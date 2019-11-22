@@ -1,5 +1,17 @@
-.zenario_html_snippet {
-	overflow:hidden;
+.zenario_html_snippet .zenario_wysiwyg:before,
+.zenario_html_snippet .zenario_wysiwyg:after {
+	content: '.';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.zenario_html_snippet .zenario_wysiwyg:after {
+	clear: both;
 }
 
 .zenario_html_snippet a {

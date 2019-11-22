@@ -58,7 +58,7 @@ class zenario_banner extends ze\moduleBaseClass {
 	}
 	
 
-	protected function setupLink(&$mergeFields, &$cID, &$cType, $useTranslation = true, $link_type = 'link_type', $hyperlink_target = 'hyperlink_target', $target_blank = 'target_blank', $url = 'url') {
+	protected function setupLink(&$mergeFields, &$cID, &$cType, $useTranslation = true, $link_type = 'link_type', $hyperlink_target = 'hyperlink_target', $target_blank = 'target_blank', $url = false) {
 		
 		$mergeFields['Target_Blank'] = '';
 		$link = $downloadFile = $cID = $cType = false;
@@ -204,10 +204,21 @@ class zenario_banner extends ze\moduleBaseClass {
 					}
 				}
 			
-			} elseif ($linkTo == '_EXTERNAL_URL' && ($link = $this->setting($url))) {
-				$mergeFields['Link_Href'] =
-				$mergeFields['Image_Link_Href'] =
-					'href="'. htmlspecialchars($link). '"';
+			} elseif ($linkTo == '_EXTERNAL_URL') {
+				$url = 'url';
+				if ($link = $this->setting($url)) {
+					$mergeFields['Link_Href'] =
+					$mergeFields['Image_Link_Href'] =
+						'href="'. htmlspecialchars($link). '"';
+				}
+			
+			}  elseif ($linkTo == '_EMAIL') {
+				$url = 'email_address';
+				if ($link = $this->setting($url)) {
+					$mergeFields['Link_Href'] =
+					$mergeFields['Image_Link_Href'] =
+						'href="'. htmlspecialchars($link). '"';
+				}
 			}
 		}
 		
@@ -328,7 +339,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			//Also have some nest-wide options to enable colorbox popups, and to set restrictions there too
 			if (isset($this->parentNest)
 			 && $this->parentNest->banner__enlarge_image
-			 && !ze::in($this->setting('link_type'), '_CONTENT_ITEM', '_EXTERNAL_URL')) {
+			 && !ze::in($this->setting('link_type'), '_CONTENT_ITEM', '_EXTERNAL_URL', '_EMAIL')) {
 				
 				//Set the link type to "_ENLARGE_IMAGE" if it's not already.
 				$this->setSetting('link_type', '_ENLARGE_IMAGE', false);
@@ -445,11 +456,11 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				//Set a responsive version of the image
 				if (ze::$minWidth) {
-					switch ($this->setting('advanced_behaviour')) {
+					switch ($this->setting('mobile_behaviour')) {
 						case 'mobile_change_image':
 						case 'mobile_same_image_different_size':
 							
-							switch ($this->setting('advanced_behaviour')) {
+							switch ($this->setting('mobile_behaviour')) {
 								case 'mobile_change_image':
 									$mobile_image = $this->setting('mobile_image');
 									break;
@@ -554,13 +565,8 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				} if (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (empty($this->mergeFields['Link_Href']))){
 					if (ze\file::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
-						if ($this->setting('disable_rel')) {
-							$this->mergeFields['Link_Href'] =
-							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox_no_arrows" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
-						} else {
-							$this->mergeFields['Link_Href'] = 'rel="lightbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
-							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
-						}
+						$this->mergeFields['Link_Href'] = 'rel="lightbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
+						$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
 						
 						if ($this->setting('floating_box_title_mode') == 'overwrite') {
 							$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
@@ -583,7 +589,9 @@ class zenario_banner extends ze\moduleBaseClass {
 		}
 		
 		//Enable lazy load in the framework if enabled.
-		$this->mergeFields['Lazy_Load'] = ($this->setting('advanced_behaviour') && $this->setting('advanced_behaviour') == 'lazy_load');
+		$this->mergeFields['Lazy_Load'] = (
+			$this->setting('advanced_behaviour') && $this->setting('advanced_behaviour') == 'lazy_load'
+			&& $this->setting('mobile_behaviour') && $this->setting('mobile_behaviour') == 'mobile_same_image');
 		
 		$this->subSections['Text'] = (bool) $this->setting('text') || $this->editing;
 		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;

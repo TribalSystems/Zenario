@@ -618,6 +618,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		}
 		$sql .= " ORDER BY end_date,end_time ";
 		 
+ 		$retVal = [];
  		if (ze\sql::numRows($result=ze\sql::select($sql))>0 ){
 			while($row=ze\sql::fetchAssoc($result)){
 				if ((!($this->setting('hide_private_items'))) || ze\content::checkPerm($row['id'],'event',$row['version'])){

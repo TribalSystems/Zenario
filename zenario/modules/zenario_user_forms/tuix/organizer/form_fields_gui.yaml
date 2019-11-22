@@ -445,6 +445,11 @@ zenario__user_forms:
                                 type: checkbox
                                 visible_if: |
                                     item.db_column == 'first_name' || item.db_column == 'last_name'
+                            allow_converting_multiple_images_to_pdf:
+                                label: Allow converting multiple images to pdf
+                                type: checkbox
+                                visible_if: |
+                                    item.type == 'document_upload'
                             invert_dataset_result:
                                 visible_if: |
                                     item.dataset_field_id && (item.type == 'checkbox' || item.type == 'group')
@@ -604,6 +609,19 @@ zenario__user_forms:
                                 label: Send to CRM
                                 type: checkbox
                                 format_onchange: true
+                            crm_send_condition:
+                                type: radios
+                                indent: 1
+                                values:
+                                    always_send:
+                                        ord: 1
+                                        label: 'Always send'
+                                    send_only_if_visible:
+                                        ord: 2
+                                        label: 'Send only if visible'
+                                value: always_send
+                                visible_if: |
+                                    item.send_to_crm
                             crm_validate_test:
                                 visible_if: |
                                     item.send_to_crm

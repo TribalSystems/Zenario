@@ -12,18 +12,20 @@ site_settings:
                     label: 'Enable Salesforce API integration'
                     type: checkbox
                     redraw_onchange: true
-                zenario_salesforce_api_form_integration__client_id:
+                zenario_salesforce_api_form_integration__salesforce_test_connection_button:
+                    type: submit
+                    format_onchange: true
+                    value: Test Connection
+                    class: submit_selected
                     visible_if: zenarioAB.value('zenario_salesforce_api_form_integration__enable');
-                    site_setting:
-                        name: zenario_salesforce_api_form_integration__client_id
-                    label: 'Client ID'
-                    type: text
-                zenario_salesforce_api_form_integration__client_secret:
+                zenario_salesforce_api_form_integration__login_uri:
                     hide_with_previous_field: true
                     site_setting:
-                        name: zenario_salesforce_api_form_integration__client_secret
-                    label: 'Client secret key'
+                        name: zenario_salesforce_api_form_integration__login_uri
+                    label: 'Login URI'
                     type: text
+                    value: "https://login.salesforce.com/services/oauth2/token"
+                    note_below: "Default value: https://login.salesforce.com/services/oauth2/token"
                 zenario_salesforce_api_form_integration__username:
                     hide_with_previous_field: true
                     site_setting:
@@ -59,13 +61,22 @@ site_settings:
                     label: "User's security token"
                     type: password
                     autocomplete: "off"
-                zenario_salesforce_api_form_integration__login_uri:
+                zenario_salesforce_api_form_integration__client_id:
+                    visible_if: zenarioAB.value('zenario_salesforce_api_form_integration__enable');
+                    site_setting:
+                        name: zenario_salesforce_api_form_integration__client_id
+                    label: 'Consumer Key'
+                    style: |
+                        width: 98%;
+                    type: text
+                zenario_salesforce_api_form_integration__client_secret:
                     hide_with_previous_field: true
                     site_setting:
-                        name: zenario_salesforce_api_form_integration__login_uri
-                    label: 'Login URI'
+                        name: zenario_salesforce_api_form_integration__client_secret
+                    label: 'Consumer secret key'
+                    style: |
+                        width: 98%;
                     type: text
-                    value: "https://login.salesforce.com"
                 zenario_salesforce_api_form_integration__log_expiry_time:
                     hide_with_previous_field: true
                     site_setting:
@@ -84,6 +95,17 @@ site_settings:
                             label: 30 days
                         100: 
                             label: 100 days
+                            
+            notices:
+                test_connection_success:
+                    show: ""
+                    type: success
+                    message: ""
+                test_connection_error:
+                    show: ""
+                    type: error
+                    message: ""
+            show_errors_after_field: zenario_salesforce_api_form_integration__enable
         mailchimp:
             label: MailChimp
             edit_mode:

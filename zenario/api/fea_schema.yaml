@@ -407,6 +407,12 @@ additionalProperties:
                     hidden: *hidden
                     visible_if: *visible_if
                     
+                    show_title_in_block_view:
+                        type: boolean
+                        description: >
+                            Set this to display the column name in Block View.
+                            Also works in Responsive mode on mobile devices.
+                    
                     values:
                         type: object
                         description: >

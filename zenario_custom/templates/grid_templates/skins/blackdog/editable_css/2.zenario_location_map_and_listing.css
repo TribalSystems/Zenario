@@ -1,0 +1,7 @@
+.zenario_location_map_and_listing .zenario_lmal_map,
+.zenario_location_map_and_listing .zenario_lmal_map_wrap,
+.zenario_location_map_and_listing .zenario_lmal_map_iframe_wrap,
+.zenario_location_map_and_listing .zenario_lmal_map_iframe_wrap iframe {
+	width:100% !important;
+	height:400px !important;
+}

@@ -107,8 +107,8 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 					$fields['details/data_migration_warning_message']['snippet']['html'] .= 
 						'<p>' . 
 						ze\admin::nPhrase(
-							'That field already has 1 response recorded against it. By migrating responses to it any previous responses will be deleted.',
-							'That field already has [[n]] responses recorded against it. By migrating responses to it any previous responses will be deleted.',
+							'That field already has received data in 1 previous form response. The receiving field on previous form responses will be overwritten with the data (but user/contact records will not be affected).',
+							'That field already has received data in [[n]] previous form responses. The receiving field on previous form responses will be overwritten with the data (but user/contact records will not be affected).',
 							$otherFieldResponseCount, ['n' => $otherFieldResponseCount]
 						) . 
 						'</p>';

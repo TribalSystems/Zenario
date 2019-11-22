@@ -376,10 +376,10 @@ class row {
 							$sql .= ',';
 						}
 						
-						static::selCol($colDefs, $addId, $sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols);
+						static::selCol($colDefs, $addId, $sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols, $ignoreMissingColumns);
 					}
 				} else {
-					static::selCol($colDefs, $addId, $sql, $pre, $suf, $tableName, $pkCol, $cols, $dbCols);
+					static::selCol($colDefs, $addId, $sql, $pre, $suf, $tableName, $pkCol, $cols, $dbCols, $ignoreMissingColumns = false);
 				}
 	
 				if ($addId && $pkCol) {
@@ -467,7 +467,7 @@ class row {
 
 
 
-	protected static function selCol(&$colDefs, &$addId, &$sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols) {
+	protected static function selCol(&$colDefs, &$addId, &$sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols, $ignoreMissingColumns) {
 		
 		//Check that the column we're looking for exists
 		if (!isset($dbCols[$col])) {
@@ -494,6 +494,9 @@ class row {
 				
 				$sql .= $pre. '`'. \ze\escape::sql($doc). '`->"$'. \ze\escape::sql($path). '"'. $suf. ' AS `'. \ze\escape::sql($col). '`';
 				$colDefs[] = $dbCols[$doc];
+			
+			} elseif ($ignoreMissingColumns && $pre === '' && $suf === '') {
+				$sql .= ' NULL AS `'. \ze\escape::sql($col). '`';
 			
 			} else {
 				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));

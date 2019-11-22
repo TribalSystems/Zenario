@@ -11,7 +11,7 @@
 
 require_once('Continue_Node.php');
 
-class Continue_TokenParser extends \Twig_TokenParser
+class Continue_TokenParser extends \Twig\TokenParser\AbstractTokenParser
 {
 
 	public function parse(\Twig_Token $token)

@@ -100,6 +100,11 @@ zenario_newsletter:
                     value: Continue
                     same_row: true
                     post_field_html: '</div style="float:right">'
+                add_user_field:
+                    label: 'Add user field:'
+                    type: select
+                    empty_value: -- Select --
+                    format_onchange: true
                 body:
                     full_width: true
                     style: |
@@ -119,11 +124,6 @@ zenario_newsletter:
                             disallow_refiners_looping_on_min_path: true
                     insert_link_button:
                         exists: true
-                add_user_field:
-                    label: 'Add user field:'
-                    type: select
-                    empty_value: -- Select --
-                    format_onchange: true
                 test_send_email_address:
                     type: text
                     maxlength: "100"

@@ -12,7 +12,7 @@
 /**
  * @author Henrik Bjornskov <hb@peytz.dk>
  */
-class Twig_Extensions_Extension_Text extends Twig_Extension
+class Twig_Extensions_Extension_Text extends Twig\Extension\AbstractExtension
 {
     /**
      * {@inheritdoc}

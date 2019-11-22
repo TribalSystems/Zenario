@@ -269,6 +269,27 @@ install:
                     value: blackdog
                     post_field_html: |
                         </div></div>
+                
+                logo:
+                    label: "Your site's logo (optional):"
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .svg
+                        drag_and_drop: true
+                        reorder_items: false
+                    value: ''
+                organisation_name:
+                    label: "Your organisation name (optional):"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                
                 previous:
                     value: Back
                     type: submit
@@ -317,11 +338,18 @@ install:
                 password:
                     label: "Choose a Password:"
                     type: password
-                    onkeyup: zenarioAW.quickValidateWelcomePage(300);
+                    oninput: |
+                        zenario.updatePasswordNotifier('#password', '#snippet_password_message');
+                    onmouseover: |
+                        $('#snippet__password_requirements').show();
+                    onmouseout: |
+                        $('#snippet__password_requirements').hide();
                     row_class: row_form
                     return_key_presses_button: next
-                password_strength:
-                    same_row: true
+                password_requirements:
+                    snippet:
+                        html: ""
+                password_message:
                     snippet:
                         html: "&nbsp;"
                 re_password:

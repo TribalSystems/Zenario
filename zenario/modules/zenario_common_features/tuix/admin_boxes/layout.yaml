@@ -32,12 +32,21 @@ zenario_layout:
                     type: text
                     readonly: true
                 name:
-                    label: 'Layout name:'
+                    label: 'Layout description:'
                     type: text
                     maxlength: "255"
-                    note_below: Please choose a unique name for this layout.
                     validation:
                         required: Please enter a name for this layout.
+                content_item_count:
+                    hidden: true
+                status:
+                    label: 'Layout status:'
+                    type: radios
+                    values:
+                        active:
+                            label: Available
+                        suspended:
+                            label: Archived
                 content_type:
                     label: 'Content type:'
                     type: text
@@ -53,7 +62,10 @@ zenario_layout:
                     value: html
                     validation:
                         required: Please select a content type.
-                    note_below: Specify which content type this layout may be used for.
+                layout_is_detault_for_ctype:
+                    indent: 1
+                    label: 'Default for this content type'
+                    type: checkbox
                 skin_id:
                     label: 'Skin:'
                     pick_items:
@@ -164,7 +176,6 @@ zenario_layout:
                     label: 'CSS class names:'
                     type: text
                     maxlength: 100
-    max_height: 500
     confirm:
         show: ""
         message: ""

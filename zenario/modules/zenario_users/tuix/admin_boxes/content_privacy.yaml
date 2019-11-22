@@ -9,6 +9,9 @@ zenario_content_privacy:
         originalId: ""
         equivId: ""
         cType: ""
+    identifier:
+        css_class: content_draft
+        label: Content item ID
     tabs:
         privacy:
             label: Permissions

@@ -45,8 +45,28 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				) {
 					$values['unconfirmed_users/remove_inactive_users'] = false;
 					$fields['unconfirmed_users/remove_inactive_users']['disabled'] = true;
+					
 					$fields['unconfirmed_users/remove_inactive_users']['side_note'] = 
-						'The scheduled task manager module must be running and the task "jobRemoveInactivePendingUsers" must be enabled to remove inactive users.';
+						ze\admin::phrase('The scheduled task manager module must be running and the task "jobRemoveInactivePendingUsers" must be enabled to remove inactive users.');
+				}
+				
+				if (!$scheduledTaskManagerRunning 
+					|| !ze::setting('jobs_enabled') 
+					|| !ze\module::inc('zenario_scheduled_task_manager')
+					|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobSendInactiveUserEmail')
+				) {
+					$values['inactive_user_email/time_user_inactive_1'] = 
+					$values['inactive_user_email/time_user_inactive_2'] = 
+					$values['inactive_user_email/user_dataset_field_to_receive_emails'] = false;
+					
+					$fields['inactive_user_email/time_user_inactive_1']['disabled'] = 
+					$fields['inactive_user_email/time_user_inactive_2']['disabled'] = 
+					$fields['inactive_user_email/user_dataset_field_to_receive_emails']['disabled'] = true;
+					
+					$fields['inactive_user_email/time_user_inactive_1']['side_note'] = 
+					$fields['inactive_user_email/time_user_inactive_2']['side_note'] = 
+					$fields['inactive_user_email/user_dataset_field_to_receive_emails']['side_note'] = 
+						ze\admin::phrase('The scheduled task manager module must be running and the task "jobSendInactiveUserEmail" must be enabled to remove inactive users.');
 				}
 		
 				// Show list of users dataset tabs
@@ -250,6 +270,8 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				} else{
 					$fields['inactive_user_email/inactive_user_email_template_2']['hidden'] = true;
 				}
+				
+				break;
 		}
 	}
 	
@@ -265,10 +287,23 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$fields['inactive_user_email/inactive_user_email_template_1']['error'] = ze\admin::phrase('Please select an email template for the second period.');
 				}
 				
-				if ($values['passwords/min_extranet_user_password_length'] < 5 || $values['passwords/min_extranet_user_password_length'] > 32){
-					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase('The minimum password length must be between 5 and 32.');
+				if ($values['passwords/min_extranet_user_password_length'] < 8 || $values['passwords/min_extranet_user_password_length'] > 32){
+					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase('The minimum password length must be between [[min_password_length]] and [[max_password_length]].',
+						['min_password_length' => 8, 'max_password_length' => 32]);
 				}
 				
+				//Require at least one character requirement checkbox to be selected.
+				if (!$values['passwords/a_z_lowercase_characters_in_user_password']
+					&& !$values['passwords/a_z_uppercase_characters_in_user_password']
+					&& !$values['passwords/0_9_numbers_in_user_password']
+					&& !$values['passwords/symbols_in_user_password']) {
+					
+					$fields['passwords/a_z_lowercase_characters_in_user_password']['error'] =
+					$fields['passwords/a_z_uppercase_characters_in_user_password']['error'] =
+					$fields['passwords/0_9_numbers_in_user_password']['error'] = true;
+					$fields['passwords/symbols_in_user_password']['error'] = ze\admin::phrase('Please select at least one password character requirement.');
+				}
+				break;
 		}
 	}
 	

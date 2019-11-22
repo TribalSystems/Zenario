@@ -220,6 +220,7 @@ plugin_settings:
                             ord: "2"
                             label: End date
                     value: start_date
+                    format_onchange: true
                 sort_order:
                     label: 'Sort order:'
                     plugin_setting:
@@ -229,6 +230,13 @@ plugin_settings:
                         most_recent_first: Most recent/latest first
                         older_first: Oldest/earliest first
                     value: most_recent_first
+                group_events_by_year_and_month:
+                    label: 'Group events by year and month'
+                    plugin_setting:
+                        name: group_events_by_year_and_month
+                    type: checkbox
+                    value: false
+                    format_onchange: true
         each_item:
             label: Each item
             fields:

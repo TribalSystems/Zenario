@@ -365,6 +365,15 @@ class db {
 			return $rv;
 		}
 	}
+	
+	//Attempt to set the timezone used by the current database connection.
+	//Note that this may fail if the 
+	public function setTimezone($tz) {
+		if ($this->con && $tz) {
+			return $this->con->query("SET time_zone = '". \ze\escape::sql($tz). "'");
+		}
+		return false;
+	}
 
 	public function reconnect($host, $name, $user, $pass, $port, $reportErrors = true) {
 		if (!$this->con) {
@@ -691,6 +700,11 @@ class db {
 		//Now we have access to the database, check if it's been set in the site-settings, and set it to that if so.
 		if (!empty(\ze::$siteConfig['zenario_timezones__default_timezone'])) {
 			date_default_timezone_set(\ze::$siteConfig['zenario_timezones__default_timezone']);
+			
+			//Also try to set the timezone for the local database connection to the same value
+			\ze::$dbL->setTimezone(\ze::$siteConfig['zenario_timezones__default_timezone']);
+		} else {
+			\ze::$dbL->setTimezone(date_default_timezone_get());
 		}
 	
 	

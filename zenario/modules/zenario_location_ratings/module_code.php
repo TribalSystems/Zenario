@@ -29,14 +29,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_location_ratings extends zenario_location_manager {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path=="zenario__locations/nav/accreditors/panel") {
+		if ($path == "zenario__locations/nav/accreditors/panel") {
 			foreach ($panel['items'] as $id => &$item) {
 				$accreditorDetails = $this->getAccreditorDetails($id);
 				
-				if ($accreditorDetails['score_type']!="boolean") {
-					$item['link']['path'] = "zenario__locations/nav/accreditors/panel/hidden_nav/accreditor_scores/panel";
-					$item['link']['branch'] = "Yes";
-					$item['link']['refiner'] = "zenario_location_ratings__accreditor";
+				if ($accreditorDetails['score_type'] == "boolean") {
+					$item['link'] = false;
+				} else {
 					$item['tooltip'] = ze\admin::phrase("View this Accreditor's ratings");
 				}
 			}
@@ -334,7 +333,7 @@ class zenario_location_ratings extends zenario_location_manager {
 		$mergeFields = [];
 		$subSections = [];
 		
-		$mergeFields['Location_Rating_Title'] = $this->phrase("_LOCATION_RATING_TITLE");
+		$mergeFields['Location_Rating_Title'] = $this->phrase("Location Ratings");
 		
 		if ($locationAccreditorScoreIds = $this->getLocationAccreditorScores($locationId)) {
 			foreach ($locationAccreditorScoreIds as $locationAccreditorScoreId) {
@@ -343,14 +342,14 @@ class zenario_location_ratings extends zenario_location_manager {
 					
 					if ($accreditor['score_type']=="numeric") {
 						$subSections['Score_Type_Numeric'] = true;
-						$mergeFields['Numeric_Score_Label'] = $this->phrase("_NUMERIC_LOCATION_SCORE",["name" => $accreditor['name']]);
+						$mergeFields['Numeric_Score_Label'] = $this->phrase("[[name]]",["name" => $accreditor['name']]);
 						$mergeFields['Numeric_Score'] = $this->getStars($locationAccreditorScore['score']);
 					} elseif ($accreditor['score_type']=="alpha") {
 					
 					} elseif ($accreditor['score_type']=="boolean") {
 						if ($locationAccreditorScore['score']=="Yes") {
 							$subSections['Score_Type_Boolean'] = true;
-							$mergeFields['Boolean_Score_Label'] = $this->phrase("_BOOLEAN_LOCATION_SCORE", ["name" => $accreditor['name']]);
+							$mergeFields['Boolean_Score_Label'] = $this->phrase("[[name]] Award", ["name" => $accreditor['name']]);
 						}
 					}
 				}

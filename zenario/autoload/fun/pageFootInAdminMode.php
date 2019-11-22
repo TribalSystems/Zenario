@@ -159,6 +159,7 @@ foreach (\ze\lang::getLanguages(!\ze::$cID) as $lang) {
 	
 	if ($onlyShowEnabledLanguages || !empty($enabledLangs[$lang['id']])) {
 		$langs[$lang['id']]['enabled'] = 1;
+		$langs[$lang['id']]['translate_phrases'] = $lang['translate_phrases'];
 	}
 }
 

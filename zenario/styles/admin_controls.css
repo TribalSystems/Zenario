@@ -149,40 +149,87 @@ body.zenario_pageModeIsnt_layout .zenario_slot_layout_preview {
 
 
 
+/*	Add a special style to the h1 tag when you hover over it in admin mode,
+	to help you spot the most important SEO tag.	*/
+	
+#zenario_citem h1 {
+	position:relative;
+	z-index:1;
+}
+
+#zenario_citem h1:hover {
+	-webkit-box-shadow:0 0 0 1px blue;
+	-moz-box-shadow:0 0 0 1px blue;
+	box-shadow:0 0 0 1px blue;
+}
+
+#zenario_citem h1:hover:before {
+	content:"H1";
+	position:absolute;
+	top:0;
+	left:0;
+	width:20px;
+	height:20px;
+	line-height:18px;
+	text-align:center;
+	background:blue;
+	color:#FFF;
+	font-size:10px;
+	font-family:"verdana" !important;
+}
+
+#zenario_citem .zenario_slot_being_edited h1:hover {
+	-webkit-box-shadow:0;
+	-moz-box-shadow:0;
+	box-shadow:0;
+}
 
 
+
+/*	Set an outline around the slot-wrapper on the page.	*/
 .zenario_slot {
-	outline: 1px dashed red;
+	outline: 1px dashed #ccc;
 }
 
+/*	A slot that is set on the layout with a library plugin should have purple lines.	*/
+.zenario_libraryPlugin .zenario_slot {
+	outline-color: #800080; /* purple */
+}
+
+/*	A slot that is set on the layout with a version-controlled plugin should have orangegreen or grey lines
+	(green on a draft or a published page, grey if trashed or hidden).	*/
+.zenario_versionControlledPlugin .zenario_slot {
+	outline-color: #ccc;
+}
+
+body.zenario_status_draft .zenario_versionControlledPlugin .zenario_slot,
+body.zenario_status_published .zenario_versionControlledPlugin .zenario_slot {
+	outline-color: #008000; /* green */
+}
+
+/*	A slot that is set on the plugins tab, or which overrides something on the layout, should have red lines.	*/
+.zenario_slotWithContents.zenario_level1 .zenario_slot {
+	outline-color: red;
+}
+
+/*	Slot borders should be yellow if it's a plugin in a nest.	*/
+body .zenario_slotWithContents .zenario_slot .zenario_slot  {
+	outline-color: #ffd000;
+}
+
+/*  When you hover over a slot, change the border from dashed to solid.  */
 .zenario_slotParent .zenario_slot {
-	outline: 1px solid red;
+	outline-style: solid;
 }
 
-.zenario_slot .zenario_slot {
-	outline: 1px dashed orange;
-}
-
-body.zenario_pageMode_edit .zenario_reusable.zenario_showSlotInEditMode .zenario_slot,
-body.zenario_pageMode_edit_disabled .zenario_reusable.zenario_showSlotInEditMode .zenario_slot {
-	outline: 1px dashed MediumVioletRed;
-}
-
-body.zenario_pageMode_edit .zenario_reusable.zenario_showSlotInEditMode.zenario_slotParent .zenario_slot,
-body.zenario_pageMode_edit_disabled .zenario_reusable.zenario_showSlotInEditMode.zenario_slotParent .zenario_slot {
-	outline: 1px solid MediumVioletRed;
-}
-
-/*  When editing a slot, I should remove all of the slot borders, except for the one you're currently editing.  */
-
+/*  When editing a slot, remove all of the slot borders, except for the one you're currently editing.  */
 body.zenario_being_edited .zenario_slotOuter .zenario_slot {
-	outline: none;
+	outline-width: 0;
 }
 
 /*  When editing a slot, put a distinct border around the slot you're currently editing.  */
-
 body.zenario_being_edited .zenario_slot_being_edited .zenario_slot {
-	outline: 2px solid red;
+	outline-width: 2px;
 }
 
 
@@ -190,7 +237,7 @@ body.zenario_pageMode_edit .zenario_slotWithNoContents > div.zenario_slot,
 body.zenario_pageMode_item .zenario_slotWithNoContents > div.zenario_slot,
 body.zenario_pageMode_layout .zenario_slotWithNoContents > div.zenario_slot,
 .zenario_slotWithNoPermission > div.zenario_slot {
-	opacity: 0.4;
+	/*opacity: 0.4;*/
 }
 
 .zenario_slotWithNoPermission > div em {
@@ -207,17 +254,17 @@ body.zenario_pageMode_item .zenario_hideSlotInItemMode > div.zenario_slot,
 body.zenario_pageMode_item .zenario_level2 > div.zenario_slot,
 body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode > div.zenario_slot,
 body.zenario_pageMode_layout .zenario_level1 > div.zenario_slot {
-	opacity: 0.2;
+	/*opacity: 0.2;*/
 }
 
-body.zenario_skq_open .zenario_slot,
-body.zenario_pageMode_preview .zenario_slot,
-body.zenario_pageMode_menu .zenario_slot,
-body.zenario_pageMode_rollback .zenario_slotWithNoContents .zenario_slot,
-body.zenario_pageMode_rollback .zenario_reusable .zenario_slot,
-body.zenario_pageMode_edit_disabled .zenario_slotWithNoContents .zenario_slot,
-body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode .zenario_slot,
-body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot/*,
+body.zenario_skq_open .zenario_slot ,
+body.zenario_pageMode_preview .zenario_slot ,
+body.zenario_pageMode_menu .zenario_slot ,
+body.zenario_pageMode_rollback .zenario_slotWithNoContents .zenario_slot ,
+body.zenario_pageMode_rollback .zenario_reusable .zenario_slot ,
+body.zenario_pageMode_edit_disabled .zenario_slotWithNoContents .zenario_slot ,
+body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode .zenario_slot /*,
+body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot,
 body.zenario_pageMode_item .zenario_hideSlotInItemMode .zenario_slot,
 body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode .zenario_slot*/ {
 	outline: none;
@@ -412,7 +459,7 @@ div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
 }
 
 div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
-	background: url('../admin/images/sprites/org-icons-v5.png') no-repeat -257px -212px;
+	background: url('../admin/images/slots/icon-add-green.svg') no-repeat center center / 15px 15px;
 }
 
 .zenario_reusable div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
@@ -582,7 +629,7 @@ div.zenario_slotControlsWrap .zenario_slotControl_reusable {
 }
 
 div.zenario_slotControlsWrap .zenario_slotControl_empty {
-	opacity: 0.4;
+	/*opacity: 0.4;*/
 }
 
 .zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview {

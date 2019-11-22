@@ -64,8 +64,7 @@ class adminAdm {
 				$actions['_ALL'] = false;
 				$clearAllOthers = false;
 				break;
-			case 'specific_languages':
-			case 'specific_menu_areas':
+			case 'specific_areas':
 				//Admins who use specific_languages or specific_menu_areas have certain set permissions.
 				//These are checked using PHP logic, but for backwards compatability with anything else
 				//we'll also insert them into the database.
@@ -162,17 +161,42 @@ class adminAdm {
 	//Look for and update the copy of the Global Admins in the local table
 	//Formerly "syncSuperAdmin()"
 	public static function syncMultisiteAdmins($adminIdG) {
-		$adminColumns = [
+		
+		//Get a list of which admins to sync.
+		//Normally all local admins in the global site should become global admins in each client site.
+		//Exlude any admins that are only allowed to edit specific areas
+		$adminsToSync = [
+			'authtype' => 'local',
+			'permissions' => ['all_permissions', 'specific_actions']
+		];
+		
+		//Get a list of which columns we should try and sync
+		$colsToSync = [
 			'username', 'password', 'password_salt', 'password_needs_changing', 
 			'status', 'first_name', 'last_name', 'email', 'created_date', 'modified_date', 'image_id',
-			'permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas'
+			'permissions'
 		];
-
+		
+		//This code checks if the admin tables on both sites are up to date, and allow us to
+		//block something from being synced if not
+		$adminTablesUpToDate = [
+			'path' => 'admin/db_updates/step_2_update_the_database_schema',
+			'patchfile' => 'admin_tables.inc.php',
+			'revision_no' => ['>=' => 48600]
+		];
+		
+		if (\ze\row::exists('local_revision_numbers', $adminTablesUpToDate)
+		 && \ze\rowGlobal::exists('local_revision_numbers', $adminTablesUpToDate)) {
+			$colsToSync[] = 'specific_languages';
+			$colsToSync[] = 'specific_content_types';
+		}
+		
+		
 		//Attempt to connect to the global database
 		if (\ze\db::connectGlobal()) {
 			//Look up the details on the global database
-			$globalAdmins = \ze\rowGlobal::getArray('admins', $adminColumns, ['authtype' => 'local']);
-
+			$globalAdmins = \ze\rowGlobal::getAssocs('admins', $colsToSync, $adminsToSync, [], false, $ignoreMissingColumns = true);
+			
 			//For all global admins...
 			foreach ($globalAdmins as $globalId => &$admin) {
 	
@@ -205,7 +229,7 @@ class adminAdm {
 	
 			$key = ['global_id' => $admin['global_id']];
 	
-			//Skip trashed globsl admins that were never on this site in the first place
+			//Skip trashed global admins that were never on this site in the first place
 			if ($admin['status'] == 'deleted'
 			 && !\ze\row::exists('admins', $key)) {
 				continue;
@@ -232,7 +256,11 @@ class adminAdm {
 			unset($admin['image_checksum'], $admin['_actions_']);
 			$admin['authtype'] = 'super';
 	
-			$admin['local_id'] = $localId = \ze\row::set('admins', $admin, $key);
+			$admin['local_id'] = $localId = \ze\row::set('admins', $admin, $key, $ignore = false, $ignoreMissingColumns = true);
+			//Note we're using the $ignoreMissingColumns option here to catch a very specific case where the "specific_content_types"
+			//column has been created on the control site but not yet on the client site, which would cause a database
+			//error when logging in. This should only be needed briefly as the column will be added on the client site when
+			//the next database update is applied.
 	
 			//Check to see if the specific permissions have changed
 			$actionsHere = \ze\row::getValues('action_admin_link', 'action_name', ['admin_id' => $localId], 'action_name');

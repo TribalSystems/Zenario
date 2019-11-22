@@ -11,6 +11,7 @@ plugin_settings:
                     redraw_onchange: Yes
                     
                 zenario_extranet_change_password__notification_email_template:
+                    indent: 1
                     plugin_setting:
                         name: zenario_extranet_change_password__notification_email_template
                     label: 'Select email template:'

@@ -63,11 +63,6 @@ foreach ($datasetFieldIds as $datasetFieldId) {
 		if ($edit) {
 			$newInput['type'] = "select";
 			$newInput['empty_value'] = " -- Select --";
-		} else {
-			$list = ze\dataset::fieldLOV($datasetField);
-			if (isset($list[$newInput['value']])) {
-				$newInput['value'] = $list[$newInput['value']];
-			}
 		}
 	} elseif ($datasetField['type'] == 'centralised_radios') {
 		if ($edit) {

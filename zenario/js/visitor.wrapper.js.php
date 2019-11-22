@@ -57,7 +57,7 @@ ze\cache::incJS('zenario/js/easing');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/doubletap-to-go/jquery.doubletaptogo');
 ze\cache::incJS('zenario/libs/manually_maintained/bsd/javascript_md5/md5');
-ze\cache::incJS('zenario/libs/bower/jquery-lazy/jquery.lazy');
+ze\cache::incJS('zenario/libs/yarn/jquery-lazy/jquery.lazy');
 
 echo '
 zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.min.js";';

@@ -6,8 +6,8 @@ plugin_settings:
         mobile_tab:
             hidden: true
         
-        first_tab:
-            label: Images
+        image_and_link:
+            label: Choose images
             fields:
                 # Overwrite the single image picker from the Banner Plugin with a multiple image picker
                 image:
@@ -49,10 +49,16 @@ plugin_settings:
                     side_note: |
                         This will cause the images to be loaded when they scroll into view,
                         rather than loading them all at once.
+                show_caption_on_image:
+                    #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
+                    value: true
+                show_caption_on_enlarged_image:
+                    #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
+                    value: true
 
         links:
-            ord: 1.5
-            label: Links and titles
+            ord: 4.5
+            label: Captions, links, enlarging
             custom_template_fields:
 
                 image_thumb_znz: 
@@ -86,7 +92,7 @@ plugin_settings:
                     grouping: 'image_link image_link_znz'
                     plugin_setting:
                         name: image_title_znz
-                    label: 'Title:'
+                    label: 'Caption:'
                     type: text
                     
                 link_type_znz:
@@ -97,7 +103,7 @@ plugin_settings:
                     value: _NO_LINK
                     values:
                         _NO_LINK:
-                            label: No link
+                            label: — Don't link/enlarge —
                         _CONTENT_ITEM:
                             label: Link to a content item
                         _EXTERNAL_URL:

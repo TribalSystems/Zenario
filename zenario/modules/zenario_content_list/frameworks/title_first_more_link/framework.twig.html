@@ -36,10 +36,10 @@
 				<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
 					<div class="content_list_title_date">
 						{% if Show_Item_Title %}
-							<h2 class="content_list_title {{item.Content_Type|e}}">
+							<{{Item_Title_Tags}} class="content_list_title {{item.Content_Type|e}}">
 								<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
 								{% if 'Language' in item%}<span>({{item.Language|e}})</span>{% endif %}
-							</h2>
+							</{{Item_Title_Tags}}>
 						{% endif %}
 						{% if Show_Author_Image %}
 							<div class="content_list_author_image">

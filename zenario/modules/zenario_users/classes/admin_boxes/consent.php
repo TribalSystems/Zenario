@@ -35,8 +35,39 @@ class zenario_users__admin_boxes__consent extends zenario_users {
 		
 		$fields['details/datetime']['snippet']['html'] = ze\admin::formatDateTime($consent['datetime']);
 		$fields['details/ip_address']['snippet']['html'] = $consent['ip_address'];
-		$user = static::formatConsentUser($consentId);
-		$fields['details/user']['snippet']['html'] = $user;
+		$fields['details/email_user']["hidden"] =true;
+		$fields['details/last_name_user']["hidden"] = true;
+		$fields['details/user']['snippet']['html'] = '';
+		$user ='';
+		if (!empty(trim($consent['first_name'] . ' ' . $consent['last_name']))) {
+			$user .= $fields['details/user']['snippet']['html']  = trim($consent['first_name']);
+			if(!empty($consent['first_name']) && (ze::$dbL->columnIsEncrypted('consents', 'first_name') || ze::$dbL->columnIsHashed('consents', 'first_name'))){
+			    $fields['details/user']["encrypted"]  = true;
+			}
+			if(!empty($consent['last_name'])){
+			    $fields['details/last_name_user']["hidden"] = false;
+                $user .= $fields['details/last_name_user']['snippet']['html'] = ' ' . $consent['last_name'];
+                if(ze::$dbL->columnIsEncrypted('consents', 'last_name') || ze::$dbL->columnIsHashed('consents', 'last_name')){
+                    $fields['details/last_name_user']["encrypted"]  = true;
+                }
+                $fields['details/last_name_user']["same_row"] = true;
+            } 
+            if (!empty($consent['email'])) {
+                $fields['details/email_user']["hidden"] = false;
+                $user .= $fields['details/email_user']['snippet']['html'] = !empty(trim($consent['first_name'] . ' ' . $consent['last_name'])) ? ' (' . $consent['email'].')' : $consent['email'];
+                $fields['details/email_user']["same_row"]= true;
+                if(ze::$dbL->columnIsEncrypted('consents', 'email') || ze::$dbL->columnIsHashed('consents', 'email')){
+                    $fields['details/email_user']["encrypted"]  = true;
+                }
+            }
+		} elseif ($consent['email']) {
+			$user .= $fields['details/user']['snippet']['html']= $consent['email'];
+			if(ze::$dbL->columnIsEncrypted('consents', 'email') || ze::$dbL->columnIsHashed('consents', 'email')){
+                    $fields['details/user']["encrypted"]  = true;
+                    $fields['details/email_user']["same_row"] = true;
+                }
+		}
+	
 		$fields['details/consent_text']['snippet']['html'] = $consent['label'];
 		
 		if ($consent['source_name'] == 'form' && ze\module::inc('zenario_user_forms')) {

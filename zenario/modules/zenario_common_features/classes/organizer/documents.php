@@ -86,6 +86,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				if ($item['date_uploaded']) {
 					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\admin::formatDateTime($item['date_uploaded'], '_MEDIUM', \ze::$defaultLang)]);
 				}
+				
 				if ($item['extract_wordcount']) {
 					$item['extract_wordcount'] = ze\admin::nPhrase(
 						'[[extract_wordcount]] word', 
@@ -367,25 +368,36 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 						$result = str_replace(' ', '%20', $result);
 						$fullLink = ze\link::absolute() . $result;
 						$internalLink = $result;
+						
+						$fileId = ze\row::get('documents', 'file_id', ['id' => $id]);
+						$shortChecksum = ze\row::get('files', 'short_checksum', ['id' => $fileId]);
 						$html .= '
 							<div class="document_hyperlinks_message">
-							<h3>The hyperlinks to your document are shown below:</h3>
-							<div class="document_hyperlinks_content">
-								<div class="document_hyperlinks_label">Full hyperlink:
-									<span class="note"></span>
+								<h3>The hyperlinks to your document are shown below:</h3>
+								<div class="document_hyperlinks_content">
+									<div class="document_hyperlinks_label">Full hyperlink:
+										<span class="note"></span>
+									</div>
+									<div class="document_hyperlinks_field">
+										<input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '" readonly/>
+									</div>
 								</div>
-								<div class="document_hyperlinks_field">
-									<input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '"/>
+								<div class="document_hyperlinks_content">
+									<div class="document_hyperlinks_label">Internal hyperlink:
+										<span class="note"></span>
+									</div>
+									<div class="document_hyperlinks_field">
+										<input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '" readonly/>
+									</div>
 								</div>
-							</div>
-							<div class="document_hyperlinks_content">
-								<div class="document_hyperlinks_label">Internal hyperlink:
-									<span class="note"></span>
+								<div class="document_hyperlinks_content">
+									<div class="document_hyperlinks_label">Checksum:
+										<span class="note"></span>
+									</div>
+									<div class="document_hyperlinks_field">
+										<input type="text" style="width: 488px;" value="'. htmlspecialchars($shortChecksum). '" readonly/>
+									</div>
 								</div>
-								<div class="document_hyperlinks_field">
-									<input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '"/>
-								</div>
-							</div>
 							</div>';
 					}
 				}			

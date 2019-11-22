@@ -92,6 +92,13 @@ class zenario_extranet_registration extends zenario_extranet {
 				            $customDBColumns[$k]['label'] = $value['label'];
 				            $customDBColumns[$k]['name'] = $value['db_column'];
 				            $customDBColumns[$k]['type'] = $value['type'];
+				            
+				            if (!empty($_POST[$value['db_column']])) {
+				            	//This line allows to preserve the value of a custom field
+				            	//if a form error occured.
+				            	$customDBColumns[$k]['value'] = ze\escape::sql($_POST[$value['db_column']]);
+				            }
+				            
 				            if( $customDBColumns[$k]['type'] == 'select' || $customDBColumns[$k]['type'] == 'centralised_radios' || $customDBColumns[$k]['type'] == 'radios' || $customDBColumns[$k]['type'] == 'dataset_select' || $customDBColumns[$k]['type'] == 'centralised_select' ){
 				                $customDBColumns[$k]['values'] = ze\dataset::fieldLOV($k, false);
 				            }
@@ -238,7 +245,8 @@ class zenario_extranet_registration extends zenario_extranet {
                     $fields['use_captcha']['value'] = 0; 
 				}
 				        
-                $fields['custom_fields/user_custom_fields']['pick_items']['path'] .= $dataset['id'] . '//';
+				$fields['custom_fields/user_custom_fields']['pick_items']['info_button_path'] =
+					'zenario__administration/panels/custom_datasets/item_buttons/edit_gui//'. $dataset['id']. '//';
                 
                 $fields['custom_fields/desc']['snippet']['html'] = ze\admin::phrase($fields['custom_fields/desc']['snippet']['html'], $dataset);;
 
@@ -587,6 +595,18 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->sendActivationNotification($userId);
 		}
 		
+		//No form is submitted, so $_POST is blank.
+		//Add the necessary data for email logging purposes.
+		if ($this->setting('verified_account_status') == 'contact' || $this->setting('verified_account_status') == 'active' || $this->setting('verified_account_status') == 'check_trusted') {
+			$_POST['cID'] = $this->cID;
+			$_POST['slideId'] = $this->slideId;
+			$_POST['cType'] = $this->cType;
+			$_POST['slotName'] = $this->slotName;
+			$_POST['instanceId'] = $this->instanceId;
+			$_POST['containerId'] = $this->containerId;
+			$_POST['containerId'] = $this->cVersion;
+		}
+		
 		switch ($this->setting('verified_account_status')) {
 			case 'contact':
 				$this->setAccountContact($userId);
@@ -765,10 +785,14 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->subSections['User_passwords'] = true;
 		}
 		
+		$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
+		
 		echo $this->openForm('',' class="form-horizontal"', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Registration_Form'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
+		
+		$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
 	}
 
 	protected function modeResend() {

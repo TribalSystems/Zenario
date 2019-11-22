@@ -140,7 +140,15 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
                 $panel['no_items_message'] = \ze\admin::phrase('No plugins are in the plugin library');
 		}
 
-
+		//Catch the case where the user is viewing nest/slideshow plugin instances
+		//(meaning that $refinerName is still 'plugin')
+		if ($panel['key']['moduleId'] == $nestModuleId) {
+			$pluginAdminName = \ze\admin::phrase('nest');
+			$ucPluginAdminName = \ze\admin::phrase('Nest');
+		} elseif ($panel['key']['moduleId'] == $slideshowModuleId || $panel['key']['moduleId'] == $slideshow2ModuleId) {
+			$pluginAdminName = \ze\admin::phrase('slideshow');
+			$ucPluginAdminName = \ze\admin::phrase('Slideshow');
+		}
 		
 		//Change everywhere we've written ~plugin~ to what this panel is actually for
 		$panel = json_decode(str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, json_encode($panel))), true);
@@ -172,7 +180,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			}
 		}
 		
-		//Commented out code for the quick-filter byttons
+		//Commented out code for the quick-filter buttons
 		#	unset($panel['quick_filter_buttons']['module']);
 		#	unset($panel['quick_filter_buttons']['all_modules']);
 		#

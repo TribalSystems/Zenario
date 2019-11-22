@@ -2,10 +2,8 @@
 ---
 site_settings:
     setting_group: external_programs
-    title: Editing settings for external programs
+    title: Editing settings for other server programs
     tabs:
-                    
-                    
         antiword:
             label: Antiword
             edit_mode:
@@ -186,6 +184,19 @@ site_settings:
                                 it will try to use one of the following programs to optimize
                                 the image.
                             </p><p>
+                                If neither is installed on your server then your server administrator will need to install them;
+                                e.g. by running:
+                                <br/>
+                                &emsp;for jpegtran:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt install libjpeg-progs</code>
+                                <br/>
+                                &emsp;for jpegoptim:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt install jpegoptim</code>
+                                <br/>
+                                on Ubuntu.
+                            </p><p>
                                 You only need one of these programs installed,
                                 Zenario will call whichever is running.
                             </p>
@@ -258,7 +269,7 @@ site_settings:
                     message: jpegtran is not correctly set up.
 
         mysql:
-            label: MySQL
+            label: Backup/restore
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: true
@@ -271,12 +282,12 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            <p>
+                            <p> These settings are specific to the backup and restore process.</p><p>
                                 If you wish to create or restore a database backup, it is much faster
                                 to call MySQL directly.
                             </p><p>
                                 Zenario can only call MySQL directly if it is running on a Unix-based server;
-                                there is not support for this feature on a Windows server.
+                                there is no support for this feature on a Windows server.
                             </p>
                 mysql_path:
                     name: mysql_path
@@ -285,7 +296,7 @@ site_settings:
                     label: 'mysql path:'
                     type: select
                     value: PATH
-                    empty_value: ' -- Do not use mysql -- '
+                    empty_value: ' -- Use PHP -- '
                     values:
                         'PATH':
                             label: "Use your server's PATH environment variable"
@@ -314,7 +325,7 @@ site_settings:
                     label: 'mysqldump path:'
                     type: select
                     value: PATH
-                    empty_value: ' -- Do not use mysqldump -- '
+                    empty_value: ' -- Use PHP -- '
                     values:
                         'PATH':
                             label: "Use your server's PATH environment variable"
@@ -449,6 +460,13 @@ site_settings:
                                 it will try to use the following programs to optimize
                                 the image.
                             </p><p>
+                                If neither is installed on your server then your server administrator will need to install them;
+                                e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt install advancecomp pngnq optipng</code>
+                                <br/>
+                                on Ubuntu.
+                            </p><p>
                                 Zenario will call both of these programs if they are running,
                                 so please install both of them for best results.
                             </p>
@@ -530,15 +548,28 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                This program is not needed for Zenario to run but should be enabled if you run a module that needs to generate a PDF.
+                                wkhtmltopdf is a server-side program which converts HTML pages into PDFs.
+                            </p><p>
+                                It is not needed for Zenario to run but should be enabled if you run a module that needs to generate a PDF.
+                            </p><p>
+                                If wkhtmltopdf is not installed on your server then your server administrator will need to install it;
+                                e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt install wkhtmltopdf</code>
+                                <br/>
+                                on Ubuntu.
                             </p>
+                enable_wkhtmltopdf:
+                    label: "Enable wkhtmltopdf"
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
                 wkhtmltopdf_path:
                     site_setting:
                         name: wkhtmltopdf_path
                     label: 'wkhtmltopdf path:'
                     type: select
                     value: PATH
-                    empty_value: ' -- Do not use wkhtmltopdf -- '
                     values:
                         'PATH':
                             label: "Use your server's PATH environment variable"
@@ -547,6 +578,8 @@ site_settings:
                         '/usr/local/bin/':
                             label: '/usr/local/bin/wkhtmltopdf'
                     format_onchange: true
+                    visible_if:
+                        zenarioAB.value: enable_wkhtmltopdf
                     style: >
                         margin-right: 0.5em;
                 test:
@@ -558,6 +591,8 @@ site_settings:
                     class: submit
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
+                    visible_if:
+                        zenarioAB.value: enable_wkhtmltopdf
             notices:
                 success:
                     show: ""

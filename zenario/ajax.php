@@ -264,7 +264,7 @@ if ($methodCall == 'refreshPlugin'
 	exit;
 	
 
-} elseif ($methodCall == 'handleAdminBoxAJAX' || $methodCall == 'handleWelcomeAJAX' || $methodCall == 'handleWizardAJAX') {
+} elseif ($methodCall == 'handleAdminBoxAJAX' || $methodCall == 'handleWizardAJAX') {
 	
 	require 'visitorheader.inc.php';
 	

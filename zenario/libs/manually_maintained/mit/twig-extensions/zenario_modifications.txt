@@ -40,3 +40,7 @@ lib/Twig/Extensions/Extension/I18n.php
             new Twig_SimpleFilter('trans', 'gettext'),
     With:
             new Twig_SimpleFilter('trans', 'zenario_phrase')
+
+
+Manually went through the code looking for all of the references to deprecated Twig classes,
+and replaced them with their new composer formats.

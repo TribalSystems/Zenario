@@ -78,7 +78,60 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 						ze\admin::phrase('Are you sure you wish to proceed?');
 				}
 			}
+			
+			$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__layouts/panels/layouts/item_buttons/view_content//' . $box['key']['id'] . '//';
+			
+			if ($details['content_item_count'] == 1) {
+				$sql = '
+					SELECT DISTINCT
+						ci.id, ci.type, ci.alias, civ.layout_id
+					FROM ' . DB_PREFIX . 'content_items ci
+					LEFT JOIN ' . DB_PREFIX . 'content_item_versions civ
+						ON civ.id = ci.id
+						AND ci.admin_version = civ.version
+						AND ci.type = civ.type
+					WHERE civ.layout_id = ' . $details['layout_id'];
+				
+				$result = ze\sql::select($sql);
+				$contentItem = (ze\sql::fetchAssoc($result));
+				$contentItem = ze\content::formatTag($contentItem['id'], $contentItem['type'], $contentItem['alias']);
+				
+				$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+					'<a href="' . $link . '" target="_blank">' . $contentItem . '</a> uses this layout.');
+					
+			} elseif ($details['content_item_count'] > 1) {
+				$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+					'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> use this layout.',
+					['content_item_count' => $details['content_item_count']]);
+			}
 		}
+		
+		//Layout status
+		$box['tabs']['template']['fields']['status']['value'] = $details['status'];
+		
+		if ($details['status'] == 'active') {
+			if (!$box['key']['duplicate'] && $details['default_layout_for_ctype'] != null) {
+				//A content type must always have a default layout.
+				//Check whether the currently selected layout is the default for a content type.
+				//If it isn't, allow the user to make it the default,
+				//but don't allow to leave a content item without a default layout entirely.
+				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['value'] = true;
+				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['disabled'] = true;
+				//TODO
+				$panelLink = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__content/panels/content_types//' . $box['tabs']['template']['fields']['content_type']['value'];
+				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['note_below'] =
+					ze\admin::phrase('To change the default layout, go to <a href="' . $link . '" target="_blank">Settings for content types</a> panel.');
+				
+				//Don't allow archiving a layout that is the default for a content item.
+				$box['tabs']['template']['fields']['status']['values']['suspended']['disabled'] = true;
+				$box['tabs']['template']['fields']['status']['values']['suspended']['side_note'] = ze\admin::phrase('You cannot archive a layout that is the default layout for a content type.');
+			}
+		} elseif ($details['status'] == 'suspended') {
+			//Don't allow using archived layouts as defaults.
+			$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['disabled'] = true;
+			$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['side_note'] = ze\admin::phrase('You cannot set an archived layout as the default.');
+			$box['identifier']['css_class'] = 'archived_layout';
+		}		
 		
 		$box['tabs']['template']['fields']['content_type']['readonly'] =
 			$box['key']['id'] && !$box['key']['duplicate'] && (ze\row::exists('content_item_versions', ['layout_id' => $box['key']['id']]) || ze\row::exists('content_types', ['default_layout_id' => $box['key']['id']]));
@@ -251,6 +304,15 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 		
 		if ($needToClearCache) {
 			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
+		}
+		
+		if ($values['layout_is_detault_for_ctype']) {
+			ze\row::update('content_types', ['default_layout_id' => $box['key']['id']], ['content_type_id' => $values['template/content_type']]);
+		}
+		
+		if (empty($fields['template/layout_is_detault_for_ctype']['disabled'])) {
+			
+			ze\row::update('layouts', ['status' => $values['template/status']], ['layout_id' => $box['key']['id']]);
 		}
 	}
 }

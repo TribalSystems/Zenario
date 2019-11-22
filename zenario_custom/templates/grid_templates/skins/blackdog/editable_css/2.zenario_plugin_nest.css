@@ -5,6 +5,13 @@
 	display:inline-block;
 }
 
+/* Background transparent
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_plugin_nest .nest_plugins {
+	background:transparent !important;
+}
+
 /* Nest tabs
 --------------------------------------------------------------------------------------------------*/
 

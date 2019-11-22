@@ -94,36 +94,42 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 	){
 		
 		if (!empty($mergeFields)) {
-		
-			mb_regex_encoding('UTF-8');
-			foreach ($mergeFields as $K=>&$V) {
-				$search = '\[\[' . $K . '\]\]';
 			
-				if (is_array($disableHTMLEscaping)? !empty($disableHTMLEscaping[$K]) : $disableHTMLEscaping) {
-					$replace = &$V;
-				} else {
-					$replace = nl2br(htmlspecialchars($V));
-				}
+			ze\lang::applyMergeFields($body, $mergeFields, '[[', ']]', !$disableHTMLEscaping);
+			ze\lang::applyMergeFields($subject, $mergeFields, '[[', ']]', !$disableHTMLEscaping);
+			ze\lang::applyMergeFields($nameFrom, $mergeFields, '[[', ']]', !$disableHTMLEscaping);
+			ze\lang::applyMergeFields($addressFrom, $mergeFields, '[[', ']]', !$disableHTMLEscaping);
 			
-				$body = mb_ereg_replace($search, $replace, $body);
-				$subject = mb_ereg_replace($search, $replace, $subject);
-				$nameFrom = mb_ereg_replace($search, $replace, $nameFrom);
-				$addressFrom = mb_ereg_replace($search, $replace, $addressFrom);
-				unset($replace);
-			}
+			
+			#mb_regex_encoding('UTF-8');
+			#foreach ($mergeFields as $K=>&$V) {
+			#	$search = '\[\[' . $K . '\]\]';
+			#
+			#	if (is_array($disableHTMLEscaping)? !empty($disableHTMLEscaping[$K]) : $disableHTMLEscaping) {
+			#		$replace = &$V;
+			#	} else {
+			#		$replace = nl2br(htmlspecialchars($V));
+			#	}
+			#
+			#	$body = mb_ereg_replace($search, $replace, $body);
+			#	$subject = mb_ereg_replace($search, $replace, $subject);
+			#	$nameFrom = mb_ereg_replace($search, $replace, $nameFrom);
+			#	$addressFrom = mb_ereg_replace($search, $replace, $addressFrom);
+			#	unset($replace);
+			#}
 		
-			$regex_filter = '\[\[[^\]]*\]\]';
-			$body = mb_ereg_replace ($regex_filter,'',$body);
-			$subject = mb_ereg_replace ($regex_filter,'',$subject);
-			$nameFrom = mb_ereg_replace ($regex_filter,'',$nameFrom);
-			$addressFrom = mb_ereg_replace ($regex_filter,'',$addressFrom);
+			//$regex_filter = '\[\[[^\]]*\]\]';
+			//$body = mb_ereg_replace ($regex_filter,'',$body);
+			//$subject = mb_ereg_replace ($regex_filter,'',$subject);
+			//$nameFrom = mb_ereg_replace ($regex_filter,'',$nameFrom);
+			//$addressFrom = mb_ereg_replace ($regex_filter,'',$addressFrom);
 		
-			if($addressReplyTo) {
-				$addressReplyTo = mb_ereg_replace ($regex_filter,'',$addressReplyTo);
-			}
-			if($nameReplyTo) {
-				$nameReplyTo = mb_ereg_replace ($regex_filter,'',$nameReplyTo);
-			}
+			#if($addressReplyTo) {
+			#	$addressReplyTo = mb_ereg_replace ($regex_filter,'',$addressReplyTo);
+			#}
+			#if($nameReplyTo) {
+			#	$nameReplyTo = mb_ereg_replace ($regex_filter,'',$nameReplyTo);
+			#}
 		}
 		
 		$result = true;
@@ -381,6 +387,17 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			if ($template['from_details'] == 'site_settings') {
 				$template['email_address_from'] = ze::setting('email_address_from');
 				$template['email_name_from'] = ze::setting('email_name_from');
+			}
+			
+			if ($template['include_a_fixed_attachment'] && $template['selected_attachment']) {
+				$document = ze\row::get('documents', ['file_id', 'privacy'], ['id' => $template['selected_attachment']]);
+				
+				if ($document['privacy'] != 'offline') {
+					$file = ze\file::link($document['file_id']);
+					
+					//For Docstore symlinks, get the real file path.
+					$attachments[] = realpath(rawurldecode($file));
+				}
 			}
 			
 			if (self::sendEmails(

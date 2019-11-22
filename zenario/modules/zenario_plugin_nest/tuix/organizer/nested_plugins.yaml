@@ -180,6 +180,7 @@ zenario__modules:
                         path: plugin_settings
                         key:
                             instanceId: ""
+                # The old "CSS & framework" button, commented out now as it has been merged back into the plugin settings
                 #framework_and_css:
                 #    only_show_on_refiner: nest
                 #    label: 'Nest CSS & framework'
@@ -262,13 +263,14 @@ zenario__modules:
                         is_slide: true
                     admin_box:
                         path: plugin_settings
-                framework_and_css:
-                    only_show_on_refiner: nest
-                    label: 'Plugin CSS & framework'
-                    without_columns_set:
-                        is_slide: true
-                    admin_box:
-                        path: plugin_css_and_framework
+                # The old "CSS & framework" button, commented out now as it has been merged back into the plugin settings
+                #framework_and_css:
+                #    only_show_on_refiner: nest
+                #    label: 'Plugin CSS & framework'
+                #    without_columns_set:
+                #        is_slide: true
+                #    admin_box:
+                #        path: plugin_css_and_framework
                 
                 cols:
                     only_show_on_refiner: nest

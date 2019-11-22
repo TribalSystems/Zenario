@@ -29,18 +29,20 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
+//Load this admin's details
 $adminCols = [
 	'id', 'username', 'last_login', 'first_name', 'last_name', 'modified_date',
-	'permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas'
+	'permissions', 'specific_languages', 'specific_content_items', 'specific_content_types'
 ];
-//Load this admin's details
-if ($admin = \ze\row::get('admins', $adminCols, $adminIdL)) {
+
+//During a migration from an earlier version, some of these columns won't be created until
+//after the migration script has run, so this script should be a little sensitive to columns that don't exist yet!
+if ($admin = \ze\row::get('admins', $adminCols, $adminIdL, [], $ignoreMissingColumns = true)) {
 	
 	$privs = [];
-	$content_items = [];
+	$contentItems = [];
+	$contentTypes = [];
 	$languages = [];
-	$menu_nodes = [];
-	$menu_sections = [];
 	
 	switch ($admin['permissions']) {
 		
@@ -55,41 +57,30 @@ if ($admin = \ze\row::get('admins', $adminCols, $adminIdL)) {
 			$privs = \ze\admin::loadPerms($adminIdL);
 			break;
 		
-		case 'specific_languages':
-			//Admins who use specific_languages or specific_menu_areas have certain set permissions.
+		case 'specific_areas':
+			//Admins who can only edit specific pages/areas of the site.
 			//These are checked using PHP logic, but for backwards compatability with anything else
 			//we'll also insert them into the database.
 			$privs = \ze\admin::privsForTranslators();
 			
 			//Note down the specific languages this admin can edit
-			foreach (\ze\ray::explodeAndTrim($admin['specific_languages']) as $id) {
-				$languages[$id] = $id;
+			if (!empty($admin['specific_languages'])) {
+				foreach (\ze\ray::explodeAndTrim($admin['specific_languages']) as $id) {
+					$languages[$id] = $id;
+				}
 			}
 			
 			//Note down the specific content items this admin can edit
-			foreach (\ze\ray::explodeAndTrim($admin['specific_content_items']) as $id) {
-				$content_items[$id] = $id;
+			if (!empty($admin['specific_content_items'])) {
+				foreach (\ze\ray::explodeAndTrim($admin['specific_content_items']) as $id) {
+					$contentItems[$id] = $id;
+				}
 			}
 			
-			break;
-		
-		case 'specific_menu_areas':
-			//Admins who use specific_languages or specific_menu_areas have certain set permissions.
-			//These are checked using PHP logic, but for backwards compatability with anything else
-			//we'll also insert them into the database.
-			$privs = \ze\admin::privsForTranslators();
-			
-			//Look through all of the menu areas this admin can access
-			foreach (\ze\ray::explodeAndTrim($admin['specific_menu_areas']) as $id) {
-				$menu = explode('_', $id);
-				
-				if (!empty($menu[1])) {
-					//Note down each menu node
-					$menu_nodes[$menu[1]] = $menu[1];
-				
-				} else {
-					//Note down each menu section
-					$menu_sections[$menu[0]] = $menu[0];
+			//Note down the specific content types this admin can edit
+			if (!empty($admin['specific_content_types'])) {
+				foreach (\ze\ray::explodeAndTrim($admin['specific_content_types']) as $id) {
+					$contentTypes[$id] = $id;
 				}
 			}
 			
@@ -110,10 +101,9 @@ if ($admin = \ze\row::get('admins', $adminCols, $adminIdL)) {
 	$_SESSION['admin_server_host'] = \ze\link::host();
 	
 	$_SESSION['admin_permissions'] = $admin['permissions'];
-	$_SESSION['admin_specific_content_items'] = $content_items;
 	$_SESSION['admin_specific_languages'] = $languages;
-	$_SESSION['admin_specific_menu_nodes'] = $menu_nodes;
-	$_SESSION['admin_specific_menu_sections'] = $menu_sections;
+	$_SESSION['admin_specific_content_items'] = $contentItems;
+	$_SESSION['admin_specific_content_types'] = $contentTypes;
 	$_SESSION['privs'] = $privs;
 	
 	//Mark the site that they've logged into

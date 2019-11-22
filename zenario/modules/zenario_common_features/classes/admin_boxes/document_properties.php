@@ -77,6 +77,11 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			
 			//Get privacy settings
 			$values['details/privacy'] = ze\row::get('documents', 'privacy', ['id' => $box['key']['id']]);
+			
+			//Get short checksum
+			$values['details/checksum'] = ze\row::get('files', 'short_checksum', $documentDetails['file_id']);
+			
+			$box['identifier']['value'] = ze\admin::phrase('Document ID [[id]], checksum "[[checksum]]"', ['id' => $documentId, 'checksum' => $values['details/checksum']]);
 		}
 	}
 	

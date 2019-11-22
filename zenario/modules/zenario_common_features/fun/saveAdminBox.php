@@ -28,11 +28,6 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 switch ($path) {
-	case 'plugin_settings':
-	case 'plugin_css_and_framework':
-		return require ze::funIncPath(__FILE__, 'plugin_settings.saveAdminBox');
-	
-	
 	case 'zenario_content_categories':
 		ze\priv::exitIfNot('_PRIV_EDIT_CONTENT_ITEM_CATEGORIES');
 		

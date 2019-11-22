@@ -89,8 +89,8 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]admin_settings` MODIFY COLUMN `value` mediumtext CHARACTER SET utf8mb4 NULL
 _sql
 
-); ze\dbAdm::revision(44780,
-<<<_sql
+); ze\dbAdm::revision(44780
+, <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]admins`
 	ADD `session_id` varchar(50) NULL
 _sql
@@ -108,10 +108,62 @@ _sql
 //All administrators without the "every possible permission" option checked should lose the ability to
 //create, restore and download database backups.
 //(You can reverse this if you wish, it's just a one-time change that's made upon updating.)
-); ze\dbAdm::revision(45050,
-<<<_sql
+); ze\dbAdm::revision(45050
+, <<<_sql
 	DELETE FROM `[[DB_PREFIX]]action_admin_link`
 	WHERE action_name IN ('_PRIV_BACKUP_SITE', '_PRIV_RESTORE_SITE')
+_sql
+
+
+
+//Rework to the restricted admin permissions
+); ze\dbAdm::revision(48600
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	CHANGE COLUMN `permissions` `old_permissions`
+		enum('all_permissions','specific_actions','specific_languages','specific_menu_areas')
+		NOT NULL DEFAULT 'specific_actions'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	ADD COLUMN `permissions`
+		enum('all_permissions', 'specific_actions', 'specific_areas')
+		NOT NULL DEFAULT 'specific_actions'
+	AFTER `status`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]admins`
+	SET `permissions` = 'all_permissions'
+	WHERE old_permissions = 'all_permissions'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]admins`
+	SET `permissions` = 'specific_areas'
+	WHERE old_permissions IN ('specific_languages', 'specific_menu_areas')
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	DROP COLUMN `old_permissions`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	DROP COLUMN `specific_menu_areas`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	MODIFY COLUMN `specific_languages` varchar(255) CHARACTER SET ascii
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	ADD COLUMN `specific_content_types` varchar(255) CHARACTER SET ascii
+	AFTER `specific_content_items`
 _sql
 
 );

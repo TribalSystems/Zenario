@@ -211,8 +211,7 @@ class date {
 
 	const relativeFromTwig = true;
 	//Formerly "getRelativeDate()"
-	public static function relative($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false, $showDateTime = false) {
-		
+	public static function relative($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false, $showDateTime = false, $displayAdminPhrase = false) {
 		if (is_object($timestamp)) {
 			$time = $timestamp;
 			$timestamp = (int) $time->format('U');
@@ -226,7 +225,11 @@ class date {
 	
 		$etime = time() - (int) $timestamp;
 		if ($etime < 1) {
-			return \ze\lang::phrase('[[time_elapsed]] secs ago', ['time_elapsed' => 0], 'zenario_common_features', false, 1, $cli);
+			if ($displayAdminPhrase) {
+				return \ze\admin::phrase('[[time_elapsed]] secs ago', ['time_elapsed' => 0]);
+			} else {
+				return \ze\lang::phrase('[[time_elapsed]] secs ago', ['time_elapsed' => 0], 'zenario_common_features', false, 1, $cli);
+			}
 		}
 	
 		$units = ['sec', 'min', 'hour', 'day', 'month', 'year'];
@@ -247,9 +250,18 @@ class date {
 					$r = round($etime / $uValues[--$i]);
 				
 					if ($r > 1) {
-						$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
+						if ($displayAdminPhrase) {
+							$relativeDate = \ze\admin::phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', ['time_elapsed' => $r]);
+						} else {
+							$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
+						}
 					} else {
-						$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $units[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
+						
+						if ($displayAdminPhrase) {
+							$relativeDate = \ze\admin::phrase('[[time_elapsed]] ' . $units[$i] . ' ago', ['time_elapsed' => $r]);
+						} else {
+							$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $units[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
+						}
 					}
 			
 					if ($addFullTime) {

@@ -461,7 +461,7 @@ class link {
 	
 		//"Download now" format for old documents
 		if ($useAlias
-		 && $cType == 'document'
+		 && $cType == 'document' //target content type
 		 && $mod_rewrite_enabled) {
 		
 			switch (\ze\ring::addAmp($request)) {
@@ -471,7 +471,15 @@ class link {
 				case '&download=true&cType=document':
 				case '&cType=document&download=1':
 				case '&cType=document&download=true':
-					return $fullPath. $aliasOrCID. '.download';
+					
+					$currentContentType = \ze::$cType;
+					if (\ze::isAdmin() && $currentContentType != 'document') {
+						$download = false;
+					} else {
+						$download = '.download';
+					}
+					
+					return $fullPath. $aliasOrCID. $download;
 			}
 		}
 	

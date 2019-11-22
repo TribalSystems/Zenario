@@ -153,10 +153,11 @@ full_slot:
                 }
                 return false;
         
-        framework_and_css:
-            label: 'CSS & framework'
-            locked_label: 'View CSS & framework'
-            onclick: return zenarioA.pluginSlotEditSettings(this, slotName, 'plugin_css_and_framework');
+        # The old "CSS & framework" button, commented out now as it has been merged back into the plugin settings
+        #framework_and_css:
+        #    label: 'CSS & framework'
+        #    locked_label: 'View CSS & framework'
+        #    onclick: return zenarioA.pluginSlotEditSettings(this, slotName, 'plugin_css_and_framework');
         
     
     re_move_place:

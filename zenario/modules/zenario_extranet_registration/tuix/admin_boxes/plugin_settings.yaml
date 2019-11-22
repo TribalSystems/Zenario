@@ -445,7 +445,7 @@ plugin_settings:
                         reorder_items: true
                         multiple_select: true
                         enable_type_ahead_search: true
-                        path: zenario__administration/panels/custom_fields/refiners/custom_fields_only//
+                        path: zenario__administration/panels/custom_fields/refiners/user_custom_fields_only////
                         hide_select_button: true
                     
         text:
@@ -520,7 +520,7 @@ plugin_settings:
                     show_phrase_icon: true
     
         error_messages:
-            label: Phrases (error messages)
+            label: Error phrases
             fields:
                 description:
                     full_width: true

@@ -33,6 +33,14 @@
 	clear:both;
 }
 
+.zfea_form_row.zfea_row_for_password {
+	overflow:initial;
+}
+
+.zfea_form_row.zfea_row_for_password .zenario_visitor_tooltip_wrap {
+	max-width:900px;
+}
+
 .zfea_form_row.zfea_form_indent_level_1  {
 	margin-left:30px;
 }
@@ -216,6 +224,10 @@ table.table_list tr td {
 
 table.table_list tr .sorted_buttons {
 	text-align:right;
+}
+
+table.table_list tr.alarm_ended {
+	background:#F3F3F3;
 }
 
 /* Block list like block
@@ -1655,6 +1667,17 @@ a.nest_show_embed,
 	cursor:pointer;
 }
 
+.zenario_skin input[type="button"].small_button,
+.zenario_skin input[type="submit"].small_button,
+.zenario_skin .small_button,
+.zenario_skin .standard_button {
+	white-space:nowrap;
+}
+
+.zenario_skin table tr td.sorted_buttons .small_button {
+	padding:0 8px;
+}
+
 .zenario_skin .small_button:hover,
 .zenario_skin .standard_button:hover,
 .zenario_skin .fea_filter:hover,
@@ -1741,6 +1764,11 @@ a.nest_show_embed {
 
 .zenario_skin table th .zfea_button:hover {
 	opacity:0.9;
+}
+
+.zenario_skin table .zfea_button.no_button_styling {
+	border: none;
+	background: none;
 }
 
 .zenario_skin .button_with_children_wrap ul li.small_button:hover,
@@ -1846,7 +1874,7 @@ input[type="button"].launch_keeper {
 
 .zenario_skin .zfea_button_disabled,
 .zenario_skin .zfea_button_disabled .fa {
-	color:#BBB7B4 !important;
+	color:#AAA !important;
 }
 
 .zenario_skin .zfea_button_disabled:hover  {
@@ -2616,15 +2644,29 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	input[type="email"].zenario_field_with_error,
 	input[type="search"].zenario_field_with_error,
 	input[type="password"].zenario_field_with_error,
-	input[type="radio"].zenario_field_with_error,
-	input[type="checkbox"].zenario_field_with_error,
 	select.zenario_field_with_error,
 	textarea.zenario_field_with_error {
-		margin-left:2px;
-		margin-right:2px;
-		-webkit-box-shadow: 0px 0px 2px 1px red;
-		-moz-box-shadow: 0px 0px 2px 1px red;
-		box-shadow: 0px 0px 2px 1px red;
+		-webkit-box-shadow: inset 0px 0 0 2px #CE0011;
+		-moz-box-shadow: inset 0px 0 0 2px #CE0011;
+		box-shadow: inset 0px 0 0 2px #CE0011;
+	}
+	
+	input[type="radio"].zenario_field_with_error {
+		-webkit-border-radius:50%;
+		-moz-border-radius:50%;
+		border-radius:50%;
+    	-webkit-box-shadow: 0px 0.5px 0.5px 2px #CE0011;
+    	-moz-box-shadow: 0px 0.5px 0.5px 2px #CE0011;
+    	box-shadow: 0px 0.5px 0.5px 2px #CE0011;
+	}
+	
+	input[type="checkbox"].zenario_field_with_error {
+		-webkit-border-radius:3px;
+		-moz-border-radius:3px;
+		border-radius:3px;
+    	-webkit-box-shadow: 0px 0px 1px 1px #CE0011;
+    	-moz-box-shadow: 0px 0px 1px 1px #CE0011;
+    	box-shadow: 0px 0px 1px 1px #CE0011;
 	}
 	
 	.zfea_inline_error {

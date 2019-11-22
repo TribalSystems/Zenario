@@ -29,7 +29,7 @@ plugin_settings:
                     type: checkbox
                 
                 nest_type:
-                    label: Nest Type
+                    label: 'Nest type:'
                     type: radios
                     value: permission
                     values:
@@ -262,7 +262,7 @@ plugin_settings:
                 banner_canvas:
                     plugin_setting:
                         name: banner_canvas
-                    label: Size constraint
+                    label: 'Size constraint:'
                     type: select
                     value: unlimited
                     values:
@@ -306,7 +306,7 @@ plugin_settings:
                 enlarge_image:
                     plugin_setting:
                         name: enlarge_image
-                    label: 'Enlarge images in a floating box:'
+                    label: 'Enlarge images in a floating box'
                     type: checkbox
                     format_onchange: true
                 enlarge_canvas:

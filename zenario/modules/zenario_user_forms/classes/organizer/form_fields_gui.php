@@ -262,7 +262,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		//Get CRM data for form fields if crm module is running
 		if ($panel['crm_enabled']) {
 			$sql = '
-				SELECT cf.form_field_id, cf.name AS field_crm_name, uff.user_field_id, uff.field_type, cdf.type
+				SELECT cf.form_field_id, cf.name AS field_crm_name, cf.send_condition, uff.user_field_id, uff.field_type, cdf.type
 				FROM ' . DB_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields cf
 				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
 					ON uff.user_form_id = ' . (int)$formId . '
@@ -277,6 +277,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				//Get CRM field name
 				$panel['items'][$row['form_field_id']]['field_crm_name'] = $row['field_crm_name'];
 				$panel['items'][$row['form_field_id']]['send_to_crm'] = true;
+				$panel['items'][$row['form_field_id']]['crm_send_condition'] = $row['send_condition'];
 				$type = $row['field_type'] ? $row['field_type'] : $row['type'];
 				
 				//Get multi field CRM values
@@ -733,7 +734,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 	
 	private function updateFieldCRMData($formId, $fieldId, $field, $tempValueIdLink) {
 		if (!empty($field['send_to_crm']) && !empty($field['field_crm_name'])) {
-			$formCRMValues = ['name' => $field['field_crm_name']];
+			$formCRMValues = ['name' => $field['field_crm_name'], 'send_condition' => $field['crm_send_condition']];
 			
 			if (
 				!ze\row::exists(
@@ -1010,6 +1011,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		$values['custom_code_name'] = !empty($field['custom_code_name']) ? $this->sanitizeTextForSQL($field['custom_code_name']) : null;
 		$values['preload_dataset_field_user_data'] = !empty($field['preload_dataset_field_user_data']);
 		$values['split_first_name_last_name'] = !empty($field['split_first_name_last_name']);
+		$values['allow_converting_multiple_images_to_pdf'] = !empty($field['allow_converting_multiple_images_to_pdf']);
 		
 		$defaultValueMode = !empty($field['default_value_options']) ? $field['default_value_options'] : false;
 		$values['default_value'] = null;

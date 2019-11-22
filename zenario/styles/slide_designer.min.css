@@ -4,8 +4,8 @@ html,body{height:100%}.grid_maker_wrap{height:100%}.grid_maker_wrap .zenario_gri
 .grid_maker_wrap #grid_add_toolbar .zenario_grid_add_cell_box p:hover a span{background:transparent}.grid_maker_wrap #grid_add_toolbar .zenario_grid_add_cell_box p:hover{background:#81d4fd}
 .grid_maker_wrap #grid_add_toolbar .draggable{content:'....';width:10px;height:20px;display:inline-block;overflow:hidden;line-height:5px;padding:3px 4px;cursor:move;vertical-align:middle;margin-top:-.7em;margin-right:.3em;font-size:12px;font-family:sans-serif;letter-spacing:2px;color:#ccc;text-shadow:1px 0 1px black;position:absolute;z-index:93;top:6px;right:-2px}
 .grid_maker_wrap #grid_add_toolbar .draggable:after{content:'.. .. .. ..'}.zfea_popout .zfea_popout_inner{top:10%;border:4px solid #57585a}
-.zfea_popout{z-index:9999}.zfea_popout .zfea_close{z-index:9;width:34px;height:34px;background:url(../admin/images/sprites/org-icons-v5.png) no-repeat;background-position:-58px -208px}
-.zfea_popout .zfea_close:hover{background:url(../admin/images/sprites/org-icons-v5.png) no-repeat;background-position:-108px -208px}.zfea_popout .zfea_slot_settings_assetwolf_2_view_asset_details{z-index:8}
+.zfea_popout{z-index:9999}.zfea_popout .zfea_close{z-index:9;width:34px;height:34px;background:url('../admin/images/icon-close-off.svg') no-repeat;background-size:100%}
+.zfea_popout .zfea_close:hover{background:url('../admin/images/icon-close-over.svg') no-repeat}.zfea_popout .zfea_slot_settings_assetwolf_2_view_asset_details{z-index:8}
 .zfea_popout .zfea_popout_inner{background:#333;color:#FFF}.zfea_popout .zfea_popout_inner form{position:relative;padding-bottom:85px}.zfea_popout .zfea_popout_inner form>div:first-child{max-height:50vh;overflow-y:auto;margin-top:35px;padding-right:15px}
 .zfea_popout .zfea_popout_inner .zfea_form_row__plugin_title{position:absolute;width:calc(100% - 20px);top:-35px;left:3px;padding-bottom:5px;border-bottom:1px solid #747474}
 .zfea_popout .zfea_popout_inner .zfea_form_grouping__nav_buttons{position:absolute;bottom:0;left:0;width:calc(100% - 53px)}.zfea_popout .zfea_popout_inner{font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;font-size:11px}

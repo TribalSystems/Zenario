@@ -7,15 +7,15 @@ zenario_consent:
         css_class: zenario_consent  
         label: Consent ID
     title: Consent
-    hide_tab_bar: true
+    hide_tab_bar: false
     max_height: 300
-    cancel_button_message: Close
+    #cancel_button_message: Close
     save_button_message: ""
     tabs:
         details:
             label: Details
             edit_mode:
-                enabled: true
+                enabled: on
             fields:
                 datetime:
                     label: 'Date/time:'
@@ -23,6 +23,10 @@ zenario_consent:
                     label: 'IP address:'
                 user:
                     label: 'Visitor:'
+                last_name_user:
+                    label: ''
+                email_user:
+                    label: ''
                 consent_text:
                     label: 'Consent text:'
                 source:

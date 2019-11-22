@@ -207,7 +207,7 @@ zenario__modules:
                     visible_if: |
                         item.category == 'content_type'
                         && item.status == 'module_running'
-                    label: Content type settings
+                    label: "Content type settings"
                     admin_box:
                         path: zenario_content_type_details
                 view_dropdown:
@@ -215,7 +215,7 @@ zenario__modules:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 view_instances:
-                    label: Module's plugins
+                    label: "Module's plugins"
                     parent: view_dropdown
                     visible_if: |
                         item.is_pluggable && item.status == 'module_running'
@@ -261,7 +261,7 @@ zenario__modules:
                         refiner: module
                 view_content_items:
                     parent: view_dropdown
-                    label: Effective usage
+                    label: "Effective usage"
                     with_columns_set:
                         is_pluggable: true
                     hide_in_select_mode: true

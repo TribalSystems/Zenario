@@ -321,62 +321,6 @@ class lang {
 			}
 		}
 	}
-	
-	//Possible alternate version using preg_split(). This is about 33% less efficient.
-	
-	//public static function applyMergeFields(&$string, $replace) {
-	//	$content = preg_split('/\[\[([^\[\]]+)\]\]/', $string, -1,  PREG_SPLIT_DELIM_CAPTURE);
-	//	$string = '';
-	//	
-	//	foreach ($content as $i => &$str) {
-	//		if ($i % 2 === 1) {
-	//			//Every odd element will be a phrase code
-	//			
-	//			//Look out for Twig-style flags at the end of the phrase code's name
-	//			if (false !== ($pos = strpos($str, '|'))) {
-	//				$filter = trim(substr($str, $pos + 1));
-	//				$str = trim(substr($str, 0, $pos));
-	//				
-	//				switch ($filter) {
-	//					case 'e':
-	//					case 'escape':
-	//						//html escaping anything using the "escape" flag
-	//						$string .= htmlspecialchars($replace[$str] ?? '');
-	//						continue 2;
-	//				}
-	//			}
-	//			
-	//			$string .= $replace[$str] ?? '';
-	//		} else {
-	//			//Every even element will be plain text
-	//			$string .= $str;
-	//		}
-	//	}
-	//}
-	
-	//Possible alternate version that uses preg_replace_callback().
-	//Not used because it winds up as being slightly less efficient
-	//private static $a;
-	//
-	//public static function doReplace($code) {
-	//	return static::$a[$code[1]] ?? '';
-	//}
-	//
-	//public static function applyMergeFields($string, $replace) {
-	//	static::$a = $replace;
-	//	$out = preg_replace_callback('/\[\[([^\[\]]+)\]\]/', 'test::doReplace', $string);
-	//	static::$a = null;
-	//	return $out;
-	//}
-	
-	//This is the version from Zenario 7. It's a lot less efficient!
-	//public static function applyMergeFields(&$phrase, $mrg) {
-	//	if (is_array($mrg)) {
-	//		foreach ($mrg as $key => $value) {
-	//			$phrase = str_replace(['[['. $key. ']]', '{{'. $key. '}}'], $value, $phrase);
-	//		}
-	//	}
-	//}
 
 	const nphraseFromTwig = true;
 	//Formerly "nphrase()"

@@ -135,11 +135,17 @@
 					{% endif %}
 					
 					{% if User_passwords %}
-						<div class="extranet_field">
+						<div class="extranet_field zenario_visitor_tooltip_wrap">
 							<div class="label"><label for="extranet_new_password">{{"_PASSWORD:"|trans}}</label></div>
-							{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
+							{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true",
+								'class': "extranet_password", oninput: " zenario.updatePasswordNotifier('#extranet_new_password', false)",
+								'onmouseover': "$('#note_password').show()", 'onmouseout': "$('#note_password').hide()"})}}
+								
+							<div id="note_password" class="zenario_visitor_tooltip zenario_password_requirements_tooltip">
+								{{Password_Requirements}}
+							</div>
 						</div>
-
+						
 						<div class="extranet_field">
 							<div class="label"><label for="extranet_new_password_confirm">{{"_PASSWORD_CONFIRMATION:"|trans}}</label></div>
 							{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
@@ -167,7 +173,6 @@
 					</div></div>
 				</div>
 				<div class="extranet_links">
-				    
 					{% if Resend_Link_Section %}
 					    {% if Show_Resend_Form %}
 						<div><a {{Resend_Link}}>{{Resend_Verification_Email_Link_Text}}</a></div>

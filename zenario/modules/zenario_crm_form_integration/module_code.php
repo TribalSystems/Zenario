@@ -90,7 +90,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$link = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['form_id', 'crm_id'], $linkId);
 		$formFields = zenario_user_forms::getFormFieldsStatic($link['form_id']);
 		$sql = '
-			SELECT uff.id, uff.name, cf.name AS crm_name, cf.ord
+			SELECT uff.id, uff.name, cf.name AS crm_name, cf.ord, cf.send_condition
 			FROM ' . DB_PREFIX . ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields cf
 			INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
 				ON cf.form_field_id = uff.id
@@ -114,9 +114,11 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 			
 			//Get CRM field details
 			//A single field can send multiple values if there is a comma in the name and value to be sent
+			//Follow the send condition rules to prevent sending empty fields when they should be silenced.
 			
 			$fieldCRMNames = explode(',', $row['crm_name']);
 			$fieldCRMValues = static::getCRMFieldValues($field, $value);
+			$fieldCRMSendCondition = $row['send_condition'];
 			
 			if ($fieldCRMValues) {
 				$ord = $row['ord'];
@@ -130,8 +132,12 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 					}
 					if ($value !== null) {
 						$value = trim($value);
-						$data[$name] = $value;
-						$multiValueFields[$name][$ord++] = ['name' => $row['name'], 'value' => $value];
+						if (($fieldCRMSendCondition == 'always_send')
+							|| ($value && $fieldCRMSendCondition == 'send_only_if_visible')
+						) {
+							$data[$name] = $value;
+							$multiValueFields[$name][$ord++] = ['name' => $row['name'], 'value' => $value];
+						}
 					}
 				}
 			}
@@ -300,15 +306,15 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		return $result;
 	}
 	
-	public static function getSalesforceAccessToken($linkId = false) {
+	public static function getSalesforceAccessToken($linkId = false, $clientId = false, $clientSecretKey = false, $username = false, $password = false, $userSecurityToken = false, $loginURI = false) {
 		//Get OAuth2 access token
-		$url = ze::setting('zenario_salesforce_api_form_integration__login_uri') . '/services/oauth2/token';
+		$url = ((bool)$loginURI ? $loginURI : ze::setting('zenario_salesforce_api_form_integration__login_uri'));
 		$params = [
 			'grant_type' => 'password',
-			'client_id' => ze::setting('zenario_salesforce_api_form_integration__client_id'),
-			'client_secret' => ze::setting('zenario_salesforce_api_form_integration__client_secret'),
-			'username' => ze::setting('zenario_salesforce_api_form_integration__username'),
-			'password' => ze::setting('zenario_salesforce_api_form_integration__password') . ze::setting('zenario_salesforce_api_form_integration__security_token')
+			'client_id' => ((bool)$clientId ? $clientId : ze::setting('zenario_salesforce_api_form_integration__client_id')),
+			'client_secret' => ((bool)$clientSecretKey ? $clientSecretKey : ze::setting('zenario_salesforce_api_form_integration__client_secret')),
+			'username' => ((bool)$username ? $username : ze::setting('zenario_salesforce_api_form_integration__username')),
+			'password' => ((bool)$password ? $password : ze::setting('zenario_salesforce_api_form_integration__password')) . ((bool)$userSecurityToken ? $userSecurityToken : ze::setting('zenario_salesforce_api_form_integration__security_token'))
 		];
 		$params = http_build_query($params);
 		
@@ -436,6 +442,17 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 			}
 		}
 		return ['error' => 'not_found'];
+	}
+	
+	public static function testSalesforceConnection($clientId, $clientSecretKey, $username, $password, $userSecurityToken, $loginURI) {
+		if ($clientId && $clientSecretKey && $username && $password && $userSecurityToken && $loginURI) {
+			$token = static::getSalesforceAccessToken($linkId = false, $clientId, $clientSecretKey, $username, $password, $userSecurityToken, $loginURI);
+			if (!$token['token']) {
+				return false;
+			}
+		
+			return $token;
+		}
 	}
 	
 	

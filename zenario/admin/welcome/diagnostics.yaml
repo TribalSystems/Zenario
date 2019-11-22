@@ -101,7 +101,7 @@ diagnostics:
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: MySQL client and MySQL server version 5.5.3 or later
+                        html: MySQL server version 5.5.3 or later
                     visible_if: zenarioAW.togglePressed(field)
                 mb:
                     grouping: sub_table
@@ -125,6 +125,7 @@ diagnostics:
                     snippet:
                         html: mbstring extension enabled in PHP
                     visible_if: zenarioAW.togglePressed(field)
+                
                 gd:
                     grouping: sub_table
                     full_width: true
@@ -161,6 +162,7 @@ diagnostics:
                     snippet:
                         html: PNG Support enabled in PHP
                     visible_if: zenarioAW.togglePressed(field)
+                
                 optional:
                     grouping: sub_table
                     full_width: true
@@ -224,6 +226,80 @@ diagnostics:
                             <br/><small>Needed for uploading PDF documents</small>
                     visible_if: zenarioAW.togglePressed(field)
                 
+                os:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Other server programs
+                    visible_if: zenarioAW.togglePressed(field, 2)
+                show_os: *show_subsection
+                os_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Antiword
+                            <br/><small>Antiword is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_2:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Ghostscript
+                            <br/><small>ghostscript is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_3:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: | 
+                            JPEG Image Optimizers
+                            <br/><small>jpegtran is working successfully.</small>
+                            <br/><small>jpegoptim is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_4:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: | 
+                            Backup/restore
+                            <br/><small>mysql is working successfully.</small>
+                            <br/><small>mysqldump is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_5:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            PDF-To-Text
+                            <br/><small>pdftotext is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_6:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            PNG Image Optimizers
+                            <br/><small>optipng is correctly set up.</small>
+                            <br/><small>advpng is correctly set up.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_7:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            wkhtmltopdf
+                            <br/><small>wkhtmltopdf is correctly set up.</small>
+                    visible_if: zenarioAW.togglePressed(field)
                 
                 
                 
@@ -417,6 +493,25 @@ diagnostics:
                 public_dir: *readonly_dir
                 public_dir_status: *dir_status
                 
+                dir_8:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Custom Directory
+                    visible_if: zenarioAW.togglePressed(field, 2)
+                show_dir_8: *show_subsection
+                dir_8_blurb:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Zenario uses a custom  directory to store all of the things that are customised in your site, in the way of designs and custom modules.
+                            Please ensure it exists and has all the files committed in svn:
+                    visible_if: zenarioAW.togglePressed(field)
+                custom_dir: *readonly_dir
+                custom_dir_status: *dir_status
                 
                 site:
                     grouping: sub_table
@@ -452,7 +547,7 @@ diagnostics:
                         html: ''
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
-                site_special_pages_unpublished: *blank_child
+               
                 public_documents: *blank_child
                 site_automated_backups: *blank_child
                 scheduled_task_manager: *blank_child
@@ -464,7 +559,7 @@ diagnostics:
                         html: |
                             Domain name redirects have been created for this site, but they will not function because no primary domain is defined.
                             Please go to
-                            <a href="organizer.php#zenario__administration/panels/site_settings//domains~.site_settings~tprimary_domain~k{&quot;id&quot;%3A&quot;domains&quot;}" target="_blank">
+                            <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//domains~.site_settings~tprimary_domain~k{&quot;id&quot;%3A&quot;domains&quot;}" target="_blank">
                                 <em>Domains</em> in the site settings
                             </a>
                             to define a primary domain.
@@ -598,6 +693,27 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 
+                default_timezone_not_set:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    visible_if: zenarioAW.togglePressed(field)
+                svn_uncommitted:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    visible_if: zenarioAW.togglePressed(field)
+                
+                plugin_must_be_on_private_page_error:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    visible_if: zenarioAW.togglePressed(field)
+                plugin_must_be_on_public_page_error:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    visible_if: zenarioAW.togglePressed(field)                
                 
                 
                 

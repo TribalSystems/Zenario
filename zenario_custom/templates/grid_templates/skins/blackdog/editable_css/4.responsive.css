@@ -25,25 +25,25 @@
 		background-size:contain !important;
 	}
 	
-	.zenario_slideshow__default_style .zenario_banner .banner_content {
+	.zenario_slideshow .zenario_banner .banner_content {
 		padding:0 50px;
 	}
 	
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_title h2 {
+	.zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
 		font-size: 3.5em;
 		font-size: 3.5vh;
 	}
 
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_text {
+	.zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-size: 2em;
 		font-size: 2vh;
 	}
 	
-	.zenario_slideshow__default_style a.next {
+	.zenario_slideshow a.next {
 		right:15px;
 	}
 	
-	.zenario_slideshow__default_style a.prev {
+	.zenario_slideshow a.prev {
 		left:15px;
 	}
 	
@@ -52,6 +52,17 @@
 		height:auto !important;
 	}
 
+}
+
+/* Layout min-width: 1045px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1045px) {
+
+	.extranet_wrap .extranet_field.zenario_visitor_tooltip_wrap .zenario_visitor_tooltip {
+		right:0;
+	}
+	
 }
 
 /* Layout min-width: 1024px
@@ -93,12 +104,12 @@
 		font-size:0.875em;
 	}
 	
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_title h2 {
+	.zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
 		font-size: 3em;
 		font-size: 3vh;
 	}
 
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_text {
+	.zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-size: 1.75em;
 		font-size: 1.75vh;
 	}
@@ -139,7 +150,7 @@
 	}
 
 	.section {
-		margin-top:40px;
+		margin-top:20px;
 	}
 	
 	.Grid_Header {
@@ -171,51 +182,41 @@
   		padding-top:8px;
 	}
 	
-	.mm-opened .zenario_slideshow_2 .slideshow_container,
-	.mm-opened .zenario_slideshow__default_style .nest_wrap {
+	.mm-opened .zenario_slideshow .nest_wrap {
 		margin-left:0;
-	}
-	
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_title h2 {
-		font-size: 2.5em;
-		font-size: 2.5vh;
-	}
-
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_text {
-		font-size: 1.5em;
-		font-size: 1.5vh;
 	}
 	
 	.Grid_Body .container {
 		min-height:0;
 	}
 	
-	.zenario_slideshow_2 .content_container {
-		font-size:200%;
-	}
-	
-	.zenario_slideshow_2 .content_container .slide_title {
-		line-height:1.2em;
+	.zenario_slideshow {
 		padding-bottom:20px;
 	}
 	
-	.zenario_slideshow_2 .content_container .slide_extra_html {
+	.zenario_slideshow .banner_content {
+		font-size:200%;
+	}
+	
+	.zenario_slideshow .banner_content .banner_title {
 		line-height:1.2em;
 	}
 	
-	.zenario_slideshow_2 span.arrowl, 
-	.zenario_slideshow_2 span.arrowr {
-		font-size:500%;
+	.zenario_slideshow .banner_content .banner_text {
+		line-height:1.2em;
 	}
 	
-	.zenario_slideshow_2 .bullet {
-		bottom:-10px;
+	.zenario_slideshow a.prev, 
+	.zenario_slideshow a.next {
+		font-size:200%;
 	}
 	
-	.zenario_slideshow_2 .bullet div {
-		width:26px;
-		height:26px;
-		margin:0 5px 0;
+	.zenario_slideshow a.prev {
+		left:10px;
+	}
+	 
+	.zenario_slideshow a.next {
+		right:10px;
 	}
 	
 	.slot_masthead .zenario_banner .banner_wrap_inner > a {
@@ -419,12 +420,12 @@
 		padding:8px 15px 5px;
 	}
 	
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_title h2 {
+	.zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
 		font-size: 2.25em;
 		font-size: 2.25vh;
 	}
 
-	.zenario_slideshow__default_style .zenario_banner .banner_content .banner_text {
+	.zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-size: 1.25em;
 		font-size: 1.25vh;
 	}
@@ -509,6 +510,48 @@
 	
 	.zenario_google_map > div {
 		height:300px !important;
+	}
+	
+	.zenario_slideshow .zenario_banner .banner_content {
+		position:relative;
+		top:-5px;
+		background:#f0f0f0;
+		padding:10px;
+		font-size:100%;
+	}
+	
+	.zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
+		font-size:1.2em;
+		margin-bottom:0;
+		padding-bottom:5px;
+	}
+	
+	.zenario_slideshow .zenario_banner .banner_content .banner_text {
+		font-size:0.8em;
+	}
+	
+	.zenario_slideshow .zenario_banner .banner_content .banner_text p {
+		font-size:1em;
+	}
+	
+	.zenario_slideshow .zenario_banner .banner_content .banner_text {
+		font-family:'robotoregular',Arial, Helvetica, sans-serif;
+	}
+	
+	.zenario_slideshow a.prev, 
+	.zenario_slideshow a.next {
+		top:40px;
+	}
+	
+	.zenario_slideshow .bullet {
+		height:40px !important;
+		bottom:-30px !important;
+	}
+	
+	.zenario_slideshow .bullet div {
+		width:40px;
+		height:40px;
+		margin:0 10px 0;
 	}
 	
 }

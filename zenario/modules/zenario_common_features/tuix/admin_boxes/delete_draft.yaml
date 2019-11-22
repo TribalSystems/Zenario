@@ -1,0 +1,124 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_delete_draft:
+    priv: _PRIV_DELETE_DRAFT
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+    tabs:
+        delete_draft:
+            edit_mode:
+                enabled: true
+                always_on: true
+                enable_revert: false
+            
+            notices:
+                delete_item:
+                    type: warning
+                    message: |
+                            If you delete this draft it will:
+                             - no longer be available to visitors or admins
+                             - be removed from the menu if no published versions exist
+                            
+                            Deleting this draft will not affect the published version of this item, if it exists.
+                            
+                            This cannot be undone. Are you sure you wish to proceed?
+                delete_items:
+                    type: warning
+                    message: |
+                            Deleted drafts will:
+                             - no longer be available to visitors or admins
+                             - be removed from the menu if no published versions exist
+                            
+                            Deleting a draft will not affect any published versions of these items, if they exist.
+                            
+                            This cannot be undone. Are you sure you wish to proceed?
+                    
+            
+            fields:
+                links_warning:
+                    snippet:
+                        html:
+                    hidden: true
+                delete_options:
+                    type: radios
+                    values:
+                        remove:
+                            label: 'Keep the plugin(s) but remove their links'
+                        delete_instance:
+                            label: 'Delete the plugin(s) altogether'
+                    value: remove
+                    hidden: true
+                translations_warning:
+                    pre_field_html: |
+                        <b>Translations</b><br />
+                    snippet:
+                        html:
+                    hidden: true
+                th_content_item:
+                    <table class="zfab_grey_table"><tr><th>:
+                    snippet:
+                        label: Content item
+                    hidden: true
+                    </th>:
+                th_translation:
+                    <th>:
+                    snippet:
+                        label: Translation
+                    hidden: true
+                    </th>:
+                th_status:
+                    <th>:
+                    snippet:
+                        label: Status
+                    hidden: true
+                    </th>:
+                th_action:
+                    <th>:
+                    snippet:
+                        label: Action
+                    hidden: true
+                    </th></tr>
+                table_end:
+                    ord: 999999
+                    hidden: true
+                    </table>:
+            custom_template_fields:
+                content_item__znz:
+                    <tr><td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                translation__znz:
+                    <td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                status__znz:
+                    <td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                action__znz:    
+                    <td>:
+                    type: select
+                    empty_value: ' -- Please choose what to do with this translation -- '
+                    values:
+                        keep:
+                            label: Keep translation
+                        delete:
+                            label: Delete translation
+                    validate_onchange: true
+                    validation:
+                        only_validate_when_saving: true
+                        required: true
+                    </td></tr>:
+    
+    max_height: 160
+    hide_tab_bar: true
+    save_button_message: Delete
+    cancel_button_message: Cancel

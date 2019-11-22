@@ -391,14 +391,14 @@ class zenario_country_manager extends ze\moduleBaseClass {
 			if(!empty($_SESSION['country_id'])) {
 				foreach ($countryIdsArray as $countryId) {
 					if (strtoupper($countryId) == $_SESSION['country_id']) {
-						//matchs an exclude
+						//matches an exclude
 						return false;
 					}
 				}
-				//No matchs
+				//No matches
 				return true;
 			} else {
-				//No matchs as user country_id not set!
+				//No matches as user country_id not set!
 				return true;
 			}
 		} else {
@@ -406,14 +406,14 @@ class zenario_country_manager extends ze\moduleBaseClass {
 			if(!empty($_SESSION['country_id'])) {
 				foreach ($countryIdsArray as $countryId) {
 					if (strtoupper($countryId) == $_SESSION['country_id']) {
-						//matchs an include
+						//matches an include
 						return true;
 					}
 				}
-				//No matchs
+				//No matches
 				return false;
 			} else {
-				//No matchs as user country_id not set!
+				//No matches as user country_id not set!
 				return false;
 			}
 		}

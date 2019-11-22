@@ -103,10 +103,8 @@ switch ($level) {
 
 if ($isVersionControlled) {
 	$settingsPageMode = ['edit' => true];
-	$cssFrameworkPageMode = ['edit' => true];
 } else {
 	$settingsPageMode = $pageMode;
-	$cssFrameworkPageMode = $pageMode;
 }
 
 
@@ -194,7 +192,6 @@ if (!$moduleId) {
 	
 	
 	$controls['actions']['settings']['page_modes'] = $settingsPageMode;
-	$controls['actions']['framework_and_css']['page_modes'] = $cssFrameworkPageMode;
 	
 	if ($isVersionControlled && ze::$cVersion == ze::$adminVersion) {
 		if (ze::$locked) {
@@ -224,7 +221,6 @@ if (!$moduleId) {
 	
 	} else {
 		unset($controls['actions']['settings']);
-		unset($controls['actions']['framework_and_css']);
 	}
 	unset($controls['actions']['settings']['locked_label']);
 	

@@ -33,7 +33,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //It works with both raw source code and paths to a twig file.
 	//If the $name starts with a \n character, we'll treat it as raw code.
 	//Otherwise, we'll assume it's a path to a twig file (relative to the CMS_ROOT).
-class Zenario_Twig_Loader implements Twig_LoaderInterface {
+class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
     
     //public function getSource($name) {
     //	if (substr($name, 0, 1) === "\n") {
@@ -50,10 +50,10 @@ class Zenario_Twig_Loader implements Twig_LoaderInterface {
 
     public function getSourceContext($name) {
     	if (substr($name, 0, 1) === "\n") {
-	        return new Twig_Source($name, $name);
+	        return new Twig\Source($name, $name);
     	} else {
     		$path = CMS_ROOT. $name;
-	        return new Twig_Source(file_get_contents($path), $name, $path);
+	        return new Twig\Source(file_get_contents($path), $name, $path);
 	    }
     }
 
@@ -80,7 +80,7 @@ class Zenario_Twig_Loader implements Twig_LoaderInterface {
 
 
 //A copy of the above that always only works with raw source code
-class Zenario_Twig_String_Loader implements Twig_LoaderInterface {
+class Zenario_Twig_String_Loader implements Twig\Loader\LoaderInterface {
     
     public function getCacheKey($name) {
     	return $name;
@@ -88,8 +88,8 @@ class Zenario_Twig_String_Loader implements Twig_LoaderInterface {
     
 
     public function getSourceContext($name) {
-        //return new Twig_Source($name, sha1($name));
-        return new Twig_Source($name, $name);
+        //return new Twig\Source($name, sha1($name));
+        return new Twig\Source($name, $name);
     }
 
     public function isFresh($name, $time) {
@@ -105,7 +105,7 @@ class Zenario_Twig_String_Loader implements Twig_LoaderInterface {
 //An implementation of Twig_CacheInterface that saves files to Zenario's cache directory.
 //The main reason for the rewrite is so that we use our ze\cache::createDir() function, which has a working garbage collector.
 //(Twig doesn't do any garbage collection so old frameworks can clog up the cache/ directory!)
-class Zenario_Twig_Cache implements Twig_CacheInterface {
+class Zenario_Twig_Cache implements Twig\Cache\CacheInterface {
 	
 	public function generateKey($name, $className) {
 		$hash = ze::base16To64(str_replace('__TwigTemplate_', '', $className));

@@ -29,7 +29,7 @@ css_class_name: zenario_location_ratings
 # to fix it automatically for every site.
 dependencies:
     zenario_location_manager: true
-default_frameword: standard
+default_framework: standard
 nestable: true
 is_pluggable: true
 admin_floating_box_tabs:

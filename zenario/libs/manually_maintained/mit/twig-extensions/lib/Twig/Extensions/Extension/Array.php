@@ -10,7 +10,7 @@
  *
  * @author Ricard Clau <ricard.clau@gmail.com>
  */
-class Twig_Extensions_Extension_Array extends Twig_Extension
+class Twig_Extensions_Extension_Array extends Twig\Extension\AbstractExtension
 {
     /**
      * {@inheritdoc}

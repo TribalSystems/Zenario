@@ -926,7 +926,7 @@ methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 		numItems = isCheckboxSelect? itemIds.length : 0;
 	
 	//Check all of the itemIds in the request actually exist
-	for (i in itemIds) {
+	foreach (itemIds as i) {
 		if (!(item = thus.tuix.items[itemIds[i]])) {
 			return false;
 		}
@@ -963,7 +963,7 @@ methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 	}
 	
 	if (defined(button.visible_if_for_all_selected_items)) {
-		for (i in itemIds) {
+		foreach (itemIds as i) {
 			item = thus.tuix.items[itemIds[i]];
 			
 			if (!zenarioT.eval(button.visible_if_for_all_selected_items, thus, undefined, item, button.id, button)) {
@@ -973,7 +973,7 @@ methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 	}
 	
 	if (defined(button.visible_if_for_any_selected_items)) {
-		for (i in itemIds) {
+		foreach (itemIds as i) {
 			item = thus.tuix.items[itemIds[i]];
 			
 			if (zenarioT.eval(button.visible_if_for_any_selected_items, thus, undefined, item, button.id, button)) {
@@ -1003,7 +1003,7 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 		
 		//Check all of the itemIds in the request actually exist
 		if (defined(itemIds)) {
-			for (i in itemIds) {
+			foreach (itemIds as i) {
 				if (!(item = thus.tuix.items[itemIds[i]])) {
 					return false;
 				}
@@ -1021,7 +1021,7 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 		if (defined(itemIds)
 		 && defined(button.disabled_if_for_any_selected_items)) {
 		
-			for (i in itemIds) {
+			foreach (itemIds as i) {
 				item = thus.tuix.items[itemIds[i]];
 			
 				if (zenarioT.eval(button.disabled_if_for_any_selected_items, thus, undefined, item, button.id, button)) {
@@ -1033,7 +1033,7 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 		if (defined(itemIds)
 		 && defined(button.disabled_if_for_all_selected_items)) {
 		
-			for (i in itemIds) {
+			foreach (itemIds as i) {
 				item = thus.tuix.items[itemIds[i]];
 			
 				if (!zenarioT.eval(button.disabled_if_for_all_selected_items, thus, undefined, item, button.id, button)) {
@@ -1340,7 +1340,7 @@ methods.setupButtonLinks = function(button, itemId) {
 };
 
 //Submit/toggle button presses on forms
-methods.clickButton = function(el, id) {
+methods.clickButton = function(id) {
 	
 	var button = thus.field(id),
 		clickButton = methodsOf(zenarioF).clickButton;
@@ -1350,12 +1350,12 @@ methods.clickButton = function(el, id) {
 		thus.confirm(
 			button.confirm,
 			function () {
-				clickButton.call(thus, el, id);
+				clickButton.call(thus, id);
 			}
 		);
 		
 	} else {
-		clickButton.call(thus, el, id);
+		clickButton.call(thus, id);
 	}
 };
 
@@ -1873,22 +1873,22 @@ methods.phrase = function(text, mrg) {
 
 methods.ajax = function(url, post, json) {
 	
-	var previewValues =
+	var previewPost =
 			zenario.adminId
 		 && windowParent
 		 && windowParent.zenarioAB
-		 && windowParent.zenarioAB.previewValues;
+		 && windowParent.zenarioAB.previewPost;
 	
-	if (previewValues) {
+	if (previewPost) {
 		if (post === false
 		 || !defined(post)) {
 			post = {};
 		}
 		
 		if (_.isObject(post)) {
-			post.overrideSettings = previewValues;
+			post.overrideSettings = previewPost;
 		} else {
-			post += '&overrideSettings=' + encodeURIComponent(previewValues);
+			post += '&overrideSettings=' + encodeURIComponent(previewPost);
 		}
 	}
 	

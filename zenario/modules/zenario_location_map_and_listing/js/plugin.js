@@ -31,7 +31,7 @@
 
 	//Set up the map
 	//This function is called from the showSlot() function
-	zenario_location_map_and_listing.initMap = function(containerId, locations, allowScrolling) {
+	zenario_location_map_and_listing.initMap = function(containerId, locations, allowScrolling, showAnyCountry) {
 	
 		//Create a new map object
 		var l, numL = 0,
@@ -147,7 +147,9 @@
 		
 		if (numL > 1) {
 			google.maps.event.addListenerOnce(map, 'bounds_changed', function() { 
-				if (minZoom < this.getZoom()) {
+				if (showAnyCountry) {
+					this.setZoom(2);
+				} else if (minZoom < this.getZoom()) {
 					this.setZoom(minZoom);
 				}
 			});

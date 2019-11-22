@@ -21,6 +21,9 @@ zenario_location_ratings__accreditor:
     title: Creating an Accreditor
     key:
         id: ""
+    identifier:
+        label: "Accreditor ID"
+        css_class: "zenario_location_manager_ratings"
     tabs:
         accreditor:
             label: Details
@@ -48,6 +51,9 @@ zenario_location_ratings__accreditor_rating:
     key:
         id: ""
         accreditor_id: ""
+    identifier:
+        label: "Accreditor Rating ID"
+        css_class: "zenario_location_manager_ratings"
     tabs:
         accreditor_rating:
             label: Details

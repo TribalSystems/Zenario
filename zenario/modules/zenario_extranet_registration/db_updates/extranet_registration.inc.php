@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 ze\dbAdm::revision(1,
 "INSERT IGNORE [[DB_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`, `use_standard_email_template`)
 VALUES 
 ('zenario_extranet_registration__to_user_email_verification_en',
  'To User: Email verification',
@@ -41,11 +41,12 @@ VALUES
 <p>This is an auto-generated email from [[cms_url]] .</p>',
  NOW(),
  " .(int)$_SESSION['admin_userid'] . ",
-0)"
+0,
+1)"
 ,
 
 "INSERT IGNORE [[DB_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`, `use_standard_email_template`)
 VALUES 
 ('zenario_extranet_registration__to_admin_user_signup_notification_en',
 'To Admin: User signup notification',
@@ -58,11 +59,12 @@ VALUES
 <p>This is an auto-generated email from [[cms_url]] .</p>',
  NOW(),
  " .(int)$_SESSION['admin_userid'] . ",
-0)"
+0,
+1)"
 ,
 
 "INSERT IGNORE [[DB_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`, `use_standard_email_template`)
 VALUES 
 ('zenario_extranet_registration__to_user_account_activation_en',
 'To User: Account activation',
@@ -78,11 +80,12 @@ VALUES
 <p>This is an auto-generated email from [[cms_url]] .</p>',
  NOW(),
  " .(int)$_SESSION['admin_userid'] . ",
-0)"
+0,
+1)"
 ,
 
 "INSERT IGNORE [[DB_PREFIX]]email_templates
-(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
+(`code`,`template_name`,`subject`,`body`,`date_created`,`created_by_id`,`allow_attachments`, `use_standard_email_template`)
 VALUES 
 ('zenario_extranet_registration__to_admin_user_activation_notification_en',
 'To Admin: User activation notification',
@@ -95,7 +98,8 @@ VALUES
 <p>This is an auto-generated email from [[cms_url]] .</p>',
  NOW(),
  " .(int)$_SESSION['admin_userid'] . ",
-0)"
+0,
+1)"
 
 ); ze\dbAdm::revision(82
 
@@ -179,6 +183,51 @@ _sql
 		<p>&nbsp;</p>
 		<p>This is an auto-generated email from [[cms_url]] .</p>'
 	WHERE `code` = "zenario_extranet_registration__to_user_email_verification_en"
+_sql
+
+); ze\dbAdm::revision(111,
+<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = 
+		'<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Thank you for registering on <a href=\"[[cms_url]]\">[[cms_url]]</a> .</p>
+		<p>In order to complete your registration please click the button below to confirm your email address.</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[email_confirmation_link]]\">CONFIRM EMAIL</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[email_confirmation_link]]\">[[email_confirmation_link]]</a></p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]] .</p>'
+	WHERE `code` = "zenario_extranet_registration__to_user_email_verification_en"
+_sql
+
+,<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = 
+		'<p>Dear Admin,</p>
+		<p>A new User has signed up.</p>
+		<p>You can see the User\'s details in Organizer by clicking the button below:</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[organizer_link]]\">VIEW USER\'S DETAILS</a></p>
+		<p>&nbsp;</p>
+		<p><a href=\"[[organizer_link]]\">[[organizer_link]]</a></p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]] .</p>'
+	WHERE `code` = "zenario_extranet_registration__to_admin_user_signup_notification_en"
+_sql
+
+,<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = 
+		'<p>Dear Admin,</p>
+		<p>The account for the User [[first_name]] [[last_name]] has been activated.</p>
+		<p>You can see the User\'s details in Organizer by clicking the button below:</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[organizer_link]]\">VIEW USER\'S DETAILS</a></p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]] .</p>'
+	WHERE `code` = "zenario_extranet_registration__to_admin_user_activation_notification_en"
 _sql
 
 );

@@ -156,12 +156,17 @@
 }
 
 .zenario_user_forms.form_popup .user_form {
-	height:442px;
+	height:500px;
 	padding:10px 20px 20px;
 	-webkit-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
 	-moz-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
 	box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
 	position:relative;
+}
+
+.zenario_user_forms.form_popup .user_form .form_error {
+	color:red;
+	font-size:0.938em;
 }
 
 .zenario_user_forms.form_popup .user_form .form_field {
@@ -187,7 +192,7 @@
 
 .zenario_user_forms.form_popup.show .close {
 	position:absolute;
-	top:442px;
+	top:500px;
 	right:-25px;
 	padding-top:0;
 	width:25px;
@@ -220,11 +225,7 @@
 .zenario_user_forms.form_popup .user_form input[type="email"],  
 .zenario_user_forms.form_popup .user_form textarea {
 	width:calc(100% - 20px);
-	border:0;
 	color:#808285;
-	-moz-box-shadow:    0 0 0 1px #888;
-  	-webkit-box-shadow: 0 0 0 1px #888;
-  	box-shadow:         0 0 0 1px #888;
 }
 
 .zenario_user_forms.form_popup .user_form input[type="text"], 
@@ -279,7 +280,7 @@
 }
 
 .zenario_user_forms.form_popup.show .form_wrapper {
-	bottom:442px;
+	bottom:500px;
     -webkit-transition: all 0.8s ease-in;
     -moz-transition: all 0.8s ease-in;
     -o-transition: all 0.8s ease-in;
@@ -294,7 +295,7 @@
 .zenario_user_forms.form_popup .success {
 	opacity:1;
 	width:280px;
-	height:430px;
+	height:500px;
 	padding:40px 10px 0;
 	font-size:16px;
 	line-height:24px;

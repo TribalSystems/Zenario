@@ -8,24 +8,21 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 description: |
             <p>
-                This Module displays a list of Events to a visitor.
+                This Module displays a list of Event content items to a visitor.
             </p>
             </p>
-                Inserting an Instance of this Module into a Slot on a visitor-facing page will display a
-                list of Events (which may take place on a single or multiple days).
+                To display a list of events on a visitor-facing page, insert a plugin of this module into a slot on an HTML content item.
             <p>
             </p>
-                The Events in the listing can be filtered by all events in a given time period, events 
-                from a certain Category in a given time period or events associated with a Location's 
-                HTML page that fall within the time period.
+                The events in the listing can be filtered by events in a given time period relative to the current time.
+                They can also be filtered by category of event content item, and by language.
             <p>
             </p>
-                When filtering using a time period you can choose between the current day, the current 
-                week, the current calendar month, the current year or all time.
-            <p>
-            </p>
-                You can further filter your Event Listing by choosing to display current events, future
-                events and/or past events.
+                The Event Content Type depends on the Location Manager module, so that Event content items can be associated with locations.
+                This allows you, optionally, to group events together when they take place at the same location.
+                If the Event Listing plugin is placed on a slot on the layout that's used for HTML pages, and those
+                HTML pages are identified as the Descriptive Pages of locations, then the Event Listing plugin can be made to
+                automatically show the events for the described location.
             <p>
 category: pluggable
 keywords: calendar, event, list

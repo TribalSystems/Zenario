@@ -1,0 +1,16 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Sensitive Content Message
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: |
+    <p>
+                    This module displays a message which the users have to accept to access sensitive content.
+                </p><p>
+                    The message can be customised in the site settings, and displayed for the whole site or selectively (by-content item or by-layout).
+                </p>
+category: management
+keywords: sensitive, content

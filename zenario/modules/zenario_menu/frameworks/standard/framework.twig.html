@@ -3,16 +3,26 @@
 	{% import _self as self %}
 	<ul>
 		{% for node in nodes %}
-			<li class="{{node.Class}}">
-				<div class="left_end"></div>
-					<span class="menu_image">{{node.Image}}</span>
-					{{node.Hyperlink}}
+			{% if not node.Conditionally_Hidden %}
+				<li class="{{node.Class}}">
+					<div class="left_end"></div>
+						<span class="menu_image">{{node.Image}}</span>
+						{% if node.Inactive_Open_Tag %}
+							{{node.Inactive_Open_Tag}}
+						{% endif %}
 					
-					{% if node.children %}
-						{{ self.childNodes(node.children) }}
-					{% endif %}
-				<div class="right_end"></div>
-			</li>
+						{{node.Hyperlink}}
+					
+						{% if node.Inactive_Close_Tag %}
+							{{node.Inactive_Close_Tag}}
+						{% endif %}
+					
+						{% if node.children %}
+							{{ self.childNodes(node.children) }}
+						{% endif %}
+					<div class="right_end"></div>
+				</li>
+			{% endif %}
 		{% endfor %}
 	</ul>
 {% endmacro %}
@@ -23,20 +33,30 @@
 <div class="wrap_menu_outer">
 <div class="wrap_menu_inner">
 	{% for node in nodes %}
-		<ul>
-			<li class="{{node.Class}}">
-				<div class="left_end"></div>
-					<span class="menu_image">{{node.Image}}</span>
-					{{node.Hyperlink}}
+		{% if not node.Conditionally_Hidden %}
+			<ul>
+				<li class="{{node.Class}}">
+					<div class="left_end"></div>
+						<span class="menu_image">{{node.Image}}</span>
+						{% if node.Inactive_Open_Tag %}
+							{{node.Inactive_Open_Tag}}
+						{% endif %}
 					
-					{% if node.children %}
-						{{ self.childNodes(node.children) }}
+						{{node.Hyperlink}}
+					
+						{% if node.Inactive_Close_Tag %}
+							{{node.Inactive_Close_Tag}}
+						{% endif %}
+					
+						{% if node.children and not node.All_Children_Are_Hidden %}
+							{{ self.childNodes(node.children) }}
 						
-						{% set hasChildren = true %}
-					{% endif %}
-				<div class="right_end"></div>
-			</li>
-		</ul>
+							{% set hasChildren = true %}
+						{% endif %}
+					<div class="right_end"></div>
+				</li>
+			</ul>
+		{% endif %}
 	{% endfor %}
 </div>
 </div>

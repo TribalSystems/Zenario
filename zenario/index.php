@@ -76,6 +76,23 @@ if (!empty($_SESSION['cookies_accepted'])) {
 	unset($_SESSION['cookies_accepted']);
 }
 
+if (!empty($_SESSION['sensitive_content_message_accepted'])) {
+	ze\cookie::setSensitiveContentMessageConsent();
+	unset($_SESSION['sensitive_content_message_accepted']);
+}
+
+if (!empty($_COOKIE['country_id']) && !empty($_COOKIE['user_lang'])) {
+	if (empty($_SESSION['country_id']) || empty($_SESSION['user_lang'])) {
+		$_SESSION['country_id'] = $_COOKIE['country_id'];
+		$_SESSION['user_lang'] = $_COOKIE['user_lang'];
+	}
+} elseif (!empty($_SESSION['country_id']) && !empty($_SESSION['user_lang'])) {
+	if (isset($_COOKIE['cookies_accepted']) && (empty($_COOKIE['country_id']) || empty($_COOKIE['user_lang']))) {
+		\ze\cookie::set('country_id', $_SESSION['country_id'], 604800);
+		\ze\cookie::set('user_lang', $_SESSION['user_lang'], 604800);
+	}
+}
+
 //Attempt to use page caching, rather then re-render this page
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/index.pre_load.inc.php';
 
@@ -550,7 +567,7 @@ if ($specificInstance || $specificSlot) {
 		ze\content::pageFoot('zenario/', false, false, false);
 	} else {
 		echo '
-		<script type="text/javascript" src="zenario/libs/bower/jquery/dist/jquery.min.js?v=', ZENARIO_VERSION, '"></script>';
+		<script type="text/javascript" src="zenario/libs/yarn/jquery/dist/jquery.min.js?v=', ZENARIO_VERSION, '"></script>';
 	}
 	
 	echo '<script type="text/javascript">
@@ -570,6 +587,14 @@ if ($specificInstance || $specificSlot) {
 } else {
 	ze\content::pageBody('', '', true, true);
 	ze\cookie::showConsentBox();
+	
+	if (ze\module::inc('zenario_sensitive_content_message')) {
+		
+		if (empty($_COOKIE['sensitive_content_message_accepted']) && empty($_SESSION['sensitive_content_message_accepted'])) {
+			zenario_sensitive_content_message::showSensitiveContentMessage();
+		}
+	}
+	
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
 	if (file_exists(CMS_ROOT. ($file = ze::$templatePath. ze::$templateFilename))) {

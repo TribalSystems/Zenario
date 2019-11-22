@@ -2,8 +2,8 @@
 ---
 zenario__layouts:
     panels:
-        layouts:
-            title: Layouts
+        layouts: &panel
+            title: Available layouts
             view_mode: list
             no_items_message: No layouts have been created
             grid_view_microtemplate: zenario_grid_view_layout
@@ -21,7 +21,7 @@ zenario__layouts:
                 encode_id_column: true
                 where_statement: "WHERE (l.status IS NULL OR l.status = 'active')"
                 custom_where_statement__without_unregistered: WHERE l.status IS NOT NULL
-                custom_where_statement__trash: "WHERE l.status = 'suspended'"
+                custom_where_statement__archived: "WHERE l.status = 'suspended'"
                 custom_where_statement__typeahead_search: "WHERE l.status = 'active'"
             disable_summary_view: true
             columns:
@@ -76,8 +76,8 @@ zenario__layouts:
                     hidden: true
                     format: enum
                     values:
-                        active: Active
-                        active_default: Active; default layout for content type
+                        active: Available
+                        active_default: Available; default layout for content type
                         suspended: Archived
                         unregistered: Unregistered
                         missing: Template file missing
@@ -105,7 +105,7 @@ zenario__layouts:
                 usage_status:
                     format: enum
                     values:
-                        active: Active
+                        active: Available
                         suspended: Archived
                         unregistered: Unregistered
                         missing: Template file missing
@@ -143,15 +143,8 @@ zenario__layouts:
                         INNER JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
                            ON pitl.instance_id = ps.instance_id
                           AND pitl.layout_id = l.layout_id
-                trash:
+                archived:
                     exists: true
-            trash:
-                empty_tooltip: View archived layouts
-                full_tooltip: View archived layouts
-                link:
-                    path: zenario__layouts/panels/layouts
-                    refiner: trash
-                    branch: true
             item:
                 name: Layout
                 names: Layouts
@@ -188,6 +181,15 @@ zenario__layouts:
                             To create a layout using the gridmaker interactive tool, click the "Create" button. This will allow you to define a 960 type grid, and to specify the positions of slots on the layout.
             
             inline_buttons:
+                layout:
+                    css_class: zenario_layout_inline_button
+                    label: |
+                        [[code]]
+                    admin_box:
+                        priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                        path: zenario_content_layout
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                 template_file_missing:
                     css_class: zenario_ib_warning
                     tooltip: |
@@ -203,13 +205,12 @@ zenario__layouts:
                 active:
                     css_class: zenario_ib_active
                     tooltip: |
-                        Active
+                        Available
                     visible_if: |
                         item.status == 'active'
                 default:
                     css_class: zenario_ib_default
-                    tooltip: |
-                        Active; default layout for content type
+                    tooltip: 'Available; default layout for content type [[content_type]]'
                     visible_if: |
                         item.status == 'active_default'
                 archived:
@@ -396,8 +397,10 @@ zenario__layouts:
                         traits.deletable: true
                         traits.unregistered: true
                     visible_if_for_all_selected_items: |
-                        !zenario.engToBoolean(item.default) &&
                         !zenario.engToBoolean(item.archived)
+                    disabled_if_for_any_selected_items: |
+                        zenario.engToBoolean(item.default)
+                    disabled_tooltip: 'You cannot archive a layout that is the default layout for a content type.'
                 delete:
                     priv: _PRIV_EDIT_TEMPLATE
                     label: Delete

@@ -63,7 +63,12 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 				toolbar += 'image';
 				plugins += ' image';
 			}
-			if (enableImages) {
+			
+			if (enableLinks) {
+				if (enableImages) {
+					toolbar += ' ';
+				}
+				
 				toolbar += 'link unlink';
 				plugins += ' autolink link';
 			}

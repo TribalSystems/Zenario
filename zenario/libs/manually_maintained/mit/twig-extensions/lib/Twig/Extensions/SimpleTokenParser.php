@@ -8,14 +8,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-abstract class Twig_Extensions_SimpleTokenParser extends Twig_TokenParser
+abstract class Twig_Extensions_SimpleTokenParser extends Twig\TokenParser\AbstractTokenParser
 {
     /**
      * Parses a token and returns a node.
      *
      * @param Twig_Token $token A Twig_Token instance
      *
-     * @return Twig_Node A Twig_Node instance
+     * @return Twig\Node\Node A Twig\Node\Node instance
      */
     public function parse(Twig_Token $token)
     {
@@ -48,9 +48,9 @@ abstract class Twig_Extensions_SimpleTokenParser extends Twig_TokenParser
     protected function getAttribute($node, $attribute, $arguments = array(), $type = Twig_Node_Expression_GetAttr::TYPE_ANY, $line = -1)
     {
         return new Twig_Node_Expression_GetAttr(
-            $node instanceof Twig_Node ? $node : new Twig_Node_Expression_Name($node, $line),
-            $attribute instanceof Twig_Node ? $attribute : new Twig_Node_Expression_Constant($attribute, $line),
-            $arguments instanceof Twig_Node ? $arguments : new Twig_Node($arguments),
+            $node instanceof Twig\Node\Node ? $node : new Twig_Node_Expression_Name($node, $line),
+            $attribute instanceof Twig\Node\Node ? $attribute : new Twig_Node_Expression_Constant($attribute, $line),
+            $arguments instanceof Twig\Node\Node ? $arguments : new Twig\Node\Node($arguments),
             $type,
             $line
         );
@@ -61,17 +61,17 @@ abstract class Twig_Extensions_SimpleTokenParser extends Twig_TokenParser
         return $this->getAttribute($node, $attribute, $arguments, Twig_Node_Expression_GetAttr::TYPE_METHOD, $line);
     }
 
-    protected function markAsSafe(Twig_Node $node, $line = -1)
+    protected function markAsSafe(Twig\Node\Node $node, $line = -1)
     {
         return new Twig_Node_Expression_Filter(
             $node,
             new Twig_Node_Expression_Constant('raw', $line),
-            new Twig_Node(),
+            new Twig\Node\Node(),
             $line
         );
     }
 
-    protected function output(Twig_Node $node, $line = -1)
+    protected function output(Twig\Node\Node $node, $line = -1)
     {
         return new Twig_Node_Print($node, $line);
     }
@@ -80,7 +80,7 @@ abstract class Twig_Extensions_SimpleTokenParser extends Twig_TokenParser
     {
         $nodes = array();
         foreach ($values as $value) {
-            if ($value instanceof Twig_Node) {
+            if ($value instanceof Twig\Node\Node) {
                 $nodes[] = $value;
             }
         }

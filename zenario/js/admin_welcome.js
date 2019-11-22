@@ -212,7 +212,12 @@ zenarioAW.getKey = function() {
 	return {};
 };
 zenarioAW.ajaxURL = function() {
-	return URLBasePath + 'zenario/ajax.php?method_call=handleWelcomeAJAX';
+	return URLBasePath + 'zenario/admin/welcome.ajax.php?method_call=handleWelcomeAJAX';
+};
+
+//Try to disable the ability to navigate away from the page by dragging a file or an image into the browser from the filesystem
+if (zenarioT.canDoHTML5Upload()) {
+	zenarioT.disableFileDragDrop(document.body);
 };
 
 

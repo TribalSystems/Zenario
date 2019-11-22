@@ -1,0 +1,1427 @@
+#addJQueryElements:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#addLinkStatus:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#addMediaToTinyMCE:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#addNewReusablePlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#addNewWireframePlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+adjustBox:
+    summary: |
+        Adjusts the display settings of a popout box opened by the zenarioA.openBox() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Adjusts the display settings of a popout box opened by the <code>zenarioA.openBox()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+AJAXErrorHandler:
+    summary: |
+        Zenario's error handler for any errors that happen on AJAX requests in admin mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Zenario's error handler for any errors that happen on AJAX requests in admin mode.
+        </p><p>
+            This function will try to show a popout error message,
+            and depending on the features used in the request, add the
+            Retry/Continue buttons.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#cancelMovePlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+checkCookiesEnabled:
+    summary: |
+        Checks whether cookies are enabled and able to be used.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks whether cookies are enabled and able to be used.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            A callback object.
+        </p>
+#checkForEdits:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+checkIfBoxIsOpen:
+    summary: |
+        Checks if a specific box opened by the zenarioA.openBox() function is current still open.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks if a specific box opened by the <code>zenarioA.openBox()</code> function is current still open.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#checkPasswordStrength:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+checkSlotsBeingEdited:
+    summary: |
+        Checks if any slots on the page were flagged as being edited by an admin.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks if any slots on the page were flagged as being edited by an admin.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true or false.
+        </p>
+#checkSpecificPerms:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#checkSpecificPermsOnThisPage:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+clearToast:
+    summary: |
+        Clears a toast message that was displayed using the zenarioA.toast() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Clears a toast message that was displayed using the <code>zenarioA.toast()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#clickOtherTutorialVideo:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+closeBox:
+    summary: |
+        Closes a box opened by the zenarioA.openBox() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Closes a box opened by the <code>zenarioA.openBox()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#closeBoxHandler:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+closeFloatingBox:
+    summary: |
+        Closes the box that was displayed by the zenarioA.floatingBox() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Closes the box that was displayed by the <code>zenarioA.floatingBox()</code> function.
+        </p><p>
+            Note that clicking on one of the buttons on the box will automatically close it,
+            so you would not normally need to call this function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+closeInfoBox:
+    summary: |
+        Closes the info box opened by the zenarioA.infoBox() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Closes the info box opened by the <code>zenarioA.infoBox()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+closeSlotControls:
+    summary: |
+        Closes the slot controls that were opened by the zenarioA.openSlotControls() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Closes the slot controls that were opened by the <code>zenarioA.openSlotControls()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+closeSlotControlsAfterDelay:
+    summary: |
+        Closes the slot controls that were opened by the zenarioA.openSlotControls() function, after a delay.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Closes the slot controls that were opened by the <code>zenarioA.openSlotControls()</code> function, after a delay.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+copy:
+    summary: |
+        Copies the specified text into the clipboard, and then shows a toast message to confirm this has happened.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Copies the specified text into the clipboard, and then shows a toast message to confirm this has happened.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+copyContents:
+    summary: |
+        Copies the settings of a version-controlled plugin in a slot.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Copies the settings of a version-controlled plugin in a slot.
+        </p><p>
+            Note that this only works on certain plugins,
+            and the contents are copied to the user's $_SESSION and not the user's clipboard.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#copyEmbedHTML:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#copyEmbedLink:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+cutContents:
+    summary: |
+        Copies the settings of a version-controlled plugin in a slot, and then deletes them.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Copies the settings of a version-controlled plugin in a slot, and then deletes them.
+        </p><p>
+            Note that this only works on certain plugins,
+            and the contents are copied to the user's $_SESSION and not the user's clipboard.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+debug:
+    summary: |
+        Opens the TUIX dev tools.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Opens the TUIX dev tools.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#doMovePlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#doMovePlugin2:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#dontCloseSlotControls:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+draft:
+    summary: |
+        This function is used to check that an admin is on a draft, if they click on any Edit button on the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function is used to check that an admin is on a draft, if they click on any Edit button on the page.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            This function returns true or false, depending on whether it is safe to continue.
+        </p><p>
+            If it was not safe, the admin will be shown an error message.
+        </p><p>
+            In the case where the current content item is not a draft, but it is possible to make one,
+            the message will prompt the admin to create one, after which the element that they just clicked on
+            will be automatically re-clicked if possible.
+        </p>
+#draftDoCallback:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#draftSetCallback:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+enableDragDropUploadInTinyMCE:
+    summary: |
+        Enables an Admin to upload an image by dragging and dropping it onto a TinyMCE editor.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Enables an Admin to upload an image by dragging and dropping it onto a TinyMCE editor.
+        </p><p>
+            The file will be uploaded using a call to the <code>handleOrganizerPanelAJAX()</code> function
+            of the Common Features Module.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#fileBrowser:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+floatingBox:
+    summary: |
+        Displays a simple popout box with a message and one more more buttons.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Displays a simple popout box with a message and one more more buttons.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+formatFilesizeNicely:
+    summary: |
+        Given a number in bytes, this function will format it nicely (e.g. in KB, MB, etc.)
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a number in bytes, this function will format it nicely (e.g. in KB, MB, etc.)
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The formatted number.
+        </p>
+#formatOrganizerItemName:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#formatSKItemField:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+generateRandomString:
+    summary: |
+        Generates a randomly generated base-62 string.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Generates a randomly generated base-62 string.
+        </p>
+getGridSlotDetails:
+    summary: |
+        This function gets layout information about the current CSS grid and a specific slot on that grid.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function gets layout information about the current CSS grid and a specific slot on that grid.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            An object with information in its properties.
+        </p>
+getItemFromOrganizer:
+    summary: |
+        Given a path and the id of an item, this gets information about that item form Organizer.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a path and the id of an item, this gets information about that item form Organizer.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            A data object, or a callback object if the async option was set
+            (this is recommended, as not using it is deprecated).
+        </p>
+#getSKBodyClass:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#getSkinDesc:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+hideAJAXLoader:
+    summary: |
+        Hides the "JAX loader if it was displayed by the
+        zenarioA.showAJAXLoader()
+        function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Hides the AJAX loader if it was displayed by the
+            <span class="code">zenarioA.showAJAXLoader()</span>
+            function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#hidePlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+infoBox:
+    summary: |
+        This opens an "info box" which displays information on the current version of the CMS and where it is installed..
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This opens an "info box" which displays information on the current version of the CMS and where it is installed..
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#init:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#initTutorialSlideshow:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+isHtaccessWorking:
+    summary: |
+        Checks whether the .htaccess file on the server appears to be set up and working.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks whether the .htaccess file on the server appears to be set up and working.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+loggedOut:
+    summary: |
+        Checks a message to see if it has the <!--Logged_Out--> flag set at the start,
+        and displays the "you have been logged out" box if it is there.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks a message to see if it has the &lt;!--Logged_Out--&gt; flag set at the start,
+            and displays the "you have been logged out" box if it is there.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true if the flag was set.
+        </p>
+#loggedOutIframeCheck:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#longToast:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#lookupFileDetails:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#movePlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+multipleLanguagesEnabled:
+    summary: |
+        Checks if more than one language is enabled on a site.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks if more than one language is enabled on a site.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true if two or more languages are enabled.
+        </p>
+translationsEnabled:
+    summary: |
+        Checks if translations are enabled on a site.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks if translations are enabled on a site.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true if translations are enabled.
+        </p>
+getDefaultLanguageName:
+    summary: |
+        Displays the name of the default language for a site.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Displays the name of the default language for a site.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The name of the site's default language.
+        </p>
+notification:
+    summary: |
+        Briefly displays a short message in a "toast" notification at the top of the screen..
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Briefly displays a short message in a "toast" notification at the top of the screen..
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+        <h2>Example</h2>
+        <pre>zenarioA.notification('Hello world!');</pre>
+nowDoingSomething:
+    summary: |
+        This can be used to display a pulsating "Loading..." or "Saving..." message on the screen..
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This can be used to display a pulsating "Loading..." or "Saving..." message on the screen..
+        </p><p>
+            The first parameter should be set to either "loading" or "saving" to display a message,
+            or left undefined to hide the previously displayed message.
+        </p>
+        <h2>Return Value</h2>
+        <h2>Example</h2>
+        <pre>zenarioA.nowDoingSomething('loading');
+        $.ajax('api.html').always(
+            function() {
+                zenarioA.nowDoingSomething();
+            }
+        );</pre>
+#onunload:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+openBox:
+    summary: |
+        Opens a new popout box.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Opens a new popout box.
+        </p><p>
+            Popout boxes are essentially Zenario's own version of lightboxes/colorboxes, but with lots of
+            Zenario-specific features and tweaks.
+        </p><p>
+            If you just want a colorbox, we would recommend using the colorbox library instead as it's more
+            general purpose and is better documented.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#openMenuAdminBox:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+openSlotControls:
+    summary: |
+        Opens the slot control drop-down menu for a slot.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Opens the slot control drop-down menu for a slot.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+organizerQuick:
+    summary: |
+        Opens Organizer in "quick" mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Opens Organizer in "quick" mode.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+organizerSelect:
+    summary: |
+        Opens Organizer in "select" mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Opens Organizer in "select" mode.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#overwriteContents:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+pasteContents:
+    summary: |
+        Pastes the settings of a version-controlled plugin into a slot.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Pastes the settings of a version-controlled plugin into a slot.
+        </p><p>
+            Note that this only works on certain plugins,
+            the type of plugin needs to match the one that was copied,
+            and the contents are taken from the user's $_SESSION and not the user's clipboard.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#pickNewPlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#pluginSlotEditSettings:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#refreshAllSlotsWithCutCopyPaste:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+reloadMenuPlugins:
+    summary: |
+        Reloads all of the menu plugins on the current page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Reloads all of the menu plugins on the current page.
+        </p><p>
+            (A plugin is considered to be related to the menu if it's being show on the Menu Tab of the Admin Toolbar.)
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+rememberToast:
+    summary: |
+        Saves the value of the last toast message opened using the zenarioA.toast() function ahead of a page/browser reload.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Saves the value of the last toast message opened using the <code>zenarioA.toast()</code> function ahead of a page/browser reload.
+        </p><p>
+            After the page is reloaded, the toast message will be re-displayed.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#removePlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#replacePluginSlot:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+savePageMode:
+    summary: |
+        Whenever the admin clicks something that changes the page mode of the Admin Toolbar,
+        this function sends an AJAX request to the server to remember what it was.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Whenever the admin clicks something that changes the page mode of the Admin Toolbar,
+            this function sends an AJAX request to the server to remember what it was.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+scanHyperlinksAndDisplayStatus:
+    summary: |
+        This adds the warning symbols in admin mode where links go to pages that aren't published.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This adds the warning symbols in admin mode where links go to pages that aren't published.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#setDocumentURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setEditorField:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setImageURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setLinkPickerOnTinyMCE:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setLinkURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setModuleInfo:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setSlotParents:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setTooltipIfTooLarge:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+showAJAXLoader:
+    summary: |
+        Calling this function dims the screen and displays an AJAX loader (i.e. the spinning circle thing).
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Calling this function dims the screen and displays an AJAX loader (i.e. the spinning circle thing).
+        </p><p>
+            You can use this function if you want to stop the admin from interacting with the page while you
+            wait for an AJAX request to load.
+        </p><p>
+            The admin will not be able to click on anything until you remove the loader by calling
+            <span class="code">zenarioA.hideAJAXLoader()</span>
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+showHelp:
+    summary: |
+        This displays Organizer's help-system.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This displays Organizer's help-system.
+        </p><p>
+            Requires Organizer to be already open to work.
+        </p><p>
+            Note that this help system is powered by intro.js, and this function is basically just sets everything up and calls it.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+showMessage:
+    summary: |
+        This displays a CMS-styled message box in admin mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This displays a CMS-styled message box in admin mode.
+        </p>
+        <h2>Parameters</h2>
+        <h3><code>message</code></h3>
+        <p style="margin-left: 40px;">A message to display. You can enter a plain text message, or html.</p>
+        <p style="margin-left: 40px;">You can prefix this message with any of the controls documented on the <a href="customising-popout-messages-in-admin-mode">Customising Message Boxes in Admin Mode page</a>.</p>
+        <h3><code>buttonsHTML</code></h3>
+        <p style="margin-left: 40px;">Some html for some buttons at the bottom of the box.</p>
+        <p style="margin-left: 40px;">If set to <span class="code">undefined</span> or <span class="code">true</span>, a simple "OK" button will appear.</p>
+        <h3><code>messageType</code></h3>
+        <p style="margin-left: 40px;">You can enter "error", "success", "warning" or "question" to set the style of the message.</p>
+        <h3><code>modal</code></h3>
+        <p style="margin-left: 40px;">If this is set to true, the admin won't be able to close the box by clicking in the background.</p>
+        <h3><code>htmlEscapeMessage</code></h3>
+        <p style="margin-left: 40px;">If you entered a plain text message into <span class="code">message</span>, you should set this to <span class="code">true</span>.</p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+showPagePreview:
+    summary: |
+        Opens a colorbox, showing a preview of what the current page would look like in visitor mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Opens a colorbox, showing a preview of what the current page would look like in visitor mode.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#showPlugin:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+showTutorial:
+    summary: |
+        This displays the popout box in Organizer with links to the tutorial videos.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This displays the popout box in Organizer with links to the tutorial videos.
+        </p><p>
+            Requires Organizer to be already open.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#SKInit:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#slotParentMouseOut:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#slotParentMouseOver:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+swapContents:
+    summary: |
+        Swaps the settings of a version-controlled plugin in a slot with the last settings that were copied.
+    desc: |
+        <h2>Description</h2>
+        <p>
+        Swaps the settings of a version-controlled plugin in a slot with the last settings that were copied.
+        </p><p>
+            Note that this only works on certain plugins,
+            the type of plugin needs to match the one that was copied,
+            and the contents are swapped with the contents from the user's $_SESSION and not the user's clipboard.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+tinyMCEPasteRreprocess:
+    summary: |
+        This function attempts to do lots of string-replacements in
+        an attempt tidy any bad/messy HTML from TinyMCE up a little bit.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function attempts to do lots of string-replacements in
+            an attempt tidy any bad/messy HTML from TinyMCE up a little bit.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            None (the input is modified).
+        </p>
+toast:
+    summary: |
+        A shortcut to the toastr library, with some sensible default settings.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            A shortcut to the toastr library, with some sensible default settings.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#toastOrNoToast:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+toggleShowGrid:
+    summary: |
+        This function toggles on/off the "grid" display viewing the Edit or the Layout tab on the Admin Toolbar.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function toggles on/off the "grid" display viewing the Edit or the Layout tab on the Admin Toolbar.
+        </p><p>
+            This only works for layouts created by Grid Maker; if a layout was not created using Grid Maker, you won't see anything.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#toggleShowHelpTourNextTime:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+tooltips:
+    summary: |
+        Sets tooltips on the page or element, just like the zenario.tooltips() function,
+        except with admin-mode stylings.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Sets tooltips on the page or element, just like the <code>zenario.tooltips()</code> function,
+            except with admin-mode stylings.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>

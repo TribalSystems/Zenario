@@ -125,11 +125,11 @@ zenario__content:
                         c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft')
                 module_usage:
                     table_join: |
-                        INNER JOIN [[DB_PREFIX]]layouts AS t
-                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_PREFIX]]layouts AS l
+                           ON l.layout_id = v.layout_id
                         INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = t.family_name
-                          AND tsl.file_base_name = t.file_base_name
+                           ON tsl.family_name = l.family_name
+                          AND tsl.file_base_name = l.file_base_name
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
@@ -138,27 +138,27 @@ zenario__content:
                     sql: 'piil.module_id = [[REFINER__MODULE_USAGE]]'
                 module_effective_usage:
                     table_join: |
-                        INNER JOIN [[DB_PREFIX]]layouts AS t
-                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_PREFIX]]layouts AS l
+                           ON l.layout_id = v.layout_id
                         INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = t.family_name
-                          AND tsl.file_base_name = t.file_base_name
+                           ON tsl.family_name = l.family_name
+                          AND tsl.file_base_name = l.file_base_name
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND piil.content_version = v.version
                           AND piil.slot_name = tsl.slot_name
                         LEFT JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
-                           ON pitl.layout_id = t.layout_id
+                           ON pitl.layout_id = l.layout_id
                           AND pitl.slot_name = tsl.slot_name
                     sql: 'IFNULL(piil.module_id, pitl.module_id) = [[REFINER__MODULE_EFFECTIVE_USAGE]]'
                 plugin_instance_usage:
                     table_join: |
-                        INNER JOIN [[DB_PREFIX]]layouts AS t
-                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_PREFIX]]layouts AS l
+                           ON l.layout_id = v.layout_id
                         INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = t.family_name
-                          AND tsl.file_base_name = t.file_base_name
+                           ON tsl.family_name = l.family_name
+                          AND tsl.file_base_name = l.file_base_name
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
@@ -167,18 +167,18 @@ zenario__content:
                     sql: 'piil.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]'
                 plugin_instance_effective_usage:
                     table_join: |
-                        INNER JOIN [[DB_PREFIX]]layouts AS t
-                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_PREFIX]]layouts AS l
+                           ON l.layout_id = v.layout_id
                         INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = t.family_name
-                          AND tsl.file_base_name = t.file_base_name
+                           ON tsl.family_name = l.family_name
+                          AND tsl.file_base_name = l.file_base_name
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND (piil.content_version = c.admin_version OR piil.content_version = c.visitor_version)
                           AND piil.slot_name = tsl.slot_name
                         LEFT JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
-                           ON pitl.layout_id = t.layout_id
+                           ON pitl.layout_id = l.layout_id
                           AND pitl.slot_name = tsl.slot_name
                     sql: 'IFNULL(piil.instance_id, pitl.instance_id) = [[REFINER__PLUGIN_INSTANCE_EFFECTIVE_USAGE]]'
                 content_items_using_form:
@@ -186,18 +186,18 @@ zenario__content:
                         INNER JOIN [[DB_PREFIX]]plugin_settings AS ps
                            ON ps.foreign_key_to = 'user_form'
                           AND ps.foreign_key_id = [[REFINER_ID]]
-                        INNER JOIN [[DB_PREFIX]]layouts AS t
-                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_PREFIX]]layouts AS l
+                           ON l.layout_id = v.layout_id
                         INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = t.family_name
-                          AND tsl.file_base_name = t.file_base_name
+                           ON tsl.family_name = l.family_name
+                          AND tsl.file_base_name = l.file_base_name
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND (piil.content_version = c.admin_version OR piil.content_version = c.visitor_version)
                           AND piil.slot_name = tsl.slot_name
                         LEFT JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
-                           ON pitl.layout_id = t.layout_id
+                           ON pitl.layout_id = l.layout_id
                           AND pitl.slot_name = tsl.slot_name
                     sql: 'IFNULL(piil.instance_id, pitl.instance_id) = ps.instance_id'
                 trash:
@@ -373,6 +373,12 @@ zenario__content:
                             label: "Permissions: Call a module's static method to decide"
                         send_signal:
                             label: 'Permissions: Send a signal to decide'
+                layout_status:
+                    db_column: lay.status
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]layouts AS lay
+                           ON lay.layout_id = v.layout_id
+                    hidden: true
                 first_created_datetime:
                     ord: 18
                     title: Date/time first created
@@ -575,6 +581,7 @@ zenario__content:
                         refiner: find_duplicates
                 export:
                     hide_when_no_search_results: true
+                    hide_in_select_mode: true
                     label: Export
                     admin_box:
                         path: zenario_export_content_items
@@ -1095,25 +1102,8 @@ zenario__content:
                         traits.not_locked: true
                     without_columns_set:
                         traits.ghost: true
-                    ajax:
-                        confirm:
-                            message: |
-                                You are about to delete the draft version of "[[tag]]".
-                                
-                                Deleting this draft will not affect the published version of this item, if it exists.
-                                
-                                This cannot be undone. Are you sure you wish to proceed?
-                            multiple_select_message: |
-                                You are about to delete the draft versions of the selected content items.
-                                
-                                Deleting a draft will not affect any published versions of these items, if they exist.
-                                
-                                This cannot be undone. Are you sure you wish to proceed?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete: 1
+                    admin_box:
+                        path: zenario_delete_draft
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
@@ -1152,6 +1142,7 @@ zenario__content:
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Trash this content item
+                    multiple_select_label: Trash these content items
                     multiple_select: true
                     with_columns_set:
                         traits.trashable: true

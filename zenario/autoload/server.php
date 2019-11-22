@@ -40,7 +40,7 @@ class server {
 		$attachments = [], $attachmentFilenameMappings = [],
 		$precedence = 'bulk', $isHTML = true, $exceptions = false,
 		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
-		$ccs = '', $bccs = '', $action = 'To'
+		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false
 	) {
 	
 		// If this is a warning email only send it as oftern as the site setting "warning_email_frequency" allows
@@ -104,7 +104,7 @@ class server {
 			$mail->AddReplyTo($mail->From, $mail->FromName);
 		}
 	
-		if ($debug = \ze::setting('debug_override_enable') && \ze::setting('debug_override_email_address')) {
+		if ($debug = \ze::setting('debug_override_enable') && \ze::setting('debug_override_email_address') && $ignoreDebugMode == false) {
 		
 			if ($isHTML) {
 				$mail->Body .= '<br/><br/>';
@@ -236,6 +236,11 @@ class server {
 
 	//Create a symlink if this is a UN*X server, otherwise just copy the file on a Windows server
 	public static function symlinkOrCopy($pathFrom, $pathTo, $chmod = null) {
+		
+		if (!file_exists($pathFrom)) {
+			return false;
+		}
+		
 		if (\ze\server::isWindows()) {
 			copy($pathFrom, $pathTo);
 		} else {
@@ -245,6 +250,8 @@ class server {
 		if ($chmod !== null) {
 			\ze\cache::chmod($pathTo, $chmod);
 		}
+		
+		return true;
 	}
 
 

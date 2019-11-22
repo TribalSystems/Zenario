@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: users
-    title: Editing settings for users
+    title: Editing settings for Users/Contacts
     tabs:
         names:
             label: Sign-in
@@ -54,84 +54,67 @@ site_settings:
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: false
             fields:
+                password_requirements:
+                    type: grouping
+                    snippet:
+                        label: "User password requirements"
+                        label_class: subheading
                 min_extranet_user_password_length:
-                    label: 'When user chooses password, require minimum length:'
+                    label: 'Minimum length:'
+                    grouping: password_requirements
                     site_setting:
                         name: min_extranet_user_password_length
                     type: text
                     style: "width:50px;"
                     validation:
-                        required: Please enter a number for minimum password length between 3 and 32.
-                        numeric: The minimum password length must be between 3 and 32.
-                min_extranet_user_password_strength:
-                    label: 'When user chooses password, require minimum strength:'
-                    site_setting:
-                        name: min_extranet_user_password_strength
-                    type: select
-                    value: _MEDIUM
-                    values:
-                        _WEAK:
-                            label: Weak
-                        _MEDIUM:
-                            label: Medium
-                        _STRONG:
-                            label: Strong
-                        _VERY_STRONG:
-                            label: Very strong
-                    note_below: |
-                        <p>Password strength is calculated by counting lower case, upper case, numeric and non-alphanumeric characters.</p>
-                        <p>Longer passwords, and passwords which use each character type twice or more, tend to score higher.</p>
+                        numeric: true
             
                 info:
-                    label: 'Characters used to auto-generate passwords:'
-                a_z_uppercase_characters_in_user_password:
-                    label: 'A-Z'
-                    site_setting:
-                        name: a_z_uppercase_characters
-                    type: checkbox
-                    value: true
+                    grouping: password_requirements
+                    label: 'Character requirements:'
                 a_z_lowercase_characters_in_user_password:
-                    label: 'a-z'
+                    label: 'Passwords must contain a lowercase letter (a-z)'
+                    grouping: password_requirements
                     site_setting:
                         name: a_z_lowercase_characters
                     type: checkbox
                     value: true
+                a_z_uppercase_characters_in_user_password:
+                    label: 'Passwords must contain an uppercase letter (A-Z)'
+                    grouping: password_requirements
+                    site_setting:
+                        name: a_z_uppercase_characters
+                    type: checkbox
+                    value: true
                 0_9_numbers_in_user_password:
-                    label: '0-9'
+                    label: 'Passwords must contain a number (0-9)'
+                    grouping: password_requirements
                     site_setting:
                         name: 0_9_numbers_in_user_password
                     type: checkbox
                     value: true
                 symbols_in_user_password:
-                    label: 'Symbols'
+                    label: 'Passwords must contain a symbol'
+                    grouping: password_requirements
                     site_setting:
                         name: symbols_in_user_password
                     type: checkbox
                     value: false
-            
-        filesizes:
-            label: File Sizes
+        groups:
+            label: Groups
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: false
             fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: This tab contains settings for file uploads.
-                max_user_image_filesize:
+                default_groups_dataset_tab:
                     site_setting:
-                        name: max_user_image_filesize
-                    label: 'Maximum User Image File Size:'
-                    type: text
-                    value: "50000"
-                    side_note: >
-                        Maximum allowed file size for avatar images uploaded by
-                        Extranet Users, in bytes.
-                    validation:
-                        required: Please enter a Maximum User Image File Size.
-                        numeric: The Maximum User Image File Size must be numeric.
+                        name: default_groups_dataset_tab
+                    label: 'Default tab for Groups:'
+                    type: select
+                    value: details
+                    side_note: |
+                        When a group is created from the Groups panel, add the Group to this tab of the Edit User/Contacts admin box. Go to Datasets->Users to re-arrange.
         unconfirmed_users:
             label: Unconfirmed users
             edit_mode:
@@ -188,21 +171,6 @@ site_settings:
                             ord: 9
                     value: 90
                     side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".
-        groups:
-            label: Groups
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
-            fields:
-                default_groups_dataset_tab:
-                    site_setting:
-                        name: default_groups_dataset_tab
-                    label: 'Default tab for Groups:'
-                    type: select
-                    value: details
-                    side_note: |
-                        When a group is created from the Groups panel, add the Group to this tab of the Edit User/Contacts admin box. Go to Datasets->Users to re-arrange.
         inactive_user_email:
             label: Inactive user email
             edit_mode:
@@ -326,3 +294,26 @@ site_settings:
                     type: select
                     empty_value: ' -- Select -- '
                     value: ""
+        filesizes:
+            label: File Sizes
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: This tab contains settings for file uploads.
+                max_user_image_filesize:
+                    site_setting:
+                        name: max_user_image_filesize
+                    label: 'Maximum User Image File Size:'
+                    type: text
+                    value: "50000"
+                    side_note: >
+                        Maximum allowed file size for avatar images uploaded by
+                        Extranet Users, in bytes.
+                    validation:
+                        required: Please enter a Maximum User Image File Size.
+                        numeric: The Maximum User Image File Size must be numeric.

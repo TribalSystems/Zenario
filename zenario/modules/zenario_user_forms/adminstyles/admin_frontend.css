@@ -3,6 +3,5 @@
 }
 
 #zenario_at_top_left_menu ul li ul .zenario_at__goto_user_forms a {
-	background: url('/zenario/admin/images/sprites/sprite-grid-icons-single-col-v2.png') #393939 no-repeat scroll left;
-	background-position: -12px -442px;
+	background: url('images/icon-forms-on.svg') no-repeat center / 16px 16px;
 }

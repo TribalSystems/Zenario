@@ -134,11 +134,18 @@ zenario__layouts:
         look and feel of your site
     nav:
         layouts:
-            label: Layouts
+            label: Available layouts
             tooltip: |
                 The layouts used to define the layout of your site, and the assignment of plugins in slots
             link:
                 path: zenario__layouts/panels/layouts
+        archived_layouts:
+            label: Archived layouts
+            link:
+                path: zenario__layouts/panels/layouts
+                refiner: archived
+            empty: false
+            css_class: archived_layout
         template_families:
             css_class: skin
             label: Skins

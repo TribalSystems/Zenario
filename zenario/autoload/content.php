@@ -840,24 +840,24 @@ class content {
 	//Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 	//(Admins can see all Content Items that exist)
 	//Formerly "checkPerm()"
-	public static function checkPerm($cID, $cType = 'html', $requestVersion = false) {
+	public static function checkPerm($cID, $cType = 'html', $requestVersion = false, $adminMode = null, $adminsSee400Errors = false) {
 		$content = false;
-		return (bool) \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion);
+		return (bool) \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors);
 	}
 
 	//Gets the correct version of a Content Item to show someone, or false if the do not have any access.
 	//(Works exactly like \ze\content::checkPerm() above, except it will return a version number.)
 	//Formerly "getShowableVersion()"
-	public static function showableVersion($cID, $cType = 'html') {
+	public static function showableVersion($cID, $cType = 'html', $adminMode = null, $adminsSee400Errors = false) {
 		$content = false;
-		return \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion = false);
+		return \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion = false, $adminMode, $adminsSee400Errors);
 	}
 
 	//Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 	//Works like \ze\content::checkPerm() above, except that it will return a permissions error code
 	//It also looks up some details on the Content Item
 	//Formerly "getShowableContent()"
-	public static function getShowableContent(&$content, &$version, $cID, $cType = 'html', $requestVersion = false, $checkRequestVars = false, $adminsSee400Errors = false) {
+	public static function getShowableContent(&$content, &$version, $cID, $cType = 'html', $requestVersion = false, $checkRequestVars = false, $adminMode = null, $adminsSee400Errors = false) {
 
 		if ($checkRequestVars) {
 			//Look variables such as userId, locationId, etc., in the request
@@ -875,7 +875,7 @@ class content {
 			}
 		}
 	
-		$versionNumber = \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $adminsSee400Errors);
+		$versionNumber = \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors);
 	
 		if ($versionNumber && is_numeric($versionNumber)) {
 			$versionColumns = [
@@ -894,7 +894,7 @@ class content {
 
 
 	//Formerly "checkPermAndGetShowableContent()"
-	public static function checkPermAndGetShowableContent(&$content, $cID, $cType, $requestVersion, $adminsSee400Errors = false) {
+	public static function checkPermAndGetShowableContent(&$content, $cID, $cType, $requestVersion, $adminMode = null, $adminsSee400Errors = false) {
 		// Returns the version of this content item which should normally be returned
 		if ($cID
 		 && $cType
@@ -913,8 +913,13 @@ class content {
 				WHERE equiv_id = ". (int) $content['equiv_id']. "
 				  AND type = '". \ze\escape::sql($cType). "'")
 		)) {
+			
+			if (is_null($adminMode)) {
+				$adminMode = \ze\priv::check();
+			}
+			
 			//If we are in admin mode, allow anything that exists to be shown
-			if (\ze\priv::check()) {
+			if ($adminMode) {
 			
 				//If no specific version was requested, use the admin version
 				if (!(int) $requestVersion) {
@@ -1311,6 +1316,18 @@ class content {
 	
 		return $cType. '_'. $cID. $friendlyURL;
 	}
+	
+	public static function removeFormattingFromTag(&$tag) {
+		if (strpos($tag, ',')) {
+			$tag = substr($tag, 0, strpos($tag, ','));
+		}
+		
+		if (strpos($tag, '/')) {
+			$tag = substr($tag, 0, strpos($tag, '/'));
+		}
+		
+		return $tag;
+	}
 
 
 	//Formerly "cutTitle()"
@@ -1413,25 +1430,33 @@ class content {
 	//	Layouts  //
 
 	//Formerly "getTemplateDetails()"
-	public static function layoutDetails($layoutId) {
+	public static function layoutDetails($layoutId, $showContentItemCount = false) {
 		$sql = "
 			SELECT
-				layout_id,
-				family_name,
-				file_base_name,
-				CONCAT(file_base_name, '.tpl.php') AS filename,
-				CONCAT('L', IF (layout_id < 10, LPAD(CAST(layout_id AS CHAR), 2, '0'), CAST(layout_id AS CHAR)), ' ', name) AS id_and_name,
-				name,
-				content_type,
-				status,
-				skin_id,
-				css_class,
-				bg_image_id,
-				bg_color,
-				bg_position,
-				bg_repeat
-			FROM ". DB_PREFIX. "layouts
-			WHERE layout_id = ". (int) $layoutId;
+				l.layout_id,
+				l.family_name,
+				l.file_base_name,
+				CONCAT(l.file_base_name, '.tpl.php') AS filename,
+				CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR)), ' ', l.name) AS id_and_name,
+				l.name,
+				l.content_type,
+				l.status,
+				l.skin_id,
+				l.css_class,
+				l.bg_image_id,
+				l.bg_color,
+				l.bg_position,
+				l.bg_repeat,
+				ct.content_type_name_en AS default_layout_for_ctype,
+				(	SELECT
+						count( DISTINCT id)
+					FROM " . DB_PREFIX . "content_item_versions
+					WHERE layout_id = " . (int) $layoutId . "
+				) AS content_item_count
+			FROM ". DB_PREFIX. "layouts l
+			LEFT JOIN " . DB_PREFIX . "content_types ct
+				ON ct.default_layout_id = l.layout_id
+			WHERE l.layout_id = ". (int) $layoutId;
 		$result = \ze\sql::select($sql);
 		return \ze\sql::fetchAssoc($result);
 	}

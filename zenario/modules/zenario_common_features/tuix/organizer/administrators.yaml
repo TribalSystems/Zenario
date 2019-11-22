@@ -55,13 +55,12 @@ zenario__users:
                                     'specific_actions',
                                     'no_actions'
                                 )
-                            WHEN 'specific_languages' THEN
-                                IF (a.specific_content_items != '',
-                                    IF (a.specific_languages != '',
-                                        'specific_content_items_and_languages',
-                                        'specific_content_items'
-                                    ),
-                                    'specific_languages'
+                            WHEN 'specific_areas' THEN
+                                CONCAT(
+                                    'specific',
+                                    IF (a.specific_languages != '', '_languages', ''),
+                                    IF (a.specific_content_items != '', '_content_items', ''),
+                                    IF (a.specific_content_types != '', '_content_types', '')
                                 )
                             ELSE a.permissions
                         END
@@ -70,10 +69,13 @@ zenario__users:
                         all_permissions: All permissions
                         no_actions: No permissions
                         specific_actions: Specific actions
-                        specific_content_items: Specific content items
-                        specific_content_items_and_languages: Specific content items and languages
                         specific_languages: Specific languages
-                        specific_menu_areas: Specific areas in the menu
+                        specific_content_items: Specific content items
+                        specific_languages_content_items: Specific languages and content items
+                        specific_content_types: Specific content types
+                        specific_languages_content_types: Specific languages and content types
+                        specific_content_items_content_types: Specific content items and content types
+                        specific_languages_content_items_content_types: Specific languages, content items and content types
                     show_by_default: true
                     always_show: true
                     disallow_sorting: true

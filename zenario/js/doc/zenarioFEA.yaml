@@ -1,0 +1,1136 @@
+#after:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#ajax:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#AJAXErrorHandler:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#ajaxURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#button:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#buttonIsntDisabled:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#changeSortCol:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#checkAllCheckboxes:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#checkRequests:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#checkThingEnabled:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#childColumnVisible:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#clearOnScrollForItemButtons:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#clickButton:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#closePopout:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#commandEnabled:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#confirm:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#debug:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#doSearch:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#draw:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#draw2:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#drawList:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#editModeAlwaysOn:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#editModeOn:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#ffov:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#fill:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#format:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#fun:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+getModeFromPath:
+    summary: |
+        You should write this method so that given a path, it returns a mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should write this method so that given a path, it returns a mode.
+        </p><p>
+            Paths are typically named after your company name or client name, so an example might be:
+        </p>
+        <pre>methods.getPathFromMode = function(mode) {
+            return path.replace(/^companyName_/, '');
+        };</pre>
+        <h2>Return Value</h2>
+        <p>
+            You should return a string.
+        </p>
+getPathFromMode:
+    summary: |
+        You should write this method so that given a mode, it returns a path.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should write this method so that given a mode, it returns a path.
+        </p><p>
+            Paths are typically named after your company name or client name, so an example might be:
+        </p>
+        <pre>methods.getPathFromMode = function(mode) {
+            return 'companyName_' + mode;
+        };</pre>
+        <h2>Return Value</h2>
+        <p>
+            You should return a string.
+        </p>
+#getSearchFieldValue:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#getSortedItemButtons:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#go:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#guessTypeOfLogic:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#hasSearch:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#hidden:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#hideLoader:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+idVarName:
+    summary: |
+        You should use this method to return the name of the id-variable that your FEA plugin/mode uses.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should use this method to return the name of the id-variable that your FEA plugin/mode uses.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return a string.
+        </p>
+#init:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#initPopout:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#initSparklineChart:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#isAdminFacing:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#itemButtonIsntHidden:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#loadData:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#logic:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#lookupFileDetails:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#microTemplate:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#modifyPostOnLoad:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#navigationEnabled:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#off:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#on:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#openCustomPopout:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#parseTypeaheadSearch:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#phrase:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#pickerLink:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#pMicroTemplate:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#putHTMLOnPage:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#recordRequestsInURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#redrawTab:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#reload:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#reloadParent:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#resizeToFit:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#runAJAXRequest:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#runLogic:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#save:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sendStateToServer:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setData:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setupButtonLinks:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#showClearSearchButton:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#showForm:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#showList:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#showLoader:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sortingEnabled:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sortOutTUIX:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sparkline:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#typeaheadSearchAJAXURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#typeaheadSearchEnabled:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+typeOfLogic:
+    summary: |
+        You should use this method to return the type of logic that your FEA plugin/mode uses.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should use this method to return the type of logic that your FEA plugin/mode uses.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return either 'list', 'form', 'normal_plugin' or 'normal_plugin_using_post'.
+        </p>
+#updateItemButtons:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#validate:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#validateFormatOrRedrawForField:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#visitorTUIXLink:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>

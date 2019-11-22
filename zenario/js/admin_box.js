@@ -212,9 +212,9 @@ zenarioAB.size = function(refresh) {
 				$('#zenario_fabBox').width(FAB_WIDTH);
 				newWidth = FAB_WIDTH;
 				
+				zenarioAB.previewMD5 =
 				zenarioAB.previewWidth =
-				zenarioAB.previewValues =
-				zenarioAB.lastPreviewValues = false;
+				zenarioAB.previewPost = false;
 				
 				previewHidden = true;
 			
@@ -226,9 +226,9 @@ zenarioAB.size = function(refresh) {
 				if (previewHidden) {
 					newWidth = PLUGIN_SETTINGS_WIDTH;
 				
+					zenarioAB.previewMD5 =
 					zenarioAB.previewWidth =
-					zenarioAB.previewValues =
-					zenarioAB.lastPreviewValues = false;
+					zenarioAB.previewPost = false;
 			
 			
 				} else {
@@ -587,7 +587,8 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 		c = 0,
 		current_value = '',
 		checked = get(parentName).checked,
-		$children = $('input[name=' + childrenName + ']');
+		$children = $('input[name=' + childrenName + ']'),
+		visibleChildren = !!$children.size();
 	
 	//Loop through each value for the child checkboxes.
 	//Count them, and either turn them all on or all off, depending on whether the parent was checked
@@ -600,7 +601,7 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	}
 	
 	//If the $children are currently drawn on the page, update them on the page
-	if ($children.size()) {
+	if (visibleChildren) {
 		$children.each(function(i, el) {
 			el.checked = checked;
 			//$children.attr('checked', checked? 'checked' : false);
@@ -612,6 +613,11 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	
 	//Call the function above to update the count and the CSS
 	zenarioAB.adminPermChange(parentName, childrenName, toggleName, n, c);
+	
+	//If the parent was just turned on, but was also closed, open up to show what was just enabled
+	if (checked && !visibleChildren) {
+		zenarioAB.turnToggleOn(toggleName);
+	}
 };
 
 //Date Previews in the Site Settings

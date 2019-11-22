@@ -28,32 +28,64 @@
 	{% endif %}
 	<div class="title">{{location.description|e}}</div>
 	<div class="address_container">
-		<div class="address_label">{{'Address:'|trans}}</div>
-		{% if location.address1 %}
-			<div class="address">{{location.address1|e}}</div>
+		{% if show_address %}
+			<div class="address_label">{{'Address:'|trans}}</div>
+			{% if location.address1 %}
+				<div class="address">{{location.address1|e}}</div>
+			{% endif %}
+			{% if location.address2 %}
+				<div class="address">{{location.address2|e}}</div>
+			{% endif %}
 		{% endif %}
-		{% if location.address2 %}
-			<div class="address">{{location.address2|e}}</div>
-		{% endif %}
-		{% if location.locality %}
+		{% if show_locality and location.locality %}
 			<div class="address">{{location.locality|e}}</div>
 		{% endif %}
-		{% if location.city %}
+		{% if show_city and location.city %}
 			<div class="address">{{location.city|e}}</div>
 		{% endif %}
-		{% if location.state %}
+		{% if show_state and location.state %}
 			<div class="address">{{location.state|e}}</div>
 		{% endif %}
-		{% if location.postcode %}
+		{% if show_postcode and location.postcode %}
 			<div class="address">{{location.postcode|e}}</div>
 		{% endif %}
-		{% if location.country %}
+		{% if show_country and location.country %}
 			<div class="address">{{location.country|e}}</div>
 		{% endif %}
-		{% if location.region %}
+		{% if show_region and location.region %}
 			<div class="address">{{location.region|e}}</div>
 		{% endif %}
 	</div>
+	<div class="contact_details_container">
+    	{% if show_phone and location.phone %}
+    	<div class="phone_container">
+        	<div class="phone_label">{{'Phone:'|trans}}</div>
+        	<div class="phone">{{location.phone|e}}</div>
+    	</div>
+    	{% endif %}
+    	
+    	{% if show_fax and location.fax %}
+    	<div class="fax_container">
+        	<div class="fax_label">{{'Fax:'|trans}}</div>
+        	<div class="fax">{{location.fax|e}}</div>
+    	</div>
+    	{% endif %}
+    	
+    	{% if show_email and location.email %}
+    	<div class="email_container">
+        	<div class="email_label">{{'Email:'|trans}}</div>
+        	<div class="email"><a href="mailto:{{location.email|e}}">{{location.email|e}}</a></div>
+    	</div>
+    	{% endif %}
+    	
+    	{% if show_website and location.url %}
+    	<div class="url_container">
+        	<div class="url_label">{{'Url:'|trans}}</div>
+        	<div class="url"><a href="{{location.url|e}}" target="_blank">{{location.url|e}}</a></div>
+    	</div>
+    	{% endif %}
+    </div>
+
 {% endif %}
 
 {% if show_map %}

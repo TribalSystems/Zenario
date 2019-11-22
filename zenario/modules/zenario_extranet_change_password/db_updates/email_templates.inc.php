@@ -57,4 +57,17 @@ ze\dbAdm::revision(43, "
 		1
 	)
 "
+); ze\dbAdm::revision(45,
+
+<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = 
+		'<p>Dear [[first_name]],</p>
+		<p>Your Extranet Passsword has just been changed.</p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]] .</p>
+		'
+	WHERE `code` = 'zenario_extranet_change_password_notification_en'
+_sql
+
 );

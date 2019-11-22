@@ -97,9 +97,6 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if(isset($values['name']) && !$values['name']) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a name');
-		}
 		if (isset($values['name']) && ze\categoryAdm::exists($values['name'], $box['key']['id'], $box['key']['parent_id'])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('A category called "[[name]]" already exists.', $values);
 		}

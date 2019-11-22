@@ -38,6 +38,7 @@ zenario_trash:
                 links_warning:
                     snippet:
                         html:
+                    hidden: true
                 trash_options:
                     type: radios
                     values:
@@ -47,6 +48,74 @@ zenario_trash:
                             label: 'Delete the plugin(s) altogether'
                     value: remove
                     hidden: true
+                translations_warning:
+                    pre_field_html: |
+                        <b>Translations</b><br />
+                    snippet:
+                        html:
+                    hidden: true
+                th_content_item:
+                    <table class="zfab_grey_table"><tr><th>:
+                    snippet:
+                        label: Content item
+                    hidden: true
+                    </th>:
+                th_translation:
+                    <th>:
+                    snippet:
+                        label: Translation
+                    hidden: true
+                    </th>:
+                th_status:
+                    <th>:
+                    snippet:
+                        label: Status
+                    hidden: true
+                    </th>:
+                th_action:
+                    <th>:
+                    snippet:
+                        label: Action
+                    hidden: true
+                    </th></tr>
+                table_end:
+                    ord: 999999
+                    hidden: true
+                    </table>:
+            custom_template_fields:
+                content_item__znz:
+                    <tr><td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                translation__znz:
+                    <td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                status__znz:
+                    <td>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
+                    </td>:
+                action__znz:    
+                    <td>:
+                    type: select
+                    empty_value: ' -- Please choose what to do with this translation -- '
+                    values:
+                        keep:
+                            label: Keep translation
+                        trash:
+                            label: Trash translation
+                    validate_onchange: true
+                    validation:
+                        only_validate_when_saving: true
+                        required: true
+                    </td></tr>:
+    
     max_height: 160
     hide_tab_bar: true
     save_button_message: Trash

@@ -65,11 +65,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$values['details/hide_private_item'] = $details['hide_private_item'];
 		$values['details/hide_menu_node'] = $details['hide_menu_node'];
 		
-		if ($details['default_parent_menu_node']) {
-			$values['details/set_default_parent_menu_node'] = true;
-			$values['details/default_menu_position'] = ze\contentAdm::getDefaultMenuPositionFromSettings($details);
-			$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
-		}
+		$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
 		
 		
 		if (!$details['module_id']
@@ -79,6 +75,9 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		} else {
 			$values['details/module_id'] = $details['module_id'];
 		}
+		
+		$fields['details/menu_node_position_edit']['values']['force']['label'] = 
+			ze\admin::phrase($fields['details/menu_node_position_edit']['values']['force']['label'], $details);
 		
 		
 		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =
@@ -136,9 +135,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				'enable_summary_auto_update' => 0,
 				'enable_categories' => ($values['details/enable_categories'] == 'enabled') ? 1 : 0,
 				'default_layout_id' => $values['details/default_layout_id'],
-				'default_parent_menu_node' => 0,
-				'menu_node_position' => null,
-				'menu_node_position_edit' => null,
+				'menu_node_position_edit' => $values['details/menu_node_position_edit'] ?: 'suggest',
 				'default_permissions' => $values['details/default_permissions'],
 				'hide_private_item' => $values['details/hide_private_item'],
 				'hide_menu_node' => $values['details/hide_menu_node']
@@ -146,14 +143,6 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			
 			if ($values['details/summary_field'] != 'hidden') {
 				$vals['enable_summary_auto_update'] = $values['details/enable_summary_auto_update'];
-			}
-			
-			$parentId = $startOrEnd = null;
-			if ($values['details/set_default_parent_menu_node']
-			 && ze\contentAdm::getSettingsFromDefaultMenuPosition($values['details/default_menu_position'], $parentId, $startOrEnd)) {
-				$vals['default_parent_menu_node'] = $parentId;
-				$vals['menu_node_position'] = $startOrEnd; 
-				$vals['menu_node_position_edit'] = $values['details/menu_node_position_edit'];
 			}
 			
 			switch ($box['key']['id']) {

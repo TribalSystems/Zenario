@@ -509,6 +509,8 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 				css_class: zenarioO.rowCssClass(i) + ' ' + firstRow
 			};
 			
+			row.short_checksum = item.short_checksum;
+			
 			row.image_css_class = zenarioO.getItemCSSClass(i);
 			
 			if (!useLargerThumbnails && item.image) {

@@ -110,7 +110,7 @@ plugin_settings:
 						name: location_filter
 					label: 'Filter locations on dataset field:'
 					type: select
-					values: ''
+					values: {}
 					empty_value: "-- No filter --"
 					side_note: "Only locations that have the selected dataset field checked will show."
 				order_by_1:

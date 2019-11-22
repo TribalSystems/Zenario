@@ -42,17 +42,13 @@ zenario__content:
                     title: fileID
                     db_column: f.id
                     hidden: true
-                short_checksum:
-                    title: Short checksum
-                    db_column: f.short_checksum
-                    hidden: true
                 ordinal:
                     title: Ordinal
                     db_column: d.ordinal
                     align_right: true
                     width: xxsmall
                 type:
-                    searchable: true
+                    searchable: false
                     db_column: d.type
                 folder_id:
                     db_column: d.folder_id
@@ -97,6 +93,15 @@ zenario__content:
                         offline: Offline
                         public: Public
                         private: Private
+                    
+                    document_line_number: 2
+                short_checksum:
+                    title: Short checksum
+                    searchable: true
+                    ascii_only: true
+                    db_column: f.short_checksum
+                    hidden: false
+                    css_class: "zenario_document_sub_fields"
                     
                     document_line_number: 2
                 date_uploaded:

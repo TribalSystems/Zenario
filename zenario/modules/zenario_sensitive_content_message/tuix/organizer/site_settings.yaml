@@ -1,0 +1,9 @@
+#You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        site_settings:
+            items:
+                zenario__sensitive_content_message:
+                    name: "Sensitive content message"
+                    desc: "Visitors arriving at the site see a message warning that the page contains sensitive content."

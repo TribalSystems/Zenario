@@ -110,7 +110,7 @@ class phi {
 		
 		
 		//Initialise a Twig instance for Phi
-		self::$twig = new \Twig_Environment(new \Zenario_Twig_String_Loader(), [
+		self::$twig = new \Twig\Environment(new \Zenario_Twig_String_Loader(), [
 			'cache' => new \Zenario_Phi_Twig_Cache(),
 			'autoescape' => false,
 			'debug' => false,
@@ -160,7 +160,7 @@ class phi {
 		];
 
 		foreach ($whitelist as $phpName) {
-			self::$twig->addFunction(new \Twig_SimpleFunction($phpName, $phpName));
+			self::$twig->addFunction(new \Twig\TwigFunction($phpName, $phpName));
 		}
 		
 		$whitelist = [
@@ -222,7 +222,7 @@ class phi {
 		}
 
 		foreach ($whitelist as $twigName => $phpName) {
-			self::$twig->addFunction(new \Twig_SimpleFunction($twigName, $phpName));
+			self::$twig->addFunction(new \Twig\TwigFunction($twigName, $phpName));
 		}
 	}
 	

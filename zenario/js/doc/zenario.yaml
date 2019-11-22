@@ -1,0 +1,1971 @@
+#createZenarioLibrary:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+cssEscape:
+    summary: |
+        Escapes a string for CSS text.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Escapes a string for CSS text.
+        </p><p>
+            Note that on most browsers, this is just a shortcut to the browser's build in CSS escaping function.
+            However IE does not have one, so an implementation has been written to cover visitors using IE.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The escaped string.
+        </p>
+defined:
+    summary: |
+        Checks whether a value is defined.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks whether a value is defined.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true if the value is not <code>undefined</code> or <code>null</code>.
+        </p>
+engToBoolean:
+    summary: |
+        Converts strings such as "yes", "no", "true", "false", "on" and "off" to a 0 or a 1.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Converts strings such as "yes", "no", "true", "false", "on" and "off" to a 0 or a 1.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Either a 0 or a 1.
+        </p>
+extensionOf:
+    summary: |
+        This function deals with class inheritance in JavaScript, and allows you to create a new class as an extension of an existing one.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function deals with class inheritance in JavaScript, and allows you to create a new class as an extension of an existing one.
+        </p>
+        <h2>Parameters</h2>
+        <h3><code>parent</code></h3>
+        <p style="margin-left: 40px;">The parent class. If you don't prove one, this function will create a class that does not extend anything.</p>
+        <h3><code>initFun</code></h3>
+        <p style="margin-left: 40px;">The constructor function. If you don't provide one, the inherited class' constructor function will be used instead.</p>
+        <h2>Return Value</h2>
+        <p>
+            The new class.
+        </p>
+get:
+    summary: |
+        A shortcut for the document.getElementById() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            A shortcut for the <code>document.getElementById()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The DOM-element with the id specified.
+        </p>
+has:
+    summary: |
+        A shortcut for the hasOwnProperty() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            A shortcut for the <code>hasOwnProperty()</code> method.
+        </p><p>
+            Note that you might not see this function called much if you read out source code,
+            but the minifier automatically adds calls to this function when it rewrites a <code>foreach</code> loop.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns whether the object has the key requested.
+        </p>
+htmlspecialchars:
+    summary: |
+        Replaces any special characters in a string with html entities.
+    desc: |
+        <h2>Description</h2>
+        <p>Replaces any special characters in a string with html entities.</p>
+        <p>E.g. "<span class="code">&lt;</span>" would be replaced with "<span class="code">&amp;lt;</span>" and "<span class="code">&amp;</span>" would be replaced by "<span class="code">&amp;amp;</span>"</p>
+        <h2>Where You Can Use It</h2>
+        <p>Anywhere in your JavaScript code. From Zenario 7.0.0 onwards.</p>
+        <h2>Parameters</h2>
+        <h3><code>text</code></h3>
+        <p style="margin-left: 40px;">A string containing plain text to escape.</p>
+        <h3><code>preserveLineBreaks</code></h3>
+        <p style="margin-left: 40px;">If this is set to true, line breaks will be replaced by <span class="code">&lt;br/&gt;</span> tags.</p>
+        <h2>Return Value</h2>
+        <p>An escaped string.</p>
+jsEscape:
+    summary: |
+        Replaces any special or multilingual characters in a string with character escape sequences.
+    desc: |
+        <h2>Description</h2>
+        <p>Replaces any special or multilingual characters in a string with character escape sequences.</p>
+        <p>E.g. "<span class="code">\</span>" would be replaced by "<span class="code">\x5C</span>"</p>
+        <h2>Where You Can Use It</h2>
+        <p>Anywhere in your JavaScript code. From Zenario 7.0.0 onwards.</p>
+        <h2>Parameters</h2>
+        <h3><code>text</code></h3>
+        <p style="margin-left: 40px;">A string containing plain text to escape.</p>
+        <h2>Return Value</h2>
+        <p>An escaped string.</p>
+jsUnescape:
+    summary: |
+        Attempts to unescape a string that was previously escaped using the zenario.jsEscape() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Attempts to unescape a string that was previously escaped using the <code>zenario.jsEscape()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+lib:
+    summary: |
+        This function can be used to wrap around library definitions.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function can be used to wrap around library definitions.
+        </p><p>
+            It provides shortcut variables to several commonly used functions, and has lots of
+            properties that our minifiers take advantage of to reduce the filesize of the
+            wrapped libraries.
+        </p>
+methodsOf:
+    summary: |
+        Given a class declaration, this function gives access to its methods so you can add or overwrite them.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a class declaration, this function gives access to its methods so you can add or overwrite them.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The class' method object.
+        </p>
+
+actAfterDelayIfNotSuperseded:
+    summary: |
+        This calls the provided function after the specified delay.
+        If you make another call of the same type, and the previous call will be cancelled if it has not yet run.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This calls the provided function after the specified delay.
+        </p><p>
+            If you make another call of the same type, and the previous call will be cancelled if it has not yet run.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+addAmp:
+    summary: |
+        Given a request string, this will add a & onto the start if needed.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a request string, this will add a &amp; onto the start if needed.
+        </p><p>
+            This is useful for joining two different request strings together.
+        </p>
+addBasePath:
+    summary: |
+        This function converts relative URLs into an absolute URLs.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function converts relative URLs into an absolute URLs.
+        </p><p>
+            It leaves URLs that are already absolute URLs alone so it is safe to use as a filter.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The URL, with the URL base path prepended if needed.
+        </p>
+addClassesToColorbox:
+    summary: |
+        This function adds CSS class names to the currently open/opening colorbox.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function adds CSS class names to the currently open/opening colorbox.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+addJQueryElements:
+    summary: |
+        This function enables various jQuery widgets (such as colorbox links and tooltips) on the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function enables various jQuery widgets (such as colorbox links and tooltips) on the page.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#addLibPointers:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#addPluginJavaScript:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#addRequest:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+addStyles:
+    summary: |
+        Use this to add CSS rules onto the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Use this to add CSS rules onto the page.
+        </p><p>
+            Zenario will create a <code>&lt;style&gt;</code> block with the HTML you specify.
+        </p><p>
+            If you call this function a second time with the same id, the block that was created previously will be overridden.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#addTabIdToURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+ajax:
+    summary: |
+        Launches an AJAX request to the server.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function deals with class inheritance in JavaScript, and allows you to create a new class as an extension of an existing one.
+        </p>
+        <h2>Parameters</h2>
+        <h3><code>url</code></h3>
+        <p style="margin-left: 40px;">The URL of the request</p>
+        <h3><code>post</code></h3>
+        <p style="margin-left: 40px;">Pass some POST requests in here to use POST. Or set to true to use POST without any POST requests.</p>
+        <h3><code>json</code></h3>
+        <p style="margin-left: 40px;">Set this to true if you're expecting a JSON response, and it will be automatically decoded for you.</p>
+        <h3><code>useCache</code></h3>
+        <p style="margin-left: 40px;">Store the response from this URL in the session cache, and use the cached results next time. Works for GET requests only.</p>
+        <p style="margin-left: 40px;">Works for GET requests only.</p>
+        <p style="margin-left: 40px;">The cache results are cleared automatically if the data_rev in the database changes.</p>
+        <h3><code>retry</code></h3>
+        <p style="margin-left: 40px;">In admin mode, if there is an error, an error message will be displayed.</p>
+        <p style="margin-left: 40px;">If you set this variable to true, then the CMS will add a retry button that tries the request again.</p>
+        <p style="margin-left: 40px;">Alternately you can pass a function that should be called instead..</p>
+        <h3><code>continueAnyway</code></h3>
+        <p style="margin-left: 40px;">In admin mode, whether to enable the "continue anyway" if there is a PHP notice or var_dump() on a JSON response,
+            but the response looks valid otherwise.</p>
+        <h3><code>settings</code></h3>
+        <p style="margin-left: 40px;">This function acts as a wrapper to the <code>$.ajax()</code> function.
+            Use this to parameter in any advanced options you may need that the other parameters do not cover.</p>
+        <h3><code>timeout</code></h3>
+        <p style="margin-left: 40px;">Set a timeout on the request. If the request takes longer than this it will be aborted,
+            then either cancelled or retried if the <code>retry</code> parameter is set.</p>
+        <h3><code>AJAXErrorHandler</code></h3>
+        <p style="margin-left: 40px;">You can change this variable to override the error handler that's used.</p>
+        <h3><code>onRetry</code></h3>
+        <p style="margin-left: 40px;">You can pass a function in here that's called when the retry button is pressed (admin mode only).</p>
+        <p style="margin-left: 40px;">(Note that the difference between passing a function in using this parameter and passing
+            a function in using the <code>retry</code> parameter is that this parameter does not override the default functionality.)</p>
+        <h3><code>onCancel</code></h3>
+        <p style="margin-left: 40px;">You can pass a function in here that's called when the cancel button is pressed (admin mode only).</p>
+        <h3><code>onError</code></h3>
+        <p style="margin-left: 40px;">You can pass a function in here that's called when an error occurs.</p>
+        <p style="margin-left: 40px;">(But again note that it this does not override the default functionality.)</p>
+        <h2>Return Value</h2>
+        <p>
+            This returns a callback object.
+        </p>
+
+
+//An easy-as-possible drop-in replacement for zenario.nonAsyncAJAX(), which is now deprecated.
+//It returns a zenario.callback object.
+    //url: The URL of the request
+    //post: Pass some POST requests in here to use POST. Or set to true to use POST without any POST requests.
+    //json: Set to true to decode a JSON response
+    //useCache: Store the response in the session cache, and use the cached results next time.
+        //Won't apply to POST requests.
+        //The cache results are cleared automatically if the data_rev in the database changes.
+    //retry: If there's an error, show a "retry" button on the error message.
+        //Only works in admin mode.
+        //Can be a function to call, or true to recall this function
+    //timeout: If set, the request will be automatically retried or cancelled after this amount of time.
+zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError) {
+
+AJAXLink:
+    summary: |
+        Given the name of a module, this function returns the link to access its handleAJAX() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a module, this function returns the link to access its <code>handleAJAX()</code> method.
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+#applyCompilationMacros:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+applyMergeFields:
+    summary: |
+        Given a string with merge fields in it, and an object with the values for those merge fields,
+        this function will return a new string with the merge fields replaced.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a string with merge fields in it, and an object with the values for those merge fields,
+            this function will return a new string with the merge fields replaced.
+        </p>
+browserIsChrome:
+    summary: |
+        Returns true when a visitor is running on Google Chrome.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on Google Chrome.
+        </p>
+browserIsEdge:
+    summary: |
+        Returns true when a visitor is running on Microsoft's Edge browser.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on Microsoft's Edge browser.
+        </p>
+browserIsFirefox:
+    summary: |
+        Returns true when a visitor is running on Firefox.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on Firefox.
+        </p>
+browserIsIE:
+    summary: |
+        Returns true when a visitor is running on Internet Explorer.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on Internet Explorer.
+        </p><p>
+            (Note that Edge does not count in this case.)
+        </p>
+browserIsiOS:
+    summary: |
+        Returns true when a visitor is running on iOS.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on iOS.
+        </p>
+browserIsiPad:
+    summary: |
+        Returns true when a visitor is running on an iPad.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on an iPad.
+        </p>
+browserIsiPhone:
+    summary: |
+        Returns true when a visitor is running on an iPhone.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on an iPhone.
+        </p>
+browserIsOpera:
+    summary: |
+        Returns true when a visitor is running on Opera.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on Opera.
+        </p>
+browserIsRetina:
+    summary: |
+        Returns true when a visitor is using a retina screen.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is using a retina screen.
+        </p><p>
+            (Note that this check may not work correctly on some old browsers.)
+        </p>
+browserIsSafari:
+    summary: |
+        Returns true when a visitor is running on Safari.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on Safari.
+        </p>
+browserIsWebKit:
+    summary: |
+        Returns true when a visitor is running on WebKit.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is running on WebKit.
+        </p>
+#buttonClick:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#callback:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#callScript:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+canCopy:
+    summary: |
+        Checks whether a visitor's browser supports copy/paste.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks whether a visitor's browser supports copy/paste.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true or false.
+        </p>
+#checkDataRevisionNumber:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#checkForHashChanges:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#checkSessionStorage:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#clearAllDelays:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#clearDateField:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#clone:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#closeTooltip:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+copy:
+    summary: |
+        Copies the specified text to the clipboard, if the visitor's browser supports copy/paste.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Copies the specified text to the clipboard, if the visitor's browser supports copy/paste.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true if the copy was successful.
+        </p>
+#dataRev:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#dateFieldKeyUp:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+decodeItemIdForStorekeeper:
+    summary: |
+        This function can be used to give you the original value of an id that was escaped with the encodeItemIdForStorekeeper() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function can be used to give you the original value of an id that was escaped with the <code>encodeItemIdForStorekeeper()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The unescaped id.
+        </p>
+disableScrolling:
+    summary: |
+        This disables scrolling on the page, until the zenario.enableScrolling() function is called.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This disables scrolling on the page, until the <code>zenario.enableScrolling()</code> function is called.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#drawMicroTemplate:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+enableFullScreen:
+    summary: |
+        Enables full-screen mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Enables full-screen mode.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+enableScrolling:
+    summary: |
+        This enables scrolling on the page if it was disabled by the zenario.disableScrolling() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This enables scrolling on the page if it was disabled by the <code>zenario.disableScrolling()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#enc:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+encodeItemIdForStorekeeper:
+    summary: |
+        This takes a string, and converts it into a format that is safe to use in comma-separated lists
+        or in Organizer item ids.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This takes a string, and converts it into a format that is safe to use in comma-separated lists
+            or in Organizer item ids.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The escaped string.
+        </p>
+exitFullScreen:
+    summary: |
+        Disables full-screen mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Disables full-screen mode.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#fireChangeEvent:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#fixJSON:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#formatDate:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#formSubmit:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#generateMicroTemplate:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+getContainerIdFromEl:
+    summary: |
+        Given a DOM-element or ID that is inside a slot, this function will return the slot's containerId.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a DOM-element or ID that is inside a slot, this function will return the slot's containerId.
+        </p><p>
+            Note that some functions that need a containerId as an input will automatically call this function
+            if you pass in an DOM-element or ID. 
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            A containerId.
+        </p>
+getContainerIdFromSlotName:
+    summary: |
+        Given the name of a slot, this function will return its container id.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a slot, this function will return its container id.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            A containerId.
+        </p>
+getEggIdFromEl:
+    summary: |
+        Given a DOM-element or ID that is inside a nested plugin, this function will return the nested plugin's eggId.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a DOM-element or ID that is inside a nested plugin, this function will return the nested plugin's eggId.
+        </p><p>
+            Note that some functions that need an eggId as an input will automatically call this function
+            if you pass in an DOM-element or ID. 
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            An eggId.
+        </p>
+getMouseX:
+    summary: |
+        Gets the x-co-ordinate of where the user just clicked on the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Gets the x-co-ordinate of where the user just clicked on the page.
+        </p>
+getMouseY:
+    summary: |
+        Gets the y-co-ordinate of where the user just clicked on the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Gets the y-co-ordinate of where the user just clicked on the page.
+        </p>
+getSlotnameFromEl:
+    summary: |
+        Given a DOM-element or ID that is inside a slot, this function will return the slot's name.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a DOM-element or ID that is inside a slot, this function will return the slot's name.
+        </p><p>
+            Note that some functions that need a name as an input will automatically call this function
+            if you pass in an DOM-element or ID. 
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            A slot name.
+        </p>
+goToURL:
+    summary: |
+        Redirects the user to a URL using JavaScript.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Redirects the user to a URL using JavaScript.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Always returns false.
+        </p>
+#grecaptcha:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#grecaptchaIsLoaded:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#httpOrhttps:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#hypEscape:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+IN:
+    summary: |
+        JavaScript version of our PHP ze::in() function, which itself is similar to MySQL's IN().
+    desc: |
+        <h2>Description</h2>
+        <p>
+            JavaScript version of our PHP <code>ze::in()</code> function, which itself is similar to MySQL's <code>IN()</code>.
+        </p><p>
+            Note that most of our functions use camelCase, but "in" is a reserved word in JavaScript,
+            so we've written the name in uppercase like the original MySQL function as a work-around.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true if the first parameter matches any of the subsequent parameters.
+        </p>
+inDoc:
+    summary: |
+        Checks whether a DOM element is still in the document, or if it has been removed.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks whether a DOM element is still in the document, or if it has been removed.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true or false.
+        </p>
+#init:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#inList:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+isFullScreen:
+    summary: |
+        Returns true is a visitor's browser is currently running in full-screen mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true is a visitor's browser is currently running in full-screen mode.
+        </p>
+isFullScreenAvailable:
+    summary: |
+        Returns true is a visitor's browser supports running in full-screen mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true is a visitor's browser supports running in full-screen mode.
+        </p>
+ishttps:
+    summary: |
+        Returns true when a visitor is accessing the site via https.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor is accessing the site via https.
+        </p>
+isTouchScreen:
+    summary: |
+        Returns true when a visitor has a touch screen.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Returns true when a visitor has a touch screen.
+        </p>
+linkToItem:
+    summary: |
+        Generates a URL to a content item.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Generates a URL to a content item.
+        </p><p>
+            This is a greatly simplified version of the <code>ze\item::link()</code> function.
+            The URL generated will be valid, but won't exactly match the canonical URL or friendly URL.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns a URL.
+        </p>
+#loadAutocomplete:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#loadDatePicker:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+loadLibrary:
+    summary: |
+        This can be used to load a JavaScript library, if it is not already on the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This can be used to load a JavaScript library, if it is not already on the page.
+        </p><p>
+            The format/behaviour is very similar to the <code>ze::requireJsLib()</code> function in PHP.
+        </p>
+        <h2>Parameters</h2>
+        <h3><code>path</code></h3>
+        <p style="margin-left: 40px;">The URL to the <code>.js</code> file.</p>
+        <p style="margin-left: 40px;">If the URL is a relative URL (or matches the <code>URLBasePath</code>),
+            the <code>zenarioCSSJSVersionNumber</code> will be automatically added to the end as a cache-killer,
+            if not already there.</p>
+        <h3><code>callback</code></h3>
+        <p style="margin-left: 40px;">A function to call when the library is loaded.</p>
+        <h3><code>alreadyLoaded</code></h3>
+        <p style="margin-left: 40px;">Set this to true if the library has already been loaded, and you just want to flag this in the system.</p>
+        <h3><code>stylesheet</code></h3>
+        <p style="margin-left: 40px;">Optional, the URL for a stylesheet that the library needs to be loaded.</p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#loadPhrases:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+microTemplate:
+    summary: |
+        A summary.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            A summary.
+        </p><p>
+            More words.
+        </p>
+        <h2>Parameters</h2>
+        <h3><code>template</code></h3>
+        <p style="margin-left: 40px;">The name of an existing microtemplate.</p>
+        <p style="margin-left: 40px;">Alternately you can pass a snippet of microtemplate code in for an
+            on-the-fly compilation.</p>
+        <h3><code>data</code></h3>
+        <p style="margin-left: 40px;">The merge fields for this microtemplate.</p>
+        <p style="margin-left: 40px;">If you pass in an object, it will render the microtemplate using these merge fields.</p>
+        <p style="margin-left: 40px;">If you pass in an array of objects, it will do a loop and render the microtemplate multiple times.</p>
+        <h3><code>filter</code></h3>
+        <p style="margin-left: 40px;">If you pass in an array of objects, you can pass in a filter function here to exclude specific rows.</p>
+        <h3><code>microTemplates</code></h3>
+        <p style="margin-left: 40px;">The library of microtemplates to use when calling microtemplates via name.
+            Defaults to the standard visitor microtemplates from the <code>microtemplates/</code> subdirectories of the modules on this site.</p>
+        <h2>Return Value</h2>
+        <p>
+            Returns the HTML code generated by the microtemplate.
+        </p><p>
+            Note that if you request a microtemplate that does not exist, because of how this this function is designed,
+            it will assume that was supposed to be a custom template and return the name back to you.
+        </p>
+#nonAsyncAJAX:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#nphrase:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#num:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+off:
+    summary: |
+        This can remove events registered to a slot by the zenario.on() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This can remove events registered to a slot by the zenario.on() function.
+        </p><p>
+            If you specify a containerId, only events for that containerId are removed,
+            otherwise this function removes all events from every container in the slot.
+        </p><p>
+            Likewise, if you specify an event's name, only that event is removed,
+            otherwise this function removes events regardless of their name.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+on:
+    summary: |
+        Register an event for a plugin in a slot.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Register an event for a plugin in a slot.
+        </p><p>
+            If the plugin is ever removed from the slot (e.g. because of a conductor navigation)
+            then the event will automatically be removed as well, unless it was flagged as
+            page-wide (see below).
+        </p>
+        <h2>Parameters</h2>
+        <h3><code>slotName</code></h3>
+        <h3><code>containerId</code></h3>
+        <p style="margin-left: 40px;">You can use these two parameters in three ways:</p>
+        <ul style="margin-left: 40px;">
+            <li>You can specify a slotName and leave the containerId empty to attach an event to a specific slot.</li>
+            <li>You can specify a containerId to attach an event to a element or container in a slot.
+                (If you leave slotName empty it will be auto-calculated from the containerId in this case.)
+            <li>If you leave both slotName and the containerId empty then the event will be flagged as page-wide instead.</li>
+        </ul>
+        <h3><code>eventName</code></h3>
+        <p style="margin-left: 40px;">There are two zenario-specific events that you can use here,
+            <code>resizeToDesktop<code> and <code>resizeToMobile<code>.
+            These are triggered when the grid layout is resized through its breakpoint (which one depends on the direction).</p>
+        <p style="margin-left: 40px;">Otherwise you can use the name of any event covered by jQuery.</p>
+        <p style="margin-left: 40px;">As long as the name isn't one of the standard HTML/jQuery event names, you can also invert your
+            own names, and trigger them using the <code>zenario.sendSignal function</code>.</p>
+        <h3><code>handler</code></h3>
+        <p style="margin-left: 40px;">A function to call when the event happens.</p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#outdateCachedData:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#parseContainerId:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#phrase:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+pluginAJAXLink:
+    summary: |
+        Given the name of a module, and the slot/container that one of its plugins is in, this function returns the link to access its handlePluginAJAX() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a module, and the slot/container that one of its plugins is in, this function returns the link to access its <code>handlePluginAJAX()</code> method.
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+#pluginAJAXURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#pluginClassAJAX:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+pluginVisitorTUIXLink:
+    summary: |
+        Given the name of a FEA module, and the slot/container that one of its plugins is in, this function returns the link to access one of its visitor TUIX methods.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a FEA module, and the slot/container that one of its plugins is in, this function returns the link to access one of its visitor TUIX methods.
+        </p><p>
+            Which method depends on the mode, which can be fill, format, validate, save, or tas
+            (which is short for "typeahead search", and leads to the typeaheadSearchAJAX() function).
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+#recordRequestsInURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+refreshPluginSlot:
+    summary: |
+        You can call this function to refresh/reload a plugin by AJAX, with the specified GET requests.
+    desc: |
+        <h2>Description</h2>
+        <p>You can call this function to refresh/reload a plugin by AJAX, with the specified GET requests.</p>
+        <h2>Where You Can Use It</h2>
+        <p>Anywhere in your JavaScript code in the front-end. From Zenario 7.0.0 onwards.</p>
+        <h2>Parameters</h2>
+        <h3><code>slotName</code></h3>
+        <p style="margin-left: 40px;">The name of the slot to refresh.</p>
+        <p style="margin-left: 40px;">If the slot contains a nest, then all of the plugins in the nest will be refreshed, not just one.</p>
+        <h3><code>instanceId</code></h3>
+        <p style="margin-left: 40px;">The instance id of the plugin.</p>
+        <p style="margin-left: 40px;">You can set this to "lookup" if you want it to be looked up automatically.</p>
+        <h3><code>additionalRequests</code></h3>
+        <p style="margin-left: 40px;">Any GET requests you wish to add to the AJAX request.</p>
+        <p style="margin-left: 40px;">You can provide a URL request string, or an object of key-value pairs.</p>
+        <h3><code>recordInURL</code></h3>
+        <p style="margin-left: 40px;">If this is set to <span class="code">true</span>, any GET requests you provide will be added to the URL of the current page.</p>
+        <p style="margin-left: 40px;">This will only work if a visitor's browser supports HTML5, however a "hash-bang" system is used as a fallback for browsers that don't support HTML5.</p>
+        <h3><code>scrollToTopOfSlot</code></h3>
+        <p style="margin-left: 40px;">This will cause the user's browser to scroll up to the top of the slot that is being reloaded.</p>
+        <p style="margin-left: 40px;">If not defined, the default value is <span class="code">true</span>.</p>
+        <h3><code>fadeOutAndIn</code></h3>
+        <p style="margin-left: 40px;">This will cause the slot and its contents to fade out slightly whilst it is reloading.</p>
+        <p style="margin-left: 40px;">If you wish to display an AJAX loader or some other sort of loading symbol, you can achieve this by styling the background behind the slot, as the background will be visible whilst the slot is faded out.</p>
+        <p style="margin-left: 40px;">If not defined, the default value is <span class="code">true</span>.</p>
+        <h3><code>useCache</code></h3>
+        <p style="margin-left: 40px;">If this is set to true, the CMS will store AJAX requests in the browser's session cache and only actually perform an AJAX request if the request is not already in the cache.</p>
+        <p style="margin-left: 40px;">This behaviour can be somewhat confusing when developing a site, as you can make changes to a plugin but then not see the changes if a request is cached, so it is disabled by default.</p>
+refreshSlot:
+    summary: |
+        If a slot uses the conductor, this function will reload the current slide.
+        Otherwise it functions as the zenario.refreshPluginSlot() function.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            If a slot uses the conductor, this function will reload the current slide.
+        </p><p>
+            Otherwise it functions as the <code>zenario.refreshPluginSlot()</code> function.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#registerPhrases:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+removeClassesToColorbox:
+    summary: |
+        This function removes CSS class names from the currently open colorbox.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function removes CSS class names from the currently open colorbox.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#removeLinkStatus:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#replacePluginSlotContents:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#resize:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#resizeColorbox:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#rightHandedSubStr:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sClear:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+scrollLeft::
+    summary: |
+        Gets or sets the current scroll-left of an element, or the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Gets or sets the current scroll-left of an element, or the page.
+        </p><p>
+            You can target a scrollable element on the page, or the page itself (default).
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            If a value is not set, then it will return the current value.
+            Otherwise it will change the current value.
+        </p>
+scrollToEl:
+    summary: |
+        Scrolls the page so that the specified element is in view.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Scrolls the page so that the specified element is in view.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+scrollTop:
+    summary: |
+        Gets or sets the current scroll-top of an element, or the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Gets or sets the current scroll-top of an element, or the page.
+        </p><p>
+            You can target a scrollable element on the page, or the page itself (default).
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            If a value is not set, then it will return the current value.
+            Otherwise it will change the current value.
+        </p>
+scrollToSlotTop:
+    summary: |
+        This scrolls to show the top of a slot if needed.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This scrolls to show the top of a slot if needed.
+        </p>
+        <h2>Parameters</h2>
+        <h3><code>containerIdSlotNameOrEl</code></h3>
+        <p style="margin-left: 40px;">The name of a slot. You can also pass in a containerId or a DOM-element in that slot, which
+            will be resolved to the name of that slot.</p>
+        <h3><code>neverScrollDown</code></h3>
+        <p style="margin-left: 40px;">If this is set, the screen may scroll up but never down.</p>
+        <h3><code>time</code></h3>
+        <p style="margin-left: 40px;">Set this to animate the scrolling, rather than have it be instant.</p>
+        <h3><code>el</code></h3>
+        <p style="margin-left: 40px;">The element that should be scrolled. Defaults to the page body.</p>
+        <h3><code>offset</code></h3>
+        <p style="margin-left: 40px;">Add an offset to the scroll position.</p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+sendSignal:
+    summary: |
+        This function can be used to send a signal in JavaScript.
+        Anything registered for that signal using the zenario.on() function will receive it.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function can be used to send a signal in JavaScript.
+            Anything registered for that signal using the <code>zenario.on()</code> function will receive it.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            If anything was listing to your signal, you'll receive an array of results containing their return values.
+            Otherwise you'll receive an empty array.
+        </p>
+#setActiveClass:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setChildrenToTheSameHeight:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setSessionStorage:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sGetItem:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+showFileLink:
+    summary: |
+        Given the name of a module, this function returns the link to access its showFile() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a module, this function returns the link to access its <code>showFile()</code> method.
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+showFloatingBoxLink:
+    summary: |
+        Given the name of a module, and the slot/container that one of its plugins is in, this function returns the link to access its showFloatingBox() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a module, and the slot/container that one of its plugins is in, this function returns the link to access its <code>showFloatingBox()</code> method.
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+showImageLink:
+    summary: |
+        Given the name of a module, this function returns the link to access its showImage() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a module, this function returns the link to access its <code>showImage()</code> method.
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+showSingleSlotLink:
+    summary: |
+        Given the name of a module, and the slot/container that one of its plugins is in, this function returns the link to access its showSingleSlot() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a module, and the slot/container that one of its plugins is in, this function returns the link to access its <code>showSingleSlot()</code> method.
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+showStandalonePageLink:
+    summary: |
+        Given the name of a module, this function returns the link to access its showStandalonePage() method.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a module, this function returns the link to access its <code>showStandalonePage()</code> method.
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>
+shrtNms:
+    summary: |
+        This takes a JavaScript library, scans the functions in the library, and adds short-names for them all.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This takes a JavaScript library, scans the functions in the library, and adds short-names for them all.
+        </p><p>
+            For some libraries, the minifier replaces all function calls with calls to the short-names, so the minified code
+            will not function in the browser until the short-names are added via this function.
+        </p>
+#slot:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+splitFlagsFromMessage:
+    summary: |
+        Given a message that might have flags in it, this parses the flags then strips them from the message.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a message that might have flags in it, this parses the flags then strips them from the message.
+        </p><p>
+            Flags can look like this:
+        </p>
+        <pre>&gt;!--Flag--&lt;</pre>
+        <p>
+            ...or like this:
+        </p>
+        <pre>&gt;!--Flag:Value--&lt;</pre>
+        <h2>Return Value</h2>
+        <p>
+            An object in the form:
+        </p>
+        <pre>{
+            responseText: '...',
+            flags: { ... }
+        }</pre>
+#sSetItem:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#stop:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#submitFormReturningHtml:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#tidyLibPointers:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#tinyMCEGetContent:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+toObject:
+    summary: |
+        Given a request string, this function tries to turn it back into an object.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given a request string, this function tries to turn it back into an object.
+        </p><p>
+            If you pass in something that is already an object, then this function will optionally clone the object
+            (if the <code>clone</code> parameter is set) and then just return it as is.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            An object.
+        </p>
+#tooltips:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#tooltipsUsing:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#uneschyp:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+unfun:
+    summary: |
+        If passed a function, this calls the function and then returns the result.
+        Otherwise it returns the input you give it.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            If passed a function, this calls the function and then returns the result.
+            Otherwise it returns the input you give it.
+        </p>
+#unpackAndMerge:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+urlRequest:
+    summary: |
+        If you pass an object of key-value pairs into this function, it will return them as a string in the format for a URL request.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            If you pass an object of key-value pairs into this function, it will return them as a string in the format for a URL request.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            A URL query string.
+        </p>
+versionOfIE:
+    summary: |
+        When running on Internet Explorer, this function gets the current version number.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            When running on Internet Explorer, this function gets the current version number.
+        </p>
+visitorTUIXLink:
+    summary: |
+        Given the name of a FEA module, this function returns the link to access one of its visitor TUIX methods.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Given the name of a FEA module, this function returns the link to access one of its visitor TUIX methods.
+        </p><p>
+            Which method depends on the mode, which can be fill, format, validate, save, or tas
+            (which is short for "typeahead search", and leads to the typeaheadSearchAJAX() function).
+        </p><p>
+            You can also pass in some GET requests, which will be added to the URL.
+        </p>

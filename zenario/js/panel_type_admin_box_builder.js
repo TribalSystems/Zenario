@@ -224,7 +224,7 @@ methods.addTUIXTabEvents = function(itemType, itemId, tuixTabId) {
 				if (fields.length > 0) {
 					message += '<p>All fields on this tab will also be deleted.</p>';
 				}
-				zenarioA.floatingBox(message, 'Delete tab', 'warning', true, false, function() {
+				zenarioA.floatingBox(message, 'Delete tab', 'warning', true, false, undefined, undefined, function() {
 					thus.deletePage(itemId);
 					thus.changeMadeToPanel();
 				});
@@ -1044,7 +1044,7 @@ methods.loadFieldsList = function(pageId) {
 			
 			message += "<p>Delete this dataset field?</p>";
 		
-			zenarioA.floatingBox(message, 'Delete dataset field', 'warning', true, false, function() {
+			zenarioA.floatingBox(message, 'Delete dataset field', 'warning', true, false, undefined, undefined, function() {
 				thus.deleteField(fieldId, true);
 			});
 		}

@@ -83,7 +83,7 @@ if ($notification['send_notification_email'] && $notification['notification_emai
 	//Hack for backwards compatability with layouts using the old merge fields
 	$formFields['title'] = $formFields['page_title'];
 	$formFields['comment'] = $formFields['message'];
-	$formFields['username'] = $formFields['poster_username'];
+	$formFields['username'] = $formFields['poster_username'] ?? '';
 	
 	zenario_email_template_manager::sendEmailsUsingTemplate(
 		$notification['notification_email_address'],

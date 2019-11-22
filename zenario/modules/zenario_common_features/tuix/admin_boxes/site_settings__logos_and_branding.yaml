@@ -1,0 +1,264 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: logos_and_branding
+    title: Editing logos and branding
+    tabs:
+        favicon: 
+            label: Site logos
+            edit_mode: 
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: >
+                            You may upload an image to use as a Favicon, and an image to use as a Home Screen Icon for mobile devices.
+                favicon: 
+                    site_setting:
+                        name: favicon
+                    label: "Favicon:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .ico
+                            - .png
+                        drag_and_drop: false
+                    note_below: >
+                        You can upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file (<code>.svg</code> files are not supported).<br/>
+                        If you wish to support visitors using Internet Explorer 10 or earlier, you should
+                        upload a <code>.ico</code> file that is either 16×16, 32×32, 48×48 or 64×64 pixels in size.
+                    validation:
+                        must_be_gif_ico_or_png: >
+                            The favicon must be a .gif, .ico or a .png file.
+                
+                
+                mobile_icon: 
+                    site_setting:
+                        name: mobile_icon
+                    label: "Mobile device home screen icon:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .png
+                        drag_and_drop: false
+                    pick_items: 
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    note_below: >
+                        You should upload a <code>.gif</code> or a <code>.png</code> file for a home-screen icon (<code>.svg</code> files are not supported).
+                        We recommend that the image should be 144×144 pixels in size;
+                        the image will be auto-downsized.
+                    validation:
+                        must_be_gif_or_png: >
+                            The home screen icon must be a .gif or a .png file.
+                default_icon:
+                    site_setting:
+                        name: default_icon
+                    label: "Default og:image:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .png
+                        drag_and_drop: false
+                    pick_items: 
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    note_below: >
+                        If a content item doesn’t have a feature image set, this image will be used for the content item's og:image meta data tags.<br>
+                        You should upload a <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
+                        We recommend that the image should be at least 200x200 pixels in size;
+                        the image will be auto-downsized.
+                    validation:
+                        must_be_gif_or_png: >
+                            The default icon must be a .gif or a .png file.
+        admin_login:
+            label: Admin login
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            Use this to change the logo used on the site disabled and admin login screens.
+                
+                brand_logo:
+                    site_setting:
+                        name: brand_logo
+                    label: 'Logo:'
+                    type: radios
+                    value: zenario
+                    values:
+                        zenario:
+                            label: Use the Zenario logo
+                        custom:
+                            label: 'Use a custom logo:'
+                    redraw_onchange: true
+                
+                custom_logo:
+                    site_setting:
+                        name: custom_logo
+                    visible_if: |
+                        zenarioAB.value('brand_logo') == 'custom'
+                    upload:
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .svg
+                        drag_and_drop: true
+                    note_below: >
+                        If your image is larger than 500×250 it will be scaled down to fit.
+                    validation:
+                        required_if_not_hidden: >
+                            Please upload an image.
+                        must_be_image_or_svg: >
+                            The custom logo must be a .gif, .jpg, .png or a .svg file.
+        admin_login_link:
+            label: Admin login link
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            Use this to change the logo used on the admin login link
+                            (as seen on the front-end by an admin who is not logged in but
+                             has previously logged in and selected the "remember me" option).
+                
+                admin_link_logo:
+                    site_setting:
+                        name: admin_link_logo
+                    label: 'Logo:'
+                    type: radios
+                    value: zenario
+                    values:
+                        zenario:
+                            label: Use the Zenario logo
+                        custom:
+                            label: 'Use a custom logo:'
+                    redraw_onchange: true
+                
+                admin_link_custom_logo:
+                    site_setting:
+                        name: admin_link_custom_logo
+                    visible_if: |
+                        zenarioAB.value('admin_link_logo') == 'custom'
+                    upload:
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .svg
+                        drag_and_drop: true
+                    validation:
+                        required_if_not_hidden: >
+                            Please upload an image.
+                        must_be_image_or_svg: >
+                            The admin login logo must be a .gif, .jpg, .png or a .svg file.
+                    note_below: >
+                        This image will be resized down if it is larger than 50×50 pixels in size.
+                
+                admin_link_logo_pos:
+                    site_setting:
+                        name: admin_link_logo_pos
+                    label: 'Postion:'
+                    type: radios
+                    cols: 3
+                    value: 'allt allr'
+                    values:
+                        'allt alll':
+                            label: Top left
+                        'allt allc':
+                            label: Top center
+                        'allt allr':
+                            label: Top right
+                        'allb alll':
+                            label: Bottom left
+                        'allb allc':
+                            label: Bottom center
+                        'allb allr':
+                            label: Bottom right
+                
+                admin_link_logo_offset:
+                    site_setting:
+                        name: admin_link_logo_offset
+                    label: 'Offset from top/bottom:'
+                    type: text
+                    style: |
+                        width: 3em;
+                    post_field_html: px
+                    value: 30
+                    validation:
+                        numeric: The offset must be a number
+        og:
+            label: Organizer
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            Use this to change the description and favicon used for Organizer.
+                
+                organizer_title:
+                    site_setting:
+                        name: organizer_title
+                    label: 'Organizer title:'
+                    type: text
+                    value: Organizer
+                
+                organizer_favicon:
+                    site_setting:
+                        name: organizer_favicon
+                    label: 'Organizer favicon:'
+                    type: radios
+                    value: zenario
+                    values:
+                        site:
+                            label: Use the site favicon
+                        zenario:
+                            label: Use the Zenario favicon
+                        custom:
+                            label: 'Use a custom favicon:'
+                    redraw_onchange: true
+                
+                custom_organizer_favicon:
+                    site_setting:
+                        name: custom_organizer_favicon
+                    visible_if: |
+                        zenarioAB.value('organizer_favicon') == 'custom'
+                    upload:
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .ico
+                            - .png
+                        drag_and_drop: true
+                    note_below: >
+                        You can upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file.<br/>
+                    validation:
+                        must_be_gif_ico_or_png: >
+                            The favicon must be a .gif, .ico or a .png file.

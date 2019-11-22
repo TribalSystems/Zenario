@@ -531,6 +531,10 @@ define('ZENARIO_404_NOT_FOUND', false);
 
 
 require CMS_ROOT. 'zenario/editions.inc.php';
+if (file_exists(CMS_ROOT. 'zenario_custom/editions.inc.php')) {
+	require CMS_ROOT. 'zenario_custom/editions.inc.php';
+}
+
 require CMS_ROOT. 'zenario/admin/db_updates/latest_revision_no.inc.php';
 
 if (ZENARIO_IS_BUILD) {

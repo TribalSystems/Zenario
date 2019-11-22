@@ -16,13 +16,9 @@ zenario_email_log_view:
                 sent_form_text:
                     snippet:
                         html: ''
-                email_template_name:
-                    label: |
-                        Template name:
-                    type: text
                 email_subject:
                     label: |
-                        Subject
+                        Subject:
                     type: text
                 email_address_to:
                     label: |

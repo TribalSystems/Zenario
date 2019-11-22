@@ -289,34 +289,44 @@ class userAdm {
 		$numbersArray = explode(',',$numbers);
 	
 		$password = "";
-		$passwordLength = max(5, (int) \ze::setting('min_extranet_user_password_length'));
+		$passwordLength = max(8, (int) \ze::setting('min_extranet_user_password_length'));
 	
 		$passwordCharacters = [];
 	
 		if($passwordLength){
 	
+			//Build an array of all required characters. It will be used later on to generate a password.
+			//Also, make sure at least 1 character of all the mandatory types is present...
 			if(\ze::setting('a_z_uppercase_characters')){
 				$passwordCharacters = array_merge($passwordCharacters,$uppercase);
+				$password .=\ze\userAdm::addCharacterToPassword($uppercase);
+				$passwordLength--;
 			}
 		
 			if(\ze::setting('a_z_lowercase_characters')){
 				$passwordCharacters = array_merge($passwordCharacters,$lowercase);
+				$password .=\ze\userAdm::addCharacterToPassword($lowercase);
+				$passwordLength--;
 			}
 		
 			if(\ze::setting('0_9_numbers_in_user_password')){
 				$passwordCharacters = array_merge($passwordCharacters,$numbersArray);
+				$password .=\ze\userAdm::addCharacterToPassword($numbersArray);
+				$passwordLength--;
 			}
 		
 			if(\ze::setting('symbols_in_user_password')){
-				$passwordCharacters = array_merge($passwordCharacters,$symbolsArray);
+				$password .=\ze\userAdm::addCharacterToPassword($symbolsArray);
+				$passwordLength--;
 			}
 		
+			//...then continue adding any characters from passwordCharacters array.
 			if($passwordCharacters){
-				$lenght = count($passwordCharacters) - 1;
 				for($i=1; $i<=$passwordLength; $i++){
-					$randomNumber = mt_rand(0, $lenght);
-					$password .= $passwordCharacters[$randomNumber];
+					$password .=\ze\userAdm::addCharacterToPassword($passwordCharacters);
 				}
+				
+				$password = str_shuffle($password);
 			}
 	
 		}
@@ -326,6 +336,12 @@ class userAdm {
 		} else {
 			return \ze\ring::random($passwordLength);
 		}	
+	}
+	
+	public static function addCharacterToPassword($charactersArray) {
+		$length = count($charactersArray) - 1;
+		$randomNumber = mt_rand(0, $length);
+		return $charactersArray[$randomNumber];
 	}
 
 	//Formerly "setUsersPassword()"

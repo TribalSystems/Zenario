@@ -107,10 +107,10 @@ zenario__administration:
                 css_class: zenario_scheduled_task_manager__task
             no_items_message: |
                 No Scheduled Tasks exist.
-                                            If you install and run a Module that has a Scheduled Task, it will appear here.
-            enable_close_up_view: Yes
+                If you install and run a Module that has a Scheduled Task, it will appear here.
             collection_buttons:
                 setup_crontab_dropdown:
+                    hide_on_refiner: true
                     label: Setup crontab
                 copy_code:
                     parent: setup_crontab_dropdown
@@ -126,6 +126,7 @@ zenario__administration:
                 master_switch:
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
                     hidden: true
+                    hide_on_refiner: true
                     label: 'Master switch:'
                 master_switch_off:
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
@@ -173,7 +174,7 @@ zenario__administration:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to suspend the incoming email handler with the method "[[job_name]]"?
+                                Are you sure you wish to suspend the scheduled task with the name "[[job_name]]"?
                             button_message: "Suspend"
                             message_type: warning
                             cancel_button_message: Cancel

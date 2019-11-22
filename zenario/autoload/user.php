@@ -420,8 +420,61 @@ class user {
 		$user = \ze\sql::fetchAssoc($sql);
 		return $user && $user['password_expired'];
 	}
+	
+	public static function getPasswordRequirements() {
+		
+		//If "site_settings" table doesn't exist (e.g. installing Zenario), use fallback values.
+		//Check if there is a database connection.
+		if (\ze::$dbL) {
+			$minPassLength = \ze::setting('min_extranet_user_password_length');
+			$passwordMustContainLowerCaseCharacters = \ze::setting('a_z_lowercase_characters');
+			$passwordMustContainUpperCaseCharacters = \ze::setting('a_z_uppercase_characters');
+			$passwordMustContainNumbers = \ze::setting('0_9_numbers_in_user_password');
+			$passwordMustContainSymbols = \ze::setting('symbols_in_user_password');
+		} else {
+			$minPassLength = 8;
+			$passwordMustContainLowerCaseCharacters = 
+			$passwordMustContainUpperCaseCharacters = 
+			$passwordMustContainNumbers = true;
+			$passwordMustContainSymbols = false;
+		}
+		
+		return $passwordRequirements = 	[
+											'min_length' => $minPassLength,
+											'require_lowercase_chars' => $passwordMustContainLowerCaseCharacters,
+											'require_uppercase_chars' => $passwordMustContainUpperCaseCharacters,
+											'require_numbers' => $passwordMustContainNumbers,
+											'require_symbols' => $passwordMustContainSymbols
+										];
+	}
 
+	//Show a note explaining the password requirements
+	public static function displayPasswordRequirementsNoteVisitor() {
+		$passwordRequirements = \ze\user::getPasswordRequirements();
+		
+		$html = '<p>' . \ze\lang::phrase('Minimum requirements:') . '</p><ul>';
+		$html .= '<li class="fail" id="min_length">' . \ze\lang::phrase('[[n]] characters long', ['n' => $passwordRequirements['min_length']]) . '</li>';
+		if ($passwordRequirements['require_lowercase_chars']) {
+			$html .= '<li class="fail" id="lowercase">' . \ze\lang::phrase('1 lowercase character') . '</li>';
+		}
 
+		if ($passwordRequirements['require_uppercase_chars']) {
+			$html .= '<li class="fail" id="uppercase">' . \ze\lang::phrase('1 uppercase character') . '</li>';
+		}
+
+		if ($passwordRequirements['require_numbers']) {
+			$html .= '<li class="fail" id="numbers">' . \ze\lang::phrase('1 number') . '</li>';
+		}
+
+		if ($passwordRequirements['require_symbols']) {
+			$html .= '<li class="fail" id="symbols">' . \ze\lang::phrase('1 symbol') . '</li>';
+		}
+
+			$html .= '</ul>';
+		
+		return $html;
+	}
+	
 	//Formerly "checkNamedUserPermExists()"
 	public static function checkNamedPermExists($perm, &$directlyAssignedToUser, &$hasRoleAtCompany, &$hasRoleAtLocation, &$hasRoleAtLocationAtCompany, &$onlyIfHasRolesAtAllAssignedLocations) {
 	
@@ -1042,58 +1095,39 @@ class user {
 		return $row[0];
 	}
 
-
-
-
-
-
-
-
-	//Returns an array of password strength names to scores
-	//Defined as a function so that it is only hardcoded here, rather
-	//than everywhere it is used.
-	//Formerly "passwordStrengthsToValues()"
-	public static function passwordStrengthsToValues($strength = false) {
-		$a = ['_WEAK' => 0, '_MEDIUM' => 35, '_STRONG' => 70, '_VERY_STRONG' => 100];
-		//Either return an array, or if $strength is set, return the score for that strength
-		if ($strength) {
-			return $a[$strength];
-		} else {
-			return $a;
-		}
-	}
-
-	//Formerly "passwordValuesToStrengths()"
-	public static function passwordValuesToStrengths($value) {
-		if ($value < 35) {
-			return '_WEAK';
-		} elseif ($value < 70) {
-			return '_MEDIUM';
-		} elseif ($value < 100) {
-			return '_STRONG';
-		} else {
-			return '_VERY_STRONG';
-		}
-	}
-
-
-	//Calculate the bonus for using different sets of characters
-		//e.g. lower case, upper case, numeric, non-alphanumeric...
-	//Formerly "calculateBonusFromUsage()"
-	public static function calculateBonusFromUsage($n) {
-		return min(2, $n);
-	}
-
 	//Check if a given password meets the strength requirements.
 	//Formerly "checkPasswordStrength()"
-	public static function checkPasswordStrength($pass, $passwordStrengthRequired = false) {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+	public static function checkPasswordStrength($password) {
+		$passwordRequirements = \ze\user::getPasswordRequirements();
+
+		//Count the number of lower case, upper case, numeric and non-alphanumeric characters.
+		$lower = strlen(preg_replace('#[^a-z]#', '', $password));
+		$upper = strlen(preg_replace('#[^A-Z]#', '', $password));
+		$numbers = strlen(preg_replace('#[^0-9]#', '', $password));
+		$symbols = strlen(preg_replace('#[a-z0-9]#i', '', $password));
+
+		//Validate password: match the min length, and follow any character requirements.
+		$passwordMatchesRequirements = true;
+		if (	(strlen($password) < $passwordRequirements['min_length'])
+				|| ($passwordRequirements['require_lowercase_chars'] && $lower == 0)
+				|| ($passwordRequirements['require_uppercase_chars'] && $upper == 0)
+				|| ($passwordRequirements['require_numbers'] && $numbers == 0)
+				|| ($passwordRequirements['require_symbols'] && $symbols == 0)) {
+			
+					$passwordMatchesRequirements = false;
+		}
+
+		$validation = 	[
+							'min_length' => strlen($password) >= $passwordRequirements['min_length'],
+							'lowercase' => $lower != 0,
+							'uppercase' => $upper != 0,
+							'numbers' => $numbers != 0,
+							'symbols' => $symbols != 0,
+							'password_matches_requirements' => $passwordMatchesRequirements
+						];
+
+		return $validation;
 	}
-
-
-
-
-
 
 	//Given a MySQL timestamp, a unix timestamp, or a PHP date object, return a PHP date object in the current user's timezone
 	//Formerly "convertToUserTimezone()"

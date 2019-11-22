@@ -136,7 +136,7 @@ zenarioA.closeInfoBox = function() {
 	zenarioA.closeBox('AdminInfoBox');
 };
 
-zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase) {
+zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase, onOkay) {
 	var end = false,
 		hadCommand = false,
 		message,
@@ -252,16 +252,8 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		
 		modal = true;
 	}
-	
-	if (addCancel) {
-		if (addCancel === true) {
-			addCancel = '';
-		}
-		buttonsHTML += 
-			_$input('type', 'button', 'class', 'submit', 'value', cancelPhrase || phrase.cancel, 'onclick', addCancel);
-	}
 
-	zenarioA.floatingBox(message, buttonsHTML, messageType, modal, htmlEscapeMessage);
+	zenarioA.floatingBox(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase, onOkay);
 	return true;
 };
 
@@ -1058,7 +1050,7 @@ zenarioA.addNewWireframePlugin = function(el, slotName, moduleId) {
 		return;
 	}
 	
-	zenarioA.floatingBox(html, $(el).text(), 'warning', false, false, function() {
+	zenarioA.floatingBox(html, $(el).text(), 'warning', false, false, undefined, undefined, function() {
 	
 		var error = zenario.moduleNonAsyncAJAX('zenario_common_features', req, true);
 	
@@ -1089,7 +1081,7 @@ zenarioA.pluginSlotEditSettings = function(el, slotName, fabPath, requests, tab)
 zenarioA.movePlugin = function(el, slotName) {
 	el.blur();
 	
-	zenarioA.floatingBox(phrase.movePluginDesc, true, 'question', true, true, function() {
+	zenarioA.floatingBox(phrase.movePluginDesc, true, 'question', true, true, undefined, undefined, function() {
 		zenarioA.moveSource = slotName;
 		$('.zenario_slotPluginControlBox').addClass('zenario_moveDestination');
 		$('#' + plgslt_ + slotName + '-control_box').removeClass('zenario_moveDestination').addClass('zenario_moveSource');
@@ -1114,7 +1106,7 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 				return;
 			}
 			
-			zenarioA.floatingBox(html, phrase.movePlugin, 'warning', false, false, function() {
+			zenarioA.floatingBox(html, phrase.movePlugin, 'warning', false, false, undefined, undefined, function() {
 				zenarioA.doMovePlugin2(moveSource, moveDestination, 2);
 			});
 		}
@@ -1214,7 +1206,7 @@ zenarioA.pasteContents = function(el, slotName) {
 zenarioA.overwriteContents = function(el, slotName) {
 	el.blur();
 	
-	zenarioA.floatingBox(phrase.overwriteContentsConfirm, $(el).text(), 'warning', false, false, function() {
+	zenarioA.floatingBox(phrase.overwriteContentsConfirm, $(el).text(), 'warning', false, false, undefined, undefined, function() {
 		var error = 
 			zenario.moduleNonAsyncAJAX('zenario_common_features', {overwriteContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
@@ -1231,7 +1223,7 @@ zenarioA.overwriteContents = function(el, slotName) {
 zenarioA.swapContents = function(el, slotName) {
 	el.blur();
 	
-	zenarioA.floatingBox(phrase.swapContentsConfirm, $(el).text(), 'warning', false, false, function() {
+	zenarioA.floatingBox(phrase.swapContentsConfirm, $(el).text(), 'warning', false, false, undefined, undefined, function() {
 		var error = 
 			zenario.moduleNonAsyncAJAX('zenario_common_features', {swapContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
@@ -1277,7 +1269,7 @@ zenarioA.removePlugin = function(el, slotName, level) {
 			return;
 		}
 	
-		zenarioA.floatingBox(html, phrase.remove, true, false, false, doRemovePlugin);
+		zenarioA.floatingBox(html, phrase.remove, true, false, false, undefined, undefined, doRemovePlugin);
 	} else {
 		doRemovePlugin();
 	}
@@ -1756,7 +1748,7 @@ zenarioA.loggedOutIframeCheck = function(message, messageType) {
 	return false;
 };
 
-zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, onOkay) {
+zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase, onOkay) {
 	var defaultModalValue = false,
 		html,
 		m;
@@ -1771,8 +1763,19 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	
 	} else if (buttonsHTML && buttonsHTML.indexOf('<input ') === -1) {
 		buttonsHTML =
-			_$input('class', 'submit_selected', 'type', 'button', 'value', buttonsHTML) +
-			_$input('type', 'button', 'class', 'submit', 'value', phrase.cancel);
+			_$input('class', 'submit_selected', 'type', 'button', 'value', buttonsHTML);
+		
+		if (!defined(addCancel)) {
+			addCancel = true;
+		}
+	}
+	
+	if (addCancel) {
+		if (addCancel === true) {
+			addCancel = '';
+		}
+		buttonsHTML += 
+			_$input('type', 'button', 'class', 'submit', 'value', cancelPhrase || phrase.cancel, 'onclick', addCancel);
 	}
 	
 	if (messageType == 'success' || messageType == 4) {
@@ -2303,18 +2306,18 @@ zenarioA.showPagePreview = function(width, height, description, id) {
 /* Organizer launch functions */
 
 //Format the name of an item from Organizer appropriately
-zenarioA.formatOrganizerItemName = function(panel, i) {
+zenarioA.formatOrganizerItemName = function(panel, itemId) {
 	var string = undefined,
 		string2,
 		value;
 	
 	if (panel.items
-	 && panel.items[i]) {
+	 && panel.items[itemId]) {
 	
 		if (string = string2 = panel.label_format_for_picked_items || panel.label_format_for_grid_view) {
-			foreach (panel.items[i] as var c) {
+			foreach (panel.items[itemId] as var c) {
 				if (string.indexOf('[[' + c + ']]') != -1) {
-					value = panel.items[i][c];
+					value = panel.items[itemId][c];
 					
 					if (panel.columns
 					 && panel.columns[c]
@@ -2329,12 +2332,12 @@ zenarioA.formatOrganizerItemName = function(panel, i) {
 			}
 		
 		} else {
-			string = panel.items[i][panel.default_sort_column || 'name'];
+			string = panel.items[itemId][panel.default_sort_column || 'name'];
 		}
 	}
 	
 	if (!defined(string)) {
-		return i;
+		return itemId;
 	} else {
 		return string.replace(/\s+/g, ' ');
 	}
@@ -2630,6 +2633,30 @@ zenarioA.multipleLanguagesEnabled = function() {
 	
 	return false;
 };
+
+
+
+zenarioA.translationsEnabled = function() {
+	var lang,
+		langs = 0;
+	
+	if (zenarioA.lang) {
+		foreach (zenarioA.lang as lang) {
+			if (zenarioA.lang[lang].translate_phrases) {
+				return true;
+			}
+		}
+	}
+	
+	return false;
+};
+
+
+
+zenarioA.getDefaultLanguageName = function() {
+	var defaultLanguageCode = zenarioA.siteSettings.default_language;
+	return zenarioA.lang[defaultLanguageCode]['name'];
+}
 
 
 
@@ -3039,27 +3066,6 @@ zenarioA.checkCookiesEnabled = function() {
 	});
 	
 	return cb;
-};
-
-
-zenarioA.checkPasswordStrength = function(password) {
-	var lower_case = password.match(/[a-z]/g),
-		upper_case = password.match(/[A-Z]/g),
-        numbers = password.match(/[0-9]/g),
-        symbols = password.match(/[^a-zA-Z0-9]/g),
-        password_requirement_match = true,
-        siteSettings = zenarioA.siteSettings;
-	
-	if (    (password.length < siteSettings.min_extranet_user_password_length)
-			|| (siteSettings['a_z_lowercase_characters'] && !lower_case)
-			|| (siteSettings['a_z_uppercase_characters'] && !upper_case)
-			|| (siteSettings['0_9_numbers_in_user_password'] && !numbers)
-			|| (siteSettings['symbols_in_user_password'] && !symbols)) {
-				
-				password_requirement_match = false;
-	}
-	
-	return password_requirement_match;
 };
 
 //Check all hyperlinks on the page and add its status

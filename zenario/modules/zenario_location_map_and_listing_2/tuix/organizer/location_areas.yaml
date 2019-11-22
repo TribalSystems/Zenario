@@ -1,0 +1,69 @@
+zenario__locations:
+    nav:
+        areas:
+            name: Areas
+            panel:
+                title: Areas
+                view_mode: list
+                db_items:
+                    table: "[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]areas AS a"
+                    id_column: a.id
+                columns:
+                    id:
+                        title: Id
+                        db_column: id
+                        width: xxsmall
+                        align_right: true
+                        show_by_default: false
+                        searchable: true
+                    name:
+                        title: Name
+                        db_column: name
+                        always_show: true
+                        width: xxlarge
+                        show_by_default: true
+                        searchable: Yes
+                collection_buttons:
+                    create_area:
+                        ord: 1
+                        css_class: zenario_create_a_new
+                        label: Create an area
+                        admin_box:
+                            path: zenario_location_manager__areas
+                item_buttons:
+                    edit_area: 
+                        ord: 1
+                        css_class: settings
+                        label: Edit area
+                        admin_box:
+                            path: zenario_location_manager__areas
+                    delete_area:
+                        ord: 2
+                        css_class: delete
+                        label: Delete area
+                        hide_in_select_mode: Yes
+                        multiple_select: true
+                        ajax:
+                            confirm:
+                                message: "Are you sure you wish to delete the area \"[[name]]\"?"
+                                multiple_select_message: "Are you sure you wish to delete the selected areas?"
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                action: delete_area
+                disable_close_up_view: Yes
+                item:
+                    css_class: zenario_location_manager_areas
+    panel:
+        refiners:
+            uncategorised_locations:
+                #The table join code is in the preFillOrganizerPanel of this module.
+                sql: "lmi.icon_name IS NULL"
+        collection_buttons:
+            uncategorised_locations: 
+                ord: 4
+                label: "Show uncategorised locations"
+                link: 
+                    path: zenario__locations/panel/refiners/uncategorised_locations////
+                hide_on_refiner: uncategorised_locations

@@ -14,9 +14,9 @@
  *
  * @author Fabien Potencier <fabien.potencier@symfony-project.com>
  */
-class Twig_Extensions_Node_Trans extends Twig_Node
+class Twig_Extensions_Node_Trans extends Twig\Node\Node
 {
-    public function __construct(Twig_Node $body, Twig_Node $plural = null, Twig_Node_Expression $count = null, Twig_Node $notes = null, $lineno, $tag = null)
+    public function __construct(Twig\Node\Node $body, Twig\Node\Node $plural = null, Twig_Node_Expression $count = null, Twig\Node\Node $notes = null, $lineno, $tag = null)
     {
         $nodes = array('body' => $body);
         if (null !== $count) {
@@ -115,11 +115,11 @@ class Twig_Extensions_Node_Trans extends Twig_Node
     }
 
     /**
-     * @param Twig_Node $body A Twig_Node instance
+     * @param Twig\Node\Node $body A Twig\Node\Node instance
      *
      * @return array
      */
-    protected function compileString(Twig_Node $body)
+    protected function compileString(Twig\Node\Node $body)
     {
         if ($body instanceof Twig_Node_Expression_Name || $body instanceof Twig_Node_Expression_Constant || $body instanceof Twig_Node_Expression_TempName) {
             return array($body, array());
@@ -130,7 +130,7 @@ class Twig_Extensions_Node_Trans extends Twig_Node
             $msg = '';
 
             foreach ($body as $node) {
-                if (get_class($node) === 'Twig_Node' && $node->getNode(0) instanceof Twig_Node_SetTemp) {
+                if (get_class($node) === 'Twig\Node\Node' && $node->getNode(0) instanceof Twig_Node_SetTemp) {
                     $node = $node->getNode(1);
                 }
 
@@ -149,7 +149,7 @@ class Twig_Extensions_Node_Trans extends Twig_Node
             $msg = $body->getAttribute('data');
         }
 
-        return array(new Twig_Node(array(new Twig_Node_Expression_Constant(trim($msg), $body->getTemplateLine()))), $vars);
+        return array(new Twig\Node\Node(array(new Twig_Node_Expression_Constant(trim($msg), $body->getTemplateLine()))), $vars);
     }
 
     /**

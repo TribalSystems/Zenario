@@ -28,25 +28,19 @@
 
 
 /*  
- *  An "Edition" Module is a Module that can add some extra functionality into the CMS.
+ *  An "edition" module is a module that can add some extra functionality into Zenario.
  *  
- *  All edition Modules can take actions when a Visitor navigates to a Content Item
+ *  If you wish to write your own edition module, you will need to add its name to the list below in order
+ *  to hook it up with Zenario.
  *  
- *  For efficiency reasons, we do not scan the entire Modules directory looking for edition Modules.
- *  If you wish to write your own Edition Module, you will need to add its name to the list below in order
- *  to hook it up with the CMS. The first in the list to be found will be marked as the active Module
+ *  There are hooks in Zenario for the active edition to tweak certain behaviour, including when a visitor
+ *  accesses a page, directing a visitor to the homepage, how the menu is generated and what happens when
+ *  a content item is Published.
  *  
- *  All edition Modules can take actions or run scripts when a Visitor navigates to a Content Item and a
- *  page is generated.
- *  
- *  There are hooks in the CMS for the active Edition to tweak certain behaviour, including directing
- *  a Visitor to the Homepage, how the Menu is generated and what happens when a Content Item is Published.
- *  
- *  The active Edition also provides the information in the Info Box when an Admin clicks on the gemstone at
- *  the top left of Storekeeper, and provides the "Powered By" text in the Footer Menu.
- *  
- *  Any subsequent Modules in the list will not be marked as the active Module, but will still be able to take
- *  actions and run scripts when a page is generated.
+ *  When Zenario runs into a hook, it calls the first edition module in the list that handles the hook.
+ *  If two edition modules both handle a hook, normally only the first will be called. However each handling
+ *  module has the ability to continue running the handlers, in which case the next module in the list that
+ *  handles the hook will also be called.
  */
 
 
@@ -55,6 +49,6 @@ ze::$editions = [
 	'zenario_pro_features',
 	'zenario_common_features',
 	
-	//A list other modules that aren't "edition" modules, but use some of their hocks/features
+	//A list other modules that aren't "edition" modules, but use some of their hooks/features
 	'assetwolf_2'
 ];

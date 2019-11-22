@@ -32,6 +32,18 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		//Set up the primary key from the requests given
+		if ($box['key']['id'] && empty($box['key']['cID'])) {
+			ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
+		}
+		
+		$content =
+			ze\row::get(
+				'content_items',
+				['id', 'type', 'tag_id', 'language_id', 'equiv_id', 'alias', 'visitor_version', 'admin_version', 'status'],
+				['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
+		
+		$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
 		
 		$fields['privacy/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
 		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();

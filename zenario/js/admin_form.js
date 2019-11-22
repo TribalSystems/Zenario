@@ -148,7 +148,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 					
 					$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 75, function() {
 						if (zenario.browserIsIE()) {
-							thus.style.removeAttribute('filter');
+							this.style.removeAttribute('filter');
 						}
 						
 						thus.focusFirstField();
@@ -169,7 +169,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 			
 			$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 				if (zenario.browserIsIE()) {
-					thus.style.removeAttribute('filter');
+					this.style.removeAttribute('filter');
 				}
 				
 				if (!needToShake
@@ -194,7 +194,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 		
 		$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 			if (zenario.browserIsIE()) {
-				thus.style.removeAttribute('filter');
+				this.style.removeAttribute('filter');
 			}
 			
 			thus.focusFirstField();

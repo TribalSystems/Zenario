@@ -182,7 +182,7 @@ ul.slimmenu span.sub-collapser.expanded i::before {
 	position:absolute;
 	z-index:59;
 	top:0;
-	right:0;
+	left:0;
 }
 
 .collapse-button {
@@ -230,7 +230,8 @@ ul.slimmenu span.sub-collapser.expanded i::before {
 ul.slimmenu {
 	position:relative;
 	z-index:59;
-	top:0;
+	top:50px;
+	text-align:left;
 }
 
 ul.slimmenu > li {
@@ -301,7 +302,7 @@ ul.slimmenu.collapsed li a {
 .zenario_menu_reponsive_multilevel_2 ul.slimmenu.collapsed li .sub-collapser:before {
 	font-family: 'FontAwesome';
 	content: "\f105";
-	line-height:38px;
+	line-height:35px;
 	font-size:26px;
 }
 

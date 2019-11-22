@@ -11,7 +11,7 @@
 
 require_once('Break_Node.php');
 
-class Break_TokenParser extends \Twig_TokenParser
+class Break_TokenParser extends \Twig\TokenParser\AbstractTokenParser
 {
 
 	public function parse(\Twig_Token $token)

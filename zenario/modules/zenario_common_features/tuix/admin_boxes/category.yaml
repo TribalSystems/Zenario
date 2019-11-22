@@ -24,6 +24,8 @@ zenario_categories:
                     type: text
                     side_note: >
                         Internal name.
+                    validation:
+                        required: "Please enter a name."
                 public:
                     label: 'Public'
                     type: checkbox

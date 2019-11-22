@@ -37,30 +37,31 @@ if ($jpegOnly) {
 }
 
 
-if ($workingCopyImages) {
-	if ($removeOldWorkingCopies) {
+if ($recreateCustomThumbnailOnes) {
+	if ($removeOldCopies) {
 		$sql = "
 			UPDATE ". DB_PREFIX. "files SET
-				working_copy_width = 0,
-				working_copy_height = 0,
-				working_copy_data = NULL
+				custom_thumbnail_1_width = 0,
+				custom_thumbnail_1_height = 0,
+				custom_thumbnail_1_data = NULL
 			WHERE mime_type IN ". $mimeType;
 		\ze\sql::update($sql);
 	}
 	
-	if ($working_copy_image_size = (int) \ze::setting('working_copy_image_size')) {
+	if (($custom_thumbnail_1_width = (int) \ze::setting('custom_thumbnail_1_width'))
+	 && ($custom_thumbnail_1_height = (int) \ze::setting('custom_thumbnail_1_height'))){
 		$sql = "
-			SELECT id, location, path, filename, data AS working_copy_data, mime_type, width AS working_copy_width, height AS working_copy_height
+			SELECT id, location, path, filename, data AS custom_thumbnail_1_data, mime_type, width AS custom_thumbnail_1_width, height AS custom_thumbnail_1_height
 			FROM ". DB_PREFIX. "files
 			WHERE mime_type IN ". $mimeType. "
-			  AND (width > ". (int) $working_copy_image_size. " OR height > ". (int) $working_copy_image_size. ")
-			  AND working_copy_data IS NULL";
+			  AND (width > ". (int) $custom_thumbnail_1_width. " OR height > ". (int) $custom_thumbnail_1_height. ")
+			  AND custom_thumbnail_1_data IS NULL";
 		$result = \ze\sql::select($sql);
 		
 		while($img = \ze\sql::fetchAssoc($result)) {
 			if ($img['location'] == 'docstore') {
 				if ($path = ze\file::docstorePath($img['path'])) {
-					$img['working_copy_data'] = file_get_contents($path);
+					$img['custom_thumbnail_1_data'] = file_get_contents($path);
 				} else {
 					continue;
 				}
@@ -72,7 +73,7 @@ if ($workingCopyImages) {
 			unset($img['path']);
 			unset($img['filename']);
 			
-			\ze\file::resizeImageString($img['working_copy_data'], $img['mime_type'], $img['working_copy_width'], $img['working_copy_height'], $working_copy_image_size, $working_copy_image_size);
+			\ze\file::resizeImageString($img['custom_thumbnail_1_data'], $img['mime_type'], $img['custom_thumbnail_1_width'], $img['custom_thumbnail_1_height'], $custom_thumbnail_1_width, $custom_thumbnail_1_height);
 			
 			\ze\row::update('files', $img, $imageId);
 		}
@@ -80,30 +81,31 @@ if ($workingCopyImages) {
 }
 
 
-if ($thumbnailWorkingCopyImages) {
-	if ($removeOldWorkingCopies) {
+if ($recreateCustomThumbnailTwos) {
+	if ($removeOldCopies) {
 		$sql = "
 			UPDATE ". DB_PREFIX. "files SET
-				working_copy_2_width = 0,
-				working_copy_2_height = 0,
-				working_copy_2_data = NULL
+				custom_thumbnail_2_width = 0,
+				custom_thumbnail_2_height = 0,
+				custom_thumbnail_2_data = NULL
 			WHERE mime_type IN ". $mimeType;
 		\ze\sql::update($sql);
 	}
 	
-	if ($thumbnail_wc_image_size = (int) \ze::setting('thumbnail_wc_image_size')) {
+	if (($custom_thumbnail_2_width = (int) \ze::setting('custom_thumbnail_2_width'))
+	 && ($custom_thumbnail_2_height = (int) \ze::setting('custom_thumbnail_2_height'))) {
 		$sql = "
-			SELECT id, location, path, filename, data AS working_copy_2_data, mime_type, width AS working_copy_2_width, height AS working_copy_2_height
+			SELECT id, location, path, filename, data AS custom_thumbnail_2_data, mime_type, width AS custom_thumbnail_2_width, height AS custom_thumbnail_2_height
 			FROM ". DB_PREFIX. "files
 			WHERE mime_type IN ". $mimeType. "
-			  AND (width > ". (int) $thumbnail_wc_image_size. " OR height > ". (int) $thumbnail_wc_image_size. ")
-			  AND working_copy_2_data IS NULL";
+			  AND (width > ". (int) $custom_thumbnail_2_width. " OR height > ". (int) $custom_thumbnail_2_height. ")
+			  AND custom_thumbnail_2_data IS NULL";
 		$result = \ze\sql::select($sql);
 		
 		while($img = \ze\sql::fetchAssoc($result)) {
 			if ($img['location'] == 'docstore') {
 				if ($path = ze\file::docstorePath($img['path'])) {
-					$img['working_copy_2_data'] = file_get_contents($path);
+					$img['custom_thumbnail_2_data'] = file_get_contents($path);
 				} else {
 					continue;
 				}
@@ -115,7 +117,7 @@ if ($thumbnailWorkingCopyImages) {
 			unset($img['path']);
 			unset($img['filename']);
 			
-			\ze\file::resizeImageString($img['working_copy_2_data'], $img['mime_type'], $img['working_copy_2_width'], $img['working_copy_2_height'], $thumbnail_wc_image_size, $thumbnail_wc_image_size);
+			\ze\file::resizeImageString($img['custom_thumbnail_2_data'], $img['mime_type'], $img['custom_thumbnail_2_width'], $img['custom_thumbnail_2_height'], $custom_thumbnail_2_width, $custom_thumbnail_2_height);
 			
 			\ze\row::update('files', $img, $imageId);
 		}

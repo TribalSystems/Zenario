@@ -108,55 +108,17 @@ class priv {
 					}
 				}
 			
-				switch ($_SESSION['admin_permissions']) {
+				if ($_SESSION['admin_permissions'] == 'specific_areas') {
 				
 					//If this admin can only edit specific content items,
+					//or can only edit content items of a specific content type,
 					//or can only edit content items of a specific language,
 					//check that this is one of those content items.
-					case 'specific_languages':
-						if (empty($_SESSION['admin_specific_languages'][$langId])
-						 && empty($_SESSION['admin_specific_content_items'][$editCType. '_'. $editCID])) {
-							return false;
-						}
-					
-						break;
-					
-					//If this admin can only edit specific areas of the menu, check that
-					//this content item is in one of those areas
-					case 'specific_menu_areas':
-						if (!empty($_SESSION['admin_specific_menu_sections'])) {
-							$sql = "
-								SELECT 1
-								FROM ". DB_PREFIX. "menu_nodes AS mn
-								WHERE mn.section_id IN (". \ze\escape::in($_SESSION['admin_specific_menu_sections'], 'numeric'). ")
-								  AND mn.equiv_id = ". (int) $equivId. "
-								  AND mn.content_type = '". \ze\escape::sql($editCType). "'
-								LIMIT 1";
-						
-							$result = \ze\sql::select($sql);
-							if (\ze\sql::fetchRow($result)) {
-								break;
-							}
-						}
-					
-						if (!empty($_SESSION['admin_specific_menu_nodes'])) {
-							$sql = "
-								SELECT 1
-								FROM ". DB_PREFIX. "menu_nodes AS mn
-								INNER JOIN ". DB_PREFIX. "menu_hierarchy AS mh
-								   ON mh.child_id = mn.id
-								  AND mh.ancestor_id IN (". \ze\escape::in($_SESSION['admin_specific_menu_nodes'], 'numeric'). ")
-								WHERE mn.equiv_id = ". (int) $equivId. "
-								  AND mn.content_type = '". \ze\escape::sql($editCType). "'
-								LIMIT 1";
-						
-							$result = \ze\sql::select($sql);
-							if (\ze\sql::fetchRow($result)) {
-								break;
-							}
-						}
-					
+					if (empty($_SESSION['admin_specific_languages'][$langId])
+					 && empty($_SESSION['admin_specific_content_types'][$editCType])
+					 && empty($_SESSION['admin_specific_content_items'][$editCType. '_'. $editCID])) {
 						return false;
+					}
 				}
 			}
 		
@@ -177,8 +139,7 @@ class priv {
 				
 					//Translators/microsite admins can only have a few set permissions,
 					//anything else should be denied.
-					case 'specific_languages':
-					case 'specific_menu_areas':
+					case 'specific_areas':
 						switch ($action) {
 							case 'perm_author':
 							case 'perm_editmenu':
@@ -200,6 +161,14 @@ class priv {
 							case '_PRIV_VIEW_LANGUAGE':
 							case '_PRIV_MANAGE_LANGUAGE_PHRASE':
 								return true;
+							
+							//Allow admins to create content items of certain types, if they have that content type enabled
+							case '_PRIV_CREATE_FIRST_DRAFT':
+								if ($editCType) {
+									return !empty($_SESSION['admin_specific_content_types'][$editCType]);
+								} else {
+									return true;
+								}
 						}
 				}
 			}
@@ -235,7 +204,7 @@ class priv {
 					//Most normal administrators can edit menu text if \ze\priv::check() says they can
 					return true;
 			
-				case 'specific_languages':
+				case 'specific_areas':
 					//If an admin can only edit certain languages, allow them to edit the menu text if it
 					//is specificially for this language
 					if (!empty($_SESSION['admin_specific_languages'][$langId])) {
@@ -243,50 +212,18 @@ class priv {
 					}
 				
 					//If an admin can only edit certain content items, allow them to edit the menu text if it
-					//is for this language
-					if (!empty($_SESSION['admin_specific_content_items'])) {
-						$sql = "
-							SELECT 1
-							FROM ". DB_PREFIX. "menu_nodes AS mn
-							INNER JOIN ". DB_PREFIX. "content_items AS c
-							   ON c.equiv_id = mn.equiv_id
-							  AND c.type = mn.content_type
-							  AND c.tag_id IN (". \ze\escape::in($_SESSION['admin_specific_content_items']). ")
-							  AND c.language_id = '". \ze\escape::sql($langId). "'
-							WHERE mn.id = ". (int) $menuNodeId. "
-							LIMIT 1";
-				
-						$result = \ze\sql::select($sql);
-						if (\ze\sql::fetchRow($result)) {
-							return true;
-						}
-					}
-		
-				case 'specific_menu_areas':
-			
-					if ($menuNodeId && !empty($_SESSION['admin_specific_menu_nodes'][$menuNodeId])) {
-						return true;
-					}
-			
-					if (!empty($_SESSION['admin_specific_menu_sections'])) {
-						if (!$sectionId) {
-							$sectionId = \ze\row::get('menu_nodes', 'section_id', $menuNodeId);
-						}
-						if (!empty($_SESSION['admin_specific_menu_sections'][$sectionId])) {
-							return true;
-						}
-					}
-			
-					if (!empty($_SESSION['admin_specific_menu_nodes'])) {
-						$sql = "
-							SELECT 1
-							FROM ". DB_PREFIX. "menu_hierarchy AS mh
-							WHERE mh.child_id = ". (int) $menuNodeId. "
-							  AND mh.ancestor_id IN (". \ze\escape::in($_SESSION['admin_specific_menu_nodes'], 'numeric'). ")
-							LIMIT 1";
-				
-						$result = \ze\sql::select($sql);
-						if (\ze\sql::fetchRow($result)) {
+					//is for this one
+					foreach (\ze\sql::select("
+						SELECT c.tag_id, c.type
+						FROM ". DB_PREFIX. "menu_nodes AS mn
+						INNER JOIN ". DB_PREFIX. "content_items AS c
+						   ON c.equiv_id = mn.equiv_id
+						  AND c.type = mn.content_type
+						  AND c.language_id = '". \ze\escape::sql($langId). "'
+						WHERE mn.id = ". (int) $menuNodeId
+					) as $cItem) {
+						if (!empty($_SESSION['admin_specific_content_types'][$cItem['type']])
+						 || !empty($_SESSION['admin_specific_content_items'][$cItem['tag_id']])) {
 							return true;
 						}
 					}
@@ -308,7 +245,7 @@ class priv {
 					//Most normal administrators can edit menu text if \ze\priv::check() says they can
 					return true;
 			
-				case 'specific_languages':
+				case 'specific_areas':
 					//If an admin can only edit certain languages, allow them to edit the menu text if it
 					//is specificially for this language
 					if (!empty($_SESSION['admin_specific_languages'][$langId])) {

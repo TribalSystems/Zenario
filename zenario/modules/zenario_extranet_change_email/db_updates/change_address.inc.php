@@ -49,7 +49,8 @@ ze\dbAdm::revision(4, "
 		`body`,
 		`date_created`,
 		`created_by_id`,
-		`allow_attachments`
+		`allow_attachments`,
+		`use_standard_email_template`
 	) VALUES (
 		 'zenario_extranet_change_email__to_user_email_change_en',
 		 'To User: Change email verification',
@@ -62,14 +63,33 @@ ze\dbAdm::revision(4, "
 		',
 		 NOW(),
 		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
-		 0
+		 0,
+		 1
 		)
-");
-ze\dbAdm::revision(30,
+"); ze\dbAdm::revision(30,
 
 <<<_sql
 	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_change_email'
+	WHERE `code` = 'zenario_extranet_change_email__to_user_email_change_en'
+_sql
+
+); ze\dbAdm::revision(32,
+
+<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = 
+		'<p>Dear [[first_name]] [[last_name]],</p>
+		<p>You have recently changed your email address and we now need to verify the new email address.</p>
+		<p>Please follow this button to verify your new email address:</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[email_confirmation_link]]\">VERIFY EMAIL</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[email_confirmation_link]]\">[[email_confirmation_link]]</a></p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]] .</p>
+		'
 	WHERE `code` = 'zenario_extranet_change_email__to_user_email_change_en'
 _sql
 

@@ -327,7 +327,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 							$tabMergeFields['Show_Embed'] = true;
 							$tabMergeFields['Embed'] = json_encode($mergefields);
 							
-							ze::requireJsLib('zenario/libs/bower/toastr/toastr.min.js', 'zenario/libs/bower/toastr/toastr.min.css');
+							ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
 						}
 					}
 					

@@ -42,10 +42,10 @@
 					{% endif %}
 					<div class="content_list_text">
 						{% if Show_Item_Title %}
-							<h2 class="content_list_title {{item.Content_Type|e}}">
+							<{{Item_Title_Tags}} class="content_list_title {{item.Content_Type|e}}">
 								{{item.Title|e}}
 								{% if 'Language' in item%}<span>({{item.Language|e}})</span>{% endif %}
-							</h2>
+							</{{Item_Title_Tags}}>
 						{% endif %}
 						{% if Show_Author_Image %}
 							<div class="content_list_author_image">

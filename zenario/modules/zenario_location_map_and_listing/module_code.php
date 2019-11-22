@@ -77,6 +77,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			
 			//Load a list of countries that have locations
 			$this->data['countries'] = $this->getCountryList();
+			$this->data['countries']['xx'] = 'Any country';
 
 			$this->data['openForm'] = $this->openForm();
 			$this->data['closeForm'] = $this->closeForm();
@@ -86,6 +87,10 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			$countryId = false;
 			if (!empty($_REQUEST['country_id']) && !empty($this->data['countries'][$_REQUEST['country_id']])) {
 				$this->data['country_id'] = $_REQUEST['country_id'];
+			
+			//...or check in the cookies...
+			} elseif (!empty($_COOKIE['country_id']) && !empty($this->data['countries'][$_COOKIE['country_id']])) {
+				$this->data['country_id'] = $_COOKIE['country_id'];
 			
 			//...or check in the session...
 			} elseif (!empty($_SESSION['country_id']) && !empty($this->data['countries'][$_SESSION['country_id']])) {
@@ -215,7 +220,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				  AND vp_cn.language_id = '". ze\escape::sql(ze::$visLang). "'
 			WHERE loc.status = 'active'";
 		
-		if ($this->setting('filter_by_country')) {
+		if ($this->setting('filter_by_country') && $this->data['country_id'] != 'xx') {
 			$sql .= "
 				AND loc.country_id = '". ze\escape::sql($this->data['country_id']). "'";
 		}
@@ -498,14 +503,15 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			$this->data['drawingGoogleMap'] = true;
 			$this->twigFramework($this->data);
 			
-			
+			$anyCountry = ($this->data['country_id'] == 'xx' ? true : false);
 			//Note: Using callScript() in your showSlot() method will only work if this isn't an AJAX reload!
 			$this->callScript(
 				'zenario_location_map_and_listing',
 				'initMap',
 				$this->containerId,
 				$this->data['locations_map_info'],
-				(bool) $this->setting('allow_scrolling'));
+				(bool) $this->setting('allow_scrolling'),
+				$anyCountry);
 		}
 	}
 

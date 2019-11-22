@@ -236,6 +236,20 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					}
 				}
 
+				if ($groupEventsByYearAndMonth = (bool)$this->setting('group_events_by_year_and_month')) {
+					
+					$startDateTimestamp = strtotime($row['start_date']);
+					
+					$startMonth = date('n', $startDateTimestamp);
+					//Make sure the month is always a double-digit number.
+					$startMonth = str_pad($startMonth, 2, '0', STR_PAD_LEFT);
+					
+					$startYear = date('Y', $startDateTimestamp);
+					
+					$eventRow['start_year_label'] = $startYear;
+					$eventRow['start_month_label'] = ze\lang::phrase('_MONTH_LONG_' . $startMonth, []);
+				}
+				
 				if ( ($this->cType != 'event' || $eventRow['equiv_id'] != ze\content::equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != ze::$langId)) ){
 					$eventRows[$eventRow['equiv_id']] = $eventRow;
 				}
@@ -720,6 +734,22 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					$fields['each_item/show_content_items_category']['disabled'] = true;
 					$fields['each_item/show_content_items_category']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
 					$values['each_item/show_content_items_category'] = false;
+				}
+				
+				if (!empty($fields['overall_list/group_events_by_year_and_month']['current_value'])) {
+					$fields['overall_list/sort_field']['values']['end_date']['disabled'] = true;
+					$fields['overall_list/sort_field']['side_note'] = ze\lang::phrase('Cannot sort by end date if grouping events by year and month is enabled.');
+				} else {
+					$fields['overall_list/sort_field']['values']['end_date']['disabled'] = false;
+					unset($fields['overall_list/sort_field']['side_note']);
+				}
+				
+				if (!empty($fields['overall_list/sort_field']['current_value']) && $fields['overall_list/sort_field']['current_value'] == 'end_date') {
+					$fields['overall_list/group_events_by_year_and_month']['disabled'] = true;
+					$fields['overall_list/group_events_by_year_and_month']['side_note'] = ze\lang::phrase('Cannot group events by year and month if sorting by end date is enabled.');
+				} else {
+					$fields['overall_list/group_events_by_year_and_month']['disabled'] = false;
+					unset($fields['overall_list/group_events_by_year_and_month']['side_note']);
 				}
                 
 				break;

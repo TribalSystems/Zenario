@@ -8,8 +8,9 @@ plugin_settings:
                 html:
                     plugin_setting:
                         name: html
-                        is_searchable_content: Yes
-                        translate: Yes
+                        is_searchable_content: true
+                        translate: true
+                        save_value_when_hidden: true
                     label: 'Display this HTML:'
                     type: editor
                     dont_trim: true
@@ -21,7 +22,5 @@ plugin_settings:
                             min_path: zenario__content/panels/image_library
                             max_path: zenario__content/panels/image_library
                             disallow_refiners_looping_on_min_path: true
-                    insert_link_button:
-                        exists: Yes
                     value: ""
     module_class_name: zenario_wysiwyg_editor

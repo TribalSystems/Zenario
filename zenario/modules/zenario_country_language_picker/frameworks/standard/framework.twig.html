@@ -1,0 +1,91 @@
+{% if Change_country_button %}
+	<div class="user_form_click_here" {{Button_js}}>
+		<h3>{{Country_name}}</h3>
+	</div>
+	<div id="country_id" class="{{Country_id}}" style="display:none;"></div>
+{% elseif Show_picker %}
+	<div class="zenario_country_language_picker">
+		<div class="zenario_country_language_picker_wrap">
+			<div class="zenario_country_language_picker_header"></div>
+			<div class="zenario_country_language_picker_body">
+				<p>Please select the country that you are interested in purchasing products for.<br>This will enable us to show you products which comply with local safety regulations.</p>
+				<div class="columns">
+				<div class="column column_1">
+					<h3>Africa:</h3>
+					<ul>
+						{% if "ZA" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ZA&user_lang={% if "en-za" in Active_languages %}en-za{% else %}{{Default_language}}{% endif %}">South Africa</a></li>{% endif %}
+					</ul>
+		
+					<h3>Asia:</h3>
+					<ul>
+						{% if "CN" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CN&user_lang={% if "cn" in Active_languages %}cn{% else %}{{Default_language}}{% endif %}">China</a></li>{% endif %}
+	
+						{% if "IN" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IN&user_lang={% if "en-in" in Active_languages %}en-in{% else %}{{Default_language}}{% endif %}">India</a></li>{% endif %}
+	
+						{% if "ID" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ID&user_lang={% if "id" in Active_languages %}id{% else %}{{Default_language}}{% endif %}">Indonesia</a></li>{% endif %}
+	
+						{% if "JP" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=JP&user_lang={% if "ja" in Active_languages %}ja{% else %}{{Default_language}}{% endif %}">Japan</a></li>{% endif %}
+	
+						{% if "KR" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KR&user_lang={% if "ko" in Active_languages %}ko{% else %}{{Default_language}}{% endif %}">South Korea</a></li>{% endif %}
+	
+						{% if "RU" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=RU&user_lang={% if "ru" in Active_languages %}ru{% else %}{{Default_language}}{% endif %}">Russia</a></li>{% endif %}
+	
+						{% if "SA" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SA&user_lang={% if "ar" in Active_languages %}ar{% else %}{{Default_language}}{% endif %}">Saudi Arabia</a></li>{% endif %}
+					</ul>
+				</div>
+
+				<div class="column column_2">
+					<h3>Australasia:</h3>
+					<ul>
+						{% if "AU" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AU&user_lang={% if "en-au" in Active_languages %}en-au{% else %}{{Default_language}}{% endif %}">Australia</a></li>{% endif %}
+					</ul>
+		
+					<h3>Europe:</h3>
+					<ul>
+						{% if "FR" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=FR&user_lang={% if "fr" in Active_languages %}fr{% else %}{{Default_language}}{% endif %}">France</a></li>{% endif %}
+	
+						{% if "DE" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=DE&user_lang={% if "de" in Active_languages %}de{% else %}{{Default_language}}{% endif %}">Germany</a></li>{% endif %}
+	
+						{% if "IT" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IT&user_lang={% if "it" in Active_languages %}it{% else %}{{Default_language}}{% endif %}">Italy</a></li>{% endif %}
+	
+						{% if "ES" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ES&user_lang={% if "es" in Active_languages %}es{% else %}{{Default_language}}{% endif %}">Spain</a></li>{% endif %}
+	
+						{% if "TR" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TR&user_lang={% if "tr" in Active_languages %}tr{% else %}{{Default_language}}{% endif %}">Turkey</a></li>{% endif %}
+	
+						{% if "GB" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GB&user_lang={% if "en-gb" in Active_languages %}en-gb{% else %}{{Default_language}}{% endif %}">United Kingdom</a></li>{% endif %}
+					</ul>
+				</div>
+
+				<div class="column column_3">
+					<h3>North America:</h3>
+					<ul>
+						{% if "US" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=US&user_lang={% if "en-us" in Active_languages %}en-us{% else %}{{Default_language}}{% endif %}">USA</a></li>{% endif %}
+	
+						{% if "CA" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CA&user_lang={% if "en-ca" in Active_languages %}en-ca{% else %}{{Default_language}}{% endif %}">Canada</a></li>{% endif %}
+					</ul>
+		
+					<h3>South America:</h3>
+					<ul>
+						{% if "AR" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AR&user_lang={% if "es" in Active_languages %}es{% else %}{{Default_language}}{% endif %}">Argentina</a></li>{% endif %}
+	
+						{% if "BR" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BR&user_lang={% if "pt" in Active_languages %}pt{% else %}{{Default_language}}{% endif %}">Brazil</a></li>{% endif %}
+	
+						{% if "MX" in Active_countries %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MX&user_lang={% if "es" in Active_languages %}es{% else %}{{Default_language}}{% endif %}">Mexico</a></li>{% endif %}
+					</ul>
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+{% else %}
+<div class="zenario_country_language_picker_change_country_confirmation">
+	<div class="message_wrap">
+		<h4>Change country</h4>
+		<p>Are you sure you want to change country?</p>
+		<div class="message_bottom">
+			<span class="message_button cancel" rel="colorbox" onclick="$.colorbox.close();">Cancel</span>
+			<span class="message_button" id="change_country_button" onclick="changeCountryConfirm('{{ajaxURL}}');">Change</span>
+		</div>
+	</div>
+</div>
+{% endif %}

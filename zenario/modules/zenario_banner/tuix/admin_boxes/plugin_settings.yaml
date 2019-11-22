@@ -7,12 +7,76 @@ plugin_settings:
                 format_on_edit: true
                 format_on_cancel_edit: true
                 format_on_revert: true
+            label: 'Title & HTML'
+            fields:
+                title:
+                    plugin_setting:
+                        name: title
+                        is_searchable_content: true
+                        use_value_for_plugin_name: true
+                        translate: true
+                    label: 'Title:'
+                    type: text
+                    width: "150"
+                    maxlength: "255"
+                    value: ""
+                
+                title_tags:
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tags:'
+                    type: select
+                    values:
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h2
+                    same_row: true
+                
+                translate_text:
+                     plugin_setting:
+                         name: translate_text
+                     label: 'Make this plugin multilingual using the phrases system'
+                     type: checkbox
+                     value: 1
+                     format_onchange: true
+                
+                text:
+                    plugin_setting:
+                        name: text
+                        is_searchable_content: true
+                        translate: true
+                    label: 'Description (HTML):'
+                    type: editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    cols: "80"
+                    rows: "10"
+                    value: ""
+                more_link_text:
+                    plugin_setting:
+                        name: more_link_text
+                        is_searchable_content: true
+                        translate: true
+                    label: |
+                        Text for "More info" link:
+                    type: text
+                    width: "150"
+                    maxlength: "255"
+                    value: ""
+            
+        image_and_link:
             label: Image/link
             fields:
                 image_source:
                     plugin_setting:
                         name: image_source
-                    label: 'Image source'
+                    label: 'Image source:'
                     type: select
                     value: _NO_IMAGE
                     values:
@@ -33,7 +97,7 @@ plugin_settings:
                         foreign_key_to: file
                         use_value_for_plugin_name: 2
                         
-                    label: Image
+                    label: 'Image:'
                     pick_items:
                         path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library
@@ -58,12 +122,12 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: canvas
-                    label: 'Image canvas'
+                    label: 'Image canvas:'
                     type: select
                     value: unlimited
                     values:
                         unlimited:
-                            ord: true
+                            ord: "1"
                             label: Unlimited size
                         fixed_width:
                             ord: "2"
@@ -78,11 +142,24 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: true
+                retina:
+                    indent: 2
+                    plugin_setting:
+                        name: retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    same_row: true
+                    value: ""
+                    visible_if: |
+                        !zenarioAB.svgSelected('image') &&
+                        !zenarioAB.svgSelected('images')
+                    side_note: |
+                        Display image at double density.
                 width:
                     indent: 2
                     plugin_setting:
                         name: width
-                    label: 'Width'
+                    label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width in pixels.
@@ -95,7 +172,7 @@ plugin_settings:
                     indent: 2
                     plugin_setting:
                         name: height
-                    label: 'Height'
+                    label: 'Height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a height in pixels.
@@ -108,7 +185,7 @@ plugin_settings:
                     indent: 2
                     plugin_setting:
                         name: offset
-                    label: 'Offset'
+                    label: 'Offset:'
                     type: text
                     style: 'width: 50px;'
                     value: "0"
@@ -120,54 +197,31 @@ plugin_settings:
                     side_note: |
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
-                retina:
-                    indent: 2
+                show_caption_on_image:
+                    indent: 1
                     plugin_setting:
-                        name: retina
-                    label: 'This is a retina image'
+                        name: show_caption_on_image
+                    label: "Show caption on thumbnail"
                     type: checkbox
-                    value: ""
-                    visible_if: |
-                        !zenarioAB.svgSelected('image') &&
-                        !zenarioAB.svgSelected('images')
-                    side_note: |
-                        Display image at double density.
+                    hidden: true
                 
-                #Lazy loading doesn't support different image for mobile. They're separate options.
+                #Lazy loading doesn't support any other Mobile behaviour than "Same image".
                 advanced_behaviour:
                     plugin_setting:
                         name: advanced_behaviour
-                    label: Advanced Behaviour
+                    label: 'Additional behaviour:'
                     indent: 1
                     type: select
                     format_onchange: true
                     values:
-                        general:
-                            label: 'General'
                         none:
                             label: 'None'
-                            parent: general
                         background_image:
                             label: 'Show as a background image'
-                            parent: general
                         use_rollover:
                             label: 'Use a rollover image'
-                            parent: general
                         lazy_load:
                             label: 'Lazy load image'
-                            parent: general
-                        
-                        mobile_behaviour:
-                            label: 'Mobile behaviour'
-                        mobile_hide_image:
-                            label: 'Hide image'
-                            parent: mobile_behaviour
-                        mobile_same_image_different_size:
-                            label: 'Same image, different size'
-                            parent: mobile_behaviour
-                        mobile_change_image:
-                            label: 'Different image'
-                            parent: mobile_behaviour
                     visible_if:
                         zenarioAB.valueIn: image_source, _CUSTOM_IMAGE, _STICKY_IMAGE
                 
@@ -176,7 +230,7 @@ plugin_settings:
                     plugin_setting:
                         name: rollover_image
                         foreign_key_to: file
-                    label: 'Change image on rollover'
+                    label: 'Change image on rollover:'
                     pick_items:
                         path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library
@@ -194,7 +248,37 @@ plugin_settings:
                             - .png
                         drag_and_drop: false
                         reorder_items: false
+                alt_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: alt_tag
+                        translate: true
+                    label: 'Overwrite image alt-tag:'
+                    type: text
+                    maxlength: "255"
+                    value: ""
                 
+                ######################################
+                ###### Mobile behaviour options ######
+                ######################################
+                
+                mobile_behaviour:
+                    plugin_setting:
+                        name: mobile_behaviour
+                    label: 'Mobile behaviour:'
+                    type: select
+                    format_onchange: true
+                    values:
+                        mobile_same_image:
+                            label: 'Same image'
+                        mobile_same_image_different_size:
+                            label: 'Same image, different size'
+                        mobile_change_image:
+                            label: 'Different image'
+                        mobile_hide_image:
+                            label: 'Hide image'
+                    value: mobile_same_image
+
                 mobile_image:
                     plugin_setting:
                         name: mobile_image
@@ -243,6 +327,18 @@ plugin_settings:
                             label: Resize and crop
                     format_onchange: true
                     indent: 1
+                mobile_retina:
+                    indent: 2
+                    plugin_setting:
+                        name: mobile_retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    same_row: true
+                    value: ""
+                    visible_if: |
+                        !zenarioAB.svgSelected('mobile_image')
+                    side_note: |
+                        Display image at double density.
                 mobile_width:
                     plugin_setting:
                         name: mobile_width
@@ -269,17 +365,6 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                mobile_retina:
-                    indent: 2
-                    plugin_setting:
-                        name: mobile_retina
-                    label: 'This is a retina image'
-                    type: checkbox
-                    value: ""
-                    visible_if: |
-                        !zenarioAB.svgSelected('mobile_image')
-                    side_note: |
-                        Display image at double density.
                 mobile_offset:
                     plugin_setting:
                         name: mobile_offset
@@ -297,19 +382,14 @@ plugin_settings:
                         move the slider to the right to move the image right/up.
                     indent: 2
                 
-                alt_tag:
-                    indent: 1
-                    plugin_setting:
-                        name: alt_tag
-                        translate: true
-                    label: 'Overwrite image alt-tag'
-                    type: text
-                    maxlength: "255"
-                    value: ""
+                ##########################
+                ###### Link options ######
+                ##########################
+                
                 link_type:
                     plugin_setting:
                         name: link_type
-                    label: 'Destination'
+                    label: 'Destination:'
                     type: select
                     value: _NO_LINK
                     values:
@@ -324,21 +404,14 @@ plugin_settings:
                                 tuix.key.moduleClassName == 'zenario_banner'
                         _EXTERNAL_URL:
                             label: Link to an external URL
+                        _EMAIL:
+                            label: Link to an email address
                         _ENLARGE_IMAGE:
                             label: Enlarge image in floating box
                             disabled_if: |
                                 !zenario.IN(zenarioAB.value('image_source'), '_CUSTOM_IMAGE', '_PICTURE')
                                 || zenarioAB.svgSelected('image')
                                 || zenarioAB.svgSelected('images')
-                    format_onchange: true
-                disable_rel:
-                    visible_if: "zenarioAB.value('link_type') == '_ENLARGE_IMAGE'"
-                    indent: 1
-                    plugin_setting:
-                        name: disable_rel
-                    label: 'Disable the left and right navigation arrows in the floating box'
-                    type: checkbox
-                    value: ""
                     format_onchange: true
                 floating_box_title_mode:
                     visible_if: "zenarioAB.value('link_type') == '_ENLARGE_IMAGE'"
@@ -348,7 +421,7 @@ plugin_settings:
                     type: radios
                     values: 
                         use_default: 
-                            label: 'Use default floating box caption ("")'
+                            label: 'Use the image\'s default floating box caption ("")'
                             ord: 1
                         overwrite: 
                             label: 'Use custom floating box caption on this plugin'
@@ -374,7 +447,7 @@ plugin_settings:
                         name: hyperlink_target
                         foreign_key_to: content
                         use_value_for_plugin_name: 4
-                    label: 'Content item'
+                    label: 'Content item:'
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -399,13 +472,13 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: hide_private_item
-                    label: 'Privacy'
+                    label: 'Privacy:'
                     type: select
                     #note_below: controlled in formatAdminBox
                     value: __ALWAYS_SHOW
                     values:
                         _ALWAYS_SHOW:
-                            ord: true
+                            ord: "1"
                             label: Show to visitors and extranet users, even if the target content item is private
                         _PRIVATE:
                             ord: "2"
@@ -431,10 +504,30 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: url
-                    label: 'External URL'
+                    label: 'External URL:'
                     type: url
                     maxlength: "255"
                     value: ""
+                    validation:
+                        required_if_not_hidden: "Please enter a URL."
+                email_address:
+                    indent: 1
+                    plugin_setting:
+                        name: email_address
+                    label: "Email address:"
+                    type: text
+                    placeholder: "mailto:example@email.com"
+                    onblur: "if (this.value && !this.value.match('mailto:')) {this.value = 'mailto:' + this.value;}"
+                    maxlength: "255"
+                    value: ""
+                    validation:
+                        required_if_not_hidden: "Please enter an email address."
+                test_send_email:
+                    type: button
+                    value: "Test"
+                    same_row: true
+                    hide_with_previous_field: true
+                    onclick: "var email_address = document.getElementById('email_address'); if (email_address) {var popup = window.open(email_address.value); setTimeout(function() { popup.close() }, 500);;}"
                 target_blank:
                     indent: 1
                     plugin_setting:
@@ -500,12 +593,12 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: enlarge_canvas
-                    label: 'Enlarged image canvas'
+                    label: 'Enlarged image canvas:'
                     type: select
                     value: unlimited
                     values:
                         unlimited:
-                            ord: true
+                            ord: "1"
                             label: Unlimited size
                         fixed_width:
                             ord: "2"
@@ -521,7 +614,7 @@ plugin_settings:
                     indent: 2
                     plugin_setting:
                         name: enlarge_width
-                    label: 'Width'
+                    label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter an enlarged width.
@@ -534,7 +627,7 @@ plugin_settings:
                     indent: 2
                     plugin_setting:
                         name: enlarge_height
-                    label: 'Height'
+                    label: 'Height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter an enlarged height.
@@ -543,68 +636,11 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-
-        text:
-            label: 'Title & HTML'
-            fields:
-                translate_text:
-                     plugin_setting:
-                         name: translate_text
-                     label: 'Make this plugin multilingual using the phrases system'
-                     type: checkbox
-                     value: 1
-                     format_onchange: true
-                title:
+                show_caption_on_enlarged_image:
+                    indent: 1
                     plugin_setting:
-                        name: title
-                        is_searchable_content: true
-                        use_value_for_plugin_name: true
-                        translate: true
-                    label: 'Title'
-                    type: text
-                    width: "150"
-                    maxlength: "255"
-                    value: ""
-                
-                title_tags:
-                    plugin_setting:
-                        name: title_tags
-                    label: 'Title heading tags'
-                    type: select
-                    values:
-                        h1: Heading 1
-                        h2: Heading 2
-                        h3: Heading 3
-                        h4: Heading 4
-                        h5: Heading 5
-                        h6: Heading 6
-                        p: Paragraph
-                    value: h2
-                    side_note: |
-                        Choose which HTML tags the title will be displayed in.
-                
-                text:
-                    plugin_setting:
-                        name: text
-                        is_searchable_content: true
-                        translate: true
-                    label: 'HTML'
-                    type: editor
-                    dont_trim: true
-                    insert_link_button:
-                        exists: true
-                    cols: "80"
-                    rows: "10"
-                    value: ""
-                more_link_text:
-                    plugin_setting:
-                        name: more_link_text
-                        is_searchable_content: true
-                        translate: true
-                    label: |
-                        Text for "More info" link
-                    type: text
-                    width: "150"
-                    maxlength: "255"
-                    value: ""
+                        name: show_caption_on_enlarged_image
+                    label: "Show caption on enlarged image"
+                    type: checkbox
+                    hidden: true
     module_class_name: zenario_banner

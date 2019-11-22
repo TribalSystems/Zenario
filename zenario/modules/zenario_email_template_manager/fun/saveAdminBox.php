@@ -64,6 +64,11 @@ switch ($path) {
 
 			$columns['bcc_email_address'] =
 				($columns['send_bcc'] = $values['meta_data/send_bcc'])? $values['meta_data/bcc_email_address'] : '';
+				
+			$columns['include_a_fixed_attachment'] = $values['meta_data/include_a_fixed_attachment'];
+			$columns['selected_attachment'] = ($values['meta_data/include_a_fixed_attachment']) ? $values['meta_data/selected_attachment'] : false;
+			$columns['allow_visitor_uploaded_attachments'] = $values['meta_data/allow_visitor_uploaded_attachments'];
+			$columns['when_sending_attachments'] = $values['meta_data/when_sending_attachments'];
 			
 			
 			switch ($values['meta_data/use_standard_email_template']) {

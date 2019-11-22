@@ -888,42 +888,44 @@ if (isset($adminToolbar['sections']['create'])) {
 	// Create a 'create button' for each content type in the order HTML, News, Events, Others dropdown (Alphabetical)
 	$ord = 3;
 	foreach (ze\content::getContentTypes(false, true) as $contentTypeId => $contentType) {
-		$button = [
-			'priv' => '_PRIV_CREATE_FIRST_DRAFT',
-			'label' => $contentType['content_type_name_en'],
-			'css_class' => 'zenario_create_a_new',
-			'appears_in_toolbars' => [
-				'create' => true
-			],
-			'admin_box' => [
-				'path' => 'zenario_content',
-				'key' => [
-					'id' => '',
-					'cID' => '',
-					'cType' => $contentTypeId,
-					'create_from_toolbar' => 1,
-					'from_cID' => ze::$cID,
-					'from_cType' => ze::$cType,
-					'target_language_id' => ze::$langId
+		if (ze\priv::check('_PRIV_CREATE_FIRST_DRAFT', false, $contentTypeId)) {
+			$button = [
+				'label' => $contentType['content_type_name_en'],
+				'css_class' => 'zenario_create_a_new',
+				'appears_in_toolbars' => [
+					'create' => true
+				],
+				'admin_box' => [
+					'path' => 'zenario_content',
+					'key' => [
+						'id' => '',
+						'cID' => '',
+						'cType' => $contentTypeId,
+						'target_cType' => $contentTypeId,
+						'create_from_toolbar' => 1,
+						'from_cID' => ze::$cID,
+						'from_cType' => ze::$cType,
+						'target_language_id' => ze::$langId
+					]
 				]
-			]
-		];
+			];
 		
-		switch ($contentTypeId) {
-			case 'html':
-				$button['ord'] = 1;
-				break;
-			case 'news':
-				$button['ord'] = 2;
-				break;
-			case 'event':
-				$button['ord'] = 3;
-				break;
-			default:
-				$button['ord'] = ++$ord;
+			switch ($contentTypeId) {
+				case 'html':
+					$button['ord'] = 1;
+					break;
+				case 'news':
+					$button['ord'] = 2;
+					break;
+				case 'event':
+					$button['ord'] = 3;
+					break;
+				default:
+					$button['ord'] = ++$ord;
+			}
+		
+			$adminToolbar['sections']['create']['buttons'][$contentTypeId] = $button;
 		}
-		
-		$adminToolbar['sections']['create']['buttons'][$contentTypeId] = $button;
 	}
 }
 
@@ -1008,12 +1010,14 @@ $adminToolbar['sections']['icons']['buttons']['layout_id']['label'] = $layoutLab
 $sql = '
 	SELECT 
 		COUNT(DISTINCT c.tag_id) AS item_count, 
-		l.name
+		l.name, l.status, ct.content_type_name_en AS default_layout_for_ctype
 	FROM '.DB_PREFIX.'content_item_versions v
 	INNER JOIN '.DB_PREFIX.'layouts l
 		ON v.layout_id = l.layout_id
 	INNER JOIN '.DB_PREFIX.'content_items c
 		ON (v.version = c.admin_version) AND (v.tag_id = c.tag_id)
+	LEFT JOIN ' . DB_PREFIX . 'content_types ct
+		ON ct.default_layout_id = l.layout_id
 	WHERE v.layout_id = '.(int)ze::$layoutId. '
 	AND c.status NOT IN ("trashed", "deleted")';
 $result = ze\sql::select($sql);
@@ -1021,8 +1025,18 @@ $layoutDetails = ze\sql::fetchAssoc($result);
 $layoutName = $layoutDetails['name'];
 $layoutItemCount = $layoutDetails['item_count'];
 
+if ($layoutDetails['status'] == 'active') {
+	$layoutStatus = 'Available';
+} elseif ($layoutDetails['status'] == 'suspended') {
+	$layoutStatus = 'Archived';
+}
+
+$isDefaultForAContentType = $layoutDetails['default_layout_for_ctype'] ? 'Default layout for content type ' . $layoutDetails['default_layout_for_ctype'] : '';
+
 $adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
-	'Layout ID: '.$layoutLabel.'<br /> Layout Name: '.$layoutName.'<br /> Items using this Layout: '.$layoutItemCount;
+	'Layout ID: '.$layoutLabel.'<br /> Layout Name: '.$layoutName.'<br /> Items using this Layout: '.$layoutItemCount.'<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+	
+$adminToolbar['sections']['icons']['buttons']['layout_id']['css_class'] .= ' layout_status_' . $layoutDetails['status'];
 
 $visitorURL = ze\link::toItem(
 	$cID, $cType, $fullPath = true, $request = '', ze::$alias,
@@ -1300,7 +1314,7 @@ switch (ze::$status) {
 	case 'published_with_draft':
 		$linkStatus = ze::$status;
 		
-		$perms = ze\content::getShowableContent($content, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminsSee400Errors = true);
+		$perms = ze\content::getShowableContent($content, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminMode = true, $adminsSee400Errors = true);
 	
 		if ($perms === ZENARIO_401_NOT_LOGGED_IN) {
 			$linkStatus .= '_401';

@@ -17,6 +17,18 @@ plugin_settings:
                     value: ""
                 page_size:
                     label: 'Maximum number of entries to show in dropdown panel:'
+                maximum_results_number:
+                    plugin_setting:
+                        name: maximum_results_number
+                    indent: 1
+                    type: text
+                    same_row: true
+                    maxlength: 5
+                    style: "width: 5em;"
+                    format_onchange: true
+                    value: 5
+                    visible_if: |
+                        zenarioAB.value('page_size') == 'maximum_of'
                     validation:
                         required: Please enter the maximum number of entries.
                         numeric: The maximum number of entries number be a number.

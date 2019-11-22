@@ -27,7 +27,7 @@
 			{% endif %}
 			
 			{% if Registration_Form %}
-			
+				
 				{% if Registration_Title_Section %}
 					<h2>{{Registration_Title}}</h2>
 				{% endif %}
@@ -66,17 +66,22 @@
 					</div>
 					
 					{% if User_passwords %}
-						<div class="extranet_field">
+						<div class="extranet_field zenario_visitor_tooltip_wrap">
 							<div class="label"><label for="extranet_new_password">{{"_PASSWORD:"|trans}}</label></div>
-							{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
+							{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true",
+								'class': "extranet_password", oninput: " zenario.updatePasswordNotifier('#extranet_new_password', false)",
+								'onmouseover': "$('#note_password').show()", 'onmouseout': "$('#note_password').hide()"})}}
+								
+							<div id="note_password" class="zenario_visitor_tooltip zenario_password_requirements_tooltip">
+								{{Password_Requirements}}
+							</div>
 						</div>
-
+						
 						<div class="extranet_field">
 							<div class="label"><label for="extranet_new_password_confirm">{{"_PASSWORD_CONFIRMATION:"|trans}}</label></div>
 							{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
 						</div>
 					{% endif %}
-					
 					
 					{% if Ts_And_Cs_Section %}
 						<div class="extranet_field">
@@ -84,7 +89,7 @@
 							<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>
 						</div>
 					{% endif %}
-
+					
 					{% if Captcha %}
 						<div class="extranet_field">
 							<div class="captcha">

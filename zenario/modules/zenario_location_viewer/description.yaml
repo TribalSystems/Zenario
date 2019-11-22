@@ -26,7 +26,7 @@ is_pluggable: true
 can_be_version_controlled: false
 default_framework: standard
 default_instance_name: Untitled Location Viewer
-nestable: false
+nestable: true
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

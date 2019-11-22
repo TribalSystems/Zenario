@@ -221,7 +221,7 @@ class datasetAdm {
 	}
 
 	//Formerly "listCustomFields()"
-	public static function listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false) {
+	public static function listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false, $putMergeFieldsIntoLabel = false, $specificTab = '') {
 		$dataset = \ze\dataset::details($dataset);
 	
 		$key = [];
@@ -286,6 +286,11 @@ class datasetAdm {
 		if ($customOnly) {
 			$key['is_system_field'] = 0;
 		}
+		
+		if (!empty($specificTab)) {
+			$key['tab_name'] = \ze\escape::sql($specificTab);
+		}
+		
 		$key['dataset_id'] = $dataset['id'];
 	
 		if ($flat) {
@@ -306,6 +311,12 @@ class datasetAdm {
 			} else {
 				if ($useOptGroups) {
 					$existingParents[$field['parent'] = 'tab__'. $field['tab_name']] = true;
+				}
+			}
+			
+			if ($putMergeFieldsIntoLabel) {
+				if ($field['label']) {
+					$field['label'] = trim($field['label'], " \t\n\r\0\x0B:").': [['.$field['db_column'].']]';
 				}
 			}
 		}

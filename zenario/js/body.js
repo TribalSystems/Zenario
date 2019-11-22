@@ -28,8 +28,14 @@
 
 //These functions are included on every page, just after the body tag, so they're written to be
 //as small as possible when minified
-(function(document_body, window, zenarioL) {
+(function(document, window, zenarioL, script) {
 	
+	//Add polyfills for IE
+	if (!document.currentScript) {
+		script = document.createElement('script');
+		script.src = URLBasePath + 'zenario/js/ie.wrapper.js.php';
+		document.head.appendChild(script);
+	}
 	
 	//This function sets/modifies a CSS class on the document.body.
 	var lSet = zenarioL.set = function(condition, metClassName, notMetClassName, tmp) {
@@ -40,7 +46,7 @@
 				notMetClassName = tmp;
 			}
 	
-			document_body.className = document_body.className
+			document.body.className = document.body.className
 				.replace(
 					new RegExp('\\b(' + notMetClassName + ')\\b', 'g'),
 					''
@@ -110,4 +116,4 @@
 	};
 
 
-})(document.body, window, window.zenarioL = {});
+})(document, window, window.zenarioL = {});

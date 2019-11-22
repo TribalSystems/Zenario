@@ -52,4 +52,7 @@ if (ze::$canCache) {
 	
 	unset($type);
 	unset($chFile);
+	
+	//Make sure we're recording the output, if we expect to write it to the cache dorectory later
+	ob_start();
 }

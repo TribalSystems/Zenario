@@ -12,11 +12,17 @@
 	<div class="banner_images"> 
 		{% for Image in Images %}
 			<div class="banner_image"> 
-				{% if Image.Text %}
+				{% if Show_caption_on_image and Image.Text %}
 					<div class="title">{{Image.Text}}</div>
 				{% endif %}
 				{% if Image.Floating_Box %} 
-					<a rel="colorbox" href="{{Image.Floating_Box.Src|escape}}" data-box-title="{{Image.Floating_Box.Title|escape}}">
+					<a
+						rel="colorbox"
+						href="{{Image.Floating_Box.Src|escape}}"
+						{% if Show_caption_on_enlarged_image %}
+							data-box-title="{% if Image.Text %}{{Image.Text}}{% endif %}"
+						{% endif %}
+					>
 				{% elseif Image.Image_Link_Href %} 
 					<a {{Image.Image_Link_Href}}{{Image.Target_Blank}}>
 				{% endif %}

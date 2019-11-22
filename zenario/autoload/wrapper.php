@@ -81,7 +81,8 @@ class wrapper {
 	
 	
 		//Look up the skin from the database
-		if (!$skin = \ze\content::skinDetails($req['id'])) {
+		if (empty($req['id'])
+		 || (!$skin = \ze\content::skinDetails($req['id']))) {
 			return;
 		}
 	

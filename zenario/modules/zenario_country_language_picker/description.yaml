@@ -1,0 +1,22 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Country and Language Picker
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: |
+    <p>
+                    This module displays a country and language picker.
+                </p>
+category: management
+keywords: country, language
+
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Country and language picker
+
+dependencies:
+    zenario_country_manager: true

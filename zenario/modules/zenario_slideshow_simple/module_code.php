@@ -72,16 +72,55 @@ class zenario_slideshow_simple extends zenario_slideshow {
 					$s2SmartGroups[$id] = ['label' => $label, 'ord' => ++$ord];
 				}
 				
+				$desktopCanvasSetting = ze\row::get('plugin_settings', 'value', ['name' => 'banner_canvas', 'instance_id' => $instanceId, 'egg_id' => 0]);
+				$desktopCanvasSettingNiceName = '';
+				switch ($desktopCanvasSetting) {
+					case 'fixed_width':
+						$desktopCanvasSettingNiceName = 'Constrain by width';
+						break;
+					case 'fixed_height':
+						$desktopCanvasSettingNiceName = 'Constrain by height';
+						break;
+					case 'fixed_width_and_height':
+						$desktopCanvasSettingNiceName = 'Constrain by width and height';
+						break;
+					case 'resize_and_crop':
+						$desktopCanvasSettingNiceName = 'Resize and crop';
+						break;
+				}
+				
+				$mobileCanvasSetting = ze\row::get('plugin_settings', 'value', ['name' => 'mobile_canvas', 'instance_id' => $instanceId, 'egg_id' => 0]);
+				$mobileCanvasSettingNiceName = '';
+				switch ($mobileCanvasSetting) {
+					case 'fixed_width':
+						$mobileCanvasSettingNiceName = 'Constrain by width';
+						break;
+					case 'fixed_height':
+						$mobileCanvasSettingNiceName = 'Constrain by height';
+						break;
+					case 'fixed_width_and_height':
+						$mobileCanvasSettingNiceName = 'Constrain by width and height';
+						break;
+					case 'resize_and_crop':
+						$mobileCanvasSettingNiceName = 'Resize and crop';
+						break;
+				}
+				
 				$details = [
 					'slides' => static::getSlideshowForEditor($instanceId),
 					'groups' => $s2Groups,
 					'smartGroups' => $s2SmartGroups,
 					'showTabs' => (bool)ze\row::get('plugin_settings', 'value', ['name' => 'show_tabs', 'instance_id' => $instanceId, 'egg_id' => 0]),
+					'desktopCanvasSetting' => $desktopCanvasSetting,
+					'desktopCanvasSettingNiceName' => $desktopCanvasSettingNiceName,
 					'width' => (int)ze\row::get('plugin_settings', 'value', ['name' => 'banner_width', 'instance_id' => $instanceId, 'egg_id' => 0]),
 					'height' => (int)ze\row::get('plugin_settings', 'value', ['name' => 'banner_height', 'instance_id' => $instanceId, 'egg_id' => 0]),
+					'mobileCanvasSetting' => $mobileCanvasSetting,
+					'mobileCanvasSettingNiceName' => $mobileCanvasSettingNiceName,
 					'mobileWidth' => (int)ze\row::get('plugin_settings', 'value', ['name' => 'mobile_width', 'instance_id' => $instanceId, 'egg_id' => 0]),
 					'mobileHeight' => (int)ze\row::get('plugin_settings', 'value', ['name' => 'mobile_height', 'instance_id' => $instanceId, 'egg_id' => 0])
 				];
+				
 				echo json_encode($details);
 				break;
 				

@@ -76,7 +76,6 @@ zenario__email_template_manager:
                             WHERE ii.foreign_key_id = T.id
                               AND ii.foreign_key_to = 'email_template'
                         )
-                    show_by_default: true
                     align_right: true
                     width: xsmall
                 debug_override:

@@ -10,5 +10,5 @@ zenario_extranet_password_reset
 
 
 "Phrase Code",Translation
-_ERROR_EXTRANET_EMAIL,"Please enter your Email Address."
-_ERROR_INVALID_EXTRANET_EMAIL,"Please enter a valid Email Address."
+_ERROR_EXTRANET_EMAIL,"Please enter your email address."
+_ERROR_INVALID_EXTRANET_EMAIL,"Please enter a valid email address."

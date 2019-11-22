@@ -18,6 +18,22 @@ zenario__administration:
                         cdf.dataset_id = [[REFINER_ID]]
                         AND cdf.is_system_field = 0 
                         AND cdf.type in ('text', 'date', 'radios', 'checkbox', 'textarea', 'consent', 'group', 'centralised_radios', 'url', 'select', 'consent', 'dataset_select', 'centralised_select')
+                user_fields:
+                    sql: |
+                        cdf.dataset_id = (
+                            SELECT cd.id
+                            FROM [[DB_PREFIX]]custom_datasets AS cd
+                            WHERE cd.table = 'users_custom_data'
+                        )
+                user_custom_fields_only:
+                    sql: |
+                        cdf.dataset_id = (
+                            SELECT cd.id
+                            FROM [[DB_PREFIX]]custom_datasets AS cd
+                            WHERE cd.table = 'users_custom_data'
+                        )
+                        AND cdf.is_system_field = 0 
+                        AND cdf.type in ('text', 'date', 'radios', 'checkbox', 'textarea', 'consent', 'group', 'centralised_radios', 'url', 'select', 'consent', 'dataset_select', 'centralised_select')
             columns:
                 label:
                     title: Label

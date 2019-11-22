@@ -10,24 +10,29 @@ zenario_clear_error_log:
         clear:
             edit_mode:
                 enabled: true
+            notices: 
+                are_you_sure: 
+                    show: "1"
+                    type: warning
+                    message: "Are you sure you wish to clear the error log?"
             fields:
                 info_1:
                     snippet:
-                        html: Are you sure you want to clear the error log? all errors older than
+                        html: This action will clear errors older than
                 older_than:
                     type: select
                     values:
                         1_second:
-                            label: 1 Second
+                            label: clear all
                         1_week:
-                            label: 1 Week
+                            label: 1 week
                         1_month:
-                            label: 1 Month
+                            label: 1 month
                         1_year:
-                            label: 1 Year
-                    value: 1_month
+                            label: 1 year
+                    value: 1_second
                     same_row: true
                 info_2:
                     snippet:
-                        html: will be permanently deleted.
+                        html: 
                     same_row: true

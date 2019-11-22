@@ -232,6 +232,14 @@ class zenario_menu extends ze\moduleBaseClass {
 					
 					if (!empty($row['children']) && is_array($row['children'])) {
 						$menuNodeMergeFields['children'] = $this->getMenuMergeFields($row['children'], $depth + 1);
+						
+						$menuNodeMergeFields['All_Children_Are_Hidden'] = true;
+						foreach ($menuNodeMergeFields['children'] as $child) {
+							if (empty($child['Conditionally_Hidden'])) {
+								$menuNodeMergeFields['All_Children_Are_Hidden'] = false;
+								break;
+							}
+						}
 					}
 					
 					$menuMergeFields[] = $menuNodeMergeFields;
@@ -341,6 +349,13 @@ class zenario_menu extends ze\moduleBaseClass {
 			$objects['Image'] = $menuItemImageLink;
 		}
 		
+		if (!empty($row['conditionally_hidden'])) {
+			$objects['Conditionally_Hidden'] = true;
+		} elseif (empty($row['active'])) {
+			$objects['Inactive_Open_Tag'] = '<em class="zenario_inactive">';
+			$objects['Inactive_Close_Tag'] = '</em>';
+		}
+		
 		//A function that can be overwritten to allow extra functionality
 		if ($this->addExtraMenuNodeMergeFields($row, $objects, $i)) {
 			
@@ -389,12 +404,6 @@ class zenario_menu extends ze\moduleBaseClass {
 		}
 		
 		$menuItem .= '</a>';
-		
-		if (!empty($row['conditionally_hidden'])) {
-			$menuItem = '<span class="zenario_conditionally_hidden">'. $menuItem. '</span>';
-		} elseif (empty($row['active'])) {
-			$menuItem = '<em class="zenario_inactive">'. $menuItem. '</em>';
-		}
 		
 		return $menuItem;
 	}

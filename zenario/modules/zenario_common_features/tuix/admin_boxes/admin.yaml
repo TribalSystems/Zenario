@@ -54,11 +54,15 @@ zenario_admin:
                     type: text
                     maxlength: "100"
                     style: 'width: 25em;'
+                    validation:
+                        required: Please enter a First Name.
                 last_name:
                     label: 'Last Name:'
                     type: text
                     maxlength: "100"
                     style: 'width: 25em;'
+                    validation:
+                        required: Please enter a Last Name.
                 email:
                     label: 'Email Address:'
                     type: text
@@ -150,26 +154,17 @@ zenario_admin:
                     type: radios
                     values:
                         all_permissions:
-                            label: "This administrator has every possible permission"
+                            label: "Grant every possible permission"
                         specific_actions:
-                            label: "This administrator has the following specific permissions:"
+                            label: "Grant specific permissions..."
                             side_note: |
-                                This person will be able to make changes on this entire site,
+                                This administrator will be able to make changes on this entire site,
                                 subject to the permissions specified in the checkboxes.
-                        specific_languages:
-                            label: "This administrator can edit content items in the following languages:"
+                        specific_areas:
+                            label: "Grant by language / content type / content item"
                             side_note: |
-                                This person will be allowed to edit content items in the languages specified below,
-                                or to create content items in those languages where equivalents exist in the default language ([[default_language]]).
+                                This administrator will be allowed to edit content items if they match one of the rules below.
                                 They will not be allowed to access other parts of the system (e.g. users, emails, ...)
-                        specific_menu_areas:
-                            label: "This administrator can edit content items under the following parts of the menu:"
-                            side_note: |
-                                This person will be allowed to perform actions on all content items in an area or areas of the site
-                                (as defined defined below with the menu hierarchy).
-                                Edit, hide and trash actions will be available on content items in those parts of the site, in all languages.
-                                They will not be allowed to make changes in other parts of the site,
-                                nor to access other parts of the system (e.g. users, emails, ...)
                     value: specific_actions
                     format_onchange: true
                 
@@ -180,15 +175,30 @@ zenario_admin:
                 
                 
                 specific_languages:
+                    indent: 1
                     visible_if: |
-                        zenarioAB.value('permissions') == 'specific_languages'
-                    full_width: true
+                        zenarioAB.value('permissions') == 'specific_areas'
+                    label: 'All content items in these languages:'
                     type: checkboxes
                     cols: 2
+                    side_note: |
+                        This administrator will be allowed to edit all content items in these languages,
+                        and to create content items in those languages where equivalents exist in the default language ([[default_language]]).
+                
+                specific_content_types:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('permissions') == 'specific_areas'
+                    label: 'All content items of these content types:'
+                    type: checkboxes
+                    cols: 2
+                    side_note: |
+                        This administrator will be allowed to create and edit content items if they are of one of these types.
                 
                 specific_content_items:
+                    indent: 1
                     visible_if: |
-                        zenarioAB.value('permissions') == 'specific_languages'
+                        zenarioAB.value('permissions') == 'specific_areas'
                     label: 'And the following specific content items:'
                     pick_items:
                         path: zenario__content/panels/content
@@ -198,24 +208,9 @@ zenario_admin:
                         #one_to_one_choose_phrase:
                         multiple_select: true
                         #one_to_many_choose_phrase:
-                        select_phrase: Select a content item
+                        select_phrase: Select a content item...
                         #nothing_selected_phrase:
                         disallow_refiners_looping_on_min_path: true
-                
-                specific_menu_areas:
-                    visible_if: |
-                        zenarioAB.value('permissions') == 'specific_menu_areas'
-                    full_width: true
-                    pick_items:
-                        path: zenario__menu/panels/menu_position/refiners/existing////
-                        min_path: zenario__menu/panels/menu_position
-                        disallow_refiners_looping_on_min_path: true
-                        #one_to_one_choose_phrase:
-                        multiple_select: true
-                        #one_to_many_choose_phrase:
-                        select_phrase: Select part of menu...
-                        #nothing_selected_phrase:
-                        hide_info_button: true
                     
                     
                     

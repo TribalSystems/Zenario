@@ -293,7 +293,6 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		} else {
 			$this->data['Msg_Empty_List']=	$this->phrase('_NO_LOCATIONS_TO_DISPLAY');
 		}
-		
 		$this->twigFramework($this->data);
 		
 	}

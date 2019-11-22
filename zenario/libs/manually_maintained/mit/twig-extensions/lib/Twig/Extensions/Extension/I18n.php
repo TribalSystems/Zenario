@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-class Twig_Extensions_Extension_I18n extends Twig_Extension
+class Twig_Extensions_Extension_I18n extends Twig\Extension\AbstractExtension
 {
     /**
      * {@inheritdoc}

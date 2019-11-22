@@ -114,35 +114,6 @@ class contentAdm {
 			return 'archived';
 		}
 	}
-	
-
-	//Convert the format of the menu position as saved in the content-type settings to
-	//a position in the format that the position selector used
-	//Formerly "getDefaultMenuPositionFromSettings()"
-	public static function getDefaultMenuPositionFromSettings($contentType) {
-		$menuNode = \ze\row::get('menu_nodes', ['id', 'section_id'], $contentType['default_parent_menu_node']);
-		$dummyNode = 1;
-		$menuNodeId = $menuNode['id'];
-	
-		if ($contentType['menu_node_position'] == 'start') {
-		
-			// Get first child menu node
-			$sql = '
-				SELECT id
-				FROM ' . DB_PREFIX . 'menu_nodes
-				WHERE parent_id = ' . (int)$menuNode['id'] . '
-				ORDER BY ordinal
-				LIMIT 1';
-			$result = \ze\sql::select($sql);
-			$row = \ze\sql::fetchRow($result);
-		
-			if ($row[0]) {
-				$menuNodeId = $row[0];
-				$dummyNode = 0;
-			}
-		}
-		return $menuNode['section_id'] . '_' . $menuNodeId . '_' . $dummyNode;
-	}
 
 	//Reverse of the above
 	//Formerly "getSettingsFromDefaultMenuPosition()"
@@ -984,9 +955,14 @@ class contentAdm {
 
 	//Check if a Content Item is in a state where it could be deleted/trashed/hidden. Note that these functions don't check for locks.
 	//Formerly "allowDelete()"
-	public static function allowDelete($cID, $cType, $status = false) {
+	public static function allowDelete($cID, $cType, $status = false, $contentItemLanguageId = false) {
 		if (!$status) {
 			$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+		}
+		
+		//Check specific language permissions
+		if (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_HIDE_CONTENT_ITEM', $contentItemLanguageId)) {
+			return false;
 		}
 	
 		if ($status == 'first_draft') {
@@ -999,8 +975,12 @@ class contentAdm {
 
 	//\ze\priv::check("_PRIV_PUBLISH_CONTENT_ITEM")
 	//Formerly "allowTrash()"
-	public static function allowTrash($cID, $cType, $status = false, $lastModified = false) {
+	public static function allowTrash($cID, $cType, $status = false, $lastModified = false, $contentItemLanguageId = false) {
 		if (\ze\content::isSpecialPage($cID, $cType) && !\ze\contentAdm::allowRemoveEquivalence($cID, $cType)) {
+			return false;
+			
+		//Check specific language permissions
+		} elseif (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_HIDE_CONTENT_ITEM', $contentItemLanguageId)) {
 			return false;
 		} else {
 			if ($status === false) {
@@ -1047,7 +1027,7 @@ class contentAdm {
 
 
 	//Formerly "rerenderWorkingCopyImages()"
-	public static function rerenderWorkingCopyImages($workingCopyImages = true, $thumbnailWorkingCopyImages = true, $removeOldWorkingCopies = false, $jpegOnly = false) {
+	public static function rerenderWorkingCopyImages($recreateCustomThumbnailOnes = true, $recreateCustomThumbnailTwos = true, $removeOldCopies = false, $jpegOnly = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
@@ -1782,6 +1762,54 @@ class contentAdm {
 			return false;
 		} else {
 			return $slots;
+		}
+	}
+	
+	public static function getContentItemsWithPluginsThatMustBeOnPublicOrPrivatePage($pagePrivacyRequirement) {
+		if ($pagePrivacyRequirement == 'public_page' || $pagePrivacyRequirement == 'private_page') {
+			//Get an array of:
+			//all public items with contain plugins that must be on a private page,
+			//or all private items with contain plugins that must be on a public page.
+			$sql = "
+				SELECT DISTINCT c.id, c.type, c.alias, c.language_id, m.class_name
+				FROM " . DB_PREFIX . "modules AS m
+				INNER JOIN " . DB_PREFIX . "plugin_item_link AS pil
+				ON pil.module_id = m.id
+				INNER JOIN " . DB_PREFIX . "content_items AS c
+				ON pil.content_id = c.id
+				AND pil.content_type = c.type
+				AND pil.content_version IN (c.visitor_version, c.admin_version)
+				INNER JOIN " . DB_PREFIX . "translation_chains AS tc
+				ON c.equiv_id = tc.equiv_id
+				AND c.type = tc.type
+				WHERE m.must_be_on = '" . $pagePrivacyRequirement . "' ";
+				if ($pagePrivacyRequirement == 'private_page') {
+					$sql .= "AND tc.privacy IN ('public', 'logged_out')";
+				} elseif ($pagePrivacyRequirement == 'public_page') {
+					$sql .= "AND tc.privacy NOT IN ('public', 'logged_out')";
+				}
+			$result = \ze\sql::select($sql);
+			$resultArray = [];
+			$i = 0;
+			while ($row = \ze\sql::fetchAssoc($result)) {
+				
+				$link = htmlspecialchars(\ze\link::toItem($row['id'], $row['type'], true));
+				$contentItemName = \ze\content::formatTag($row['id'], $row['type'], $row['alias'], $row['language_id']);
+				$contentItemStatusImageClass = '<span class="organizer_item_image ' . self::getItemIconClass($row['id'], $row['type']) . '"></span>';
+				
+				$contentItem = '<a href="' . $link . '" target="_blank">'
+					. $contentItemStatusImageClass . $contentItemName
+					. '</a>';
+				
+				$plugin = $row['class_name'];
+				$plugin = '<br>Module: ' . $plugin;
+				
+				$resultArray[] = '<div class="content_item_plugin_privacy_mismatch">' . $contentItem . $plugin . '</div>';
+			}
+			
+			return $resultArray;
+		} else {
+			return false;
 		}
 	}
 }

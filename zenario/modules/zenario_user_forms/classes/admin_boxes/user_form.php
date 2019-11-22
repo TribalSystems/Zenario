@@ -120,6 +120,8 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				$values['data/success_message_type'] = 'redirect_after_submission';
 			} elseif (!empty($record['show_success_message'])) {
 				$values['data/success_message_type'] = 'show_success_message';
+			} elseif (!empty($record['show_success_message_and_the_form'])) {
+				$values['data/success_message_type'] = 'show_success_message_and_the_form';
 			} else {
 				$values['data/success_message_type'] = 'none';
 			}
@@ -440,7 +442,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$fields['data/redirect_location']['hidden'] = $values['data/success_message_type'] != 'redirect_after_submission';
 		
-		$fields['data/success_message']['hidden'] = $values['data/success_message_type'] != 'show_success_message';
+		$fields['data/success_message']['hidden'] = ($values['data/success_message_type'] != 'show_success_message' && $values['data/success_message_type'] != 'show_success_message_and_the_form');
 		
 		if ($values['data_deletion/period_to_delete_response_headers'] == ""
 			&& ($siteWideSetting = ze::setting('period_to_delete_the_form_response_log_headers'))
@@ -638,9 +640,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$record['simple_access_cookie_override_redirect'] = (empty($values['simple_access_cookie_override_redirect']) ? 0 : 1);
 		$record['send_signal'] = (empty($values['send_signal']) ? 0 : 1);
 		$record['show_success_message'] = ($values['success_message_type'] == 'show_success_message');
+		$record['show_success_message_and_the_form'] = ($values['success_message_type'] == 'show_success_message_and_the_form');
 		$record['redirect_after_submission'] = ($values['success_message_type'] == 'redirect_after_submission');
 		$record['redirect_location'] = (($values['success_message_type'] != 'redirect_after_submission') ? null : $values['redirect_location']);
-		$record['success_message'] = (($values['success_message_type'] != 'show_success_message') ? null : $values['success_message']);
+		$record['success_message'] = (($values['success_message_type'] != 'show_success_message' && $values['success_message_type'] != 'show_success_message_and_the_form') ? null : $values['success_message']);
 		$record['user_status'] = (empty($values['save_data']) ? 'contact' : $values['user_status']);
 		$record['log_user_in'] = (empty($values['log_user_in']) ? 0 : 1);
 		

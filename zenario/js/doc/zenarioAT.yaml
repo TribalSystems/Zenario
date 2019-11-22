@@ -1,0 +1,290 @@
+#action:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#action2:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#applyMergeFields:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#applyMergeFieldsToLabel:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#clickButton:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+clickTab:
+    summary: |
+        This changes the tab shown by the admin toolbar.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This changes the tab shown by the admin toolbar.
+        </p><p>
+            If a plugin on the page is currently being edited, nothing will happen.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#customiseOrganizerLink:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#draw:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#getKey:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#getKeyId:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#getLastKeyId:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+init:
+    summary: |
+        This function initialises the Admin Toolbar. It can be called a second time to reload it.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function initialises the Admin Toolbar. It can be called a second time to reload it.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#init2:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+organizerQuick:
+    summary: |
+        This function can be used to open Organizer in "quick" mode from the admin toolbar.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function can be used to open Organizer in "quick" mode from the admin toolbar.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#pickItems:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#showGridOnOff:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#slotDisabled:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sort:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#sortButtons:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#uploadComplete:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>

@@ -89,13 +89,12 @@ body {
 	z-index:9;
     width: 34px;
     height: 34px;
-    background: url(../admin/images/sprites/org-icons-v5.png) no-repeat;
-    background-position: -58px -208px;
+	background:url('../admin/images/icon-close-off.svg') no-repeat;
+	background-size:100%;
 }
 
 .zfea_popout .zfea_close:hover {
-    background: url(../admin/images/sprites/org-icons-v5.png) no-repeat;
-    background-position: -108px -208px;
+	background:url('../admin/images/icon-close-over.svg') no-repeat;
 }
 
 .zfea_popout .zfea_slot_settings_assetwolf_2_view_asset_details {

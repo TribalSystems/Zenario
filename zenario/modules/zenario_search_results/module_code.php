@@ -396,7 +396,7 @@ class zenario_search_results extends ze\moduleBaseClass {
 					ORDER BY relevance DESC, c.id, c.type";
 				
 				if ($this->setting('use_pagination')) {
-					$pageSize = (int) $this->setting('page_size');
+					$pageSize = (int) $this->setting('maximum_results_number') ?:999999;
 					$numberOfPages = ceil($recordCount/$pageSize);
 					
 					for ($i=1;$i<=$numberOfPages;$i++) {
@@ -434,9 +434,9 @@ class zenario_search_results extends ze\moduleBaseClass {
 				$sql .= "
 					ORDER BY relevance DESC, c.id, c.type";
 				
-				if ($this->setting('page_size')) {
+				if ($pageSize = $this->setting('maximum_results_number') ?:999999) {
 					$sql .= "
-						LIMIT ". (int) $this->setting('page_size');
+						LIMIT ". (int) $pageSize;
 				}
 				
 				$result = ze\sql::select($sqlF. $sqlR. $sql);

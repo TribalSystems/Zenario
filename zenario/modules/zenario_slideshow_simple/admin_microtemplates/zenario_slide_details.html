@@ -10,11 +10,21 @@
 				<img id="zenario_main_image_preview" src="{{m.image_details_thumbnail_url|e}}" alt="{{m.alt_tag|e}}" />
 			</div>
 			
-			<p id="zenario_main_image_dimensions">{{m.width|e}} × {{m.height|e}}</p>
+			<p id="zenario_main_image_dimensions">{{m.filename|e}} [{{m.width|e}} × {{m.height|e}}px]</p>
 			
-			<% if (m.dimensions) { %>
-				<div>Desktop image canvas constrained to {{m.dimensions|e}} high in slideshow settings (recommended size).</div>
-			<% } %>
+			<div class="zenario_note_below">
+				Desktop canvas (changed in Slideshow properties):
+				
+				<% if (m.desktop_canvas_setting == 'fixed_width_and_height' || m.desktop_canvas_setting == 'resize_and_crop') { %>
+					<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.dimensions|e}}].
+				<% } else if (m.desktop_canvas_setting == 'fixed_width') { %>
+					<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.width|e}}px].
+				<% } else if (m.desktop_canvas_setting == 'fixed_height') { %>
+					<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.height|e}}px].
+				<% } else { %>
+					<br />Unlimited size.
+				<% } %>
+			</div>
 			
 			<div class="zenario_slide_settings_section zenario_slide_settings_choose_image">
 				<p>Desktop Image:</p>
@@ -35,16 +45,27 @@
 				<input type="text" name="tab_name" value="{{m.tab_name|e}}" size="50" maxlength="250"/>
 			<% } %>
 			
-			<p>Slide title:</p>
+			<p>
+				Slide title:
+				<% if (zenarioA.translationsEnabled()) { %>
+					<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a>
+				<% } %>
+				<br />
+			</p>
 			<input type="text" name="slide_title" value="{{m.slide_title|e}}" size="50" maxlength="250"/>
 			
-			<p>Description (HTML)</p>
+			<p>
+				Description (HTML):
+				<% if (zenarioA.translationsEnabled()) { %>
+					<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a><br />
+				<% } %>
+			</p>
 			<textarea name="slide_extra_html">{{m.slide_extra_html|e}}</textarea>
 			
-			<% if (m.link_type != '_NO_LINK') { %>
-				<div id="zenario_slide_more_link_text">
-					<p>More link text:</p>
-					<input type="text" name="slide_more_link_text" value="{{m.slide_more_link_text|e}}" size="50" maxlength="250"/>
+			<% if (zenarioA.translationsEnabled()) { %>
+				<div class="zenario_note_below">
+					To make a phrase, put {{zenarioA.getDefaultLanguageName()}} text inside [[double square brackes]].
+					<a href="zenario/admin/organizer.php#zenario__languages/panels/phrases" target="_blank">Edit/translate phrases</a>.
 				</div>
 			<% } %>
 			
@@ -66,7 +87,7 @@
 				<div class="zenario_rollover_slide">
 					<% if (m.rollover_image_id) { %>
 						<img id="zenario_rollover_image_preview" src="{{m.rollover_image_details_thumbnail_url}}" alt="{{m.r_alt_tag}}" />
-						<p id="zenario_rollover_image_dimensions">{{m.r_width|e}} × {{m.r_height|e}}</p>
+						<p id="zenario_rollover_image_dimensions">{{m.r_filename|e}} [{{m.r_width|e}} × {{m.r_height|e}}px]</p>
 					<% } else { %>
 						<img src="zenario/modules/zenario_slideshow_simple/images/image-in-slot-placeholder.png" />
 					<% } %>
@@ -79,6 +100,20 @@
 					<button type="button" id="zenario_rollover_organizer_option" class="launch_keeper">Select image...</button>
 					<% if (m.rollover_image_id) { %>
 						<button type="button" id="zenario_remove_rollover_image" class="launch_keeper">Remove</button>
+					<% } %>
+				</div>
+				
+				<div class="zenario_note_below">
+					Desktop canvas (changed in Slideshow properties):
+				
+					<% if (m.desktop_canvas_setting == 'fixed_width_and_height' || m.desktop_canvas_setting == 'resize_and_crop') { %>
+						<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.dimensions|e}}].
+					<% } else if (m.desktop_canvas_setting == 'fixed_width') { %>
+						<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.width|e}}px].
+					<% } else if (m.desktop_canvas_setting == 'fixed_height') { %>
+						<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.height|e}}px].
+					<% } else { %>
+						<br />Unlimited size.
 					<% } %>
 				</div>
 			<% } %>
@@ -104,19 +139,17 @@
 				<div class="zenario_mobile_slide">
 					<% if (m.mobile_image_id) { %>
 						<img id="zenario_mobile_image_preview" src="{{m.mobile_image_details_thumbnail_url}}" alt="{{m.m_alt_tag}}"/>
-						<p id="zenario_mobile_image_dimensions">{{m.m_width|e}} × {{m.m_height|e}}</p>
+						<p id="zenario_mobile_image_dimensions">
+							<% if (m.mobile_behaviour == 'different_image') { %>
+								{{m.m_filename|e}} [{{m.m_width|e}} × {{m.m_height|e}}px]
+							<% } else { %>
+								{{m.filename|e}} [{{m.width|e}} × {{m.height|e}}px]
+							<% } %>
+						</p>
 					<% } else { %>
 						<img src="zenario/modules/zenario_slideshow_simple/images/image-in-slot-placeholder.png" />
 					<% } %>
 				</div>
-				
-				<% if (m.mobile_behaviour == 'same_image_different_size' && m.mobileDimensions) { %>
-					<div>Mobile image canvas constrained to {{m.mobileDimensions|e}} in slideshow settings.</div>
-				<% } else if (m.mobile_behaviour == 'different_image' && m.mobileDimensions) { %>
-					<div>Mobile image canvas constrained to {{m.mobileDimensions|e}} high in slideshow settings (recommended size).</div>
-				<% } else if (m.mobile_behaviour == 'same_image' && m.dimensions) { %>
-					<div>Desktop image canvas constrained to {{m.dimensions|e}} high in slideshow settings (recommended size).</div>
-				<% } %>
 				
 				<% if (m.mobile_behaviour == 'different_image') { %>
 					<p>Mobile Image:</p>
@@ -126,6 +159,34 @@
 						<button type="button" id="zenario_mobile_organizer_option" class="launch_keeper">Select image...</button>
 						<% if (m.mobile_image_id) { %>
 							<button type="button" id="zenario_remove_mobile_image" class="launch_keeper">Remove</button>
+						<% } %>
+					</div>
+				<% } %>
+				
+				<% if (m.mobile_behaviour == 'same_image_different_size' || m.mobile_behaviour == 'different_image') { %>
+					<div class="zenario_note_below">
+						Mobile canvas (changed in Slideshow properties):
+			
+						<% if (m.mobile_canvas_setting == 'fixed_width_and_height' || m.mobile_canvas_setting == 'resize_and_crop') { %>
+							<br />{{m.mobile_canvas_setting_nice_name|e}} [{{m.mobileDimensions|e}}].
+						<% } else if (m.mobile_canvas_setting == 'fixed_width') { %>
+							<br />{{m.mobile_canvas_setting_nice_name|e}} [{{m.m_width|e}}px].
+						<% } else if (m.mobile_canvas_setting == 'fixed_height') { %>
+							<br />{{m.mobile_canvas_setting_nice_name|e}} [{{m.m_height|e}}px].
+						<% } %>
+					</div>
+				<% } else if (m.mobile_behaviour == 'same_image') { %>
+					<div class="zenario_note_below">
+						Desktop canvas (changed in Slideshow properties):
+			
+						<% if (m.desktop_canvas_setting == 'fixed_width_and_height' || m.desktop_canvas_setting == 'resize_and_crop') { %>
+							<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.dimensions|e}}].
+						<% } else if (m.desktop_canvas_setting == 'fixed_width') { %>
+							<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.width|e}}px].
+						<% } else if (m.desktop_canvas_setting == 'fixed_height') { %>
+							<br />{{m.desktop_canvas_setting_nice_name|e}} [{{m.height|e}}px].
+						<% } else { %>
+							<br />Unlimited size.
 						<% } %>
 					</div>
 				<% } %>
@@ -150,34 +211,48 @@
 				<select id="zenario_select_link_type" name="link_type" onchange="zenario_slideshow_simple.selectSlide('{{m.id|e}}')">
 					{{zenarioT.microTemplate('zenario_slide_select_options', m.link_type_values)}}
 				</select>
-				
-				<% if (m.link_type == '_CONTENT_ITEM') { %>
+			
+				<% if (m.link_type && m.link_type == '_CONTENT_ITEM') { %>
 					<div id="zenario_internal_link_settings">
 						<p>Content item:</p>
 						<input type="text" id="zenario_content_item_link"  value="{{m.hyperlink_target_display|e}}" readonly size="50"/>
 						<input type="button" id="zenario_select_content_item" value="Select a content item..."/>
 					</div>
 				<% } %>
-				
-				<% if (m.link_type == '_EXTERNAL_URL') { %>
+			
+				<% if (m.link_type && m.link_type == '_EXTERNAL_URL') { %>
 					<div id="zenario_external_link_settings">
 						<p>External URL:</p>
 						<input type="text" id="zenario_external_link" name="url" value="{{m.url|e}}" size="50" maxlength="250"/>
 					</div>
 				<% } %>
-				
-				<% if (m.link_type == '_EXTERNAL_URL' || m.link_type == '_CONTENT_ITEM') { %>
+			
+				<% if ( m.link_type && m.link_type == '_EXTERNAL_URL' || m.link_type == '_CONTENT_ITEM') { %>
 					<div id="zenario_open_in_new_window_settings">
 						<input type="checkbox" id="zenario_open_in_new_window" name="open_in_new_window" <% if (m.open_in_new_window) { %>checked="checked"<% } %>/>
 						<label for="zenario_open_in_new_window">Open in a new window</label>
 					</div>
 				<% } %>
-				
+			
+				<% if (m.link_type && m.link_type != '_NO_LINK') { %>
+					<div id="zenario_slide_more_link_text">
+						<p>
+							Text for "More info" link:
+							<% if (zenarioA.translationsEnabled()) { %>
+								<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a><br />
+							<% } %>
+						</p>
+						<input type="text" name="slide_more_link_text" value="{{m.slide_more_link_text|e}}" size="50" maxlength="250"/>
+					</div>
+				<% } %>
+			</div>
+			
+			<div id="zenario_slide_visibility_settings">
 				<p>Slide visibility by user:</p>
 				<select id="zenario_select_privacy" name="privacy" onchange="zenario_slideshow_simple.selectSlide('{{m.id|e}}')">
 					{{zenarioT.microTemplate('zenario_slide_select_options', m.privacy_values)}}
 				</select>
-				
+			
 				<% if (m.privacy == 'group_members') { %>
 					<% for (var i = 0; i < m.groups.length; i++) { %>
 						<div>
@@ -192,7 +267,7 @@
 							{{zenarioT.microTemplate('zenario_slide_select_options', m.smart_groups_values)}}
 						</select>
 					</div>
-					
+				
 				<% } else if (m.privacy == 'call_static_method') { %>
 					<div id="zenario_static_method_settings"> 
 						<div id="zenario_module_class_name_settings">

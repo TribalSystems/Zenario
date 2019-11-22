@@ -58,13 +58,8 @@ if (!$isAdmin
 
 //Write the URLBasePath to the page, and add JS needed for the CMS
 echo '
-'. $scriptTag. ' src="', $prefix, 'libs/bower/jquery/dist/jquery.min.js?', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libs/yarn/jquery/dist/jquery.min.js?', $v, '"></script>
 '. $scriptTag. ' src="', $prefix, 'libs/manually_maintained/mit/jquery/jquery-ui.visitor.min.js?', $v, '"></script>
-
-<!--[if IE 9]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?', $w, '&amp;ie=9"></script><![endif]-->
-<!--[if IE 8]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?', $w, '&amp;ie=8"></script><![endif]-->
-<!--[if lte IE 7]>'. $scriptTag. ' src="', $prefix, 'js/ie.wrapper.js.php?', $w, '&amp;ie=7"></script><![endif]-->
-
 '. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w, '"></script>';
 
 

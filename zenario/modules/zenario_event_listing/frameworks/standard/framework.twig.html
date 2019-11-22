@@ -10,6 +10,23 @@
 		{% endif %}
 		
 		{% for Event in Event_Row_On_List %}
+			
+			{% if Event.start_year_label and Event.start_month_label %}
+				{% if YearCurrentLabel is not defined or YearCurrentLabel != Event.start_year_label %}
+					{% set YearCurrentLabel = Event.start_year_label %}
+					<div class="year_label">
+						{{YearCurrentLabel|e}}
+					</div>
+				{% endif %}
+				
+				{% if MonthCurrentLabel is not defined or MonthCurrentLabel != Event.start_month_label %}
+					{% set MonthCurrentLabel = Event.start_month_label %}
+					<div class="month_label">
+						{{MonthCurrentLabel|e}}
+					</div>
+				{% endif %}
+			{% endif %}
+			
 			{% if Event_elements_equal_height %}
 				<div class="single_event tothesameheight">
 			{% else %}

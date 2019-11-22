@@ -51,8 +51,8 @@ site_settings:
                              You might also use a real email account if you want to trap undeliverable messages sent to users,
                              so that you catch any bounces via this account.)
                     validation:
-                        required: 'Please enter an email address &quot;From&quot;.'
-                        email: 'Please ensure this &quot;From&quot; email address is in a valid format.'
+                        required: 'Please enter an email address "From".'
+                        email: 'Please ensure this "From" email address is in a valid format.'
                 email_name_from:
                     site_setting:
                         name: email_name_from
@@ -302,6 +302,28 @@ site_settings:
                             This tab allows you to send a test email.
                             
                             If you do not receive the test email, you may need to change the settings on the SMTP tab.
+                test_send_from_address:
+                    label: "&quot;From&quot; email address:"
+                    type: text
+                    readonly: true
+                test_send_subject:
+                    label: "Subject:"
+                    type: text
+                    readonly: true
+                test_send_message:
+                    label: "Message:"
+                    type: editor
+                    readonly: true
+                    disabled: true
+                test_send_format:
+                    label: "Test email format:"
+                    type: radios
+                    values:
+                        plain_text:
+                            label: "Send as plain text"
+                        standard_email_template:
+                            label: "Use standard email template"
+                    value: plain_text
                 test_send_email_address:
                     type: text
                     maxlength: "100"

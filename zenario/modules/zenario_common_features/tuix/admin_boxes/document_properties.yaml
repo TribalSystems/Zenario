@@ -6,7 +6,7 @@ zenario_document_properties:
         delete_thumbnail: ''
     identifier: 
         css_class: zenario_file_item
-        label: Document ID
+        value: ''
     tabs:
         details:
             label: Document metadata
@@ -30,6 +30,11 @@ zenario_document_properties:
                     label: 'Filename:'
                     type: text
                     maxlength: "255"
+                checksum:
+                    label: 'Checksum:'
+                    type: text
+                    maxlength: 5
+                    hidden: true
                 date_uploaded:
                     label: 'Date uploaded:'
                     type: datetime

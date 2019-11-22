@@ -53,6 +53,14 @@ switch ($path) {
 				$fields['data_deletion/period_to_delete_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
 			}
 			
+			if ($values['meta_data/include_a_fixed_attachment'] == true && $values['meta_data/selected_attachment']) {
+				$privacy = ze\row::get('documents', 'privacy', ['id' => $values['meta_data/selected_attachment']]);
+				
+				if ($privacy == 'offline') {
+					$fields['meta_data/selected_attachment']['error'] = true;
+				}
+			}
+			
 		}
 		break;
 	case 'site_settings':

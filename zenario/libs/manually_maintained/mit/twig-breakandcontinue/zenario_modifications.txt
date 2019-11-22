@@ -1,0 +1,2 @@
+Manually went through the code looking for all of the references to deprecated Twig classes,
+and replaced them with their new composer formats.

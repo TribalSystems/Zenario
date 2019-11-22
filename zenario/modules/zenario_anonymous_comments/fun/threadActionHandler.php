@@ -67,6 +67,12 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	if (empty($_POST['comm_message'])) {
 		$failure = true;
 		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
+	} else {
+		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
+		if (strlen($sanitisedMessage) > 65535) {
+			$failure = true;
+			$this->postingErrors[] = ['Error' => $this->phrase('The message is too long.')];
+		}
 	}
 	
 	if (!$failure) {
@@ -90,10 +96,17 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 		$failure = true;
 		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_TITLE')];
 	}
+	
 	if (empty($_POST['comm_message'])) {
 		//complain about required fields
 		$failure = true;
 		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
+	} else {
+		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
+		if (strlen($sanitisedMessage) > 65535) {
+			$failure = true;
+			$this->postingErrors[] = ['Error' => $this->phrase('The message is too long.')];
+		}
 	}
 	
 	if (!$failure) {
@@ -102,7 +115,13 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	
 } elseif (($_POST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
 	if ($_POST['comm_message']) {
-		$this->editPost(ze\user::id(), $_POST['comm_message'], $_POST['comm_name']);
+		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
+		if (strlen($sanitisedMessage) > 65535) {
+			$failure = true;
+			$this->postingErrors[] = ['Error' => $this->phrase('The message is too long.')];
+		} else {
+			$this->editPost(ze\user::id(), $_POST['comm_message'], $_POST['comm_name']);
+		}
 	} else {
 		//complain about required fields
 		$failure = true;
@@ -127,7 +146,13 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	
 } elseif (($_POST['comm_request'] ?? false) == 'report_post' && $this->canReportPost()) {
 	if ($_POST['comm_message'] ?? false) {
-		$this->reportPost();
+		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
+		if (strlen($sanitisedMessage) > 65535) {
+			$failure = true;
+			$this->postingErrors[] = ['Error' => $this->phrase('The message is too long.')];
+		} else {
+			$this->reportPost();
+		}
 	} else {
 		//complain about required fields
 		$failure = true;

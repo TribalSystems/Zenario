@@ -43,17 +43,29 @@ require CMS_ROOT. 'zenario/basicheader.inc.php';
 
 clearstatcache();
 function removeUnwantedCode($path) {
-	$check = CMS_ROOT. 'zenario/libs/bower/'. $path;
+	$check = CMS_ROOT. 'zenario/libs/yarn/'. $path;
 	if (is_dir($check)) {
 		exec('svn del --force '. escapeshellarg($check));
+		
+		clearstatcache();
+		if (is_dir($check)) {
+			exec('rm -r '. escapeshellarg($check));
+		}
 	}
 }
 
 removeUnwantedCode('jquery/src');
-removeUnwantedCode('respond/cross-domain');
-removeUnwantedCode('respond/src');
-
-
+removeUnwantedCode('jquery-lazy/node_modules');
+removeUnwantedCode('respond.js/cross-domain');
+removeUnwantedCode('respond.js/src');
+removeUnwantedCode('respond.js/test');
+removeUnwantedCode('spectrum-colorpicker/build');
+removeUnwantedCode('spectrum-colorpicker/docs');
+removeUnwantedCode('spectrum-colorpicker/example');
+removeUnwantedCode('spectrum-colorpicker/test');
+removeUnwantedCode('toastr/node_modules');
+removeUnwantedCode('toastr/nuget');
+removeUnwantedCode('toastr/tests');
 
 
 $RecursiveDirectoryIterator = new \RecursiveDirectoryIterator(CMS_ROOT. 'zenario/libs/');

@@ -101,7 +101,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
             	$tagId = $cType. '_'. $cID;
             	if (!isset($data[$tagId])) {
             		$data[$tagId] = ['content' => [], 'version' => []];
-					$data[$tagId]['perms'] = ze\content::getShowableContent($data[$tagId]['content'], $data[$tagId]['version'], $cID, $cType, $requestVersion = false, $checkRequestVars = true, $adminsSee400Errors = true);
+					$data[$tagId]['perms'] = ze\content::getShowableContent($data[$tagId]['content'], $data[$tagId]['version'], $cID, $cType, $requestVersion = false, $checkRequestVars = true, $adminMode = true, $adminsSee400Errors = true);
             	}
            		$perms = $data[$tagId]['perms'];
 	            

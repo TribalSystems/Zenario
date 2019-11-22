@@ -264,3 +264,8 @@ zenario_menu:
                             <li><code>true</code> to show the menu node</li>
                             <li>An <code>array()</code> to show the menu node, and set/overwrite its properties.</li>
                         </ul>
+                
+                restrict_child_content_types:
+                    type: select
+                    values: {}
+                    empty_value: 'Allow any type of content to be created under here'

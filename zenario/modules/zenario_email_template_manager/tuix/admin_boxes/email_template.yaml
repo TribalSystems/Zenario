@@ -136,13 +136,69 @@ zenario_email_template:
                     label: 'Format:'
                     type: radios
                     values:
-                        no:
-                            label: Create a custom email that doesn't use the standard email template. Edit the entire email, using rich text.
                         yes:
-                            label: Use the standard email template ([[link]]) for the header and the footer. Edit the body, using rich text.
+                            pre_field_html: |
+                                <h6 style="
+                                    margin: 0 0 6px 2em;
+                                ">
+                                    Use the standard email template ([[link]]) for the header and the footer. Edit the body, using
+                                </h6>
+                            style: |
+                                margin-left: 4em;
+                            label:  rich text
                         twig:
-                            label: Use the standard email template ([[link]]) for the header and the footer. Edit the body, using HTML and Twig code (advanced).
+                            style: |
+                                margin-left: 4em;
+                            label: HTML and Twig code (advanced)
+                        no:
+                            pre_field_html: |
+                                <h6 style="
+                                    margin: 10px 0 6px 2em;
+                                ">
+                                    Edit the entire email (advanced), using
+                                </h6>
+                            style: |
+                                margin-left: 4em;
+                            label: rich text
                     format_onchange: true
+                include_a_fixed_attachment:
+                    label: Include a fixed attachment
+                    ord: 11
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
+                selected_attachment:
+                    ord: 11.1
+                    pick_items:
+                        path: zenario__content/panels/documents
+                        min_path: zenario__content/panels/documents
+                        max_path: zenario__content/panels/documents
+                        target_path: zenario__content/panels/documents
+                        select_phrase: Select an attachment...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an attachment.
+                    visible_if: zenarioAB.value('include_a_fixed_attachment')
+                    indent: 1
+                    format_onchange: true
+                allow_visitor_uploaded_attachments:
+                    label: Include visitor-uploaded attachments when emailing form data
+                    ord: 11.2
+                    type: checkbox
+                    value: false
+                when_sending_attachments:
+                    label: "When sending attachments:"
+                    ord: 11.3
+                    type: radios
+                    values:
+                        send_organizer_link:
+                            ord: 1
+                            label: "Send Organizer link for attachments"
+                        send_actual_file:
+                            ord: 2
+                            label: "Send actual file"
+                    value: send_organizer_link
+                    note_below: "Visitor-uploaded attachments are not sent to visitors"
                 body:
                     label: 'Email body:'
                     type: editor

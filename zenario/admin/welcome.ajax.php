@@ -48,7 +48,7 @@ $installed =
  && (defined('DBNAME'))
  && (defined('DBUSER'))
  && (defined('DBPASS'))
- && (ze::$dbL = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
+ && (ze::$dbL = new ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
  && (ze::$dbL->con)
  && ($result = @ze::$dbL->con->query("SHOW TABLES LIKE '". DB_PREFIX. "site_settings'"))
  && ($installStatus = 2)
@@ -60,6 +60,41 @@ if (!$installed) {
 }
 
 
+//Handle the image upload in the installer
+if (($_REQUEST['method_call'] ?? false) == 'handleWelcomeAJAX') {
+	
+	if (!$installed) {
+		ze\fileAdm::exitIfUploadError();
+		
+		if (ze\file::isImageOrSVG($mimeType = ze\file::mimeType($_FILES['Filedata']['name']))) {
+			ze\fileAdm::putUploadFileIntoCacheDir(
+				$_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'],
+				$_REQUEST['_html5_backwards_compatibility_hack'] ?? false,
+				false, false,
+				$isAllowed = true, $baseLink = 'zenario/admin/welcome.ajax.php'
+			);
+		}
+	}
+	exit;
+}
+
+//Display such an image that was previously uploaded
+if (!$installed && !empty($_GET['getUploadedFileInCacheDir'])) {
+	
+	if (($filepath = ze\file::getPathOfUploadInCacheDir($_GET['getUploadedFileInCacheDir']))
+	 && ($mimeType = ze\file::mimeType($filepath))) {
+		
+		$filename = basename($filepath);
+		
+		//Output the file
+		header('Content-type: '. $mimeType);
+		
+		ze\cache::end();
+		readfile($filepath);
+	}
+	
+	exit;
+}
 
 if ($_REQUEST['quickValidate'] ?? false) {
 	
@@ -205,10 +240,9 @@ if ($systemRequirementsMet && $installed) {
 			$admin = ze\sql::fetchAssoc($result);
 		
 			if (!$admin) {
-				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('This link is invalid or has expired. Please contact an administrator.');
+				$tags['tabs']['new_admin']['errors'][] = ze\admin::phrase('This link is invalid or has expired. Please contact an administrator.');
 				$fields['new_admin/description']['hidden'] = true;
 				$fields['new_admin/password']['hidden'] = true;
-				$fields['new_admin/password_strength']['hidden'] = true;
 				$fields['new_admin/re_password']['hidden'] = true;
 				$fields['new_admin/save_password_and_login']['hidden'] = true;
 			} else {

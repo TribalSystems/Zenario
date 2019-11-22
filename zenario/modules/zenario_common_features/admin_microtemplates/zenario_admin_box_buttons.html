@@ -19,7 +19,7 @@
 		<% } else { %>
 			zfab_disabled
 		<% } %>
-	">{{zenarioA.phrase.prev}}</a>
+	"><span>{{zenarioA.phrase.prev}}</span></a>
 	
 	<a class="zfab_np zfab_next
 		<% if (zenarioAB.nextTab) { %>
@@ -27,24 +27,24 @@
 		<% } else { %>
 			zfab_disabled
 		<% } %>
-	">{{zenarioA.phrase.next}}</a>
+	"><span>{{zenarioA.phrase.next}}</span></a>
 <% } %>
 
 <% if (zenarioAB.hasPreviewWindow && !m.isReadOnly) { %>
 	<% if (zenario.cID && zenarioAB.tuix.key.slotName) { %>
-		<% switch (zenarioAB.path) { %>
-			<% case "plugin_settings": %>
-				<input type="button"
-					id="zenario_fabPreviewFullPage"
-					value="{{zenarioA.phrase.previewFullWidth|e}}"
-					onclick="zenarioAB.showPreviewInPopoutBox(false, true);"/>
-			<% break; %>
-			<% case "plugin_css_and_framework": %>
-				<input type="button"
-					id="zenario_fabPreviewFullPage"
-					value="{{zenarioA.phrase.previewFullPage|e}}"
-					onclick="zenarioAB.showPreviewInPopoutBox(true, true);"/>
-		<% } %>
+		<input type="button"
+			id="zenario_fabPreviewFullPage"
+			value="{{zenarioA.phrase.previewFullWidth|e}}"
+			onclick="zenarioAB.showPreviewInPopoutBox(false, true);"/>
+		
+		<!--
+			Preview with the rest of the page intact. Works with most things, but not FEAs:
+			
+			<input type="button"
+				id="zenario_fabPreviewFullPage"
+				value="{{zenarioA.phrase.previewFullPage|e}}"
+				onclick="zenarioAB.showPreviewInPopoutBox(true, true);"/>
+		-->
 	<% } %>
 	
 	<input type="button" value="{{zenarioA.phrase.updatePreview|e}}" onclick="

@@ -47,7 +47,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$adminDetails = ze\admin::details(ze\admin::id());
 		$values['meta_data/test_send_email_address'] = $adminDetails['admin_email'];
 		$box['tabs']['meta_data']['fields']['add_user_field']['values'] =
-			ze\datasetAdm::listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+			ze\datasetAdm::listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true, false, $putMergeFieldsIntoLabel = true);
 		
 		
 		

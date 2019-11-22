@@ -70,8 +70,8 @@ zenario__content:
                     db_column: ct.enable_categories
                 is_creatable:
                     db_column: ct.is_creatable
-                default_parent_menu_node:
-                    db_column: ct.default_parent_menu_node
+                menu_node_position_edit:
+                    db_column: ct.menu_node_position_edit
             
             default_sort_column: content_type_name_en
             item:

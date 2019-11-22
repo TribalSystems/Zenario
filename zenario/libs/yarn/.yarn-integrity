@@ -1,0 +1,36 @@
+{
+  "systemParams": "darwin-x64-72",
+  "modulesFolders": [
+    "zenario/libs/yarn"
+  ],
+  "flags": [],
+  "linkedModules": [],
+  "topLevelPatterns": [
+    "bez@*",
+    "jquery-lazy@*",
+    "jquery-multiselect@*",
+    "jquery@2.x",
+    "mdn-polyfills@*",
+    "media-match@*",
+    "respond.js@*",
+    "spectrum-colorpicker@*",
+    "toastr@*",
+    "vimeo-upload@*"
+  ],
+  "lockfileEntries": {
+    "bez@*": "https://registry.yarnpkg.com/bez/-/bez-0.1.0.tgz#e32bfdc817c8b75bfb67ffe58e96568e77562b19",
+    "jquery-lazy@*": "https://registry.yarnpkg.com/jquery-lazy/-/jquery-lazy-1.7.10.tgz#aa3d43d058bf1ea89284214f4521f6d9a162d051",
+    "jquery-multiselect@*": "https://registry.yarnpkg.com/jquery-multiselect/-/jquery-multiselect-1.0.0.tgz#2b3125fd109bfbef1d4be54dc847143678c71b2c",
+    "jquery@2.x": "https://registry.yarnpkg.com/jquery/-/jquery-2.2.4.tgz#2c89d6889b5eac522a7eea32c14521559c6cbf02",
+    "jquery@>=1.12.0": "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2",
+    "jquery@>=1.7.2": "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2",
+    "mdn-polyfills@*": "https://registry.yarnpkg.com/mdn-polyfills/-/mdn-polyfills-5.19.0.tgz#5c2bef9015f53ecab35ec6169d3662a2671d032b",
+    "media-match@*": "https://registry.yarnpkg.com/media-match/-/media-match-2.0.3.tgz#3cb852d6a43e7325199522bc443a077fbbe41460",
+    "respond.js@*": "https://registry.yarnpkg.com/respond.js/-/respond.js-1.4.2.tgz#fd5c07450acce6090916d8d090b86b672dd9748b",
+    "spectrum-colorpicker@*": "https://registry.yarnpkg.com/spectrum-colorpicker/-/spectrum-colorpicker-1.8.0.tgz#b926cf5002c0a77860b5f8351e1c093c65200107",
+    "toastr@*": "https://registry.yarnpkg.com/toastr/-/toastr-2.1.4.tgz#8b43be64fb9d0c414871446f2db8e8ca4e95f181",
+    "vimeo-upload@*": "https://registry.yarnpkg.com/vimeo-upload/-/vimeo-upload-0.1.6.tgz#ad9f80230575d94f6d2da479c665410d21b949c2"
+  },
+  "files": [],
+  "artifacts": {}
+}

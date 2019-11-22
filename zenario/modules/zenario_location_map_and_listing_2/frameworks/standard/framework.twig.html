@@ -1,0 +1,285 @@
+<div class="interface_header" {% if this.setting('hide_filters_list') %} style="display: none;" {% endif %}>
+	<div class="interface_header_top">
+		<div class="interface_back_link">
+			<a onclick="history.back(-1)">{{"Back"|trans}}</a>
+		</div>
+		<div class="interface_logo">
+		</div>
+	</div>
+	<div class="interface_header_bottom">
+		<div id="interface_filters" class="interface_filters">
+			<div id="filter_button_and_dropdown">
+				<h5 id="filter_button" class="filter_button" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.filterOnclick();">Filters</h5>
+				{% if Level_1_filters %}
+					<div id="filter_dropdown" class="filter_dropdown">
+						<div class="filter_dropdown_inner">
+							<span id="apply_filters_button" class="apply_filters_button">Apply filters</span>
+							{{openForm}}
+							
+							{% set excludeDatasetFilters = this.setting('exclude_dataset_filters_picker') %}
+				
+							{# Draw the top level filters. #}
+							{% for Level_1_filter_key, Level_1_filter in Level_1_filters %}
+								{% set location_dataset_filter_level_1 = this.setting('location_dataset_filter_level_1') %}
+								{% set location_dataset_filter_level_2 = this.setting('location_dataset_filter_level_2') %}
+								{% if ((not location_dataset_filter_level_1) or (location_dataset_filter_level_1 and location_dataset_filter_level_1 == Level_1_filter_key)) and Level_1_filter_key not in excludeDatasetFilters %}
+									<div class="interface_filter_{{Level_1_filter_key|e}}">
+										<input
+											type="checkbox"
+											name="level_1_filter_{{Level_1_filter_key|e}}"
+											id="level_1_filter_{{Level_1_filter_key|e}}"
+											{% if Level_1_filter.checked %} checked {% endif %}
+											{% if Level_1_filter.readonly %} readonly {% endif %}
+											{% if Level_1_filter.hidden %} hidden {% endif %}
+										>
+										{% if not Level_1_filter.hidden %}
+											<label class="level_1" for="level_1_filter_{{Level_1_filter_key|e}}">{{Level_1_filter.label|trans}}</label>
+										{% endif %}
+					
+										{# For each top level filter, draw the level 2 filters. #}
+										{# Level 2 filters are grouped by the top level filter ID. #}
+						
+										{% if Level_2_filters and Level_2_filters[Level_1_filter_key] %}
+											<div class="interface_filter_{{Level_1_filter_key|e}}_subfilters">
+												{% for Level_2_filter_key, Level_2_filter in Level_2_filters[Level_1_filter_key] %}
+													{% if not location_dataset_filter_level_2 or location_dataset_filter_level_2 == Level_2_filter_key %}
+														{% set doNotRepeat = false %}
+														{% for field_id, field in Level_2_filter['values'] %}
+										
+															{# For level 2 filters, first draw a checkbox to enable the filter. Then draw the filter input (text, select list, radios, checkboxes...) #}
+															{% if Level_2_filter_key not in excludeDatasetFilters %}
+																{% if not doNotRepeat %}
+																	<label class="level_2">
+																		<input
+																			type="checkbox"
+																			{% if field.type == "radio" or field.type == "select" %}
+																				name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_checkbox"
+																				id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_checkbox"
+																				{% if Level_2_filter.checked %} checked {% endif %}
+																			{% else %}
+																				name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																				id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																				{% if field.checked %} checked {% endif %}
+																			{% endif %}
+																		>
+																		{% if field.type == "radio" or field.type == "select" %}
+																			{{Level_2_filter.label|trans}}
+																		{% else %}
+																			{{field.label|trans}}
+																		{% endif %}
+																	</label>
+																	{% if field.type == "radio" or field.type == "select" %}
+																		{# This is to prevent generating a checkbox for every radio/select option. #}
+																		{# Also, if this element is a select list, the select tag is needed. #}
+																		{% set doNotRepeat = true %}
+																		{% if field.type == "select" and Level_2_filter.checked %}
+																			<select
+																				name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_select"
+																				id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_select"
+																			>
+																		{% endif %}
+																	{% endif %}
+																{% endif %}
+										
+																{# Draw a list of input fields of the correct type, so the user can adjust the values. #}
+																{% if field.type == "text" and field.checked %}
+																	<input
+																		type="{{field.type|e}}"
+																		name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_text"
+																		id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_text"
+																		{% if field.value %} value="{{field.value|e}}" {% endif %}
+																	>
+																{% elseif field.type == "radio" and Level_2_filter.checked %}
+																	<label>
+																		<input
+																			type="{{field.type|e}}"
+																			name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_radio"
+																			id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																			value="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																			{% if field.checked %} checked {% endif %}
+																		>
+																		{{field.label|trans}}
+																	</label>
+																{% elseif field.type == "select" and Level_2_filter.checked %}
+																	<option
+																		id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																		value="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																		{% if field.checked %} selected {% endif %}
+																	>
+																	{{field.label|trans}}
+																	</option>
+																{% endif %}
+															{% endif %}
+														{% endfor %}
+									
+														{% if Level_2_filter.type == "select" %}
+															</select>
+														{% endif %}
+													{% endif %}
+												{% endfor %}
+											</div>
+										{% endif %}
+									</div>
+								{% endif %}
+							{% endfor %}
+				
+							{{closeForm}}
+						</div>
+					</div>
+				{% endif %}
+			</div>
+			{% if Selected_filters %}
+				<div class="selected_filters">
+					{% for Selected_filter in Selected_filters %}
+						<span>
+							{{Selected_filter.label}}
+							<span class="closing_button" onclick="zenario_location_map_and_listing_2.selectedFiltersElementOnclick({{Selected_filter.onclickTarget}});">
+								X
+							</span>
+						</span>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</div>
+		{% if this.setting('show_location_list') and this.setting('show_map') %}
+			<ul class="mode">
+				<li id="mode_list_button" class="mode_list" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.setModeTo('mode_list');">List</li>
+				<li id="mode_map_button" class="mode_map" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.setModeTo('mode_map');">Map</li>
+			</ul>
+		{% endif %}
+	</div>
+</div>
+
+<div class="interface_body">
+	
+	<div id="interface_list_container" class="interface_list_container" {% if not this.setting('show_location_list') %} style="display: none;" {% endif %}>
+		<div class="interface_content">
+			<div id="{{mapId|escape}}" class="zenario_lmal_map zenario_lmal_map_wrap"></div>
+		
+			<div class="interface_location_listing">
+				<h2>{{list_title|trans}}</h2>
+				{% for location in locations %}
+					<div class="zenario_lmal_location {{location.htmlId|escape}}" id="{{location.htmlId|escape}}"
+						{% if this.setting('show_location_list') and this.setting('show_map') %}
+							onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingClick(this, {{location.location_id|e}})};"
+							onmouseover="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseover(this, {{location.location_id|e}})};"
+							onmouseout="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseout(this, {{location.location_id|e}})};"
+						{% endif %}
+					>
+						<div id="{{location.htmlId|escape}}_basic_details">
+							{% if this.setting('show_images') and location.list_image %}
+								<div class="image list lmal_location_image"> 
+									<img src="{{location.list_image}}" alt="{{location.alt_tag|escape}}">
+								</div>
+							{% endif %}
+							<div class="lmal_location_content"> 
+								{% if this.setting('locations__field__name') %}
+									<h3 id="location_title">
+										{{location.name|escape}}
+									</h3>
+								{% endif %}
+							
+								{% if this.setting('locations__field__checkbox_selection') and location.filters_list %}
+									<span class="zenario_lmal_filters_list">
+										{# Show a list of filters assigned to the location. #}
+										{# Make sure the filter set as the icon is in bold. #}
+										{# Separate the filters with commas. #}
+									
+										{% for location_key, location_filter in location.filters_list %}
+											{% if location_key == location.icon_name %}<b>{% endif %}<i>{{location_filter|e}}</i>{% if location_key == location.icon_name %}</b>{% endif %}{% if not loop.last %},{% endif %}
+										{% endfor %}
+									</span>
+								{% endif %}
+			
+								{% if this.setting('locations__field__address') %}
+									{% set addressline = [] %}
+									{% if location.address1 %}
+										{% set addressline = addressline|merge([location.address1]) %}
+									{% endif %}
+									{% if location.address2 %}
+										{% set addressline = addressline|merge([location.address2]) %}
+									{% endif %}
+									{% if location.locality %}
+										{% set addressline = addressline|merge([location.locality]) %}
+									{% endif %}
+									{% if location.city %}
+										{% set addressline = addressline|merge([location.city]) %}
+									{% endif %}
+									{% if location.state %}
+										{% set addressline = addressline|merge([location.state]) %}
+									{% endif %}
+									{% if location.postcode %}
+										{% set addressline = addressline|merge([location.postcode]) %}
+									{% endif %}
+			
+									{% if addressline|length %}
+										<div class="zenario_lmal_addressline">
+											{{addressline|escape|join(', ')}}
+										</div>
+									{% endif %}
+								{% endif %}
+	
+								<div class="zenario_lmal_contact_info">
+									{% if this.setting('locations__field__phone') and location.phone %}
+										{% set phone = location.phone|escape %}
+										<span class="zenario_lmal_phone">
+											{{"[[phone]]"|trans({phone: phone})}}
+										</span>
+									{% endif %}
+									{% if this.setting('locations__field__email') and location.email %}
+										<span class="zenario_lmal_email">
+											<a href="mailto:{{location.email|escape}}">{{"Email"|trans}}</a>
+										</span>
+									{% endif %}	
+									{% if this.setting('locations__field__website') and location.url %}
+										<span class="zenario_lmal_url">
+											<a target="_blank" href="{{location.url|escape}}">{{"Website"|trans}}</a>
+										</span>
+									{% endif %}
+					
+									{% if this.setting('locations__field__link_to_descriptive_page') and location.descriptive_page %}
+										<span class="button view_descriptive_page list">
+											<a target="_blank" href="{{location.descriptive_page|escape}}">{{"See more..."|trans}}</a>
+										</span>
+									{% endif %}
+								</div>
+					
+								{% if this.setting('locations__field__summary') and location.summary %}
+									{% set description = location.summary|escape %}
+									<div class="zenario_lmal_description">
+										{{description}}
+									</div>
+								{% endif %}
+								
+								{% if this.setting('locations__field__special_offers') and location.special_offers %}
+									<div class="zenario_lmal_special_offers">
+										{{location.special_offers|e}}
+									</div>
+								{% endif %}
+							</div>
+						</div>
+						
+						{% if Logged_in_user_is_admin and Location_organizer_href_start %}
+							<a
+								class="zenario_front_end_picked_item_info"
+								href="
+									{{Location_organizer_href_start}}{{location.location_id}}
+									{{Location_organizer_href_middle}}{{location.location_id}}
+									{{Location_organizer_href_end}}"
+								target="_blank">i</a>
+						{% endif %}
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+	
+	{% if this.setting('show_map') %}
+		<div id="interface_map_container" class="interface_map_container">
+			<!-- This is the HTML for the google map iframe -->
+			<div class="zenario_lmal_map zenario_lmal_map_iframe_wrap">
+				<iframe id="{{mapIframeId|escape}}" src="{{mapIframeSrc|escape}}"></iframe>
+			</div>
+		</div>
+	{% endif %}
+</div>

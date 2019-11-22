@@ -95,11 +95,15 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		$this->objects['hash'] = $_REQUEST['hash'] ?? false;
 		$this->objects['extranet_reset_password'] = $_REQUEST['extranet_reset_password'] ?? false;
 		
+		$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
+		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Main_Title'] = true;
 			$this->subSections['Reset_Password_Form_Passwords'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
+		
+		$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
 	}
 	
 	private function sendResetEmail() {

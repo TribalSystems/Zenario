@@ -64,8 +64,18 @@ class zenario_users__admin_boxes__content extends zenario_users {
 				
 				switch ($chain['privacy']) {
 					case 'group_members':
-						$values['privacy/group_ids'] =
-							ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
+						$ids = ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]);
+						
+						//Catch the case where one or more IDs reference a deleted group.
+						//The query below will return existing groups.
+						$sql = '
+							SELECT id
+							FROM ' . DB_PREFIX . 'custom_dataset_fields
+							WHERE id IN (' . ze\escape::in($ids, true) . ')';
+						$result = ze\sql::select($sql);
+						
+						$groupIds = ze\sql::fetchValues($result);
+						$values['privacy/group_ids'] = ze\escape::in($groupIds, true);
 						break;
 					
 					case 'with_role':

@@ -27,6 +27,7 @@ plugin_settings:
         css_class: plugin_album_instance
         label: ''
         value: ''
+    tab: first_tab
     tabs:
         first_tab:
             label: Details
@@ -60,12 +61,12 @@ plugin_settings:
         'phrases.framework':
             hidden: true
             label: Phrases
-            ord: 999999997
+            ord: 100001
             fields: {}
         
         custom_tuix:
             label: Custom TUIX
-            ord: 999999998
+            ord: 100002
             visible_if: |
                 tuix.key.isFEA
             fields:
@@ -84,7 +85,7 @@ plugin_settings:
         
         last_tab:
             label: Help
-            ord: 999999999
+            ord: 100009
             fields:
                 module_description:
                     label: 'Module description:'

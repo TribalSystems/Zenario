@@ -57,9 +57,7 @@ class admin {
 
 	//Formerly "adminHasSpecificPerms()"
 	public static function hasSpecificPerms() {
-		return !empty($_SESSION['admin_permissions'])
-		 && ($_SESSION['admin_permissions'] == 'specific_languages'
-		  || $_SESSION['admin_permissions'] == 'specific_menu_areas');
+		return !empty($_SESSION['admin_permissions']) && ($_SESSION['admin_permissions'] == 'specific_areas');
 	}
 	
 
@@ -319,6 +317,39 @@ class admin {
 	public static function checkPassword($adminUsernameOrEmail, &$details, $password, $checkViaEmail = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
+	
+	//Show a note explaining the password requirements
+	public static function displayPasswordRequirementsNoteAdmin($password) {
+		$passwordRequirements = \ze\user::getPasswordRequirements();
+		$passwordValidation = \ze\user::checkPasswordStrength($password);
+		
+		$html = '<p>' . \ze\admin::phrase('Minimum requirements:') . '</p><ul>';
+		$class = $passwordValidation['min_length'] ? 'pass' : 'fail';
+		$html .= '<li class="' . $class . '" id="min_length">' . \ze\admin::phrase('[[n]] characters long', ['n' => $passwordRequirements['min_length']]) . '</li>';
+		if ($passwordRequirements['require_lowercase_chars']) {
+			$class = $passwordValidation['lowercase'] ? 'pass' : 'fail';
+			$html .= '<li class="' . $class . '" id="lowercase">' . \ze\admin::phrase('1 lowercase character') . '</li>';
+		}
+
+		if ($passwordRequirements['require_uppercase_chars']) {
+			$class = $passwordValidation['uppercase'] ? 'pass' : 'fail';
+			$html .= '<li class="' . $class . '" id="uppercase">' . \ze\admin::phrase('1 uppercase character') . '</li>';
+		}
+
+		if ($passwordRequirements['require_numbers']) {
+			$class = $passwordValidation['numbers'] ? 'pass' : 'fail';
+			$html .= '<li class="' . $class . '" id="numbers">' . \ze\admin::phrase('1 number') . '</li>';
+		}
+
+		if ($passwordRequirements['require_symbols']) {
+			$class = $passwordValidation['symbols'] ? 'pass' : 'fail';
+			$html .= '<li class="' . $class . '" id="symbols">' . \ze\admin::phrase('1 symbol') . '</li>';
+		}
+
+		$html .= '</ul>';
+		
+		return $html;
+	}
 
 	//Formerly "cancelPasswordChange()"
 	public static function cancelPasswordChange($adminId) {
@@ -411,10 +442,9 @@ class admin {
 			$_SESSION['admin_box_sync'],
 			$_SESSION['admin_copied_contents'],
 			$_SESSION['admin_permissions'],
-			$_SESSION['admin_specific_content_items'],
 			$_SESSION['admin_specific_languages'],
-			$_SESSION['admin_specific_menu_nodes'],
-			$_SESSION['admin_specific_menu_sections'],
+			$_SESSION['admin_specific_content_items'],
+			$_SESSION['admin_specific_content_types'],
 			$_SESSION['privs']
 		);
 	
@@ -442,6 +472,7 @@ class admin {
 			'_PRIV_VIEW_CONTENT_ITEM_SETTINGS' => true,
 			'_PRIV_VIEW_MENU_ITEM' => true,
 			'_PRIV_EDIT_MENU_TEXT' => true,
+			'_PRIV_CREATE_FIRST_DRAFT' => true,
 			'_PRIV_CREATE_TRANSLATION_FIRST_DRAFT' => true,
 			'_PRIV_EDIT_DRAFT' => true,
 			'_PRIV_CREATE_REVISION_DRAFT' => true,

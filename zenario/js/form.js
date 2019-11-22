@@ -360,7 +360,15 @@ methods.clickTab = function(tab) {
 	}
 };
 
-methods.clickButton = function(el, id) {
+methods.turnToggleOn = function(id) {
+	thus.clickButton(id, true);
+};
+
+methods.turnToggleOff = function(id) {
+	thus.clickButton(id, false);
+};
+
+methods.clickButton = function(id, turnOnOff) {
 	
 	var button;
 	
@@ -372,11 +380,18 @@ methods.clickButton = function(el, id) {
 		} else if (button.type == 'toggle') {
 			
 			var $el = $(thus.get(id)),
-				$rowEl = $(thus.get('row__' + id));
+				$rowEl = $(thus.get('row__' + id)),
+				pressed = !!engToBoolean(button.pressed);
+				
+			//If we're trying to turn the button on, and it was already on, do nothing.
+			if (turnOnOff !== undefined && turnOnOff == pressed) {
+				return;
+			}
 			
 			if (button.pressed = !engToBoolean(button.pressed)) {
 				$el.removeClass('not_pressed').addClass('pressed');
 				$rowEl.addClass('zfea_row_pressed');
+			
 			} else {
 				$el.removeClass('pressed').addClass('not_pressed');
 				$rowEl.removeClass('zfea_row_pressed');
@@ -1999,6 +2014,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				
 					color_picker_options.disabled = readOnly;
 					color_picker_options.preferredFormat = color_picker_options.preferredFormat || 'hex';
+					color_picker_options.showInput = true;
 				
 					$(thus.get(id)).spectrum(color_picker_options);
 				});
@@ -2141,10 +2157,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					}
 			
 					extraAtt.style = 'visibility: hidden;';
-			
-					if (_.isObject(field.editor_options) ) {
-						options = _.extend(options, field.editor_options);
-					}
+				}
+				
+				if (_.isObject(field.editor_options) ) {
+					options = _.extend(options, field.editor_options);
 				}
 			
 				options.setup = function (editor) {
@@ -2199,7 +2215,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				}
 			
 				if (!readOnly || engToBoolean(field.can_be_pressed_in_view_mode)) {
-					extraAttAfter.onclick = "lib.clickButton(this, '" + id + "');";
+					extraAttAfter.onclick = "lib.clickButton('" + id + "');";
 					delete extraAtt.disabled;
 				}
 			
@@ -2397,10 +2413,17 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		if (isTextFieldWithAutocomplete) {
 			
-			var i, v, source = [];
+			var source = [];
 			
 			foreach (sortOrder as i => v) {
-				source.push({label: field.values[v], value: v});
+				val = field.values[v];
+				
+				if (_.isString(val)) {
+					source.push({label: val, value: v});
+				} else {
+					source.push({label: val.label, value: v});
+				}
+				
 			}
 			
 			cb.after(function() {
@@ -2786,6 +2809,8 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		
 		//Leave 200ms between repeated AJAX requests
 		debounce: 200,
+		
+		nbDropdownElements: 30,
 		
 		sortable: reorder_items,
 		placeholder: pick_items.nothing_selected_phrase || upload.nothing_selected_phrase || phrase.nothing_selected,
@@ -3479,7 +3504,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 					if (!thus.splitValues[id]) {
 						thus.splitValues[id] = '';
 					}
-					thus.splitValues[id] += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);; 
+					thus.splitValues[id] += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);
 			
 				} else {
 					html += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);; 
@@ -4051,6 +4076,10 @@ methods.valueIn = function(f) {
 	return _.contains(arguments, thus.value(f), 1);
 };
 
+methods.valueInArray = function(f, a) {
+	return _.contains(a, thus.value(f));
+};
+
 methods.valueIs = function(f, v) {
 	return thus.value(f) == v;
 };
@@ -4555,14 +4584,14 @@ methods.getValueArrayofArrays = function(leaveAsJSONString) {
 	return zenario.nonAsyncAJAX(thus.getURL(), zenario.urlRequest({_read_values: true, _box: thus.sendStateToServer()}), !leaveAsJSONString);
 };
 
-methods.getValues1D = function(pluginSettingsOnly, useTabNames, getInitialValues, ignoreReadonlyFields, ignoreHiddenFields) {
+methods.getValues1D = function(pluginSettingsOnly, useTabNames, getInitialValues, ignoreReadonlyFields, ignoreHiddenFields, specificTabs) {
 	
 	var t, tab, f, field, name, value, values = {};
 	
 	if (thus.tuix
 	 && thus.tuix.tabs) {
 		foreach (thus.tuix.tabs as t => tab) {
-			if (tab.fields) {
+			if (tab.fields && (!defined(specificTabs) || zenarioT.tuixToArray(specificTabs).indexOf(t) != -1)) {
 				foreach (tab.fields as f => field) {
 					
 					name = f;

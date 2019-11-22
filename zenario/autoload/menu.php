@@ -330,8 +330,8 @@ class menu {
 	public static function parentId($mID) {
 		return \ze\row::get('menu_nodes', 'parent_id', ['id' => $mID]);
 	}
-
-
+	
+	
 	const privateItemsExist = 1;
 	const staticFunctionCalled = 2;
 
@@ -407,20 +407,23 @@ class menu {
 			
 				//Otherwise the menu node should be hidden
 				return false;
+			
+			//In admin mode, just check whether something is published, and don't check user permissions
+			} elseif ($adminMode) {
+				return \ze\content::isPublished($row['cID'], $row['cType']);
 		
 			//Check for Menu Nodes that are only shown if logged in/out as an Extranet User
-			//But note that this logic is not used in Admin Mode; Admins always see every Menu Node, and don't see any special markings for these Menu Nodes
 			} elseif ($row['hide_private_item'] == 3) {
 				$cachingRestrictions = max($cachingRestrictions, self::privateItemsExist);
-				return !empty($_SESSION['extranetUserID']) || $adminMode;
+				return !empty($_SESSION['extranetUserID']);
 		
 			} elseif ($row['hide_private_item'] == 2) {
 				$cachingRestrictions = max($cachingRestrictions, self::privateItemsExist);
-				return empty($_SESSION['extranetUserID']) || $adminMode;
+				return empty($_SESSION['extranetUserID']);
 		
 			} elseif ($row['hide_private_item']) {
 				$cachingRestrictions = max($cachingRestrictions, self::privateItemsExist);
-				return \ze\content::checkPerm($row['cID'], $row['cType']);
+				return \ze\content::checkPerm($row['cID'], $row['cType'], false, false, false);
 			}
 		}
 		return $row['target_loc'] != 'none';
@@ -673,7 +676,10 @@ class menu {
 							$row['children'] = false;
 							$result2 = \ze\menu::query($language, $row['mID'], true, $sectionId, $showInvisibleMenuItems, $getFullMenu, $adminMode);
 							while ($row2 = \ze\sql::fetchAssoc($result2)) {
-								if ($row2['target_loc'] != 'none' && (empty($row2['invisible']) || $showInvisibleMenuItems) && \ze\menu::shouldShow($row2, $cachingRestrictions, $language, $getFullMenu, $adminMode)) {
+								if ($row2['target_loc'] != 'none'
+								 && (empty($row2['invisible']) || $showInvisibleMenuItems)
+								 && ($adminMode || \ze\menu::shouldShow($row2, $cachingRestrictions, $language, $getFullMenu, $adminMode))
+								) {
 									$row['children'] = true;
 									break;
 								}

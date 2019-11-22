@@ -77,12 +77,35 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			
 			$fields['details/status']['readonly'] = true;
 			$fields['details/status']['values'] = [$user['status'] => $fields['details/status']['values'][$user['status']]];
+			if($user['last_login']!= NULL){
+			    $values['dates/last_login'] = date_format(new DateTime($user['last_login']),"d M Y H:i:s");
+            }
+            if($user['created_date']!= NULL){
+                $values['dates/created_date'] = date_format(new DateTime($user['created_date']),"d M Y H:i:s") . " " . ($user['creation_method_note'] ?? '') . ' (' . ($user['creation_method'] ?? '') . ')';
+            }
+            
+			if($user['created_date'] == $user['modified_date'] ){
+			    $fields['dates/modified_date']['hidden'] = true;
+			} else {
+                if($user['modified_date']!= NULL){
+                    $values['dates/modified_date'] =  date_format(new DateTime($user['modified_date']),"d M Y H:i:s");
+                }
 			
-			$values['dates/last_login'] = $user['last_login'];
-			$values['dates/created_date'] = $user['created_date'];
-			$values['dates/modified_date'] = $user['modified_date'];
-			$values['dates/last_profile_update_in_frontend'] = $user['last_profile_update_in_frontend'];
+			}
+			if($user['suspended_date']!= NULL){
+			    $values['dates/suspended_date'] =  date_format(new DateTime($user['suspended_date']),"d M Y H:i:s");
+			}else {
+			    $fields['dates/suspended_date']['hidden'] = true;
 			
+			}
+			
+			if($user['last_profile_update_in_frontend']!= NULL){
+			    $values['dates/last_profile_update_in_frontend'] = date_format(new DateTime($user['last_profile_update_in_frontend']),"d M Y H:i:s");
+			    $fields['dates/last_profile_update_in_frontend']['hidden'] = false;
+			}else {
+			    $fields['dates/last_profile_update_in_frontend']['hidden'] = true;
+			
+			}
 			$userType = $user['status'] == 'contact' ? 'contact' : 'user';
 			$box['title'] = ze\admin::phrase('Editing the [[user_type]] "[[identifier]]"', ['identifier' => $user['identifier'], 'user_type' => $userType]);
 			
@@ -173,6 +196,8 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$fields['details/password']['type'] = empty($fields['details/reveal_password']['pressed'])? 'password' : 'text';
 		$fields['details/reveal_password']['value'] = empty($fields['details/reveal_password']['pressed'])? 'Reveal' : 'Hide';
+		
+		$fields['details/password']['side_note'] = ze\admin::displayPasswordRequirementsNoteAdmin($values['details/password']);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -180,11 +205,12 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		if (!empty($box['tabs']['details']['edit_mode']['on'])) {
 			
 			if (!$values['details/status']) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('Please select a status for this user.');
+				$fields['details/status']['error'] = ze\admin::phrase('Please select a status for this user.');
 			}
 			
 			if (!($values['details/email'] || $values['details/first_name'] || $values['details/last_name'])) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter an email, a first name or a last name.');
+				$fields['details/email']['error'] = $fields['details/first_name']['error'] = $fields['details/last_name']['error'] = 
+					ze\admin::phrase('Please enter an email, a first name or a last name.');
 			}
 			
 			//Call the ze\userAdm::isInvalid() function to get any errors in the submission
@@ -217,10 +243,13 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			}
 			
 			if ($e = ze\userAdm::isInvalid($cols, $box['key']['id'])) {
-				
 				//If there are errors, add them to the first tab
-				foreach ($e->errors as $error) {
+				foreach ($e->errors as $key => $error) {
 					$box['tabs']['details']['errors'][] = ze\admin::phrase($error);
+					
+					if ($key == 'email') {
+						$fields['details/email']['error'] = ze\admin::phrase($error);
+					}
 				}
 			}
 			
@@ -230,6 +259,36 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				 || (!empty($fields['details/change_password']['pressed']) && ze\priv::check('_PRIV_EDIT_USER'))) {
 					if (!$values['details/password']) {
 						$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a password.');
+						$fields['details/password']['error'] = true;
+					} else {
+						//Validate password
+						$passwordValidation = ze\user::checkPasswordStrength($values['details/password']);
+						if (!$passwordValidation['password_matches_requirements']) {
+					
+							$fields['details/password']['error'] = true;
+					
+							//Set the post-html field to display "FAIL" highlighted in red.
+							$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+								</div>';
+							$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
+						} else {
+							//Set the post-html field to display "PASS" highlighted in green.
+							$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
+								</div>';
+							$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
+						}
+					}
+				}
+				
+				if (!$fields['details/send_activation_email_to_user']['hidden'] && $values['details/send_activation_email_to_user']) {
+					if (!$values['details/email']) {
+						$fields['details/send_activation_email_to_user']['error'] = ze\admin::phrase('Please enter an email address in the "Email" field above.');
+					} elseif (!empty($fields['details/email']['error'])) {
+						$fields['details/send_activation_email_to_user']['error'] = $fields['details/email']['error'];
 					}
 				}
 			}

@@ -129,7 +129,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && \ze::setting('organizer_favicon') == 
 	if (!$isOrganizer
 	 && \ze::setting('mobile_icon')
 	 && ($icon = \ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], \ze::setting('mobile_icon')))
-	 && ($link = ze\file::link($icon['id']))) {
+	 && ($link = ze\file::link($icon['id'], false, 'public/images'))) {
 		echo "\n", '<link rel="apple-touch-icon-precomposed" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
 	}
 }
@@ -393,4 +393,4 @@ echo '<script type="text/javascript">window.zenarioCodeVersion = "', $codeVersio
 
 //Bugfixes for IE 6, 7 and 8
 echo '
-<!--[if lte IE 8]><script type="text/javascript" src="', $prefix, 'libs/bower/respond/dest/respond.min.js?', $v, '"></script><![endif]-->';
+<!--[if lte IE 8]><script type="text/javascript" src="', $prefix, 'libs/yarn/respond.js/dest/respond.min.js?', $v, '"></script><![endif]-->';

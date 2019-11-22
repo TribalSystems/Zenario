@@ -47,22 +47,7 @@ site_settings:
                 description:
                     full_width: true
                     snippet:
-                        html: This tab contains settings for administrator passwords and security.
-                min_admin_password_strength:
-                    site_setting:
-                        name: min_admin_password_strength
-                    label: Minimum admin password strength
-                    type: select
-                    value: _MEDIUM
-                    values:
-                        _WEAK:
-                            label: Weak
-                        _MEDIUM:
-                            label: Medium
-                        _STRONG:
-                            label: Strong
-                        _VERY_STRONG:
-                            label: Very strong
+                        html: This tab contains settings for security.
                 new_admin_email_expiry:
                     site_setting:
                         name: new_admin_email_expiry

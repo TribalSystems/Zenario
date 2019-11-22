@@ -80,10 +80,10 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 			$box['tabs']['confirm']['fields']['grant_perms_desc']['hidden'] = false;
 	
 			if (isset($box['max_height'])) {
-				$box['max_height'] = 110;
+				$box['max_height'] = 170;
 			}
 	
-			if ($_SESSION['admin_global_id'] ?? false) {
+			if (($_SESSION['admin_global_id'] ?? false) || ($_SESSION['admin_permissions'] == 'all_permissions')) {
 				unset($box['tabs']['confirm']['fields']['grant_perms']['values']['myself']);
 				$box['tabs']['confirm']['fields']['grant_perms']['values']['site_admins']['label'] =
 					ze\admin::phrase('Grant all administrators the permissions added by this module');
@@ -191,7 +191,6 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 		if (ze\dbAdm::needToReloadOrganizerWhenModuleIsInstalled($module['class_name'])) {
 			$this->needReload = true;
 		}
-
 	}
 	
 	private $needReload = false;

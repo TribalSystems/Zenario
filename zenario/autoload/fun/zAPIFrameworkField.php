@@ -191,7 +191,7 @@ if (!$readonly && (!$lov || $i || $type == 'select' || $type == 'text' || $type 
 		'rows' => true,
 		'style' => true,
 		'tabindex' => true,
-		'title', true.
+		'title' => true,
 		'onblur' => true,
 		'onchange' => true,
 		'onclick' => true,
@@ -206,6 +206,7 @@ if (!$readonly && (!$lov || $i || $type == 'select' || $type == 'text' || $type 
 		'onkeypress' => true,
 		'onkeyup' => true,
 		'onselect' => true,
+		'oninput' => true,
 	
 		//New HTML 5 attributes
 		'autocomplete' => true,
@@ -270,7 +271,7 @@ if (!$readonly && (!$lov || $i || $type == 'select' || $type == 'text' || $type 
 	}
 	
 	foreach ($attributes as $att => $attVal) {
-		if (isset($allowedAtt[$att])) {
+		if (isset($allowedAtt[$att]) || substr($att, 0, 5) == 'data-') {
 			$html .= ' '. $att. '="'. htmlspecialchars($attVal). '"';
 		}
 	}

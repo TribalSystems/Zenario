@@ -16,17 +16,27 @@
 	
 	{# Define variables to avoid having to use quotes later #}
 	{% set topLevelId = topLevelNodeId['id'] %}
+	{% set topLevelTitle = topLevelNodeId['title'] %}
+	{% set topLevelText = topLevelNodeId['text'] %}
+	
 	{% set currentLevelId = currentLevelNodeId['id'] %}
 	{% set currentLevelImageLink = currentLevelNodeId['feature_image_link'] %}
 	{% set currentLevelImageSrcset = currentLevelNodeId['Image_Srcset'] %}
 	{% set currentLevelImageWidth = currentLevelNodeId['feature_image_width'] %}
 	{% set currentLevelImageHeight = currentLevelNodeId['feature_image_height'] %}
 	{% set currentLevelDestUrl = currentLevelNodeId['dest_url'] %}
-	{% set currentLevelTitle = currentLevelNodeId['title'] %}
-	{% set currentLevelText = currentLevelNodeId['text'] %}
+	{% set currentLevelTitle = (currentLevelNodeId['title'] ? currentLevelNodeId['title'] : '&nbsp') %}
+	{% set currentLevelText = (currentLevelNodeId['text'] ? currentLevelNodeId['text'] : '<p>&nbsp</p>') %}
 	{% set currentLevelLinkType = currentLevelNodeId['link_type'] %}
 	
 	onmouseover="
+		
+		{# Title/description fallback logic: use the parent node details #}
+		{% set title = (topLevelTitle ? topLevelTitle|e('js') : "&nbsp;") %}
+		{% set desc = (topLevelText ? topLevelText|e('js') : "&nbsp;") %}
+		
+		$('#{{containerId}} .feature_title').html('<h2>{{title}}</h2>');
+		$('#{{containerId}} .feature_text').html('{{desc}}');
 		
 		{# Replace the currently displayed feature image #}
 		var el = zenario.get('{{containerId}}_node_id_{{topLevelId}}_feature_img');
@@ -55,7 +65,6 @@
 		{% endif %}
 		
 		{% if menuNodeHasOwnFeatureImage and (currentLevelTitle or currentLevelText) %}
-			$('#{{containerId}} .feature_content').show();
 			
 			{# Process title and description. Include the link if the menu node has it. #}
 			{% if currentLevelLinkType != 'no_link' %}
@@ -89,9 +98,6 @@
 				$('#{{containerId}} .feature_text').attr('onclick', '{{self.featureImageOnClickEvent(currentLevelId)|e('js')}}');
 			{% endif %}
 			
-		{% else %}
-			{# If there is no title or description, hide the element. #}
-			$('.feature_content').hide();
 		{% endif %}
 	"
 {% endmacro %}
@@ -241,10 +247,9 @@
 								{% endif %}
 							{% endfor %}
 						</div>
-						{% if (nodeExtraProperties[node1.mID]['use_feature_image'] == 1) %}
-							{% if nodeExtraProperties[node1.mID]['show_banner'] %}
-								<div class="feature_wrap">
-									<div class="feature_image" {% if rollover_js %}{{rollover_js}}{% endif %}>
+							<div class="feature_wrap">
+								<div class="feature_image" {% if rollover_js %}{{rollover_js}}{% endif %}>
+									{% if nodeExtraProperties[node1.mID]['use_feature_image'] == 1 and nodeExtraProperties[node1.mID]['show_banner'] %}
 										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
 											<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
 										{% endif %}
@@ -270,35 +275,25 @@
 												"
 											/>
 										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
-									</div>
-									
-									
-									<div class="feature_content">
-									{% if nodeExtraProperties[node1.mID]['title'] %}
-										<div class="feature_title">
-									{% else %}
-										<div class="feature_title" hidden>
 									{% endif %}
-											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
+								</div>
+								
+								<div class="feature_content">
+									<div class="feature_title">
+										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
 											<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
-											{% endif %}
-											<h2>
-												{{nodeExtraProperties[node1.mID]['title']|e}}
-											</h2>
-											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
-										</div>
-									
-									{% if nodeExtraProperties[node1.mID]['text'] %}
-										<div class="feature_text">
-									{% else %}
-										<div class="feature_text" hidden>
-									{% endif %}
-											{{nodeExtraProperties[node1.mID]['text']}}
-										</div>
+										{% endif %}
+										<h2>
+											{{nodeExtraProperties[node1.mID]['title']|e}}
+										</h2>
+										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
+									</div>
+								
+									<div class="feature_text">
+										{{nodeExtraProperties[node1.mID]['text']}}
 									</div>
 								</div>
-							{% endif %}
-						{% endif %}
+							</div>
 						<div class="second_gallery_wrap">
 							{% if node1.image_id %}
 								<div class="second_gallery_item_wrap{% if (cID == node1.cID) and (cType == node1.cType) %} on{% endif %}">

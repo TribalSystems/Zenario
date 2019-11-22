@@ -1,0 +1,47 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: "Sensitive content message"
+    setting_group: zenario__sensitive_content_message
+    tabs:
+        zenario_sensitive_content_message__site_settings:
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: Yes
+            label: "Sensitive content message"
+            fields:
+                zenario_sensitive_content_message__setting:
+                    label: "Sensitive content message:"
+                    site_setting:
+                        name: zenario_sensitive_content_message__setting
+                    type: radios
+                    values:
+                        disabled:
+                            label: "Disabled"
+                        enabled_for_whole_site:
+                            label: "Enabled for whole site"
+                        enabled_by_layout_and_by_content_item:
+                            label: "Enabled by-layout and by-content item"
+                    value: disabled
+                    validation:
+                        required: "Please choose a setting."
+                    format_onchange: true
+                zenario_sensitive_content_message__heading:
+                    label: "Heading:"
+                    indent: 1
+                    site_setting:
+                        name: zenario_sensitive_content_message__heading
+                    type: text
+                    validation:
+                        required_if_not_hidden: "Please enter a title."
+                    visible_if: (zenarioAB.value("zenario_sensitive_content_message__setting") == "enabled_for_whole_site" || zenarioAB.value("zenario_sensitive_content_message__setting") == "enabled_by_layout_and_by_content_item")
+                zenario_sensitive_content_message__text:
+                    label: "Message:"
+                    indent: 1
+                    site_setting:
+                        name: zenario_sensitive_content_message__text
+                    type: editor
+                    validation:
+                        required_if_not_hidden: "Please enter a message."
+                    visible_if: (zenarioAB.value("zenario_sensitive_content_message__setting") == "enabled_for_whole_site" || zenarioAB.value("zenario_sensitive_content_message__setting") == "enabled_by_layout_and_by_content_item")

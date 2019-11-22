@@ -20,9 +20,15 @@
                     <div class="label"><label for="extranet_password">{{"_OLD_PASSWORD:"|trans}}</label></div>
                     {{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_password"})}}
                 </div>
-                <div class="extranet_field">
+                <div class="extranet_field zenario_visitor_tooltip_wrap">
                     <div class="label"><label for="extranet_new_password">{{"_NEW_PASSWORD:"|trans}}</label></div>
-                    {{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
+                    {{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true",
+						'class': "extranet_password", oninput: " zenario.updatePasswordNotifier('#extranet_new_password', false)",
+						'onmouseover': "$('#note_password').show()", 'onmouseout': "$('#note_password').hide()"})}}
+						
+					<div id="note_password" class="zenario_visitor_tooltip zenario_password_requirements_tooltip">
+						{{Password_Requirements}}
+					</div>
                 </div>
                 <div class="extranet_field">
                     <div class="label"><label for="extranet_new_password_confirm">{{"_REPEAT_PASSWORD:"|trans}}</label></div>

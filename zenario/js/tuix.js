@@ -119,7 +119,10 @@ var htmlBaseFun = function(tag, a, noOffset) {
 //	zenarioT.label = funciton() {};
 //	zenarioT.p = funciton() {};
 //	zenarioT.h1 = funciton() {};
-_.each(['', 'div', 'input', 'select', 'option', 'span', 'label', 'p', 'h1', 'ul', 'li'], function(el) {
+//	zenarioT.ul = funciton() {};
+//	zenarioT.li = funciton() {};
+//	zenarioT.form = funciton() {};
+_.each(['', 'div', 'input', 'select', 'option', 'span', 'label', 'p', 'h1', 'ul', 'li', 'form'], function(el) {
 	zenarioT[el || 'html'] = function(tag) {
 		return htmlBaseFun(el || tag, arguments, el);
 	}

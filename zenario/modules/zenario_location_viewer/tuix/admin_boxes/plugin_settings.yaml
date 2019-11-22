@@ -55,6 +55,7 @@ plugin_settings:
                     label: 'Other Location:'
                     plugin_setting:
                         name: location
+                        use_value_for_plugin_name: true
                     pick_items:
                         path: zenario__locations/panel
                         target_path: zenario__locations/panel
@@ -65,6 +66,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: You must select a location
                     indent: 1
+                    format_onchange: true
                 location_user:
                     plugin_setting:
                         name: location_user
@@ -92,10 +94,94 @@ plugin_settings:
                     format_onchange: true
                     side_note: |
                         Displays a location's details as defined in the framework.
+                show_address:
+                    plugin_setting:
+                        name: show_address
+                    label: 'Show address lines 1-2'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_locality:
+                    plugin_setting:
+                        name: show_locality
+                    label: 'Show locality'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_city:
+                    plugin_setting:
+                        name: show_city
+                    label: 'Show city'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_state:
+                    plugin_setting:
+                        name: show_state
+                    label: 'Show state'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_postcode:
+                    plugin_setting:
+                        name: show_postcode
+                    label: 'Show postcode'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_country:
+                    plugin_setting:
+                        name: show_country
+                    label: 'Show country'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_phone:
+                    plugin_setting:
+                        name: show_phone
+                    label: 'Show phone'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_fax:
+                    plugin_setting:
+                        name: show_fax
+                    label: 'Show fax'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_email:
+                    plugin_setting:
+                        name: show_email
+                    label: 'Show email'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_website:
+                    plugin_setting:
+                        name: show_website
+                    label: 'Show website'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_summary:
+                    plugin_setting:
+                        name: show_summary
+                    label: 'Show summary'
+                    type: checkbox
+                    value: 1
+                    indent: 1
+                show_region:
+                    plugin_setting:
+                        name: show_region
+                    label: 'Show region'
+                    type: checkbox
+                    value: 1
+                    indent: 1
                 show_image:
                     plugin_setting:
                         name: show_image
-                    label: 'Show location image'
+                    label: 'Show image'
                     type: checkbox
                     value: 1
                     format_onchange: true

@@ -109,6 +109,7 @@ var slots = zenario_conductor.slots = {},
 				slotName: slotName,
 				commands: {},
 				exists: false,
+				autoRefreshTimer: false,
 				vars: {}
 			};
 		}
@@ -301,7 +302,7 @@ zenario_conductor.go = function(slot, command, requests, runAfter) {
 	
 	if (slot.exists) {
 		
-		if (this.autoRefreshTimer) {
+		if (slot.autoRefreshTimer && command != 'refresh') {
 			zenario_conductor.stopAutoRefresh(slot.slotName);
 		}
 		
@@ -410,20 +411,23 @@ zenario_conductor.go = function(slot, command, requests, runAfter) {
 	}
 };
 
-zenario_conductor.autoRefreshTimer = false;
 zenario_conductor.autoRefresh = function(slotName, interval) {
+	var slot = getSlot(slotName);
+	
 	$('div.slot.' + slotName).addClass('auto_refreshing');
-	if (this.autoRefreshTimer === false) {
+	if (slot.autoRefreshTimer === false) {
 		zenario.refreshSlot(slotName);
-		this.autoRefreshTimer = setInterval(function() {
+		slot.autoRefreshTimer = setInterval(function() {
 			zenario.refreshSlot(slotName);
 		}, interval * 1000);
 	}
 };
 
 zenario_conductor.stopAutoRefresh = function(slotName) {
-	clearInterval(this.autoRefreshTimer);
-	this.autoRefreshTimer = false;
+	var slot = getSlot(slotName);
+	
+	clearInterval(slot.autoRefreshTimer);
+	slot.autoRefreshTimer = false;
 	$('div.slot.' + slotName).removeClass('auto_refreshing');
 };
 

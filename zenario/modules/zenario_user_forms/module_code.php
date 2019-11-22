@@ -379,11 +379,26 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 					}
 					
-					//After submitting form show a success message
-					if ($this->form['show_success_message']) {
-						$html = $this->getSuccessMessageHTML();
+					//After submitting the form, show a success message.
+					//Check the settings to determine whether to keep showing the form HTML too.
+					if ($this->form['show_success_message'] || $this->form['show_success_message_and_the_form']) {
+						
+						//If this is the "Extranet Profile" plugin, it will have its own success message (the "profile_updated" plugin setting).
+						//It will be added later on as a global success message if not blank.
+						//Otherwise, the setting check will return false or an empty string, and the form success message setting will be used instead.
+						if (!empty($this->setting('profile_updated'))) {
+							$html = '<div class="success">' . $this->setting('profile_updated') . '</div>';
+						} else {
+							$html = $this->getSuccessMessageHTML();
+						}
+						
 						$html .= $this->getCloseButtonHTML();
 						$this->cssClass .= ' no_title';
+						
+						if ($this->form['show_success_message_and_the_form']) {
+							$html .= $this->getFormHTML($pageId);
+						}
+						
 						$this->data['form_HTML'] = $html;
 						return true;
 					//Or redirect to another page
@@ -1076,6 +1091,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				uff.filter_on_field,
 				uff.repeat_start_id,
 				uff.invert_dataset_result,
+				uff.allow_converting_multiple_images_to_pdf,
 				cdf.id AS dataset_field_id, 
 				cdf.type, 
 				cdf.db_column, 
@@ -1320,13 +1336,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		}
 		
-		//Global errors and messages
-		if (isset($this->errors['global_top'])) {
-			$html .= '<div class="form_error global top">' . htmlspecialchars(static::fPhrase($this->errors['global_top'], [], $t)) . '</div>';
-		} elseif (isset($this->messages['global_top'])) {
-			$html .= '<div class="success global top">' . htmlspecialchars(static::fPhrase($this->messages['global_top'], [], $t)) . '</div>';
-		}
-		
 		$html .= '<div id="' . htmlspecialchars($this->containerId) . '_user_form" class="user_form">';
 		$html .= $this->openForm(
 			$onSubmit = '', 
@@ -1353,6 +1362,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			foreach ($extraRequests as $name => $value) {
 				$html .= '<input type="hidden" name="' . htmlspecialchars($name) . '" value="' . htmlspecialchars($value) . '"/>';
 			}
+		}
+		
+		//Global errors and messages
+		if (isset($this->errors['global_top'])) {
+			$html .= '<div class="form_error global top">' . htmlspecialchars(static::fPhrase($this->errors['global_top'], [], $t)) . '</div>';
+		} elseif (isset($this->messages['global_top'])) {
+			$html .= '<div class="success global top">' . htmlspecialchars(static::fPhrase($this->messages['global_top'], [], $t)) . '</div>';
 		}
 		
 		$html .= $this->getFieldsHTML($pageId, $this->isFormReadonly($this->form));
@@ -2118,15 +2134,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '
 					<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($json) . '"/>
 					<div class="files_preview">' . $previewHTML . '</div>
-					<input type="button" class="open_popup_1" value="' . htmlspecialchars(static::fPhrase('Upload', [], $t)) . '">
+					<input type="button" class="open_popup_1" value="' . htmlspecialchars(static::fPhrase('Select...', [], $t)) . '">
 					<div class="overlay_1" style="display:none;">
 						<div class="popup_1">
-							<span class="close">×</span>
+							<span class="close">Cancel</span>
 							<div class="header">
-								<h3>' . htmlspecialchars(static::fPhrase('Upload files', [], $t)) . '</h3>
+								<h3>' . htmlspecialchars(static::fPhrase('Drag files into the box below', [], $t)) . '</h3>
 							</div>
 							<div class="content">
-								<div class="files" style="min-height:200px;min-width:500px;border-style:solid;">
+								<div class="files" style="min-height:200px;min-width:500px;border-style:dashed;">
 									...
 								</div>
 								<div class="progress" style="display:none;">
@@ -2135,16 +2151,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							</div>
 							<div class="footer">
 								<div class="section_wrap">
-									<label>' . htmlspecialchars(static::fPhrase('Select files to upload', [], $t)) . '</label>
+									<label>' . htmlspecialchars(static::fPhrase('Or select files from your device:', [], $t)) . '</label>
 									<div class="button">
-										<span>' . htmlspecialchars(static::fPhrase('Browse files', [], $t)) . '</span>
 										<input class="upload_complete_files" type="file" name="file_upload[]" multiple>
 									</div>
-								</div>
+								</div>';
+				if ($field['allow_converting_multiple_images_to_pdf']) {
+					$html .= '
 								<div class="section_wrap">
 									<label>' . htmlspecialchars(static::fPhrase('Upload multiple images as a single PDF', [], $t)) . '</label>
 									<input type="button" class="open_popup_2" value="' . htmlspecialchars(static::fPhrase('Start...', [], $t)) . '">
-								</div>
+								</div>';
+				}
+				
+				$html .= '
 								<div class="section_wrap save">
 									<input type="button" class="save" value="' . htmlspecialchars(static::fPhrase('Save', [], $t)) . '">
 								</div>
@@ -2795,6 +2815,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$error = $this->validateFormField($fieldId, $ignoreRequiredFields);
 				if ($error) {
 					$this->errors[$fieldId] = $error;
+					$this->errors['global_top'] = ze\lang::phrase('Please check below for errors.');
 				}
 			}
 		}
@@ -2816,6 +2837,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			foreach ($customErrors as $fieldId => $error) {
 				if (!isset($this->errors[$fieldId])) {
 					$this->errors[$fieldId] = $error;
+					$this->errors['global_top'] = ze\lang::phrase('Please check below for errors.');
 				}
 			}
 		}
@@ -3223,6 +3245,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			
 			//Send an email to administrators
+			//If there is a condition, make sure the email is only sent if the correct
+			//checkbox is selected.
 			if ($sendEmailToAdmin) {
 				$conditionFieldId = $this->form['send_email_to_admin_condition_field'];
 				if ($this->form['send_email_to_admin_condition'] == 'always_send'
@@ -3231,7 +3255,22 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						&& $this->fields[$conditionFieldId]['value'] === true
 						)
 				) {
-					$adminEmailMergeFields = $this->getTemplateEmailMergeFields($userId, true);
+					$sendOrganizerLink = $allowVisitorUploadedAttachments = true;
+					if ($this->form['admin_email_use_template'] && $this->form['admin_email_template']) {
+						$template = ze\row::get('email_templates', ['when_sending_attachments', 'allow_visitor_uploaded_attachments'], ['code' => $this->form['admin_email_template']]);
+						if ($template['when_sending_attachments'] == 'send_organizer_link') {
+							$sendOrganizerLink = 'admin';
+						} elseif ($template['when_sending_attachments'] == 'send_actual_file') {
+							$sendOrganizerLink = false;
+						}
+						
+						if (!$template['allow_visitor_uploaded_attachments']) {
+							$allowVisitorUploadedAttachments = false;
+							$sendOrganizerLink = false;
+						}
+					}
+					
+					$adminEmailMergeFields = $this->getTemplateEmailMergeFields($userId, true, $sendOrganizerLink);
 				
 					//Set reply to address and name
 					$replyToEmail = false;
@@ -3250,8 +3289,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 					}
 				
+					//If the form uses an email template, and the template is set to send form attachments to admins...
+					$allowVisitorUploadedAttachments = true;
+					if ($this->form['admin_email_use_template']) {
+						$allowVisitorUploadedAttachments = ze\row::get('email_templates', 'allow_visitor_uploaded_attachments', ['code' => $this->form['admin_email_template']]);
+					}
+					
 					$attachments = [];
-					if (ze::setting('zenario_user_forms_admin_email_attachments')) {
+					//... or the site setting for sending attachments is enabled, add any attachments submitted with this form.
+					if ($allowVisitorUploadedAttachments) {
 						foreach ($this->fields as $fieldId => $field) {
 							switch ($field['type']) {
 								case 'attachment':
@@ -3341,7 +3387,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $field['db_column'] ? $field['db_column'] : 'unlinked_' . $field['type'] . '_' . $field['id'];
 	}
 	
-	private function getTemplateEmailMergeFields($userId, $toAdmin = false) {
+	private function getTemplateEmailMergeFields($userId, $toAdmin = false, $sendOrganizerLink = false) {
 		$mergeFields = [];
 		//User merge fields
 		if ($userId) {
@@ -3354,8 +3400,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Data merge fields (after user merge fields so form merge fields are not overridden)
 		foreach ($this->fields as $fieldId => $field) {
+			
 			$column = $this->getFormFieldMergeName($field);
-			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true);
+			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $sendOrganizerLink);
 			
 			if ($field['split_first_name_last_name']) {
 				$mergeFields['first_name'] = trim(substr($field['value'], 0, strpos($field['value'], ' ')));
@@ -3418,10 +3465,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			$includeDownloadLinks = $adminDownloadLinks ? 'admin' : false;
 			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $includeDownloadLinks);
-			if ($field['type'] == 'textarea' && $displayHTML) {
-				$displayHTML = '<br>' . $displayHTML;
+			if ($field['type'] != 'attachment') {
+				if ($field['type'] == 'textarea' && $displayHTML) {
+					$displayHTML = '<br>' . $displayHTML;
+				}
+				$body .= '<p>' . htmlspecialchars(trim($field['name'], " \t\n\r\0\x0B:")) . ': ' . $displayHTML . '</p>';
 			}
-			$body .= '<p>' . htmlspecialchars(trim($field['name'], " \t\n\r\0\x0B:")) . ': ' . $displayHTML . '</p>';
 		}
 		
 		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);

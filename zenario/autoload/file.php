@@ -171,8 +171,8 @@ class file {
 				//Working copies should only be created if they are enabled, and the image is big enough to need them.
 				//Organizer thumbnails should always be created, even if the image needs to be scaled up
 				foreach ([
-					['working_copy_data', 'working_copy_width', 'working_copy_height', \ze::setting('working_copy_image_size'), \ze::setting('working_copy_image_size'), false],
-					['working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height', \ze::setting('thumbnail_wc_image_size'), \ze::setting('thumbnail_wc_image_size'), false],
+					['custom_thumbnail_1_data', 'custom_thumbnail_1_width', 'custom_thumbnail_1_height', \ze::setting('custom_thumbnail_1_width'), \ze::setting('custom_thumbnail_1_height'), false],
+					['custom_thumbnail_2_data', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height', \ze::setting('custom_thumbnail_2_width'), \ze::setting('custom_thumbnail_2_height'), false],
 					['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130, true]
 				] as $c) {
 					if ($c[3] && $c[4] && ($c[5] || ($file['width'] > $c[3] || $file['height'] > $c[4]))) {
@@ -603,8 +603,14 @@ class file {
 		if ($type == 'upload') {
 			$type = $parts[count($parts) - 2];
 		}
-	
-		return \ze\row::get('document_types', 'mime_type', ['type' => strtolower($type)]) ?: 'application/octet-stream';
+		
+		//Look up this mime type.
+		//But if we don't have database access (e.g. we're not installed), call commonMimeType() as a fallback
+		if (is_null(\ze::$dbL)) {
+			return \ze\welcome::commonMimeType($type);
+		} else {
+			return \ze\row::get('document_types', 'mime_type', ['type' => strtolower($type)]) ?: 'application/octet-stream';
+		}
 	}
 
 	//Formerly "isImage()"
@@ -792,10 +798,10 @@ class file {
 						'files',
 						[
 							'privacy', 'mime_type', 'width', 'height',
-							'working_copy_width', 'working_copy_height', 'working_copy_2_width', 'working_copy_2_height',
+							'custom_thumbnail_1_width', 'custom_thumbnail_1_height', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height',
 							'thumbnail_180x130_width', 'thumbnail_180x130_height',
 							'checksum', 'short_checksum', 'filename', 'location', 'path'],
-						$fileId))
+						$fileId, $orderBy = [], $ignoreMissingColumns = true))
 		 || !(self::isImageOrSVG($image['mime_type']))) {
 			return false;
 		}
@@ -950,20 +956,20 @@ class file {
 		if ($path || $returnImageStringIfCacheDirNotWorking) {
 		
 			//Where an image has multiple sizes stored in the database, get the most suitable size
-			if (\ze::setting('working_copy_image_threshold')) {
-				$wcit = ((int) \ze::setting('working_copy_image_threshold') ?: 66) / 100;
+			if (\ze::setting('thumbnail_threshold')) {
+				$wcit = ((int) \ze::setting('thumbnail_threshold') ?: 66) / 100;
 			} else {
 				$wcit = 0.66;
 			}
 		
 			foreach ([
 				['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height'],
-				['working_copy_data', 'working_copy_width', 'working_copy_height'],
-				['working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height']
+				['custom_thumbnail_1_data', 'custom_thumbnail_1_width', 'custom_thumbnail_1_height'],
+				['custom_thumbnail_2_data', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height']
 			] as $c) {
 			
-				$xOK = $image[$c[1]] && $newWidth == $image[$c[1]] || ($newWidth < $image[$c[1]] * $wcit);
-				$yOK = $image[$c[1]] && $newHeight == $image[$c[2]] || ($newHeight < $image[$c[2]] * $wcit);
+				$xOK = !empty($image[$c[1]]) && $newWidth == $image[$c[1]] || ($newWidth < $image[$c[1]] * $wcit);
+				$yOK = !empty($image[$c[1]]) && $newHeight == $image[$c[2]] || ($newHeight < $image[$c[2]] * $wcit);
 			
 				if ($mode == 'resize_and_crop' && (($yOK && $cropNewWidth >= $image[$c[1]]) || ($xOK && $cropNewHeight >= $image[$c[2]]))) {
 					$xOK = $yOK = true;
@@ -1404,6 +1410,15 @@ class file {
 			return;
 		}
 
+		//Attempt to prevent "division by zero" error
+		if (empty($imageWidth)) {
+			$imageWidth = 1;
+		}
+		
+		if (empty($imageHeight)) {
+			$imageHeight = 1;
+		}
+		
 		if (($constraint_width / $imageWidth) < ($constraint_height / $imageHeight)) {
 			$width_out = $constraint_width;
 			$height_out = (int) ($imageHeight * $constraint_width / $imageWidth);
@@ -1440,6 +1455,15 @@ class file {
 	
 		} elseif ($mode == 'resize_and_crop') {
 		
+			//Attempt to prevent "division by zero" error
+			if (empty($imageWidth)) {
+				$imageWidth = 1;
+			}
+			
+			if (empty($imageHeight)) {
+				$imageHeight = 1;
+			}
+			
 			if (($maxWidth / $imageWidth) < ($maxHeight / $imageHeight)) {
 				$newWidth = (int) ($imageWidth * $maxHeight / $imageHeight);
 				$newHeight = $maxHeight;

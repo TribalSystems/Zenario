@@ -186,21 +186,11 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		//item.
 		$checkSpecificPerms = ze::in($mode, 'full', 'quick', 'select') && ze\admin::hasSpecificPerms();
         
-        $defaultMenuNodes = [];
-        $contentTypesResult = ze\row::query('content_types', ['default_parent_menu_node'], []);
-        while ($contentTypeRow = ze\sql::fetchAssoc($contentTypesResult)) {
-            $defaultMenuNodes[$contentTypeRow['default_parent_menu_node']] = true;
-        }
-        
 		foreach ($panel['items'] as &$item) {
 	
 			$id = $item['mid'];
 			
 			$internalTarget = $item['target_loc'] == 'int' && $item['equiv_id'];
-	        
-	        if (isset($defaultMenuNodes[$id])) {
-	            $item['is_content_type_default_menu_node'] = true;
-	        }
 	        
 	        $item['css_class'] = ze\menuAdm::cssClass($item);
 	        

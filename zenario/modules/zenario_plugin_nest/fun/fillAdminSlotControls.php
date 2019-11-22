@@ -41,9 +41,6 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	if ($isSlideshow) {
 		$buttonName = 'plugins_in_slideshow';
 		
-		if (isset($controls['actions']['framework_and_css'])) {
-			$controls['actions']['framework_and_css']['label'] = ze\admin::phrase('Slideshow CSS & framework');
-		}
 		$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow settings');
 		
 		if ($existingPlugins) {
@@ -55,9 +52,6 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	} else {
 		$buttonName = 'plugins_in_nest';
 		
-		if (isset($controls['actions']['framework_and_css'])) {
-			$controls['actions']['framework_and_css']['label'] = ze\admin::phrase('Nest CSS & framework');
-		}
 		$controls['actions']['settings']['label'] = ze\admin::phrase('Nest settings');
 		
 		if ($existingPlugins) {

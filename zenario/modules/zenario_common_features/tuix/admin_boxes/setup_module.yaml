@@ -41,6 +41,7 @@ zenario_setup_module:
                     same_row: Yes
                     hidden: Yes
                     type: select
+                    empty_value: -- Select --
                     values:
                         myself:
                             label: Grant myself the permissions needed to use this module
@@ -50,5 +51,7 @@ zenario_setup_module:
                                 module
                         no:
                             label: Do not grant any permissions
+                    validation:
+                        required_if_not_hidden: Please select an action.
     save_button_message: ""
     cancel_button_message: Cancel

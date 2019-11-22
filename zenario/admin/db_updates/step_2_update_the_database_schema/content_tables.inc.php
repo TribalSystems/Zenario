@@ -2133,9 +2133,341 @@ _sql
 _sql
 
 
+
+//
+//	Zenario 8.5
+//
+
+
+//Move 5 field labels of Extranet module from "Login" tab to "Phrases" tab
+);	ze\dbAdm::revision(48002
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+		SET name = "phrase.framework.Sign in"
+	WHERE name = "main_login_heading"
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+		SET name = "phrase.framework.Your Email:"
+	WHERE name = "email_field_label"
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+		SET name = "phrase.framework.Your Screen Name:"
+	WHERE name = "screen_name_field_label"
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+		SET name = "phrase.framework.Your password:"
+	WHERE name = "password_field_label"
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+		SET name = "phrase.framework.Login"
+	WHERE name = "login_button_text"
+_sql
+
+);	ze\dbAdm::revision(48003
+//Reverting some of the Banner module changes. Mobile settings are once again separate settings.
+//These settings are moved from Advanced Behaviour to Mobile Behaviour.
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'mobile_behaviour',
+	  `value`,
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'advanced_behavior'
+		AND value IN ("mobile_same_image", "mobile_same_image_different_size", "mobile_change_image", "mobile_hide_image")
+	ORDER BY instance_id, egg_id
+_sql
+
+//Set the Advanced Behaviour select list to "None" if one of the old mobile settings was selected before (they are now a separate "Mobile behaviour" select list).
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'advanced_behaviour',
+	  'none',
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = "advanced_behaviour"
+		AND value IN ("mobile_same_image", "mobile_same_image_different_size", "mobile_change_image", "mobile_hide_image")
+	ORDER BY instance_id, egg_id
+_sql
+
+
+);	ze\dbAdm::revision(48004
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'show_text_preview',
+	  0,
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'data_field'
+		AND value = 'none'
+	ORDER BY instance_id, egg_id
+_sql
+
+
+
+//Rework the site settings for image thumbnails to make it clearer how it works.
+//Also try to cope with the fact that they may be in reverse order
+);	ze\dbAdm::revision(48300
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]site_settings`
+	SET `name` = 'thumbnail_threshold'
+	WHERE `name` = 'working_copy_image_threshold'
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
+	  `name`,
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	)
+	SELECT
+	  'custom_thumbnail_1_width',
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	FROM `[[DB_PREFIX]]site_settings`
+	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
+	  AND `value` != ''
+	  AND `value` IS NOT NULL
+	ORDER BY CAST(`value` AS UNSIGNED)
+	LIMIT 1
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
+	  `name`,
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	)
+	SELECT
+	  'custom_thumbnail_1_height',
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	FROM `[[DB_PREFIX]]site_settings`
+	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
+	  AND `value` != ''
+	  AND `value` IS NOT NULL
+	ORDER BY CAST(`value` AS UNSIGNED)
+	LIMIT 1
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
+	  `name`,
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	)
+	SELECT
+	  'custom_thumbnail_2_width',
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	FROM `[[DB_PREFIX]]site_settings`
+	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
+	  AND `value` != ''
+	  AND `value` IS NOT NULL
+	ORDER BY CAST(`value` AS UNSIGNED)
+	LIMIT 1, 1
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
+	  `name`,
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	)
+	SELECT
+	  'custom_thumbnail_2_height',
+	  `value`,
+	  `default_value`,
+	  `encrypted`
+	FROM `[[DB_PREFIX]]site_settings`
+	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
+	  AND `value` != ''
+	  AND `value` IS NOT NULL
+	ORDER BY CAST(`value` AS UNSIGNED)
+	LIMIT 1, 1
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name IN ('thumbnail_wc_image_size', 'working_copy_image_size')
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	CHANGE COLUMN `working_copy_width` `custom_thumbnail_1_width` smallint(5) unsigned DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	CHANGE COLUMN `working_copy_height` `custom_thumbnail_1_height` smallint(5) unsigned DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	CHANGE COLUMN `working_copy_data` `custom_thumbnail_1_data` mediumblob
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	CHANGE COLUMN `working_copy_2_width` `custom_thumbnail_2_width` smallint(5) unsigned DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	CHANGE COLUMN `working_copy_2_height` `custom_thumbnail_2_height` smallint(5) unsigned DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	CHANGE COLUMN `working_copy_2_data` `custom_thumbnail_2_data` mediumblob
+_sql
+
+//Fix the case where the thumbnails were defined the wrong way around.
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files` AS f
+	INNER JOIN `[[DB_PREFIX]]files` AS g
+	   ON f.id = g.id
+	SET f.custom_thumbnail_1_width = g.custom_thumbnail_2_width,
+		f.custom_thumbnail_1_height = g.custom_thumbnail_2_height,
+		f.custom_thumbnail_1_data = g.custom_thumbnail_2_data,
+		f.custom_thumbnail_2_width = g.custom_thumbnail_1_width,
+		f.custom_thumbnail_2_height = g.custom_thumbnail_1_height,
+		f.custom_thumbnail_2_data = g.custom_thumbnail_1_data
+	WHERE f.custom_thumbnail_2_width != 0
+	  AND f.custom_thumbnail_2_width IS NOT NULL
+	  AND (
+			f.custom_thumbnail_1_width = 0
+		 OR f.custom_thumbnail_1_width IS NULL
+		 OR (
+				f.custom_thumbnail_1_width > f.custom_thumbnail_2_width
+			AND f.custom_thumbnail_1_height > f.custom_thumbnail_2_height
+		)
+	)
+_sql
+
+
+//Add a column to restrict what content type can be created under a menu node
+);	ze\dbAdm::revision(48630
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
+	ADD COLUMN `restrict_child_content_types` varchar(20) CHARACTER SET ascii NULL default NULL
+	AFTER `hide_private_item`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
+	ADD KEY (`restrict_child_content_types`)
+_sql
+
+
+//Remove the columns from the content type settings that used to let you pick just one menu node
+);	ze\dbAdm::revision(48640
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	DROP COLUMN `default_parent_menu_node`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	DROP COLUMN `menu_node_position`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_types`
+	SET menu_node_position_edit = 'suggest'
+	WHERE menu_node_position_edit IS NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	MODIFY COLUMN `menu_node_position_edit` enum('force','suggest') NOT NULL
+_sql
+
+
+//Content Summary List (and Blog News List), and search modules had an update of settings.
+//The max number of elements is now a text field rather than a dropdown of values.
+);
+
+if (ze\dbAdm::needRevision(48641)) {
+	$sql = '
+		SELECT ps.instance_id, ps.egg_id, ps.name, ps.value, ps.is_content, m.class_name
+		FROM ' . DB_PREFIX . 'plugin_settings ps
+		LEFT JOIN ' . DB_PREFIX . 'plugin_instances pi
+			ON ps.instance_id = pi.id
+		LEFT JOIN ' . DB_PREFIX . 'modules m
+			ON pi.module_id = m.id
+		WHERE ps.name = "page_size";';
+			
+	$result = ze\sql::select($sql);
+	
+	$modules = [
+		DB_PREFIX . 'search_entry_box',
+		DB_PREFIX . 'search_entry_box_predictive_probusiness',
+		DB_PREFIX . 'search_results',
+		DB_PREFIX . 'search_results_pro',
+		DB_PREFIX . 'advanced_search',
+		DB_PREFIX . 'content_list',
+		DB_PREFIX . 'blog_news_list'
+	];
+	
+	$values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 50];
+	
+	while ($row = ze\sql::fetchAssoc($result)) {
+		if (in_array($row['class_name'], $modules) && in_array($row['value'], $values)) {
+			ze\row::insert('plugin_settings', ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'maximum_results_number', 'value' => $row['value'], 'is_content' => $row['is_content']], $ignore = true);
+			ze\row::update('plugin_settings', ['value' => 'maximum_of'], ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'page_size']);
+		}
+	}
+	
+	ze\dbAdm::revision(48641);
+}
+
+
+
 //Fix a bug where it was possible to put invalid characters in a filename when renaming it.
 //Adding a DB query to sanitise anywhere it's previously happened.
-);	ze\dbAdm::revision(47803
+	ze\dbAdm::revision(48643
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]files`
 	SET filename =
@@ -2149,7 +2481,7 @@ _sql
 
 //For anyone using the Black Dog skin, attempt to update the logic for the CSS animations to use the new library.
 //Note: This patch was from 8.6, but it's safe to re-run so there's no harm in back-patching it.
-);	ze\dbAdm::revision(47804
+);	ze\dbAdm::revision(48645
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]site_settings`
 	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/blackdog/js/animation_load.js'></script>", '')

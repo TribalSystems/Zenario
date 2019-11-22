@@ -1,0 +1,11 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content:
+    tabs:
+        meta_data:
+            fields:
+                sensitive_content_message_checkbox:
+                    ord: 100
+                    type: checkbox
+                    label: "Sensitive content"
+                    note_below: "Show visitors a warning message which must be accepted before the page is read. <a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//zenario__sensitive_content_message~.site_settings~tzenario_sensitive_content_message__site_settings~k{\"id\"%3A\"zenario__sensitive_content_message\"}' target='_blank'>Edit message.</a>"

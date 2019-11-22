@@ -12,7 +12,7 @@
 require_once('Break_TokenParser.php');
 require_once('Continue_TokenParser.php');
 
-class MNBreakAndContinueTwigExtension extends \Twig_Extension
+class MNBreakAndContinueTwigExtension extends \Twig\Extension\AbstractExtension
 {
 	public function getTokenParsers()
 	{

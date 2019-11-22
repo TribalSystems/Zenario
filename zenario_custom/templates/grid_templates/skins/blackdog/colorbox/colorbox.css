@@ -56,3 +56,110 @@ body #cboxOverlay{
 #cboxTitle {
 	font-size:0.875em;
 }
+
+/*  Colorbox 
+--------------------------------------------------------------------------------------------------*/
+
+#colorbox form {
+	margin:0;
+	padding:0;
+}
+
+#colorbox input,
+#colorbox button,
+#colorbox select,
+#colorbox textarea,
+#colorbox select {
+	font-size:1em;
+	font-family:'robotoregular',Arial, Helvetica, sans-serif;
+}
+
+#colorbox input[type='text'],
+#colorbox input[type='password'],
+#colorbox input[type='email'],
+#colorbox input[type='search'],
+#colorbox textarea,
+#colorbox select {
+	width:calc(100% - 22px);
+	padding:0 10px;
+	color:#525151;
+	background:#FFF;
+	border:1px solid #b8babc;
+}
+
+#colorbox select {
+	width:100%;
+}
+
+#colorbox textarea {
+	padding-top:10px;
+	padding-bottom:10px;
+}
+
+#colorbox input[type='text'],
+#colorbox input[type='password'],
+#colorbox input[type='email'],
+#colorbox input[type='search'],
+#colorbox select {
+	height:30px;
+	line-height:30px;
+	font-size:1em;
+}
+
+#colorbox input[type='text'],
+#colorbox input[type='password'],
+#colorbox input[type='email'],
+#colorbox input[type='search'],
+#colorbox select,
+#colorbox textarea {
+   	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+}
+
+#colorbox input[readonly=''],
+#colorbox input[disabled='disabled'],
+#colorbox textarea[disabled='disabled'],
+#colorbox select[disabled='disabled'] {
+	color:#888 !important;
+	background-color:#DFDFDF !important;
+	border-color:#DFDFDF !important;
+	opacity:0.8 !important;
+}
+
+#colorbox input[type='file'] {
+	width:100%;
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+}
+
+#colorbox input[type='submit'],
+#colorbox input[type='button'],
+#colorbox button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext) {
+	display:inline-block;
+	height:36px;
+	line-height:32px;
+	padding: 0 15px;
+	border:0;
+	background:#000;
+	color:#FFF;
+	text-align:center;
+	font-size:0.938em;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+  	cursor:pointer;
+}
+
+#colorbox input[type='submit']:hover,
+#colorbox input[type='button']:hover,
+#colorbox button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext):hover {
+	background:#b8babc;
+	color:#282e35;
+	text-decoration:none;
+}

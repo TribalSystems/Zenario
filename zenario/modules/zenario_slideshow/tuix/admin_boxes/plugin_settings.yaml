@@ -27,6 +27,7 @@ plugin_settings:
                     indent: 1
                     visible_if: zenarioAB.value('show_heading')
                     type: select
+                    same_row: true
                     values: 
                         h1: Heading 1
                         h2: Heading 2

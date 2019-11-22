@@ -1,0 +1,48 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Location Map and Listing 2
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: |
+    <p>
+        This module displays a list of locations to visitors,
+        and also displays each location on a Google Map.
+    </p>
+    <p>
+        There is a tab in the Locations dataset, "Filters", where admins
+        can define their filters. There is a list of these filters above the map
+        which the visitors can use to display specific types of locations.
+        
+    </p>
+    <p>
+        The plugin can also be set to filter by dataset field; if this is enabled,
+        visitors will only see locations that are in the dataset field,
+        and the list of filters will only display the level 2 ones
+        within the dataset field set in the plugin settings.
+    </p>
+category: pluggable
+keywords: list, location, place, map
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_location_map_and_listing_2
+css_class_name: zenario_location_map_and_listing_2
+default_framework: standard
+is_pluggable: true
+default_instance_name: Untitled Location Map and Listing 2
+nestable: false
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_country_manager: true
+    zenario_location_manager: true

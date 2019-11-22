@@ -70,12 +70,19 @@ class fileAdm {
 	}
 
 	//Formerly "putUploadFileIntoCacheDir()"
-	public static function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false, $cacheFor = false) {
+	public static function putUploadFileIntoCacheDir(
+		$filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false,
+		$cacheFor = false, $isAllowed = null, $baseLink = 'zenario/file.php'
+	) {
 		
 		//Catch the case where the browser or the server URLencoded the filename
 		$filename = rawurldecode($filename);
 		
-		if (!\ze\file::isAllowed($filename)) {
+		if (is_null($isAllowed)) {
+			$isAllowed = \ze\file::isAllowed($filename);
+		}
+		
+		if (!$isAllowed) {
 			echo
 				\ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
 				"\n\n",
@@ -160,7 +167,7 @@ To correct this, please ask your system administrator to perform a
 				move_uploaded_file($tempnam, $path);
 			}
 		}
-	
+		
 		if (($mimeType = \ze\file::mimeType($file['filename']))
 		 && (\ze\file::isImage($mimeType))
 		 && ($image = @getimagesize($path))) {
@@ -172,7 +179,7 @@ To correct this, please ask your system administrator to perform a
 			$file['id'] = \ze\ring::encodeIdForOrganizer($sha. '/'. $file['filename']);
 		}
 		
-		$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
+		$file['link'] = $baseLink. '?getUploadedFileInCacheDir='. $file['id'];
 		if ($cacheFor) {
 			$file['link'] .= '&cacheFor=' . (int)$cacheFor;
 		}

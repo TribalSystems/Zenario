@@ -52,11 +52,32 @@ class welcome {
 
 
 
+	public static function passwordMessageSnippet($password) {
+		$passwordValidation = \ze\user::checkPasswordStrength($password);
+		if (!$passwordValidation['password_matches_requirements']) {
+			
+			//Set the post-html field to display "FAIL" highlighted in red.
+			$passwordMessageSnippet = 
+				'<div>
+					<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password does not match the requirements') . '</span>
+				</div>';
+		} else {
+			//Set the post-html field to display "PASS" highlighted in green.
+			$passwordMessageSnippet = 
+				'<div>
+					<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements') . '</span>
+				</div>';
+		}
+		
+		return $passwordMessageSnippet;
+	}
+	
 	//Formerly "quickValidateWelcomePage()"
 	public static function quickValidateWelcomePage(&$values, &$rowClasses, &$snippets, $tab) {
 		if ($tab == 5 || $tab == 'change_password' || $tab == 'new_admin') {
-			$strength = \ze\user::passwordValuesToStrengths(\ze\user::checkPasswordStrength($values['password'], true));
-			$snippets['password_strength'] = '<div class="password_'. $strength. '"><span>'. \ze\admin::phrase($strength). '</span></div>';
+			
+			//Validate password
+			$snippets['password_message'] = self::passwordMessageSnippet($values['password']);
 	
 		} elseif ($tab == 6) {
 			if (is_file($values['path'])) {
@@ -78,9 +99,6 @@ class welcome {
 		}
 
 	}
-
-
-
 
 	//This file includes common functionality for running SQL scripts
 
@@ -218,13 +236,11 @@ class welcome {
 		return false;
 	}
 
-
 	//Formerly "installerReportError()"
 	public static function installerReportError() {
 		return "\n". \ze\admin::phrase('(Error [[errno]]: [[error]])', ['errno' => \ze\sql::errno(), 'error' => \ze\sql::error()]);
 	}
 	
-
 	//Formerly "refreshAdminSession()"
 	public static function refreshAdminSession() {
 		if (\ze\admin::id()) {
@@ -302,7 +318,20 @@ class welcome {
 	
 		return $themes;
 	}
-
+	
+	//A list of some common mime types, including images. Used in the installer where we don't have database access
+	public static function commonMimeType($type) {
+		$mimeTypes = [
+			'gif' => 'image/gif',
+			'jpe' => 'image/jpeg',
+			'jpeg' => 'image/jpeg',
+			'jpg' => 'image/jpeg',
+			'png' => 'image/png',
+			'svg' => 'image/svg+xml'
+		];
+	
+		return $mimeTypes[$type] ?? 'application/octet-stream';
+	}
 
 	//Formerly "systemRequirementsAJAX()"
 	public static function systemRequirementsAJAX(&$source, &$tags, &$fields, &$values, $changes, $isDiagnosticsPage = false) {
@@ -322,8 +351,6 @@ class welcome {
 			$section_warning = 'section_warning';
 			$section_invalid = 'section_invalid';
 		}
-	
-	
 	
 		//Check if the server meets the requirements
 		//Get the server phpinfo
@@ -404,7 +431,6 @@ class welcome {
 				\ze\admin::phrase('&nbsp;(<em>you have version [[version]]</em>)', ['version' => htmlspecialchars($apacheVer[1])]);
 		}
 	
-	
 		$phpRequirementsMet = false;
 		$phpVersion = phpversion();
 		$fields['0/php_1']['post_field_html'] =
@@ -429,7 +455,6 @@ class welcome {
 			$phpWarning = true;
 		}
 	
-	
 		$mysqlRequirementsMet = false;
 		if (!extension_loaded('mysqli')) {
 			$fields['0/mysql_1']['row_class'] = $invalid;
@@ -438,50 +463,66 @@ class welcome {
 	
 		} else {
 			$fields['0/mysql_1']['row_class'] = $valid;
+			
+			//Attempt to check the MySQL version.
+			//There's a simple test for this in PHP, but unfortunately it returns the version
+			//of PHP's library functions, and not the actual version of the MySQL server, so
+			//it would be better if we could check the MySQL server's version directly.
+			
+			//If the CMS is already installed, we can do a database connection and read the right version off of the metadata.
+			if ($isDiagnosticsPage) {
+				$dbL = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false);
+				$mysqlServerVersion = (isset($dbL->con->server_info)) ? $dbL->con->server_info : false;
+				$fields['0/mysql_2']['post_field_html'] =
+						\ze\admin::phrase('&nbsp;(<em>your server is version [[version]]</em>)', ['version' => htmlspecialchars($mysqlServerVersion)]);
+				if (!$mysqlServerVersion
+				 || !\ze\welcome::compareVersionNumber($mysqlServerVersion, '5.5.3')) {
+					$fields['0/mysql_2']['row_class'] = $invalid;
+				} else {
+					$fields['0/mysql_2']['row_class'] = $valid;
+					$mysqlRequirementsMet = true;
+				}
+			
+			} else {
+				//Check the MySQL version on the PHP the client.
+				$mysqlVersion = \ze::ifNull(
+					\ze\ray::value($phpinfo, 'mysql', 'Client API version'),
+					\ze\ray::value($phpinfo, 'mysqli', 'Client API library version'));
 		
-			$mysqlVersion = \ze::ifNull(
-				\ze\ray::value($phpinfo, 'mysql', 'Client API version'),
-				\ze\ray::value($phpinfo, 'mysqli', 'Client API library version'));
-		
-			//Often the reported version of the client library can be behind the server version.
-			//Try to check the server version if possible
-			if (!\ze::setting('mysql_path')) {
-				//If mysql isn't set up in Site Settings, try to guess what the settings should be
-				//and temporarily set it up noe
+				//Try and check the MySQL version on this server
 				if (\ze\server::programPathForExec('/usr/bin/', 'mysql', $checkExecutable = true)) {
 					\ze\site::setSetting('mysql_path', '/usr/bin/', false, false, false);
-	
+
 				} elseif (\ze\server::programPathForExec('/usr/local/bin/', 'mysql', $checkExecutable = true)) {
 					\ze\site::setSetting('mysql_path', '/usr/local/bin/', false, false, false);
 				}
-			}
-			if (\ze::setting('mysql_path') && ($mysqlServerVersion = \ze\dbAdm::callMySQL(false, ' --version'))) {
-				$mysqlServerVersion = \ze\ring::chopPrefix(\ze::setting('mysql_path'), $mysqlServerVersion, true);
-				$matches = [];
-				if ($matches = preg_split('@Distrib ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE)) {
-					if (!empty($matches[1])) {
-						if (!\ze\welcome::compareVersionNumber($mysqlVersion, $matches[1])) {
-							$mysqlVersion = $mysqlServerVersion;
+				if (\ze::setting('mysql_path') && ($mysqlServerVersion = \ze\dbAdm::callMySQL(false, ' --version'))) {
+					$mysqlServerVersion = \ze\ring::chopPrefix(\ze::setting('mysql_path'), $mysqlServerVersion, true);
+					$matches = [];
+					if ($matches = preg_split('@Distrib ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE)) {
+						if (!empty($matches[1])) {
+							if (!\ze\welcome::compareVersionNumber($mysqlVersion, $matches[1])) {
+								$mysqlVersion = $mysqlServerVersion;
+							}
 						}
 					}
 				}
-			}
 		
 		
-			if ($mysqlVersion) {
-				$fields['0/mysql_2']['post_field_html'] =
-					\ze\admin::phrase('&nbsp;(<em>your client is version [[version]]</em>)', ['version' => htmlspecialchars($mysqlVersion)]);
-			}
+				if ($mysqlVersion) {
+					$fields['0/mysql_2']['post_field_html'] =
+						\ze\admin::phrase('&nbsp;(<em>your client is version [[version]]</em>)', ['version' => htmlspecialchars($mysqlVersion)]);
+				}
 		
-			if (!$mysqlVersion
-			 || !\ze\welcome::compareVersionNumber($mysqlVersion, '5.5.3')) {
-				$fields['0/mysql_2']['row_class'] = $invalid;
-			} else {
-				$fields['0/mysql_2']['row_class'] = $valid;
-				$mysqlRequirementsMet = true;
+				if (!$mysqlVersion
+				 || !\ze\welcome::compareVersionNumber($mysqlVersion, '5.5.3')) {
+					$fields['0/mysql_2']['row_class'] = $invalid;
+				} else {
+					$fields['0/mysql_2']['row_class'] = $valid;
+					$mysqlRequirementsMet = true;
+				}
 			}
 		}
-	
 	
 		$mbRequirementsMet = true;
 		if (!extension_loaded('ctype')) {
@@ -498,8 +539,105 @@ class welcome {
 		} else {
 			$fields['0/mb_2']['row_class'] = $valid;
 		}
+		
+		if ($isDiagnosticsPage) {
+			$osRequirementsMet = true;
+			$extract = '';
+			if (!\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract)) {
+				$osRequirementsMet = false;
+				$fields['0/os_1']['row_class'] = $warning;
+				$fields['0/os_1']['snippet']['html'] = \ze\admin::phrase('Antiword<br><small>Antiword is not correctly set up.</small>');
 	
-	
+			} else {
+				$fields['0/os_1']['row_class'] = $valid;
+			}
+			$extract = '';
+
+			if (!\ze\file::createPpdfFirstPageScreenshotPng(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+				$osRequirementsMet = false;
+				$fields['0/os_2']['row_class'] = $warning;
+				$fields['0/os_2']['snippet']['html'] = \ze\admin::phrase('Ghostscript<br><small>ghostscript is not correctly set up.</small>');
+			} else {
+				$fields['0/os_2']['row_class'] = $valid;
+			}
+
+			$jpegtran=\ze\server::programPathForExec(\ze::setting('jpegtran_path'), 'jpegtran', true);
+			$jpegoptim= \ze\server::programPathForExec(\ze::setting('jpegoptim_path'), 'jpegoptim', true);
+			if ($jpegtran==NULL || $jpegoptim==NULL) {
+				$osRequirementsMet = false;
+				$fields['0/os_3']['row_class'] = $warning;
+				if($jpegtran== NULL && $jpegoptim!= NULL){
+					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('JPEG Image Optimizers<br><small>jpegtran is not correctly set up.</small><br><small>jpegoptim is correctly set up.</small>');
+				} else if($jpegoptim== NULL && $jpegtran!= NULL) {
+			
+					 $fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('JPEG Image Optimizers<br><small>jpegtran is correctly set up.</small><br><small>jpegoptim is not are correctly set up.</small>');
+				} else {
+					 $fields['0/os_3']['row_class'] = $warning;
+					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('JPEG Image Optimizers<br><small>jpegtran is not correctly set up.</small><br><small>jpegoptim is not correctly set up.</small>');
+				}
+			} else {
+				$fields['0/os_3']['row_class'] = $valid;
+			}
+			$mysqlPath = \ze\dbAdm::testMySQL(false);
+			$mysqldumpPath = \ze\dbAdm::testMySQL(true);
+			if ($mysqlPath == false || $mysqldumpPath == false ) {
+				$osRequirementsMet = false;
+				$fields['0/os_4']['row_class'] = $warning;
+				if($mysqlPath== false && $mysqldumpPath!= false){
+					$fields['0/os_4']['snippet']['html'] = \ze\admin::phrase('Backup/restore<br><small>mysql is not correctly set up.</small><br><small>mysqldump is working successfully.</small>');
+				} else if($mysqlPath!= false && $mysqldumpPath== false) {
+			
+					 $fields['0/os_4']['snippet']['html'] = \ze\admin::phrase('Backup/restore<br><small>mysql is working successfully.</small><br><small>mysqldump is not correctly set up.</small>');
+				} else {
+					$fields['0/os_4']['row_class'] = $warning;
+					$fields['0/os_4']['snippet']['html'] = \ze\admin::phrase('Backup/restore<br><small>mysql is not correctly set up.</small><br><small>mysqldump is not correctly set up.</small>');
+				}
+			} else {
+				$fields['0/os_4']['row_class'] = $valid;
+			}	
+		
+			if (!(\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))) {
+				$osRequirementsMet = false;
+				$fields['0/os_5']['row_class'] = $warning;
+				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase('PDF-To-Text<br><small>pdftotext is not correctly set up.</small>');
+
+			} else {
+				$fields['0/os_5']['row_class'] = $valid;
+			}
+			$optipng = \ze\server::programPathForExec(\ze::setting('optipng_path'), 'optipng', true);
+			$advpng = \ze\server::programPathForExec(\ze::setting('advpng_path'), 'advpng', true);
+			if ($optipng == NULL || $advpng ==NULL) {
+				$osRequirementsMet = false;
+				$fields['0/os_6']['row_class'] = $warning;
+				if($optipng== NULL && $advpng!= NULL){
+					$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('PNG Image Optimizers<br><small>optipng is not correctly set up.</small><br><small>advpng is correctly set up.</small>');
+				} else if($advpng== NULL && $optipng!= NULL) {
+			
+					 $fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('PNG Image Optimizers<br><small>optipng is correctly set up.</small><br><small>advpng is not correctly set up.</small>');
+				} else {
+					$fields['0/os_6']['row_class'] = $warning;
+					$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('PNG Image Optimizers<br><small>optipng is not correctly set up.</small><br><small>advpng is not correctly set up.</small>');
+				}
+			} else {
+				$fields['0/os_6']['row_class'] = $valid;
+			}
+		
+			//wkhtmltopdf is an optional program.
+			//Enabled and set up correctly:
+			if (($programPath = \ze\server::programPathForExec(\ze::setting('wkhtmltopdf_path'), 'wkhtmltopdf'))
+					 && ($rv = exec(escapeshellarg($programPath) .' --version'))) {
+				$fields['0/os_7']['row_class'] = $valid;
+			// Enabled but set up incorrectly:
+			} elseif ($programPath && isset($rv) && !$rv) {
+				$osRequirementsMet = false;
+				$fields['0/os_7']['row_class'] = $warning;
+				$fields['0/os_7']['snippet']['html'] = \ze\admin::phrase('wkhtmltopdf<br><small>wkhtmltopdf is not correctly set up.</small>');
+			//Disabled:
+			} else {
+				$fields['0/os_7']['hidden'] = true;
+			}
+		}
+		
 		$gdRequirementsMet = true;
 		if (\ze\ray::value($phpinfo, 'gd', 'GD Support') != 'enabled') {
 			$gdRequirementsMet = false;
@@ -532,7 +670,6 @@ class welcome {
 				$fields['0/gd_4']['row_class'] = $valid;
 			}
 		}
-	
 	
 		$optionalRequirementsMet = true;
 		
@@ -584,7 +721,6 @@ class welcome {
 			$fields['0/optional_utf8_encode']['row_class'] = $valid;
 		}
 	
-	
 		$overall = 'section_valid';
 	
 		if (!$apacheRecommendationMet) {
@@ -630,7 +766,7 @@ class welcome {
 		} else {
 			$fields['0/mb']['row_class'] = $section_valid;
 		}
-	
+		
 		if (!$gdRequirementsMet) {
 			$overall = 'section_invalid';
 			$fields['0/show_gd']['pressed'] = true;
@@ -638,9 +774,16 @@ class welcome {
 		} else {
 			$fields['0/gd']['row_class'] = $section_valid;
 		}
-	
-	
+		
 		if ($isDiagnosticsPage) {
+			if (!$osRequirementsMet) {
+				$overall = 'section_invalid';
+				$fields['0/show_os']['pressed'] = true;
+				$fields['0/os']['row_class'] = $section_warning;
+			} else {
+				$fields['0/os']['row_class'] = $section_valid;
+			}
+			
 			if ($overall != 'section_valid') {
 				$fields['0/show_system_requirements']['pressed'] = true;
 			}
@@ -649,7 +792,7 @@ class welcome {
 		} else {
 			$wasFirstViewing = $tags['key']['first_viewing'];
 			$tags['key']['first_viewing'] = false;
-	
+	    
 			//Did the Server meets the requirements?
 			if (!($phpRequirementsMet && $mysqlRequirementsMet && $mbRequirementsMet && $gdRequirementsMet)) {
 				$fields['0/continue']['hidden'] = true;
@@ -662,13 +805,10 @@ class welcome {
 		}
 	}
 
-
-
 	//Formerly "installerAJAX()"
 	public static function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $installStatus, &$freshInstall, &$adminId) {
 		$merge = [];
 		$merge['SUBDIRECTORY'] = SUBDIRECTORY;
-	
 		//If the database prefix is already set in the config file, look it up and default the field to it.
 		if (!isset($fields['3/prefix']['current_value'])) {
 			if (defined('DB_PREFIX') && DB_PREFIX && strpos(DB_PREFIX, '[') === false) {
@@ -686,7 +826,6 @@ class welcome {
 		} elseif (!empty($fields['1/restore']['pressed'])) {
 			$task = 'restore';
 		}
-	
 	
 		//Validation for Step 3: Validate the Database Connection
 		if ($tags['tab'] > 3 || ($tags['tab'] == 3 && !empty($fields['3/next']['pressed']))) {
@@ -741,6 +880,7 @@ class welcome {
 							\ze\admin::phrase('You do not have access rights to the database [[DBNAME]].', $merge);
 			
 					} elseif (!\ze\welcome::compareVersionNumber($version[0], '5.5.3')) {
+					    
 						$tags['tabs'][3]['errors'][] = 
 							\ze\admin::phrase('Sorry, your MySQL server is "[[version]]". Version 5.5.3 or later is required.', ['version' => $version[0]]);
 			
@@ -763,7 +903,6 @@ class welcome {
 			}
 		}
 	
-	
 		//No validation for Step 4, but remember the theme and language chosen
 		if ($tags['tab'] > 4 || ($tags['tab'] == 4 && !empty($fields['4/next']['pressed']))) {
 			$merge['LANGUAGE_ID'] = $values['4/language_id'];
@@ -772,7 +911,6 @@ class welcome {
 			$merge['VIS_DATE_FORMAT_LONG'] = $values['4/vis_date_format_long'];
 			$merge['THEME'] = preg_replace('/\W/', '', $values['4/theme']);
 		}
-	
 	
 		if (empty($fields['1/restore']['pressed'])) {
 			//Validation for Step 5: Validate new Admin's details
@@ -840,7 +978,6 @@ class welcome {
 			}
 		}
 	
-	
 		//Validation for Step 6: Attempt to create (if requested) and then validate the siteconfig files
 		if ($tags['tab'] == 7 && (!empty($fields['7/ive_done_it']['pressed']) || !empty($fields['7/do_it_for_me']['pressed']))) {
 			$tags['tabs'][7]['errors'] = [];
@@ -892,8 +1029,6 @@ class welcome {
 			}
 		}
 	
-	
-	
 		//Handle navigation
 		switch ($tags['tab']) {
 			case 0:
@@ -903,14 +1038,12 @@ class welcome {
 			
 				break;
 		
-		
 			case 1:
 				if (!empty($fields['1/restore']['pressed']) || !empty($fields['1/fresh_install']['pressed'])) {
 					$tags['tab'] = 3;
 				}
 			
 				break;
-		
 		
 			case 3:
 				if (!empty($fields['3/previous']['pressed'])) {
@@ -927,7 +1060,6 @@ class welcome {
 			
 				break;
 		
-		
 			case 4:
 				if (!empty($fields['4/previous']['pressed'])) {
 					unset($tags['tabs'][4]['errors']);
@@ -938,7 +1070,6 @@ class welcome {
 				}
 			
 				break;
-		
 		
 			case 5:
 				if (!empty($fields['5/previous']['pressed'])) {
@@ -951,7 +1082,6 @@ class welcome {
 			
 				break;
 			
-			
 			case 6:
 				if (!empty($fields['6/previous']['pressed'])) {
 					unset($tags['tabs'][6]['errors']);
@@ -962,7 +1092,6 @@ class welcome {
 				}
 			
 				break;
-		
 		
 			case 7:
 				if (!empty($fields['7/previous']['pressed'])) {
@@ -980,7 +1109,6 @@ class welcome {
 			
 				break;
 			
-			
 			case 8:
 				if (!empty($fields['8/previous']['pressed'])) {
 					unset($tags['tabs'][8]['errors']);
@@ -989,7 +1117,6 @@ class welcome {
 			
 				break;
 		}
-	
 	
 		//Don't let the Admin proceed from Step 1 without accepting the license
 		if ($tags['tab'] > 0 && !$licenseAccepted) {
@@ -1018,7 +1145,6 @@ class welcome {
 			$tags['tab'] = 7;
 		}
 	
-	
 		//Display the current step
 		switch ($tags['tab']) {
 			case 0:
@@ -1039,7 +1165,6 @@ class welcome {
 			
 				break;
 		
-		
 			case 1:
 				if (is_file(CMS_ROOT. 'license.txt')) {
 					$fields['1/license']['snippet']['url'] = 'license.txt';
@@ -1051,12 +1176,10 @@ class welcome {
 			
 				break;
 		
-		
 			case 3:
 				//Nothing doing for step 3
 			
 				break;
-		
 		
 			case 4:
 			
@@ -1108,16 +1231,19 @@ class welcome {
 			
 				break;
 		
-		
 			case 5:
 			
-				$strength = \ze\user::passwordValuesToStrengths(\ze\user::checkPasswordStrength(($fields['5/password']['current_value'] ?? false), true));
-				$fields['5/password_strength']['snippet']['html'] =
-					'<div class="password_'. $strength. '"><span>'. \ze\admin::phrase($strength). '</span></div>';
-			
+				//Quick hack - these functions doesn't seem to work with a partial db-connection, so just clear it quickly
+				$db = \ze::$dbL;
+				\ze::$dbL = null;
+				
+					$fields['5/password_message']['snippet']['html'] = self::passwordMessageSnippet($fields['5/password']['current_value'] ?? false);
+					$fields['5/password_requirements']['snippet']['html'] = \ze\admin::displayPasswordRequirementsNoteAdmin($fields['5/password']['current_value'] ?? false);
+				
+				//Restore the connection
+				\ze::$dbL = $db;
 			
 				break;
-		
 		
 			case 6:
 				$fields['6/path']['value'] = CMS_ROOT;
@@ -1125,7 +1251,6 @@ class welcome {
 			
 			
 				break;
-		
 		
 			case 7:
 				$fields['7/zenario_siteconfig']['pre_field_html'] =
@@ -1135,7 +1260,6 @@ class welcome {
 			
 			
 				break;
-		
 		
 			case 8:
 				$tags['tabs'][8]['errors'] = [];
@@ -1172,7 +1296,11 @@ class welcome {
 				\ze::define('DBPASS', $merge['DBPASS']);
 				\ze::define('DBPORT', $merge['DBPORT']);
 				\ze::define('DB_PREFIX', $merge['DB_PREFIX']);
-			
+				
+				//Previously the "from" address was the same as the admin support email address.
+				//The default "from" address now should contain the server user string (e.g. "www-data" for Apache),
+				//and the server name.
+				$merge['EMAIL_ADDRESS_FROM'] = getenv('APACHE_RUN_USER') . '@' . $_SERVER['SERVER_NAME'];
 			
 				//Here we restore a backup, and/or do a fresh install, depending on the choices in the installer.
 				//(Installing a sample site is done by restoring a backup, then immediately doing a fresh install.)
@@ -1298,7 +1426,6 @@ class welcome {
 						//(If someone is doing repeated fresh installs, this stops data from an old one getting cached and used in another)
 						\ze\row::set('local_revision_numbers', ['revision_no' => rand(1, 32767)], ['path' => 'data_rev', 'patchfile' => 'data_rev']);
 					
-					
 						$freshInstall = true;
 					
 						//Create an Admin, and give them all of the core permissions
@@ -1314,7 +1441,6 @@ class welcome {
 						\ze\adminAdm::setPassword($adminId, $merge['PASSWORD']);
 						\ze\adminAdm::savePerms($adminId, 'all_permissions');
 						\ze\admin::setSession($adminId);
-					
 					
 						//Prepare email to the installing person
 						$message = $source['email_templates']['installed_cms']['body'];
@@ -1348,6 +1474,38 @@ class welcome {
 						if (!\ze::$defaultLang && ($langId = \ze\row::get('content_items', 'language_id', []))) {
 							\ze\site::setSetting('default_language', \ze::$defaultLang = $langId);
 						}
+						
+						//Set the "Email from" and "Organizer title" setting from the Organisation name field, if that was provided
+						if ($values['4/organisation_name']) {
+							\ze\site::setSetting('email_name_from', (string)$values['4/organisation_name']);
+							\ze\site::setSetting('organizer_title', \ze\admin::phrase('Organizer for [[organisation_name]]', $values));
+						}
+						
+						//Check if a logo was uploaded during the installer, and try to add it to the filesystem
+						if ($values['4/logo']
+						 && ($location = \ze\file::getPathOfUploadInCacheDir($values['4/logo']))
+						 && ($imageId = \ze\file::addToDatabase('image', $location, false, $mustBeAnImage = true, $deleteWhenDone = false))) {
+							
+							//Change the image in the banner to use this image
+							\ze\row::update('plugin_settings',
+								[
+									'value' => $imageId,
+									'foreign_key_id' => $imageId
+								],
+								['name' => 'image', 'instance_id' => 1, 'egg_id' => 0]
+							);
+							
+							//Also set the image as the image on the login screen
+							$imageId = \ze\file::addToDatabase('site_setting', $location);
+							
+							\ze\site::setSetting('brand_logo', 'custom');
+							\ze\site::setSetting('custom_logo', $imageId);
+							
+							//Unless the image was a SVG, also set it as the default og:image
+							if (\ze\file::isImage(\ze\file::mimeType($location))) {
+								\ze\site::setSetting('default_icon', $imageId);
+							}
+						}
 					
 						//Populate the menu_hierarchy and the menu_positions tables
 						\ze\menuAdm::recalcAllHierarchy();
@@ -1374,13 +1532,8 @@ class welcome {
 				break;
 		}
 	
-	
-	
 		return false;
 	}
-
-
-
 
 	public static function enableCaptchaForAdminLogins() {
 		return \ze::setting('google_recaptcha_site_key')
@@ -1511,7 +1664,6 @@ class welcome {
 			}
 		}
 	
-	
 		//Format the login screen
 		if ($tags['tab'] == 'login') {
 			if (!empty($_COOKIE['COOKIE_LAST_ADMIN_USER'])) {
@@ -1538,8 +1690,6 @@ class welcome {
 		return false;
 	}
 
-
-
 	//Formerly "updateNoPermissionsAJAX()"
 	public static function updateNoPermissionsAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $getRequest) {
 		//Handle the "back to site" button
@@ -1548,8 +1698,6 @@ class welcome {
 			return;
 	
 		} else {
-		 
-		      
 		       $tags['tabs'][0]['errors'][0] = \ze\admin::phrase("Sorry, you do not have permission to apply a database update to this site. An email has been sent to the Zenario system administrator to ask them to do this.");
 		       
 				if(!isset($_SESSION["mailSent"])){//send mail once to global support.
@@ -1600,8 +1748,6 @@ class welcome {
 		}
 	}
 
-
-
 	//Formerly "updateAJAX()"
 	public static function updateAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task) {
 		$tags['tab'] = 1;
@@ -1618,7 +1764,6 @@ class welcome {
 				return true;
 			}
 		}
-	
 	
 		$fields['1/description']['snippet']['html'] =
 			\ze\admin::phrase('We need to update your database (<code>[[database]]</code>) to match.', ['database' => htmlspecialchars(DBNAME)]);
@@ -1705,7 +1850,6 @@ class welcome {
 		return false;
 	}
 
-
 	//Log the current admin out
 	//Formerly "logoutAdminAJAX()"
 	public static function logoutAdminAJAX(&$tags, $getRequest) {
@@ -1767,11 +1911,6 @@ class welcome {
 		\ze\sql::update($sql, false, false);
 	}
 
-
-
-
-
-
 	//Formerly "securityCodeAJAX()"
 	public static function securityCodeAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $getRequest, $time) {
 	
@@ -1829,7 +1968,10 @@ class welcome {
 				$addressFrom = false,
 				$nameFrom = $source['email_templates'][$emailTemplate]['from'],
 				false, false, false,
-				$isHTML = true);
+				$isHTML = true,
+				false, false, false, false, '', '', 'To',
+				$ignoreDebugMode = true); //Security codes should always be sent to the intended recipient,
+										  //even if debug mode is on.
 		
 			if (!$emailSent) {
 				$tags['tabs']['security_code']['errors'][] =
@@ -1869,8 +2011,6 @@ class welcome {
 			}
 		}
 		
-		
-		
 		$fields['security_code/not_seen_you']['hidden'] =
 		$fields['security_code/not_seen_you_ip']['hidden'] =
 		$fields['security_code/timeout']['hidden'] = 
@@ -1890,13 +2030,8 @@ class welcome {
 			}
 		}
 	
-	
 		return false;
 	}
-
-
-
-
 
 	//Formerly "changePasswordAJAX()"
 	public static function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task) {
@@ -1932,8 +2067,8 @@ class welcome {
 			} elseif ($newPassword == $currentPassword) {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('_MSG_PASS_NOT_CHANGED');
 		
-			} elseif (!\ze\user::checkPasswordStrength($newPassword)) {
-				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('_MSG_PASS_STRENGTH');
+			} elseif (!\ze\user::checkPasswordStrength($newPassword)['password_matches_requirements']) {
+				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
 		
 			} elseif (!$newPasswordConfirm) {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('Please repeat your New Password.');
@@ -1954,16 +2089,11 @@ class welcome {
 			}
 		}
 	
-	
-		//Show the password strength box
-		$strength = \ze\user::passwordValuesToStrengths(\ze\user::checkPasswordStrength(($fields['change_password/password']['current_value'] ?? false), true));
-		$fields['change_password/password_strength']['snippet']['html'] =
-			'<div class="password_'. $strength. '"><span>'. \ze\admin::phrase($strength). '</span></div>';
-	
+		$fields['change_password/password_message']['snippet']['html'] = self::passwordMessageSnippet($values['password']);
+		$fields['change_password/password_requirements']['snippet']['html'] = \ze\admin::displayPasswordRequirementsNoteAdmin($fields['5/password']['current_value'] ?? false);
 	
 		return false;
 	}
-	
 	
 	public static function newAdminAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $adminId) { 
 		//Set password if the Admin presses the save and login button
@@ -1974,8 +2104,8 @@ class welcome {
 			if (!$password) {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please enter a password.');
 				
-			} elseif (!\ze\user::checkPasswordStrength($password)) {
-				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('_MSG_PASS_STRENGTH');
+			} elseif (!\ze\user::checkPasswordStrength($password)['password_matches_requirements']) {
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
 				
 			} elseif (!$passwordConfirm) {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please repeat your Password.');
@@ -1993,15 +2123,11 @@ class welcome {
 			}
 		}
 		
-		//Show the password strength box
-		$strength = \ze\user::passwordValuesToStrengths(\ze\user::checkPasswordStrength(($fields['new_admin/password']['current_value'] ?? false), true));
-		$fields['new_admin/password_strength']['snippet']['html'] =
-			'<div class="password_'. $strength. '"><span>'. \ze\admin::phrase($strength). '</span></div>';
+		$fields['new_admin/password_message']['snippet']['html'] = self::passwordMessageSnippet($fields['new_admin/password']['current_value'] ?? false);
+		$fields['new_admin/password_requirements']['snippet']['html'] = \ze\admin::displayPasswordRequirementsNoteAdmin($fields['new_admin/password']['current_value'] ?? false);
 		
 		return false;
 	}
-
-
 
 	//Formerly "diagnosticsAJAX()"
 	public static function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $freshInstall) {
@@ -2023,7 +2149,8 @@ class welcome {
 		$fields['0/cache_dir']['value']	= CMS_ROOT. 'cache';
 		$fields['0/private_dir']['value']	= CMS_ROOT. 'private';
 		$fields['0/public_dir']['value']	= CMS_ROOT. 'public';
-	
+	    $fields['0/custom_dir']['value']	= CMS_ROOT. 'zenario_custom';
+	    
 		if (!$values['0/backup_dir']) {
 			$values['0/backup_dir'] = (string) \ze::setting('backup_dir');
 		}
@@ -2238,7 +2365,6 @@ class welcome {
 				\ze\admin::phrase('CSS for plugins may be edited by an administrator, and Zenario writes CSS files to the following directories. Please ensure they exist and are writable by the web server:');
 		}
 	
-	
 		if (!is_dir(CMS_ROOT. 'cache')) {
 			$fields['0/cache_dir_status']['row_class'] = 'sub_invalid';
 			$fields['0/cache_dir_status']['snippet']['html'] =
@@ -2289,8 +2415,25 @@ class welcome {
 			$fields['0/public_dir_status']['snippet']['html'] =
 				\ze\admin::phrase('The &quot;public&quot; directory exists and is writable.');
 		}
+
+		$statusLines = [];
+	    if (!is_dir(CMS_ROOT. 'zenario_custom')) {
+			$fields['0/custom_dir_status']['row_class'] = 'sub_invalid';
+			$fields['0/custom_dir_status']['snippet']['html'] =
+				\ze\admin::phrase('The &quot;zenario_custom&quot; directory does not exist.');
 	
-	
+		} elseif (exec('svn status '. escapeshellarg(CMS_ROOT. 'zenario_custom'), $statusLines) && !empty($statusLines)) {
+            $skinCustomDirsValid = false;
+            $fields['0/custom_dir_status']['row_class'] = 'sub_warning';
+            $fields['0/custom_dir_status']['snippet']['html'] =
+                \ze\admin::phrase('The &quot;zenario_custom&quot; directory has uncommitted changes in svn.');
+        } else {
+            $skinCustomDirsValid = true;
+            $fields['0/custom_dir_status']['row_class'] = 'sub_valid';
+            $fields['0/custom_dir_status']['snippet']['html'] =
+                \ze\admin::phrase('The &quot;zenario_custom&quot; directory exists and all the files are committed in svn.');
+        }
+	   
 		if ($fields['0/backup_dir_status']['row_class'] == 'sub_invalid') {
 			$showCheckAgainButtonIfDirsAreEditable =
 			$fields['0/show_dirs']['pressed'] =
@@ -2340,7 +2483,7 @@ class welcome {
 			$fields['0/dirs']['row_class'] = 'section_invalid';
 			$fields['0/dir_7']['row_class'] = 'sub_section_invalid';
 		}
-	
+	    
 		if (!$skinDirsValid) {
 			$showCheckAgainButton =
 			$fields['0/show_dirs']['pressed'] =
@@ -2352,7 +2495,27 @@ class welcome {
 		} else {
 			$fields['0/dir_4']['row_class'] = 'sub_section_valid';
 		}
-	
+		
+		//skins for custom directory warnings
+		if ($fields['0/custom_dir_status']['row_class'] == 'sub_invalid') {
+			$showCheckAgainButton =
+			$fields['0/show_dirs']['pressed'] =
+			$fields['0/show_dir_8']['pressed'] = true;
+			$fields['0/dirs']['row_class'] = 'section_invalid';
+			$fields['0/dir_8']['row_class'] = 'sub_section_invalid';
+		}
+	    else if (!$skinCustomDirsValid) {
+			$showCheckAgainButton =
+			$fields['0/show_dirs']['pressed'] =
+			$fields['0/show_dir_8']['pressed'] = true;
+			if ($fields['0/dirs']['row_class'] != 'section_invalid') {
+				$fields['0/dirs']['row_class'] = 'section_warning';
+			}
+			$fields['0/dir_8']['row_class'] = 'sub_section_warning';
+		} else {
+		    $fields['0/dirs']['row_class'] = 'section_valid';
+			$fields['0/dir_8']['row_class'] = 'sub_section_valid';
+		}
 		$fields['0/site']['row_class'] = 'section_valid';
 		$fields['0/content']['row_class'] = 'section_valid';
 		$fields['0/administrators']['row_class'] = 'section_valid';
@@ -2387,31 +2550,7 @@ class welcome {
 			} else {
 				$fields['0/site_disabled']['row_class'] = 'valid';
 				$fields['0/site_disabled']['snippet']['html'] = \ze\admin::phrase('Your site is enabled.');
-			}
-		
-			$sql = "
-				SELECT 1
-				FROM ". DB_PREFIX. "special_pages AS sp
-				INNER JOIN ". DB_PREFIX. "content_items AS c
-				   ON c.id = sp.equiv_id
-				  AND c.type = sp.content_type
-				WHERE c.status NOT IN ('published_with_draft','published')
-				  AND sp.allow_hide = 0";
-		
-			if (($result = \ze\sql::select($sql)) && (\ze\sql::fetchRow($result))) {
-				$show_warning = true;
-				$fields['0/site_special_pages_unpublished']['row_class'] = 'warning';
-				$fields['0/site_special_pages_unpublished']['snippet']['html'] =
-					\ze::setting('site_enabled')?
-						\ze\admin::phrase("Zenario identifies some web pages as &quot;special pages&quot; to perform Not Found, Login and other functions. Some of these pages are not published, so visitors may not be able to access some important functions.")
-					:	\ze\admin::phrase("Zenario identifies some web pages as &quot;special pages&quot; to perform Not Found, Login and other functions. Some of these pages are not published. Before enabling your site, please remember to publish them.");
-		
-			} else {
-				$fields['0/site_special_pages_unpublished']['row_class'] = 'valid';
-				$fields['0/site_special_pages_unpublished']['hidden'] = true;
-			}
-			
-			
+			}	
 			
 			$errors = $exampleFile = false;
 			\ze\document::checkAllPublicLinks($forceRemake = false, $errors, $exampleFile);
@@ -2430,7 +2569,6 @@ class welcome {
 				$fields['0/public_documents']['hidden'] = true;
 			}
 		
-			
 			$warnings = \ze\welcome::getBackupWarnings();
 			$fields['0/site_automated_backups']['row_class'] = $warnings['row_class'];
 			$fields['0/site_automated_backups']['hidden'] = isset($warnings['hidden']) ? $warnings['hidden'] : false;
@@ -2438,7 +2576,6 @@ class welcome {
 				$fields['0/site_automated_backups']['snippet']['html'] = $warnings['snippet']['html'];
 			}
 			$show_warning = !empty($warnings['show_warning']);
-			
 			
 			//Check if the scheduled task manager is running
 			if (!\ze\module::inc('zenario_scheduled_task_manager')) {
@@ -2462,7 +2599,6 @@ class welcome {
 				$fields['0/scheduled_task_manager']['snippet']['html'] =
 					\ze\admin::phrase('The Scheduled Tasks Manager is running.');
 			}
-			
 			
 			//Check for a missing site description file.
 			if (!is_file(CMS_ROOT. 'zenario_custom/site_description.yaml')) {
@@ -2559,7 +2695,6 @@ class welcome {
 				$fields['0/email_addresses_overridden']['hidden'] = true;
 			}
 			
-			
 			//Check for missing modules
 			$missingModules = [];
 			foreach(\ze\row::getAssocs('modules', ['class_name', 'display_name'], ['status' => 'module_running'], 'class_name') as $module) {
@@ -2621,7 +2756,6 @@ class welcome {
 				$fields['0/module_errors']['snippet']['html'] = nl2br(htmlspecialchars($moduleErrors));
 			}
 			
-			
 			$storesUserData = \ze\row::exists(
 				'modules', [
 					'status' => ['module_running', 'module_suspended'],
@@ -2653,7 +2787,6 @@ class welcome {
 				$fields['0/no_ssl_for_login']['row_class'] = 'warning';
 			}
 			
-			
 			//Check if extranet sites use SSL
 			$warnAboutThis = 
 				!\ze\site::description('enable_two_factor_authentication_for_admin_logins')
@@ -2662,6 +2795,34 @@ class welcome {
 			if (!$fields['0/two_factor_security']['hidden'] = !$warnAboutThis) {
 				$show_warning = true;
 				$fields['0/two_factor_security']['row_class'] = 'warning';
+			}
+			
+			//Get any public pages which have plugins that must be on a private page (e.g. change password)
+			if ($privatePagesWithPluginsThatMustBeOnPublicPage = \ze\contentAdm::getContentItemsWithPluginsThatMustBeOnPublicOrPrivatePage('private_page')) {
+				$show_warning = true;
+				$fields['0/plugin_must_be_on_private_page_error']['hidden'] = false;
+				$fields['0/plugin_must_be_on_private_page_error']['row_class'] = 'warning';
+				$fields['0/plugin_must_be_on_private_page_error']['snippet']['html'] = 
+						\ze\admin::nPhrase('This content item is public, but contains one or more plugins which must be on a private page:[[listOfContentItems]]',
+							'These content items are public, but contain one or more plugins which must be on a private page:[[listOfContentItems]]',
+							count($privatePagesWithPluginsThatMustBeOnPublicPage),
+							['listOfContentItems' => implode('<br>', $privatePagesWithPluginsThatMustBeOnPublicPage)]);
+			} else {
+				$fields['0/plugin_must_be_on_private_page_error']['hidden'] = true;
+			}
+			
+			//Get any private pages which have plugins that must be on a public page (e.g. change password)
+			if ($publicPagesWithPluginsThatMustBeOnPrivatePage = \ze\contentAdm::getContentItemsWithPluginsThatMustBeOnPublicOrPrivatePage('public_page')) {
+				$show_warning = true;
+				$fields['0/plugin_must_be_on_public_page_error']['hidden'] = false;
+				$fields['0/plugin_must_be_on_public_page_error']['row_class'] = 'warning';
+				$fields['0/plugin_must_be_on_public_page_error']['snippet']['html'] = 
+						\ze\admin::nPhrase('This content item is private, but contains one or more plugins which must be on a public page:[[listOfContentItems]]',
+							'These content items are private, but contain one or more plugins which must be on a public page:[[listOfContentItems]]',
+							count($publicPagesWithPluginsThatMustBeOnPrivatePage),
+							['listOfContentItems' => implode('<br>', $publicPagesWithPluginsThatMustBeOnPrivatePage)]);
+			} else {
+				$fields['0/plugin_must_be_on_public_page_error']['hidden'] = true;
 			}
 			
 			//If company key exists, and users module is running, show a warning if the consent table is not encrypted
@@ -2681,13 +2842,12 @@ class welcome {
 					$fields['0/consent_table_encrypted']['row_class'] = 'warning';
 					
 					$fields['0/consent_table_encrypted']['snippet']['html'] = 
-						\ze\admin::phrase('The following columns should be encrypted and hashed in the consent log table: [[columns]].', ['columns' => implode(', ', $unencryptedColumns)]);
+						\ze\admin::phrase('The following columns should be encrypted and hashed in the table <code>consents</code>: [[columns]].', ['columns' => implode(', ', $unencryptedColumns)]);
 				}
 			} else {
 				//Otherwise, hide the warning.
 				$fields['0/consent_table_encrypted']['hidden'] = true;
 			}
-			
 			
 			//Check if site contains user/contact data unencrypted
 			$warnAboutThis =(bool)(!\ze::$dbL->columnIsEncrypted('users', 'first_name') && !\ze::$dbL->columnIsEncrypted('users', 'last_name') && !\ze::$dbL->columnIsEncrypted('users', 'email') && !\ze::$dbL->columnIsEncrypted('users', 'identifier'));
@@ -2734,10 +2894,9 @@ class welcome {
 	                
 	                    $userColumns[] =  '<code>'.'first_name'.'</code>';
 	                }
-	                
 	            }
-	            
 			}
+			
 			if(\ze::$dbL->columnIsEncrypted('users', 'last_name') || \ze::$dbL->columnIsHashed('users', 'last_name')){
 			    $q= \ze\sql::select("SHOW COLUMNS FROM ".DB_PREFIX."users LIKE '%last_name'" );
 	            if($q){
@@ -2753,8 +2912,8 @@ class welcome {
 	                    $userColumns[] =  '<code>'.'last_name'.'</code>';
 	                }
 	            }
-	            
 			}
+			
 			if(\ze::$dbL->columnIsEncrypted('users', 'email') || (\ze::$dbL->columnIsHashed('users', 'email'))){
 			    $q= \ze\sql::select("SHOW COLUMNS FROM ".DB_PREFIX."users LIKE '%email'" );
 	            if($q){
@@ -2772,6 +2931,7 @@ class welcome {
 	            }
 	            
 			}
+			
 			if(\ze::$dbL->columnIsEncrypted('users', 'identifier') || \ze::$dbL->columnIsHashed('users', 'identifier')){
 			    $q= \ze\sql::select("SHOW COLUMNS FROM ".DB_PREFIX."users LIKE '%identifier'" );
 	            if($q){
@@ -2796,7 +2956,6 @@ class welcome {
                 $fields['0/column_not_found']['snippet']['html'] = \ze\admin::phrase('The following columns are encrypted/ hashed but their corresponding plain text columns are missing: [[columns]].', ['columns' => implode(', ', $userColumns)]);
 	        }
 	        
-	       
 			//Do some basic checks on the robots.txt file
 			$robotsDotTextError = false;
 			if (!file_exists(CMS_ROOT. 'robots.txt')) {
@@ -2818,6 +2977,7 @@ class welcome {
 					}
 				}
 			}
+			
 			if (!$fields['0/robots_txt']['hidden'] = !$robotsDotTextError) {
 				$show_warning = true;
 				$fields['0/robots_txt']['row_class'] = 'warning';
@@ -2846,8 +3006,11 @@ class welcome {
 					$fileParts = pathinfo($file);
 				
 					//Ignore hidden files that start with a . (like .htaccess)
-					//Ignore .php files
-					if ($fileParts['filename'] === '' || $fileParts['extension'] === 'php') {
+					if ($fileParts['filename'] === ''
+						//Ignore .php files
+					 || $fileParts['extension'] === 'php'
+						//Ignore .lock files (e.g. generated from a package builder)
+					 || $fileParts['extension'] === 'lock') {
 						continue;
 					}
 				
@@ -2877,15 +3040,12 @@ class welcome {
 				$fields['0/site']['row_class'] = 'section_warning';
 			}
 			
-			
-			
 			//
 			// Go through all of the checks in the site content section
 			//
 			
 			$show_warning = false;
 			$show_error = false;
-			
 			
 			$fields['0/content_unpublished_1']['row_class'] =
 			$fields['0/content_unpublished_2']['row_class'] =
@@ -2950,15 +3110,15 @@ class welcome {
 									'admin' => \ze\admin::formatName($row['creator'])
 								]);
 						}
-						
+                
+						$specialPageUnpublishedMessage = (\ze\content::isSpecialPage($row['id'], $row['type'])) ? \ze\admin::phrase('<br />This page is a special page and it should be published.') : "";
 						$fields['0/content_unpublished_'. $i]['hidden'] = false;
 						$fields['0/content_unpublished_'. $i]['row_class'] = ''; //Don't display warning triangle icons for unpublished items anymore. Deleting this line will show a green tick icon.
 						$fields['0/content_unpublished_'. $i]['snippet']['html'] =
-							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode.', $row) . '<br />' . $item['unpublished_content_info'];
+							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode.', $row) . $specialPageUnpublishedMessage.'<br/>'.$item['unpublished_content_info'];
 					}
 				}
 			}
-			
 			
 			if ($show_error) {
 				$fields['0/show_content']['pressed'] = true;
@@ -2968,7 +3128,6 @@ class welcome {
 				$fields['0/show_content']['pressed'] = true;
 				$fields['0/content']['row_class'] = 'section_warning';
 			}
-			
 			
 			//
 			// Go through all of the checks in the administrators section
@@ -3012,6 +3171,7 @@ class welcome {
 							$show_warning = true;
 							$fields['0/administrators_active']['hidden'] = true;
 						}
+						
 						if (++$inactiveAdminCount <= 5) {
 							$row['link'] = 'zenario/admin/organizer.php#zenario__users/panels/administrators//' . $row['id'];
 						
@@ -3064,14 +3224,24 @@ class welcome {
 				$fields['0/administrator_more_inactive']['hidden'] =
 				$fields['0/administrators_active']['hidden'] = true;
 			}
+			$fields['0/default_timezone_not_set']['hidden'] = true;
+			if (\ze\module::inc('zenario_timezones')) {
+                if(\ze::setting('zenario_timezones__default_timezone') == ""){
+                    $fields['0/default_timezone_not_set']['row_class'] = 'warning';
+                    $fields['0/default_timezone_not_set']['hidden'] = false;
+                    $mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//date_and_time~.site_settings~ttimezone_settings~k{"id"%3A"date_and_time"}')];
+				
+				    $show_warning = true; 
+				    $fields['0/default_timezone_not_set']['snippet']['html'] =
+					\ze\admin::phrase('The default timezone is not set in site settings. Please go to <a href="[[link]]" target="_blank"><em>Date and Time</em></a> in Site Settings to change this.', $mrg);
+			    }
+			}
+			
 		}
-		
-		
 		
 		//Strip any trailing slashes off of a directory path
 		$values['0/backup_dir'] = preg_replace('/[\\\\\\/]+$/', '', $values['0/backup_dir']);
 		$values['0/docstore_dir'] = preg_replace('/[\\\\\\/]+$/', '', $values['0/docstore_dir']);
-	
 	
 		//On multisite sites, don't allow local Admins to change the directory paths
 		if (\ze\db::hasGlobal() && !($_SESSION['admin_global_id'] ?? false)) {
@@ -3098,9 +3268,7 @@ class welcome {
 			}
 		}
 	
-	
 		\ze\welcome::systemRequirementsAJAX($source, $tags, $fields, $values, $changes, $isDiagnosticsPage = true);
-	
 	
 		$everythingIsOkay =
 			$fields['0/dirs']['row_class'] == 'section_valid'
@@ -3113,7 +3281,6 @@ class welcome {
 			$showCheckAgainButton = true;
 		}
 	
-	
 		//In some cases, if something is so bad, hide the continue button.
 		$fields['0/continue']['hidden'] =
 			!$showContinueButton;
@@ -3124,13 +3291,9 @@ class welcome {
 			$showContinueButton
 		 && !$showCheckAgainButton
 		 && (!$showCheckAgainButtonIfDirsAreEditable || $_SESSION['zenario_installer_disallow_changes_to_dirs']);
-	
-	
+		
 		$wasFirstViewing = $tags['key']['first_viewing'];
 		$tags['key']['first_viewing'] = false;
-	
-	
-	
 	
 		//If everything is valid, do not show this screen unless it was shown previously,
 		//or the admin specificly requested it by clicking on the stethoscope button
@@ -3165,7 +3328,6 @@ class welcome {
 					$tags['shake'] = true;
 				}
 			}
-		
 			return false;
 		}
 	}
@@ -3219,9 +3381,6 @@ class welcome {
 		$fields['0/link']['snippet']['html'] =
 			'<a href="'. \ze\link::protocol(). $_SERVER['HTTP_HOST']. SUBDIRECTORY. '">'. \ze\link::protocol(). $_SERVER['HTTP_HOST']. SUBDIRECTORY. '</a>';
 	}
-
-
-
 
 	//Formerly "redirectAdmin()"
 	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false) {
@@ -3355,7 +3514,6 @@ class welcome {
             }
         }
 		return $warnings;
-    
     }
     
     //Used in "Backups and document storage" Site Setting FAB.
@@ -3415,7 +3573,6 @@ class welcome {
             }
         }
 		return $warnings;
-    
     }
 
 	//Formerly "deleteNamedPluginSetting()"
@@ -3444,5 +3601,4 @@ class welcome {
 			WHERE m.class_name = '". \ze\escape::sql($moduleClassName). "'";
 		\ze\sql::update($sql);
 	}
-
 }

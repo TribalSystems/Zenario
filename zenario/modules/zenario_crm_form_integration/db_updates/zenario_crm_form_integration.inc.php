@@ -578,3 +578,11 @@ _sql
 
 	);
 }
+
+ze\dbAdm::revision(46
+,  <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]crm_fields`
+	ADD COLUMN `send_condition`enum('always_send', 'send_only_if_visible') DEFAULT 'always_send'
+_sql
+
+);

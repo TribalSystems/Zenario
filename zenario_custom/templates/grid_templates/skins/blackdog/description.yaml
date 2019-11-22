@@ -3,6 +3,7 @@ display_name: BlackDog
 type: usable
 
 import:
+	- zenario/styles/fea/fea_common.css
 	- zenario/styles/fea/fea_font_awesome.css
 
 style_formats:

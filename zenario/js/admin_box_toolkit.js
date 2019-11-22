@@ -97,8 +97,8 @@ methods.open = function(path, key, tab, values, callBack, createAnotherObject, r
 	thus.isSlidUp =
 	thus.heightBeforeSlideUp =
 	thus.hasPreviewWindow =
-	thus.lastPreviewValues =
-	thus.previewValues =
+	thus.previewMD5 =
+	thus.previewPost =
 	thus.previewSlotWidth = false;
 	thus.previewSlotWidthInfo = '';
 	thus.previewHidden = true;
@@ -284,8 +284,8 @@ methods.close = function(keepMessageWindowOpen) {
 	
 	delete thus.cb;
 	delete thus.tuix;
-	delete thus.previewValues;
-	delete thus.lastPreviewValues;
+	delete thus.previewMD5;
+	delete thus.previewPost;
 	delete thus.previewSlotWidth;
 	delete thus.previewSlotWidthInfo;
 	
@@ -620,8 +620,10 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 	//only files with an id should show the info button.
 	if (!engToBoolean(pick_items.hide_info_button)
 	 && (!field.upload || numeric)
-	 && (path = pick_items.path)
-	 && (path == pick_items.target_path || pick_items.min_path == pick_items.target_path)) {
+	 && ((path = pick_items.info_button_path)
+	  || ((path = pick_items.path)
+	   && (path == pick_items.target_path || pick_items.min_path == pick_items.target_path)))
+	) {
 		
 		//No matter what the generated path was, there should always be two slashes between the selected item and the path
 		if (zenario.rightHandedSubStr(path, 2) == '//') {
@@ -711,28 +713,23 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 	}
 	
 	
-	var requests = _.clone(zenarioA.importantGetRequests),
-		postName,
-		postValues,
+	var details = {
+			post: {}
+		},
+		requests = _.clone(zenarioA.importantGetRequests),
 		includeSlotInfo = !fullPage;
 	
 	switch (thus.path) {
 		case 'zenario_skin_editor':
 			includeSlotInfo = false;
 		
-		case 'plugin_css_and_framework':
-			postName = 'overrideFrameworkAndCSS';
-			
-			if (loadValues) {
-				postValues = JSON.stringify(thus.getValues1D(false, true, false, true, true));
-			}
-			break;
-		
 		case 'plugin_settings':
-			postName = 'overrideSettings';
-			
 			if (loadValues) {
-				postValues = JSON.stringify(thus.getValues1D(true, false));
+				details.md5 = hex_md5(
+					(details.post.overrideSettings = JSON.stringify(thus.getValues1D(true, false)))
+					+
+					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getValues1D(false, true, false, true, true, ['this_css_tab', 'all_css_tab', 'framework_tab'])))
+				);
 			}
 			break;
 			
@@ -800,11 +797,9 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 		requests.instanceId = instanceId;
 	}
 	
-	return {
-		url: zenario.linkToItem(zenario.cID, zenario.cType, requests),
-		postName: postName,
-		postValues: postValues
-	};
+	details.url = zenario.linkToItem(zenario.cID, zenario.cType, requests);
+	
+	return details;
 };
 
 
@@ -824,7 +819,8 @@ methods.fieldChange = function(id, lov) {
 };
 
 //This function updates the preview, after a short delay to stop lots of spam updates happening all at once
-methods.updatePreview = function(delay) {	if (thus.hasPreviewWindow && !thus.previewHidden) {
+methods.updatePreview = function(delay) {
+	if (thus.hasPreviewWindow && !thus.previewHidden) {
 		zenario.actAfterDelayIfNotSuperseded('fabUpdatePreview', function() {
 	
 			//Get the values of the plugin settings on this FAB
@@ -832,9 +828,9 @@ methods.updatePreview = function(delay) {	if (thus.hasPreviewWindow && !thus.pre
 	
 			//If they've changed since last time, refresh the preview window
 			if (preview
-			 && thus.lastPreviewValues != preview.postValues) {
-				thus.lastPreviewValues = thus.previewValues = preview.postValues;
-		
+			 && thus.previewMD5 != preview.md5) {
+				thus.previewMD5 = preview.md5;
+				thus.previewPost = preview.post;
 				thus.submitPreview(preview);
 			}
 		}, delay || 1000);
@@ -881,10 +877,12 @@ methods.submitPreview = function(preview, $parent, cssClassName) {
 };
 
 methods.showPreviewViaPost = function(preview, iframeName) {
-	
-	$('<form action="' + htmlspecialchars(preview.url) + '" method="post" target="' + htmlspecialchars(iframeName) + '">' +
-		'<input name="' + htmlspecialchars(preview.postName) + '" value="' + htmlspecialchars(preview.postValues) + '"/>' +
-	'</form>').appendTo('body').hide().submit().remove();
+	$(
+		zenarioT.form('action', preview.url, 'method', 'post', 'target', iframeName,
+			zenarioT.input('name', 'overrideSettings', 'value', preview.post.overrideSettings)
+		  + zenarioT.input('name', 'overrideFrameworkAndCSS', 'value', preview.post.overrideFrameworkAndCSS)
+		)
+	).appendTo('body').hide().submit().remove();
 };
 
 methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
@@ -897,10 +895,11 @@ methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 		return;
 	}
 	
-	thus.previewValues = preview.postValues;
+	thus.previewMD5 = preview.md5;
+	thus.previewPost = preview.post;
 	
 	//Attempt to load the page via GET
-	href = preview.url + '&' + encodeURIComponent(preview.postName) + '=' + encodeURIComponent(preview.postValues);
+	href = preview.url + zenario.urlRequest(preview.post);
 	
 	//Bugfix: Loading by GET may fail if the data is too large, so use POST instead
 	if (href.length >= (zenario.browserIsIE()? 2000 : 4000)) {

@@ -695,3 +695,26 @@ if (ze\dbAdm::needRevision(47601)) {
 	
 	ze\dbAdm::revision(47601);
 }
+
+//This code would migrate email templates to using curly brackets, if we choose to go and do that
+
+////Update email templates to use {{ and }} for merge fields rather than [[ and ]].
+//if (ze\dbAdm::needRevision(48400)) {
+//	$sql = "
+//		SELECT id, subject, email_address_from, email_name_from, body
+//		FROM " . DB_PREFIX . "email_templates";
+//	$result = ze\sql::select($sql);
+//	while ($et = ze\sql::fetchAssoc($result)) {
+//		$etId = $et['id'];
+//		unset($et['id']);
+//		
+//		foreach ($et as &$val) {
+//			$val = preg_replace('@\{\{(\s*\w+?\s*)\}\}@', '[[$1]]', $val);
+//		}
+//		unset($val);
+//		
+//		ze\row::update('email_templates', $et, $etId);
+//	}
+//	
+//	ze\dbAdm::revision(48400);
+//}

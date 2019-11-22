@@ -101,6 +101,8 @@ zenario_content:
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 Release Date:
                             </label>
+                    side_note: |
+                        The release date is the publicly-displayed date of this content item. It may be different from the date you edit or publish it.
                 
                 
                 
@@ -133,9 +135,10 @@ zenario_content:
                     grouping: menu
                     indent: 1
                     hide_if_previous_outdented_value_isnt: 1
-                    type: radios
-                    value: specific
+                    type: select
                     values:
+                        suggested:
+                            label: Suggested position
                         before:
                             label: Just before current position
                         after:
@@ -145,6 +148,14 @@ zenario_content:
                         specific:
                             label: Specific position (advanced)...
                     redraw_onchange: true
+                menu_pos_suggested:
+                    grouping: menu
+                    indent: 2
+                    visible_if: |
+                        lib.value('create_menu_node')
+                    hide_if_previous_outdented_value_isnt: suggested
+                    type: select
+                    values: {}
                 menu_pos_before:
                     grouping: menu
                     indent: 2
@@ -191,80 +202,6 @@ zenario_content:
                     onchange: zenarioAB.tuix.___menu_text_changed = true;
                     validation:
                         required_if_not_hidden: Please enter some text for the menu node.
-                
-                
-                
-                #Old code
-                #warning_message:
-                #    ord: 33
-                #    pre_field_html: <div class="zenario_fbWarning">
-                #    snippet:
-                #        html: ''
-                #    post_field_html: </div>
-                #    hidden: true
-                #create_menu:
-                #    ord: 34
-                #    label: 'Add to menu'
-                #    type: checkbox
-                #    format_onchange: true
-                #at_position:
-                #    ord: 35
-                #    label: 'Menu options:'
-                #    type: radios
-                #    values:
-                #        orphan:
-                #            label: Don't add to menu (orphan)
-                #        after_current:
-                #            label: Add to menu, just after the current page
-                #        specific_position:
-                #            label: Add to menu at a specific position (advanced)
-                #    value: after_current
-                #    format_onchange: true
-                #menu_title:
-                #    ord: 36
-                #    label: 'Menu node text:'
-                #    type: text
-                #    maxlength: 255
-                #    onchange: zenarioAB.tuix.___menu_title_changed = true;
-                #    onkeyup: |
-                #        if (get('menu_path')) {
-                #            get('menu_path').value = 
-                #                !get('menu_title').value ?
-                #                    ''
-                #                :    !get('menu_parent_path').value ?
-                #                        get('menu_title').value
-                #                    :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
-                #        }
-                #    validation:
-                #        required_if_not_hidden: Please enter some text for the menu node.
-                #    indent: 1
-                #specific_position:
-                #    ord: 37
-                #    label: 'Attach to menu:'
-                #    pick_items:
-                #        path: zenario__menu/panels/menu_position/refiners/create////
-                #        min_path: zenario__menu/panels/menu_position
-                #        disallow_refiners_looping_on_min_path: true
-                #        select_phrase: Place menu node...
-                #        hide_info_button: true
-                #        visible_if_for_all_selected_items: |
-                #            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
-                #    indent: 1
-                #    validation:
-                #        required_if_not_hidden: Please choose a place in the menu or leave it as an orphan.
-                #
-                #menu_path:
-                #    ord: 41
-                #    label: 'Path preview:'
-                #    type: text
-                #    disabled: disabled
-                #    class: zenario_textbox_noborder
-                #    indent: 1
-                #menu_parent_path:
-                #    same_row: true
-                #    ord: 42
-                #    type: hidden
-                #    indent: 1
                 
                 
                 
@@ -557,9 +494,21 @@ zenario_content:
                     full_width: true
                     snippet:
                         html: |
-                            Use this screen to set the background for this content item.
+                            If you wish to style this content item specifically in your skin, you may give it one or more CSS class names.
+                            A <code>&lt;div&gt;</code> with these class names will be added to this page.
+                css_class:
+                    label: 'CSS class names:'
+                    type: text
+                    maxlength: 100
+                    side_note: 'This CSS will be added to the outer <code>&lt;div&gt;</code> of the rendered HTML page.'
+                customise_background:
+                    label: 'Customise page background'
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
                 background_image:
                     label: 'Background image:'
+                    indent: 1
                     upload:
                         multi: false
                         accept: 'image/*'
@@ -578,9 +527,12 @@ zenario_content:
                         multiple_select: false
                         select_phrase: 'Use existing...'
                     redraw_onchange: true
+                    visible_if: |
+                        lib.value('customise_background') == true
                 
                 bg_color:
                     label: 'Background color:'
+                    indent: 1
                     type: color_picker
                     color_picker_options:
                         allowEmpty: true
@@ -589,9 +541,12 @@ zenario_content:
                         showInitial: true
                         clickoutFiresChange: true
                     maxlength: 64
+                    visible_if: |
+                        lib.value('customise_background') == true
                 
                 bg_position:
                     label: 'Background position:'
+                    indent: 1
                     type: select
                     empty_value: "[ Don't specify ]"
                     values:
@@ -613,9 +568,12 @@ zenario_content:
                             label: '↓ Bottom center'
                         'right bottom':
                             label: '↘ Bottom right'
+                    visible_if: |
+                        lib.value('customise_background') == true
                 
                 bg_repeat:
                     label: 'Background repeat:'
+                    indent: 1
                     type: select
                     empty_value: "[ Don't specify ]"
                     values:
@@ -627,18 +585,9 @@ zenario_content:
                             label: ' ⋮ Repeat vertically'
                         no-repeat:
                             label: " • Don't repeat"
+                    visible_if: |
+                        lib.value('customise_background') == true
                 
-                desc2:
-                    full_width: true
-                    snippet:
-                        html: |
-                            If you wish to style this content item specifically in your skin, you may give it one or more CSS class names.
-                            A <code>&lt;div&gt;</code> with these class names will be added to this page.
-                css_class:
-                    label: 'CSS class names:'
-                    type: text
-                    maxlength: 100
-        
         file:
             ord: 35
             label: File
@@ -743,7 +692,7 @@ zenario_content:
                     type: select
                     empty_value: ' -- Please choose what to do with this plugin -- '
                     values: plugin_actions
-                    redraw_onchange: true
+                    validate_onchange: true
                     validation:
                         only_validate_when_saving: true
                         required: true
@@ -770,9 +719,9 @@ zenario_content:
     lovs:
         plugin_actions:
             original:
-                label: Use the same plugin here too
+                label: Use same plugin
             duplicate:
-                label: Duplicate the plugin and place the copy here
+                label: Make a copy
     
     confirm:
         show: false

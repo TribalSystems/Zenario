@@ -1560,4 +1560,16 @@ _sql
 	ADD COLUMN `send_email_to_admin_condition_field` int(5) unsigned NULL AFTER `send_email_to_admin_condition`
 _sql
 
+); ze\dbAdm::revision(257
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `show_success_message_and_the_form` tinyint(1) NOT NULL DEFAULT '0' AFTER `show_success_message`
+_sql
+
+); ze\dbAdm::revision(258
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `allow_converting_multiple_images_to_pdf` tinyint(1) NOT NULL DEFAULT '0'
+_sql
+
 );

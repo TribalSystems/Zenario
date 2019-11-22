@@ -34,7 +34,8 @@ ze\dbAdm::revision(1, "
 		`body`,
 		`date_created`,
 		`created_by_id`,
-		`allow_attachments`
+		`allow_attachments`,
+		`use_standard_email_template`
 	) VALUES (
 		 'zenario_extranet_password_reset__to_user_password_reset_en',
 		 'To User: Password reset',
@@ -48,7 +49,8 @@ ze\dbAdm::revision(1, "
 		',
 		 NOW(),
 		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
-		 0
+		 0,
+		 1
 		)
 "
 ); ze\dbAdm::revision(3,
@@ -56,6 +58,25 @@ ze\dbAdm::revision(1, "
 <<<_sql
 	UPDATE [[DB_PREFIX]]email_templates
 	SET `module_class_name` = 'zenario_extranet_password_reset'
+	WHERE `code` = 'zenario_extranet_password_reset__to_user_password_reset_en'
+_sql
+
+); ze\dbAdm::revision(9,
+
+<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = 
+		'<p>Dear [[first_name]] [[last_name]],</p>
+		 <p>You (or someone pretending to be you) asked for a reset of your password on <a href=\"[[cms_url]]\">[[cms_url]]</a></p>
+		 <p>To reset your password, please click the button below:</p>
+		 <p>&nbsp;</p>
+		 <p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[reset_url]]\">RESET PASSWORD</a></p>
+		 <p>&nbsp;</p>
+		 <p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		 <p><a href=\"[[reset_url]]\">[[reset_url]]</a></p>
+		 <p>&nbsp;</p>
+		 <p>This is an auto-generated email from [[cms_url]] .</p>
+		'
 	WHERE `code` = 'zenario_extranet_password_reset__to_user_password_reset_en'
 _sql
 

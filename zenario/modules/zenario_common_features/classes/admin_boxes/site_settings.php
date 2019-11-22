@@ -56,24 +56,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 
-		//TODO: Settings for adding captcha to login page
-		/*if ($settingGroup == 'administration') {
-			$fields['anti_spam/captcha_type']['values'] = ['word' => 'Words (Captcha 1.0)', 'math' => 'Maths'];
-		
-			$link = ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//captcha";
-		
-			if (ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
-				$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Captcha 2.0)';
-				$fields['anti_spam/captcha_type']['note_below'] = 'Captcha settings can be found in  <a href="' . $link. '" target="_blank">Site Settings</a>';
-			} else {
-				$fields['anti_spam/captcha_type']['note_below'] = 'To enable more kinds of captcha, please check your <a href="' . $link. '" target="_blank">API key details</a> and ensure all keys are completed.';
-			}
-		
-			if (!$values['use_honeypot']) {
-				$values['honeypot_label'] = 'Please don\'t type anything in this field';
-			}
-		}*/
-		
 		if (isset($fields['admin_domain/admin_domain_is_public'])) {
 			$fields['admin_domain/admin_domain_is_public']['value'] = !ze\link::adminDomainIsPrivate();
 		}
@@ -223,24 +205,28 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		//Working copy images store a number for enabled. But the UI is a checkbox for enabled, and then a number if enabled.
 		//Convert the format when displaying the fields
-		if (isset($fields['image_sizes/thumbnail_wc'])) {
-			if (ze::setting('thumbnail_wc_image_size')) {
-				$fields['image_sizes/thumbnail_wc']['value'] = 1;
+		if (isset($fields['image_sizes/custom_thumbnail_1'])) {
+			if (ze::setting('custom_thumbnail_1_width')) {
+				$fields['image_sizes/custom_thumbnail_1']['value'] = 1;
 			} else {
-				$fields['image_sizes/thumbnail_wc']['value'] = '';
-				$fields['image_sizes/thumbnail_wc_image_size']['value'] = 300;
+				$fields['image_sizes/custom_thumbnail_1']['value'] = '';
+				$fields['image_sizes/custom_thumbnail_1_width']['value'] =
+				$fields['image_sizes/custom_thumbnail_1_height']['value'] = 300;
 			}
 		}
-		if (isset($fields['image_sizes/working_copy_image'])) {
-			if (ze::setting('working_copy_image_size')) {
-				$fields['image_sizes/working_copy_image']['value'] = 1;
+		if (isset($fields['image_sizes/custom_thumbnail_2'])) {
+			if (ze::setting('custom_thumbnail_2_width')) {
+				$fields['image_sizes/custom_thumbnail_2']['value'] = 1;
 			} else {
-				$fields['image_sizes/working_copy_image']['value'] = '';
-				$fields['image_sizes/working_copy_image_size']['value'] = 1000;
+				$fields['image_sizes/custom_thumbnail_2']['value'] = '';
+				$fields['image_sizes/custom_thumbnail_2_width']['value'] =
+				$fields['image_sizes/custom_thumbnail_2_height']['value'] = 1000;
 			}
 		}
-		if (isset($fields['image_sizes/set_working_copy_image_threshold'])) {
-			$values['image_sizes/set_working_copy_image_threshold'] = (bool) $values['image_sizes/working_copy_image_threshold'];
+		if (isset($fields['image_resizing/thumbnail_threshold'])) {
+			if (!$values['image_resizing/thumbnail_threshold']) {
+				$values['image_resizing/thumbnail_threshold'] = 66;
+			}
 		}
 
 		if (isset($fields['security/enable_two_factor_authentication_for_admin_logins'])) {
@@ -393,14 +379,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//TODO: Settings for adding captcha to login page
-		/*if ($settingGroup == 'administration') {
-			$fields['anti_spam/honeypot_label']['hidden'] = !$values['anti_spam/use_honeypot'];
-		
-			$fields['anti_spam/captcha_type']['hidden'] =
-			$fields['anti_spam/extranet_users_use_captcha']['hidden'] =
-				!$values['anti_spam/use_captcha'];
-		}*/
 		
 		if (isset($fields['debug/debug_override_email_address'])) {
 			$fields['debug/debug_override_email_address']['hidden'] = !$values['debug/debug_override_enable'];
@@ -596,8 +574,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			] as $program => $tab) {
 				$box['tabs'][$tab]['notices']['error_'. $program]['show'] =
 				$box['tabs'][$tab]['notices']['success_'. $program]['show'] = false;
-
 				if (!empty($fields[$tab. '/test_'. $program]['pressed'])) {
+				
 					if (ze\server::programPathForExec($values[$tab. '/'. $program. '_path'], $program, true)) {
 						$box['tabs'][$tab]['notices']['success_'. $program]['show'] = true;
 					} else {
@@ -610,6 +588,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if (isset($box['tabs']['wkhtmltopdf'])) {
 			$box['tabs']['wkhtmltopdf']['notices']['error']['show'] =
 			$box['tabs']['wkhtmltopdf']['notices']['success']['show'] = false;
+			
+			$values['wkhtmltopdf/enable_wkhtmltopdf'] = (bool) $values['wkhtmltopdf/wkhtmltopdf_path'];
 			
 			if (!empty($box['tabs']['wkhtmltopdf']['fields']['test']['pressed'])) {
 				if (($programPath = ze\server::programPathForExec($values['wkhtmltopdf/wkhtmltopdf_path'], 'wkhtmltopdf'))
@@ -661,6 +641,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 	
 			$box['tabs']['test']['notices']['test_send_error']['show'] = false;
 			$box['tabs']['test']['notices']['test_send_sucesses']['show'] = false;
+			
+			$mrg = ['absCMSDirURL' => ze\link::absolute()];
+			$values['test/test_send_message'] = ze\admin::phrase('<p>Your email appears to be working.</p><p>This is a test email sent by an administrator at [[absCMSDirURL]].</p>', $mrg);
+			$values['test/test_send_from_address'] = $values['email/email_address_from'];
+			$values['test/test_send_subject'] = ze\admin::phrase('A test email from [[absCMSDirURL]]', $mrg);
 	
 			if (ze\ray::engToBooleanArray($fields['test/test_send_button'], 'pressed')) {
 				$box['tabs']['test']['notices']['test_send']['show'] = true;
@@ -693,10 +678,15 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					}
 			
 					try {
-						$mrg = ['absCMSDirURL' => ze\link::absolute()];
-						$subject = ze\admin::phrase('A test email from [[absCMSDirURL]]', $mrg);
-						$body = ze\admin::phrase('<p>Your email appears to be working.</p><p>This is a test email sent by an administrator at [[absCMSDirURL]].</p>', $mrg);
+						$subject = $values['test/test_send_subject'];
+						$body = $values['test/test_send_message'];
 						$addressToOverriddenBy = false;
+						
+						if ($values['test/test_send_format'] == "standard_email_template") {
+							ze\module::inc('zenario_email_template_manager');
+							zenario_email_template_manager::putBodyInTemplate($body);
+						}
+						
 						$result = ze\server::sendEmail(
 							$subject, $body,
 							$email,
@@ -704,7 +694,9 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							$nameTo = false,
 							$addressFrom = false,
 							$nameFrom = false,
-							false, false, false,
+							$attachments = false,
+							$attachmentFilenameMappings = false,
+							$precedence = false,
 							$isHTML = true, 
 							$exceptions = true);
 				
@@ -793,16 +785,16 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 
-		if (isset($fields['image_sizes/jpeg_quality_limit'])) {
-			if (!$values['image_sizes/jpeg_quality_limit']) {
+		if (isset($fields['image_resizing/jpeg_quality_limit'])) {
+			if (!$values['image_resizing/jpeg_quality_limit']) {
 				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('Please enter a JPEG quality.');
 	
-			} elseif (!is_numeric($values['image_sizes/jpeg_quality_limit'])) {
+			} elseif (!is_numeric($values['image_resizing/jpeg_quality_limit'])) {
 				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('The JPEG quality must be a number.');
 	
 			} else
-			if ((int) $values['image_sizes/jpeg_quality_limit'] < 80
-			 || (int) $values['image_sizes/jpeg_quality_limit'] > 100) {
+			if ((int) $values['image_resizing/jpeg_quality_limit'] < 80
+			 || (int) $values['image_resizing/jpeg_quality_limit'] > 100) {
 				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('The JPEG quality must be a number between 80 and 100.');
 			}
 		}
@@ -876,7 +868,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		//Loop through each field that would be in the Admin Box, and has the <site_setting> tag set
 		foreach ($box['tabs'] as $tabName => &$tab) {
 	
-			$workingCopyImages = $thumbnailWorkingCopyImages = false;
+			$recreateCustomThumbnailTwos = $recreateCustomThumbnailOnes = false;
 			$jpegOnly = true;
 	
 			if (is_array($tab)
@@ -914,9 +906,10 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					
 							//Working copy images store a number for enabled. But the UI is a checkbox for enabled, and then a number if enabled.
 							//Convert the format back when saving
-							if (($setting == 'working_copy_image_threshold' && empty($values['image_sizes/set_working_copy_image_threshold']))
-							 || ($setting == 'working_copy_image_size' && empty($values['image_sizes/working_copy_image']))
-							 || ($setting == 'thumbnail_wc_image_size' && empty($values['image_sizes/thumbnail_wc']))) {
+							if (($setting == 'custom_thumbnail_1_width' && empty($values['image_sizes/custom_thumbnail_1']))
+							 || ($setting == 'custom_thumbnail_1_height' && empty($values['image_sizes/custom_thumbnail_1']))
+							 || ($setting == 'custom_thumbnail_2_width' && empty($values['image_sizes/custom_thumbnail_1']) && empty($values['image_sizes/custom_thumbnail_2']))
+							 || ($setting == 'custom_thumbnail_2_height' && empty($values['image_sizes/custom_thumbnail_1']) && empty($values['image_sizes/custom_thumbnail_2']))) {
 								$value = '';
 							}
 					
@@ -959,12 +952,12 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 											ze\contentAdm::resyncEquivalence($equiv['equiv_id'], $equiv['type']);
 										}
 						
-									} elseif ($setting == 'thumbnail_wc_image_size') {
-										$thumbnailWorkingCopyImages = true;
+									} elseif ($setting == 'custom_thumbnail_1_width' || $setting == 'custom_thumbnail_1_height') {
+										$recreateCustomThumbnailOnes = true;
 										$jpegOnly = false;
 						
-									} elseif ($setting == 'working_copy_image_size') {
-										$workingCopyImages = true;
+									} elseif ($setting == 'custom_thumbnail_2_width' || $setting == 'custom_thumbnail_2_height') {
+										$recreateCustomThumbnailTwos = true;
 										$jpegOnly = false;
 									}
 								}
@@ -974,8 +967,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 	
-			if ($workingCopyImages || $thumbnailWorkingCopyImages) {
-				ze\contentAdm::rerenderWorkingCopyImages($workingCopyImages, $thumbnailWorkingCopyImages, true, $jpegOnly);
+			if ($recreateCustomThumbnailOnes || $recreateCustomThumbnailTwos) {
+				ze\contentAdm::rerenderWorkingCopyImages($recreateCustomThumbnailOnes, $recreateCustomThumbnailTwos, true, $jpegOnly);
 			}
 		}
 

@@ -244,10 +244,10 @@ if ($scan = scandir(TINYMCE_DIR. 'plugins')) {
 minify('zenario/libs/manually_maintained/bsd/jquery_roundabout/', 'jquery.roundabout', $level, '.js');
 minify('zenario/libs/manually_maintained/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $level, '.js');
 minify('zenario/libs/manually_maintained/mit/jquery.fix.clone/', 'jquery.fix.clone', $level, '.js');
-minify('zenario/libs/bower/jquery-lazy/', 'jquery.lazy', $level, '.js');
-minify('zenario/libs/bower/jquery-lazy/', 'jquery.lazy.plugins', $level, '.js');
-minify('zenario/libs/bower/jQuery-MultiSelect/', 'jquery.multiselect', $level, '.js');
-minify('zenario/libs/bower/jQuery-MultiSelect/', 'jquery.multiselect', $level, '.css');
+minify('zenario/libs/yarn/jquery-lazy/', 'jquery.lazy', $level, '.js');
+minify('zenario/libs/yarn/jquery-lazy/', 'jquery.lazy.plugins', $level, '.js');
+minify('zenario/libs/yarn/jquery-multiselect/', 'jquery-MultiSelect', $level, '.js');
+minify('zenario/libs/yarn/jquery-multiselect/', 'jquery-MultiSelect', $level, '.css');
 
 //Minify colorbox
 minify('zenario/libs/manually_maintained/mit/colorbox/', 'jquery.colorbox', $level, '.js');
@@ -281,15 +281,15 @@ minify('zenario/libs/manually_maintained/mit/slimmenu/', 'slimmenu', $level, '.c
 minify('zenario/libs/manually_maintained/mit/slimmenu/', 'jquery.slimmenu', $level, '.js');
 
 //Minify Spectrum
-minify('zenario/libs/bower/spectrum/', 'spectrum', $level, '.css');
-minify('zenario/libs/bower/spectrum/', 'spectrum', $level, '.js');
+minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.css');
+minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.js');
 
 //Minify the split library for IE 8
 minify('zenario/libs/manually_maintained/mit/split/', 'split', $level, '.js');
 
 //Minify Toastr
-minify('zenario/libs/bower/toastr/', 'toastr', $level, '.css');
-minify('zenario/libs/bower/toastr/', 'toastr', $level, '.js');
+minify('zenario/libs/yarn/toastr/build/', 'toastr', $level, '.css');
+minify('zenario/libs/yarn/toastr/', 'toastr', $level, '.js');
 
 //Minify Underscore
 minify('zenario/libs/manually_maintained/mit/underscore/', 'underscore', $level, '.js');

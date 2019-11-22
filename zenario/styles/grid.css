@@ -648,6 +648,10 @@ body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
 	overflow-y: auto;
 }
 
+.grid_panel_wrap #grid.zenario_grid_slot_view .zenario_overflow_wrap {
+	width:100% !important;
+}
+
 body.iframe .zenario_grid_bg_preview,
 #grid .zenario_grid_bg_preview {
 	background:#FFF;
@@ -1025,56 +1029,59 @@ div.zenario_grid_download_bg {
 	
 	#download_links .nice_button,
 	form.zenario_grid_form .nice_button,
-	#settings .nice_button {
-		background:url('../admin/images/grid_maker/btn-blue-m.gif') repeat-x top;
-	}
-	
-	#download_links .nice_button .r,
-	form.zenario_grid_form .nice_button .r,
-	#settings .nice_button .r {
-		background:url('../admin/images/grid_maker/btn-blue-l.gif') no-repeat left top;
-	}
-	
+	#settings .nice_button,
 	#download_links .nice_button .i,
 	form.zenario_grid_form .nice_button .i,
 	#settings .nice_button .i {
-		background:url('../admin/images/grid_maker/btn-blue-r.gif') no-repeat right top;
+		background: #36b6d3; /* Old browsers */
+		background: -moz-linear-gradient(top, #36b6d3 0%, #0699c5 34%, #008ab3 65%, #0085ac 100%); /* FF3.6-15 */
+		background: -webkit-linear-gradient(top, #36b6d3 0%,#0699c5 34%,#008ab3 65%,#0085ac 100%); /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, #36b6d3 0%,#0699c5 34%,#008ab3 65%,#0085ac 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#36b6d3', endColorstr='#0085ac',GradientType=0 ); /* IE6-9 */
+		
+		-moz-border-radius:4px;
+		-webkit-border-radius:4px;
+		border-radius:4px;
 	}
 	
-	#download_links .zenario_grid_disabled .nice_button {
-		background:url('../admin/images/grid_maker/btn-grey-m.gif') repeat-x top;
+	#download_links .nice_button:hover,
+	form.zenario_grid_form .nice_button:hover,
+	#settings .nice_button:hover,
+	#download_links .nice_button .i:hover,
+	form.zenario_grid_form .nice_button .i:hover,
+	#settings .nice_button .i:hover {
+		background: #0085ac; /* Old browsers */
+		background: -moz-linear-gradient(top, #0085ac 0%, #0699c5 34%, #008ab3 65%, #36b6d3 100%); /* FF3.6-15 */
+		background: -webkit-linear-gradient(top, #0085ac 0%,#0699c5 34%,#008ab3 65%,#36b6d3 100%); /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, #0085ac 0%,#0699c5 34%,#008ab3 65%,#36b6d3 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0085ac', endColorstr='#36b6d3',GradientType=0 ); /* IE6-9 */
 	}
 	
-	#download_links .zenario_grid_disabled .nice_button .r {
-		background:url('../admin/images/grid_maker/btn-grey-l.gif') no-repeat left top;
+	#download_links .nice_button,
+	form.zenario_grid_form .nice_button,
+	#settings .nice_button,
+	#download_links .zenario_grid_disabled .nice_button {		
+		-webkit-transition: all 0.3s ease-in-out;
+		-moz-transition: all 0.3s ease-in-out;
+		-o-transition: all 0.3s ease-in-out;
+		transition: all 0.3s ease-in-out;
 	}
 	
-	#download_links .zenario_grid_disabled .nice_button .i {
-		background:url('../admin/images/grid_maker/btn-grey-r.gif') no-repeat right top;
+	#download_links .zenario_grid_disabled .nice_button,
+	#download_links .zenario_grid_disabled .nice_button:hover {
+		background: #dbd9da; /* Old browsers */
+		background: -moz-linear-gradient(top, #dbd9da 0%, #d3d3d3 34%, #cccccc 65%, #cdcbcc 100%); /* FF3.6-15 */
+		background: -webkit-linear-gradient(top, #dbd9da 0%,#d3d3d3 34%,#cccccc 65%,#cdcbcc 100%); /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, #dbd9da 0%,#d3d3d3 34%,#cccccc 65%,#cdcbcc 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dbd9da', endColorstr='#cdcbcc',GradientType=0 ); /* IE6-9 */
 	}
 	
 	#download_links .download_btn {
-		background:url('../admin/images/grid_maker/download-btn-off-state-middle-strip.png') repeat-x top;
-	}
-	
-	#download_links .download_btn .r {
-		background:url('../admin/images/grid_maker/download-btn-off-state-left-end.png') no-repeat left top;
-	}
-	
-	#download_links .download_btn .i {
-		background:url('../admin/images/grid_maker/download-btn-off-state-right-end.png') no-repeat right top;
+		background:#4BD74A;
 	}
 	
 	#download_links .download_btn:hover {
-		background:url('../admin/images/grid_maker/download-btn-over-state-middle-strip.png') repeat-x top;
-	}
-	
-	#download_links .download_btn:hover .r {
-		background:url('../admin/images/grid_maker/download-btn-over-state-left-end.png') no-repeat left top;
-	}
-	
-	#download_links .download_btn:hover .i {
-		background:url('../admin/images/grid_maker/download-btn-over-state-right-end.png') no-repeat right top;
+		background:#57F555;
 	}
 	
 	#download_links .nice_button .i,
@@ -1364,8 +1371,8 @@ div.zenario_grid_download_bg {
 	}
 	
 	.grid_maker_wrap #close_button {
-		background: url("../admin/images/sprites/org-icons-v5.png") no-repeat;
-		background-position:-58px -208px;
+		background:url('../admin/images/icon-close-off.svg') no-repeat;
+		background-size:100%;
     	width: 34px;
     	height: 34px;
     	position: absolute;
@@ -1376,7 +1383,7 @@ div.zenario_grid_download_bg {
 	}
 	
 	.grid_maker_wrap #close_button:hover {
-		background-position:-108px -208px;
+		background:url('../admin/images/icon-close-over.svg') no-repeat;
     }
     
     #colorbox.zenario_grid_maker #cboxClose {

@@ -172,7 +172,7 @@ body.no_js input.jquery_datepicker {
 }
 
 /*
-	Rules for minimum hieghts on slots
+	Rules for minimum heights on slots
 */
 
 .container .medium_slot .zenario_slot {
@@ -189,4 +189,69 @@ body.no_js input.jquery_datepicker {
 
 .container .xxlarge_slot .zenario_slot {
 	min-height: 375px;
+}
+
+/*
+	Tooltip for password, applies for Admin and visitor
+*/
+
+.zenario_password_requirements_tooltip {
+	text-align:left;
+	display:none;
+}
+
+.zenario_password_requirements_tooltip p {
+	margin-bottom:5px !important;
+}
+
+.zenario_password_requirements_tooltip ul {
+	padding:0 !important;
+	margin:3px 0 !important;
+	line-height:1.5em !important;
+}
+
+.zenario_password_requirements_tooltip ul li {
+	margin:0 0 4px 0 !important;
+	text-align:left !important;
+}
+
+.zenario_password_requirements_tooltip ul li.fail,
+.zenario_password_requirements_tooltip ul li.pass {
+	list-style:none !important;
+	background-repeat:no-repeat;
+	background-position:0 2px;
+	background-size:auto 12px;
+	padding:0 0 0 15px !important;
+}
+
+.zenario_password_requirements_tooltip ul li.fail {
+	background-image:url('../zenario/admin/images/icon-error.svg');
+	color:#E30000;
+}
+
+.zenario_password_requirements_tooltip ul li.pass {
+	background-image:url('../zenario/admin/images/icon-tick-green-circle.svg');
+	color:#00AB00;
+}
+
+/*
+	Tooltip for password, applies just visitor
+*/
+
+.zenario_visitor_tooltip_wrap {
+	position:relative;
+}
+
+.zenario_visitor_tooltip_wrap .zenario_password_requirements_tooltip {
+	position:absolute;
+	right:0;
+	top:0;
+}
+
+input[type="password"].border_red {
+	border-color:#e30000 !important;
+}
+
+input[type="password"].border_green {
+	border-color:#00AB00 !important;
 }

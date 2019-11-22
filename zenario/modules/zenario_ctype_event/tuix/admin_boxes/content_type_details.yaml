@@ -8,12 +8,12 @@ zenario_content_type_details:
                     visible_if: zenarioAB.key('id') == 'event'
                     label: 'Location field:'
                     type: radios
-                    cols: 2
+                    cols: 3
                     values:
-                        optional:
-                            label: Enabled
                         hidden:
-                            label: Disabled
+                            label: 'Disabled'
+                        optional:
+                            label: 'Enabled'
                     value: optional
                     redraw_onchange: true
                 zenario_ctype_event__location_text:

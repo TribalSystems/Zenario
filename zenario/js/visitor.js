@@ -199,20 +199,31 @@ zenario.lib(function(
 
 	//Look up a Plugin's VLP Phrase
 	zenario.phrase = function(vlpClass, text, mrg) {
-	
-		if (!defined(zenario.phrases[vlpClass])
-		 || !defined(zenario.phrases[vlpClass][text])) {
-			zenario.loadPhrases(vlpClass, text);
+		
+		if (vlpClass) {
+			if (!defined(zenario.phrases[vlpClass])
+			 || !defined(zenario.phrases[vlpClass][text])) {
+				zenario.loadPhrases(vlpClass, text);
+			}
+			if (!defined(zenario.phrases[vlpClass][text])) {
+				zenario.phrases[vlpClass][text] = text;
+			}
+			
+			text = zenario.phrases[vlpClass][text];
 		}
-		if (!defined(zenario.phrases[vlpClass][text])) {
-			zenario.phrases[vlpClass][text] = text;
-		}
 	
-		return zenario.applyMergeFields(zenario.phrases[vlpClass][text], mrg);
+		return zenario.applyMergeFields(text, mrg);
 	};
 
 	zenario.nphrase = function(vlpClass, text, pluralText, n, mrg) {
+		
+		mrg = mrg || {};
+		
 		if (defined(pluralText) && (1*n) !== 1) {
+			
+			if (!defined(mrg.count)) {
+				mrg.count = n;
+			}
 			return zenario.phrase(vlpClass, pluralText, mrg);
 		} else {
 			return zenario.phrase(vlpClass, text, mrg);
@@ -475,17 +486,87 @@ zenario.lib(function(
 			zenario.urlRequest(requests);
 	};
 	
+	zenario.checkPasswordStrength = function(password, settings) {
 	
+		if (!_.isString(password)) {
+			password = '';
+		}
+		
+		settings = settings || zenarioA.siteSettings;
+		
+		if (settings) {
+			min_pass_length = settings.min_extranet_user_password_length;
+		} else {
+			settings = {};
+			min_pass_length = 8;
+			settings['a_z_lowercase_characters'] = 
+			settings['a_z_uppercase_characters'] = 
+			settings['0_9_numbers_in_user_password'] = true;
+			settings['symbols_in_user_password'] = false;
+		}
+	
+		var validation = [],
+			lower = password.match(/[a-z]/g) ? true : false,
+			upper = password.match(/[A-Z]/g) ? true : false,
+			numbers = password.match(/[0-9]/g) ? true : false,
+			symbols = password.match(/[^a-zA-Z0-9]/g) ? true : false,
+			password_requirement_match = true;
+	
+		if (    (password.length < min_pass_length)
+				|| (settings['a_z_lowercase_characters'] && !lower)
+				|| (settings['a_z_uppercase_characters'] && !upper)
+				|| (settings['0_9_numbers_in_user_password'] && !numbers)
+				|| (settings['symbols_in_user_password'] && !symbols)) {
+				
+					password_requirement_match = false;
+		}
+	
+		validation['min_length'] = (password.length >= min_pass_length);
+		validation['lowercase'] = lower;
+		validation['uppercase'] = upper;
+		validation['numbers'] = numbers;
+		validation['symbols'] = symbols;
+		validation['password_matches_requirements'] = password_requirement_match;
+	
+		return validation;
+	};
+	
+	zenario.updatePasswordNotifier = function(passwordField, passwordMessageField) {
+		var validation = zenario.checkPasswordStrength($(passwordField).val());
+						
+		$('#min_length').attr('class', validation['min_length'] ? 'pass' : 'fail');
+		$('#lowercase').attr('class', validation['lowercase'] ? 'pass' : 'fail');
+		$('#uppercase').attr('class', validation['uppercase'] ? 'pass' : 'fail');
+		$('#numbers').attr('class', validation['numbers'] ? 'pass' : 'fail');
+		$('#symbols').attr('class', validation['symbols'] ? 'pass' : 'fail');
 
-
-
-
-
-
-
-
-
-
+		//Update the password message field if there is one...
+		if (passwordMessageField) {
+			passwordMessageField = $(passwordMessageField);
+			
+			if (validation['password_matches_requirements']) {
+				passwordMessageField.addClass('title_green');
+				passwordMessageField.removeClass('title_red');
+				passwordMessageField.text('Password matches the requirements');
+			} else {
+				passwordMessageField.addClass('title_red');
+				passwordMessageField.removeClass('title_green');
+				passwordMessageField.text('Password does not match the requirements');
+			}
+		} else {
+			//...otherwise change the password input field border colour.
+			passwordField = $(passwordField);
+			
+			if (validation['password_matches_requirements']) {
+				passwordField.addClass('border_green');
+				passwordField.removeClass('border_red');
+			} else {
+				passwordField.addClass('border_red');
+				passwordField.removeClass('border_green');
+			}
+		}
+	}
+	
 var chopLeft = function(s, n) {
 		return s.substr(0, n || 1);
 	},
@@ -1089,7 +1170,6 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 		});
 	}
 };
-
 
 
 //Lazy-load the datepicker library when needed
@@ -1716,9 +1796,9 @@ if (window.history && history.pushState) {
 			//If there was, give the Admin a chance to stop leaving the page
 			if (!defined(message) || confirm(message)) {
 				
-				//If there is a conductor on the page that uses it's own navigation,
+				//If there is a conductor on the page that uses its own navigation,
 				//and the user is potentially messing around with this by using the browser navigation,
-				//call a function to warn the conductor about this so it can clear up it's own variables.
+				//call a function to warn the conductor about this so it can clear up its own variables.
 				zenario_conductor.resetVarsOnBrowserBackNav();
 				
 				zenario.refreshPluginSlot(slotName, 'lookup',

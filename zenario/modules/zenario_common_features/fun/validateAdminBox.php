@@ -29,10 +29,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	
-	case 'plugin_settings':
-	case 'plugin_css_and_framework':
-		return require ze::funIncPath(__FILE__, 'plugin_settings.validateAdminBox');
-	
 	case 'zenario_document_folder':
 		
 		if ($values['details/folder_name'] == "") {

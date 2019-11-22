@@ -60,10 +60,29 @@ plugin_settings:
                     plugin_setting:
                         name: page_size
                     label: 'Page size:'
+                    type: select
+                    values:
+                        maximum_of:
+                            label: Maximum of...
+                        999999:
+                            label: All possible
+                    value: maximum_of
+                    format_onchange: true
+                maximum_results_number:
+                    plugin_setting:
+                        name: maximum_results_number
+                    indent: 1
                     type: text
+                    same_row: true
+                    maxlength: 5
+                    value: 5
+                    style: "width: 5em;"
+                    format_onchange: true
+                    visible_if: |
+                        zenarioAB.value('page_size') == 'maximum_of'
                     validation:
-                        numeric: Please enter a number for the Page Size.
-                    value: "5"
+                        numeric: The page size must be a number.
+                        required_if_not_hidden: Please enter the page size.
                 enable_categories:
                     plugin_setting:
                         name: enable_categories

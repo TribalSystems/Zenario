@@ -6,8 +6,11 @@ zenario_content_layout:
         id: ""
         cID: ""
         cType: ""
+    identifier:
+        css_class: content_draft
+        label: Content item ID
     hide_tab_bar: true
-    max_height: 250
+    max_height: 270
     tabs:
         cant_edit:
             hidden: true

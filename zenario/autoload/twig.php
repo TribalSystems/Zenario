@@ -47,7 +47,7 @@ class twig {
 	
 	public static function init() {
 		//Initialise Twig
-		self::$twig = new \Twig_Environment(new \Zenario_Twig_Loader(), [
+		self::$twig = new \Twig\Environment(new \Zenario_Twig_Loader(), [
 			'cache' => new \Zenario_Twig_Cache(),
 			'autoescape' => false,
 			'auto_reload' => true
@@ -71,18 +71,18 @@ class twig {
 
 		//Add references to some commonly used functions from Twig frameworks in Zenario 7,
 		//just to cut down the ammount of rewriting we need to do!
-		self::$twig->addFunction(new \Twig_SimpleFunction('imageLinkArray', '\ze\\file::imageLinkArray'));
-		self::$twig->addFunction(new \Twig_SimpleFunction('trackFileDownload', '\ze\\file::trackDownload'));
-		self::$twig->addFunction(new \Twig_SimpleFunction('get', '\ze::get'));
-		self::$twig->addFunction(new \Twig_SimpleFunction('post', '\ze::post'));
-		self::$twig->addFunction(new \Twig_SimpleFunction('request', '\ze::request'));
-		self::$twig->addFunction(new \Twig_SimpleFunction('session', '\ze::session'));
+		self::$twig->addFunction(new \Twig\TwigFunction('imageLinkArray', '\ze\\file::imageLinkArray'));
+		self::$twig->addFunction(new \Twig\TwigFunction('trackFileDownload', '\ze\\file::trackDownload'));
+		self::$twig->addFunction(new \Twig\TwigFunction('get', '\ze::get'));
+		self::$twig->addFunction(new \Twig\TwigFunction('post', '\ze::post'));
+		self::$twig->addFunction(new \Twig\TwigFunction('request', '\ze::request'));
+		self::$twig->addFunction(new \Twig\TwigFunction('session', '\ze::session'));
 
-		self::$twig->addFunction(new \Twig_SimpleFunction('print_r', 'print_r'));
-		self::$twig->addFunction(new \Twig_SimpleFunction('var_dump', 'var_dump'));
-		self::$twig->addFunction(new \Twig_SimpleFunction('json_encode', 'json_encode'));
+		self::$twig->addFunction(new \Twig\TwigFunction('print_r', 'print_r'));
+		self::$twig->addFunction(new \Twig\TwigFunction('var_dump', 'var_dump'));
+		self::$twig->addFunction(new \Twig\TwigFunction('json_encode', 'json_encode'));
 
-		self::$twig->addFunction(new \Twig_SimpleFunction('ze', 'zenario_callLibFromTwig'));
+		self::$twig->addFunction(new \Twig\TwigFunction('ze', 'zenario_callLibFromTwig'));
 	}
 	
 	public static function render($framework, $vars) {

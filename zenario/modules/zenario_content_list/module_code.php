@@ -456,15 +456,14 @@ class zenario_content_list extends ze\moduleBaseClass {
 			while($row = ze\sql::fetchAssoc($result)) {
 				$item = [];
 				
-				if ($this->dataField == 'v.description') {
+				if ($this->setting('show_text_preview') && $this->dataField == 'v.description') {
 					if ($this->isRSS) {
 						$item['Excerpt_Text'] = $this->escapeIfRSS($row['content_table_data']);
 					} else {
 						$item['Excerpt_Text'] = htmlspecialchars($row['content_table_data']);
 					}
 				
-				} elseif ($this->dataField == 'v.content_summary') {
-					
+				} elseif ($this->setting('show_text_preview') && $this->dataField == 'v.content_summary') {
 					if ($this->setting('content_type') != 'all' || !ze\row::exists('content_types', ['content_type_id' => $row['type'], 'summary_field' => 'hidden'])) {
 						if ($this->isRSS) {
 							$item['Excerpt_Text'] = ze\escape::xml(html_entity_decode(strip_tags($row['content_table_data']), ENT_QUOTES, 'UTF-8'));
@@ -473,6 +472,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 						}
 					}
 				}
+				
 				if ($row['writer_id']) {
 					$item['Author'] = $row['writer_name'];
 				}
@@ -717,7 +717,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//Get a count of how many items we have to display
 		$this->rows = ze\sql::fetchValue('SELECT COUNT(*) '. $sql);
 		
-		$this->totalPages = (int) ceil($this->rows / $this->setting('page_size'));
+		$page_size = $this->setting('maximum_results_number') ?: 999999;
+		$offset = $this->setting('show_pagination') ? $this->setting('offset') : 0;
+		
+		$this->totalPages = (int) ceil($this->rows / $page_size);
 		
 		if ($this->page > $this->totalPages) {
 			$this->page = $this->totalPages;
@@ -733,7 +736,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$this->lookForContentSelect().
 			$sql.
 			$this->orderContentBy().
-			ze\sql::limit($this->page, $this->setting('page_size'), $this->setting('offset'));
+			ze\sql::limit($this->page, $page_size, $this->setting('offset'));
 		return ze\sql::select($sql);
 	}
 	
@@ -852,6 +855,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 				'Show_Author_Image' => $this->setting('show_author_image'),
 				'Show_Excerpt' => (bool) $this->dataField,
 				'Show_Item_Title' => (bool)$this->setting('show_titles'),
+				'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',
+				'Show_Text_Preview' => (bool)$this->setting('show_text_preview'),
 				'Show_Sticky_Image' => (bool) $this->setting('show_sticky_images'),
 				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 				'Show_Title' => (bool)$this->setting('show_headings'),

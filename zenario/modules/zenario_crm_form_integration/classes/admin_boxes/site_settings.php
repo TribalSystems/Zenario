@@ -39,4 +39,47 @@ class zenario_crm_form_integration__admin_boxes__site_settings extends zenario_c
 		}
 	}
 	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($fields['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__salesforce_test_connection_button']['pressed'] ?? false) {
+			$error = '';
+			$success = '';
+			if (!$values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__client_id']
+				|| !$values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__client_secret']
+				|| !$values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__username']
+				|| !$values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__password']
+				|| !$values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__security_token']
+				|| !$values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__login_uri']
+			) {
+				$error = ze\admin::phrase('Please make sure the "Username", "Password", "Client ID", "Client secret key", "User\'s security token" and "Login URI" are not blank.');
+			} else {
+				$clientId = $values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__client_id'];
+				$clientSecretKey = $values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__client_secret'];
+				$username = $values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__username'];
+				$password = $values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__password'];
+				$userSecurityToken = $values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__security_token'];
+				$loginURI = $values['zenario_salesforce_api_form_integration/zenario_salesforce_api_form_integration__login_uri'];
+				
+				$result = zenario_crm_form_integration::testSalesforceConnection($clientId, $clientSecretKey, $username, $password, $userSecurityToken, $loginURI);
+				if ($result) {
+					$success = ze\admin::phrase('Connection successful.');
+				} else {
+					$error = ze\admin::phrase('Connection failed.');
+				}
+			}
+			
+			if ($error) {
+				$box['tabs']['zenario_salesforce_api_form_integration']['notices']['test_connection_success']['show'] = false;
+				
+				$box['tabs']['zenario_salesforce_api_form_integration']['notices']['test_connection_error']['show'] = true;
+				$box['tabs']['zenario_salesforce_api_form_integration']['notices']['test_connection_error']['message'] = $error;
+			}
+			if ($success) {
+				$box['tabs']['zenario_salesforce_api_form_integration']['notices']['test_connection_error']['show'] = false;
+				
+				$box['tabs']['zenario_salesforce_api_form_integration']['notices']['test_connection_success']['show'] = true;
+				$box['tabs']['zenario_salesforce_api_form_integration']['notices']['test_connection_success']['message'] = $success;
+			}
+		}	
+	}
+	
 }

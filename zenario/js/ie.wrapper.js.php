@@ -29,12 +29,7 @@
 header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
-$ie = '';
-if (!empty($_GET['ie'])) {
-	$ie = (int) $_GET['ie'];
-}
-
-ze\cache::useBrowserCache('zenario-inc-js-ie-'. $ie. '-'. LATEST_REVISION_NO);
+ze\cache::useBrowserCache('zenario-inc-js-'. LATEST_REVISION_NO);
 
 
 //Run pre-load actions
@@ -42,26 +37,11 @@ ze\cache::useBrowserCache('zenario-inc-js-ie-'. $ie. '-'. LATEST_REVISION_NO);
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
-switch ($ie) {
-	case 7:
-		echo '
-			try {
-				document.execCommand("BackgroundImageCache", false, true);
-			} catch(err) {}';
-		ze\cache::incJS('zenario/libs/manually_maintained/public_domain/json/json2');
-	
-	case 8:
-		echo '
-			if (!Date.now) {
-				Date.now = function() {
-					return new Date().valueOf();
-				};
-			}';
-		ze\cache::incJS('zenario/libs/manually_maintained/mit/split/split');
-	
-	case 9:
-		ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery.placeholder');
-		ze\cache::incJS('zenario/libs/bower/media-match/media.match');
+//Add polyfills from the mdn-polyfills lib
+foreach (scandir($pfDir = CMS_ROOT. 'zenario/libs/yarn/mdn-polyfills/') as $polyfill) {
+	if (substr($polyfill, -3) == '.js') {
+		require $pfDir. $polyfill;
+	}
 }
 
 

@@ -31,10 +31,27 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__organizer__consents extends zenario_users {
 
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
 		foreach ($panel['items'] as $consentId => &$item) {
 			//Show user details from consent in a single column
 			$item['user'] = static::formatConsentUser($consentId);
+			
+			
 		}
+		//check if a column is encrypted and/or hashed.
+		if(ze::$dbL->columnIsEncrypted('consents', 'first_name') || ze::$dbL->columnIsHashed('consents', 'first_name') ){
+		    $panel["columns"]["user"]['encrypted'] = true;
+		    $panel["columns"]["first_name"]['encrypted'] = true;
+		} else if(ze::$dbL->columnIsEncrypted('consents', 'email') || ze::$dbL->columnIsHashed('consents', 'email')){
+		    $panel["columns"]["user"]['encrypted'] = true;
+		    $panel["columns"]["email"]['encrypted'] = true;
+		} else if(ze::$dbL->columnIsEncrypted('consents', 'last_name') || ze::$dbL->columnIsHashed('consents', 'last_name')){
+		    $panel["columns"]["user"]['encrypted'] =true;
+		    $panel["columns"]["last_name"]['encrypted'] = true;
+		} else {
+		    $panel["columns"]["user"]['encrypted'] = false;
+		}
+		
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

@@ -9,7 +9,7 @@
  * @link      https://github.com/marionnewlevant/craft-mnbreakandcontinue
  */
 
-class Break_Node extends \Twig_Node
+class Break_Node extends \Twig\Node\Node
 {
 	/**
 	 * Compiles a Break_Node into PHP.

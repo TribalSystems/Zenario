@@ -32,6 +32,18 @@ switch ($path) {
 	case 'zenario_email_template':
 		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
 		
+		if ($values['meta_data/include_a_fixed_attachment'] == true && $values['meta_data/selected_attachment']) {
+			$privacy = ze\row::get('documents', 'privacy', ['id' => $values['meta_data/selected_attachment']]);
+			
+			if ($privacy == 'offline') {
+				$fields['meta_data/selected_attachment']['note_below'] = ze\admin::phrase('The selected document is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $privacy]);
+			} else {
+				unset($fields['meta_data/selected_attachment']['note_below']);
+			}
+		} else {
+			unset($fields['meta_data/selected_attachment']['note_below']);
+		}
+		
 		//Show site-setting value next to field and a link to the settings panel
 		if ($values['meta_data/from_details'] == 'site_settings') {
 			$fields['meta_data/from_details']['post_field_html'] = '&nbsp' . ze::setting('email_address_from') . '/' . ze::setting('email_name_from');
@@ -59,6 +71,7 @@ switch ($path) {
 		}
 		
 		//Watch out for when someone changes the format. Attempt to change the merge fields between each format (where this is simple to do).
+		//If we switch email template to always use curly brackets, we can start to ignore this!
 		if ($box['key']['lastFormatOption']
 		 && $box['key']['lastFormatOption'] != $values['meta_data/use_standard_email_template']) {
 			

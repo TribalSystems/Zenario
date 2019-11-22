@@ -1015,6 +1015,16 @@ additionalProperties:
                                                 
                                                 Note that this property does not disable the type-ahead search.
                                         
+                                        info_button_path:
+                                            type: string
+                                            description: >
+                                                You can set this property to specify the navigation path used to show the
+                                                item when the user clicks the info button.
+                                                
+                                                (If you don't set this, it defaults to the path property.)
+                                                
+                                                This works from version 8.5 onwards.
+                                        
                                         allow_typing_anything:
                                             type: boolean
                                             description: >

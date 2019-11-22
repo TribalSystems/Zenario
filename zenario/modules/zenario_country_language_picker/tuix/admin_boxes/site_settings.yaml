@@ -1,0 +1,26 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: "Country and language picker"
+    setting_group: zenario__country_language_picker
+    tabs:
+        zenario_country_language_picker__site_settings:
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: Yes
+            label: "Country and language picker"
+            fields:
+                zenario_country_language_picker__setting:
+                    label: "Country and language picker:"
+                    site_setting:
+                        name: zenario_country_language_picker__setting
+                    type: radios
+                    values:
+                        disabled:
+                            label: "Disabled"
+                        enabled_for_whole_site:
+                            label: "Enabled for whole site"
+                    value: disabled
+                    validation:
+                        required: "Please choose a setting."

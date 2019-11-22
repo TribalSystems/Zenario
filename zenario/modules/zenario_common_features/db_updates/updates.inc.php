@@ -38,4 +38,15 @@ ze\dbAdm::revision(177,
 	WHERE page_type IN ('zenario_example_page', 'zenario_second_page')
 _sql
 
+); ze\dbAdm::revision(232,
+<<<_sql
+	ALTER TABLE [[DB_PREFIX]]content_item_versions
+	ADD COLUMN `sensitive_content_message` tinyint(1) NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]layouts
+	ADD COLUMN `sensitive_content_message` tinyint(1) NOT NULL default 0
+_sql
+
 );

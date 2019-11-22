@@ -604,15 +604,11 @@ class zenario_document_container extends ze\moduleBaseClass {
 		
 			//Check if there are Private elements on Public content items...
 			if (isset(array_count_values($documentsInFolderPrivacy)['private']) && ($this->privacy == 'public' || $this->privacy == 'logged_out')) {
-				//$privateDocsOnPublicContentItems = '<p>Warning: content item is Public, the folder contains one or more Private documents, so these documents will not appear to visitors.</p>';
-				//TODO: possible rewording?
 				$privateDocsOnPublicContentItems = '<p>Warning: content item is Public, but one or more selected documents are Private. These documents will not appear to visitors.</p>';
 			}
 		
 			//...check if there are Offline elements...
 			if (isset(array_count_values($documentsInFolderPrivacy)['offline'])) {
-				//$offlineDocs = '<p>Warning: the folder contains one or more Offline documents, which will not appear to visitors. Offline documents can be published at any time.</p>';
-				//TODO: possible rewording?
 				$offlineDocs = '<p>Warning: one or more selected documents are Offline. These documents will not appear to visitors. Offline documents can be published in the Organizer Documents section at any time.</p>';
 			}
 		

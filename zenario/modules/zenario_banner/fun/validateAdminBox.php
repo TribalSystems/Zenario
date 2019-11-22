@@ -31,29 +31,29 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'plugin_settings':
 		
-		if (!empty($fields['first_tab/alt_tag'])
-		 && empty($fields['first_tab/alt_tag']['hidden'])
-		 && $changes['first_tab/alt_tag']
-		 && !$values['first_tab/alt_tag']) {
-			$box['tabs']['first_tab']['errors'][] = ze\admin::phrase('Please enter an alt-tag.');
+		if (!empty($fields['image_and_link/alt_tag'])
+		 && empty($fields['image_and_link/alt_tag']['hidden'])
+		 && $changes['image_and_link/alt_tag']
+		 && !$values['image_and_link/alt_tag']) {
+			$box['tabs']['image_and_link']['errors'][] = ze\admin::phrase('Please enter an alt-tag.');
 		}
 		
-		if (!empty($fields['first_tab/floating_box_title'])
-		 && empty($fields['first_tab/floating_box_title']['hidden'])
-		 && $changes['first_tab/floating_box_title']
-		 && !$values['first_tab/floating_box_title']) {
-			$box['tabs']['first_tab']['errors'][] = ze\admin::phrase('Please enter a floating box title attribute.');
+		if (!empty($fields['image_and_link/floating_box_title'])
+		 && empty($fields['image_and_link/floating_box_title']['hidden'])
+		 && $changes['image_and_link/floating_box_title']
+		 && !$values['image_and_link/floating_box_title']) {
+			$box['tabs']['image_and_link']['errors'][] = ze\admin::phrase('Please enter a floating box title attribute.');
 		}
 		
 		//Convert all absolute URLs in the HTML Text to relative URLs when saving
 		foreach (['value', 'current_value'] as $value) {
-			if (isset($box['tabs']['text']['fields']['text'][$value])) {
+			if (isset($box['tabs']['first_tab']['fields']['text'][$value])) {
 				foreach (['"', "'"] as $quote) {
-					$box['tabs']['text']['fields']['text'][$value] = 
+					$box['tabs']['first_tab']['fields']['text'][$value] = 
 						str_replace(
 							$quote. htmlspecialchars(ze\link::absolute()),
 							$quote,
-							$box['tabs']['text']['fields']['text'][$value]);
+							$box['tabs']['first_tab']['fields']['text'][$value]);
 				}
 			}
 		}

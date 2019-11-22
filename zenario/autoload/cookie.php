@@ -78,6 +78,23 @@ class cookie {
 	public static function requireConsent() {
 		\ze::$cookieConsent = 'require';
 	}
+	
+	public static function setSensitiveContentMessageConsent() {
+		//Set a 7 day cookie
+		\ze\cookie::set('sensitive_content_message_accepted', 1, 604800);
+		unset($_SESSION['sensitive_content_message_accepted']);
+	}
+	
+	public static function setCountryAndLanguage($country_id, $user_lang) {
+		//Set a 7 day cookie
+		if (isset($_COOKIE['cookies_accepted'])) {
+			\ze\cookie::set('country_id', $country_id, 604800);
+			\ze\cookie::set('user_lang', $user_lang, 604800);
+		}
+		
+		$_SESSION['country_id'] = $country_id;
+		$_SESSION['user_lang'] = $user_lang;
+	}
 
 
 
@@ -147,7 +164,7 @@ class cookie {
 				$sessionId = $_GET[$sessionName];
 			}
 			if ($sessionId && !preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $sessionId)) {
-				session_id('');
+				session_regenerate_id();
 			}
 			
 			session_start();

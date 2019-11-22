@@ -3,7 +3,7 @@
 site_settings:
     tab: users
     setting_group: perms
-    title: Editing settings for user permissions and data protection
+    title: Settings for User Permissions
     lovs:
         roles: {}
     tabs:

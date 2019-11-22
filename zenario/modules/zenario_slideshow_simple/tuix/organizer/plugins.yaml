@@ -9,7 +9,7 @@ zenario__modules:
                     ord: edit.3
                     visible_if: |
                         item.module_class_name == 'zenario_slideshow_simple'
-                    label: Add/edit slides in slideshow
+                    label: Open Slideshow Editor
                     hide_in_select_mode: true
                     onclick: |
                         zenario_slideshow_simple.openSlideManager(

@@ -192,6 +192,7 @@ zenario__email_template_manager:
                     label: Templates
                     link:
                         path: zenario__email_template_manager/panels/newsletter_templates
+                    hide_on_refiner: true
                     
             item_buttons:
                 edit:

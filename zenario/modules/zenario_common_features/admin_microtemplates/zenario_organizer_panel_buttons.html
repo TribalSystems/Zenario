@@ -9,26 +9,22 @@
 		</div>
 	<% } %>
 	
-	<% if (m.itemsSelected) { %>
+	<% if (m.itemsSelected && m.itemButtons && m.itemButtons.length) { %>
 	
 		<div id="organizer_itemToolbarWrap">
 			<div class="toolbar" id="organizer_itemToolbar">
 			
 				<div id="organizer_itemToolbarButtons" class="toolbarButtons">
 			
-					
-					<% if (m.itemButtons && m.itemButtons.length) { %>
-						
-						<% var bi, button; %>
-						<% foreach (m.itemButtons as bi => button) { %>
-							<% if (bi == 0 && m.itemCSSClass) { %>
-								<% button.itemCSSClass = m.itemCSSClass; %>
-							<% } %>
-							
-							{{zenarioT.microTemplate('zenario_organizer_button', button)}}
-							
-							<% delete button.itemCSSClass; %>
+					<% var bi, button; %>
+					<% foreach (m.itemButtons as bi => button) { %>
+						<% if (bi == 0 && m.itemCSSClass) { %>
+							<% button.itemCSSClass = m.itemCSSClass; %>
 						<% } %>
+						
+						{{zenarioT.microTemplate('zenario_organizer_button', button)}}
+						
+						<% delete button.itemCSSClass; %>
 					<% } %>
 				</div>
 			</div>

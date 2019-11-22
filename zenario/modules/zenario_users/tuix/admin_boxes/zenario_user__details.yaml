@@ -21,9 +21,8 @@ zenario_user__details:
                     type: warning
             fields:
                 email: 
-                    label: "Email"
+                    label: "Email:"
                     type: text
-                    redraw_onchange: true
                 email_verified: 
                     label: "Email verified"
                     type: checkbox
@@ -31,27 +30,27 @@ zenario_user__details:
                     readonly: true
                     side_note: If checked, the user has received an email and clicked on a special link within that email.
                 salutation: 
-                    label: "Salutation"
+                    label: "Salutation:"
                     type: text
                     allow_admin_to_change_visibility: true
                 first_name: 
-                    label: "First Name"
+                    label: "First Name:"
                     type: text
                 last_name: 
-                    label: "Last Name"
+                    label: "Last Name:"
                     type: text
                 status: 
-                    label: "Status"
+                    label: "Status:"
                     type: radios
                     values: 
                         contact: 
                             ord: 1
                             label: Contact
-                            tooltip: A user who cannot log in (for data capture or mailing purpose only)
+                            tooltip: "A user who cannot log in (for data capture or mailing purpose only)"
                         pending: 
                             ord: 2
                             label: Pending extranet user
-                            tooltip: A user who needs activation by an administrator before logging in
+                            tooltip: "A user who needs activation by an administrator before logging in"
                         active: 
                             ord: 3
                             label: Extranet user (active)
@@ -69,7 +68,7 @@ zenario_user__details:
                 
                 screen_name: 
                     grouping: screen_name_grouping
-                    label: "Screen Name"
+                    label: "Screen Name:"
                     type: text
                     visible_if: |
                         zenarioAB.value('status', 'details')
@@ -125,7 +124,7 @@ zenario_user__details:
                         && zenarioAB.value('status', 'details') != 'contact'
                 password:
                     grouping: password_grouping
-                    label: "Password"
+                    label: "Password:"
                     type: password
                     visible_if: |
                         (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
@@ -135,6 +134,9 @@ zenario_user__details:
                     # This is a little hack to try and stop Google Chrome auto-filling a username and password in here
                     # http://stackoverflow.com/questions/15738259/disabling-chrome-autofill
                     autocomplete: "off"
+                    oninput: |
+                        zenario.updatePasswordNotifier('#password', '#snippet_password_message');
+                        
                     pre_field_html: |
                         <input type="text" name="dummy_username" autocomplete="off" tabindex="-1" style="
                             position: fixed;
@@ -193,9 +195,22 @@ zenario_user__details:
                                 if (passwordEl = zenario.get('password')) {
                                     passwordEl.value = password;
                                 }
+                                
+                                $('#password').trigger('oninput');
                             "/>
                 
                 
+                password_message:
+                    grouping: password_grouping
+                    indent: 1
+                    visible_if: |
+                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        && zenarioAB.value('status', 'details')
+                        && zenarioAB.value('status', 'details') != 'contact'
+                    post_field_html: |
+                        <div>
+                            <span id="snippet_password_message" class="title_red">Password does not match the requirements</span>
+                        </div>
                 password_needs_changing:
                     priv: _PRIV_EDIT_USER
                     visible_if: |
@@ -215,8 +230,7 @@ zenario_user__details:
                     type: checkbox
                     side_note: "Send an activation email to the user with their login details."
                     visible_if: |
-                        zenarioAB.value('email', 'details') 
-                        && zenarioAB.value('status', 'details')
+                        zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     format_onchange: Yes
                     hidden: Yes
@@ -244,37 +258,37 @@ zenario_user__details:
             label: Dates/History
             fields:
                 created_date: 
-                    label: "Created Date"
-                    type: date
+                    label: "Created Date:"
+                    type: text
                     change_month_and_year: true
                     readonly: true
                 modified_date: 
-                    label: "Modified Date"
-                    type: date
+                    label: "Modified Date:"
+                    type: DateTime
                     change_month_and_year: true
                     readonly: true
                 last_login: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last Login"
-                    type: date
+                    label: "Last Login:"
+                    type: DateTime
                     change_month_and_year: true
                     readonly: true
                 last_profile_update_in_frontend: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last profile update"
-                    type: date
+                    label: "Last profile update:"
+                    type: DateTime
                     change_month_and_year: true
                     readonly: true
                 suspended_date: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'suspended'
-                    label: "Suspended date"
-                    type: date
+                    label: "Suspended date:"
+                    type: DateTime
                     change_month_and_year: true
                     readonly: true
                 consents_log:
-                    label: Consents log
+                    label: 'Consents log:'
                     snippet:
                         html: 'No consents recorded for this user.'

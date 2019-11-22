@@ -13,7 +13,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 /**
  * @author Robin van der Vleuten <robinvdvleuten@gmail.com>
  */
-class Twig_Extensions_Extension_Date extends Twig_Extension
+class Twig_Extensions_Extension_Date extends Twig\Extension\AbstractExtension
 {
     public static $units = array(
         'y' => 'year',

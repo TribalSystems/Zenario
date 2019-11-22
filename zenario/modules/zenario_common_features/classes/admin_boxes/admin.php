@@ -91,7 +91,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$values['permissions/permissions'] = $details['permissions'];
 			$values['permissions/specific_languages'] = $details['specific_languages'];
 			$values['permissions/specific_content_items'] = $details['specific_content_items'];
-			$values['permissions/specific_menu_areas'] = $details['specific_menu_areas'];
+			$values['permissions/specific_content_types'] = $details['specific_content_types'];
 			
 			$allPerms = $details['permissions'] == 'all_permissions';
 			$isCurrentAdmin = $box['key']['id'] == ze\admin::id();
@@ -138,8 +138,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			
 			//Admins shouldn't be able to change themselves into a limited admin
 			if ($isCurrentAdmin) {
-				$fields['permissions/permissions']['values']['specific_languages']['disabled'] = true;
-				$fields['permissions/permissions']['values']['specific_menu_areas']['disabled'] = true;
+				$fields['permissions/permissions']['values']['specific_areas']['disabled'] = true;
 			}
 			
 			if ($box['key']['id'] == ze\admin::id()) {
@@ -229,6 +228,8 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$fields['permissions/specific_languages']['values'][$langId] = $lang['english_name']. ' ('. $lang['id']. ')';
 		}
 		
+		$fields['permissions/specific_content_types']['values'] = ze\row::getValues('content_types', 'content_type_name_en', [], 'content_type_name_en');
+		
 		$adminAuthType = ze\row::get('admins', 'authtype', ze\admin::id());
 		if ($adminAuthType == 'local') {
 			$fields['is_client_account']['disabled'] = true;
@@ -244,8 +245,8 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$limitCount,
 			['limit' => $limit]);
 		
-		$fields['permissions/permissions']['values']['specific_languages']['side_note'] =
-			ze\admin::phrase($fields['permissions/permissions']['values']['specific_languages']['side_note'],
+		$fields['permissions/specific_languages']['side_note'] =
+			ze\admin::phrase($fields['permissions/specific_languages']['side_note'],
 				['default_language' => (ze::$defaultLang ?: 'en')]);
 		
 	}
@@ -425,20 +426,14 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			}
 		}
 		
-		if (ze\ring::engToBoolean($box['tabs']['permissions']['edit_mode']['on'] ?? false)) {
-			switch ($values['permissions/permissions']) {
-				case 'specific_languages':
-					if (!$values['permissions/specific_languages']
-					 && !$values['permissions/specific_content_items']) {
-						$box['tabs']['permissions']['errors'][] = ze\admin::phrase('Please select a language.');
-					}
-					break;
-				
-				case 'specific_menu_areas':
-					if (!$values['permissions/specific_menu_areas']) {
-						$box['tabs']['permissions']['errors'][] = ze\admin::phrase('Please select an area of the menu.');
-					}
-					break;
+		if (!empty($box['tabs']['permissions']['edit_mode']['on'])) {
+			if ($values['permissions/permissions'] == 'specific_areas') {
+				if (!$values['permissions/specific_languages']
+				 && !$values['permissions/specific_content_items']
+				 && !$values['permissions/specific_content_types']) {
+					$box['tabs']['permissions']['errors'][] = ze\admin::phrase('Please select at least one content item.');
+
+				}
 			}
 		}
 
@@ -556,17 +551,12 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$details = [
 				'specific_languages' => '',
 				'specific_content_items' => '',
-				'specific_menu_areas' => ''];
+				'specific_content_types' => ''];
 			
-			switch ($values['permissions/permissions']) {
-				case 'specific_languages':
-					$details['specific_languages'] = $values['permissions/specific_languages'];
-					$details['specific_content_items'] = $values['permissions/specific_content_items'];
-					break;
-				
-				case 'specific_menu_areas':
-					$details['specific_menu_areas'] = $values['permissions/specific_menu_areas'];
-					break;
+			if ($values['permissions/permissions'] == 'specific_areas') {
+				$details['specific_languages'] = $values['permissions/specific_languages'];
+				$details['specific_content_items'] = $values['permissions/specific_content_items'];
+				$details['specific_content_types'] = $values['permissions/specific_content_types'];
 			}
 			ze\adminAdm::savePerms($box['key']['id'], $values['permissions/permissions'], $perms, $details);
 

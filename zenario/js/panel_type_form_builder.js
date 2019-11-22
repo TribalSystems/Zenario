@@ -748,7 +748,7 @@ methods.addTUIXTabEvents = function(itemType, itemId, tuixTabId) {
 			if (item.fields.length) {
 				message += '<p>All fields on this page will be moved onto the previous page.</p>';
 			}
-			zenarioA.floatingBox(message, 'Delete', 'warning', true, false, function() {
+			zenarioA.floatingBox(message, 'Delete', 'warning', true, false, undefined, undefined, function() {
 				thus.deletePage(itemId);
 			});
 		});
@@ -1092,7 +1092,7 @@ methods.loadFieldsList = function(pageId) {
 		if (thus.saveCurrentOpenDetails()) {
 			var field = thus.getItem('field', fieldId);
 			message = '<p>Are you sure you want to duplicate the field "' + field.name + '"?</p>';
-			zenarioA.floatingBox(message, 'Duplicate', 'warning', true, false, function() {
+			zenarioA.floatingBox(message, 'Duplicate', 'warning', true, false, undefined, undefined, function() {
 				var newFieldId = thus.createField(undefined, field.ord + 0.1, undefined, fieldId);
 				thus.clickField(newFieldId, true);
 				thus.updateFieldOrds();
@@ -1111,7 +1111,7 @@ methods.loadFieldsList = function(pageId) {
 		}
 		
 		message = '<p>Are you sure you want to update this dataset repeat field?</p>';
-		zenarioA.floatingBox(message, 'Update', 'warning', true, false, function() {
+		zenarioA.floatingBox(message, 'Update', 'warning', true, false, undefined, undefined, function() {
 			
 			var datasetRepeatFieldId = repeatField.dataset_field_id;
 			var datasetRepeatField = thus.tuix.dataset.fields[datasetRepeatFieldId];
@@ -1423,11 +1423,11 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 	if (tab == 'details') {
 		if (item.visibility && item.visibility == 'visible_on_condition') {
 			if (!item.visible_condition_field_id) {
-				tags.tabs[tab].fields.visible_condition_field_id.error = 'Please select a visible on conditional form field.';
+				tags.tabs[tab].fields.visible_condition_field_id.error = 'Please select a field on which its visibility is conditional.';
 			} else if (!item.visible_condition_field_value) {
 				var conditionField = thus.getItem('field', item.visible_condition_field_id);
 				if (conditionField && (conditionField.type == 'checkbox' || conditionField.type == 'group')) {
-					tags.tabs[tab].fields.visible_condition_field_value.error = 'Please select a visible on condition form field value.';
+					tags.tabs[tab].fields.visible_condition_field_value.error = 'Please select a field value on which its visiblity is conditional.';
 				}
 			}
 		}
@@ -1477,7 +1477,7 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 						if (item.visibility == 'hidden') {
 							tags.tabs[tab].fields.readonly_or_mandatory.error = 'A field cannot be mandatory while hidden.';
 						} else if (item.visibility == 'visible_on_condition') {
-							tags.tabs[tab].fields.readonly_or_mandatory.error = "This field is always mandatory but is conditionally visible. You must change this field to be either visible all the time or conditionally mandatory with the same condition as it's visibility.";
+							tags.tabs[tab].fields.readonly_or_mandatory.error = "This field is marked as mandatory, but is only visible based on a condition. Either: change this field to be visible (without condition); or mandatory on condition, with the same condition as that on which visibility depends.";
 						}
 					} else if (item.readonly_or_mandatory == 'conditional_mandatory') {
 						if (!item.mandatory_condition_field_id) {

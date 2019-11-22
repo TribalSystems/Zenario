@@ -111,46 +111,6 @@ plugin_settings:
                     visible_if: |
                         zenarioAB.value('requires_terms_and_conditions')
                 
-                label_description:
-                    full_width: Yes
-                    snippet:
-                        html: >
-                            The settings below allow you to control the headings and field labels.
-                main_login_heading:
-                    plugin_setting:
-                        name: main_login_heading
-                    label: 'Main heading:'
-                    type: text
-                    value: "Sign in"
-                    show_phrase_icon: true
-                email_field_label:
-                    plugin_setting:
-                        name: email_field_label
-                    label: 'Email field label:'
-                    type: text
-                    value: "Your Email:"
-                    show_phrase_icon: true
-                screen_name_field_label:
-                    plugin_setting:
-                        name: screen_name_field_label
-                    label: 'Screen name field label:'
-                    type: text
-                    value: "Your Screen Name:"
-                    show_phrase_icon: true
-                password_field_label:
-                    plugin_setting:
-                        name: password_field_label
-                    label: 'Password field label:'
-                    type: text
-                    value: "Your password:"
-                    show_phrase_icon: true
-                login_button_text:
-                    plugin_setting:
-                        name: login_button_text
-                    label: 'Login button text:'
-                    type: text
-                    value: "Login"
-                    show_phrase_icon: true
         action_after_login:
             label: Action after login
             fields:

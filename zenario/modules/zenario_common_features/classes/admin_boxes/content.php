@@ -257,7 +257,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$values['plugins/slotname'. $suffix] = $slotName;
 						$values['plugins/module'. $suffix] = ze\module::displayName($slot['module_id']);
 						$values['plugins/instance_id'. $suffix] = $slot['instance_id'];
-						$values['plugins/plugin'. $suffix] = $instance['instance_name'];
+						$values['plugins/plugin'. $suffix] = $instance['instance_name'] . ' (' . $instance['name'] . ')';
 						$values['plugins/new_name'. $suffix] =  ze\admin::phrase('[[name]] (copy)', $instance);
 					}
 				}
@@ -396,7 +396,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		} else {
 			//Otherwise require _PRIV_CREATE_FIRST_DRAFT for creating a new content item
-			ze\priv::exitIfNot('_PRIV_CREATE_FIRST_DRAFT');
+			ze\priv::exitIfNot('_PRIV_CREATE_FIRST_DRAFT', false, $box['key']['cType']);
 		}
 
 
@@ -585,6 +585,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		
 		$this->fillMenu($box, $fields, $values, $contentType, $content, $version);
+		
+		if ($values['css/background_image'] || $values['css/bg_color'] || $values['css/bg_position'] || $values['css/bg_repeat']) {
+			$values['css/customise_background'] = true;
+		}
 	}
 	
 
@@ -848,7 +852,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		
 		$this->autoSetTitle($box, $fields, $values);
-		$this->formatMenu($box, $fields, $values, $changes);
 	}
 	
 	public function autoSetTitle(&$box, &$fields, &$values) {
@@ -952,6 +955,18 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('This translation already exists.');
 			}
 		}
+		
+		$errorsOnTab = false;
+		foreach ($box['tabs']['plugins']['fields'] as $field) {
+			if (isset($field['error'])) {
+				$errorsOnTab = true;
+				break;
+			}
+		}
+		
+		if ($errorsOnTab) {
+			$fields['plugins/table_end']['error'] = ze\admin::phrase('Please select an action for each plugin.');
+		}
 	}
 	
 	
@@ -1042,16 +1057,24 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		 && ze\priv::check('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $box['key']['cID'], $box['key']['cType'])) {
 			$version['css_class'] = $values['css/css_class'];
 	
-			if (($filepath = ze\file::getPathOfUploadInCacheDir($values['css/background_image']))
-			 && ($imageId = ze\file::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
-				$version['bg_image_id'] = $imageId;
+			//Only save background if "customise background" checkbox is ticked.
+			if ($values['css/customise_background']) {
+				if (($filepath = ze\file::getPathOfUploadInCacheDir($values['css/background_image']))
+				 && ($imageId = ze\file::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
+					$version['bg_image_id'] = $imageId;
+				} else {
+					$version['bg_image_id'] = $values['css/background_image'];
+				}
+				
+				$version['bg_color'] = $values['css/bg_color'];
+				$version['bg_position'] = $values['css/bg_position']? $values['css/bg_position'] : null;
+				$version['bg_repeat'] = $values['css/bg_repeat']? $values['css/bg_repeat'] : null;
 			} else {
-				$version['bg_image_id'] = $values['css/background_image'];
+				$version['bg_image_id'] = $version['bg_color'] = '';
+				$version['bg_position'] = $version['bg_repeat'] = null;
 			}
 	
-			$version['bg_color'] = $values['css/bg_color'];
-			$version['bg_position'] = $values['css/bg_position']? $values['css/bg_position'] : null;
-			$version['bg_repeat'] = $values['css/bg_repeat']? $values['css/bg_repeat'] : null;
+			
 		}
 
 		//Save the chosen file, if a file was chosen
@@ -1140,6 +1163,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 	protected function fillMenu(&$box, &$fields, &$values, $contentType, $content, $version) {
 		
+		$beforeNode = 0;
+		$underNode = 1;
 		$defaultPos = '';
 		
 		//If a content item was set as the "from" or "source", attempt to get details of its primary menu node
@@ -1158,13 +1183,28 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$menu = false;
 		}
 		
+		
+		//Look for suggested menu nodes
+		$suggestedPositions = [];
+		if ($box['key']['cType'] != 'html') {
+			foreach (ze\row::getAssocs('menu_nodes', ['id', 'section_id'], ['restrict_child_content_types' => $box['key']['cType']]) as $menuNode) {
+				$mPath = ze\menuAdm::pathWithSection($menuNode['id'], true). ' -> '. ze\admin::phrase('[ Create at the end ]');
+				$mVal = $menuNode['section_id']. '_'. $menuNode['id']. '_'. $underNode;
+				
+				$suggestedPositions[$mVal] = $mPath;
+			}
+		}
+		$suggestionsExist = !empty($suggestedPositions);
+		$suggestionsForced = $suggestionsExist && $contentType['menu_node_position_edit'] == 'force';
+		
 
 		//Don't show the option to add a menu node when editing an existing content item...
 		if ($box['key']['cID']
 		 
 		//...or if an Admin does not have the permissions to create a menu node...
+			//(Though allow this through for restricted admins if they are forced to create a content item in one of the suggested places.)
 		 || ($box['key']['translate'] && !ze\priv::check('_PRIV_EDIT_MENU_TEXT'))
-		 || (!$box['key']['translate'] && !ze\priv::check('_PRIV_ADD_MENU_ITEM'))
+		 || (!$box['key']['translate'] && !$suggestionsForced && !ze\priv::check('_PRIV_ADD_MENU_ITEM'))
 		
 		//...or when translating a content item without a menu node.
 		 || ($box['key']['translate'] && !$menu)) {
@@ -1176,6 +1216,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//If we're translating, add the ability to add the text but hide all of the options about setting a position
 		} elseif ($box['key']['translate']) {
 			$fields['meta_data/menu_pos'] =
+			$fields['meta_data/menu_pos_suggested'] =
 			$fields['meta_data/menu_pos_before'] =
 			$fields['meta_data/menu_pos_under'] =
 			$fields['meta_data/menu_pos_after'] =
@@ -1184,9 +1225,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$values['meta_data/create_menu_node'] = 1;
 		
 		} else {
-			$beforeNode = 0;
-			$underNode = 1;
-			
 			if ($menu) {
 				//Set the menu positions for before/after/under
 				$values['meta_data/menu_pos_before'] = $menu['section_id']. '_'. $menu['id']. '_'. $beforeNode;
@@ -1223,191 +1261,32 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 			}
 			
-			if ($contentType['default_parent_menu_node']) {
+			//If there were some suggestions, default the radio-group to select them over the specific option
+			if ($suggestionsExist) {
+				$values['meta_data/menu_pos'] = 'suggested';
+				$fields['meta_data/menu_pos_suggested']['values'] = $suggestedPositions;
 				
-				$values['meta_data/menu_pos'] = 'specific';
-				$values['meta_data/menu_pos_specific'] = ze\contentAdm::getDefaultMenuPositionFromSettings($contentType);
-				
-				if ($contentType['menu_node_position_edit'] == 'force') {
-					$fields['meta_data/menu_pos']['readonly'] =
-					$fields['meta_data/menu_pos_specific']['readonly'] = true;
-					$fields['meta_data/menu_pos_locked_warning']['hidden'] = false;
+				if (count($suggestedPositions) > 1) {
+					$fields['meta_data/menu_pos']['values']['suggested']['label'] = ze\admin::phrase('Suggested positions');
 				}
+				
+				//Lock down the choice to only suggestions, if this is enabled in the content type settings
+				if ($suggestionsForced) {
+					$fields['meta_data/menu_pos']['hidden'] =
+					$fields['meta_data/menu_pos']['readonly'] = true;
+					$fields['meta_data/menu_pos_locked_warning']['hidden'] = false;
+					$fields['meta_data/menu_pos_suggested']['hide_with_previous_outdented_field'] = false;
+				}
+
+			} else {
+				$values['meta_data/menu_pos'] = 'specific';
+				unset($fields['meta_data/menu_pos']['values']['suggested']);
 			}
 		}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		//Old code
-		//
-		//
-		////Remove the ability to create a Menu Node if location information for the menu has not been provided
-		//if (!$box['key']['target_menu_section']) {
-		//	$fields['meta_data/create_menu']['hidden'] = true;
-		//
-		//} elseif ($box['key']['target_menu_parent']) {
-		//	$values['meta_data/menu_parent_path'] = ze\menuAdm::path($box['key']['target_menu_parent'], ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ($_GET['language'] ?? false)));
-		//}
-		//
-		//
-		//if ($content) {
-		//	if ($box['key']['duplicate'] || $box['key']['translate']) {
-		//		
-		//		//If duplicating, check for a Menu Node
-		//		if ((($box['key']['translate'] && ze\priv::check('_PRIV_EDIT_MENU_TEXT')) || (!$box['key']['translate'] && ze\priv::check('_PRIV_ADD_MENU_ITEM')))
-		//		 && ($currentMenu = ze\menu::getFromContentItem($box['key']['source_cID'], $box['key']['cType']))
-		//
-		//		//When duplicating to a new/different language, if Menu Text already exists in the new Language,
-		//		//but a Content Item does not, rely on the existing Menu Text and don't offer to create a new one
-		//		 && (!($lang = ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ($_GET['language'] ?? false)))
-		//		  || ($lang == $content['language_id'])
-		//		  || !(ze\row::exists('menu_text', ['menu_id' => $currentMenu['id'], 'language_id' => $lang])))) {
-		//			
-		//			$box['key']['target_menu_section'] = $currentMenu['section_id'];
-		//			$values['meta_data/menu_title'] = $currentMenu['name'];
-		//			$values['meta_data/menu_path'] = ze\menuAdm::path($currentMenu['parent_id'], $lang);
-		//			$values['meta_data/create_menu'] = 1;
-		//
-		//			
-		//		} else {
-		//			$values['meta_data/create_menu'] = '';
-		//			$fields['meta_data/create_menu']['hidden'] = true;
-		//			$box['key']['target_menu_section'] = null;
-		//			$box['key']['target_menu_parent'] = null;
-		//		}
-		//		
-		//		if ($box['key']['translate']) {
-		//			$fields['meta_data/create_menu']['hidden'] = true;
-		//		}
-		//	
-		//	} else {
-		//		//The options to set the menu text should be hidden when not creating something
-		//		$fields['meta_data/create_menu']['hidden'] = true;
-		//		$values['meta_data/create_menu'] = '';
-		//		$box['key']['target_menu_section'] = null;
-		//		$box['key']['target_menu_parent'] = null;
-		//	}
-		//}
-		//
-		//
-		//if (!$version) {
-		//	
-		//	// Load content type default menu options
-		//	if ($contentType['default_parent_menu_node']) {
-		//		
-		//		$values['meta_data/at_position'] = 'specific_position';
-		//		
-		//		$values['meta_data/specific_position'] = ze\contentAdm::getDefaultMenuPositionFromSettings($contentType);
-		//		
-		//		if ($contentType['menu_node_position_edit'] == 'force') {
-		//			$fields['meta_data/warning_message']['snippet']['html'] = ze\admin::phrase('The initial menu position for content items of this type has been locked.');
-		//			$fields['meta_data/warning_message']['hidden'] = false;
-		//			$fields['meta_data/at_position']['disabled'] = true;
-		//			$fields['meta_data/specific_position']['readonly'] = true;
-		//		}
-		//	}
-		//	
-		//	//Check the FAB was opened from an existing content item in the front-end
-		//	if ($box['key']['from_cID']
-		//	 && $box['key']['from_cType']
-		//	 && ($menu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']))) {
-		//		
-		//		$box['key']['from_mID'] = $menu['id'];
-		//		
-		//		//Default the specific location option to "under the current content item", if a default wasn't set in the content type settings
-		//		if (!$values['meta_data/specific_position']) {
-		//			$dummyNode = 1;
-		//			$values['meta_data/specific_position'] = $menu['section_id'] . '_' . $menu['id'] . '_' . $dummyNode;
-		//		}
-		//	
-		//	} else {
-		//		//Don't allow the "after current" option if the was no relative content item to base this off
-		//		$fields['meta_data/at_position']['values']['after_current']['hidden'] = true;
-		//	}
-		//}
-		//
-		//
-		//if (!$version && $box['key']['target_menu_title'] && isset($box['tabs']['meta_data']['fields']['menu_title'])) {
-		//	$values['meta_data/menu_title'] = $box['key']['target_menu_title'];
-		//}
-		//
-		//if (!empty($values['meta_data/menu_title'])) {
-		//	if (ze\ray::value($box,'tabs','meta_data','fields','menu_parent_path','value')) {
-		//		$values['meta_data/menu_path'] =
-		//			$values['meta_data/menu_parent_path'].
-		//			' -> '.
-		//			$values['meta_data/menu_title'];
-		//	} else {
-		//		$values['meta_data/menu_path'] =
-		//			$values['meta_data/menu_title'];
-		//	}
-		//}
-		//
-		//
-		//
-		////Remove the Menu Creation options if an Admin does not have the permissions to create a Menu Item
-		//if (($box['key']['translate'] && !ze\priv::check('_PRIV_EDIT_MENU_TEXT'))
-		// || (!$box['key']['translate'] && !ze\priv::check('_PRIV_ADD_MENU_ITEM'))) {
-		//	$values['meta_data/create_menu'] = '';
-		//	$fields['meta_data/create_menu']['hidden'] = true;
-		//	$box['key']['target_menu_section'] = null;
-		//	$box['key']['target_menu_parent'] = null;
-		//}
-		//
-		//
-		//if (empty($fields['meta_data/create_menu']['hidden'])) {
-		//	$values['meta_data/create_menu'] =
-		//	$box['tabs']['meta_data']['fields']['create_menu']['current_value'] = 1;
-		//}
-		//
-		//
-		//
-		////For top-level menu modes, add a note to the "path" field to make it clear that it's
-		////at the top level
-		//if (!$values['meta_data/menu_parent_path']) {
-		//	$fields['meta_data/menu_path']['label'] = ze\admin::phrase('Path (top level):');
-		//}
-		//
-		//
-		//
-		//
 	}
-
-	public function formatMenu(&$box, &$fields, &$values, $changes) {
-	
-	
-		//Old code
 		
-		//$fields['meta_data/menu_title']['hidden'] =
-		//$fields['meta_data/menu_path']['hidden'] =
-		//$fields['meta_data/menu_parent_path']['hidden'] =
-		//	empty($box['key']['target_menu_section'])
-		//		|| !$values['meta_data/create_menu'];
-		//
-		//$showMenuOptions = !empty($box['key']['create_from_toolbar']) || !empty($box['key']['create_from_content_panel']);
-		//
-		//if ($showMenuOptions) {
-		//	$fields['meta_data/menu_title']['hidden'] = !ze::in($values['meta_data/at_position'], 'specific_position', 'after_current');
-		//	$fields['meta_data/menu_title']['indent'] = 1;
-		//}
-		//
-		//if (!$values['meta_data/menu_title']) {
-		//	$values['meta_data/menu_title'] = $values['meta_data/title'];
-		//}
-		//
-		//$fields['meta_data/at_position']['hidden'] = 
-		//	!$showMenuOptions;
-		//
-		//$fields['meta_data/specific_position']['hidden'] = 
-		//	!$showMenuOptions || $values['meta_data/at_position'] != 'specific_position';
-	//
-	}
+		
+		
 	
 	
 	public function saveMenu(&$box, &$fields, &$values, $changes, $equivId) {
@@ -1438,10 +1317,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//If creating a new content item, add a new menu node at the specified position
 			} else {
 				if ($values['meta_data/create_menu_node']
-				 && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
+				 && ($values['meta_data/menu_pos'] == 'suggested' || ze\priv::check('_PRIV_ADD_MENU_ITEM'))) {
 				
 					$menuIds = [];
 					switch ($values['meta_data/menu_pos']) {
+						case 'suggested':
+							$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/menu_pos_suggested']);
+							break;
 						case 'before':
 							$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/menu_pos_before']);
 							break;
@@ -1463,66 +1345,5 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		//Old code
-		//
-		////Create Menu Nodes for first drafts
-		//if ($values['meta_data/create_menu'] && $box['key']['cVersion'] == 1 && $box['key']['target_menu_section']) {
-		//	if (($box['key']['translate'] && ze\priv::check('_PRIV_EDIT_MENU_TEXT')) || (!$box['key']['translate'] && ze\priv::check('_PRIV_ADD_MENU_ITEM'))) {
-		//		
-		//		$menu = ze\menu::getFromContentItem($box['key']['source_cID'], $box['key']['cType']);
-		//		
-		//		if (($box['key']['duplicate'] || $box['key']['translate'])
-		//		 && ze\contentAdm::recordEquivalence($box['key']['source_cID'], $box['key']['cID'], $box['key']['cType'])
-		//		 && ($menu)) {
-		//			//Try to use one equivalent Menu Node rather than creating two copies, if duplicationg into a new Language
-		//			$menuId = $menu['mID'];
-		//
-		//		} elseif (!$box['key']['translate']) {
-		//			$submission = $menu? $menu : [];
-		//			
-		//			unset(
-		//				$submission['id'], $submission['mID'], $submission['menu_id'],
-		//				$submission['redundancy'], $submission['equiv_id'],
-		//				$submission['parent_id'], $submission['ordinal']
-		//			);
-		//			
-		//			$submission['target_loc'] = 'int';
-		//			$submission['content_id'] = $box['key']['cID'];
-		//			$submission['content_type'] = $box['key']['cType'];
-		//			$submission['content_version'] = $box['key']['cVersion'];
-		//			$submission['parent_id'] = $box['key']['target_menu_parent'];
-		//			$submission['section_id'] = $box['key']['target_menu_section'];
-		//	
-		//			$menuId = ze\menuAdm::save($submission);
-		//		}
-		//
-		//		ze\menuAdm::saveText($menuId, $values['meta_data/language_id'], ['name' => $values['meta_data/menu_title']]);
-		//	}
-		//}
-		//
-		//$showMenuOptions = !empty($box['key']['create_from_toolbar']) || !empty($box['key']['create_from_content_panel']);
-		////Create menu node from toolbar
-		//if ($showMenuOptions && ze::in($values['meta_data/at_position'], 'specific_position', 'after_current')) {
-		//	
-		//	
-		//	if ($values['meta_data/at_position'] == 'specific_position' && $values['meta_data/specific_position']) {
-		//		ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/specific_position'], $afterNeighbour = 0);
-		//	
-		//	} elseif ($values['meta_data/at_position'] == 'after_current' && $box['key']['from_mID']) {
-		//		ze\menuAdm::addContentItems($box['key']['id'], $box['key']['from_mID'], $afterNeighbour = 1);
-		//	}
-		//	
-		//	$menuId = ze\row::get('menu_nodes', 'id', ['equiv_id' => $box['key']['cID'], 'content_type' => $box['key']['cType']]);
-		//	ze\menuAdm::saveText($menuId, $values['meta_data/language_id'], ['name' => $values['meta_data/menu_title']]);
-		//}
 	}
 }

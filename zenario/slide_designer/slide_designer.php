@@ -30,7 +30,7 @@ $v = ze\db::codeVersion();
 ze\content::pageHead('../');
 
 echo '
-    <link rel="stylesheet" type="text/css" href="../libs/bower/toastr/toastr.min.css?v=', $v, '">
+    <link rel="stylesheet" type="text/css" href="../libs/yarn/toastr/build/toastr.min.css?v=', $v, '">
     <link rel="stylesheet" type="text/css" href="zenario/libs/manually_maintained/mit/jquery/css/jquery_ui/jquery-ui.css">
     
     <link rel="stylesheet" type="text/css" href="../styles/fea/fea_common.css?v=', $v, '">
@@ -218,7 +218,7 @@ foreach ($phrases as &$phrase) {
 
 
 echo '
-   <script src="../libs/bower/toastr/toastr.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>
+   <script src="../libs/yarn/toastr/toastr.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>
    <script src="../libs/manually_maintained/mit/jquery/jquery-ui.admin.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>
    <script src="../js/tuix.wrapper.js.php?', $v, '" type="text/javascript" charset="utf-8"></script>
    <script src="../js/plugin.wrapper.js.php?', $v, '&amp;ids=', ze\module::id('zenario_abstract_fea'), '" type="text/javascript" charset="utf-8"></script>

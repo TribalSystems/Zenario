@@ -28,10 +28,6 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 switch ($path) {
-	case 'plugin_settings':
-	case 'plugin_css_and_framework':
-		return require ze::funIncPath(__FILE__, 'plugin_settings.formatAdminBox');
-	
 	case 'zenario_document_move':
 		$fields['details/move_to']['hidden'] = $values['details/move_to_root'];
 		break;

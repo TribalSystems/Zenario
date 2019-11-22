@@ -39,19 +39,18 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			}
 		}
 		
-		if (isset($_GET['refiner__trash'])) {
+		if (isset($_GET['refiner__archived'])) {
 			$panel['title'] = ze\admin::phrase('Archived Layouts');
 			$panel['no_items_message'] = ze\admin::phrase('No Layouts have been archived.');
+			$panel['item']['css_class'] = 'archived_layout';
 			
-			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__trash'];
+			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__archived'];
 			
 			unset($panel['columns']['archived']['title']);
 			unset($panel['columns']['default']);
 			unset($panel['collection_buttons']);
-			unset($panel['trash']);
 		
 		} elseif ($refinerName == 'content_type') {
-			unset($panel['trash']);
 			unset($panel['columns']['archived']['title']);
 			$panel['no_items_message'] = ze\admin::phrase('There are no active Layouts for this Content Type.');
 
@@ -67,7 +66,6 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__typeahead_search'];
 		
 		} elseif ($refinerName || ze::in($mode, 'get_item_name', 'get_item_links')) {
-			unset($panel['trash']);
 			
 			if (isset($panel['db_items']['custom_where_statement__without_unregistered'])) {
 				$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__without_unregistered'];
@@ -75,8 +73,6 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				unset($panel['db_items']['where_statement']);
 			}
 		
-		} else {
-			$panel['trash']['empty'] = !ze\row::exists('layouts', ['status' => 'suspended']);
 		}
 		
 		if (isset($_GET['refiner__content_type'])) {
@@ -178,6 +174,9 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				} else {
 					$summary = 'Static';
 				}
+				
+				$summary .= ' / Skin: ' . $item['skin_name'];
+				
 				$item['summary'] = $summary;
 				
 				if (!ze\row::exists('content_types', ['default_layout_id' => $id]) && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
@@ -201,6 +200,8 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				if (!empty($foundPaths[$item['path']])) {
 					$item['image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=180&height=130&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
 				}
+				
+				$item['row_class'] = ' layout_status_' . $item['status'];
 				
 			//Non-numeric ids are the Family and Filenames of Template Files that have no layouts created
 			} else {

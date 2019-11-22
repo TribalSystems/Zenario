@@ -6,6 +6,9 @@ zenario_alias:
         cID: ""
         cType: ""
         equivId: ''
+    identifier:
+        css_class: content_draft
+        label: Content item ID
     max_height: 400
     hide_tab_bar: true
     tabs:

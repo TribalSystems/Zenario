@@ -36,15 +36,6 @@ zenario__administration:
                     name: API Keys
                     desc: API Keys and settings for third party services.
                     keywords: dropbox google translate translation tools
-                branding:
-                    priv: _PRIV_VIEW_SITE_SETTING
-                    name: Branding
-                    desc: >
-                        Change the favicon used for Organizer and the logo used on the site disabled and
-                        admin login screen.
-                captcha:
-                    name: Captcha
-                    desc: Settings for the captchas used by some plugins.
                 categories:
                     name: Categories
                     desc: Settings for categories.
@@ -88,19 +79,21 @@ zenario__administration:
                     desc: Settings for handling errors in PHP and MySQL
                     keywords: errors php warnings php notices mysql strict database
                 external_programs:
-                    name: External programs
+                    name: Other server programs
                     desc: >
-                        Setup external server programs such as
+                        Setup other server programs such as
                         image optimizers and PDF readers
                     keywords: >
                         antiword pdftotext pdf-to-text pdf to text ghostscript word document
                         plain text extract plaintext extract image thumbnail
                         png jpeg jpg optimize optimise
-                favicon:
+                logos_and_branding:
                     css_class: favicon
-                    name: Site logos
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    name: Site logos and Branding
                     desc: >
-                        Upload or remove a Favicon, a Home Screen Icon or the Default Icon for this site
+                        Upload or remove the favicon, and the logo used on the site disabled and
+                        admin login screen.
                     keywords: >
                         favicon mobile icon home screen icon
                 files_and_images:

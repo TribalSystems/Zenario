@@ -58,6 +58,10 @@ echo '
     				padding: 0;
     				overflow: hidden;
     			}
+    			div.version_no {
+    				text-align: right;
+    				font-style: italic;
+    			}
     			
     			.docson > .box {
     				width: 100%;
@@ -109,7 +113,19 @@ echo '
     }
 echo '
 </head>
-<body>
+<body>';
+
+//Try and work out which version this is for
+foreach (scandir($apiDir. '../admin/db_updates/copy_over_top_check/') as $file) {
+	if ($file[0] != '.') {
+		echo '
+<div class="version_no">Documentation is for version ', htmlspecialchars(str_replace('.txt', '', $file)), '</div>';
+		break;
+	}
+}
+
+
+echo '
 <div id="doc"></div>
 <script charset="utf-8">
     require.config({ baseUrl: "', $docsonBaseUrl, '"});

@@ -1,0 +1,14 @@
+.zenario_breadcrumbs a {
+	color:#525151;
+}
+
+.zenario_breadcrumbs .current a {
+	color:#2a98ce;
+}
+
+.zenario_breadcrumbs span:not(.level1_1_on):before {
+	font-family:"FontAwesome";
+	content:"\f138";
+	color:#CCC;
+	padding:0 4px;
+}

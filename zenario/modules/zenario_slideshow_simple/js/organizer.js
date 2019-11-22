@@ -26,6 +26,12 @@ methods.openSlideManager = function(el, slotName, ajaxURL, instanceId) {
 	thus.deletedSlideIds = [];
 	thus.selectedSlideId = false;
 	thus.changeMade = false;
+	thus.desktop_canvas_setting = false;
+	thus.desktop_canvas_setting_nice_name = false;
+	thus.mobile_canvas_setting = false;
+	thus.mobile_canvas_setting_nice_name = false;
+	thus.mobile_canvas_width = false;
+	thus.mobile_canvas_height = false;
 	thus.dimensions = false;
 	thus.mobileDimensions = false;
 	thus.errors = false;
@@ -47,12 +53,26 @@ methods.openSlideManager = function(el, slotName, ajaxURL, instanceId) {
 		}
 		thus.showTabs = data.showTabs;
 		
+		if (data.desktopCanvasSetting) {
+			thus.desktop_canvas_setting = data.desktopCanvasSetting;
+			thus.desktop_canvas_setting_nice_name = data.desktopCanvasSettingNiceName;
+		}
+		
+		if (data.mobileCanvasSetting) {
+			thus.mobile_canvas_setting = data.mobileCanvasSetting;
+			thus.mobile_canvas_setting_nice_name = data.mobileCanvasSettingNiceName;
+		}
+		
 		if (data.width && data.height) {
-			thus.dimensions = data.width + 'px wide, ' + data.height + 'px high';
+			thus.dimensions = data.width + ' x ' + data.height + 'px';
 		}
+		
 		if (data.mobileWidth && data.mobileHeight) {
-			thus.mobileDimensions = data.mobileWidth + 'px wide, ' + data.mobileHeight + 'px high';
+			thus.mobileDimensions = data.mobileWidth + ' x ' + data.mobileHeight + 'px';
 		}
+		
+		thus.mobile_canvas_width = data.mobileWidth;
+		thus.mobile_canvas_height = data.mobileHeight;
 		
 		var orderedSlides = thus.getOrderedSlides();
 		thus.selectedSlideId = orderedSlides.length > 0 ? orderedSlides[0].id : false;
@@ -304,12 +324,27 @@ methods.getSlideDetailsMergeFields = function(slideId, imageType, cb) {
 		}
 	}
 	
+	//Required to display the mobile canvas width.
+	if (!mergeFields.m_width) {
+		mergeFields.m_width = thus.mobile_canvas_width;
+	}
+	
+	//Required to display the mobile canvas height.
+	if (!mergeFields.m_height) {
+		mergeFields.m_height = thus.mobile_canvas_height;
+	}
+	
 	if (mergeFields.mobile_behaviour == 'same_image' || mergeFields.mobile_behaviour == 'same_image_different_size') {
 		mergeFields.mobile_image_id = mergeFields.image_id;
 		mergeFields.mobile_image_details_thumbnail_url = mergeFields.image_details_thumbnail_url;
 		mergeFields.m_width = mergeFields.width;
 		mergeFields.m_height = mergeFields.height;
 	}
+	
+	mergeFields.desktop_canvas_setting = thus.desktop_canvas_setting;
+	mergeFields.desktop_canvas_setting_nice_name = thus.desktop_canvas_setting_nice_name;
+	mergeFields.mobile_canvas_setting = thus.mobile_canvas_setting;
+	mergeFields.mobile_canvas_setting_nice_name = thus.mobile_canvas_setting_nice_name;
 	
 	if (thus.dimensions) {
 		mergeFields.dimensions = thus.dimensions;

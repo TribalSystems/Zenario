@@ -30,7 +30,7 @@ require '../basicheader.inc.php';
 header('Content-Type: text/css; charset=UTF-8');
 
 //Ensure that the site name and subdirectory are part of the ETag, as Skins can have different ids on different servers
-$ETag = 'zenario-skin-'. $_SERVER['HTTP_HOST']. '-'. LATEST_REVISION_NO. '-'. (int) $_GET['id'];
+$ETag = 'zenario-skin-'. $_SERVER['HTTP_HOST']. '-'. LATEST_REVISION_NO. '-'. (int) ($_GET['id'] ?? 0);
 
 if (isset($_GET['editor'])) {
 	$ETag .= '-editor';

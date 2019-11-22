@@ -15,6 +15,7 @@ content_types:
         content_type_id: project
         content_type_name_en: Project description
         content_type_plural_en: Project descriptions
+        content_type_plural_lower_en: project descriptions
         default_template_name: Project Layout
         enable_summary_auto_update: false
         description_field: optional

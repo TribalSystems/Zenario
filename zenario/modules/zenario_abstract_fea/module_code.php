@@ -493,8 +493,8 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	protected function includeEditor() {
 		if (!ze::isAdmin()) {
 			ze::requireJsLib('zenario/js/ace.wrapper.js.php');
-			ze::requireJsLib('zenario/libs/bower/toastr/toastr.min.js', 'zenario/libs/bower/toastr/toastr.min.css');
-			ze::requireJsLib('zenario/libs/bower/spectrum/spectrum.min.js', 'zenario/libs/bower/spectrum/spectrum.min.css');
+			ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
+			ze::requireJsLib('zenario/libs/yarn/spectrum-colorpicker/spectrum.min.js', 'zenario/libs/yarn/spectrum-colorpicker/spectrum.min.css');
 		}
 	}
 	

@@ -1,0 +1,549 @@
+#checkboxClick:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+closeInspectionView:
+    summary: |
+        This method should close inspection view.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This method should close inspection view.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+cmsSetsPanelTUIX:
+    summary: |
+        Called by Organizer whenever it needs to set the panel data.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Called by Organizer whenever it needs to set the panel data.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+cmsSetsPath:
+    summary: |
+        Called by Organizer whenever it needs to set the current tag-path.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Called by Organizer whenever it needs to set the current tag-path.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+cmsSetsRefiner:
+    summary: |
+        Called by Organizer to give information on the current refiner.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Called by Organizer to give information on the current refiner.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+cmsSetsRequestedItem:
+    summary: |
+        Called by Organizer whenever a panel is first loaded with a specific item requested.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Called by Organizer whenever a panel is first loaded with a specific item requested.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+cmsSetsSearchTerm:
+    summary: |
+        If searching is enabled then the CMS will call this method to tell you what the search term was.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            If searching is enabled then the CMS will call this method to tell you what the search term was.
+        </p><p>
+            (N.b. searching will be enabled if your <code>returnSearchingEnabled()</code> method returns true.)
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+cmsSetsSelectedItems:
+    summary: |
+        This method will be called when the CMS sets the items that are selected,
+        e.g. when your panel is initially loaded.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This method will be called when the CMS sets the items that are selected,
+            e.g. when your panel is initially loaded.
+        </p><p>
+            This will be an object in the format
+        </p>
+        <pre>{1: true, 6: true, 18: true}</pre>
+        </p><p>
+            It is usually called before your panel is drawn so you do not need to update the state
+            of the items on the page.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+cmsSetsSortColumn:
+    summary: |
+        Called by Organizer to set the sort column and direction.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Called by Organizer to set the sort column and direction.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+deselectItem:
+    summary: |
+        This method should cause an item to be deselected
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This method should cause an item to be selected.
+        </p><p>
+            It is called after your panel is drawn so you should update the state of your items
+            on the page.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+displayToastMessage:
+    summary: |
+        Called whenever Organizer has saved an item and wants to display a toast message to the administrator.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Called whenever Organizer has saved an item and wants to display a toast message to the administrator.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+#init:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+itemClick:
+    summary: |
+        This function is called whenever someone clicks on an item in your panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function is called whenever someone clicks on an item in your panel.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return false (this is used to cancel the event propagation).
+        </p>
+#microTemplate:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+onUnload:
+    summary: |
+        This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+openInspectionView:
+    summary: |
+        This method should open inspection view.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This method should open inspection view.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+#resetScrollPosition:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+restoreScrollPosition::
+    summary: |
+        This is called when your panel has just been reloaded/restored, and Organizer wants to prompt you to restore the saved the scroll position of your panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This is called when your panel has just been reloaded/restored, and Organizer wants to prompt you to restore the saved the scroll position of your panel.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+returnAJAXRequests:
+    summary: |
+        Use this to add any requests you need to the AJAX URL used to call your panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Use this to add any requests you need to the AJAX URL used to call your panel.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return an object.
+        </p><p>
+            If you do not wish to add any requests then you should return <code>{}<code>.
+        </p>
+returnAJAXURL:
+    summary: |
+        Use this function to set AJAX URL you want to use to load the panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Use this function to set AJAX URL you want to use to load the panel.
+        </p><p>
+            The default value here is a PHP script that will:
+        </p>
+        <ol>
+            <li>Load all of the TUIX properties.</li>
+            <li>Call your <code>preFillOrganizerPanel()<code> method.</li>
+            <li>Populate items from the database if you set the <code>db_items</code> property in TUIX.</li>
+            <li>Call your <code>fillOrganizerPanel()</code> method.</li>
+        </ol>
+        <p>
+            You can skip these steps and not do an AJAX request by returning false instead,
+            or do something different by returning a URL to a different PHP script.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return a URL, or false.
+        </p>
+#returnDevToolsAJAXURL:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+returnDoSortingAndSearchingOnServer:
+    summary: |
+        Return whether you want searching/sorting/pagination to be done server-side.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Return whether you want searching/sorting/pagination to be done server-side.
+        </p><p>
+            If you return true, sorting and pagination will be applied on the server.
+        </p><p>
+            If you return false, your <code>sortAndSearchItems()</code> method will be called instead.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return true or false.
+        </p>
+returnInspectionViewEnabled:
+    summary: |
+        Return whether you want to enable inspection view.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Return whether you want to enable inspection view.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return true or false.
+        </p>
+#returnIsMultiLineList:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+returnMultipleSelectEnabled:
+    summary: |
+        Return whether you are allowing multiple items to be selected in full and quick mode.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Return whether you are allowing multiple items to be selected in full and quick mode.
+        </p><p>
+            (In select mode the opening picker will determine whether multiple select is allowed.)
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return true or false.
+        </p>
+returnPageSize:
+    summary: |
+        You should return the page size you wish to use, or false to disable pagination.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should return the page size you wish to use, or false to disable pagination.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return an integer, or false.
+        </p>
+returnPanelTitle:
+    summary: |
+        You should use this to return the panel title.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should use this to return the panel title.
+        </p><p>
+            This is also shown in the back button when the back button would take you back to this panel.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return a string.
+        </p>
+returnSearchingEnabled:
+    summary: |
+        You should return whether to enable searching on a panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should return whether to enable searching on a panel.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return true or false.
+        </p>
+returnSelectedItems:
+    summary: |
+        You should return the currently selected items.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            You should return the currently selected items.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            This should be an object in the format
+        </p>
+        <pre>{1: true, 6: true, 18: true}</pre>
+returnShowLeftColumn:
+    summary: |
+        Return whether to show the left hand nav.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Return whether to show the left hand nav.
+        </p><p>
+            //By default, if this is full mode then show the left hand nav, and if not, then hide it.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return true or false.
+        </p>
+saveScrollPosition:
+    summary: |
+        This is called when Organizer wants to prompt you to save the scroll position of your panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This is called when Organizer wants to prompt you to save the scroll position of your panel.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+searchItems:
+    summary: |
+        This function allows you to search items on the client side.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function allows you to search items on the client side.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return an array of matching ids.
+        </p>
+selectItem:
+    summary: |
+        This method should cause an item to be selected.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This method should cause an item to be selected.
+        </p><p>
+            It is called after your panel is drawn so you should update the state of your items
+            on the page.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+#showButtons:
+    summary: |
+        This function is called when Organizer needs to draw the buttons for a panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function is called when Organizer needs to draw the buttons for a panel.
+        </p><p>
+            Note that this may be more often than a panel redraw, as it also happens when
+            the user selects or deselects an item.
+        </p><p>
+            You should add html to the buttons, e.g.
+        </p>
+        <pre>$buttons.html('<p>Hello world!</p>').show();</pre>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+showPanel:
+    summary: |
+        This function is called when Organizer needs to draw the current panel.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function is called when Organizer needs to draw the current panel.
+        </p><p>
+            You should add html to the panel, e.g.
+        </p>
+        <pre>$panel.html('<p>Hello world!</p>').show();</pre>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+sizePanel:
+    summary: |
+        This is called whenever Organizer is resized - i.e. when the administrator resizes their window.
+        It's also called on the first load of your panel after your showPanel() and setButtons() methods have been called.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This is called whenever Organizer is resized - i.e. when the administrator resizes their window.
+        </p><p>
+            It's also called on the first load of your panel after your <code>showPanel()</code> and <code>setButtons()</code> methods have been called.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+sortAndSearchItems:
+    summary: |
+        This function allows you to search/sort items on the client side.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function allows you to search/sort items on the client side.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            If your <code>returnDoSortingAndSearchingOnServer()</code> function returned false,
+            you should return an array of matching ids.
+        </p>
+sortItems:
+    summary: |
+        This function allows you to sort items on the client side.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This function allows you to sort items on the client side.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            You should return an array of sorted ids.
+        </p>
+toggleInspectionView:
+    summary: |
+        This method should toggle inspection view.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This method should toggle inspection view.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>
+updateItemCheckbox:
+    summary: |
+        This updates the checkbox for an item, if you are showing checkboxes next to items,
+        and the "all items selected" checkbox, if it is on the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This updates the checkbox for an item, if you are showing checkboxes next to items,
+            and the "all items selected" checkbox, if it is on the page.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Not needed.
+        </p>

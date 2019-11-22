@@ -546,9 +546,11 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			
 		} else {
 			$userDetails = ze\user::details($user['id']);
-			foreach($userDetails as $dbColumn => $value) {
-				$search[] = '[['.$dbColumn.']]';
-				$replace[] = htmlspecialchars($value);
+			if (is_array($userDetails)) {
+				foreach($userDetails as $dbColumn => $value) {
+					$search[] = '[['.$dbColumn.']]';
+					$replace[] = htmlspecialchars($value);
+				}
 			}
 		}
 		

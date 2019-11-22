@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>jquery-MultiSelect example</title>
+
+	<link rel="stylesheet" href="./jquery-MultiSelect.css">
+
+	<script src="./jquery.js"></script>
+	<script type="text/javascript" src="./jquery-MultiSelect.js"></script>
+</head>
+
+<body>
+	<div id="multiselect"></div>
+	
+	<script type="text/javascript">
+		$("#multiselect").multiselect({
+			data : [
+				{
+                    id : 0,
+                    name : "Alaska"
+                },
+                {
+                    id : 1,
+                    name : "florida"
+                },
+                {
+                    id : 2,
+                    name : "New York"
+                },
+                {
+                    id : 3,
+                    name : "Ohio"
+                },
+                {
+                    id : 4,
+                    name : "Alaska"
+                },
+                {
+                    id : 5,
+                    name : "florida"
+                },
+                {
+                    id : 6,
+                    name : "New York"
+                },
+                {
+                    id : 7,
+                    name : "Ohio"
+                }
+			],
+			search : true,
+			searchPlaceholder : "Search list items...",
+			placeholder : "Select option",
+			className : "state-dropdown",
+			disable : false,
+            onOptionSelect : function(item){
+                console.log(item);
+            }
+		});
+	</script>
+</body>
+</html>

@@ -657,7 +657,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			$this->remember('comm_confirm').
 			$this->remember('comm_post').
 			$this->remember('forum_thread') .
-			$this->remember('checksum', md5($this->post['message_text'] ?? $this->thread['title']));
+			$this->remember('checksum', md5($this->post['message_text'] ?? ($this->thread['title'] ?? '')));
 		
 		$this->sections['Confirmation_Box']['Close_Form'] = $this->closeForm();
 	}
@@ -765,7 +765,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				}
 			}
 			
-			$this->sections['Post_Message']['Post_Email'] = '<input type="email" id="comm_email" name="comm_email" maxlength="100" value="'. $this->sections['Post_Message']['Post_Email']. '"/>';
+			$this->sections['Post_Message']['Post_Email'] = '<input type="email" id="comm_email" name="comm_email" maxlength="100" value="'. ($this->sections['Post_Message']['Post_Email'] ?? '') . '"/>';
 		}
 	}
 	

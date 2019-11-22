@@ -1110,9 +1110,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				}
 				
 				//If "_limit" is in the request, this means that server side sorting/pagination is being used
-				if ($_GET['_limit'] ?? false) {
+				if ($limit = (int) ($_GET['_limit'] ?? 0)) {
 					//Apply pagination using the limit
-					$start = (int) ($_GET['_start'] ?? false);
+					$start = (int) ($_GET['_start'] ?? 0);
 				
 					if ($start >= $count) {
 						$start = 0;
@@ -1132,13 +1132,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 						//Change the start position appropriately
 						if ($pos !== false) {
-							$start = $pos - ($pos % (int) ($_GET['_limit'] ?? false));
+							$start = $pos - ($pos % $limit);
 						}
 					}
 				
 					//Set which page this should be
-					$tags['__page__'] = 1 + (int) ($start / (int) ($_GET['_limit'] ?? false));
-					$stop = $start + (int) ($_GET['_limit'] ?? false);
+					$tags['__page__'] = 1 + (int) ($start / $limit);
+					$stop = $start + $limit;
 				
 					$startV = $start;
 					$stopV = $stop;
@@ -1498,7 +1498,7 @@ if ($doExport) {
 	//Allow users to request anything they could see as CSV or Excel
 	$isExcel = !empty($_POST['_excelExport']);
 	$keys = ze\ray::explodeAndTrim($_POST['_exportCols']);
-	$title = preg_replace('@\W@', '-', ($tags['title'] ?? '') ?: 'Export');
+	$title = preg_replace('@\W@', '-', ($tags['title'] ?? '') ?: 'Export'). ' '. str_replace(':', '-', ze\date::now());
 	
 	//Create a new Excel document or CSV file
 	if ($isExcel) {

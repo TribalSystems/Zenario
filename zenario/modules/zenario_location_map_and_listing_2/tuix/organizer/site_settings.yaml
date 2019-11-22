@@ -1,0 +1,7 @@
+zenario__administration:
+	panels:
+		site_settings:
+			items:
+				zenario_location_map_and_listing_2__site_settings_group:
+					name: Areas
+					desc: Settings for areas.

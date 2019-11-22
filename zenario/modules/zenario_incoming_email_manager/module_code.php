@@ -335,7 +335,10 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 					$panel['item']['name'] = ze\admin::phrase('Incoming Email Handler');
 					$panel['item']['names'] = ze\admin::phrase('Incoming Email Handlers');
 					$panel['item']['css_class'] = 'zenario_incoming_email_manager__handler';
-					$panel['no_items_message'] = ze\admin::phrase('No Incoming Email Handlers exist. If you install and run a Module that has an Incoming Email Handler, it will appear here.');
+					$panel['no_items_message'] =
+						ze\admin::phrase('No Incoming Email Handlers exist. If you install and run a Module that has an Incoming Email Handler, it will appear here.');
+					$panel['item_buttons']['suspend']['ajax']['confirm']['message'] =
+						ze\admin::phrase('Are you sure you wish to suspend the incoming email handler with the name "[[job_name]]"?');
 					
 					unset($panel['item_buttons']['enable']);
 					unset($panel['item_buttons']['edit']);

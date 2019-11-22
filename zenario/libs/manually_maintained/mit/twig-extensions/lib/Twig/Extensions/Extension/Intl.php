@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-class Twig_Extensions_Extension_Intl extends Twig_Extension
+class Twig_Extensions_Extension_Intl extends Twig\Extension\AbstractExtension
 {
     public function __construct()
     {

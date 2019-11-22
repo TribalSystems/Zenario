@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $adminColumns = [
 	'username', 'password', 'password_salt', 'password_needs_changing', 
 	'status', 'first_name', 'last_name', 'email', 'created_date', 'modified_date', 'image_id',
-	'permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas'
+	'permissions', 'specific_languages', 'specific_content_types'
 ];
 
 //Attempt to connect to the global database

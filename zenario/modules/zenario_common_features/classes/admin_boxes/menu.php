@@ -90,6 +90,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$values['advanced/rel_tag'] = $menu['rel_tag'];
 			$values['advanced/css_class'] = $menu['css_class'];
 			$values['advanced/add_registered_get_requests'] = $menu['add_registered_get_requests'];
+			$values['advanced/restrict_child_content_types'] = $menu['restrict_child_content_types'];
 	
 			if ($values['advanced/call_static_method'] = (bool) $menu['module_class_name']) {
 				$values['advanced/menu__module_class_name'] = $menu['module_class_name'];
@@ -250,6 +251,15 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$explodedGetRequests = explode(',', $values['advanced/custom_get_requests']);
 			foreach ($explodedGetRequests as $request) {
 				$fields['advanced/custom_get_requests']['values'][$request] = $request;
+			}
+		}
+		
+		
+		
+		foreach (ze\row::getAssocs('content_types', ['content_type_plural_en'], [], 'content_type_plural_en') as $cType => $cTypeDetails) {
+			if ($cType != 'html') {
+				$fields['advanced/restrict_child_content_types']['values'][$cType] = 
+					ze\admin::phrase('Only allow [[content_type_plural_en]] to be created under here', $cTypeDetails);
 			}
 		}
 
@@ -512,6 +522,15 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$customGetRequests = explode(',', $values['custom_get_requests']);
 				$customGetRequests = implode('&', $customGetRequests);
 				$submission['custom_get_requests'] = $customGetRequests;
+			}
+			
+			//Save the restrict_child_content_types value.
+			//Not that as it's an indexed column, to keep the index tidy, I'm saving a NULL value rather than an empty string
+			//if nothing is chosen.
+			if ($values['advanced/restrict_child_content_types']) {
+				$submission['restrict_child_content_types'] = $values['advanced/restrict_child_content_types'];
+			} else {
+				$submission['restrict_child_content_types'] = null;
 			}
 		}
 

@@ -90,6 +90,9 @@ class zenario_multiple_image_container extends zenario_banner {
 			}
 		}
 		
+		$this->mergeFields['Show_caption_on_image'] = $this->setting('show_caption_on_image');
+		$this->mergeFields['Show_caption_on_enlarged_image'] = $this->setting('show_caption_on_enlarged_image');
+		
 		//Don't show empty Banners
 		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty
 		if (empty($this->mergeFields['Images'])
@@ -119,6 +122,7 @@ class zenario_multiple_image_container extends zenario_banner {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		parent::fillAdminBox($path, $settingGroup, $box, $fields, $values);
 		$box['css_class'] .= ' zenario_fab_multiple_image_container';
+		$box['tabs']['image_and_link']['fields']['canvas']['label'] = ze\admin::phrase('Thumbnail image canvas:');
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -129,7 +133,7 @@ class zenario_multiple_image_container extends zenario_banner {
 				$ord = 0;
 				$valuesInDB = false;
 				$enlargeImageOptionPicked = false;
-				$imageIds = ze\ray::explodeAndTrim($values['first_tab/image']);
+				$imageIds = ze\ray::explodeAndTrim($values['image_and_link/image']);
 				foreach ($imageIds as $imageId) {
 					if (!isset($box['tabs']['links']['fields']['image_'. $imageId])) {
 						//Copy the template files, replacing znz with the id of the image
@@ -179,15 +183,15 @@ class zenario_multiple_image_container extends zenario_banner {
 				}
 				
 				//Try to use the Banner plugin's formatAdminBox() method for some things
-				$fields['first_tab/image_source']['hidden'] = true;
-				$values['first_tab/link_type'] = $enlargeImageOptionPicked? '_ENLARGE_IMAGE' : '';
+				$fields['image_and_link/image_source']['hidden'] = true;
+				$values['image_and_link/link_type'] = $enlargeImageOptionPicked? '_ENLARGE_IMAGE' : '';
 				parent::formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 				
 				//Tweak/remove some of the banner plugin's options
 				//(Note that these aren't done in our TUIX file because they would be
 				// overridden in zenario_banner::formatAdminBox(),
 				// so we need to override them here!)
-				foreach ($box['tabs']['first_tab']['fields'] as $fieldName => &$field) {
+				foreach ($box['tabs']['image_and_link']['fields'] as $fieldName => &$field) {
 					
 					//Ignore core fields here
 					if (isset($field['class_name']) && $field['class_name'] == 'zenario_common_features') {
@@ -199,6 +203,8 @@ class zenario_multiple_image_container extends zenario_banner {
 						case 'image':
 						case 'canvas':
 						case 'lazy_load':
+						case 'show_caption_on_image':
+						case 'show_caption_on_enlarged_image':
 							$field['hidden'] = false;
 							break;
 						
@@ -226,13 +232,13 @@ class zenario_multiple_image_container extends zenario_banner {
 					}
 				}
 				
-				$fields['text/text']['hidden'] =
-				$fields['text/more_link_text']['hidden'] = true;
-				unset($fields['text/text']['plugin_setting']);
-				unset($fields['text/more_link_text']['plugin_setting']);
+				$fields['first_tab/text']['hidden'] =
+				$fields['first_tab/more_link_text']['hidden'] = true;
+				unset($fields['first_tab/text']['plugin_setting']);
+				unset($fields['first_tab/more_link_text']['plugin_setting']);
 				
 				//Make sure the "Captions, links, enlarging" tab is never blank.
-				$box['tabs']['links']['fields']['no_captions']['hidden'] = !empty($values['first_tab/image']);
+				$box['tabs']['links']['fields']['no_captions']['hidden'] = !empty($values['image_and_link/image']);
 				
 				
 				break;
@@ -240,7 +246,7 @@ class zenario_multiple_image_container extends zenario_banner {
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$imageIds = ze\ray::explodeAndTrim($values['first_tab/image']);
+		$imageIds = ze\ray::explodeAndTrim($values['image_and_link/image']);
 		foreach ($imageIds as $imageId) {
 			if (!empty($values['links/link_type_'. $imageId])) {
 				switch ($values['links/link_type_'. $imageId]) {

@@ -170,8 +170,6 @@ zenario__menu:
                     db_column: mt.language_id
                 parent_id:
                     db_column: mi.parent_id
-                is_content_type_default_menu_node:
-                    hidden: true
             item:
                 name: Menu node
                 names: Menu nodes
@@ -199,7 +197,7 @@ zenario__menu:
                     hide_in_select_mode: true
                     hide_on_filter: true
                     parent: create_dropdown
-                    label: Menu node (unlinked)
+                    label: Menu node only
                     ord: 99
                     admin_box:
                         path: zenario_menu
@@ -236,16 +234,6 @@ zenario__menu:
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
                     label: Create a child
-                create_menu_node:
-                    priv: _PRIV_ADD_MENU_ITEM
-                    hide_in_select_mode: true
-                    hide_on_filter: true
-                    parent: create_child_dropdown
-                    label: Menu node
-                    admin_box:
-                        path: zenario_menu
-                        key:
-                            id_is_parent_menu_node_id: 1
                 create_menu_node_and_content_item:
                     priv: _PRIV_ADD_MENU_ITEM
                     hide_in_select_mode: true
@@ -254,6 +242,16 @@ zenario__menu:
                     label: Menu node and content item
                     admin_box:
                         path: zenario_content
+                        key:
+                            id_is_parent_menu_node_id: 1
+                create_menu_node:
+                    priv: _PRIV_ADD_MENU_ITEM
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    parent: create_child_dropdown
+                    label: Menu node only
+                    admin_box:
+                        path: zenario_menu
                         key:
                             id_is_parent_menu_node_id: 1
                 edit_menu_text:
@@ -389,10 +387,6 @@ zenario__menu:
                 
                 
                 delete:
-                    disabled_if_for_any_selected_items: |
-                        item.is_content_type_default_menu_node
-                    disabled_tooltip: |
-                        Cannot delete because this is the default menu node for a content type.
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete menu node
                     parent: action_dropdown

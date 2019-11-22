@@ -59,11 +59,6 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 			if (ze::in($mode, 'full', 'quick')) {
 				$item['defaults'] = ze\admin::phrase('Version-controlled content items');
 				
-				if ($item['default_parent_menu_node']) {
-					$mrg = ['menu_path' => ze\menuAdm::pathWithSection($item['default_parent_menu_node'])];
-					$item['defaults'] .= ze\admin::phrase(', new items attached to menu under [[menu_path]]', $mrg);
-				}
-				
 				$with = [];
 				if ($item['description_field'] != 'hidden') {
 					$with[] = ze\admin::phrase('meta description');
@@ -83,6 +78,32 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 				
 				if (!empty($with)) {
 					$item['defaults'] .= ze\admin::phrase(', with [[with]]', ['with' => implode(', ', $with)]);
+				}
+				
+				if ($item['content_type_id'] != 'html') {
+					$menuNodes = array_values(ze\row::getValues('menu_nodes', 'id', ['restrict_child_content_types' => $item['content_type_id']]));
+					$count = count($menuNodes);
+				
+					if ($item['menu_node_position_edit'] == 'force') {
+						if ($count == 0) {
+							$item['defaults'] .= ze\admin::phrase('. New items restricted but no menu item nominated');
+					
+						} else {
+							$mrg = ['menu_path' => ze\menuAdm::pathWithSection($menuNodes[0])];
+							$item['defaults'] .= ze\admin::phrase('. New items restricted to under [[menu_path]]', $mrg);
+						
+							--$count;
+							$item['defaults'] .= ze\admin::nPhrase(' and 1 other place', ', and [[count]] other places', $count, [], '');
+						}
+					} else {
+						if ($count > 0) {
+							$mrg = ['menu_path' => ze\menuAdm::pathWithSection($menuNodes[0])];
+							$item['defaults'] .= ze\admin::phrase('. New items attached to menu under [[menu_path]]', $mrg);
+						
+							--$count;
+							$item['defaults'] .= ze\admin::nPhrase(' and 1 other place', ', and [[count]] other places', $count, [], '');
+						}
+					}
 				}
 			}
 		}

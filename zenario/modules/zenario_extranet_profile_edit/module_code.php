@@ -60,10 +60,6 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 		return $rv;
 	}
 	
-	protected function successfulFormSubmit($responseId) {
-		$this->messages['global_top'] = $this->phrase($this->setting('profile_updated'));
-	}
-	
 	protected function getFormTitle($overwrite = false) {
 		$title = '';
 		if ($this->setting('show_title_message')) {

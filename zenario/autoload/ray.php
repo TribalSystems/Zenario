@@ -122,7 +122,11 @@ class ray {
 
 	//Formerly "jsonEncodeForceObject()"
 	public static function jsonDump(&$tags) {
-		echo json_encode($tags, JSON_FORCE_OBJECT);
+		if (version_compare(PHP_VERSION, '7.2') >= 0) {
+			echo json_encode($tags, JSON_FORCE_OBJECT | JSON_INVALID_UTF8_SUBSTITUTE);
+		} else {
+			echo json_encode($tags, JSON_FORCE_OBJECT);
+		}
 	}
 
 	//Convert a value to a 1D array, or merge a 2D array into a 1D array.

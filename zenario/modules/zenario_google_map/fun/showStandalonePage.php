@@ -74,11 +74,14 @@ echo '<!DOCTYPE HTML>
 				document.getElementById("head").appendChild(sheet);
 			};
 			
-			//console.log(lat + " " + lng);
-			//console.log(zoom + " " + lng);
+			//For some reason, the lat property ends up being the window itself and breaking
+			//the plugin (noticed on WFN).
+			//Disabling the code below seems to prevent it.
+			//Possibly could be removed.
 			
-			lat = getFromOpener(lat) || lat || options.lat;
-			lng = getFromOpener(lng) || lng || options.lng;
+			//lat = getFromOpener(lat) || lat || options.lat;
+			//lng = getFromOpener(lng) || lng || options.lng;
+			
 			stylesheet = getFromOpener(stylesheet) || stylesheet || options.stylesheet;
 			customIcon = getFromOpener(customIcon) || customIcon || options.customIcon;
 			

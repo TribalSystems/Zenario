@@ -35,20 +35,6 @@ define('DEBUG_USE_STRICT_MODE', true);
 //define('DB_PREFIX_GLOBAL', '[[DB_PREFIX_GLOBAL]]');
 
 
-  ///////////////////////////////////////////////
- // MySQL database settings for data archives //
-///////////////////////////////////////////////
-
-// These parameters allow you to specify a different database for asset data and
-// other large storage.
-//define('DBHOST_DA', '[[DBHOST_DA]]');
-//define('DBNAME_DA', '[[DBNAME_DA]]');
-//define('DBUSER_DA', '[[DBUSER_DA]]');
-//define('DBPASS_DA', '[[DBPASS_DA]]');
-//define('DBPORT_DA', '[[DBPORT_DA]]');
-//define('DB_PREFIX_DA', '[[DB_PREFIX_DA]]');
-
-
   ///////////////////////////
  // Support email address //
 ///////////////////////////

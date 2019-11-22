@@ -132,7 +132,7 @@
 										<% if (m.lib.mode == 'view_data_pool_block') { %>
    										<div class='field_label resize_text'>{{col.blocks_title|e}}</div>
    										<% } else { %>
-										    {{col.blocks_title|e}}
+										    <% if (col.show_title_in_block_view && col.title) { %>{{col.title|e}} <% } %>{{col.blocks_title|e}}
 										<% } %>
 										{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
 										<% if (item.cell_tooltips && item.cell_tooltips[col.id]) { %>

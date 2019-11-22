@@ -42,31 +42,14 @@ html {
 	top:0;
 }
 
-	/* ADMIN HACKS */
-	
-/*
-	The following statement is needed if the zenario_menu_responsive_push_pull plugin is on the page:
-	
-	.zenario_adminLoggedIn .Grid_Header,
-	.zenario_adminLoggedIn .Grid_Header.fixed_header {
-		position:absolute;
-		top:calc(36px + 129px);
-	}
-*/
+/* ADMIN HACKS */
+
 	.zenario_adminLoggedIn.zenario_pageModeIsnt_preview.zenario_pageModeIsnt_menu .Grid_Header {
 		height:auto;
 	}
 
 	.zenario_adminLoggedIn.zenario_pageModeIsnt_preview.zenario_pageModeIsnt_menu .slot_top {
 		margin-bottom:140px;
-	}
-
-	.zenario_adminLoggedIn.zenario_pageModeIsnt_preview.zenario_pageModeIsnt_menu .zenario_menu_responsive_push_pull {
-		position:relative;
-	}
-
-	.zenario_adminLoggedIn.zenario_pageModeIsnt_preview.zenario_pageModeIsnt_menu .zenario_menu_responsive_push_pull #mmenu-hamburger {
-		padding:0;
 	}
 
 

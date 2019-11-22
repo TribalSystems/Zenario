@@ -51,8 +51,8 @@ ze\cache::incJS(TINYMCE_DIR. 'jquery.tinymce');
 
 //Include other third-party libraries
 ze\cache::incJS('zenario/libs/manually_maintained/mit/intro/intro');
-ze\cache::incJS('zenario/libs/bower/spectrum/spectrum');
-ze\cache::incJS('zenario/libs/bower/toastr/toastr');
+ze\cache::incJS('zenario/libs/yarn/spectrum-colorpicker/spectrum');
+ze\cache::incJS('zenario/libs/yarn/toastr/toastr');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery.selectboxes');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jssor/jssor.slider.mini');
 ze\cache::incJS('zenario/libs/manually_maintained/public_domain/mousehold/mousehold');

@@ -53,7 +53,7 @@ ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.selectmen
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.iconselectmenu');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.slider');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.sortable');
-ze\cache::incJS('zenario/libs/bower/jQuery-MultiSelect/jquery.multiselect');
+ze\cache::incJS('zenario/libs/yarn/jquery-multiselect/jquery-MultiSelect');
 
 ze\cache::incJS('zenario/js/tuix.ready');
 

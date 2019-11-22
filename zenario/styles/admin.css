@@ -176,9 +176,10 @@
 /*  Default calendar icon for datepickers  */
 
 input.zenario_datepicker {
-	background-image: url("../admin/images/icons/calendar_small.gif");
+	background-image: url("../admin/images/icon-calendar.svg");
 	background-repeat: no-repeat;
 	background-position: 98% 50%;
+	background-size: auto 16px;
 }
 
 
@@ -387,7 +388,7 @@ body .zenario_admin_tooltip_over_tinymce {
 }
 
 .zenario_admin_tooltip .ui-tooltip-content {
-	max-width: 450px;
+	max-width: 450px !important;
 }
 
 .zenario_admin_tooltip p,
@@ -466,9 +467,6 @@ body .zenario_admin_tooltip_over_tinymce {
 span.zenario_conditionally_hidden {
 	opacity: 0.5;
 }
-$span .zenario_inactive {
-	background: pink !important;
-}
 .zenario_inactive a {
 	font-style: italic;
 }
@@ -486,10 +484,31 @@ input, textarea, button {
 }
 */
 
+/*  Layout icon backgrounds  */
+
+#organizer_rightColumn div.organizer_row.layout_status_active div.organizer_cell div.zenario_layout_inline_button a,
+#organizer_rightColumn div.organizer_row.layout_status_active_default div.organizer_cell div.zenario_layout_inline_button a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_active a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_active_default a {
+	background:#D7ABEA;
+}
+
+#organizer_rightColumn div.organizer_row.layout_status_suspended div.organizer_cell div.zenario_layout_inline_button a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_suspended a {
+	background:#EBACB3;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_layout_inline_button a:hover,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout a:hover {
+	background:#4B4D4C;
+	color:#FFF;
+}
+
 /*  Debug icon  */
 
 .zenario_debug {
 	position: relative;
+	z-index:3 !important;
 	float: right;
 	width: 18px;
 }
@@ -523,7 +542,7 @@ input, textarea, button {
 
 .zenario_at_topRightIcons {
 	float: right;
-	width: 74px;
+	display:inline-block;
 	height: 18px;
 	padding: 5px 5px 0 0;
 	overflow: hidden;

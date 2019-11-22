@@ -1,0 +1,27 @@
+{
+	"name": "Zenario",
+	"description": "Zenario is a web-based content management system for sites with one or many languages.",
+	"type": "project",
+	"author": "Tribal Systems",
+	"keywords": [
+		"cms",
+		"content management",
+		"wysiwyg",
+		"zenario"
+	],
+	"homepage": "https://github.com/TribalSystems/Zenario",
+	"license": "BSD-3-Clause",
+	"dependencies": {
+		"bez": "*",
+		"jquery": "2.x",
+		"jquery-lazy": "*",
+		"jquery-multiselect": "*",
+		"mdn-polyfills": "*",
+		"media-match": "*",
+		"respond.js": "*",
+		"spectrum-colorpicker": "*",
+		"toastr": "*",
+		"vimeo-upload": "*",
+		"wowjs": "*"
+	}
+}

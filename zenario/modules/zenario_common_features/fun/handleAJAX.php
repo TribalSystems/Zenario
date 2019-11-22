@@ -302,19 +302,19 @@ if (ze\priv::check()) {
 			
 			if ($mrg['pages'] == 1) {
 				echo ze\admin::phrase(
-					'Are you sure you wish to insert a [[display_name]] into slot [[slotName]] on this layout?
+					'Insert a version-controlled [[display_name]] into slot [[slotName]] on this layout?
 					<br/><br/>
-					This will affect [[pages]] content item, <b>[[published]] published</b>.
+					The content or settings of this plugin will then be editable via the Edit tab.
 					<br/><br/>
-					The content item will gain its own version-controlled [[display_name]], which you can modify on the Edit tab.'
+					This will affect just this content item, so <b>[[published]] published</b> content items.'
 				, $mrg);
 			} else {
 				echo ze\admin::phrase(
-					'Are you sure you wish to insert a [[display_name]] into slot [[slotName]] on this layout?
+					'Insert a version-controlled [[display_name]] into slot [[slotName]] on this layout?
 					<br/><br/>
-					This will affect [[pages]] content items, <b>[[published]] published</b>.
+					The content or settings of this plugin will then be editable via the Edit tab.
 					<br/><br/>
-					Each content item will gain its own version-controlled [[display_name]], which you can modify on the Edit tab.'
+					This will affect [[pages]] content items, including <b>[[published]] published</b> content items.'
 				, $mrg);
 			}
 	

@@ -148,6 +148,11 @@ p.phone:before {
 	margin:0 8px;
 }
 
+.extranet_wrap .extranet_field.zenario_visitor_tooltip_wrap .zenario_visitor_tooltip {
+	top:27px;
+	right:-145px;
+}
+
 /* Pagination
 --------------------------------------------------------------------------------------------------*/
 
@@ -174,4 +179,120 @@ p.phone:before {
 .pag_pagination span.pag_page_on a {
     background:#000;
     text-decoration:none;
+}
+
+/* Sensitive content */
+
+.zenario_sensitive_content {
+	position:fixed;
+	z-index:999;
+	top:0;
+	bottom:0;
+	left:0;
+	right:0;
+	background:rgba(0,0,0,0.5);
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap {
+	position:fixed;
+	z-index:1000;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	
+	width:560px;
+	border:5px solid #1e2021;
+	box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.75);
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap,
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_title {
+	background:#1e2021;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message,
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons {
+	background:#ebebeb;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_title,
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message,
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons {
+	padding:20px 30px;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons {
+	padding-top:10px;
+	text-align:center;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap {
+	font-family:Arial,Verdana,Helvetica;
+	line-height:18px;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap span.red {
+	color:#ff0015;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_title {
+	font-size:18px;
+	font-weight:700;
+	color:#FFF;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message {
+	font-size:12px;
+	color:#30302d;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message h4 {
+	font-size:14px;
+	font-weight:700;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message p,
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message h4,
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message ol {
+	margin-top:5px;
+	margin-bottom:8px;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message ol {
+	margin-left:20px;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message ol li {
+	margin-bottom:5px;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_message a {
+	color:#ff0015;
+	text-decoration:underline;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons a {
+	display:inline-block;
+	height:38px;
+	line-height:36px;
+	padding:0 12px;
+	font-size:16px;
+	font-weight:700;
+	background:#30302d;
+	color:#FFF;
+	-webkit-border-radius:4px;
+	-moz-border-radius:4px;
+	border-radius:4px;
+   	-webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons a:hover {
+	opacity:0.8;
+}
+
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons a,
+.zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons a:hover {
+	text-decoration:none;
 }

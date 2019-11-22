@@ -264,8 +264,8 @@ class miscAdm {
 					$name = 
 						'<a target="_blank" href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, true, '', $citem['alias'], false, false, $citem['equiv_id'], $citem['language_id'])). '">
 							<span class="listicon organizer_item_image '. \ze\contentAdm::getItemIconClass($cID, $cType, true, $citem['status']). '">
-							</span>'. htmlspecialchars(\ze\content::formatTag($cID, $cType, $citem['alias'], $citem['language_id'])). '
-						</a>';
+							</span>'. htmlspecialchars(\ze\content::formatTag($cID, $cType, $citem['alias'], $citem['language_id'])).
+						'</a>';
 				} else {
 					$name = htmlspecialchars($usage['content_item']);
 				}
@@ -634,7 +634,7 @@ class miscAdm {
 
 
 	//Formerly "exportPanelItems()"
-	public static function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export') {
+	public static function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export', $excelFileExtension = 'xls', $excelWorksheetTitle = '') {
 		$filename = str_replace('"', '\'', str_replace('/', ' ', $filename));
 		// Export as CSV file
 		if ($format == 'csv') {
@@ -662,12 +662,33 @@ class miscAdm {
 			// Create excel object
 			$objPHPExcel = new \PHPExcel();
 			// Write headers and data
+			if (!empty($excelWorksheetTitle) && is_string($excelWorksheetTitle)) {
+				//Remove illegal characters: \, /, *, [, ], :, ?
+				$excelWorksheetTitle = preg_replace('@[\\\/\*\[\]\:\?]@', '', $excelWorksheetTitle);
+				
+				//Worksheet name max length is 31 characters.
+				$length = strlen($excelWorksheetTitle);
+				if ($length > 31) {
+					$excelWorksheetTitle = substr($excelWorksheetTitle, 0, 31);
+				}
+				
+				$objPHPExcel->getActiveSheet()->setTitle($excelWorksheetTitle);
+			}
+			
 			$objPHPExcel->getActiveSheet()->fromArray($headers, NULL, 'A1');
 			$objPHPExcel->getActiveSheet()->fromArray($rows, NULL, 'A2');
+			
+			if ($excelFileExtension == 'xlsx') {
+				$excelFileFormat = 'Excel2007';
+			} else {
+				$excelFileExtension == 'xls';
+				$excelFileFormat = 'Excel5';
+			}
+			
 			// Output file
 			header('Content-Type: application/vnd.ms-excel');
-			header('Content-Disposition: attachment; filename="' . $filename . '.xls"');
-			$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+			header('Content-Disposition: attachment; filename="' . $filename . '.' . $excelFileExtension . '"');
+			$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, $excelFileFormat);
 			$objWriter->save('php://output');
 		}
 	}

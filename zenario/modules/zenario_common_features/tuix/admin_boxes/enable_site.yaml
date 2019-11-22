@@ -46,10 +46,10 @@ zenario_enable_site:
                         <% } %>
                     note_below: |
                         <% if (lib.field('site_enabled').pressed) { %>
-                            Site available to visitors
+                            Click to disable this site.
                         <% } else { %>
-                            Site not available to visitors, only available via admin mode.
-                            Zenario will display a holding page to visitors, as follows:
+                            Click to enable this site. Currently this site is disabled, and only visible in admin mode.
+                            You can define text for a holding page that visitors can see:
                         <% } %>
 
                 site_disabled_title:

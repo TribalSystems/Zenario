@@ -210,7 +210,7 @@ plugin_settings:
                     value: "0"
                     values:
                         - 
-                                    label: Use unique and primary menu node
+                                    label: Use unique and primary menu nodes
                         - 
                                     label: Use unique, primary and secondary menu nodes
                     side_note: >
@@ -365,7 +365,7 @@ plugin_settings:
                         name: heading_tags
                     label: 'Title heading tags'
                     type: select
-                    values:
+                    values: &tags
                         h1: Heading 1
                         h2: Heading 2
                         h3: Heading 3
@@ -374,9 +374,7 @@ plugin_settings:
                         h6: Heading 6
                         p: Paragraph
                     value: h1
-                    side_note: |
-                        Choose which HTML tags the heading will be displayed in.
-                    indent: 1
+                    same_row: true
                 show_headings_if_no_items:
                     plugin_setting:
                         name: show_headings_if_no_items
@@ -413,7 +411,7 @@ plugin_settings:
                 show_more_link:
                     plugin_setting:
                         name: show_more_link
-                    label: 'Show a link to another item'
+                    label: 'For overall list, show an additional link to a content item'
                     type: checkbox
                     value: "0"
                     side_note: >
@@ -463,28 +461,47 @@ plugin_settings:
                     label: "Show title"
                     type: checkbox
                     value: "1"
+                    redraw_onchange: true
+                titles_tags:
+                    plugin_setting:
+                        name: titles_tags
+                    label: 'Title heading tags'
+                    type: select
+                    values: *tags
+                    value: h2
+                    same_row: true
+                    side_note: |
+                        Choose which HTML tags the title will be displayed in.
+                    visible_if: zenarioAB.value('show_titles')
+                show_text_preview:
+                    plugin_setting:
+                        name: show_text_preview
+                    label: 'Show text preview'
+                    type: checkbox
+                    redraw_onchange: true
+                    value: true
                 data_field:
                     plugin_setting:
                         name: data_field
                     label: 'Show text preview from:'
+                    indent: 1
                     type: select
                     value: content_summary
                     values:
-                        none:
-                                    label: "Don't show"
                         content_summary:
-                                    label: "Item's summary"
+                            label: "Item's summary"
                         description:
-                                    label: "Item's description"
+                            label: "Item's description"
+                    visible_if: zenarioAB.value('show_text_preview')
                 show_sticky_images:
                     plugin_setting:
                         name: show_sticky_images
-                    label: "Show image"
+                    label: "Show feature image"
                     type: checkbox
                     value: ""
                     format_onchange: Yes
                     side_note: |
-                        The feature image for the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no feature image exists.
+                        Show the feature image of each content item, if it has one. For picture content items, a thumbnail will be automatically generated if no feature image exists.
                 fall_back_to_default_image:
                     plugin_setting:
                         name: fall_back_to_default_image
@@ -576,7 +593,7 @@ plugin_settings:
                 show_dates:
                     plugin_setting:
                         name: show_dates
-                    label: "Show item's release date/time"
+                    label: "Show release date/time"
                     type: checkbox
                     value: "0"
                     format_onchange: Yes
@@ -770,6 +787,23 @@ plugin_settings:
                     type: checkbox
                     value: 0
                     format_onchange: yes
+                target_blank:
+                    plugin_setting:
+                        name: target_blank
+                    label: 'Open content item in a new window'
+                    type: checkbox
+                    value: ""
+                    side_note: >
+                        With this option enabled the content link when clicked will open on a new window.
+
+                show_language:
+                    plugin_setting:
+                        name: show_language
+                    label: 'Show content language'
+                    type: checkbox
+                    value: ""
+                    side_note: >
+                        With this option enabled the content language will be shown next to the document title.
         pagination:
             label: Pagination
             notices:
@@ -781,59 +815,6 @@ plugin_settings:
                         This will disrupt any pagination you attempt to apply, so we recommend
                         turning pagination off in this case.
             fields:
-                offset:
-                    plugin_setting:
-                        name: offset
-                    label: 'Offset results:'
-                    type: select
-                    values:
-                        0: 
-                            ord: 1
-                            label: "No offset"
-                        1: "1"
-                        2: "2"
-                        3: "3"
-                        4: "4"
-                        5: "5"
-                        6: "6"
-                        7: "7"
-                        8: "8"
-                        9: "9"
-                        10: "10"
-                        10: "11"
-                        12: "12"
-                        15: "15"
-                        20: "20"
-                        50: "50"
-                    value: "0"
-                    side_note: >
-                        e.g. if you select 1, your results will start from the 2nd resulting content item
-                page_size:
-                    plugin_setting:
-                        name: page_size
-                    label: 'Number of results:'
-                    type: select
-                    values:
-                        1: "1"
-                        2: "2"
-                        3: "3"
-                        4: "4"
-                        5: "5"
-                        6: "6"
-                        7: "7"
-                        8: "8"
-                        9: "9"
-                        10: "10"
-                        12: "12"
-                        15: "15"
-                        20: "20"
-                        50: "50"
-                        999999:
-                            label: All possible
-                    value: "5"
-                    side_note: >
-                        If pagination is enabled, this number of summaries will be
-                        shown on each page.
                 show_pagination:
                     plugin_setting:
                         name: show_pagination
@@ -860,21 +841,60 @@ plugin_settings:
                         99: "99"
                     value: "9"
                     indent: 1
-                target_blank:
+                offset:
                     plugin_setting:
-                        name: target_blank
-                    label: 'Open content in a new window'
-                    type: checkbox
-                    value: ""
+                        name: offset
+                    label: 'Offset results:'
+                    type: select
+                    values:
+                        0: 
+                            ord: 1
+                            label: "No offset"
+                        1: "1"
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                        7: "7"
+                        8: "8"
+                        9: "9"
+                        10: "10"
+                        10: "11"
+                        12: "12"
+                        15: "15"
+                        20: "20"
+                        50: "50"
+                    value: "0"
+                    indent: 1
                     side_note: >
-                        With this option enabled the content link when clicked will open on a new window.
-
-                show_language:
+                        e.g. if you select 1, your results will start from the 2nd resulting content item        
+                page_size:
                     plugin_setting:
-                        name: show_language
-                    label: 'Show content language'
-                    type: checkbox
-                    value: ""
+                        name: page_size
+                    label: 'Number of results:'
+                    type: select
+                    values:
+                        maximum_of:
+                            label: Maximum of...
+                        999999:
+                            label: All possible
+                    value: maximum_of
+                    format_onchange: true
                     side_note: >
-                        With this option enabled the content language will be shown next to the document title.
-        
+                        If pagination is enabled, list this number of items, if available.
+                maximum_results_number:
+                    plugin_setting:
+                        name: maximum_results_number
+                    indent: 1
+                    type: text
+                    same_row: true
+                    maxlength: 5
+                    style: "width: 5em;"
+                    format_onchange: true
+                    value: 5
+                    visible_if: |
+                        zenarioAB.value('page_size') == 'maximum_of'
+                    validation:
+                        numeric: The maximum number of results must be a number.
+                        required_if_not_hidden: Please enter the maximum number of results.

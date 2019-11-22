@@ -1,0 +1,24 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: date_and_time
+    tabs:
+        timezone_settings:
+            label: 'Timezone'
+            edit_mode:
+                enabled: Yes
+            fields:
+                timezone_dataset_field:
+                    site_setting:
+                        name: zenario_timezones__timezone_dataset_field
+                    label: 'Timezone dataset field:'
+                    type: select
+                    empty_value: -- Select --
+                default_timezone:
+                    site_setting:
+                        name: zenario_timezones__default_timezone
+                    label: 'Default timezone:'
+                    type: select
+                    empty_value: -- Select --
+                    side_note: |
+                        The timezone to use when a user has not set a specific timezone.

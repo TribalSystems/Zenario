@@ -1,0 +1,62 @@
+after:
+    summary: |
+        Adds a function to be called when the callback is complete.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Adds a function to be called when the callback is complete.
+        </p><p>
+            Your function will be called with the result of the callback as its argument
+            (or the results of the callbacks as its arguments, if you have chained multiple callbacks together).
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns the callback object again, so you can use this for method chaining.
+        </p>
+done:
+    summary: |
+        Mark the callback as completed, and return a result.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Mark the callback as completed, and return a result.
+        </p><p>
+            The result you give will be added as an argument to the callback function.
+        </p><p>
+            Note that <code>call()</code> is a deprecated alias for <code>done()</code>.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns the callback object again, so you can use this for method chaining.
+        </p>
+add:
+    summary: |
+        Turn this callback into a wrapper for other callbacks.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Turn this callback into a wrapper for other callbacks.
+        </p><p>
+            Your callback function will be called after all of the callback functions you've added are called,
+            and you'll get multiple arguments passed to your callback function (one per callback).
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            As a shortcut, if you don't specify a callback, this will create one for you and then return it.
+        </p><p>
+            Otherwise it will return the callback object again, so you can use this for method chaining.
+        </p>
+poke:
+    summary: |
+        Force a callback to run its functions even if nothing has been registered yet.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Force a callback to run its "after" functions even if it wasn't finished yet.
+        </p><p>
+            If no "after" functions have been registered, this will do nothing.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            None.
+        </p>

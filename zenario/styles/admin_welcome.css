@@ -1262,17 +1262,33 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover
 	margin-left:25px;
 }
 
+#welcome div.content_item_plugin_privacy_mismatch {
+	position:relative;
+	padding-left:25px;
+}
+
+#welcome div.content_item_plugin_privacy_mismatch .organizer_item_image {
+	position:absolute;
+	top:0;
+	left:0;
+}
+
+#welcome span[id*="plugin_must_be_on_public_page_error"] > div.content_item_plugin_privacy_mismatch:first-child,
+#welcome span[id*="plugin_must_be_on_private_page_error"] > div.content_item_plugin_privacy_mismatch:first-child {
+	margin-top:10px;
+}
+
 .organizer_item_image.home_content_draft_published {
-	background:url("../admin/images/icon-content-home-draft-published.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-home-draft-published.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.home_content_published {
 	background:url("../admin/images/icon-content-home-published.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.home_content_draft {
-	background:url("../admin/images/icon-content-home-draft.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-home-draft.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_draft_published {
-	background:url("../admin/images/icon-content-special-draft-published.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-special-draft-published.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_published {
 	background:url("../admin/images/icon-special-pages.svg") no-repeat center center / 20px 23px;
@@ -1284,22 +1300,22 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover
 	background:url("../admin/images/icon-content-special-hidden.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_draft {
-	background:url("../admin/images/icon-content-special-draft.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-special-draft.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_draft_trashed {
-	background:url("../admin/images/icon-content-special-draft-trashed.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-special-draft-trashed.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.special_content_trashed {
 	background:url("../admin/images/icon-content-special-trashed.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_draft_published {
-	background:url("../admin/images/icon-content-draft-published.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-draft-published.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_published {
 	background:url("../admin/images/icon-content-published.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_draft_hidden {
-	background:url("../admin/images/icon-content-draft-hidden.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-draft-hidden.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_hidden {
 	background:url("../admin/images/icon-content-hidden.svg") no-repeat center center / 20px 23px;
@@ -1308,7 +1324,7 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover
 	background:url("../admin/images/icon-content-draft.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_draft_trashed {
-	background:url("../admin/images/icon-content-draft-trashed.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-draft-trashed.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_trashed {
 	background:url("../admin/images/icon-trashed-content.svg") no-repeat center center / 20px 23px;
@@ -1327,4 +1343,78 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover
 #toast-container {
 	font-family: verdana, arial, helvetica;
     font-size: 13px;
+}
+
+/*
+	Tooltip for password, applies for Admin and visitor
+*/
+
+#snippet__password_requirements {
+	display:none;
+	text-align:left;
+    font-size: 11px;
+    padding: 6px 8px;
+    background: #323232;
+    color: #fff;
+    border: 0;
+    -webkit-box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    max-width: 150px;
+}
+
+#snippet__password_requirements p {
+	margin-bottom:5px !important;
+}
+
+#snippet__password_requirements ul {
+	padding:0 !important;
+	margin:3px 0 !important;
+	line-height:1.5em !important;
+}
+
+#snippet__password_requirements ul li {
+	margin:0 0 4px 0 !important;
+	text-align:left !important;
+}
+
+#snippet__password_requirements ul li.fail,
+#snippet__password_requirements ul li.pass {
+	list-style:none !important;
+	background-repeat:no-repeat;
+	background-position:0 2px;
+	background-size:auto 12px;
+	padding:0 0 0 15px !important;
+}
+
+#snippet__password_requirements ul li.fail {
+	background-image:url('../zenario/admin/images/icon-error.svg');
+	color:#E30000;
+}
+
+#snippet__password_requirements ul li.pass {
+	background-image:url('../zenario/admin/images/icon-tick-green-circle.svg');
+	color:#00AB00;
+}
+
+/* Tooltip wrap */
+
+.zenario_ab_row__password_requirements {
+	position:relative;
+}
+
+.zenario_ab_row__password_requirements #snippet__password_requirements {
+	position:absolute;
+	right:0;
+	top:-65px;
+}
+
+input[type="password"].border_red {
+	border-color:#e30000 !important;
+}
+
+input[type="password"].border_green {
+	border-color:#00AB00 !important;
 }

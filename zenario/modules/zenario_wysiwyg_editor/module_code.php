@@ -82,20 +82,10 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		switch ($path) {
 			case 'plugin_settings':
 				
-				//Removed the "Sync Content Summary" option
-				/*
 				if ($box['key']['isVersionControlled']) {
-					if ($this->summaryLocked($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
-						$box['tabs']['first_tab']['fields']['sync_summary']['hidden'] = true;
-					} else {
-						$summary = trim(strip_tags(ze\row::get('content_item_versions', 'content_summary',
-										['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']])));
-						
-						$box['tabs']['first_tab']['fields']['sync_summary']['value'] =
-							!$summary || $summary == trim(strip_tags($box['tabs']['first_tab']['fields']['html']['value']));
-					}
+					$box['tabs']['first_tab']['hidden'] = 
+					$fields['first_tab/html']['hidden'] = true;
 				}
-				*/
 				
 				break;
 		}
@@ -104,24 +94,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				//For Wireframes, make the image uploads point to the images for this Content Items
-				//Otherwise remove the ability to add images
-				if ($box['key']['isVersionControlled'] && empty($box['tabs']['first_tab']['hidden'])) {
-					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['path'] =
-						'zenario__content/panels/content/item_buttons/images//'. $box['key']['cType']. '_'. $box['key']['cID']. '//';
-					
-					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['min_path'] =
-					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['max_path'] =
-					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['target_path'] =
-						'zenario__content/panels/image_library';
-				
-				} else {
-					unset($box['tabs']['first_tab']['fields']['html']['insert_image_button']);
+				if (!$box['key']['isVersionControlled']) {
+					//Workaround for problems with absolute and relative URLs:
+						//First, convert all relative URLs to absolute URLs so Admins can always see the images
+					ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['first_tab']['fields']['html']);
 				}
-				
-				//Workaround for problems with absolute and relative URLs:
-					//First, convert all relative URLs to absolute URLs so Admins can always see the images
-				ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['first_tab']['fields']['html']);
 				
 				break;
 		}
@@ -130,25 +107,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {
 			case 'plugin_settings':
-				//Workaround for problems with absolute and relative URLs:
-					//Second, convert all absolute URLs to relative URLs when saving
-				ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['first_tab']['fields']['html']);
-				
-				break;
-		}
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path) {
-			case 'plugin_settings':
-				//Removed the "Sync Content Summary" option
-				/*
-				if ($box['key']['isVersionControlled']
-				 && $values['first_tab/sync_summary']
-				 && !$this->summaryLocked($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
-					$this->syncSummary($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $values['first_tab/html']);
+				if (!$box['key']['isVersionControlled']) {
+					//Workaround for problems with absolute and relative URLs:
+						//Second, convert all absolute URLs to relative URLs when saving
+					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['first_tab']['fields']['html']);
 				}
-				*/
 				
 				break;
 		}
@@ -208,8 +171,19 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		if (!$this->shouldShowLayoutPreview()) {
 			$this->showSlot();
 		} else {
-			echo ze\admin::phrase('<h2>WYSIWYG editor</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>');
+			echo "\n\t", '<div class="zenario_wysiwyg">', "\n";
+				echo ze\admin::phrase('<h2>WYSIWYG editor</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>');
+			echo "\n\t", '</div>';
 		}
+	}
+	
+	
+	function showSlot() {
+		if (ze::$isTwig) return;
+		
+		echo "\n\t", '<div class="zenario_wysiwyg">', "\n";
+			$this->showContent();
+		echo "\n\t", '</div>';
 	}
 	
 	function showContent() {
@@ -298,7 +272,10 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				
 				//To avoid confusion, you sholudn't be able to edit the contents of a Wireframe WYSIWYG Editor inline AND in the settings box
 				//The only thing you can change is the CSS and framework
-				unset($controls['actions']['settings']);
+				if (isset($controls['actions']['settings'])) {
+					$controls['actions']['settings']['label'] = ze\admin::phrase('CSS & framework');
+					$controls['actions']['settings']['ord'] = 9;
+				}
 			
 			//You also shouldn't be able to access any of the slot controls whilst the WYSIWYG Editor is open!
 			} else {

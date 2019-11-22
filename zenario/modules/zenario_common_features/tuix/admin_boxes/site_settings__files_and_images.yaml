@@ -35,7 +35,7 @@ site_settings:
                             note_below: |
                                 Images will have the Auto state when first uploaded, but will be set to Public if on a public content item, or Private if on a private content item. (Shown in the Organizer Images panel with an orange border, but this changes once the image changes to Public or Private.)
         image_sizes:
-            label: Image sizes
+            label: Image thumbnails
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -44,96 +44,123 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            This tab contains settings for the storage and processing of images.
-                                                            Working copy images may be stored to improve performance when automatically resizing large images.
-                jpeg_quality_limit:
-                    site_setting:
-                        name: jpeg_quality_limit
-                    label: 'Limit JPEG image quality:'
-                    type: text
-                    value: 99
-                    style: 'width: 50px;'
-                    slider:
-                        range: min
-                        min: 80
-                        max: 100
-                        before_field: true
-                    note_below: |
-                        When Zenario outputs a JPEG image on a page,
-                        limit the quality to no more than this amount to keep page-sizes smaller.
+                            When images are uploaded, Zenario will automatically create thumbnails for them.
+                            <br/><br/>
+                            When a plugin requests a thumbnail of an image, where possible Zenario will use the premade ones
+                            instead of generating a new one on the fly. This reduces the load on your server and make your
+                            web pages load more quickly for visitors.
+                            <br/><br/>
+                            You can use this tab to define up to three different thumbnails for each image.
                 
-                thumbnail_wc:
-                    label: 'Create thumbnails for images as soon as they are uploaded'
-                    type: checkbox
-                    redraw_onchange: true
-                thumbnail_wc_image_size:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    site_setting:
-                        name: thumbnail_wc_image_size
-                    label: 'Thumbnail size (largest dimension):'
-                    post_field_html: pixels
-                    note_below: |
-                        When an image is uploaded, Zenario will create a thumbnail of this size.
-                        Having a thumbnail pre-created will allow any plugin
-                        that uses a thumbnail of that size or smaller
-                        to be generated faster.
+                thumbnail_180x130_width: 
+                    label: 'Thumbnail size (width × height):'
                     type: text
-                    value: 300
+                    readonly: true
+                    value: 180
                     style: 'width: 5em;'
-                    slider:
-                        range: min
-                        min: 200
-                        max: 1000
-                        before_field: true
-                        step: 25
-                    validation:
-                        required_if_not_hidden: Please enter a thumbnail size.
-                        numeric: The thumbnail size must be numeric.
-                working_copy_image:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
+                    post_field_html: '&nbsp;&nbsp;×&nbsp;'
+                thumbnail_180x130_height: 
+                    same_row: true
+                    type: text
+                    readonly: true
+                    value: 130
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    note_below: |
+                        This thumbnail is used by Organizer and cannot be modified.
+                
+                custom_thumbnail_1:
                     label: 'Create a second thumbnail'
                     type: checkbox
                     redraw_onchange: true
-                working_copy_image_size:
-                    indent: 2
-                    hide_with_previous_outdented_field: 1
+                
+                custom_thumbnail_1_width: 
+                    indent: 1
                     hide_if_previous_outdented_value_isnt: 1
                     site_setting:
-                        name: working_copy_image_size
-                    label: 'Thumbnail size (largest dimension):'
-                    post_field_html: pixels
+                        name: custom_thumbnail_1_width
+                    label: 'Size (width × height):'
                     type: text
-                    style: 'width: 6em;'
-                    slider:
-                        range: min
-                        min: 500
-                        max: 2000
-                        before_field: true
-                        step: 50
-                    validation:
-                        required_if_not_hidden: Please enter a second thumbnail size.
-                        numeric: The second thumbnail size must be numeric.
-                set_working_copy_image_threshold:
+                    validation: 
+                        required_if_not_hidden: Please enter a width in pixels.
+                        numeric: The width must be a number.
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;&nbsp;×&nbsp;'
+                custom_thumbnail_1_height: 
                     indent: 1
-                    hide_with_previous_outdented_field: 1
                     hide_if_previous_outdented_value_isnt: 1
-                    label: 'Change the threshold for this (advanced)'
+                    site_setting:
+                        name: custom_thumbnail_1_height
+                    same_row: true
+                    type: text
+                    validation: 
+                        required_if_not_hidden: Please enter a height in pixels.
+                        numeric: The height must be a number.
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                
+                custom_thumbnail_2:
+                    indent: 1
+                    label: 'Create a third thumbnail'
                     type: checkbox
                     redraw_onchange: true
-                working_copy_image_threshold:
+                
+                custom_thumbnail_2_width: 
                     indent: 2
-                    hide_with_previous_outdented_field: 1
+                    hide_with_previous_outdented_field: true
                     hide_if_previous_outdented_value_isnt: 1
                     site_setting:
-                        name: working_copy_image_threshold
-                    pre_field_html: |
-                        Zenario will use this thumbnail when the the requested thumbnail is exactly the same size,
-                        or no larger than the following proportion of the working copy's dimensions:
-                                                    <br/><br/>
-                    post_field_html: %
+                        name: custom_thumbnail_2_width
+                    label: 'Size (width × height):'
                     type: text
+                    validation: 
+                        required_if_not_hidden: Please enter a width in pixels.
+                        numeric: The width must be a number.
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;&nbsp;×&nbsp;'
+                custom_thumbnail_2_height: 
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    site_setting:
+                        name: custom_thumbnail_2_height
+                    same_row: true
+                    type: text
+                    validation: 
+                        required_if_not_hidden: Please enter a height in pixels.
+                        numeric: The height must be a number.
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+        
+        image_resizing:
+            label: Image resizing (advanced)
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            To prevent artifacts in images, Zenario will only use a thumbnail when:
+                            <ul>
+                                <li>The size of the thumbnail exactly matches the requested size.</li>
+                                <li>The thumbnail is large enough to be resized down to the requested size without any visible artifacts.</li>
+                            </ul>
+                            If you are seeing artifacts in your thumbnails, you can change when this happens:
+                
+                thumbnail_threshold:
+                    site_setting:
+                        name: thumbnail_threshold
+                    pre_field_html: |
+                    label: 'Allowable threshold for resizing down:'
+                    post_field_html: '&nbsp;%'
+                    type: text
+                    value: 66
                     style: 'width: 3em;'
                     slider:
                         range: min
@@ -143,6 +170,34 @@ site_settings:
                     validation:
                         required_if_not_hidden: Please enter a percentage.
                         numeric: The percentage must be numeric.
+                    note_below: |
+                        It's usually safe to leave this set to the default value (66%).
+                        However if you see artifacts on your thumbnail then try making it smaller.
+                
+                description2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <br/>
+                            <br/>
+                            When Zenario resizes a JPEG image to create a thumbnail, the new image is then recompressed.
+                            This compresson algorithm can use a quality of between 0 and 100.
+                
+                jpeg_quality_limit:
+                    site_setting:
+                        name: jpeg_quality_limit
+                    label: 'JPEG image quality used when resizing images:'
+                    type: text
+                    value: 99
+                    style: 'width: 50px;'
+                    slider:
+                        range: min
+                        min: 80
+                        max: 100
+                        before_field: true
+                    note_below: |
+                        The lower this number the smaller the filesize of the thumbnail will be, however if you set setting it
+                        too low then you may see artifacts on your thumbnails for JPEG images.
         filesizes:
             label: File Upload Sizes
             edit_mode:

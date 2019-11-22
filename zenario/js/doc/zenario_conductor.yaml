@@ -1,0 +1,290 @@
+autoRefresh:
+    summary: |
+        Sets an auto-refresh on the current slide.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Sets an auto-refresh on the current slide.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+backLink:
+    summary: |
+        This can be used to generate a hyperlink to the previous slide.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This can be used to generate a hyperlink to the previous slide.
+        </p><p>
+            You need to enter the name of the slot that the conductor is in.
+        </p><p>
+            Optionally you can enter some requests.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            If another slide/state was set as the back-link from the current slide/state,
+            this function will return the hyperlink there.
+        </p><p>
+            Any variables that were previously used in the destination will be included as requests
+            in the link, but no variables from the current slide will be included.
+        </p>
+#cleanRequests:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+commandEnabled:
+    summary: |
+        Checks whether a specific command is available in the conductor in the slot you specify.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks whether a specific command is available in the conductor in the slot you specify.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            <code>true</code> if there is a conductor in the slot, with the command available.
+        </p>
+#confirmOnClose:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+confirmOnCloseMessage:
+    summary: |
+        Checks if any plugin on the current slide has set a confirmation message before the plugin is closed, and if so returns the message.
+    desc: |
+        <h2>Description</h2>
+        <p>
+        Checks if any plugin on the current slide has set a confirmation message before the plugin is closed, and if so returns the message.
+        </p><p>
+            If multiple plugins have set a message, only the message from one of them will be returned.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            The message, or <code>undefined</code> if no plugin set a message.
+        </p>
+enabled:
+    summary: |
+        Checks whether there is a conductor set up in the slot you specify.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Checks whether there is a conductor set up in the slot you specify.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            <code>true</code> if there is a conductor there.
+        </p>
+go:
+    summary: |
+        This triggers the conductor's navigation.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This triggers the conductor's navigation.
+        </p><p>
+            You need to enter the name of the slot that the conductor is in and a command for the navigation.
+        </p><p>
+            Optionally you can enter some requests, and a function to call after the navigation is completed.
+            (Though if the conductor navigates to a different content item, the callback function will not be
+            honoured.)
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            If there was a conductor set up for the slot specified, this function returns true.
+        </p>
+goBack:
+    summary: |
+        Commands the conductor to navigate back to the previous slide/state.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Commands the conductor to navigate back to the previous slide/state.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            <code>true</code> if there is a conductor in the slot, and the back command was available.
+        </p>
+link:
+    summary: |
+        This can be used to generate a hyperlink to another slide.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            This can be used to generate a hyperlink to another slide.
+        </p><p>
+            You need to enter the name of the slot that the conductor is in and a command for the navigation.
+        </p><p>
+            Optionally you can enter some requests.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            A hyperlink to another slide with the requests in the URL.
+        </p>
+#linkToOtherContentItem:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#mergeRequests:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+refresh:
+    summary: |
+        Reloads the current slide of the conductor.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Reloads the current slide.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Returns true if the slot name you provided had a conductor in it.
+        </p>
+refreshAll:
+    summary: |
+        Reloads the current slide of all of the conductors currently on the page.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Reloads the current slide of all of the conductors currently on the page.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+reloadAfterDelay:
+    summary: |
+        Reloads the current slide of the conductor after a specified delay.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Reloads the current slide of the conductor after a specified delay.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#request:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setCommands:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#setVars:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+stopAutoRefresh:
+    summary: |
+        Stops the auto-refresh.
+    desc: |
+        <h2>Description</h2>
+        <p>
+            Stops the auto-refresh.
+        </p>
+        <h2>Return Value</h2>
+        <p>
+            Nothing.
+        </p>
+#transitionIn:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
+#transitionOut:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>

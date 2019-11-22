@@ -390,12 +390,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$fields['last_tab/module_description']['snippet']['html'] = 
 					'<div class="module_description">' . $moduleDescription . '</div>';
 		
-				break;
-	
-			case 'plugin_css_and_framework':
+			
+			//Experimenting with having plugin settings and frameworks visible on the same tab again
+			//	break;
+			//
+			//case 'plugin_css_and_framework':
 		
-				$instanceName = $instance['instance_name'];
-				
 				$titleMrg = [
 					'module' => $module['display_name'],
 					'instanceName' => $instanceName
@@ -473,8 +473,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					if ($thisCSSPath) {
 						$file_exists = file_exists($filepath = CMS_ROOT. $thisCSSPath);
 						
-						if (!ze\priv::check('_PRIV_EDIT_CSS') || !$skinIsEditable) {
-							 $is_writable = false;
+						if (!$skinIsEditable) {
+							$is_writable = false;
+							$fields['this_css_tab/use_css_file']['side_note'] = ze\admin::phrase("The ability to edit CSS for this skin has been disabled. Edit the skin's <code>description.yaml</code> file to enable it.");
+						
+						} elseif (!ze\priv::check('_PRIV_EDIT_CSS')) {
+							$is_writable = false;
+							$fields['this_css_tab/use_css_file']['side_note'] = ze\admin::phrase('Disabled because your administrator account does not have the <em>Edit skin and plugin CSS</em> permission.');
+						
 						} else {
 							if ($file_exists) {
 								$is_writable = is_writable($filepath);
@@ -511,8 +517,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					
 					$file_exists = file_exists($filepath = CMS_ROOT. $allCSSPath);
 					
-					if (!ze\priv::check('_PRIV_EDIT_CSS') || !$skinIsEditable) {
-						 $is_writable = false;
+					if (!$skinIsEditable) {
+						$is_writable = false;
+						$fields['all_css_tab/use_css_file']['side_note'] = ze\admin::phrase("The ability to edit CSS for this skin has been disabled. Edit the skin's <code>description.yaml</code> file to enable it.");
+					
+					} elseif (!ze\priv::check('_PRIV_EDIT_CSS')) {
+						$is_writable = false;
+						$fields['all_css_tab/use_css_file']['side_note'] = ze\admin::phrase('Disabled because your administrator account does not have the <em>Edit skin and plugin CSS</em> permission.');
+					
 					} else {
 						if ($file_exists) {
 							$is_writable = is_writable($filepath);
@@ -568,40 +580,39 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					$box['tabs']['this_css_tab']['hidden'] = true;
 					$box['tabs']['all_css_tab']['hidden'] = true;
 				}
-		
-				// Get admin box title
-				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
-					if ($box['key']['isSlideshow']) {
-						$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled slideshow [[instanceName]]', $titleMrg);
-					} else {
-						$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled nest [[instanceName]]', $titleMrg);
-					}
-		
-				} elseif ($box['key']['eggId']) {
-					if ($box['key']['isSlideshow']) {
-						$title =  ze\admin::phrase('CSS & framework for [[module]], in slideshow "[[instanceName]]"', $titleMrg);
-					} else {
-						$title =  ze\admin::phrase('CSS & framework for [[module]], in nest "[[instanceName]]"', $titleMrg);
-					}
-		
-				} elseif ($box['key']['isVersionControlled']) {
-					$title = ze\admin::phrase('CSS & framework for version controlled [[module]]', $titleMrg);
-		
-				} else {
-					switch ($module['class_name']) {
-						case 'zenario_plugin_nest':
-							$title = ze\admin::phrase('CSS & framework for Nest');
-							break;
-						case 'zenario_slideshow':
-							$title = ze\admin::phrase('CSS & framework for Slideshow');
-							break;
-						default:
-							$title = ze\admin::phrase('CSS & framework for [[module]]', $titleMrg);
-					}
-				}
 				
 				
+				//Old code to set the title for the framework and CSS tab
 				
+				//if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
+				//	if ($box['key']['isSlideshow']) {
+				//		$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled slideshow [[instanceName]]', $titleMrg);
+				//	} else {
+				//		$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled nest [[instanceName]]', $titleMrg);
+				//	}
+				//
+				//} elseif ($box['key']['eggId']) {
+				//	if ($box['key']['isSlideshow']) {
+				//		$title =  ze\admin::phrase('CSS & framework for [[module]], in slideshow "[[instanceName]]"', $titleMrg);
+				//	} else {
+				//		$title =  ze\admin::phrase('CSS & framework for [[module]], in nest "[[instanceName]]"', $titleMrg);
+				//	}
+				//
+				//} elseif ($box['key']['isVersionControlled']) {
+				//	$title = ze\admin::phrase('CSS & framework for version controlled [[module]]', $titleMrg);
+				//
+				//} else {
+				//	switch ($module['class_name']) {
+				//		case 'zenario_plugin_nest':
+				//			$title = ze\admin::phrase('CSS & framework for Nest');
+				//			break;
+				//		case 'zenario_slideshow':
+				//			$title = ze\admin::phrase('CSS & framework for Slideshow');
+				//			break;
+				//		default:
+				//			$title = ze\admin::phrase('CSS & framework for [[module]]', $titleMrg);
+				//	}
+				//}
 		
 				break;
 		}
@@ -630,10 +641,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					}
 				}
 				
-				break;
 				
-				
-			case 'plugin_css_and_framework':
+			//Experimenting with having plugin settings and frameworks visible on the same tab again
+			//	break;
+			//case 'plugin_css_and_framework':
+			
+			
 				if (!empty($values['framework_tab/framework'])) {
 
 					$module = ze\module::details($box['key']['moduleId']);
@@ -1231,10 +1244,10 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				ze\pluginAdm::setSlideRequestVars($box['key']['instanceId'], $box['key']['slideNum']);
 				
 				
-				break;
-	
-	
-			case 'plugin_css_and_framework':
+			//Experimenting with having plugin settings and frameworks visible on the same tab again
+			//	break;
+			//
+			//case 'plugin_css_and_framework':
 				
 				if ($values['this_css_tab/css_class'] == $fields['this_css_tab/css_class']['custom__default']) {
 					$values['this_css_tab/css_class'] = '';

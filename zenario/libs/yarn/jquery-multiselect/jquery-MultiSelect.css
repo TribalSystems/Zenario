@@ -1,0 +1,76 @@
+/*Container*/
+.multiselect-container{
+	display: inline-block;
+    min-width: 200px;
+    position: relative;
+}
+
+.multiselect-container.disable{
+    pointer-events: none;
+    cursor: not-allowed;
+    background: lightgray;
+}
+
+/*Header related*/
+.multiselect-container .header{
+	display: block;
+    padding: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    border-radius: 2px;
+}
+.multiselect-container .header .selected-text{
+	position: relative;
+	color: #666;
+}
+.multiselect-container .header .selected-text:after{
+	content: ' ';
+    height: 0;
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    width: 0;
+    border: 6px solid rgba(0,0,0,0);
+    border-top-color: #999;
+    margin-top: -3px;
+}
+
+/*Multiselect dropdown */
+.multiselect-container .dropdown{
+	display: none;
+	position: absolute;
+    border: 1px solid #ccc;
+    left: 0px;
+    top: calc(100% + 10px);
+    width: 100%;
+    border-radius: 2px;
+    max-height: 200px;
+    overflow: auto;
+}
+.multiselect-container.show .dropdown{
+	display: block;
+}
+.multiselect-container.show .dropdown .search{
+    width: 100%;
+}
+.multiselect-container.show .dropdown .search-input{
+    width: 100%;
+    box-sizing: border-box;
+    height: 40px;
+    font-size: 14px;
+    padding-left: 10px;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+.multiselect-container.show .dropdown .search-input:focus{
+    outline : 0px;
+}
+.multiselect-container .dropdown .item{
+	padding: 10px;
+    border-bottom: 1px solid #ccc;
+    cursor: pointer;
+}
+.multiselect-container .dropdown .item:hover{
+	background-color: #efefef;
+}

@@ -48,11 +48,10 @@ class zenario_extranet_change_password extends zenario_extranet {
 				//send change password notification
 				if ($this->setting('zenario_extranet_change_password__send_notification_email') && $this->setting('zenario_extranet_change_password__notification_email_template')
 		             && ze\module::inc('zenario_email_template_manager')) {
-			          $userDetails['cms_url'] = ze\link::absolute();
-			      
 			         
 			         $userId = ze\user::id();
 			         $userDetails = ze\row::get("users", ['email', 'first_name', 'last_name'], ['id'=> $userId]);
+			         $userDetails['cms_url'] = ze\link::absolute();
 
 			         //Send the chosen email template using the Email Template Manager
 			         zenario_email_template_manager::sendEmailsUsingTemplate(
@@ -78,10 +77,14 @@ class zenario_extranet_change_password extends zenario_extranet {
 			return;
 		}
 		
+		$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
+		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Change_Password_Form'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
+		
+		$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
 	}
 	
 	

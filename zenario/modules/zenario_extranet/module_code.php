@@ -27,10 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
-
-
-
 class zenario_extranet extends ze\moduleBaseClass {
 	
 	var $mode;
@@ -155,7 +151,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 							$cID = $cType = false;
 							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
 							ze\content::langEquivalentItem($cID, $cType);
-							$TCLink = array( 'TCLink' =>$this->linkToItem($cID, $cType, true));
+							$TCLink = ['TCLink' => $this->linkToItem($cID, $cType, true)];
 							$this->objects['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
 						}
 						
@@ -218,7 +214,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$this->getTitleAndLabelMergeFields();
 		
 		$mode = $this->mode;
-		$this->$mode();
+		if (!empty($mode) && is_string($mode)) {
+			$this->$mode();
+		}
 	}
 	
 	// Display a change password form
@@ -324,7 +322,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		
 		//Update the link to the registration page according to plugin settings
-		if ($this->setting('show_link_to_registration_page')) {
+		if ($this->setting('show_link_to_registration_page') && ze\module::isRunning('zenario_extranet_registration')) {
 			if ($tagId = $this->setting('registration_page')) {
 				$cID = $cType = false;
 				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
@@ -670,11 +668,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$errorMessage = $this->setting('new_password_same_as_old_message') ? $this->setting('new_password_same_as_old_message') : '_ERROR_NEW_PASSWORD_SAME_AS_OLD';
 			$errors[] = ['Error' => $this->phrase($errorMessage)];
 		
-		} elseif (strlen($newPassword) < ze::setting('min_extranet_user_password_length')) {
-			//password not long enough
-			$errorMessage = $this->setting('new_password_length_message') ? $this->setting('new_password_length_message') : '_ERROR_NEW_PASSWORD_LENGTH';
-			$errors[] = ['Error' => $this->phrase($errorMessage, ['min_password_length' => ze::setting('min_extranet_user_password_length')])];
-		
 		} elseif (!$confirmation) {
 			//no repeat password
 			$errors[] = ['Error' => ze\lang::phrase('_ERROR_REPEAT_NEW_PASSWORD', false, $vlpClass)];
@@ -684,10 +677,11 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$errorMessage = $this->setting('new_passwords_do_not_match') ? $this->setting('new_passwords_do_not_match') : '_ERROR_NEW_PASSWORD_MATCH';
 			$errors[] = ['Error' => $this->phrase($errorMessage)];
 	
-		} elseif (!ze\user::checkPasswordStrength($newPassword,ze::setting('min_extranet_user_password_strength'))) {
+		//checkPasswordStrength now returns an array instead of just a boolean.
+		} elseif (!ze\user::checkPasswordStrength($newPassword)['password_matches_requirements']) {
 			//password not strong enough
-			$errorMessage = $this->setting('new_password_not_strong_enough_message') ? $this->setting('new_password_not_strong_enough_message') : '_ERROR_NEW_PASSWORD_NOT_STRONG_ENOUGH';
-			$errors[] = ['Error' => $this->phrase($errorMessage)];
+			$errorMessage = ze\lang::phrase('Password does not match the requirements.');
+			$errors[] = ['Error' => $errorMessage];
 		
 		}
 	
@@ -697,14 +691,13 @@ class zenario_extranet extends ze\moduleBaseClass {
 	protected function getTitleAndLabelMergeFields() {
 		$mergeFields = [];
 		
-		$this->objects['main_login_heading'] = $mergeFields['main_login_heading'] = $this->phrase($this->setting('main_login_heading'));
-		$this->objects['email_field_label'] = $mergeFields['email_field_label'] = $this->phrase($this->setting('email_field_label'));
-		$this->objects['screen_name_field_label'] = $mergeFields['screen_name_field_label'] = $this->phrase($this->setting('screen_name_field_label'));
-		$this->objects['password_field_label'] = $mergeFields['password_field_label'] = $this->phrase($this->setting('password_field_label'));
-		$this->objects['login_button_text'] = $mergeFields['login_button_text'] = $this->phrase($this->setting('login_button_text'));
+		$this->objects['main_login_heading'] = $mergeFields['main_login_heading'] = $this->phrase('Sign in');
+		$this->objects['email_field_label'] = $mergeFields['email_field_label'] = $this->phrase('Your Email:');
+		$this->objects['screen_name_field_label'] = $mergeFields['screen_name_field_label'] = $this->phrase('Your Screen Name:');
+		$this->objects['password_field_label'] = $mergeFields['password_field_label'] = $this->phrase('Your password:');
+		$this->objects['login_button_text'] = $mergeFields['login_button_text'] = $this->phrase('Login');
 		
 		return $mergeFields;
-		
 	}
 	
 	
@@ -808,6 +801,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 					$addRows = !empty($box['tabs']['action_after_login']['fields']['add_redirect_rule']['pressed']);
 					$multiRows = $this->setupRedirectRuleRows($box, $fields, $values, $changes, $filling = false, $addRows);
 					$values['action_after_login/number_of_redirect_rules'] = $multiRows['numRows'];
+				}
+				
+				if (!ze\module::isRunning('zenario_extranet_registration')) {
+					$fields['first_tab/registration_page']['note_below'] = ze\admin::phrase('Warning: Extranet Registration module is not running.<br />Registration page link will not be shown.');
 				}
 				
 				break;

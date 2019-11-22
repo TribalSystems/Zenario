@@ -79,7 +79,7 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 		
 		if ($adminFrom = ze\row::get(
 			'admins',
-			['permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas'],
+			['permissions', 'specific_languages', 'specific_content_items', 'specific_content_types'],
 			['status' => 'active', 'authtype' => 'local', 'id' => $values['copy/copy_from']]
 		)) {
 			

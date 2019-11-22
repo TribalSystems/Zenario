@@ -34,16 +34,16 @@ switch ($path) {
 		//For Wireframe Plugins, pick images from this item's images, rather than 
 		if ($box['key']['isVersionControlled']/*
 		 && ze\content::isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])*/) {
-			$box['tabs']['first_tab']['fields']['image']['pick_items']['path'] =
-			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['path'] =
+			$box['tabs']['image_and_link']['fields']['image']['pick_items']['path'] =
+			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['path'] =
 				'zenario__content/panels/content/item_buttons/images//'. $box['key']['cType']. '_'. $box['key']['cID']. '//';
 			
-			$box['tabs']['first_tab']['fields']['image']['pick_items']['min_path'] =
-			$box['tabs']['first_tab']['fields']['image']['pick_items']['max_path'] =
-			$box['tabs']['first_tab']['fields']['image']['pick_items']['target_path'] =
-			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['min_path'] =
-			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['max_path'] =
-			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['target_path'] =
+			$box['tabs']['image_and_link']['fields']['image']['pick_items']['min_path'] =
+			$box['tabs']['image_and_link']['fields']['image']['pick_items']['max_path'] =
+			$box['tabs']['image_and_link']['fields']['image']['pick_items']['target_path'] =
+			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['min_path'] =
+			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['max_path'] =
+			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['target_path'] =
 				'zenario__content/panels/image_library';
 		}
 		
@@ -55,8 +55,8 @@ switch ($path) {
 		if ((!empty($box['key']['eggId']))
 		 && ($nestedPlugin = ze\pluginAdm::getNestDetails($box['key']['eggId']))
 		 && (ze\module::className($nestedPlugin['module_id']) == 'zenario_banner')) {
-			$box['tabs']['first_tab']['fields']['canvas']['note_below'] =
-			$box['tabs']['first_tab']['fields']['enlarge_canvas']['note_below'] =
+			$box['tabs']['image_and_link']['fields']['canvas']['note_below'] =
+			$box['tabs']['image_and_link']['fields']['enlarge_canvas']['note_below'] =
 				ze\admin::phrase('If placed in a nest or slideshow, the canvas size setting will be overridden by the setting of the nest or slideshow.');
 		}
 		

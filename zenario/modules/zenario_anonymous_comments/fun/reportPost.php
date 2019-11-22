@@ -47,7 +47,7 @@ if ($this->post['updater_id'] !== null) {
 	$mergeFields['last_editor_screen_name'] = $this->getUserScreenNameLink($this->post['updater_id']);
 }
 
-$mergeFields['reporter_screen_name'] =  $this->getUserScreenNameLink($user['id']);
+$mergeFields['reporter_screen_name'] =  $this->getUserScreenNameLink($user['id'] ?? false);
 $mergeFields['text_message'] = $this->post['message_text'];
 $mergeFields['report_message'] = zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'] ?? false, true, true);
 $mergeFields['cms_url'] = ze\link::absolute();

@@ -550,7 +550,9 @@ zenario_user_form:
                         redirect_after_submission:
                             label: 'Redirect to a "thank you" page'
                         show_success_message:
-                            label: 'Remain on form, show a success message'
+                            label: 'Remain on form, show a success message only'
+                        show_success_message_and_the_form:
+                            label: 'Remain on form, show a success message and the form'
                         none:
                             label: 'Remain on form with no message'
                     value: show_success_message

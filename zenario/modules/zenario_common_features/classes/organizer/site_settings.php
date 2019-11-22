@@ -41,23 +41,11 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 			unset($panel['items']['site_enabled']);
 		}
 		
-		//If a favicon is set, change the icon of the favicon to that icon
-		if (ze::setting('favicon')
-		 && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], ze::setting('favicon')))) {
-			if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
-				$url = ze\file::link($icon['id']);
-			} else {
-				$width = $height = $url = false;
-				ze\file::imageLink($width, $height, $url, $icon['id'], 48, 46);
-			}
-			$panel['items']['favicon']['image'] = $url;
-		}
-		
-		//Same for the site logo and the rebranding
+		//If a branding logo is set, change the icon of "Logos and branding" to that logo
 		if (ze::setting('brand_logo') == 'custom' && ze::setting('custom_logo')) {
 			$width = $height = $url = false;
 			ze\file::imageLink($width, $height, $url, ze::setting('custom_logo'), 48, 46);
-			$panel['items']['branding']['image'] = $url;
+			$panel['items']['logos_and_branding']['image'] = $url;
 		}
 		
 		if (!ze\module::isRunning('zenario_newsletter')) {

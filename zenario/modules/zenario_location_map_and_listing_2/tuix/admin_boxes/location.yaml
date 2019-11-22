@@ -1,0 +1,65 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_location_manager__location:
+    tabs:
+        filters:
+            label: Filters
+            edit_mode:
+                enabled: Yes
+            fields:
+                map_icon:
+                    label: "Map icon:"
+                    ord: 999999999
+                    type: select
+                    values: {}
+                    empty_value: "-- Select --"
+            
+zenario_location_manager__areas:
+    title: Creating an area
+    key:
+        id: ""
+    identifier:
+        label: "Area ID"
+        css_class: "zenario_location_manager_areas"
+    tabs:
+        area:
+            label: Details
+            edit_mode:
+                enabled: Yes
+            fields:
+                name:
+                    label: 'Name:'
+                    type: text
+                    validation:
+                        required: "Please enter a name."
+                zoom:
+                    type: hidden
+                    same_row: Yes
+                ne_lat:
+                    type: hidden
+                    same_row: Yes
+                ne_lng:
+                    type: hidden
+                    same_row: Yes
+                sw_lat:
+                    type: hidden
+                    same_row: Yes
+                sw_lng:
+                    type: hidden
+                    same_row: Yes
+                polygon_points:
+                    type: hidden
+                    same_row: Yes
+                polygon_colour:
+                    label: "Polygon colour:"
+                    type: colour_picker
+                    format_onchange: true
+                map_lookup:
+                    same_row: true
+                    snippet:
+                        html: ""
+                map_edit:
+                    label: 'Map:'
+                    snippet:
+                        html: ""
+            enable_revert: Yes

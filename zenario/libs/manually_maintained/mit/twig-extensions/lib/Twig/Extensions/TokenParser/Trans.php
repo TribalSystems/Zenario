@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-class Twig_Extensions_TokenParser_Trans extends Twig_TokenParser
+class Twig_Extensions_TokenParser_Trans extends Twig\TokenParser\AbstractTokenParser
 {
     /**
      * {@inheritdoc}
@@ -69,7 +69,7 @@ class Twig_Extensions_TokenParser_Trans extends Twig_TokenParser
         return 'trans';
     }
 
-    protected function checkTransString(Twig_Node $body, $lineno)
+    protected function checkTransString(Twig\Node\Node $body, $lineno)
     {
         foreach ($body as $i => $node) {
             if (

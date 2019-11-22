@@ -1,0 +1,37 @@
+site_settings:
+    setting_group: zenario_location_map_and_listing_2__site_settings_group
+    title: "Settings for Areas"
+    tabs:
+        zenario_location_map_and_listing_2_areas:
+            label: "Details"
+            edit_mode:
+                enabled: Yes
+            fields:
+                polygon_stroke_opacity:
+                    site_setting:
+                        name: polygon_stroke_opacity
+                    label: 'Polygon stroke opacity:'
+                    type: text
+                    value: "80"
+                    style: "width: 50px;"
+                    slider: 
+                        min: 0
+                        max: 100
+                        step: 1
+                        value: "80"
+                        before_field: true
+                        style: "width: 200px;"
+                polygon_fill_opacity:
+                    site_setting:
+                        name: polygon_fill_opacity
+                    label: 'Polygon fill opacity:'
+                    type: text
+                    value: "35"
+                    style: "width: 50px;"
+                    slider: 
+                        min: 0
+                        max: 100
+                        step: 1
+                        value: "35"
+                        before_field: true
+                        style: "width: 200px;"
