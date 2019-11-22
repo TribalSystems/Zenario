@@ -80,8 +80,8 @@ zenario__administration:
                         embed site iframe
                         X-Frame-Options ALLOWALL SAMEORIGIN
                 email:
-                    name: Email
-                    desc: Settings for emails.
+                    name: Email and Newsletter
+                    desc: Settings for sending emails and newsletters from this website.
                     keywords: smtp mail test send debug mode system email address from
                 errors:
                     name: Error handling
@@ -113,14 +113,14 @@ zenario__administration:
                     name: Site-wide <head> and <body> HTML
                     desc: |
                         Add HTML to the <head> or <body> tag of all pages on your site.
-                urls:
-                    name: URLs
-                    desc: Settings that affect how URLs for your site are generated.
+                urls_and_xml_sitemap:
+                    name: URL format, aliases and XML sitemap
+                    desc: Settings that affect how URLs for your site are generated, and to enable an XML sitemap.
                     keywords: mod_rewrite suffix default behaviour for translations alias language code
                 users:
                     name: Users
                     desc: Settings that affect extranet users & contacts.
-                    keywords: screen names log all sign-ins logins passwords maximum user image file sizes
+                    keywords: screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
                 optimisation:
                     name: Optimisation
                     desc: Settings that affect or speed up web pages.
@@ -140,13 +140,6 @@ zenario__administration:
                         show debug info
                         cache stats refresh statistics
                         clear cache clear the cache
-
-                xml_sitemap:
-                    priv: _PRIV_EDIT_SITE_SETTING
-                    css_class: xml_sitemap
-                    name: XML Sitemap
-                    desc: Enable an XML Sitemap for your site.
-                    keywords: google bing search index sitemap url
             
             # These controls don't use the usual Site Settings Admin Box,
             # but we put them here anyway as this is the logical place to look for them
@@ -223,6 +216,6 @@ zenario__administration:
                 #    parent: action_dropdown
                 #    local_admins_only: true
                 #    label: Change Password
-                #    frontend_link: 'zenario/admin/welcome.php?task=change_password&og=zenario__administration/nav/configure_settings/panel//profile'
+                #    frontend_link: 'admin.php?task=change_password&og=zenario__administration/nav/configure_settings/panel//profile'
                 #    visible_if_for_all_selected_items: |
                 #        id == 'profile'

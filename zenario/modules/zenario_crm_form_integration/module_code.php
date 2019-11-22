@@ -32,46 +32,40 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 	
 	public static function eventUserFormSubmitted($data, $form, $fieldIdValueLink, $responseId = false) {
 		$formId = $form['id'];
-		$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable', 'crm_id'], ['form_id' => $formId]);
+		$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable', 'crm_id', 'consent_field'], ['form_id' => $formId]);
 		while ($link = ze\sql::fetchAssoc($result)) {
 			if ($link['enable']) {
-				
-				//Send to a CRM
-				if ($link['crm_id'] == 'generic') {
-					$data = static::formatCRMData($link['id'], $data, $fieldIdValueLink, $responseId);
-					static::sendDataToCRM($link['id'], $data, $responseId);
-				}
-				
-				//Send to Salesforce
-				if ($link['crm_id'] == 'salesforce' && ze::setting('zenario_salesforce_api_form_integration__enable')) {
-					$data = static::formatCRMData($link['id'], $data, $fieldIdValueLink, $responseId);
-					static::sendDataToSalesforce($link['id'], $data, $responseId);
-				}
-				
-				//Send to MailChimp
-				if ($link['crm_id'] == 'mailchimp' && ze::setting('zenario_crm_form_integration__enable_mailchimp')) {
-				    $consentFieldId = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', 'consent_field', ['form_id' => $formId]);
-				    				    
-				    if($link['enable']){
-				        $send = 1;
-				        if($consentFieldId){
-				            if($fieldIdValueLink[$consentFieldId]){
-				                $send = 1;
-				            } else{
-				                $send = 0;
-				            }
-				        }
-				        if($send == 1){
-					        $data = static::formatCRMData($link['id'], $data, $fieldIdValueLink, $responseId);
-					        static::sendDataToMailChimp($link['id'], $data, $responseId);
-					    }
+				$send = 1;
+				if($link['consent_field']){
+					if($fieldIdValueLink[$link['consent_field']]){
+						$send = 1;
+					} else{
+						$send = 0;
 					}
 				}
 				
-				//Send to 360Lifecycle
-				if ($link['crm_id'] == '360lifecycle' && ze::setting('zenario_crm_form_integration__enable_360lifecycle')) {
+				if ($send) {
 					$data = static::formatCRMData($link['id'], $data, $fieldIdValueLink, $responseId);
-					static::sendDataTo360LifeCycle($link['id'], $data, $responseId);
+					
+					//Send to a CRM
+					if ($link['crm_id'] == 'generic') {
+						static::sendDataToCRM($link['id'], $data, $responseId);
+					}
+			
+					//Send to Salesforce
+					if ($link['crm_id'] == 'salesforce' && ze::setting('zenario_salesforce_api_form_integration__enable')) {
+						static::sendDataToSalesforce($link['id'], $data, $responseId);
+					}
+				
+					//Send to MailChimp
+					if ($link['crm_id'] == 'mailchimp' && ze::setting('zenario_crm_form_integration__enable_mailchimp')) {
+						static::sendDataToMailChimp($link['id'], $data, $responseId);
+					}
+				
+					//Send to 360Lifecycle
+					if ($link['crm_id'] == '360lifecycle' && ze::setting('zenario_crm_form_integration__enable_360lifecycle')) {
+						static::sendDataTo360LifeCycle($link['id'], $data, $responseId);
+					}
 				}
 			}
 		}
@@ -238,8 +232,8 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 				'datetime' => date('Y-m-d H:i:s'), 
 				'form_id' => $link['form_id'], 
 				'response_id' => $responseId, 
-				'oauth_status' => $status, 
-				'oauth_response' => mb_substr(json_encode($token), 0, 65535, 'UTF-8')
+				'oauth_status' => $token['status'], 
+				'oauth_response' => mb_substr(json_encode($token['token']), 0, 65535, 'UTF-8')
 			]
 		);
 		//Delete old log entries
@@ -249,13 +243,35 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 				WHERE datetime < DATE_SUB(NOW(), INTERVAL ' . (int)$logDays . ' DAY)';
 			ze\sql::update($sql);
 		}
-		if (!$token) {
+		if (!$token['token']) {
 			return false;
 		}
 		
+		//Check if there is anything to do before we create the main object:
+		$extraDataFields = ze\module::sendSignal(
+				'eventPreSendDataToSalesForce', 
+				[
+					'token' => $token,
+					'data' => $data,
+					'crmData' => $crmData,
+					'crmFormLinkId' => $linkId,
+					'responseId' => $responseId
+				]
+			);
+		
+		if (is_array($extraDataFields)) {
+			foreach ($extraDataFields as $moduleResponse) {
+				if (is_array($moduleResponse)) {
+					foreach ($moduleResponse as $key => $additionalData) {
+						$data[$key]= $additionalData;
+					}
+				}
+			}
+		}
+		
 		//Send response to Salesforce 
-		$accessToken = $token['access_token'];
-		$instanceURL = $token['instance_url'];
+		$accessToken = $token['token']['access_token'];
+		$instanceURL = $token['token']['instance_url'];
 		$url = $instanceURL . '/services/data/v40.0/sobjects/' . urlencode($crmData['s_object']) . '/' ;
 		$dataJSON = json_encode($data);
 		
@@ -315,18 +331,18 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 			return false;
 		}
 		
-		return json_decode($resultJSON, true);
+		return ['token' => json_decode($resultJSON, true), 'status'=> $status];
 	}
 	
 	//Validate a field and optionally a list of values on a Salesforce Object
 	public static function validateSalesforceObjectField($sObject, $name, $values = []) {
 		$token = static::getSalesforceAccessToken();
-		if (!$token) {
+		if (!$token['token']) {
 			return false;
 		}
 		
-		$accessToken = $token['access_token'];
-		$instanceURL = $token['instance_url'];
+		$accessToken = $token['token']['access_token'];
+		$instanceURL = $token['token']['instance_url'];
 		$url = $instanceURL . '/services/data/v40.0/sobjects/' . urlencode($sObject) . '/describe';
 
 		$curl = curl_init($url);
@@ -612,48 +628,4 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 	}
 	
 	
-	
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		if ($subClass = $this->runSubClass(__FILE__)) {
-			return $subClass->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-	}
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($subClass = $this->runSubClass(__FILE__)) {
-			return $subClass->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($subClass = $this->runSubClass(__FILE__)) {
-			return $subClass->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($subClass = $this->runSubClass(__FILE__)) {
-			return $subClass->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($subClass = $this->runSubClass(__FILE__)) {
-			return $subClass->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	
-	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($subClass = $this->runSubClass(__FILE__)) {
-			return $subClass->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($subClass = $this->runSubClass(__FILE__)) {
-			return $subClass->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
-		}
-	}
 }

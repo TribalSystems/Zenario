@@ -1,0 +1,74 @@
+.zenario_content_list .content_list_listing {
+	overflow:hidden;
+}
+
+.zenario_content_list .content_list_listing .content_list_data_row h2 {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1em;
+	text-transform:uppercase;
+	margin-bottom:2px;
+}
+
+.zenario_content_list .content_list_listing .content_list_data_row img {
+	max-width:100% !important;
+	height:auto !important;
+}
+
+.zenario_content_list .content_list_listing .content_list_data_row p.content_list_date {
+	font-size:0.857em;
+	font-family:'cardoregular',Arial, Helvetica, sans-serif;
+}
+
+/* Home page news
+--------------------------------------------------------------------------------------------------*/
+
+.slot_news .zenario_content_list__default_style .content_list_listing .content_list_data_row {
+	width:32%;
+	float:left;
+}
+
+.slot_news .zenario_content_list__default_style .content_list_listing .content_list_data_row.data_row_even {
+	margin-left:2%;
+	margin-right:2%;
+}
+
+.slot_news .zenario_content_list .content_list_listing .content_list_data_row h2 {
+	margin-top:10px;
+}
+
+/* Listing item
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_content_list.listing .content_list_listing .content_list_data_row {
+	overflow:hidden;
+	padding:20px 0;
+	border-bottom:1px dotted #777;
+}
+
+.zenario_content_list.listing .content_list_listing > .content_list_data_row:first-child {
+	padding-top:0;
+}
+
+.zenario_content_list.listing .content_list_data_row div.sticky_image {
+	width:120px;
+	float:left;
+	margin-right:20px;
+}
+
+.zenario_content_list.listing .content_list_data_row .content_list_text,
+.zenario_content_list.listing .content_list_data_row .content_list_more {
+	display:inline-block;
+	float:right;
+	width:calc(100% - 140px);
+}
+
+.zenario_content_list.listing .content_list_data_row .content_list_more {
+	text-align:right;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:0.857em;
+}
+
+.zenario_content_list.listing .content_list_data_row .content_list_more:after {
+	font-family: 'FontAwesome';
+	content: "\f138"; /* fa-angle-right */
+}

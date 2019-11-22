@@ -5,7 +5,7 @@ zenario_email_template:
         meta_data:
             fields:
                 user_form:
-                    ord: body.01
+                    ord: 12.1
                     label: 'Insert merge fields from a form:'
                     type: select
                     empty_value: -- Select Form --
@@ -13,7 +13,7 @@ zenario_email_template:
                     side_note: |
                         Add forms fields and their merge fields onto the current email body by selecting a form and then choosing all or individual form fields
                 user_form_field:
-                    ord: body.02
+                    ord: 12.2
                     same_row: 1
                     type: select
                     empty_value: -- Select Field --

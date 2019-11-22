@@ -231,6 +231,9 @@ class zenario_multiple_image_container extends zenario_banner {
 				unset($fields['text/text']['plugin_setting']);
 				unset($fields['text/more_link_text']['plugin_setting']);
 				
+				//Make sure the "Captions, links, enlarging" tab is never blank.
+				$box['tabs']['links']['fields']['no_captions']['hidden'] = !empty($values['first_tab/image']);
+				
 				
 				break;
 		}

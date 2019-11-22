@@ -98,7 +98,7 @@ zenario__users:
             item:
                 name: Log
                 names: Logs
-                css_class: log
+                css_class: log access_log
             no_items_message: No accesses have been logged.
             
             collection_buttons:

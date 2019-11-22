@@ -55,7 +55,8 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 
 		if ($box['key']['sub_category']) {
 			unset($box['title_for_existing_records']);
-			$box['title'] = ze\admin::phrase('Creating a sub-category');
+			//TODO maybe improve the wording
+			$box['title'] = ze\admin::phrase('Creating a sub-category in "[[name]]"', ['name' => ze\category::name($box['key']['parent_id'])]);
 		}
 		
 		if (ze::setting('enable_display_categories_on_content_lists') && ze::setting('enable_category_landing_pages')) {

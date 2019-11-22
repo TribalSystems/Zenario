@@ -9,6 +9,7 @@ site_settings:
                     site_setting:
                         name: period_to_delete_sign_in_log
                     label: "How long should the user sign-in log be saved?"
+                    ord: 8
                     type: select
                     values: 
                         0: 
@@ -32,6 +33,7 @@ site_settings:
                     site_setting:
                         name: period_to_delete_the_user_content_access_log
                     label: "How long should the user content-access log be saved?"
+                    ord: 9
                     type: select
                     values: 
                         0: 

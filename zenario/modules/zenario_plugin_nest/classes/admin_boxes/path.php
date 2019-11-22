@@ -49,12 +49,20 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 			$box['max_height'] += 200;
 		}
 		
+		//Get the details of this slide
+		$slide = ze\row::get('nested_plugins',
+			['id', 'slide_num', 'use_slide_layout', 'request_vars', 'hierarchical_var'],
+			['instance_id' => $box['key']['instanceId'], 'states' => [$box['key']['state']]]
+		);
+		$box['key']['slideNum'] = $slide['slide_num'];
 		
-		//Look up the module ids of all of the plugins used on this page
-		$box['key']['slideNum'] = ze\row::get('nested_plugins', 'slide_num', ['instance_id' => $box['key']['instanceId'], 'states' => [$box['key']['state']]]);
+		$moduleDescs = [];
+		$modulesAndModes = [];
+		$moduleIdsToNames = [];
 		
+		//Look up the module ids and modes of all of the plugins used on this page
 		$sql = "
-			SELECT np.module_id, np.makes_breadcrumbs, GROUP_CONCAT(DISTINCT ps.value SEPARATOR ', ') AS modes
+			SELECT np.module_id, np.makes_breadcrumbs, ps.value AS mode
 			FROM ". DB_PREFIX. "nested_plugins AS np
 			LEFT JOIN ". DB_PREFIX. "plugin_settings AS ps
 			   ON ps.instance_id = np.instance_id
@@ -62,36 +70,83 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 			  AND ps.name = 'mode'
 			WHERE np.instance_id = ". (int) $box['key']['instanceId']. "
 			  AND np.slide_num = ". (int) $box['key']['slideNum']. "
-			  AND is_slide = 0
-			GROUP BY np.module_id";
+			  AND is_slide = 0";
 		$result = ze\sql::select($sql);
 		
-		$ord = 2;
-		$commands = [];
+		//Note each down
 		$somethingMakesBreadcrumbs = false;
 		while ($egg = ze\sql::fetchAssoc($result)) {
+			$mode = $egg['mode'];
+			$moduleId = $egg['module_id'];
+			
+			if (!isset($moduleIdsToNames[$moduleId])) {
+				$moduleIdsToNames[$moduleId] = ze\module::className($moduleId);
+			}
+			$moduleClassName = $moduleIdsToNames[$moduleId];
 			
 			if ($egg['makes_breadcrumbs'] > 1) {
 				$somethingMakesBreadcrumbs = true;
 			}
 			
-			$modes = ze\ray::explodeAndTrim($egg['modes']);
-			$tags = [];
-			if ((ze\moduleAdm::loadDescription(ze\module::className($egg['module_id']), $tags))
-			 && !empty($tags['path_commands'])) {
-				foreach($tags['path_commands'] as $command => $details) {
+			$moduleDescs[$moduleClassName] = [];
+			$modulesAndModes[$moduleClassName. '-'. $mode] = [$moduleClassName, $mode];
+		}
+		
+		//Check which slide layouts are used on this slide, of any
+		$slKey = false;
+		switch ($slide['use_slide_layout']) {
+			case 'asset_schema':
+			case 'datapool_schema':
+				if (ze\module::inc('assetwolf_2')) {
+					$slKey = assetwolf_2::getAllPossibleSlideLayoutsForSlide($slide);
+				}
+				break;
+		}
+		
+		//If there were some used, check which plugins/modes are there and note those down as well
+		if (!empty($slKey)) {
+			foreach (ze\row::getValues('slide_layouts', 'data', $slKey) as $data) {
+				if ($data = json_decode($data, true)) {
+					if (!empty($data) && is_array($data)) {
+						foreach ($data as $plugin) {
+							if (($moduleClassName = $plugin['class_name'] ?? false)
+							 && ($mode = $plugin['settings']['mode'] ?? false)) {
+								$moduleDescs[$moduleClassName] = [];
+								$modulesAndModes[$moduleClassName. '-'. $mode] = [$moduleClassName, $mode];
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		//Load the description.yaml file of all of the modules used
+		foreach ($moduleDescs as $moduleClassName => &$desc) {
+			ze\moduleAdm::loadDescription($moduleClassName, $desc);
+		}
+		unset($desc);
+		
+		$ord = 2;
+		$commands = [];
+		foreach ($modulesAndModes as $moduleAndMode) {
+			$moduleClassName = $moduleAndMode[0];
+			$mode = $moduleAndMode[1];
+			$desc = $moduleDescs[$moduleClassName];
+			
+			if (!empty($desc['path_commands'])) {
+				foreach($desc['path_commands'] as $command => $details) {
 					
 					if (!empty($details['hidden'])) {
 						continue;
 					}
 					
-					if (!isset($details['modes'])
-					 || !empty(array_intersect($details['modes'], $modes))) {
+					if (!isset($details['modes']) || in_array($mode, $details['modes'])) {
 						$commands[$command] = $details;
 					}
 				}
 			}
 		}
+		
 		asort($commands);
 		foreach ($commands as $command => $details) {
 			$fields['path/command']['values'][$command] = [

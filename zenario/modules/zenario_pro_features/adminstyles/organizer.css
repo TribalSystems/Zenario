@@ -99,3 +99,31 @@
 #zenario_page_caching.zenario_page_caching_on {
 	background: url('images/icon-footer-optimisation-on.svg') no-repeat center center / 18px auto;
 }
+
+
+
+
+
+
+span.zenario_cache_info_icon_example {
+	height: 18px;
+	width: 15px;
+	display: inline-block;
+	opacity: 0.5;
+}
+
+span.zenario_cache_info_icon_example.zenario_cache_disabled {
+	background: url('images/placeholder_cache_disabled_drum.png') top left no-repeat;
+}
+
+span.zenario_cache_info_icon_example.zenario_not_cached {
+	background: url('images/placeholder_not_cached_drum.png') top left no-repeat;
+}
+
+span.zenario_cache_info_icon_example.zenario_cache_in_use {
+	background: url('images/placeholder_cache_drum.png') top left no-repeat;
+}
+
+span.zenario_cache_info_icon_example.zenario_from_cache {
+	background: url('images/placeholder_from_cache_drum.png') top left no-repeat;
+}

@@ -706,11 +706,30 @@ body.ie9 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.z
 #zenario_fbAdminInner .launch_keeper,
 #zenario_fbAdminInner .zfab_text_link_button,
 #zenario_fbAdminInner .zenario_ab__zenario_import .input_submit,
-#zenario_fbAdminInner #row__password .zenario_show_on_open input[type="button"] {
-	color: #FFFFFF;
-	padding: 2px 10px 3px;
+#zenario_fbAdminInner #row__password input[type="button"],
+#zenario_fbAdminInner #row__screen_name input[type="button"] {
 	font-size:13px;
 	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
+}
+
+.zenario_fbAdmin .zenario_fbButtons input,
+#zenario_fbAdminInner .submit,
+#zenario_fbAdminInner .input_submit,
+#zenario_fbAdminInner .input_button,
+#zenario_fbAdminInner .input_toggle,
+#zenario_fbAdminInner .submit_selected,
+#zenario_fbAdminInner .submit_disabled,
+#zenario_fbAdminInner .launch_keeper,
+#zenario_fbAdminInner .zfab_text_link_button,
+#zenario_fbAdminInner .zenario_ab__zenario_import .input_submit {
+	color: #FFFFFF;
+	padding: 2px 10px 3px;
+}
+
+#zenario_fbAdminInner #row__password input[type="button"],
+#zenario_fbAdminInner #row__screen_name input[type="button"] {
+	padding: 2px 8px 3px;
+	margin-right:0;
 }
 
 .zenario_fbAdmin .zenario_fbButtons input,
@@ -838,7 +857,7 @@ body.ie9 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.z
 	background: pink;
 	float: left;
 	border:1px solid #b9b9b9;
-	background:#f6f6f6 url('../admin/images/icon-cogwheel.png') no-repeat center center;
+	background:#f6f6f6 url('../admin/images/icon-cogwheel.svg') no-repeat center center / 15px 15px;
 	-webkit-border-radius: 2px;
 	-moz-border-radius: 2px;
 	border-radius: 2px;
@@ -1194,7 +1213,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 
 #zenario_fbAdminInner input[type=text].zenario_datepicker,
 .webkit #zenario_fbAdminInner input[type=text].zenario_datepicker {
-	background: url("../admin/images/icons/calendar_small.gif") no-repeat scroll 98% 50% white !important;
+	background: url("../admin/images/icon-calendar.svg") no-repeat 98% 50% white / 15px auto !important;
 	border: 1px solid #c4c4c4 !important;
 	color: #424242 !important;
 	padding:5px;
@@ -1874,11 +1893,10 @@ tr.th_row th
 }
 
 
-
 /* Styles specific to the new Admin Box toolkit */
 
 form.thickbox input.input_date {
-	background: url("../admin/images/icons/calendar_small.gif") no-repeat 98% 50% white;
+	background: url("../admin/images/icon-calendar.svg") no-repeat 98% 50% white / 15px auto;
 	border: 1px dotted #888888;
 }
 
@@ -2476,6 +2494,19 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
 	z-index: 319999;
 }
 
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu .ui-menu-item,
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-icons .ui-menu-item {
+	padding-left:10px;
+}
+
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu .ui-menu-item .ui-icon {
+	display:none;
+}
+
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
+	font-size:12px;
+}
+
 /*  The CSS Class Picker  */
 
 #cboxOverlay.zenario_css_class_picker,
@@ -2604,8 +2635,18 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
 	padding: 3px 2px;
 }
 
-#zenario_fbAdminImageManager #zenario_slide_attributes #zenario_main_image_details .zenario_slide_settings_choose_image input[type="text"] {
-	width:200px;
+#zenario_fbAdminImageManager #zenario_slide_attributes .actions {
+	overflow:hidden;
+	clear:both;
+	padding-top:3px;
+}
+
+#zenario_fbAdminImageManager #zenario_slide_attributes .actions.actions_more {
+	padding-left:10px;
+}
+
+#zenario_fbAdminImageManager #zenario_slide_attributes .actions.actions_more label {
+	font-size:11px;
 }
 
 #zenario_fbAdminImageManager #zenario_slide_attributes #zenario_main_image_details #zenario_show_overwrite_alt_tag {
@@ -2751,6 +2792,13 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
 
 #zenario_fbAdminImageManager #zenario_slides #zenario_slide_small_preview_group > div {
 	min-height:200px;
+}
+
+#zenario_fbAdminImageManager #zenario_slides #zenario_slide_small_preview_group ul,
+#zenario_fbAdminImageManager #zenario_slides #zenario_slide_small_preview_group ul li {
+	list-style:none;
+	padding:0;
+	margin:0;
 }
 
 #zenario_fbAdminImageManager #zenario_slides #zenario_slide_small_preview_group ul li {
@@ -3092,12 +3140,26 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
 	background:#4D4D4D;
 	border:1px solid #333;
 	border-top-color:#747474;
-	color:#FFF;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner ul li {
 	font-size:11px;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner a {
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner a,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner ul li {
 	color:#FFF;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner .zenario_note_content a {
+	color:#333;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner .zfab_row_fields ul:not(.TokensContainer) {
+	list-style:disc;
+	margin-left:20px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .zenario_row_input_button {
@@ -3223,8 +3285,12 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 #zenario_fbButtons .launch_keeper:hover,
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .launch_keeper,
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .launch_keeper:hover,
-#zenario_fbAdminInner #row__password .zenario_show_on_open input[type="button"],
-#zenario_fbAdminInner #row__password .zenario_show_on_open input[type="button"]:hover {
+#zenario_fbAdminImageManager #zenario_fbAdminInner .launch_keeper,
+#zenario_fbAdminImageManager #zenario_fbAdminInner .launch_keeper:hover,
+#zenario_fbAdminInner #row__password input[type="button"],
+#zenario_fbAdminInner #row__password input[type="button"]:hover,
+#zenario_fbAdminInner #row__screen_name input[type="button"],
+#zenario_fbAdminInner #row__screen_name input[type="button"]:hover {
 	background:none;
 }
 
@@ -3236,17 +3302,20 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 
 #zenario_fbAdminInner .launch_keeper,
 #zenario_fbButtons .launch_keeper,
-#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .launch_keeper {
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .launch_keeper,
+#zenario_fbAdminImageManager #zenario_fbAdminInner .launch_keeper {
 	border:0;
 	float:left;
 }
 
-#zenario_fbAdminInner #row__password .zenario_show_on_open input[type="button"] {
+#zenario_fbAdminInner #row__password input[type="button"],
+#zenario_fbAdminInner #row__screen_name input[type="button"] {
 	border:0;
 	cursor:pointer;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .launch_keeper {
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .launch_keeper,
+#zenario_fbAdminImageManager #zenario_fbAdminInner .launch_keeper {
 	color:#EBDA04;
 	font-size:11px;
 	text-shadow:0 1px 1px #000;
@@ -3256,9 +3325,17 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 #zenario_fbAdminInner .launch_keeper,
 #zenario_fbAdminInner .zfab_text_link_button,
 #zenario_fbButtons .launch_keeper,
-#zenario_fbAdminInner #row__password .zenario_show_on_open input[type="button"] {
+#zenario_fbAdminInner #row__password input[type="button"],
+#zenario_fbAdminInner #row__screen_name input[type="button"] {
 	color: #027dc9;
 	text-shadow:0 1px 1px #dfdfdf;
+}
+
+#zenario_fbAdminInner #row__password input[type="button"]:hover,
+#zenario_fbAdminInner #row__screen_name input[type="button"]:hover {
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .organizer_removebutton.launch_keeper {
@@ -3392,6 +3469,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .launch_keeper:hover,
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain .organizer_removebutton.launch_keeper:hover,
 #zenario_fbAdminFloatingBox .zenario_fabMain #zenario_fbMain .zenario_fab_picked_item_info:hover,
+#zenario_fbAdminImageManager #zenario_fbAdminInner .launch_keeper:hover,
 #zenario_fbAdminInner .organizer_removebutton:hover,
 #zenario_fbButtons .launch_keeper:hover {
 	-webkit-box-shadow: none;
@@ -3450,7 +3528,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 
 #zenario_fbAdminFloatingBox .zenario_fabMain #zenario_fbMain .zenario_fab_picked_item_info,
 #zenario_fbAdminFloatingBox .zenario_fabMain #zenario_fbMain .zenario_fab_picked_item_info:hover {
-	background:url('../admin/images/icon-info-v2.png') no-repeat 0 0;
+	background:url('../admin/images/icon-info-squares.svg') no-repeat 0 0 / 18px 18px;
 }
 
 #zenario_fbAdminFloatingBox .zenario_fabMain #zenario_fbMain .Tokenize.Disabled .zenario_fab_picked_item_info:hover {
@@ -4075,9 +4153,13 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	z-index: 1;
 	float: right;
 	right: 68px;
-	top: 50px;
+	top: 15px;
 	
 	width:250px;
+}
+
+.zfab_with_identifier #zenario_fabGlobalArea {
+	top: 50px;
 }
 
 #zenario_fabGlobalArea .zfab_row .title,
@@ -4126,7 +4208,8 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	top:0;
 	right:0;
 	margin-top:0;
-	background:#F6F6F6;
+	background-color:#F6F6F6;
+	background-position:-60px -12px;
 	color:#333;
 }
 
@@ -4140,6 +4223,10 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	margin-top:0.1em !important;
 }
 
+#zenario_fabGlobalArea .ui-widget-content .ui-menu-item .ui-icon {
+	background:none;
+}
+
 /*
 	END: Styles for the global area that's always visible at the top right
 */
@@ -4150,7 +4237,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	height:27px;
 	right:28px;
 	border:1px solid #B9B9B9;
-	background:#F6F6F6 url('../admin/images/fab-slide-toggle-up.png') no-repeat center center;
+	background:#F6F6F6 url('../admin/images/icon-arrow-up-thin.svg') no-repeat center center / 15px 10px;
 	cursor:pointer;
 	-webkit-border-radius: 2px;
 	-moz-border-radius: 2px;
@@ -4163,7 +4250,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabSlideToggleDown {
-	background:#F6F6F6 url('../admin/images/fab-slide-toggle-down.png') no-repeat center center;
+	background:#F6F6F6 url('../admin/images/icon-arrow-down-thin.svg') no-repeat center center / 15px 10px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabSlideToggle:hover {
@@ -4178,11 +4265,11 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabClose {
-	background:url('../admin/images/fab-close-button.png') no-repeat center center;
+	background:url('../admin/images/icon-close-off-state-gey.svg') no-repeat center center / 14px 13px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabClose:hover {
-	background:url('../admin/images/fab-close-button-hover.png') no-repeat center center;
+	background:url('../admin/images/icon-close-hover-state-blue.svg') no-repeat center center / 14px 13px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead #zenario_fabTitleWrap {
@@ -4440,7 +4527,7 @@ body.ie10 #zenario_fabBox_readonlyMarker {
 	right:4px;
 	top:4px;
 	margin-left:4px;
-	background:url('../admin/images/icon-info-v2.png') no-repeat !important;
+	background:url('../admin/images/icon-info-squares.svg') no-repeat / 18px 18px !important;
 }
 
 #zenario_fbAdminInner .Tokenize .Dropdown .zenario_picked_image {
@@ -4648,7 +4735,8 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 }
 
 div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_internal_unique {
-	background-position:-12px -142px;
+	filter: invert(50%);
+	-webkit-filter: invert(50%);
 }
 
 /*  If only one item can be shown in a picker, don't show a flashing cursor when one is already selected.
@@ -4670,6 +4758,25 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 .zenario_fab_plugin #zenario_fbAdminInner .Tokenize.zenario_reorder_items .TokensContainer li.Token a.Close {
 	position:absolute;
 	right:0;
+}
+
+/*  Tokenize for FAB content 
+	and field 'menu pos after' */
+
+.zenario_fab_zenario_content #zenario_fbAdminInner div[class*="zenario_ab_row__menu_pos_"] .Tokenize {
+	width:calc(100% - 15px);
+}
+
+.zenario_fab_zenario_content #zenario_fbAdminInner div[class*="zenario_ab_row__menu_pos_"] .Tokenize .TokensContainer {
+	width:100%;
+}
+
+.zenario_fab_zenario_content #zenario_fbAdminInner div[class*="zenario_ab_row__menu_pos_"] .Tokenize.OnlyOne span.form_field {
+	width:calc(100% - 35px);
+}
+
+.zenario_fab_zenario_content #zenario_fbAdminInner div[class*="zenario_ab_row__menu_pos_"] .Tokenize .TokensContainer li {
+	white-space:normal;
 }
 
 /* Some specific styles for the "Links" tab in the Multiple Image Container's plugin settings
@@ -4705,11 +4812,13 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 --------------------------------------------------------------------------------------------------*/
 
 #zenario_fbAdminFloatingBox #zenario_fbAdminInner .warning_icon {
+	min-height:16px;
 	background:url('../admin/images/icon-warning.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
 }
 
 #zenario_fbAdminFloatingBox #zenario_fbAdminInner .success_icon {
+	min-height:16px;
 	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
 }
@@ -4747,7 +4856,8 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 	background:url("../admin/images/icon-roles-white.svg") no-repeat center center / 16px 16px;
 }
 
-.zenario_fab_plugin .organizer_item_image.zenario_user_forms{
+.zenario_fab_plugin .organizer_item_image.zenario_user_forms,
+.zenario_fab_plugin .organizer_item_image.form_type_registration {
 	background:url("../admin/images/icon-forms-white.svg") no-repeat center center / 16px 16px;
 }
 
@@ -4872,9 +4982,9 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 	text-align:right;
 }
 
-#zenario_fbAdminFloatingBox .zenario_row_with_dropdown .ui-selectmenu-button.ui-widget.ui-state-default .ui-icon {
+/*#zenario_fbAdminFloatingBox .zenario_row_with_dropdown .ui-selectmenu-button.ui-widget.ui-state-default .ui-icon {
 	background-color:#555;
-}
+}*/
 
 .zenario_row_with_dropdown .ui-selectmenu-menu .ui-menu {
 	height:210px;
@@ -4889,16 +4999,25 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 }
 
 body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
+	max-height:65vh;
 	overflow-y:auto;
+	overflow-x:hidden;
+	/*border-top:1px solid #EAE7E8;
+	border-bottom:1px solid #EAE7E8;*/
 }
 
-body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu {
-	max-height:80vh;
-	overflow-y:auto;
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu.iconselectmenu__in__zenario_slide {
+	max-height:55vh;
 }
 
-body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu ul.ui-menu .ui-menu-item {
-	padding-left:1.5em;
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu {
+	height:auto !important;
+	overflow:hidden !important;
+}
+
+body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-widget-content {
+	border-top:0;
+	border-bottom:0;
 }
 
 

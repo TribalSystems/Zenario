@@ -42,7 +42,7 @@ x-zenario-admin-slot-wrapper {
 .zenario_moveSource,
 .zenario_moveDestination,
 .zenario_slotParent .zenario_slotPluginControlBox,
-.zenario_nestSlotWithContents:hover .zenario_slotEggControlBox {
+.zenario_nestSlot:hover .zenario_slotEggControlBox {
 	display: inline;
 }
 
@@ -63,7 +63,7 @@ body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .pluginAdminEd
 
 body.zenario_pageModeIsnt_item.zenario_pageModeIsnt_layout .zenario_missing_slots,
 
-body.zenario_pageMode_preview .zenario_nestSlotWithContents:hover .zenario_slotEggControlBox,
+body.zenario_pageMode_preview .zenario_nestSlot:hover .zenario_slotEggControlBox,
 body.zenario_pageMode_preview .zenario_slotNotShownInVisitorMode,
 body.zenario_pageMode_menu .zenario_slotNotShownInVisitorMode,
 body.zenario_pageMode_rollback .zenario_slotNotShownInVisitorMode,
@@ -597,7 +597,7 @@ div.zenario_slotControlsWrap .zenario_sc {
 	display: none;
 }
 
-.zenario_nestSlotWithContents:hover div.zenario_slotAdminControlBox a {
+.zenario_nestSlot:hover div.zenario_slotAdminControlBox a {
 	display: block;
 }
 

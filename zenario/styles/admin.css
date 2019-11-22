@@ -9,19 +9,13 @@
     font-size:11px;
 }
 
-.snippet__title div, 
-.snippet__description div,
-.snippet__keywords div
-{
-    display:inline;
-    padding: 2px 5px !important;
-    text-align: center;
-}
-
 .title_red,
 .description_red,
 .keywords_red
 {
+    display:inline;
+    padding: 2px 5px !important;
+    text-align: center;
 	background: none repeat scroll 0 0 #FCA4A3;
 }
 
@@ -29,6 +23,9 @@
 .description_orange,
 .keywords_orange
 {
+    display:inline;
+    padding: 2px 5px !important;
+    text-align: center;
 	background: none repeat scroll 0 0 #FF9900;
 }
 
@@ -36,6 +33,9 @@
 .description_yellow,
 .keywords_yellow
  {
+    display:inline;
+    padding: 2px 5px !important;
+    text-align: center;
 	background: none repeat scroll 0 0 #FFCC33;
 }
 
@@ -43,6 +43,9 @@
 .description_green,
 .keywords_green
  {
+    display:inline;
+    padding: 2px 5px !important;
+    text-align: center;
 	background: none repeat scroll 0 0 #53F27C;
 }
 
@@ -123,6 +126,10 @@
     top: 2%;
     left: 50%;
     z-index: 360000;
+}
+
+#zenario_fbAdminImageManager {
+    z-index: 310000;
 }
 
 #colorbox.zenario_show_colobox_above_fab {
@@ -487,13 +494,18 @@ input, textarea, button {
 	width: 18px;
 }
 
+.zenario_debug div,
+#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled,
+#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_enabled {
+	background: #D2D0D1 url('../admin/images/icon-bug.png') no-repeat center / 12px 12px;
+}
+
 .zenario_debug div {
 	position: absolute;
 	z-index:97;
 	width: 18px;
 	height: 18px;
 	display: block;
-	background: #D2D0D1 url('../admin/images/icon-bug.png') no-repeat center / 12px 12px;
 	cursor:pointer;
 	-webkit-border-radius:50%;
 	-moz-border-radius:50%;
@@ -504,7 +516,8 @@ input, textarea, button {
 	transition: all 0.3s ease-out;
 }
 
-.zenario_debug:hover div {
+.zenario_debug:hover div,
+#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_enabled {
 	background-color:#C5E4FD;
 }
 
@@ -522,14 +535,6 @@ input, textarea, button {
 	height: 18px;
 	margin-left: 5px;
 	cursor: pointer;
-}
-
-#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled {
-	background: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1291px;
-}
-
-#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_enabled {
-	background: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1341px;
 }
 
 /* Page preview icons */
@@ -842,7 +847,10 @@ del.zenario_link_status__spare_domain > del {
 	background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center;
 }
 
-del.zenario_link_status__menu_warning > del {
-	background-image: url('../admin/images/sprites/org-icons-v5.png');
-    background-position: -667px -117px;
+del.zenario_link_status__spare_alias > del {
+	background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center;
 }
+
+del.zenario_link_status__menu_warning > del {
+	background:url('../admin/images/icon-warning.svg') no-repeat center / 16px 16px;
+}}

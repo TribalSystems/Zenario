@@ -48,7 +48,7 @@ _sql
 		email_body TEXT,
 		sent_timestamp datetime NOT NULL,			
 	PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 ze\dbAdm::revision(47,

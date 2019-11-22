@@ -187,6 +187,11 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				}
 	
 				$panel['columns']['last_updated_by']['values'] = $admins;
+				
+				
+				$panel['columns']['timezone']['values'] = zenario_timezones::getTimezonesLOV();
+				//static::getTimezones(ze\dataset::LIST_MODE_LIST)
+				
 	
 				foreach ($panel['items'] as $id => &$item) {
 					$item['cell_css_classes'] = [];
@@ -444,6 +449,22 @@ class zenario_location_manager extends ze\moduleBaseClass {
         ];
     }
     
+	public function setTimezoneValues(&$field) {
+			
+		$defaultTZ = ze::setting('zenario_timezones__default_timezone');
+		
+		$field['values'] = zenario_timezones::getTimezonesLOV();
+		
+		if ($defaultTZ && isset($field['values'][$defaultTZ]['label'])) {
+			$field['empty_value'] =
+				ze\admin::phrase('Use the sitewide default timezone - [[label]]',
+					$field['values'][$defaultTZ]);
+		} else {
+			$field['empty_value'] =
+				ze\admin::phrase('Use the sitewide default timezone (not set)');
+		}
+    }
+    
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$locationDetails = [];
 	
@@ -453,54 +474,55 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				$locationCountriesFinal = zenario_country_manager::getCountryAdminNamesIndexedByISOCode("active");
 				
 				foreach ($locationCountriesFinal as $key => $value) {
-					$box['tabs']['details']['fields']['country']['values'][$key] = $value;
+					$fields['details/country']['values'][$key] = $value;
 				}
 
 				if ($box['key']['id']) {
 					$locationDetails = self::getLocationDetails($box['key']['id']);
                   
                  	$box['title'] = ze\admin::phrase('Editing the location "[[name]]"',['name' => $locationDetails['description']]);
-                    $box['tabs']['images']['fields']['images']['value'] = ze\escape::in(self::locationsImages($box['key']['id']), 'numeric');
-					$box['tabs']['details']['fields']['external_id']['value'] = $locationDetails['external_id'];
-                    $box['tabs']['details']['fields']['name']['value'] = $locationDetails['description'];
-                    $box['tabs']['details']['fields']['address_line_1']['value'] = $locationDetails['address1'];
-                    $box['tabs']['details']['fields']['address_line_2']['value'] = $locationDetails['address2'];
-                    $box['tabs']['details']['fields']['locality']['value'] = $locationDetails['locality'];
-                    $box['tabs']['details']['fields']['city']['value'] = $locationDetails['city'];
-                    $box['tabs']['details']['fields']['state']['value'] = $locationDetails['state'];
-                    $box['tabs']['details']['fields']['postcode']['value'] = $locationDetails['postcode'];
-                    $box['tabs']['details']['fields']['country']['value'] = $locationDetails['country_id'];
+                    $values['images/images'] = ze\escape::in(self::locationsImages($box['key']['id']), 'numeric');
+					$values['details/external_id'] = $locationDetails['external_id'];
+                    $values['details/name'] = $locationDetails['description'];
+                    $values['details/address_line_1'] = $locationDetails['address1'];
+                    $values['details/address_line_2'] = $locationDetails['address2'];
+                    $values['details/locality'] = $locationDetails['locality'];
+                    $values['details/city'] = $locationDetails['city'];
+                    $values['details/state'] = $locationDetails['state'];
+                    $values['details/postcode'] = $locationDetails['postcode'];
+                    $values['details/country'] = $locationDetails['country_id'];
 					if ($region = self::getInmostLocationRegion($box['key']['id'])){
-						$box['tabs']['details']['fields']['region']['value'] = $region;
+						$values['details/region'] = $region;
 					}
-					$box['tabs']['details']['fields']['map_center_lat']['value'] = $locationDetails['map_center_latitude'];
-					$box['tabs']['details']['fields']['map_center_lng']['value'] = $locationDetails['map_center_longitude'];
-					$box['tabs']['details']['fields']['marker_lat']['value'] = $locationDetails['latitude'];
-					$box['tabs']['details']['fields']['marker_lng']['value'] = $locationDetails['longitude'];
-					$box['tabs']['details']['fields']['hide_pin']['value'] = $locationDetails['hide_pin'];
-					$box['tabs']['details']['fields']['zoom']['value'] = $locationDetails['map_zoom'];
+					$values['details/map_center_lat'] = $locationDetails['map_center_latitude'];
+					$values['details/map_center_lng'] = $locationDetails['map_center_longitude'];
+					$values['details/marker_lat'] = $locationDetails['latitude'];
+					$values['details/marker_lng'] = $locationDetails['longitude'];
+					$values['details/hide_pin'] = $locationDetails['hide_pin'];
+					$values['details/zoom'] = $locationDetails['map_zoom'];
+					$values['details/timezone'] = $locationDetails['timezone'];
                     
                     
                     if ($locationDetails['content_type'] && $locationDetails['equiv_id']) {
-	                    $box['tabs']['content_item']['fields']['content_item']['value'] = $locationDetails['content_type'] . "_" . $locationDetails['equiv_id'];
+	                    $values['content_item/content_item'] = $locationDetails['content_type'] . "_" . $locationDetails['equiv_id'];
 	                }
  
-                    $box['tabs']['details']['fields']['last_updated']['value'] = $locationDetails['last_updated'] ?? false;
-                	$box['tabs']['details']['fields']['last_updated']['hidden'] = false;
+                    $values['details/last_updated'] = $locationDetails['last_updated'] ?? false;
+                	$fields['details/last_updated']['hidden'] = false;
 
 					$lastUpdatedByAdmin = ze\row::get("admins",["id","username","authtype"],["id" => ($locationDetails['last_updated_admin_id'] ?? false)]);
 
-                	$box['tabs']['details']['fields']['last_updated_by']['value'] = ($lastUpdatedByAdmin['username'] ?? false) . ((($lastUpdatedByAdmin['authtype'] ?? false)=="super") ? " (super)":"");
-                	$box['tabs']['details']['fields']['last_updated_by']['hidden'] = false;
+                	$values['details/last_updated_by'] = ($lastUpdatedByAdmin['username'] ?? false) . ((($lastUpdatedByAdmin['authtype'] ?? false)=="super") ? " (super)":"");
+                	$fields['details/last_updated_by']['hidden'] = false;
  
                 } else {
-                	$box['tabs']['details']['fields']['last_updated']['hidden'] = true;
-                	$box['tabs']['details']['fields']['last_updated_by']['hidden'] = true;
+                	$fields['details/last_updated']['hidden'] = true;
+                	$fields['details/last_updated_by']['hidden'] = true;
                 }
 
-				if (isset($box['tabs']['sectors']['fields']['sectors'])) {
+				if (isset($fields['sectors/sectors'])) {
 					self::setupSectorCheckboxes(
-						$box['tabs']['sectors']['fields']['sectors'],
+						$fields['sectors/sectors'],
 						$box['key']['id']);
 				}
 
@@ -526,10 +548,12 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=1") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 				$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
-				$box['tabs']['details']['fields']['map_lookup']['snippet']['html'] = $map_lookup;				
-				$box['tabs']['details']['fields']['map_edit']['snippet']['html'] = $mapEdit;
-				$box['tabs']['details']['fields']['map_view']['snippet']['html'] = $mapView;
-
+				$fields['details/map_lookup']['snippet']['html'] = $map_lookup;				
+				$fields['details/map_edit']['snippet']['html'] = $mapEdit;
+				$fields['details/map_view']['snippet']['html'] = $mapView;
+				
+				
+				$this->setTimezoneValues($fields['details/timezone']);
 				
 				
 				break;
@@ -541,7 +565,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				$locationCountriesFinal = zenario_country_manager::getCountryAdminNamesIndexedByISOCode("active");
 
 				foreach ($locationCountriesFinal as $key => $value) {
-					$box['tabs']['details']['fields']['country']['values'][$key] = $value;
+					$fields['details/country']['values'][$key] = $value;
 				}
 				
 				if ($box['key']['id']) {
@@ -553,7 +577,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 											"city" => "city",
 											"state" => "state",
 											"postcode" => "postcode",
-											"country" => "country_id"
+											"country" => "country_id",
+											"timezone" => "timezone"
 										];
 										
 					foreach ($fieldsToCheck as $tuixName => $dbName) {
@@ -592,7 +617,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					}
 					
 					if ($regionSame) {
-						$box['tabs']['details']['fields']['region']['value'] = $previousRegion;
+						$values['details/region'] = $previousRegion;
 					}
 
 
@@ -609,13 +634,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					if (ze\sql::numRows($result)==1) {
 						$row = ze\sql::fetchAssoc($result);
 						
-						$box['tabs']['content_item']['fields']['content_item']['value'] = $row['tag'];
+						$values['content_item/content_item'] = $row['tag'];
 					}
 
 					if (ze::setting("zenario_location_manager__sector_management")!="0") {
 						$box['tabs']['sectors']['hidden'] = true;
 					} else {
-						$field = &$box['tabs']['sectors']['fields']['sectors'];
+						$field = &$fields['sectors/sectors'];
 	
 						$field['multiple_edit'] = [];
 						
@@ -639,10 +664,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						}
 						
 						if ($sectorsPicked) {
-							self::setupSectorCheckboxes($box['tabs']['sectors']['fields']['remove_sectors']);
-							$box['tabs']['sectors']['fields']['remove_sectors']['multiple_edit'] = [];
+							self::setupSectorCheckboxes($fields['sectors/remove_sectors']);
+							$fields['sectors/remove_sectors']['multiple_edit'] = [];
 						} else {
-							$box['tabs']['sectors']['fields']['remove_sectors']['hidden'] = true;
+							$fields['sectors/remove_sectors']['hidden'] = true;
 						}
 						
 						$items = [];
@@ -650,26 +675,29 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							if (!isset($value['marked'])) {
 								//$value['label'] .= ' (0/'. $total. ')';
 								
-								if (isset($box['tabs']['sectors']['fields']['remove_sectors']['values'][$id])) {
-									unset($box['tabs']['sectors']['fields']['remove_sectors']['values'][$id]);
+								if (isset($fields['sectors/remove_sectors']['values'][$id])) {
+									unset($fields['sectors/remove_sectors']['values'][$id]);
 								}
 							} else {
 								if ($sectorsPicked) {
-									$box['tabs']['sectors']['fields']['remove_sectors']['values'][$id]['label'] = $value['label'];
+									$fields['sectors/remove_sectors']['values'][$id]['label'] = $value['label'];
 									$items[] = $id;
 								}
 							}
 						}
-						$box['tabs']['sectors']['fields']['remove_sectors']['value'] = ze\escape::in($items, false);
+						$values['sectors/remove_sectors'] = ze\escape::in($items, false);
 	
 						if (ze\row::exists(ZENARIO_LOCATION_MANAGER_PREFIX . "sectors", [])) {
-							$box['tabs']['sectors']['fields']['no_sectors']['hidden'] = true;
+							$fields['sectors/no_sectors']['hidden'] = true;
 						} else {
-							$box['tabs']['sectors']['fields']['sectors']['hidden'] = true;
-							$box['tabs']['sectors']['fields']['remove_sectors']['hidden'] = true;
+							$fields['sectors/sectors']['hidden'] = true;
+							$fields['sectors/remove_sectors']['hidden'] = true;
 						}
 					}
 				}
+				
+				
+				$this->setTimezoneValues($fields['details/timezone']);
 			
 				
 
@@ -685,7 +713,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
                  	$box['title'] = ze\admin::phrase('Editing the sector "[[name]]"',['name' => $sectorDetails['name']]);
                         
 					
-                    $box['tabs']['details']['fields']['name']['value'] = $sectorDetails['name'];
+                    $values['details/name'] = $sectorDetails['name'];
                   
                     $box['tabs']['details']['edit_mode']['on'] = false;
                     $box['tabs']['details']['edit_mode']['always_on'] = false;
@@ -696,35 +724,35 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				if ($box['key']['id']) {
 					$scoreDetails = self::getScoreDetails($box['key']['id']);
                     
-                    $box['tabs']['details']['fields']['name']['value'] = $scoreDetails['name'];
+                    $values['details/name'] = $scoreDetails['name'];
 				}
 				
 				break;
 			case "zenario_content":
 				if (isset($_GET['refiner__zenario__locations__create_content']) || (($_GET["refinerName"] ?? false)=="refiner__zenario__locations__create_content")) {
-					$box['tabs']['meta_data']['fields']['content_summary']['hidden'] = true;
-					$box['tabs']['meta_data']['fields']['lock_summary_view_mode']['hidden'] = true;
-					$box['tabs']['meta_data']['fields']['lock_summary_edit_mode']['hidden'] = true;
-					$box['tabs']['meta_data']['fields']['desc_location_specific']['hidden'] = false;
+					$fields['meta_data/content_summary']['hidden'] = true;
+					$fields['meta_data/lock_summary_view_mode']['hidden'] = true;
+					$fields['meta_data/lock_summary_edit_mode']['hidden'] = true;
+					$fields['meta_data/desc_location_specific']['hidden'] = false;
 				} else {
 					if ($box['key']['cID']) {
 						if ($locationId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", 'id',
 									["equiv_id" => $box['key']['cID'], "content_type" => $box['key']['cType']])) {
-							$box['tabs']['meta_data']['fields']['content_summary']['hidden'] = true;
-							$box['tabs']['meta_data']['fields']['lock_summary_view_mode']['hidden'] = true;
-							$box['tabs']['meta_data']['fields']['lock_summary_edit_mode']['hidden'] = true;
-							$box['tabs']['meta_data']['fields']['desc_location_specific']['hidden'] = false;
+							$fields['meta_data/content_summary']['hidden'] = true;
+							$fields['meta_data/lock_summary_view_mode']['hidden'] = true;
+							$fields['meta_data/lock_summary_edit_mode']['hidden'] = true;
+							$fields['meta_data/desc_location_specific']['hidden'] = false;
 							if ($locationDetails = self::getLocationDetails($locationId)) {
-								$box['tabs']['meta_data']['fields']['desc_location_specific']['snippet']['html'] = 
+								$fields['meta_data/desc_location_specific']['snippet']['html'] = 
 									ze\admin::phrase("This content item is associated with a location \"[[location]]\". The location's summary will be used.", 
 										['location' => $locationDetails['description']] );
 							}
 						} else {
-							$box['tabs']['meta_data']['fields']['content_summary']['hidden'] = false;
-							$box['tabs']['meta_data']['fields']['desc_location_specific']['hidden'] = true;
+							$fields['meta_data/content_summary']['hidden'] = false;
+							$fields['meta_data/desc_location_specific']['hidden'] = true;
 						}
 					} else {
-						$box['tabs']['meta_data']['fields']['desc_location_specific']['hidden'] = true;
+						$fields['meta_data/desc_location_specific']['hidden'] = true;
 					}
 				} 
 				break;
@@ -765,8 +793,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 																&zoom=" . ($values['details/zoom'] ?? false)) . "
 																&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
-				$box['tabs']['details']['fields']['map_edit']['snippet']['html'] =  $mapEdit;
-				$box['tabs']['details']['fields']['map_view']['snippet']['html'] =  $mapView;
+				$fields['details/map_edit']['snippet']['html'] =  $mapEdit;
+				$fields['details/map_view']['snippet']['html'] =  $mapView;
 				$countryValue = $values['details/country'];
 
 				if ($countryValue) {
@@ -774,18 +802,18 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					
 					if (!empty($regions)) {
 						
-						$box['tabs']['details']['fields']['region']['hidden'] = "No";
-						$box['tabs']['details']['fields']['region']['pick_items']['path'] = 'zenario__languages/panels/countries/item//' . $countryValue . '//';
+						$fields['details/region']['hidden'] = "No";
+						$fields['details/region']['pick_items']['path'] = 'zenario__languages/panels/countries/item//' . $countryValue . '//';
 						
 						if (!($regionsCountry = zenario_country_manager::getCountryOfRegion($values['details/region']))
 						 || !($countryValue == $regionsCountry['id'])) {
-							$box['tabs']['details']['fields']['region']['current_value'] = '';
+							$values['details/region'] = '';
 						} 
 					} else {
-						$box['tabs']['details']['fields']['region']['hidden'] = "Yes";
+						$fields['details/region']['hidden'] = "Yes";
 					}
 				} else {
-					$box['tabs']['details']['fields']['region']['hidden'] = "Yes";
+					$fields['details/region']['hidden'] = "Yes";
 				}
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
@@ -796,25 +824,24 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					
 					if (sizeof($regions)>0) {
 						
-						$box['tabs']['details']['fields']['region']['hidden'] = false;
-						$box['tabs']['details']['fields']['region']['pick_items']['path'] = 'zenario__languages/panels/countries/item//' . $countryValue . '//';
+						$fields['details/region']['hidden'] = false;
+						$fields['details/region']['pick_items']['path'] = 'zenario__languages/panels/countries/item//' . $countryValue . '//';
 						
 						if (!($regs = zenario_country_manager::getRegions('active',$countryValue, false, $values['details/region']))){
-							$box['tabs']['details']['fields']['region']['value'] = '';
-							$box['tabs']['details']['fields']['region']['current_value'] = '';
+							$values['details/region'] = '';
 						} 
 					} else {
-						$box['tabs']['details']['fields']['region']['hidden'] = "Yes";
+						$fields['details/region']['hidden'] = "Yes";
 					}
 				} else {
-					$box['tabs']['details']['fields']['region']['hidden'] = "Yes";
+					$fields['details/region']['hidden'] = "Yes";
 				}
 				
 				/*if ($path=="zenario_location_manager__locations_multiple_edit") {
 					if (!$changes['details/country'] && !$changes['details/region']) {
-						unset($box['tabs']['details']['fields']['region']['current_value']);
+						unset($values['details/region']);
 					} elseif ($changes['details/country']) {
-						unset($box['tabs']['details']['fields']['region']['multiple_edit']);
+						unset($fields['details/region']['multiple_edit']);
 					}
 				}*/
 				break;
@@ -899,6 +926,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					'latitude' => $values['details/marker_lat'] ? $values['details/marker_lat'] : null,
 					'longitude' => $values['details/marker_lng'] ? $values['details/marker_lng'] : null,
 					'hide_pin' => $values['details/hide_pin'],
+					'timezone' => $values['details/timezone'],
 					'map_center_latitude' => $values['details/map_center_lat'] ? $values['details/map_center_lat'] : null,
 					'map_center_longitude' => $values['details/map_center_lng'] ? $values['details/map_center_lng'] : null,
 					'map_zoom' => $values['details/zoom'] ? $values['details/zoom'] : null,
@@ -1008,6 +1036,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							$fieldsToChangeSQL[] = "postcode = '" . ze\escape::sql($values['details/postcode']) . "'";
 						}
 
+						if ($fieldName=="timezone") {
+							$fieldsToChangeSQL[] = "timezone = '" . ze\escape::sql($values['details/timezone']) . "'";
+						}
+
 						if ($fieldName=="country") {
 							$fieldsToChangeSQL[] = "country_id = '" . ($values['details/country']?$values['details/country']:null) . "'";
 							$locationIds = explode(",",$box['key']['id']);
@@ -1088,7 +1120,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						$locationIds = explode(",",$box['key']['id']);
 						$removeFromSectors = array_flip(explode(',', $values['sectors/remove_sectors']));
 						
-						foreach ($box['tabs']['sectors']['fields']['remove_sectors']['values'] as $id => $value) {
+						foreach ($fields['sectors/remove_sectors']['values'] as $id => $value) {
 							if (!isset($removeFromSectors[$id])) {
 								foreach ($locationIds as $locationId) {
 									ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', ['sector_id' => $id, 'location_id' => $locationId]);
@@ -1685,6 +1717,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					map_center_latitude,
 					map_center_longitude,
 					hide_pin,
+					timezone,
 					status,
 					equiv_id,
 					content_type,
@@ -2328,6 +2361,22 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					WHERE id = '. (int) ze::$vars['locationId']
 				);
 		}
+	}
+	public static function requestVarDisplayName($name) {
+		switch ($name) {
+			case 'name':
+				return 'Location name';
+		}
+	}
+	
+	public static function getLocationTimezone($locationId) {
+		//If we have a location id, try to check the timezone used for that location.
+		if ($locationId && ($tz = \ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 'timezone', $locationId))) {
+		} else {
+			//Otherwise if there's no location, or no timezone set for that location, use the site default.
+			$tz = date_default_timezone_get();
+		}
+		return $tz;
 	}
 }
 

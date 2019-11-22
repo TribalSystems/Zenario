@@ -484,7 +484,8 @@ class pluginAdm {
 					param_2,
 					always_visible_to_admins
 				FROM ". DB_PREFIX. "nested_plugins
-				WHERE instance_id = ". (int) $oldInstanceId;
+				WHERE instance_id = ". (int) $oldInstanceId. "
+				ORDER BY slide_num, ord";
 			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
@@ -515,7 +516,8 @@ class pluginAdm {
 					descendants,
 					is_forwards
 				FROM ". DB_PREFIX. "nested_paths
-				WHERE instance_id = ". (int) $oldInstanceId;
+				WHERE instance_id = ". (int) $oldInstanceId. "
+				ORDER BY from_state, to_state";
 			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
@@ -537,7 +539,8 @@ class pluginAdm {
 					0
 				FROM ". DB_PREFIX. "plugin_instance_store
 				WHERE instance_id = ". (int) $oldInstanceId. "
-				  AND is_cache = 0";
+				  AND is_cache = 0
+				ORDER BY method_name";
 			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	
@@ -558,7 +561,11 @@ class pluginAdm {
 				  AND np_old.slide_num = np_new.slide_num
 				  AND np_old.ord = np_new.ord
 				WHERE np_old.is_slide = 1
-				  AND np_old.instance_id = ". (int) $oldInstanceId;
+				  AND np_old.instance_id = ". (int) $oldInstanceId. "
+				ORDER BY 
+					gsl.link_from,
+					np_new.id,
+					gsl.link_from_char, gsl.link_to, gsl.link_to_id";
 	
 			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
@@ -612,6 +619,9 @@ class pluginAdm {
 				$sql .= "
 				  AND ps.name NOT LIKE '\%%'";
 			}
+			
+			$sql .= "
+				ORDER BY np_new.id, ps.`name`";
 	
 			\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	

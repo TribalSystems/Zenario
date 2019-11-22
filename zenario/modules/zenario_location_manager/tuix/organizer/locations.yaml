@@ -45,70 +45,70 @@ zenario__locations:
                 format: id
                 db_column: l.id
                 show_by_default: false
-                searchable: Yes
+                searchable: true
                 width: xxsmall
-                align_right: Yes
+                align_right: true
             external_id:
                 title: External number
                 db_column: l.external_id
                 show_by_default: false
                 hidden: false
-                searchable: Yes
+                searchable: true
                 width: small
-                align_right: Yes
+                align_right: true
             path:
                 title: Path
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 width: xlarge
                 hidden: false
             description:
                 title: Name
                 db_column: l.description
-                show_by_default: Yes
-                searchable: Yes
+                show_by_default: true
+                searchable: true
                 width: large
                 always_show: true
             address_line_1:
                 title: Address 1
                 db_column: l.address1
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 hidden: false
             address_line_2:
                 title: Address 2
                 db_column: l.address2
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 hidden: false
             locality:
                 title: Locality
                 db_column: l.locality
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 hidden: false
             city:
                 title: City
                 db_column: l.city
-                show_by_default: Yes
-                searchable: Yes
+                show_by_default: true
+                searchable: true
                 hidden: false
             state:
                 title: State
                 db_column: l.state
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 hidden: false
             postcode:
                 title: Postcode
                 db_column: l.postcode
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 hidden: false
             country_code:
                 db_column: l.country_id
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 hidden: false
             country:
                 title: Country
@@ -117,8 +117,8 @@ zenario__locations:
                     [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries c
                                                 ON
                                                     l.country_id = c.id
-                show_by_default: Yes
-                searchable: Yes
+                show_by_default: true
+                searchable: true
                 hidden: false
             region:
                 title: Region
@@ -132,24 +132,32 @@ zenario__locations:
                                                     lrl1.region_id = r.id
                 db_column: "GROUP_CONCAT(DISTINCT r.name ORDER BY lrl1.id DESC SEPARATOR ', ')"
                 search_column: r.name
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 hidden: false
             latitude:
                 title: Latitude
                 db_column: l.latitude
-                show_by_default: No
+                show_by_default: false
                 hidden: false
             longitude:
                 title: Longitude
                 db_column: l.longitude
-                show_by_default: No
+                show_by_default: false
                 hidden: false
+            timezone:
+                title: Timezone
+                db_column: l.timezone
+                show_by_default: false
+                hidden: false
+                format: enum
+                searchable: false
+                empty_value: Use default
             status:
                 title: Status
                 db_column: l.status
                 show_by_default: false
-                searchable: Yes
+                searchable: true
                 hidden: false
                 format: enum
                 values:
@@ -161,7 +169,7 @@ zenario__locations:
                 title: Descriptive page
                 item_link: content_item
                 db_column: "CONCAT(l.content_type,'_',l.equiv_id)"
-                show_by_default: No
+                show_by_default: false
                 hidden: false
             sectors:
                 title: Sectors
@@ -173,7 +181,7 @@ zenario__locations:
                                                    ON lssl.sector_id = s.id
                                                 WHERE l.id = lssl.location_id 
                                             )
-                show_by_default: No
+                show_by_default: false
                 hidden: false
             sticky_flag:
                 title: Primary Sector
@@ -187,7 +195,7 @@ zenario__locations:
                                                 AND lssl.sticky_flag = 1
                                                 LIMIT 1
                                             )
-                searchable: No
+                searchable: false
                 hidden: false
             parent_name:
                 db_column: |
@@ -206,7 +214,7 @@ zenario__locations:
                 table_join: |
                     [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS pl 
                                             ON pl.id = l.parent_id
-                show_by_default: No
+                show_by_default: false
                 hidden: false
             number_of_children:
                 db_column: |
@@ -218,7 +226,7 @@ zenario__locations:
                                                   AND cl.parent_id != 0
                                             )
                 title: Child locations
-                show_by_default: No
+                show_by_default: false
                 hidden: false
             image_usage:
                 db_column: f.usage
@@ -230,26 +238,26 @@ zenario__locations:
                 title: Date/time last updated
                 db_column: l.last_updated
                 format: datetime
-                show_by_default: No
+                show_by_default: false
                 hidden: false
             last_updated_by:
                 title: Last updated by
                 db_column: l.last_updated_admin_id
-                show_by_default: No
-                searchable: Yes
+                show_by_default: false
+                searchable: true
                 format: enum
                 hidden: false
             last_updated_via_import:
                 title: Date/time last updated from import
                 db_column: l.last_updated_via_import
                 format: datetime
-                show_by_default: No
+                show_by_default: false
                 hidden: false
             on_map:
                 title: On map
                 db_column: '(l.latitude AND l.longitude)'
-                show_by_default: Yes
-                searchable: Yes
+                show_by_default: true
+                searchable: true
                 format: yes_or_no
                 width: xsmall
                 ord: "999"
@@ -275,7 +283,7 @@ zenario__locations:
             css_class: zenario_location_manager_location
             link:
                 path: zenario__locations/panel
-                branch: Yes
+                branch: true
                 refiner: children_of_location
         collection_buttons:
             create_location:
@@ -283,7 +291,7 @@ zenario__locations:
                 ord: "1"
                 label: Create a location
                 css_class: zenario_create_a_new
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 admin_box:
                     path: zenario_location_manager__location
                     create_another: true
@@ -295,7 +303,7 @@ zenario__locations:
                     path: zenario__locations/panel
                     target_path: zenario__locations/panel
                     min_path: zenario__locations/panel
-                    multiple_select: Yes
+                    multiple_select: true
                     one_to_one_choose_phrase: Add selected location to this sector
                     one_to_many_choose_phrase: Add selected locations to this sector
                     request:
@@ -306,9 +314,9 @@ zenario__locations:
                 css_class: add
                 ord: "0"
                 label: Add child location here
-                multiple_select: No
+                multiple_select: false
                 only_show_on_refiner: children_of_location
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 pick_items:
                     path: zenario__locations/panel
                     one_to_one_choose_phrase: Add child
@@ -316,7 +324,7 @@ zenario__locations:
                     target_path: zenario__locations/panel
                     min_path: zenario__locations/panel
                     max_path: zenario__locations/panel
-                    multiple_select: Yes
+                    multiple_select: true
                     request:
                         action: add_child_location
             # User dataset import buttons
@@ -360,41 +368,41 @@ zenario__locations:
                 priv: _PRIV_MANAGE_LOCATIONS
                 ord: "1"
                 label: Edit location
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 admin_box:
                     path: zenario_location_manager__location
             edit_multiple_locations:
                 priv: _PRIV_MANAGE_LOCATIONS
                 ord: "1"
                 label: Edit multiple...
-                hide_in_select_mode: Yes
-                multiple_select: Yes
-                multiple_select_only: Yes
+                hide_in_select_mode: true
+                multiple_select: true
+                multiple_select_only: true
                 admin_box:
                     path: zenario_location_manager__locations_multiple_edit
             view_in_hierarchy:
                 css_class: locations
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 tooltip: View location in hierarchy
-                navigation_path: Yes
+                navigation_path: true
                 without_columns_set:
                     traits.not_in_hierarchy: true
             
             view_dropdown:
                 label: View
-                multiple_select: Yes
-                hide_when_children_are_not_visible: Yes
+                multiple_select: true
+                hide_when_children_are_not_visible: true
             action_dropdown:
                 label: Actions
-                multiple_select: Yes
-                hide_when_children_are_not_visible: Yes
+                multiple_select: true
+                hide_when_children_are_not_visible: true
             
             mark_as_pending:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: action_dropdown
                 label: Mark as pending
-                hide_in_select_mode: Yes
-                multiple_select: Yes
+                hide_in_select_mode: true
+                multiple_select: true
                 visible_if_for_all_selected_items: |
                     item.status === 'active' || item.status === 'suspended'
                 ajax:
@@ -410,8 +418,8 @@ zenario__locations:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: action_dropdown
                 label: Geocode map co-ordinates
-                hide_in_select_mode: Yes
-                multiple_select: Yes
+                hide_in_select_mode: true
+                multiple_select: true
                 ajax:
                     request:
                         action: geocode_locations
@@ -419,8 +427,8 @@ zenario__locations:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: action_dropdown
                 label: Activate
-                hide_in_select_mode: Yes
-                multiple_select: Yes
+                hide_in_select_mode: true
+                multiple_select: true
                 visible_if_for_all_selected_items: |
                     item.status === 'pending' || item.status === 'suspended'
                 ajax:
@@ -436,8 +444,8 @@ zenario__locations:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: action_dropdown
                 label: Suspend
-                hide_in_select_mode: Yes
-                multiple_select: Yes
+                hide_in_select_mode: true
+                multiple_select: true
                 visible_if_for_all_selected_items: |
                     item.status === 'pending' || item.status === 'active'
                 ajax:
@@ -453,7 +461,7 @@ zenario__locations:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: action_dropdown
                 label: Delete
-                multiple_select: Yes
+                multiple_select: true
                 ajax:
                     confirm:
                         message: |
@@ -469,13 +477,13 @@ zenario__locations:
                         message_type: warning
                     request:
                         action: delete_location
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
             
             upload_image:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: images_dropdown
                 label: Attach image
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 tooltip: |
                     Upload an image|
                                             You may upload a .gif, a .jpeg, a .jpg or a .png images.<br/>
@@ -483,16 +491,16 @@ zenario__locations:
                     fileExt: '*.gif;*.jpg;*.jpeg;*.png'
                     fileDesc: Images
                     request:
-                        upload_image: Yes
+                        upload_image: true
                 without_columns_set:
                     traits.has_image: true
             images:
                 parent: images_dropdown
                 label: View images
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 link:
                     path: zenario__locations/location_images/panel
-                    branch: Yes
+                    branch: true
                     refiner: location_images
             remove_location:
                 priv: _PRIV_MANAGE_LOCATIONS
@@ -507,13 +515,13 @@ zenario__locations:
                         message_type: warning
                     request:
                         action: remove_location
-                multiple_select: Yes
-                hide_in_select_mode: Yes
+                multiple_select: true
+                hide_in_select_mode: true
             set_parent:
                 priv: _PRIV_MANAGE_LOCATIONS
                 name: Assign location a parent
-                hide_in_select_mode: Yes
-                multiple_select: Yes
+                hide_in_select_mode: true
+                multiple_select: true
                 combine_items:
                     path: zenario__locations/panel/refiners/without_location_id////
                     one_to_one_choose_phrase: Assign parent
@@ -525,9 +533,9 @@ zenario__locations:
             remove_child:
                 priv: _PRIV_MANAGE_LOCATIONS
                 name: Make location an orphan
-                multiple_select: No
+                multiple_select: false
                 only_show_on_refiner: children_of_location
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 ajax:
                     confirm:
                         message: 'Are you sure you wish to make the location "[[description]]" an orphan?'

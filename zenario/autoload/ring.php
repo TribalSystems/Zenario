@@ -82,14 +82,17 @@ class ring {
 	}
 
 	//Formerly "chopPrefixOffString()", "chopPrefixOffOfString()"
-	public static function chopPrefix($prefix, $string, $returnStringOnFailure = false) {
-		if ($string === $prefix) {
+	public static function chopPrefix($prefix, $string, $returnStringOnFailure = false, $caseInsensitive = false) {
+		$compareString = $caseInsensitive ? strtolower($string) : $string;
+		$comparePrefix = $caseInsensitive ? strtolower($prefix) : $prefix;
+		
+		if ($compareString === $comparePrefix) {
 			return '';
 		}
 	
-		$len = strlen($prefix);
+		$len = strlen($comparePrefix);
 	
-		if (substr($string, 0, $len) == $prefix) {
+		if (substr($compareString, 0, $len) == $comparePrefix) {
 			return substr($string, $len);
 		} elseif ($returnStringOnFailure) {
 			return $string;

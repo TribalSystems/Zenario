@@ -225,7 +225,8 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 					WHERE newsletter_name LIKE CONCAT(nli.newsletter_name, '%')), 0), ')') AS newsletter_name, 
 					$copy_cols, CURRENT_TIMESTAMP, $admin_id
 				    FROM $table_newsletters AS nli
-				    WHERE id=" . (int)$ids;
+				    WHERE id=" . (int)$ids. "
+				    ORDER BY id";
 			
 			ze\sql::update($sql, false, false);
 			$new_id = ze\sql::insertId();
@@ -236,7 +237,8 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			    
 			    $sql = "INSERT INTO $table_newsletter_smart_group_link(newsletter_id, smart_group_id)
 				    SELECT $new_id, smart_group_id FROM $table_newsletter_smart_group_link
-				    WHERE newsletter_id=" . (int)$ids;
+				    WHERE newsletter_id=" . (int)$ids. "
+				    ORDER BY smart_group_id";
 			    ze\sql::update($sql);
 				
 				//now lets see if we made the first copy and update (copy 1) by (copy)

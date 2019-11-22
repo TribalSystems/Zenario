@@ -213,7 +213,7 @@
 									var value;
 									if ($tcField.is(':checkbox')) {
 										value = $tcField.is(':checked');
-									} else if (tcField.type == 'radios') {
+									} else if (tcField.type == 'radios' || tcField.type == 'centralised_radios') {
 										value = $tcField.filter(':checked').val();
 									} else {
 										value = $tcField.val();

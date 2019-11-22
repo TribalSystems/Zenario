@@ -625,7 +625,8 @@ if (ze\dbAdm::needRevision(45600)) {
 	ze\dbAdm::revision(45600);
 }
 
-ze\dbAdm::revision(46308
+//(N.b. this was added in an after-branch patch in 8.3 revision 46308, but is safe to re-run.)
+ze\dbAdm::revision(47037
 ,  <<<_sql
 	UPDATE `[[DB_PREFIX]]email_templates`
 	SET period_to_delete_log_headers = 0
@@ -666,7 +667,8 @@ _sql
 //A bug caused uploaded documents to be added to the database instead of the docstore.
 //Now the bug is fixed we need to sort out the bugged documents by re-uploading them into
 //the docstore.
-if (ze\dbAdm::needRevision(46310)) {
+//(N.b. this was added in an after-branch patch in 8.3 revision 46310, but is safe to re-run.)
+if (ze\dbAdm::needRevision(47601)) {
 	$sql = "
 		SELECT d.id, d.file_id, f.filename, f.location, f.path, f.short_checksum, f.usage
 		FROM " . DB_PREFIX . "documents d
@@ -691,5 +693,5 @@ if (ze\dbAdm::needRevision(46310)) {
 		}
 	}
 	
-	ze\dbAdm::revision(46310);
+	ze\dbAdm::revision(47601);
 }

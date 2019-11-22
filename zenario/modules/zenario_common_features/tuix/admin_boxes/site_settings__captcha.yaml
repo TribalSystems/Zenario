@@ -4,64 +4,6 @@ site_settings:
 	setting_group: captcha
 	title: Editing captcha settings
 	tabs:
-		captcha:
-			label: "reCaptcha 1.0"
-			edit_mode:
-				enabled: Yes
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: No
-			fields:
-				description:
-					full_width: Yes
-					snippet:
-						html: |
-							This tab contains settings for reCAPTCHA.
-															This is a captcha that is used by some plugins in Zenario (for example User Forms).
-				google_recaptcha_private_key:
-					site_setting:
-						name: google_recaptcha_private_key
-					label: 'Private Key:'
-					type: text
-					value: 6LdBYbsSAAAAAH_6WN07J11fkdBLGlXutD7_25LO
-					note_below: |
-						The Private Key to use for reCAPTCHA.
-														You may wish to sign-up for your own personal key at
-														<a href="https://www.google.com/recaptcha" target="_blank">
-															https://www.google.com/recaptcha
-														</a>
-														rather than using the default.
-				google_recaptcha_public_key:
-					site_setting:
-						name: google_recaptcha_public_key
-					label: 'Public Key:'
-					type: text
-					value: 6LdBYbsSAAAAABPEXr5x7uLjqDjeQDWY0d6EOsEo
-					note_below: |
-						The Public Key to use for reCAPTCHA.
-														You may wish to sign-up for your own personal key at
-														<a href="https://www.google.com/recaptcha" target="_blank">
-															https://www.google.com/recaptcha
-														</a>
-														rather than using the default.
-				google_recaptcha_show_audio_challenge:
-					site_setting:
-						name: google_recaptcha_show_audio_challenge
-					label: 'Show Audio Version:'
-					type: checkbox
-					value: ""
-					note_below: Show an Audio version of the reCAPTCHA challenge.
-				google_recaptcha_theme:
-					site_setting:
-						name: google_recaptcha_theme
-					label: 'Theme:'
-					type: select
-					value: white
-					values:
-						blackglass: Black Glass
-						clean: Clean
-						red: Red
-						white: White
-					note_below: The theme to use for Recaptcha.
 		captcha_picture:
 			label: "reCaptcha 2.0"
 			edit_mode:

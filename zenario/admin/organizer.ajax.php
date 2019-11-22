@@ -44,12 +44,12 @@ require '../visitorheader.inc.php';
 define('ADMIN_ID', (int) ($_SESSION['admin_userid'] ?? false));
 
 
-function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exactMatch, $not, $col) {
+function searchOrganizerColumn(&$whereStatement, $columnName, $searchText, $exactMatch, $not, $col) {
 	
 	$asciiCharactersOnly = ze\ring::engToBoolean($col['ascii_only'] ?? false);
 	
 	if (isset($col['chop_prefix_from_search'])) {
-		$serachText = ze\ring::chopPrefix($col['chop_prefix_from_search'], $serachText, $returnStringOnFailure = true);
+		$searchText = ze\ring::chopPrefix($col['chop_prefix_from_search'], $searchText, $returnStringOnFailure = true, $caseInsensitive = true);
 	}
 	
 	if ($exactMatch) {
@@ -65,7 +65,7 @@ function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exac
 			$whereStatement .= "_ascii";
 		}
 	
-		$whereStatement .= "'". ze\escape::sql($serachText). "'";
+		$whereStatement .= "'". ze\escape::sql($searchText). "'";
 	
 	} else {
 		if ($not) {
@@ -80,7 +80,7 @@ function searchOrganizerColumn(&$whereStatement, $columnName, $serachText, $exac
 			$whereStatement .= "_ascii";
 		}
 	
-		$whereStatement .= "'%". ze\escape::like($serachText, true). "%'";
+		$whereStatement .= "'%". ze\escape::like($searchText, true). "%'";
 	}
 	
 	if ($not) {
@@ -98,7 +98,7 @@ $organizerQueryIds = false;
 $organizerQueryDetails = false;
 $settingGroup = '';
 $compatibilityClassNames = [];
-ze::$skType = $type = 'organizer';
+ze::$tuixType = $type = 'organizer';
 
 //Work out which mode this should be for Organizer
 if ($_GET['_select_mode'] ?? false) {
@@ -142,7 +142,7 @@ if (($_GET['method_call'] ?? false) == 'showSitemap') {
 } elseif ($_REQUEST['path'] ?? false) {
 	$requestedPath = preg_replace('/[^\w\/]/', '', ($_REQUEST['path'] ?? false));
 }
-ze::$skPath = $requestedPath;
+ze::$tuixPath = $requestedPath;
 
 class zenario_organizer {
 	
@@ -194,6 +194,7 @@ class zenario_organizer {
 			foreach ($tableJoin as &$join) {
 				zenario_organizer::noteTableJoin($existingJoins, $join);
 			}
+			unset($join);
 	
 		} else {
 			$tableJoin = preg_replace('/\s\s+/', ' ', trim($tableJoin));
@@ -337,6 +338,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					ze\tuix::includeModule($modules, $button, $type, $requestedPath, $settingGroup);
 				}
 			}
+			unset($button);
 		}
 	}
 	
@@ -1392,6 +1394,7 @@ if (isset($tags['items']) && is_array($tags['items']) && is_array($removedColumn
 			unset($item[$unset]);
 		}
 	}
+	unset($item);
 }
 
 
@@ -1486,15 +1489,96 @@ if ($mode == 'get_item_data') {
 }
 
 
-//Display the output as JSON to send to the client
-header('Content-Type: text/javascript; charset=UTF-8');
 
-if ($_REQUEST['_script'] ?? false) {
-	echo 'zenarioO.lookForBranches(zenarioO.map = ';
-}
+$doExport = $requestedPath && !empty($_POST['_export']) && !empty($_POST['_exportCols']);
 
-ze\ray::jsonDump($tags);
 
-if ($_REQUEST['_script'] ?? false) {
-	echo ');';
+if ($doExport) {
+	//Simple export feature
+	//Allow users to request anything they could see as CSV or Excel
+	$isExcel = !empty($_POST['_excelExport']);
+	$keys = ze\ray::explodeAndTrim($_POST['_exportCols']);
+	$title = preg_replace('@\W@', '-', ($tags['title'] ?? '') ?: 'Export');
+	
+	//Create a new Excel document or CSV file
+	if ($isExcel) {
+		require_once CMS_ROOT.'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
+		$objPHPExcel = new PHPExcel();
+	} else {
+		$filename = tempnam(sys_get_temp_dir(), 'csvfile');
+		$f = fopen($filename, 'wb');
+	}
+	
+	//Get the column headers
+	$row = [];
+	foreach ($keys as $key) {
+		$row[] = $tags['columns'][$key]['title'] ?? $key;
+	}
+	
+	//Write the column headers
+	if ($isExcel) {
+		$rowNum = 1;
+		$objPHPExcel->getActiveSheet()->fromArray($row, NULL, 'A1');
+	} else {
+		fputcsv($f, $row);
+	}
+	
+	//Loop through each row
+	if (!empty($tags['items']) && is_array($tags['items'])) {
+	
+		if (!empty($tags['__item_sort_order__'])) {
+			$ids = $tags['__item_sort_order__'];
+		} else {
+			$ids = array_keys($tags['items'] ?? []);
+		}
+		
+		foreach ($ids as $id) {
+			$item = $tags['items'][$id] ?? [];
+			
+			//For each row, get the fields that are currently visible
+			$row = [];
+			foreach ($keys as $key) {
+				$row[] = $item[$key] ?? '';
+			}
+			
+			//Output the row
+			if ($isExcel) {
+				$objPHPExcel->getActiveSheet()->fromArray($row, NULL, 'A'. ++$rowNum);
+			} else {
+				fputcsv($f, $row);
+			}
+		}
+	}
+	
+	//Offer the file as download
+	if ($isExcel) {
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="'. $title. '.xls"');
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+	
+	} else {
+		fclose($f);
+		header('Content-Type: text/x-csv');
+		header('Content-Disposition: attachment; filename="'. $title. '.csv"');
+		header('Content-Length: '. filesize($filename));
+		readfile($filename);
+		@unlink($filename);
+	}
+
+
+} else {
+
+	//Display the output as JSON to send to the client
+	header('Content-Type: text/javascript; charset=UTF-8');
+
+	if ($_REQUEST['_script'] ?? false) {
+		echo 'zenarioO.lookForBranches(zenarioO.map = ';
+	}
+
+	ze\ray::jsonDump($tags);
+
+	if ($_REQUEST['_script'] ?? false) {
+		echo ');';
+	}
 }

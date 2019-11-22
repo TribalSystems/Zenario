@@ -21,6 +21,7 @@ ze\skinAdm::checkForChangesInFiles($runInProductionMode = true);
 $v = ze\db::codeVersion();
 
 echo '
+	<link rel="stylesheet" type="text/css" href="../../styles/grid.min.css?v=', $v, '" media="screen"/>
 	<link rel="stylesheet" type="text/css" href="../../styles/admin_grid_maker.min.css?v=', $v, '" media="screen"/>';
 
 
@@ -38,6 +39,7 @@ ze\content::pageFoot($prefix, false, false, false);
 echo '
 <script type="text/javascript" src="../../libs/manually_maintained/mit/jquery/jquery-ui.button.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../libs/manually_maintained/mit/jquery/jquery-ui.spinner.min.js?v=', $v, '"></script>
+<script type="text/javascript" src="../../js/grid.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/admin_grid_maker.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	window.zenarioAdminHasZipPerms = ', ze\ring::engToBoolean(ze\priv::check('_PRIV_VIEW_TEMPLATE')), ';
@@ -50,13 +52,16 @@ echo '
 <div class="grid_maker_wrap">
 	<div id="close_button"></div>
 	<div id="settings" style="margin:auto;"></div>
-	<div class="grid_panel_wrap"><div class="grid_panel" id="grid" style="margin:auto;"></div></div>
+	<div class="grid_panel_wrap">
+		<div class="grid_add_toolbar" id="grid_add_toolbar"></div>
+		<div class="grid_panel" id="grid" style="margin:auto;"></div>
+	</div>
 	<div id="download_links" style="margin:auto;"></div>
 </div>
 
 
 <script type="text/javascript">
-	zenarioG.init(<?php
+	zenarioGM.init(<?php
 		
 		//Load a Template file's details into Grid Maker
 			//There are two different formats here:
@@ -93,7 +98,7 @@ echo '
 			echo "'{}'";
 		}
 	?>);
-	$(document).ready(function() { zenarioG.draw(); });
+	$(document).ready(function() { zenarioGM.draw(); });
 </script>
 
 

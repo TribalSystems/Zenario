@@ -1,0 +1,8 @@
+slot_plugin_and_mode:
+    lovs:
+        modes:
+            zenario_banner:
+                label: Banners
+            zenario_banner`:
+                parent: zenario_banner
+                label: Show a text banner

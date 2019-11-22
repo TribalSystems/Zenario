@@ -120,6 +120,7 @@ foreach([
 	'link_status__published_with_draft_403' => 'Links to a private content item that your current extranet user cannot see, and which also has an unpublished draft.',
 	'link_status__published_401' => 'Links to a private content item that you would not be able to see without admin access.',
 	'link_status__published_403' => 'Links to a private content item that your current extranet user would not be able to see without admin access.',
+	'link_status__spare_alias' => 'This link points to a spare alias.',
 	'link_status__spare_domain' => 'This link points to a spare domain.',
 	
 	'menuFeatureImage' => "Menu node's feature image",
@@ -204,7 +205,7 @@ foreach([
 	'skRefreshView' => 'Refresh view',
 	'skListView' => 'List View',
 	'skSummaryView' => 'Summary view',
-	'skGridView' => 'Grid view',
+	'skGridView' => 'Preview',
 	'skBackTo' => 'Back to ',
 	'skOf' => ' of ',
 	
@@ -259,9 +260,9 @@ _help
 	'gridAddSpace' => 'Add whitespace',
 	//Removed as no longer needed; fixed anf fluid grids now work the same way!
 	//'gridChangeGridWarning' => '<p>You are changing a grid which already has slots. This may disrupt the placement of the slots.</p><p>If you proceed you should check and if need be adjust all of your slots, or undo.</p>',
-	'gridBreak1' => 'Custom breakpoints:',
+	'gridBreak1' => 'Cust. bps:',//Changed "Custom breakpoints:" to "Cust. bps:"--JS
 	'gridBreak2' => ',',
-	'gridCols' => 'Columns:',
+	'gridCols' => 'Cols:',//Changed "Columns:" to "Cols:"--JS
 	'gridConfirmClose' => 'You have unsaved changes. Are you sure you wish to close and abandon these changes?',
 	'gridContentWidth' => 'Content width:',
 	'gridContentWidthTooltip' => 'Content width|This is the largest possible thing you could place in the grid',
@@ -277,7 +278,7 @@ _help
 	'gridDownloadZip' => 'zip',
 	'gridEditPlaceholder' => '<em>[Edit]</em>',
 	'gridEditProperties' => 'Edit properties',
-	'gridEditSlots' => 'Slot view',
+	'gridEditSlots' => 'Slots',//Changed "Slot view" to "Slots"--JS
 	'gridEmptySpace' => 'Empty Space|Drag to move or drag the corder to resize',
 	'gridErrorNameFormat' => 'The slot class name may only contain the letters a-z, digits or underscores',
 	'gridErrorNameIncomplete' => 'Please enter a name for this slot.',
@@ -287,25 +288,25 @@ _help
 	'gridFixedTooltip' => 'Fixed|In a fixed grid, all of the widths are specified in &quot;px&quot;. On a normal computer screen, one &quot;px&quot; will be one pixel tall and one pixel wide. On a retina screen, one &quot;px&quot; may be two pixels tall and two pixels wide, or sometimes higher.',
 	'gridFluid' => 'Fluid',
 	'gridFluidTooltip' => 'Fluid|In a fluid grid, all of the widths are specified in percentages, and the size of your columns and gutters will vary depending on the screen size. Fluid grids can be prone to pixel rounding errors, especially in Internet Explorer 6 and 7.',
-	'gridFullWidth' => 'Full width:',
+	'gridFullWidth' => 'Full w:',//Changed "Full width:" to "Full w:"--JS
 	'gridGridBreak' => 'Grid break|Drag to move',
 	'gridGridBreakWithSlot' => 'Slot outside the grid|Drag to move',
 	'gridGridCSSClass' => 'CSS class name(s) for the next grid:',
-	'gridGutter' => 'Gutter:',
-	'gridGutterAndWidth' => 'Column / gutter:',
-	'gridGutterLeftEdge' => 'L gutter:',
-	'gridGutterRightEdge' => 'R gutter:',
+	'gridGutter' => 'G:', //Changed "Gutter:" to "G:"--JS
+	'gridGutterAndWidth' => 'Col / g:', //Changed "Column / gutter:" to "Col / g:"--JS
+	'gridGutterLeftEdge' => 'L g:',//Changed "L gutter:" to "L g"--JS
+	'gridGutterRightEdge' => 'R g:',//Changed "R gutter:" to "R g"--JS
 	'gridHtml' => 'Custom HTML:',
 	'gridIncNestedRules' => 'CSS rules for nested cells:',
 	'gridIncNestedRulesTooltip' => "Include CSS rules for cells with nested cells|Cells with nested cells need additional CSS rules. If you're not using nested cells, you can omit these rules for a smaller download.",
 	'gridLayoutName' => 'Layout name:',
-	'gridMaxWidth' => 'Max-width:',
-	'gridMinWidth' => 'Min-width:',
+	'gridMaxWidth' => 'Max-w:',//Changed "Max-width:" to "Max-w:"--JS
+	'gridMinWidth' => 'Min-w:',//Changed "Min-width:" to "Min-w"--JS
 	'gridMirror' => 'Right-to-left',
-	'gridMirrorTooltip' => 'Display right-to-left|Check this option to display slots from the right to the left, e.g. for creating an Arabic, Hebrew or Urdu language version of an English language site.<br/><br/>The slots will appear right-to-left rather than left-to-right, and the <code>direction: rtl;</code> rule will be added. (This effect is not displayed when managing slots in &quot;Slot view&quot;.)',
+	'gridMirrorTooltip' => 'Display right-to-left|Check this option to display slots from the right to the left, e.g. for creating an Arabic, Hebrew or Urdu language version of an English language site.<br/><br/>The slots will appear right-to-left rather than left-to-right, and the <code>direction: rtl;</code> rule will be added. (This effect is not displayed when managing slots in &quot;Slots&quot;.)',
 	'gridMobile' => 'Mobile',
 	'gridNewSkinMessage' => 'You have created a new Grid Skin. Before you can see this Skin on a page, you must edit the settings of a Layout and select it. All content items using that Layout will then use your new Skin.',
-	'gridPreviewGrid' => 'Grid view',
+	'gridPreviewGrid' => 'Preview',//Changed "Grid view" to "Preview"--JS
 	'gridProperties' => 'Properties',
 	'gridRedo' => 'Redo',
 	'gridSaveProperties' => 'Save properties',
@@ -322,7 +323,7 @@ _help
 	'gridResp_only' => 'Show on mobile only',
 	'gridSave' => 'Save',
 	'gridSaveAs' => 'Save as...',
-	'gridSaveTemplate' => 'Save your layout',
+	'gridSaveTemplate' => '',
 	'gridSaveCSS' => 'Save your CSS (grid)',
 	'gridSaveTemplateFile' => 'Save your layout',
 	'gridSaveText' => 'Enter a name for your new layout.',

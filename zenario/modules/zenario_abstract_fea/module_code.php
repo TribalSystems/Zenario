@@ -125,22 +125,6 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	}
 	
 	
-	protected function getMode() {
-		//From version 7.6, if you have a plugin, we'll only allow the plugin to run in the mode chosen in the plugin settings.
-		//If you want extra modes then you'll either need to make links in the conductor, or links to other content items.
-		if ($this->instanceId && ($mode = $this->setting('mode'))) {
-			return $mode;
-		
-		//Otherwise check the mode in the request
-		} elseif (!empty($_REQUEST['mode'])) {
-			return $_REQUEST['mode'];
-		
-		//Otherwise check the path in the request
-		} elseif (!empty($_REQUEST['path'])) {
-			return $this->getModeFromPath($_REQUEST['path']);
-		}
-	}
-	
 	protected function passRequests($mode, $path) {
 		
 		//New 8.2 logic, passes all GET requests
@@ -197,6 +181,28 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		return !empty($this->thingsEnabled[$thing]);
 	}
 	
+	protected function sortingEnabled() {
+		return $this->checkThingEnabled('sort_list') || $this->checkThingEnabled('sort_col_headers');
+	}
+	
+	protected function sortCol($tags) {
+		if ($this->sortingEnabled()) {
+			if ($col = $tags['key']['sortCol'] ?? '') {
+				if (!empty($tags['columns'][$col]['sort_asc'])
+				 || !empty($tags['columns'][$col]['sort_desc'])) {
+					return $col;
+				}
+			}
+		}
+		return '';
+	}
+	
+	protected function sortDesc($tags) {
+		return ($col = $this->sortCol($tags))
+			&& (!empty($tags['columns'][$col]['sort_desc']))
+			&& (empty($tags['columns'][$col]['sort_asc']) || !empty($tags['key']['sortDesc']));
+	}
+	
 	protected function isFeaAJAX() {
 		switch ($_REQUEST['method_call'] ?? false) {
 			case 'fillVisitorTUIX':
@@ -207,14 +213,6 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		}
 		
 		return false;
-	}
-	
-	protected function getPathFromMode($mode) {
-		return 'zenario_' . $mode;
-	}
-	
-	protected function getModeFromPath($path) {
-		return str_replace('zenario_', '', $path);
 	}
 	
 	protected function gettingBreadcrumbs($tags = false) {
@@ -476,130 +474,70 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	
 	protected function setupOverridesForPhrases(&$box, &$fields, &$values) {
-		
-		$mode = $values['global_area/mode'] ?: $values['first_tab/mode'];
-		
-		$modePath = $this->getPathFromMode($mode);
-		
-		$ord = 1000;
-        
-        foreach (ze\row::getDistinctAssocs(
-            'tuix_file_contents', 'path', ['type' => 'visitor', 'module_class_name' => $this->moduleClassName]
-        ) as $feaPath) {
-        	++$ord;
-            if (isset($box['tabs']['phrases.'. $feaPath])) {
-                $box['tabs']['phrases.'. $feaPath]['hidden'] = true;
-            }
-            if ($modePath == $feaPath) {
-                if (isset($box['tabs']['phrases.'. $feaPath])) {
-                    $box['tabs']['phrases.'. $feaPath]['hidden'] = false;
-                } else {
-                    $box['tabs']['phrases.'. $feaPath] = [
-                    	'ord' => $ord,
-                        'edit_mode' => $box['tabs']['first_tab']['edit_mode'],
-                        'fields' => [],
-                        'label' => ze\admin::phrase('Phrases ([[mode]])', ['mode' => str_replace('_', ' ', $this->getModeFromPath($feaPath))])
-                    ];
-                    $box['key']['feaPath'] = $feaPath;
-                    ze\tuix::setupOverridesForPhrases($box, $box['tabs']['phrases.'. $feaPath]['fields'], $feaPath);
-                }
-            }
-        }
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
 	//Add dataset fields onto an FEA form
 	//Called in fillVisitorTUIX
 	protected function setupDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId, $startOrd = 99, $edit = true, $flat = true) {
-		
-		foreach ($datasetFieldIds as $datasetFieldId) {
-			$datasetField = ze\dataset::fieldDetails($datasetFieldId, $dataset);
-			if (!$datasetField) {
-				continue;
-			}
-			
-			$newInput = [
-				'ord' => $startOrd++,
-				'label'=> $datasetField['label'].":",
-				'type' => $datasetField['type'],
-				'placeholder' => $this->phrase("Optional"),
-				'value' => ''
-			];
-			if ($edit) {
-				if ($recordId) {
-					$newInput['value'] = ze\dataset::fieldValue($dataset, $datasetField, $recordId);
-				}
-			} else {
-				$newInput['type'] = 'text';
-				$newInput['readonly'] = true;
-				$newInput['show_as_a_span_when_readonly'] = true;
-				$newInput['value'] = ze\dataset::fieldValue($dataset, $datasetField, $recordId, true, true);
-			}
-			
-			if ($datasetField['type'] == 'checkbox' || $datasetField['type'] == 'group') {
-				if ($edit) {
-					$newInput['type'] = 'checkbox';
-					$newInput['label'] = $datasetField['label'];
-				} else {
-					$newInput['value'] = $newInput['value'] ? $this->phrase('Yes') : $this->phrase('No');
-				}
-			} elseif ($datasetField['type'] == 'centralised_select' || $datasetField['type'] == 'select') {
-				if ($edit) {
-					$newInput['type'] = "select";
-					$newInput['empty_value'] = " -- Select --";
-				} else {
-					$list = ze\dataset::fieldLOV($datasetField, $flat);
-					if (isset($list[$newInput['value']])) {
-						$newInput['value'] = $list[$newInput['value']];
-					}
-				}
-			} elseif ($datasetField['type'] == 'centralised_radios') {
-				if ($edit) {
-					$newInput['type'] = "radios";
-				}
-			}
-			
-			if ($edit && in_array($datasetField['type'], ['centralised_select', 'centralised_radios', 'select', 'radios', 'checkboxes'])) {
-				$newInput['values'] = ze\dataset::fieldLOV($datasetField, $flat);
-			}
-			
-			//Merge any custom tuix with fields
-			if ($datasetField['db_column']) {
-				$identifier = $datasetField['db_column'];
-				if (isset($tags['tabs'][$tab]['fields']['custom_field_' . $datasetFieldId])) {
-					ze\tuix::merge($newInput, $tags['tabs'][$tab]['fields']['custom_field_' . $datasetFieldId]);
-					unset($tags['tabs'][$tab]['fields']['custom_field_' . $datasetFieldId]);
-				}
-			} else {
-				$identifier = $datasetFieldId;
-			}
-			if (isset($tags['tabs'][$tab]['fields']['custom_field_' . $identifier])) {
-				ze\tuix::merge($newInput, $tags['tabs'][$tab]['fields']['custom_field_' . $identifier]);
-			}
-			$tags['tabs'][$tab]['fields']['custom_field_' . $identifier] = $newInput;
-		}
-		ze\tuix::addOrdinalsToTUIX($tags['tabs'][$tab]['fields']);
-		ze\tuix::readValues($tags, $fields, $values, $changes, $filling = true, $resetErrors = false);
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	//Save dataset fields on an FEA form added by setupDatasetFields(...)
 	//Called in saveVisitorTUIX
 	protected function saveDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId) {
-		
-		foreach ($datasetFieldIds as $datasetFieldId) {
-			$datasetField = ze\dataset::fieldDetails($datasetFieldId, $dataset);
-			if (!$datasetField) {
-				continue;
-			}
-			
-			$identifier = $datasetField['db_column'] ? $datasetField['db_column'] : $datasetFieldId;
-			if ($datasetField['type'] == 'checkboxes') {
-				ze\dataset::updateCheckboxField($dataset['id'], $datasetFieldId, $recordId, $values[$tab.'/custom_field_'.$identifier]);
-			} else {
-				ze\row::set($dataset['table'], [$datasetField['db_column'] => $values[$tab.'/custom_field_'.$identifier]], $recordId);
-			}
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	protected function includeEditor() {
+		if (!ze::isAdmin()) {
+			ze::requireJsLib('zenario/js/ace.wrapper.js.php');
+			ze::requireJsLib('zenario/libs/bower/toastr/toastr.min.js', 'zenario/libs/bower/toastr/toastr.min.css');
+			ze::requireJsLib('zenario/libs/bower/spectrum/spectrum.min.js', 'zenario/libs/bower/spectrum/spectrum.min.css');
 		}
 	}
 	
+	
+	//
+	//	Slide Designer related functions
+	//
+	
+	
+	//Load the values of any plugin settings passed in from the Slide Designer
+	protected function loadSlotSettings($path, &$tags, &$fields, &$values) {
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	
+	
+	public static function setupOverridesForPhrasesInFrameworks($hideExistingFields, &$tags, $data, $moduleClassName, $moduleClassNameForPhrases, $mode, $framework = 'standard') {
+		ze\module::incSubclass('zenario_common_features', 'admin_boxes', 'plugin_settings');
+		zenario_common_features__admin_boxes__plugin_settings::setupOverridesForPhrasesInFrameworks($hideExistingFields, $tags, $data['settings'] ?? [], $moduleClassName, $moduleClassNameForPhrases, $mode, $framework);
+	}
+	
+	//Code to handle navigation between tabs using previous and next buttons
+	public function handleNavigationInValidate(&$tags, &$fields, &$values, $prevButton = 'prev', $nextButton = 'next', $changeButton = 'change_plugin') {
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	
+	//Clear the "pressed" status of any prev/next buttons
+	public function handleNavigationInFormat(&$tags, &$fields, &$values, $prevButton = 'prev', $nextButton = 'next', $changeButton = 'change_plugin') {
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	
+	//Save the values of any plugin settings back to the Slide Designer
+	protected function saveSlotSettingsAndClose(&$tags, &$fields, &$values, $switchBoxes = false) {
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	
+	
+	
+	public final function slideLayoutPrivacyDesc($sl) {
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
 	
 }

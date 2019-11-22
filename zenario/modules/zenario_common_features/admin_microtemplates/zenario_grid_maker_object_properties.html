@@ -47,13 +47,13 @@
 			<% show = showOnly = true; %>
 		<% } %>
 	
-	<% } else if (zenarioG.data.responsive && m.type == 'space') { %>
+	<% } else if (m.lib.data.responsive && m.type == 'space') { %>
 		<p>
 			<input type="radio" name="small" id="grid_resp_hide" value="hide" checked="checked"/>
 			<label for="grid_resp_hide">{{zenarioA.phrase.gridResp_hide}}</label>
 		</p>
 	
-	<% } else if (zenarioG.data.responsive) { %>
+	<% } else if (m.lib.data.responsive) { %>
 		<% show = true; %>
 		
 		<% if (1*m.is_last) { %>

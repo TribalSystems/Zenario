@@ -49,18 +49,6 @@ class zenario_error_log extends ze\moduleBaseClass {
 			ze\sql::update($sql);
 		}
 	}
-	
-	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
 
 	
 	//Scheduled task to report yesterdays errors

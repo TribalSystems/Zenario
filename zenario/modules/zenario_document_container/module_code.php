@@ -45,11 +45,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 		$mode = $this->setting('container_mode');
 		if ($mode == 'documents') {
 			$documentId = $this->setting('document_source');
-			//Show info in admin mode
-			if (ze\priv::check()) {
-				
-				//$this->showDocumentPluginAdminInfo($documentId);
-			}
+			
 			$this->useDocumentTags = ze::setting('enable_document_tags') && $this->setting('document_tags');
 			$this->dataset = ze\dataset::details('documents');
 			$this->datasetFields = ze\dataset::fieldsDetails($this->dataset['id'], $indexById = true);
@@ -70,7 +66,6 @@ class zenario_document_container extends ze\moduleBaseClass {
 			$userId = ze\user::id();
 			//User documents must be running
 			if (!ze\module::inc('zenario_user_documents')) {
-				
 				return false;
 			}
 			//Show info in admin mode
@@ -86,6 +81,10 @@ class zenario_document_container extends ze\moduleBaseClass {
 			$documentIds = array_keys($this->data['Documents']);
 			$this->data['Download_Archive'] = true;
 			$this->getArchiveDownloadLink($this->data, $documentIds);
+		}
+		
+		if ($this->setting('show_view_button')) {
+			$this->data['View_Button'] = true;
 		}
 		
 		if ($this->setting('show_download_link')) {
@@ -460,69 +459,6 @@ class zenario_document_container extends ze\moduleBaseClass {
 		}
 	}
 	
-	
-	private function showDocumentPluginAdminInfo($documentId) {
-		if ($documentId && $document = ze\row::get('documents', ['file_id', 'type', 'folder_name','filename','title'], $documentId)) {
-			if ($document['type'] == 'file') {
-				if ($file = ze\row::get('files', ['id', 'filename'], $document['file_id'])) {
-					 $showingText = 'Document ' . '"' . $document['filename'] . '"';
-				} else {
-					$showingText = 'Missing document with file id "' . $document['file_id'] . '"';
-				}
-				$pluginSettingsForEditView = ["Showing: " => $showingText];
-			} else {
-				if ($this->setting('show_folders_in_results')) {
-					$showingText = 'Documents and sub-folder names as headings in folder "' .  $document['folder_name'] . '"';
-				} else {
-					$showingText = 'Documents in folder "' .  $document['folder_name'] . '"';
-				}
-				switch ($this->setting('show_files_in_folders')) {
-					case 'all':
-						$showingText .= ", documents from all sub-folders (all levels) will be shown";
-						break;
-					case 'sub-folders':
-						$showingText .= ", documents in selected folders sub-folders (1 level down) will be shown";
-						break;
-					case 'folder':
-						$showingText .= ", documents in sub-folders will not be shown";
-						break;
-				}
-				if ($this->setting('show_folder_name_as_title')) {
-					$showingText .= ", select folder name will be shown as main title";
-				}
-				if (ze::setting('enable_document_tags') && $this->setting('document_tags')) {
-					$documentTagText = "Only showing documents with one of the following tags:";
-					$documentTagsArray = explode(',', $this->setting('document_tags'));
-					$tagNamesArray = ze\row::getValues('document_tags', 'tag_name', ['id' => $documentTagsArray]);
-					foreach ($tagNamesArray as $tagName) {
-						$documentTagText .= " " . $tagName . ",";
-					}
-					$documentTagText = rtrim($documentTagText, ",");
-					$pluginSettingsForEditView = ["Showing: " => $showingText, "Tag filter:" => $documentTagText];
-				} else {
-					$pluginSettingsForEditView = ["Showing: " => $showingText];
-				}
-			}
-		} else {
-			$showingText = 'No document or folder selected.';
-			if ($documentId) {
-				$showingText = 'Missing document with id "' . $documentId . '"';
-			}
-			$pluginSettingsForEditView = ["Showing: " => $showingText];
-		}
-		
-		//use $this->zAPISettings for array of plugin settings
-		$this->twigFramework(
-			[
-				'Heading' => 'This is a Document Container plugin', 
-				'Sub_Heading' => 'Automatically shows a list of documents according to its settings (blank if nothing set):', 
-				'Settings' => $pluginSettingsForEditView
-			], 
-			false, 
-			false, 
-			'zenario/frameworks/show_plugin_settings.twig.html'
-		);
-	}
 	
 	private function showUserDocumentPluginAdminInfo() {
 		$this->twigFramework(

@@ -461,27 +461,35 @@ zenarioAB.validateAliasGo = function() {
 
 //bespoke functions for the Content Tab
 zenarioAB.generateAlias = function(text) {
-	return text
-			.toLowerCase()
-			.replace(
-				/[áÁàÀâÂåÅäÄãÃÆæçÇðÐéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔöÖõÕøØšŠúÚùÙûÛüÜýÝžŽ]/g,
-				function(chr) {
-					return {
-							'á':'a', 'Á':'A', 'à':'a', 'À':'A', 'â':'a', 'Â':'A', 'å':'a', 'Å':'A', 'ä':'a', 'Ä':'A', 'ã':'a', 'Ã':'A',
-							'Æ':'AE', 'æ':'ae',
-							'ç':'c', 'Ç':'C', 'ð':'d', 'Ð':'F', 'é':'e', 'É':'E', 'è':'e', 'È':'E', 'ê':'e', 'Ê':'E', 'ë':'e', 'Ë':'E',
-							'í':'i', 'Í':'I', 'ì':'i', 'Ì':'I', 'î':'i', 'Î':'I', 'ï':'i', 'Ï':'I', 'ñ':'n', 'Ñ':'N',
-							'ó':'o', 'Ó':'O', 'ò':'o', 'Ò':'O', 'ô':'o', 'Ô':'O', 'ö':'o', 'Ö':'O', 'õ':'o', 'Õ':'O', 'ø':'o', 'Ø':'O',
-							'š':'s', 'Š':'S', 'ú':'u', 'Ú':'U', 'ù':'u', 'Ù':'U', 'û':'u', 'Û':'U', 'ü':'u', 'Ü':'U', 'ý':'y', 'Ý':'Y', 'ž':'z', 'Ž':'Z'
-						}[chr];
-				})
-			.replace(/&/g, 'and')
-			.replace(/[^a-zA-Z0-9\s_-]/g, '')
-			.replace(/\s+/g, '-')
-			.replace(/^-+/, '')
-			.replace(/-+$/, '')
-			.replace(/-+/g, '-')
-			.substr(0, 50);
+	var trimmed_text =  text
+						.toLowerCase()
+						.replace(
+							/[áÁàÀâÂåÅäÄãÃÆæçÇðÐéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔöÖõÕøØšŠúÚùÙûÛüÜýÝžŽ]/g,
+							function(chr) {
+								return {
+										'á':'a', 'Á':'A', 'à':'a', 'À':'A', 'â':'a', 'Â':'A', 'å':'a', 'Å':'A', 'ä':'a', 'Ä':'A', 'ã':'a', 'Ã':'A',
+										'Æ':'AE', 'æ':'ae',
+										'ç':'c', 'Ç':'C', 'ð':'d', 'Ð':'F', 'é':'e', 'É':'E', 'è':'e', 'È':'E', 'ê':'e', 'Ê':'E', 'ë':'e', 'Ë':'E',
+										'í':'i', 'Í':'I', 'ì':'i', 'Ì':'I', 'î':'i', 'Î':'I', 'ï':'i', 'Ï':'I', 'ñ':'n', 'Ñ':'N',
+										'ó':'o', 'Ó':'O', 'ò':'o', 'Ò':'O', 'ô':'o', 'Ô':'O', 'ö':'o', 'Ö':'O', 'õ':'o', 'Õ':'O', 'ø':'o', 'Ø':'O',
+										'š':'s', 'Š':'S', 'ú':'u', 'Ú':'U', 'ù':'u', 'Ù':'U', 'û':'u', 'Û':'U', 'ü':'u', 'Ü':'U', 'ý':'y', 'Ý':'Y', 'ž':'z', 'Ž':'Z'
+									}[chr];
+							})
+						.replace(/&/g, 'and')
+						.replace(/[^a-zA-Z0-9\s_-]/g, '')
+						.replace(/\s+/g, '-')
+						.replace(/^-+/, '')
+						.replace(/-+$/, '')
+						.replace(/-+/g, '-');
+			
+	if (trimmed_text.length > 50) {
+		if (trimmed_text.indexOf('-') > -1) {
+			trimmed_text = trimmed_text.substr(0, trimmed_text.lastIndexOf('-', 50));
+		}
+	}
+	
+	trimmed_text = trimmed_text.substr(0, 50);
+	return trimmed_text;
 };
 
 zenarioAB.contentTitleChange = function() {

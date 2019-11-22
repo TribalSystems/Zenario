@@ -63,6 +63,27 @@ class zenario_users__organizer__users extends zenario_users {
 		}
 	}
 	
+	function getEncryptedColumns($table) {
+		$db = \ze::$dbL;
+		$tableName = $db->prefix. $table;
+		
+		$cols = [];
+	
+		if (!isset($db->cols[$tableName])) {
+			$db->checkTableDef($tableName);
+		}
+		
+		if (!empty($db->cols[$tableName])) {
+			foreach ($db->cols[$tableName] as $col) {
+				if ($col->encrypted) {
+					$cols[] = $col;
+				}
+			}
+		}
+		
+		return $cols;
+	}
+	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
 		
@@ -167,8 +188,8 @@ class zenario_users__organizer__users extends zenario_users {
 				
 			$panel['title'] = ze\admin::phrase('Members of the Group "[[label]]"', $groupDetails);
 			$panel['no_items_message'] = ze\admin::phrase('This Group has no members.');
-			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['message'] = ze\admin::phrase('Are you sure you wish to remove the User "[[identifier]]" from the Group "[[label]]"?', $groupDetails);
-			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['multiple_select_message'] = ze\admin::phrase('Are you sure you wish to remove the selected Users from the Group "[[label]]"?', $groupDetails);
+			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['message'] = ze\admin::phrase('Are you sure you wish to remove the user/contact "[[identifier]]" from the group "[[label]]"?', ['identifier' => ze\user::identifier($id), 'label' => $groupDetails['label']]);
+			ze\lang::applyMergeFields($panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['multiple_select_message'], ['label' => $groupDetails['label'], 'item_count' => '[[item_count]]']);
 		}
 	
 		//Don't show the "Create User" or "Delete User" or "Import" buttons on a refiner
@@ -213,6 +234,42 @@ class zenario_users__organizer__users extends zenario_users {
 				unset($panel['quick_filter_buttons']['contact']);
 				
 				break;
+		}
+		
+		
+		//If there are no results
+		if (empty($panel['items'])) {
+			//Find any encrypted/hashed columns...
+			$cols = array_merge(self::getEncryptedColumns('users'), self::getEncryptedColumns('users_custom_data'));
+	
+	
+			if (!empty($cols)) {
+				//...and override the "no items in search" message.
+				$noResultsMessage = 'There are no users/contacts matching your search. Please note: ';
+				
+				
+				$encryptedColumns = $hashedColumns = [];
+				foreach ($cols as $col) {
+					//Give nice names to any encrypted or hashed columns
+					if ($col->hashed == true) {
+						$hashedColumns[] = ucwords(str_replace('_', ' ', $col->col));
+					} else {
+						$encryptedColumns[] = ucwords(str_replace('_', ' ', $col->col));
+					}
+				}
+				
+				if (!empty($encryptedColumns)) {
+					$encryptedColumnsMessage = ze\admin::phrase("\n\n". 'The column(s) ' . implode(', ', $encryptedColumns) . ' are encrypted and cannot be searched.');
+					$noResultsMessage .= $encryptedColumnsMessage;
+				}
+				
+				if (!empty($hashedColumns)) {
+					$hashedColumnsMessage = ze\admin::phrase("\n\n". 'The column(s) ' . implode(', ', $hashedColumns) . ' are encrypted and hashed. They can only be searched with exact matches.');
+					$noResultsMessage .= $hashedColumnsMessage;
+				}
+				
+				$panel['no_items_in_search_message'] = $noResultsMessage;
+			}
 		}
 	}
 	

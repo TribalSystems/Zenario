@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: email
-    title: Editing email settings
+    title: Editing email and newsletter settings
     tabs:
         email:
             label: Email
@@ -15,7 +15,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            This tab contains default settings for the Emails sent by your site.
+                            This tab contains default settings for the Emails sent by your site and Newsletters.
                             These are also used as default values for any Email Templates created when installing a Module.
                 data_protection_link:
                     snippet:

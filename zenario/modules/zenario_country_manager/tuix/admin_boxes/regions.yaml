@@ -7,6 +7,9 @@ zenario_country_manager__region:
         id: ""
         country_id: ""
         parent_id: ""
+    identifier:
+        css_class: zenario_country_manager_region
+        label: "Region ID"
     tabs:
         details:
             label: Details

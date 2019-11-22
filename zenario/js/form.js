@@ -452,9 +452,7 @@ methods.switchToATabWithErrors = function() {
 		if (!thus.errorOnTab(tuix.tab)) {
 			foreach (thus.sortedTabs as i => tab) {
 				
-				if (tuix.tabs[tab]
-					//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
-				 && !zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, tuix.tabs[tab])) {
+				if (tuix.tabs[tab] && !thus.checkTabHidden(tab)) {
 					if (thus.errorOnTab(tab)) {
 						tuix.tab = tab;
 						return true;
@@ -465,6 +463,12 @@ methods.switchToATabWithErrors = function() {
 	}
 	
 	return false;
+};
+
+
+methods.checkTabHidden = function(tab) {
+	//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
+	return zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, thus.tuix.tabs[tab]);
 };
 
 
@@ -511,6 +515,38 @@ methods.makeFieldAsTallAsPossible = function() {
 };
 
 
+
+methods.getNextTab = function() {
+	if (!defined(thus.prevTab)
+	 && !defined(thus.nextTab)) {
+		thus.drawTabs(' ');
+	}
+	return thus.nextTab;
+};
+
+methods.getPrevTab = function() {
+	if (!defined(thus.prevTab)
+	 && !defined(thus.nextTab)) {
+		thus.drawTabs(' ');
+	}
+	return thus.prevTab;
+};
+
+methods.goToNextTab = function() {
+	var nextTab = thus.getNextTab();
+	if (defined(nextTab)) {
+		zenarioAB.clickTab(nextTab);
+		return true;
+	}
+};
+
+methods.goToPrevTab = function() {
+	var prevTab = thus.getPrevTab();
+	if (defined(prevTab)) {
+		zenarioAB.clickTab(prevTab);
+		return true;
+	}
+};
 
 
 
@@ -671,6 +707,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		if (tabs.notices) {
 			foreach (tabs.notices as i => notice) {
 				if (engToBoolean(notice.show)
+				 && !zenarioT.hidden(notice, thus, undefined, i)
 				 && {error: 1, warning: 1, question: 1, information: 1, success: 1}[notice.type]) {
 					data.notices[i] = notice;
 				}
@@ -2019,7 +2056,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							autoresize_min_height: minHeight,
 							autoresize_max_height: maxHeight,
 							autoresize_bottom_margin: 10,
-							
+		
 							onchange_callback: onchange_callback,
 							init_instance_callback: function(instance) {
 								zenarioA.enableDragDropUploadInTinyMCE(false, undefined, thus.get('row__' + (instance.editorId || instance.id)));
@@ -2109,7 +2146,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						options = _.extend(options, field.editor_options);
 					}
 				}
-				
+			
 				options.setup = function (editor) {
 					editor.on('change', 
 						function(inst) {
@@ -3930,6 +3967,10 @@ methods.currentValue = function(f, tab, readOnly) {
 	} else {
 		return thus.value(f, tab, readOnly);
 	}
+};
+
+methods.originalValue = function(f, tab) {
+	return thus.value(f, tab, true);
 };
 
 //Get the value of a field

@@ -992,7 +992,8 @@ class zenario_forum extends zenario_comments {
 				FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
 				WHERE forum_id = ". (int) $this->forumId. "
 				  AND unread_to = ". (int) $latestUpdated. "
-			)";
+			)
+			ORDER BY forum_id, reader_id";
 		ze\sql::update($sql, false, false);
 	}
 	

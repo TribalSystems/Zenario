@@ -564,7 +564,6 @@ methods.getDeleteErrors = function(itemType, itemId) {
 methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 	if (itemType == 'field') {
 		if (tab == 'details') {
-		    
 			if (item.tuix_type) {
 				var type = thus.getFieldReadableType(item.type, item.tuix_type, true);
 				tags.tabs[tab].fields.message.snippet.html = 'This is a field of type "' + type + '". You cannot edit this field\'s details.';
@@ -741,20 +740,14 @@ methods.getTUIXFieldCustomValues = function(type) {
 	
 	//A list of boolean dataset fields
 	} else if (type == 'boolean_fields') {
-	    
 		var pages = thus.getOrderedPages();
-		
 		var useOptGroups = pages.length > 1;
 		var ord = 0;
 		for (var i = 0; i < pages.length; i++) {
 			var page = pages[i];
-			
 			var fields = thus.getOrderedFields(pages[i].id);
-			
 			for (var j = 0; j < fields.length; j++) {
-			    
 				var field = fields[j];
-			
 				if ((field.type != 'checkbox' && field.type != 'group') || (thus.editingThing == 'field' && field.id == thus.editingThingId)) {
 					continue;
 				}
@@ -763,11 +756,9 @@ methods.getTUIXFieldCustomValues = function(type) {
 					label: field.label,
 					ord: ++ord
 				};
-				
 				if (useOptGroups) {
 					var parentId = 'page_' + page.id;
 					values[field.id].parent = parentId;
-					
 					if (!values[parentId]) {
 						values[parentId] = {
 							label: page.label,
@@ -776,23 +767,12 @@ methods.getTUIXFieldCustomValues = function(type) {
 					}
 				}
 			}
-			
 		}
 	}
-
+	
 	return values;
 };
 
-
-methods.sortByLabel = function(a,b) {
-
-    if (a.label < b.label ){
-        return -1;
-    }
-    if ( a.label > b.label )
-        return 1;
-    return 0;
-};
 methods.loadPagesList = function() {
 	//Find the current page
 	var pages = thus.getOrderedPages();

@@ -224,7 +224,7 @@ zenario__content:
                     db_column: c.tag_id
                     sort_column: c.type, c.id
                     sort_column_desc: c.type DESC, c.id DESC
-                    show_by_default: true
+                    always_show: true
                     disallow_filtering: true
                 equiv_id:
                     db_column: c.equiv_id
@@ -250,6 +250,7 @@ zenario__content:
                     searchable: true
                     db_column: c.alias
                     width: small
+                    hidden: true
                 title:
                     ord: 6
                     title: Title
@@ -281,50 +282,40 @@ zenario__content:
                     db_column: v.keywords
                     searchable: true
                     length_limit: 250
-                word_count:
-                    ord: 10
-                    title: Word count
-                    sortable: true
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]content_cache AS cc
-                            ON v.id = cc.content_id
-                           AND v.type = cc.content_type
-                           AND v.version = cc.content_version
-                    db_column: >
-                        IFNULL(cc.text_wordcount, 0)
-                    align_right: true
-                    width: xsmall
-                    show_by_default: true
-                    tooltip: "Word count of version controlled plugins on the content item."
+                
                 file_id:
-                    ord: 11
+                    ord: 10
                     title: File ID
                     db_column: f.id
                     searchable: No
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 checksum:
                     db_column: f.checksum
                 mime_type:
                     db_column: f.mime_type
                 filename:
-                    ord: 12
+                    ord: 11
                     title: Filename
                     db_column: v.filename
                     searchable: true
                     width: large
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 file_size:
-                    ord: 13
+                    ord: 12
                     title: File size
                     db_column: f.size
                     format: filesize
                     searchable: No
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 file_path:
                     db_column: f.path
                 version:
-                    ord: 14
+                    ord: 13
                     title: Version
                     db_column: v.version
+                    width: xsmall
                 status:
-                    ord: 15
+                    ord: 14
                     title: Status
                     db_column: c.status
                     format: enum
@@ -337,7 +328,7 @@ zenario__content:
                         hidden: Hidden
                         trashed: Trashed
                 admin_version_status:
-                    ord: 16
+                    ord: 15
                     db_column: c.status
                     format: enum
                     values:
@@ -349,7 +340,7 @@ zenario__content:
                         hidden: Hidden
                         trashed: Trashed
                 visitor_version_status:
-                    ord: 17
+                    ord: 16
                     db_column: c.status
                     format: enum
                     values:
@@ -377,23 +368,24 @@ zenario__content:
                         logged_in_not_in_smart_group:
                             label: 'Permissions: Private, only show to extranet users NOT in a given smart group...'
                         with_role:
-                            label: 'Permissions: Private, only show to extranet users with a given role...'
+                            label: 'Permissions: Private, only show to extranet users with a given role (at ANY location)...'
                         call_static_method:
                             label: "Permissions: Call a module's static method to decide"
                         send_signal:
                             label: 'Permissions: Send a signal to decide'
                 first_created_datetime:
-                    ord: 19
+                    ord: 18
                     title: Date/time first created
                     db_column: c.first_created_datetime
                     format: datetime
                 created_datetime:
-                    ord: 20
-                    title: Date/time latest version created
+                    ord: 19
+                    title: Latest version created
                     db_column: v.created_datetime
-                    format: datetime
+                    show_by_default: Yes
+                    width: large
                 concealed_datetime:
-                    ord: 21
+                    ord: 20
                     title: Date/time canceled/trashed
                     db_column: v.concealed_datetime
                     format: datetime
@@ -401,10 +393,16 @@ zenario__content:
                 creating_author_id:
                     db_column: v.creating_author_id
                 last_modified_datetime:
-                    ord: 22
-                    title: Date/time last edited
+                    ord: 21
+                    title: Last edited
                     db_column: v.last_modified_datetime
-                    format: datetime
+                    show_by_default: Yes
+                    width: large
+                last_modified_by_admin:
+                    ord: 22
+                    title: Last modified by admin
+                    width: large
+                    show_by_default: Yes
                 last_author_id:
                     db_column: v.last_author_id
                 published_datetime:
@@ -419,16 +417,32 @@ zenario__content:
                     title: Release date
                     db_column: v.release_date
                     format: date
+                word_count:
+                    ord: 25
+                    title: Word count
+                    sortable: true
+                    table_join: |
+                        LEFT JOIN [[DB_PREFIX]]content_cache AS cc
+                            ON v.id = cc.content_id
+                           AND v.type = cc.content_type
+                           AND v.version = cc.content_version
+                    db_column: >
+                        IFNULL(cc.text_wordcount, 0)
+                    align_right: true
+                    width: xsmall
+                    show_by_default: true
+                    tooltip: "Word count of version controlled plugins on the content item."
                 lock_owner_id:
                     db_column: c.lock_owner_id
                 lock_owner_name:
                 writer_name:
-                    ord: 25
+                    ord: 26
                     title: Writer name
                     db_column: v.writer_name
                     searchable: true
                 archives_exist:
                     ord: 26
+                    hidden: true
                     width: medium
                     title: 'Archives exist?'
                     db_column: |
@@ -442,7 +456,7 @@ zenario__content:
                         )
                     format: yes_or_no
                 inline_files:
-                    ord: 27
+                    ord: 28
                     title: Images and animations
                     db_column: |
                         (
@@ -456,7 +470,7 @@ zenario__content:
                     align_right: true
                     width: xsmall
                 zenario_trans__links:
-                    ord: 28
+                    ord: 29
                     title: Translations
                     align_right: true
                     show_by_default: true
@@ -470,14 +484,14 @@ zenario__content:
                               AND ci_sa.language_id IN ([[ZENARIO_SYNC_ASSIST_LANGS]])
                         )
                 layout:
-                    ord: 29
+                    ord: 30
                     title: Layout
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
                     show_by_default: true
                     width: xsmall
                     hidden: true
                 layout_id:
-                    ord: 30
+                    ord: 31
                     db_column: v.layout_id
                     filter_format: enum
                     values:
@@ -485,43 +499,22 @@ zenario__content:
                         - L02
                         #...
                 menu:
-                    ord: 31
+                    ord: 32
                     title: Menu Node
                     db_column: mt.name
                     show_by_default: true
                     item_link: menu_item
                 menu_id:
                     db_column: mi.id
-                content_extract:
-                    ord: 32
-                    title: Content extract
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]content_cache AS cc
-                            ON v.id = cc.content_id
-                           AND v.type = cc.content_type
-                           AND v.version = cc.content_version
-                    db_column: >
-                        SUBSTRING(cc.extract, 1, 200)
-                content_extract_wordcount:
-                    ord: 33
-                    title: Plain-text word count
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]content_cache AS cc
-                            ON v.id = cc.content_id
-                           AND v.type = cc.content_type
-                           AND v.version = cc.content_version
-                    db_column: >
-                        cc.extract_wordcount
-                    align_right: true
-                    width: xsmall
                 scheduled_publish_datetime:
-                    ord: 34
+                    ord: 35
                     title: 'Scheduled publish date/time'
                     db_column: v.scheduled_publish_datetime
                     format: datetime
                 
                     
             default_sort_column: tag
+            default_sort_desc: true
             label_format_for_grid_view: |
                 [[tag]]
                         Version [[version]]
@@ -529,16 +522,24 @@ zenario__content:
             label_format_for_popouts: '[[tag]] Version [[version]] [[[admin_version_status]]]'
             default_sort_column: first_created_datetime
             collection_buttons:
+
+                
+                new_dropdown:
+                    hide_when_children_are_not_visible: true
+                    css_class: zenario_create_a_new
+                    label: New
+           
                 create:
                     priv: _PRIV_CREATE_FIRST_DRAFT
-                    css_class: zenario_create_a_new
+                    hide_in_select_mode: true
                     hide_on_filter: true
-                    label: Create
+                    css_class: zenario_create_a_new
                     admin_box:
                         path: zenario_content
                         key:
                             create_from_content_panel: 1
-                
+                    ord: 1
+                            
                 delete_trashed_items:
                     priv: _PRIV_DELETE_TRASHED_CONTENT_ITEMS
                     hide_in_select_mode: true
@@ -669,19 +670,19 @@ zenario__content:
                         zenario.engToBoolean(item.frontend_link)
             
             item_buttons:
-                property_dropdown:
-                    label: Properties
-                    multiple_select: true
-                    hide_when_children_are_not_visible: true
-                
                 settings:
-                    parent: property_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: Edit metadata and content
+                    label: Edit metadata & content
                     admin_box:
                         path: zenario_content
                     without_columns_set:
                         traits.ghost: true
+
+                property_dropdown:
+                    label: More properties
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                
                 alias:
                     parent: property_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
@@ -1177,9 +1178,9 @@ zenario__content:
                             message: |
                                 Do you wish to re-draft "[[tag]]"? This will create
                                 a new draft of this content item, which will be available to
-                                visitors if you Publish it.
+                                visitors if you publish it.
                             multiple_select_message: |
-                                Do you wish do re-draft these content items? This will create a new draft for each content item, which will be avaliable to visitors if you Publish them.
+                                Do you wish do re-draft these content items? This will create a new draft for each content item, which will be avaliable to visitors if you publish them.
                             button_message: Re-draft
                             cancel_button_message: Cancel
                             message_type: question
@@ -1192,7 +1193,3 @@ zenario__content:
                     admin_box:
                         path: zenario_migrate_old_documents
                     visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden')
-                page_preview_sizes:
-                    label: Visitor preview
-                    hide_when_children_are_not_visible: true
-                    ord: 500

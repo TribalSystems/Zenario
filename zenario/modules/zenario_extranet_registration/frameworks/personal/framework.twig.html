@@ -56,10 +56,12 @@
 						</div>
 					{% endif %}
 					
+					{% if Salutation %}
 					<div class="extranet_field">
 						<div class="label"><label for="salutation">{{"_SALUTATION:"|trans}}</label></div>
 						{{this.frameworkField({'type': "text", 'name': "salutation", 'id': "salutation", 'maxlength': "25", 'source_module': 'zenario_common_features', 'source_method': 'getSalutations', 'source_param_1': '2'})}}
 					</div>
+					{% endif %}
 										
 					<div class="extranet_field">
 						<div class="label"><label for="first_name">{{"_FIRST_NAME:"|trans}}</label></div>
@@ -69,6 +71,68 @@
 						<div class="label"><label for="last_name">{{"_LAST_NAME:"|trans}}</label></div>
 						{{this.frameworkField({'type': "text", 'name': "last_name", 'id': "last_name", 'maxlength': "100", 'required': "true"})}}
 					</div>
+					
+					{% if Custom_Fields %}
+						    {% for val in Custom_Fields_Values %}
+						      
+							{% if val.type == "text" %}        
+						        <div class="extranet_field">
+						        <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
+						        <input type = "{{val.type}}" name="{{val.name}}" value=""/><br/>
+						        </div>
+						    {% elseif val.type == "textarea" %}
+						        <div class="extranet_field">
+						         <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
+						        <textarea  name="{{val.name}}"></textarea>
+						        </div>
+							{% elseif val.type == "select" or val.type == "centralised_select" or val.type == "dataset_select"%}
+                                <div class="extranet_field">
+                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
+                                <select name="{{val.name}}">
+                                    {% for key, opt in val.values %}
+                                    <option value="{{ key }}">{{ opt.label }}</option>
+                                    {% endfor %}
+                                </select>
+                                </div>
+                            {% elseif val.type == "checkbox"%}
+                                <div class="extranet_field">
+                                <div class="label">
+                                <input type = "{{val.type}}" name="{{val.name}}" />
+                                <label for="{{val.label}}">{{val.label}}</label>
+                                </div>
+                                </div>
+                            {% elseif val.type == "consent" or  val.type == "group"%}
+                                <div class="extranet_field">
+                                <div class="label">
+                                <input type="checkbox" id="{{key}}" name="{{ val.name }}">
+                                <label for="{{val.label}}">{{val.label}}</label>
+                                </div>
+                                </div>
+                            {% elseif val.type == "radios" or val.type == "centralised_radios"%}
+                                <div class="extranet_field">
+                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
+                                {% for key, opt in val.values %}
+                                    <input type="radio" id="{{key}}" name="{{ val.name }}" value="{{key}}"> {{opt.label}}
+                                {% endfor %}
+                                </div>
+                           
+                            {% elseif val.type == "url"%}
+                                <div class="extranet_field">
+                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
+                                <input type="url"  name="{{ val.name }}" value="http://"/>
+                                </div>
+                            {% elseif val.type == "date" %}
+                                <div class="extranet_field">
+                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
+                              
+                                <input type="date"  name="{{ val.name }}" />
+                                </div>                  
+                            
+                            {% endif %}
+                                
+                            {% endfor %}
+						
+					{% endif %}
 					
 					{% if User_passwords %}
 						<div class="extranet_field">
@@ -81,7 +145,6 @@
 							{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
 						</div>
 					{% endif %}
-					
 					
 					{% if Ts_And_Cs_Section %}
 						<div class="extranet_field">
@@ -104,9 +167,12 @@
 					</div></div>
 				</div>
 				<div class="extranet_links">
+				    
 					{% if Resend_Link_Section %}
+					    {% if Show_Resend_Form %}
 						<div><a {{Resend_Link}}>{{Resend_Verification_Email_Link_Text}}</a></div>
 						<div class="extranet_link_desc">{{Resend_Verification_Email_Link_Description}}</div>
+					    {% endif %}
 					{% endif %}
 					{% if Login_Link_Section %}
 						<div><a {{Login_Link}}>{{Go_Back_To_Login_Text}}</a></div>

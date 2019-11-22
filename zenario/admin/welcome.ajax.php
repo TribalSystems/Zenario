@@ -182,7 +182,7 @@ if ($systemRequirementsMet && $installed) {
 			$tags['go_to_url'] =
 				(ze::setting('admin_use_ssl')? 'https://' : ze\link::protocol()).
 				ze\link::adminDomain(). SUBDIRECTORY.
-				'zenario/admin/welcome.php?'. http_build_query($getRequest);
+				'admin.php?'. http_build_query($getRequest);
 		}
 		$loggedIn = false;
 	

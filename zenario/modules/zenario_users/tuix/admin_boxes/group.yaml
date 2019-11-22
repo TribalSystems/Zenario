@@ -1,8 +1,11 @@
 zenario_group:
     key:
         id: ''
+    identifier:
+        css_class: zenario_group
+        label: Group ID
     title: Creating a group
-    max_height: 200
+    max_height: 240
     hide_tab_bar: true
     tabs:
         details:
@@ -20,12 +23,12 @@ zenario_group:
                                 this.value.toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z_0-9]/g, '');
                         }
                     validation:
-                        required: Please enter a name
+                        required: Please enter a name.
                     maxlength: 64
                 db_column:
                     label: 'Code name:'
                     type: text
                     side_note: This will be used for the name of the column in the database.
                     validation:
-                        required: Please enter a code name
+                        required: Please enter a code name.
                     maxlength: 255

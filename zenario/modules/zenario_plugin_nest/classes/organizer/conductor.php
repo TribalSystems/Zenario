@@ -181,7 +181,8 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 			//Start adding elements for each slide, state and path
 			$ord = 100;
 			foreach ($slides as $slide) {
-			
+				$slide['name_or_title'] = zenario_plugin_nest::formatTitleTextAdmin($slide['name_or_title']);
+				
 				$states = ze\ray::explodeAndTrim($slide['states']);
 				$multipleStates = count($states) > 1;
 				

@@ -5,7 +5,7 @@ zenario_image_tag:
     key:
         id: ""
     hide_tab_bar: true
-    max_height: 175
+    max_height: 230
     title: Creating a tag
     title_for_existing_records: 'Editing the tag "[[details/name]]".'
     tabs:
@@ -29,7 +29,7 @@ zenario_image_tag:
                         
                     validation:
                         required: |
-                            Please enter a name
+                            Please enter a name.
                         no_spaces: |
                             Tag names cannot contain spaces.
                         screen_name: |

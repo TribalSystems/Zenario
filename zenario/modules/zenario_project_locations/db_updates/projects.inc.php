@@ -65,7 +65,7 @@ _sql
 	 KEY (`equiv_id`),
 	 KEY (`content_type`),
 	 KEY (`image_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 	
 , <<<_sql
@@ -77,7 +77,7 @@ _sql
 	 `project_location_id` int(10) unsigned NOT NULL,
 	 `sector_id` int(10) unsigned NOT NULL,
 	 PRIMARY KEY `project_location_id` (`project_location_id`,`sector_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 	
 , <<<_sql
@@ -89,7 +89,7 @@ _sql
 	 `project_location_id` int(10) unsigned NOT NULL,
 	 `service_id` int(10) unsigned NOT NULL,
 	 PRIMARY KEY `project_location_id` (`project_location_id`,`service_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 	
 , <<<_sql
@@ -102,7 +102,7 @@ _sql
 	 `name` varchar(255) NOT NULL,
 	 PRIMARY KEY (`id`),
 	 KEY (`name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 	
 , <<<_sql
@@ -115,7 +115,7 @@ _sql
 	 `name` varchar(255) NOT NULL,
 	 PRIMARY KEY (`id`),
 	 KEY (`name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );ze\dbAdm::revision(25
 , <<<_sql

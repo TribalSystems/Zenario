@@ -75,6 +75,10 @@ if ($this->eggId && isset($this->parentNest)) {
 						this);", '"
 			><span></span></a>';
 		
+		} elseif ($this->eggId < 0) {
+			//If there are any other auto-generated plugins, don't show any controls (for now at least)
+			//To do: add something useful here
+		
 		} else {
 			echo '
 			<a

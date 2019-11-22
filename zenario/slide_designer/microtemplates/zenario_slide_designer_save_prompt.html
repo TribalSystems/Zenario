@@ -1,0 +1,15 @@
+<div class="content_wrap">
+	<form class="zenario_grid_form zenario_grid_new_layout_form" onsubmit="return false;">
+		<h3>{{zenarioA.phrase.gridSaveTemplateFile}}</h3>
+		<p>{{zenarioA.phrase.gridSaveText}}</p>
+		<div id="zenario_grid_error"></div>
+	
+		<% if (!zenarioSD.data.cells || !zenarioSD.data.cells.length) { %>
+			<p class="zenario_grid_message_warning">{{zenarioA.phrase.gridWarningSaveWithoutSlots}}</p>
+		<% } %>
+		
+		<label for="zenario_grid_layout_name">{{zenarioA.phrase.gridLayoutName}}</label>
+		<input type="text" id="zenario_grid_layout_name" maxlength="255" value="{{htmlspecialchars(m.name)}}"/>
+		<div class="nice_button"><div class="r"><input type="submit" id="zenario_grid_new_layout_save" class="i" value="{{zenarioA.phrase.gridSave}}"/></div></div>
+	</form>
+</div>

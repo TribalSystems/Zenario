@@ -209,6 +209,7 @@ zenario__user_forms:
                                         label: Mandatory if...
                                     mandatory_if_not:
                                         label: Mandatory if not...
+                                format_onchange: true
                             mandatory_condition_field_value:
                                 indent: 2
                                 hide_with_previous_outdented_field: true
@@ -439,7 +440,8 @@ zenario__user_forms:
                                 label: Pre-populate with logged-in user's data
                                 type: checkbox
                             split_first_name_last_name:
-                                label: Split this field's data on the first space between first name and last name
+                                label: Contains first and last name
+                                note_below: Text entered here will be split on the first space, and inserted into first name and last name fields respectively.
                                 type: checkbox
                                 visible_if: |
                                     item.db_column == 'first_name' || item.db_column == 'last_name'
@@ -544,6 +546,12 @@ zenario__user_forms:
                                 hide_with_previous_field: true
                                 label: 'Word count (max):'
                                 type: text
+                            rows:
+                                visible_if: |
+                                    item.type == 'textarea'
+                                label: 'Rows:'
+                                type: text
+                                value: 4
                             css_classes:
                                 label: 'CSS classes:'
                                 type: text

@@ -185,7 +185,17 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				
 				}
 				
-				$item['usage_status'] = $item['usage_count'];
+				//Show how many items use a specific layout, and display links if possible.
+				$usageContentItems = ze\layoutAdm::usage($id, false, false, false, $countItems = false);
+				$usage = [
+					'content_item' => $usageContentItems[0] ?? null,
+					'content_items' => count($usageContentItems)
+				];
+		
+				$usageLinks = [
+					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $id. '//'
+				];
+				$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 				
 				// Try to automatically add a thumbnail
 				if (!empty($foundPaths[$item['path']])) {

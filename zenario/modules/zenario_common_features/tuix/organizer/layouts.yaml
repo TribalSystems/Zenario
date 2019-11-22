@@ -34,7 +34,7 @@ zenario__layouts:
                     searchable: true
                     width: xxsmall
                 name:
-                    title: Layout name
+                    title: Layout description
                     show_by_default: true
                     db_column: l.name
                     searchable: true
@@ -42,12 +42,12 @@ zenario__layouts:
                 summary:
                     title: Summary
                     show_by_default: true
-                    width: xlarge
+                    width: xxlarge
                 skin_name:
                     title: Skin
                     db_column: s.display_name
                     searchable: true
-                    show_by_default: true
+                    hidden: true
                 family_name:
                     title: Template directory
                     db_column: tf.family_name
@@ -73,7 +73,7 @@ zenario__layouts:
                         l.status = 'suspended'
                 status:
                     title: Status
-                    show_by_default: true
+                    hidden: true
                     format: enum
                     values:
                         active: Active
@@ -95,24 +95,11 @@ zenario__layouts:
                     searchable: true
                     ascii_only: true
                     width: small
-                #Counts both drafts and published versions if they use a different layout separately
-                usage_count:
+                where_used:
                     title: Usage
-                    db_column: |
-                        (
-                            SELECT COUNT(DISTINCT c.id, c.type)
-                            FROM [[DB_PREFIX]]content_item_versions AS v
-                            INNER JOIN [[DB_PREFIX]]content_items AS c
-                               ON c.id = v.id
-                              AND c.type = v.type
-                              AND (c.admin_version = v.version OR c.visitor_version = v.version)
-                              AND c.status NOT IN ('trashed','deleted')
-                            WHERE v.layout_id = l.layout_id
-                              AND v.type = l.content_type
-                        )
                     show_by_default: true
-                    align_right: true
-                    width: xxsmall
+                    width: xlarge
+                    html: true
                 grid_name:
                     exists: true
                 usage_status:
@@ -125,7 +112,7 @@ zenario__layouts:
                 path:
                     title: Path to template file
                     db_column: "CONCAT('zenario_custom/templates/', tf.family_name, '/', tf.file_base_name, '.tpl.php')"
-                    show_by_default: true
+                    hidden: true
                     searchable: true
                     width: xxlarge
             default_sort_column: name
@@ -213,6 +200,24 @@ zenario__layouts:
                         Template file is not registered!
                     with_columns_set:
                         traits.unregistered: true
+                active:
+                    css_class: zenario_ib_active
+                    tooltip: |
+                        Active
+                    visible_if: |
+                        item.status == 'active'
+                default:
+                    css_class: zenario_ib_default
+                    tooltip: |
+                        Active; default layout for content type
+                    visible_if: |
+                        item.status == 'active_default'
+                archived:
+                    css_class: zenario_ib_archived
+                    tooltip: |
+                        Archived
+                    visible_if: |
+                        item.status == 'suspended'
                 grid_preview:
                     css_class: inspect
                     tooltip: View image

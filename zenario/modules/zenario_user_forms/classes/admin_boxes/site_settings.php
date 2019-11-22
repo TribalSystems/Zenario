@@ -60,6 +60,9 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 				$min = ze\row::min(ZENARIO_USER_FORMS_PREFIX . 'user_response', 'response_datetime');
 				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
+			
+			$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__user_forms/panels/user_forms';
+			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 			$fields['data_protection/period_to_delete_the_form_response_log_headers']['note_below'] = $note;
 			
 		}

@@ -9,6 +9,7 @@ site_settings:
                     label: 'How long should form responses be saved?'
                     site_setting:
                         name: period_to_delete_the_form_response_log_headers
+                    ord: 2
                     type: select
                     values:
                         0:
@@ -36,6 +37,7 @@ site_settings:
                     site_setting:
                         name: delete_form_response_log_content_sooner
                     label: Delete content sooner (just save headers)
+                    ord: 3
                     type: checkbox
                     redraw_onchange: true
 
@@ -46,6 +48,7 @@ site_settings:
                     indent: 2
                     site_setting:
                         name: period_to_delete_the_form_response_log_content
+                    ord: 4
                     type: select
                     values:
                         0:

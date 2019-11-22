@@ -151,6 +151,25 @@ class site {
 	}
 	
 	
+	public static function inDevMode() {
+		if (!$devModeSetting = \ze::setting('site_in_dev_mode')) {
+			return false;
+		}
+		
+		if ($devModeSetting == 'head') {
+			if (ZENARIO_IS_HEAD) {
+				return true;
+			}
+		
+		} elseif (is_numeric($devModeSetting)) {
+			if (time() < (int) $devModeSetting) {
+				return true;
+			}
+		}
+		
+		\ze\site::setSetting('site_in_dev_mode', '');
+		return false;
+	}
 	
 	
 	

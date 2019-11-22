@@ -50,7 +50,7 @@ ze\cache::incJS('zenario/js/admin_toolbar');
 ze\cache::incJS(TINYMCE_DIR. 'jquery.tinymce');
 
 //Include other third-party libraries
-ze\cache::incJS('zenario/libs/bower/intro.js/intro');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/intro/intro');
 ze\cache::incJS('zenario/libs/bower/spectrum/spectrum');
 ze\cache::incJS('zenario/libs/bower/toastr/toastr');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery.selectboxes');

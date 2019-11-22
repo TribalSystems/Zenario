@@ -870,7 +870,7 @@ class miscAdm {
 	
 		//In production mode, only run this check if it looks like there's
 		//been a core software update since the last time we ran
-		} elseif (\ze::setting('site_mode') == 'production' && \ze\db::codeLastUpdated(false) < $lastChanged) {
+		} elseif (!\ze\site::inDevMode() && \ze\db::codeLastUpdated(false) < $lastChanged) {
 			$changed = false;
 	
 		//Otherwise, work out the time difference between that time and now
@@ -1164,7 +1164,9 @@ class miscAdm {
 										'allow_admin_to_change_visibility' => !empty($field['allow_admin_to_change_visibility']),
 										'allow_admin_to_change_export' => !empty($field['allow_admin_to_change_export'])
 									];
-									if (!$fieldDetails || !$fieldDetails['ord']) {
+									if (!empty($field['grouping'])) {
+										$values['ord'] = $fieldCount;
+									} elseif (!$fieldDetails || !$fieldDetails['ord']) {
 										$values['ord'] = (float) (($field['ord'] ?? false) ?: $fieldCount);
 									}
 									\ze\row::set('custom_dataset_fields',
@@ -1177,6 +1179,54 @@ class miscAdm {
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+	
+	//Ensure that the "all access" slide layout is always last, and the "all users" slide layout is always just before that
+	public static function checkSlideLayoutOrdinals($for, $forId) {
+		
+		$public = \ze\row::get('slide_layouts', ['id', 'ord'], ['privacy' => 'public', 'layout_for' => $for, 'layout_for_id' => $forId]);
+		$allUsers = \ze\row::get('slide_layouts', ['id', 'ord'], ['privacy' => 'logged_in', 'layout_for' => $for, 'layout_for_id' => $forId]);
+		$maxOrd = \ze\row::max('slide_layouts', 'ord', ['layout_for' => $for, 'layout_for_id' => $forId]);
+		
+		if ($maxOrd) {
+			//If the "public" slide layout isn't last, make it last and move all others back
+			if ($public) {
+				if ($public['ord'] != $maxOrd) {
+					\ze\row::update('slide_layouts', ['ord' => $maxOrd + 1], $public['id']);
+					
+					\ze\sql::update("
+						UPDATE ". DB_PREFIX. "slide_layouts
+						SET ord = ord - 1
+						WHERE layout_for = '". \ze\escape::sql($for). "'
+						  AND layout_for_id = ". (int) $forId. "
+						  AND ord > ". (int) $public['ord']. "
+						ORDER BY ord"
+					);
+				
+					\ze\row::update('slide_layouts', ['ord' => $maxOrd], $public['id']);
+				}
+				--$maxOrd;
+			}
+			
+			//If the "all users" slide layout isn't second-last, make it second-last and move all others back
+			if ($allUsers) {
+				if ($allUsers['ord'] != $maxOrd) {
+					\ze\row::update('slide_layouts', ['ord' => $maxOrd + 2], $allUsers['id']);
+					
+					\ze\sql::update("
+						UPDATE ". DB_PREFIX. "slide_layouts
+						SET ord = ord - 1
+						WHERE layout_for = '". \ze\escape::sql($for). "'
+						  AND layout_for_id = ". (int) $forId. "
+						  AND ord > ". (int) $allUsers['ord']. "
+						  AND ord <= ". (int) $maxOrd. "
+						ORDER BY ord"
+					);
+				
+					\ze\row::update('slide_layouts', ['ord' => $maxOrd], $allUsers['id']);
 				}
 			}
 		}

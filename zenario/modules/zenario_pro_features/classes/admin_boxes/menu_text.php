@@ -36,6 +36,10 @@ class zenario_pro_features__admin_boxes__menu_text extends ze\moduleBaseClass {
 			$box['tabs']['text']['fields']['zenario_pro_features__invisible']['value'] = $menu['invisible'];
 		}
 		
+		if (!ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
+			$box['tabs']['text']['fields']['zenario_pro_features__invisible']['readonly'] = true;
+		}
+		
 		if (!empty($box['max_height'])) {
 			$box['max_height'] += 25;
 		}

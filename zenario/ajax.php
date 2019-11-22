@@ -41,8 +41,8 @@ $type = false;
 $path = false;
 $methodCall = $_REQUEST['method_call'] ?? false;
 if ($methodCall == 'handleOrganizerPanelAJAX') {
-	ze::$skType = $type = 'organizer';
-	ze::$skPath = $path = $_REQUEST['__path__'] ?? false;
+	ze::$tuixType = $type = 'organizer';
+	ze::$tuixPath = $path = $_REQUEST['__path__'] ?? false;
 }
 
 $isForPlugin = ($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false) && ($_REQUEST['instanceId'] ?? false);
@@ -318,11 +318,15 @@ if ($methodCall == 'showFile') {
 	   || $methodCall == 'saveVisitorTUIX'
 	   || $methodCall == 'typeaheadSearchAJAX') {
 	
+	$requestedPath = $_REQUEST['path'] ?? false;
+
+	\ze::$tuixType = 'visitor';
+	\ze::$tuixPath = $requestedPath;
+	
 	if ($isForPlugin) {
 		$module = &ze::$slotContents[$slotName]['class'];
 	}
-	
-	$requestedPath = $_REQUEST['path'] ?? false;
+	$module = $module->runSubClass(get_class($module)) ?: $module;
 	
 	
 	//Exit if no path is specified

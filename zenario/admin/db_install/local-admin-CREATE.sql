@@ -6,7 +6,7 @@ CREATE TABLE `[[DB_PREFIX]]action_admin_link` (
   `action_name` varchar(50) NOT NULL,
   `admin_id` int(10) unsigned NOT NULL,
   UNIQUE KEY `action_name` (`action_name`,`admin_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_organizer_prefs`;
@@ -15,7 +15,7 @@ CREATE TABLE `[[DB_PREFIX]]admin_organizer_prefs` (
   `checksum` varchar(22) CHARACTER SET utf8mb4 NOT NULL DEFAULT '{}',
   `prefs` mediumtext CHARACTER SET utf8mb4,
   PRIMARY KEY (`admin_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_settings`;
@@ -25,7 +25,7 @@ CREATE TABLE `[[DB_PREFIX]]admin_settings` (
   `value` mediumtext CHARACTER SET utf8mb4,
   PRIMARY KEY (`admin_id`,`name`),
   KEY `name` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]admins`;
@@ -67,7 +67,7 @@ CREATE TABLE `[[DB_PREFIX]]admins` (
   KEY `last_login` (`last_login`),
   KEY `last_login_ip` (`last_login_ip`),
   KEY `image_id` (`image_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 

@@ -266,7 +266,7 @@ install:
                         <div class="horizontal_scroll">
                             <div>
                     type: radios
-                    value: duke_street
+                    value: blackdog
                     post_field_html: |
                         </div></div>
                 previous:

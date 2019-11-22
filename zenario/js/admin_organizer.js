@@ -791,12 +791,70 @@ var escapeStateString = function(string, isJSON) {
 	}
 
 
+//Get a list of columns that are currently being displayed (i.e. they are not hidden by either the dev or the current user)
+//in the order in which they've been sorted.
+zenarioO.showableColumns = function() {
+	
+	var colNo, c, cols = [];
+	
+	foreach (zenarioO.sortedColumns as colNo => c) {
+		if (zenarioO.isShowableColumn(c, true)) {
+			cols.push(c);
+		}
+	}
+	
+	return cols;
+};
+
+//Request a CSV export of the current view/panel.
+zenarioO.exportPanelAsCSV = function() {
+	var url = zenarioO.getAJAXURL(10000);
+	
+	if (url) {
+		zenarioA.doDownload(url, {
+			_export: 1,
+			_csvExport: 1,
+			_exportCols: zenarioO.showableColumns().join(',')
+		});
+	}
+	
+	//Calling the zenarioO.getAJAXURL() function to get the current URL messes up a few variables,
+	//which can cause a lot of strange errors later if the user continues to interact with the panel,
+	//so as a quick hack to fix all of these problems I'm triggering a cached-reload
+	zenarioO.reload(false, true);
+};
+
+//Request an Excel export of the current view/panel.
+zenarioO.exportPanelAsExcel = function() {
+	var url = zenarioO.getAJAXURL(10000);
+	
+	if (url) {
+		zenarioA.doDownload(url, {
+			_export: 1,
+			_excelExport: 1,
+			_exportCols: zenarioO.showableColumns().join(',')
+		});
+	}
+	
+	//Calling the zenarioO.getAJAXURL() function to get the current URL messes up a few variables,
+	//which can cause a lot of strange errors later if the user continues to interact with the panel,
+	//so as a quick hack to fix all of these problems I'm triggering a cached-reload
+	zenarioO.reload(false, true);
+};
+
+
+
+//Get the URL as used by the go() function, without actually sending the AJAX request.
+zenarioO.getAJAXURL = function(thisPageSize) {
+	return zenarioO.go(zenarioO.path, undefined, undefined, undefined, undefined, undefined, false, undefined, undefined, undefined, false, false, undefined, undefined, true, thisPageSize);
+};
+
 
 //Go to a location
 zenarioO.goNum = 0;
 zenarioO.loadNum = 0;
 zenarioO.lastSuccessfulGoNum = 0;
-zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, dontUseCache, itemToSelect, sameLoad, runFunctionAfter, periodic, inCloseUpView, searchTerm, filters) {
+zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, dontUseCache, itemToSelect, sameLoad, runFunctionAfter, periodic, inCloseUpView, searchTerm, filters, returnURL, thisPageSize) {
 	
 	if (!periodic) {
 		zenarioO.lastActivity = Date.now();
@@ -834,7 +892,9 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		}
 	}
 	
-	zenarioO.callPanelOnUnload();
+	if (!returnURL) {
+		zenarioO.callPanelOnUnload();
+	}
 	
 	
 	if (!queued) {
@@ -1084,11 +1144,13 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		}
 	}
 	
+	if (!defined(thisPageSize)) {
+		thisPageSize = 1*panelInstance.returnPageSize();
+	}
 	
 	var db_items = panel.db_items,
 		reorder = panel.reorder,
 		server_side = panelInstance.returnDoSortingAndSearchingOnServer(),
-		thisPageSize = 1*panelInstance.returnPageSize(),
 		url = panelInstance.returnAJAXURL(),
 		devToolsURL = panelInstance.returnDevToolsAJAXURL(),
 		requests = {},
@@ -1185,6 +1247,10 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		}
 	}
 	
+	if (returnURL) {
+		return url + zenario.urlRequest(requests);
+	}
+	
 	//Disable the current panel/page from refreshing
 	zenarioO.stopRefreshing();
 	
@@ -1201,10 +1267,10 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		}
 	}
 	
-	
 	//Allow the panel type to disable this AJAX request by returning false for the url
 	if (!url) {
 		go2(panel);
+	
 	} else {
 		zenario.ajax(url + zenario.urlRequest(requests), false, true, true, true, true).after(go2);
 	}
@@ -3284,7 +3350,7 @@ zenarioO.refreshPage = function(hash, dontAutoDetectMode, task, force) {
 		}
 	}
 	
-	var href = URLBasePath + 'zenario/admin/welcome.php?task=' + task;
+	var href = URLBasePath + 'admin.php?task=' + task;
 	
 	//If this is the front-end, link back to the front end, otherwise go back to Organizer
 	if (zenario.cID) {

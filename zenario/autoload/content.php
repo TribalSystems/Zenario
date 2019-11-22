@@ -163,9 +163,6 @@ class content {
 			|| $statusOrCID == 'published_with_draft';
 	}
 
-	//Get an item's description
-	//	function isSpecialPage($cID, $cType) {}
-
 	//Automatically generate SQL to search through Content, for example for a content list
 	//A bit of a techy function so we've included the full code here, so you can see exactly what it does
 	//Formerly "sqlToSearchContentTable()"
@@ -328,46 +325,48 @@ class content {
 			$langId = \ze::$defaultLang;
 		}
 	
-		$sql = "
-			SELECT id, equiv_id, language_id
-			FROM ". DB_PREFIX. "content_items
-			WHERE id = ". (int) $cID. "
-			  AND type = '". \ze\escape::sql($cType). "'";
-		$result = \ze\sql::select($sql);
+		if (ctype_alpha(\ze\escape::sql($cType))) { //cType can only be letters a-z and A-Z.
+			$sql = "
+				SELECT id, equiv_id, language_id
+				FROM ". DB_PREFIX. "content_items
+				WHERE id = ". (int) $cID. "
+				  AND type = '". \ze\escape::sql($cType). "'";
+			$result = \ze\sql::select($sql);
 	
-		if ($row = \ze\sql::fetchAssoc($result)) {
-			if ($langId != $row['language_id']) {
-				$sql = "
-					SELECT id
-					FROM ". DB_PREFIX. "content_items
-					WHERE equiv_id = ". (int) $row['equiv_id']. "
-					  AND type = '". \ze\escape::sql($cType). "'
-					  AND language_id = '". \ze\escape::sql($langId). "'";
+			if ($row = \ze\sql::fetchAssoc($result)) {
+				if ($langId != $row['language_id']) {
+					$sql = "
+						SELECT id
+						FROM ". DB_PREFIX. "content_items
+						WHERE equiv_id = ". (int) $row['equiv_id']. "
+						  AND type = '". \ze\escape::sql($cType). "'
+						  AND language_id = '". \ze\escape::sql($langId). "'";
 			
-				if ($checkVisible) {
-					$adminMode = \ze::isAdmin();
+					if ($checkVisible) {
+						$adminMode = \ze::isAdmin();
 				
-					//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
-					//If not, only published pages should effect the logic.
-					if ($adminMode) {
-						$sql .= "
-						  AND status NOT IN ('trashed', 'deleted')";
-					} else {
-						$sql .= "
-						  AND status IN ('published_with_draft', 'published')";
+						//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
+						//If not, only published pages should effect the logic.
+						if ($adminMode) {
+							$sql .= "
+							  AND status NOT IN ('trashed', 'deleted')";
+						} else {
+							$sql .= "
+							  AND status IN ('published_with_draft', 'published')";
+						}
+					}
+			
+					$result = \ze\sql::select($sql);
+			
+					if ($row = \ze\sql::fetchAssoc($result)) {
+						$cID = $row['id'];
+						return true;
 					}
 				}
-			
-				$result = \ze\sql::select($sql);
-			
-				if ($row = \ze\sql::fetchAssoc($result)) {
-					$cID = $row['id'];
+		
+				if (!$checkVisible) {
 					return true;
 				}
-			}
-		
-			if (!$checkVisible) {
-				return true;
 			}
 		}
 	
@@ -972,7 +971,7 @@ class content {
 	}
 
 	//Formerly "checkItemPrivacy()"
-	public static function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion) {
+	public static function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion, $roleLocationMustMatch = false) {
 	
 		//Check if a user is logged in.
 		$userId = false;
@@ -1009,15 +1008,18 @@ class content {
 			
 				} elseif ($privacy['privacy'] == 'with_role' && ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = \ze\module::prefix('zenario_organization_manager'))) {
 					//Try to get this user's roles
+					$sql = "
+						SELECT DISTINCT role_id
+						FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
+						WHERE user_id = ". (int) $userId;
+					
+					if ($roleLocationMustMatch) {
+						$sql .= "
+						  AND location_id = ". (int) \ze::$vars['locationId'];
+					}
+					
 					$linkTo = 'role';
-					$linkToIds =
-						\ze\ray::valuesToKeys(
-							\ze\sql::fetchValues("
-								SELECT DISTINCT role_id
-								FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
-								WHERE user_id = ". (int) $userId
-							)
-						);
+					$linkToIds = \ze\ray::valuesToKeys(\ze\sql::fetchValues($sql));
 			
 				} else {
 					return false;
@@ -1042,6 +1044,11 @@ class content {
 						$sql .= "
 							  AND link_from = 'slide'
 							  AND link_from_id = ". (int) $privacy['slide_id'];
+				
+					} elseif (!empty($privacy['slide_layout_id'])) {
+						$sql .= "
+							  AND link_from = 'slide_layout'
+							  AND link_from_id = ". (int) $privacy['slide_layout_id'];
 				
 					} else {
 						return false;

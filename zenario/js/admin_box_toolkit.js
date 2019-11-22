@@ -1113,11 +1113,13 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 			thus.showConfirm(saveAndContinue, createAnother);
 		
 		} else if (flags.download) {
-			thus.get('zenario_iframe_form').action = thus.getURL('download');
-			thus.get('zenario_iframe_form').innerHTML =
-				'<input type="hidden" name="_download" value="1"/>' +
-				'<input type="hidden" name="_box" value="' + htmlspecialchars(thus.sendStateToServer()) + '"/>';
-			thus.get('zenario_iframe_form').submit();
+			zenarioA.doDownload(
+				thus.getURL('download'),
+				{
+					_download: 1,
+					_box: thus.sendStateToServer()
+				}
+			);
 			
 			if (saveAndContinue) {
 				data = data.substr(15);

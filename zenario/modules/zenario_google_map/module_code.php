@@ -50,7 +50,8 @@ class zenario_google_map extends ze\moduleBaseClass {
 				ze\link::protocol() .'maps.google.com/maps/api/js?key=' . urlencode($apiKey)
 			);
 		} else {
-			$this->data['googlemap'] = $this->phrase('Please set a Google Maps API key.');
+			$googleApiKeySiteSettingLink = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_maps~k{"id"%3A"api_keys"}';
+			$this->data['googlemap'] = $this->phrase('Cannot display Google Map, please set a <a href=\'' . $googleApiKeySiteSettingLink . '\' target=\'_blank\'>Google Maps API key</a>.');
 		}
 		return true;
 	}

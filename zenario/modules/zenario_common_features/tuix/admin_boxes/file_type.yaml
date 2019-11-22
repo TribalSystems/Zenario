@@ -5,7 +5,7 @@ zenario_file_type:
     title: Registering a new custom file type
     key:
         id: ''
-    max_height: 125
+    max_height: 210
     hide_tab_bar: true
     tabs:
         details:

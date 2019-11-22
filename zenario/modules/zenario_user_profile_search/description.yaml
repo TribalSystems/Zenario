@@ -23,7 +23,6 @@ special_pages:
         page_type: zenario_user_profile_search
         default_alias: profile-search
         default_title: Profile Search
-        footer_menu_title: Profile search
         only_show_to_visitors_who_are_logged_in: true
         logic: create_and_maintain_in_default_language
 

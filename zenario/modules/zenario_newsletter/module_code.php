@@ -168,25 +168,6 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		return $sql;
 	}
 	
-	
-	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
-			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
-		}
-	}
-
 
 
 	
@@ -223,30 +204,6 @@ class zenario_newsletter extends ze\moduleBaseClass {
 	
 	function checkIfNewsletterIsInProgress($id) {
 		return ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', 'status', $id) == '_IN_PROGRESS';
-	}
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-	}
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
 	}
 	
 	

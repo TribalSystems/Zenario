@@ -23,7 +23,8 @@ zenario_admin:
                     admin_setting:
                         name: show_help_tour_next_time
                     type: checkbox
-                    value: 1
+                    value: 0
+                    disabled: true
                     label: Show this administrator the help tour when they next open Organizer
                 show_dev_tools:
                     admin_setting:

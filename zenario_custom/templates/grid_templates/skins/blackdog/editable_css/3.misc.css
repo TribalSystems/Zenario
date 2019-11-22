@@ -1,0 +1,177 @@
+/* Buttons
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin input[type='submit'],
+.zenario_skin input[type='button'],
+.zenario_skin button,
+.banner_more_button .banner_more a,
+.extranet_wrap .extranet_view_profile .extranet_links a,
+a.nice_button {
+	display:inline-block;
+	min-width:120px;
+	height:45px;
+	line-height:42px;
+	padding: 0 20px;
+	border:0;
+	background:#000;
+	color:#FFF;
+	text-align:center;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+  	cursor:pointer;
+}
+
+.zenario_skin input[type='submit']:hover,
+.zenario_skin input[type='button']:hover,
+.zenario_skin button:hover,
+.extranet_wrap a.nice_button:hover,
+.banner_title_button .banner_title a:hover,
+.banner_more_button .banner_more a:hover,
+.extranet_wrap .extranet_view_profile .extranet_links a:hover,
+a.nice_button:hover {
+	background:#b8babc;
+	color:#282e35;
+	text-decoration:none;
+}
+
+/* Sections titles
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_banner.banner_standard .banner_title h2,
+.slot_news .zenario_content_list > h2,
+.slot_news .zenario_content_list > p,
+.zenario_html_snippet p.section_title,
+.nest_portfolio .nest_title p,
+.slot_full_boxes .nest_title p {
+	font-size: 1em;
+    font-family: 'robotolight',Arial, Helvetica, sans-serif;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+/* Various phone styles
+--------------------------------------------------------------------------------------------------*/
+
+p.phone {
+	padding:5px 0;
+	margin:0;
+	font-size:0.813em;
+}
+
+p.phone:before {
+	font-family: 'FontAwesome';
+	content: "\f095";
+	font-size:16px;
+	position:relative;
+	top:2px;
+	padding-right:5px;
+}
+
+/* Extranet forms
+--------------------------------------------------------------------------------------------------*/
+
+.extranet_wrap {
+	max-width:740px;
+	padding:40px;
+	margin:auto;
+	border:4px solid #dcdcdc;
+	box-shadow:0 0 12px rgba(0,0,0,0.1);
+	text-align:center;
+}
+
+.extranet_wrap h1,
+.extranet_wrap h2,
+.extranet_wrap .extranet_welcome_text {
+	margin-bottom:30px;
+}
+
+.extranet_wrap h1,
+.extranet_wrap .extranet_welcome_text {
+	font-size:3em;
+}
+
+.extranet_wrap .extranet_welcome_text {
+	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+	color:#000;
+}
+
+.extranet_wrap .extranet_field,
+.extranet_wrap .extranet_links,
+.extranet_wrap .extranet_remember_me,
+.extranet_wrap .form_field {
+	text-align:left;
+	margin-top:15px;
+}
+
+.extranet_wrap .extranet_field .label,
+.extranet_wrap .form_field .field_title {
+	padding-bottom:5px;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	text-transform:uppercase;
+}
+
+.extranet_wrap .extranet_links,
+.extranet_wrap .extranet_remember_me {
+	font-size:0.875em;
+}
+
+.extranet_wrap .extranet_links {
+	text-align:center;
+}
+
+.extranet_wrap .extranet_links a {
+	text-decoration:underline;
+}
+
+.extranet_wrap .extranet_view_profile .extranet_links {
+	font-size:1em;
+}
+
+.extranet_wrap .extranet_view_profile .extranet_links a {
+	text-decoration:none;
+}
+
+.extranet_wrap .extranet_btn,
+.extranet_wrap .extranet_edit_profile .form_buttons {
+	overflow:hidden;
+	margin-top:25px;
+}
+
+.extranet_wrap .extranet_edit_profile .form_buttons input,
+.extranet_wrap .extranet_edit_profile .form_buttons a {
+	display:inline-block;
+	margin:0 8px;
+}
+
+/* Pagination
+--------------------------------------------------------------------------------------------------*/
+
+.pag_pagination {
+	margin-top:10px;
+	text-align:center;
+}
+
+.pag_pagination span a {
+	display:inline-block;
+    margin: 0 1px 5px;
+    padding: 0 8px 3px;
+    -webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+	color:#FFF;
+	background:#555;
+   	-webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+}
+
+.pag_pagination span a:hover,
+.pag_pagination span.pag_page_on a {
+    background:#000;
+    text-decoration:none;
+}

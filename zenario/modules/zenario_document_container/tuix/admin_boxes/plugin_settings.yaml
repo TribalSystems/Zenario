@@ -385,10 +385,17 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
+                show_view_button:
+                    plugin_setting:
+                        name: show_view_button
+                    label: 'Show a View button'
+                    type: checkbox
+                    value: 0
+                    redraw_onchange: true
                 show_download_link:
                     plugin_setting:
                         name: show_download_link
-                    label: 'Show "download"'
+                    label: 'Show a Download button'
                     type: checkbox
                     value: 0
                     redraw_onchange: true

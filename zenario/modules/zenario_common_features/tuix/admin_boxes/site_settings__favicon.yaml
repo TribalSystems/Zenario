@@ -26,7 +26,7 @@ site_settings:
                             - .png
                         drag_and_drop: false
                     note_below: >
-                        You can upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file.<br/>
+                        You can upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file (<code>.svg</code> files are not supported).<br/>
                         If you wish to support visitors using Internet Explorer 10 or earlier, you should
                         upload a <code>.ico</code> file that is either 16×16, 32×32, 48×48 or 64×64 pixels in size.
                     validation:
@@ -37,7 +37,7 @@ site_settings:
                 mobile_icon: 
                     site_setting:
                         name: mobile_icon
-                    label: "Home screen icon:"
+                    label: "Mobile device home screen icon:"
                     upload: 
                         accept: "image/*"
                         extensions: 
@@ -45,7 +45,7 @@ site_settings:
                             - .png
                         drag_and_drop: false
                     note_below: >
-                        You should upload a <code>.gif</code> or a <code>.png</code> file for a home-screen icon.
+                        You should upload a <code>.gif</code> or a <code>.png</code> file for a home-screen icon (<code>.svg</code> files are not supported).
                         We recommend that the image should be 144×144 pixels in size;
                         the image will be auto-downsized.
                     validation:
@@ -54,7 +54,7 @@ site_settings:
                 default_icon:
                     site_setting:
                         name: default_icon
-                    label: "Default icon:"
+                    label: "Default og:image:"
                     upload: 
                         accept: "image/*"
                         extensions: 
@@ -62,8 +62,8 @@ site_settings:
                             - .png
                         drag_and_drop: false
                     note_below: >
-                        This default image will be shown if a page does not have a feature image.
-                        You should upload a <code>.gif</code> or a <code>.png</code> file for a default icon.
+                        If a content item doesn’t have a feature image set, this image will be used for the content item's og:image meta data tags.<br>
+                        You should upload a <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
                         We recommend that the image should be at least 200x200 pixels in size;
                         the image will be auto-downsized.
                     validation:

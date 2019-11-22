@@ -186,8 +186,8 @@ class ze {
 	public static $twigModules = [];
 	public static $vars = [];
 
-	public static $skPath = '';
-	public static $skType = '';
+	public static $tuixType = 'visitor';
+	public static $tuixPath = '';
 	public static $dbUpdating = false;
 	public static $pq = [];
 	public static $apcDirs = [];

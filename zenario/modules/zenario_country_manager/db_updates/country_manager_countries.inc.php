@@ -34,7 +34,7 @@ ze\dbAdm::revision(12
 		`english_name` varchar(255),
 		`active` tinyint(1),
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 , 
 <<<_sql
@@ -299,7 +299,7 @@ _sql
 		`name` varchar(255),
 		`active` tinyint(1),
 		PRIMARY KEY (`id`,`country_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 ze\dbAdm::revision(16
@@ -677,6 +677,13 @@ _sql
 ,<<<_sql
 	ALTER TABLE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
 	MODIFY COLUMN `active` tinyint(1) NOT NULL DEFAULT 1
+_sql
+
+); ze\dbAdm::revision(70
+, <<<_sql
+	UPDATE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	SET english_name = "Taiwan"
+		WHERE id = "TW"
 _sql
 
 );

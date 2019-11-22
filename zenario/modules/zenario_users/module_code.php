@@ -29,78 +29,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_users extends ze\moduleBaseClass {
 
-	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function lineStorekeeperCSV($path, &$columns, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->lineStorekeeperCSV($path, $columns, $refinerName, $refinerId);
-		}
-	}	
-	public function formatStorekeeperCSV($path, &$item, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatStorekeeperCSV($path, $item, $refinerName, $refinerId);
-		}
-	}
-	
-	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
-		}
-	}	
-	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
-		}
-	}	
 	public function handleAJAX() {
 		if ($c = $this->runSubClass(__FILE__, 'organizer', 'zenario__users/panels/smart_groups')) {
 			return $c->handleAJAX();
-		}
-	}
-	
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-
-	}	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-		
-		
-	}	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-			
-	}	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}	
-	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}	
-	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
 		}
 	}
 	
@@ -595,6 +526,12 @@ class zenario_users extends ze\moduleBaseClass {
 			//Allow a user's first/last name to be displayed
 			case 'name':
 				return ze\user::name(ze::$vars['userId']);
+		}
+	}
+	public static function requestVarDisplayName($name) {
+		switch ($name) {
+			case 'name':
+				return 'User first and last name';
 		}
 	}
 	

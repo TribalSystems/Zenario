@@ -11,7 +11,7 @@ zenario__email_template_manager:
                 where_statement: WHERE ss.value REGEXP '[^@ ]+@[^. ]+(\\.[^.]+)+'
             columns:
                 name:
-                    title: Name
+                    title: Site setting name
                     always_show: true
                     db_column: ss.name
                     searchable: true

@@ -113,11 +113,12 @@
 					
 				<% } %>
 			</div>
+			<% var nb; %>
 			<% foreach (m.fields as f => field) { %>
-				<% if (field.note_below) { %>
+				<% if (field.note_below && $.trim(nb = zenario.unfun(field.note_below))) { %>
 					<div class="zenario_note_below">
 						<div class="zenario_note_icon"></div>
-						<div class="zenario_note_content">{{zenario.unfun(field.note_below)}}</div>
+						<div class="zenario_note_content">{{nb}}</div>
 					</div>
 				<% } %>
 			<% } %>

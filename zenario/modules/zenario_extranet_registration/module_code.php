@@ -70,14 +70,51 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->manageCookies();
 			
 			
-			if ($this->useScreenName) {
+			if (ze::setting("user_use_screen_name") ) {
 				$this->subSections['Choose_Screen_Name'] = true;
 			}
 			
 			if ($this->setting('user_email_verification')) {
 				$this->subSections['Second_Email'] = true;
 			}
+			if ($this->setting('show_salutation')) {
+		        $this->subSections['Salutation'] = true;
 			
+		    }
+		    if($this->setting('user_custom_fields')){
+		        $chosenCustomFields = $allCustomFields = [];
+		        $chosenCustomFields = explode(',', $this->setting('user_custom_fields'));
+		        $allCustomFields = ze\datasetAdm::listCustomFields('users', $flat = false, false, $customOnly = true);
+		       
+		        if(isset($allCustomFields)){
+		            foreach($allCustomFields as $k =>$value){
+		                if(in_array($k,  $chosenCustomFields)){
+				            $customDBColumns[$k]['label'] = $value['label'];
+				            $customDBColumns[$k]['name'] = $value['db_column'];
+				            $customDBColumns[$k]['type'] = $value['type'];
+				            if( $customDBColumns[$k]['type'] == 'select' || $customDBColumns[$k]['type'] == 'centralised_radios' || $customDBColumns[$k]['type'] == 'radios' || $customDBColumns[$k]['type'] == 'dataset_select' || $customDBColumns[$k]['type'] == 'centralised_select' ){
+				                $customDBColumns[$k]['values'] = ze\dataset::fieldLOV($k, false);
+				            }
+				          
+				        }
+				    }
+				}
+				
+				//To maintain the order as in the plugin settings
+				$sortedArray = [];
+				for($i=0; $i<count($chosenCustomFields); $i++){
+				    $sortedArray[$chosenCustomFields[$i]] = $customDBColumns[$chosenCustomFields[$i]];
+				}
+				$customDBColumns = $sortedArray;
+				
+				$this->objects['Custom_Fields_Values'] = $customDBColumns;
+		        $this->subSections['Custom_Fields'] = true;
+		    }
+		    if ($this->setting('show_resend_verification_link')) {
+		        $this->subSections['Show_Resend_Form'] = true;
+			
+		    }
+		    
 			if ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')) {
 				$this->subSections['Ts_And_Cs_Section'] = true;
 				$cID = $cType = false;
@@ -142,6 +179,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			
 			if ($this->mode == 'modeRegistration') {
 				if ($this->enableCaptcha()) {
+				    
 					$this->subSections['Captcha'] = true;
 					$this->objects['Captcha'] = $this->captcha2();
 				}
@@ -166,6 +204,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				$fields['set_timer_on_new_users']['hidden'] = !ze\module::inc('zenario_user_timers');
 				
 				$customFields = ze\datasetAdm::listCustomFields('users', $flat = false, ['checkbox', 'checkboxes'], $customOnly = true, $useOptGroups = true);
+
 				if($options = self::removeEmptyTabs($customFields)){
 					$box['tabs']['first_tab']['fields']['select_characteristics_for_new_users']['values'] = $options;
 				}
@@ -183,6 +222,26 @@ class zenario_extranet_registration extends zenario_extranet {
 						$values['first_tab/login_page'] = $tagId;
 					}
 				}
+
+				if(ze::setting('user_use_screen_name')){
+				    $fields['show_screen_name']["value"] = 1;
+				} else {
+				    $fields['show_screen_name']["value"] = 0;
+				}
+        		//Make sure that the dataset field picker points to the users dataset
+        		$dataset = ze\dataset::details('users');
+        		
+        		if(!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')){
+				    //Show warning
+				    $fields['use_captcha']['side_note'] = "Recaptcha keys are not set. To show a captcha you must set the recaptcha <a href='zenario/admin/organizer.php?fromCID=7&fromCType=html#zenario__administration/panels/site_settings//captcha~.site_settings~tcaptcha~k{&#34;id&#34;%3A&#34;captcha&#34;}' target='_blank'>site settings</a>.";
+                    $fields['use_captcha']['readonly'] = true;
+                    $fields['use_captcha']['value'] = 0; 
+				}
+				        
+                $fields['custom_fields/user_custom_fields']['pick_items']['path'] .= $dataset['id'] . '//';
+                
+                $fields['custom_fields/desc']['snippet']['html'] = ze\admin::phrase($fields['custom_fields/desc']['snippet']['html'], $dataset);;
+
 				break;
 			case 'site_settings':
 				if ($settingGroup == 'users') {
@@ -200,6 +259,7 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+
 		switch ($path) {
 			case 'plugin_settings':
 				$fields['first_tab/select_group_for_new_users']['hidden'] = !$values['first_tab/add_user_to_group'];
@@ -234,6 +294,12 @@ class zenario_extranet_registration extends zenario_extranet {
 				
 				// Screen name error hidden if screen names not enabled and no user forms or user forms and screen name on form
 				$fields['error_messages/screen_name_in_use']['hidden'] = !ze::setting('user_use_screen_name');
+			    
+			    //Show checkbox rensend verification link
+				$fields['first_tab/show_resend_verification_link']['hidden'] = $values['first_tab/initial_email_address_status']=='verified';
+
+				
+				
 				break;
 			
 			case 'site_settings':
@@ -318,6 +384,10 @@ class zenario_extranet_registration extends zenario_extranet {
 			}
 		}
 		
+		if ($this->setting('show_salutation')) {
+		    //$this->subSections['Salutation'] = true;
+			
+		}
 		if ($this->errors){
 			return false;
 		}
@@ -394,13 +464,35 @@ class zenario_extranet_registration extends zenario_extranet {
 				ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK')));
 			}
 			
-			// Save custom fields from frameworks
+			
 			$details = [];
 			ze::$dbL->checkTableDef($tableName = DB_PREFIX . 'users_custom_data');
+			
+			if ($this->setting('user_custom_fields')) {
+				$result = ze\sql::select("select db_column, type, label from ".DB_PREFIX."custom_dataset_fields where id in (".$this->setting('user_custom_fields').")");
+			
+				// Save custom fields from plugin settings
+				while ($column = ze\sql::fetchAssoc($result)) {
+					if ($column['db_column']  != 'user_id') {
+						$details[$column['db_column']] = $_POST[$column['db_column']] ?? 0;
+					 
+						if ($column['type'] && $column['type'] == "consent" && isset($_POST[$column['db_column']])) {
+					   
+							if($_POST[$column['db_column']] == 'on'){
+								$details[$column['db_column']] = 1;
+								//check if dataset feild is consent field
+								ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($column['label']));
+							} 
+						}
+					}
+				}
+			}
+			
+			// Save custom fields from frameworks (using framework field).
 			foreach (ze::$dbL->cols[$tableName] as $col => $colDef) {
-				if ($col != 'user_id' && isset($fields[$col])) {
+				if ($col != 'user_id' && (isset($fields[$col]) || isset($customFields[$col]))) {
 					$details[$col] = $fields[$col];
-				
+				   
 					$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
 					if ($colType && $colType == "consent") {
 						//check if dataset feild is consent field
@@ -408,7 +500,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					}
 				}
 			}
-			
+
 			if (!empty($details)) {
 				ze\row::set('users_custom_data', $details, $userId);
 			}

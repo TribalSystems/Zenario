@@ -1,0 +1,74 @@
+slot_settings_zenario_banner:
+    key:
+        slideLayoutId: ''
+        slideLayoutFor: ''
+        slideLayoutForId: ''
+    error_on_form_message: Please check below for errors.
+    tab: details
+    tabs:
+        details:
+            edit_mode:
+                on: true
+                enabled: true
+            fields:
+                
+                plugin_title:
+                    snippet:
+                        h1: Show a text banner
+                
+                title:
+                    plugin_setting:
+                        name: title
+                    label: 'Title'
+                    type: text
+                    width: "150"
+                    maxlength: "255"
+                    value: ""
+                
+                title_tags:
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tags'
+                    type: select
+                    values:
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h2
+                    side_note: |
+                        Choose which HTML tags the title will be displayed in.
+                
+                text:
+                    plugin_setting:
+                        name: text
+                    label: 'Text'
+                    type: textarea
+                    dont_trim: true
+                    cols: 80
+                    rows: 10
+                    
+                
+                nav_buttons: 
+                    type: grouping
+                change_plugin:
+                    grouping: nav_buttons
+                    style: |
+                        clear: both;
+                        float: left;
+                    type: button
+                    value: Change plugin/mode
+                    format_onchange: true
+                
+                save:
+                    grouping: nav_buttons
+                    same_row: true
+                    style: |
+                        float: right;
+                    css_class: zfea_do_it
+                    type: button
+                    value: Save
+                    save_onchange: true

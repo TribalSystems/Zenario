@@ -46,7 +46,7 @@
 		//This is a shortcut function for initialising a new class.
 		//It just uses normal JavaScript class inheritance, but it makes the syntax
 		//a little more readable and friendly when creating a new class
-		extensionOf = function(parent, initFun, globalName) {
+		extensionOf = function(parent, initFun) {
 			if (parent) {
 				initFun = initFun || (function() {
 						parent.apply(this, arguments);
@@ -58,19 +58,20 @@
 			} else {
 				initFun = initFun || (function() {});
 			}
-			
-			if (globalName) {
-				initFun.globalName = globalName;
-				window[globalName] = initFun;
-			}
 
 			return initFun;
 		},
 		
 		//Shortcut to the above, with different parameters
-		createZenarioLibrary = function(zenarioEncapName, parent) {
+		createZenarioLibrary = function(zenarioEncapName, parent, initFun) {
+			
 			zenarioEncapName = 'zenario' + (!defined(zenarioEncapName)? 'Lib' + ++libNum : zenarioEncapName);
-			return extensionOf(parent, undefined, zenarioEncapName);
+			initFun = extensionOf(parent, initFun);
+			
+			initFun.globalName = zenarioEncapName;
+			window[zenarioEncapName] = initFun;
+			
+			return initFun;
 		},
 	
 		//Create encapsulated objects/classes for all of Zenario's libraries

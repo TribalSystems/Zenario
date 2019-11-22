@@ -145,6 +145,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected $lastTab = false;
 	protected $slideNum = false;
 	protected $slideId = false;
+	protected $slideLayoutId = false;
 	protected $state = false;
 	protected $usesConductor = false;
 	protected $commands = [];
@@ -162,6 +163,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected $groupingColumns = 0;
 	protected $maxColumns = false;
 	protected $sameHeight = false;
+	protected $showSlideInfo = false;
 	
 	public $banner_canvas = false;
 	public $banner_width = 0;
@@ -196,7 +198,10 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		if ($specificEgg = $this->specificEgg()) {
+		$specificEgg = $this->specificEgg();
+		
+		if ($specificEgg && $specificEgg > 0) {
+			
 			$this->slideNum = ze\row::get('nested_plugins', 'slide_num', $specificEgg) ?: 1;
 			
 			$slide = ze\row::get('nested_plugins', ['id', 'states'], ['is_slide' => 1, 'slide_num' => $this->slideNum, 'instance_id' => $this->instanceId]);
@@ -596,9 +601,82 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		
 		return $text;
 	}
-
+	
+	public static function formatTitleTextAdmin($text, $htmlescape = false) {
+		if ($htmlescape) {
+			$text = htmlspecialchars($text);
+		}
+		
+		$frags = explode('[[', $text);
+		$count = count($frags);
+	
+		if ($count > 1) {
+			$text = $frags[0];
+			for ($i = 1; $i < $count; ++$i) {
+			
+				$part = explode(']]', $frags[$i], 2);
+			
+				if (isset($part[1])) {
+					//Look for variables from modules, using the syntax [[module_class_name:var_name]]
+					$details = explode(':', $part[0], 2);
+					
+					if (isset($details[1])
+					 && ze\module::inc($details[0])) {
+						
+						$val = call_user_func([$details[0], 'requestVarDisplayName'], $details[1]);
+						
+						if ($htmlescape) {
+							$text .= '<i>'. htmlspecialchars($val). '</i>';
+						} else {
+							$text .= $val;
+						}
+							
+					
+					} else {
+						$text .= $part[0];
+					}
+				
+					
+					//Anything that's not a mergefield should be left as-is
+					$text .= $part[1];
+				} else {
+					$text .= $part[0];
+				}
+			}
+		}
+		
+		return $text;
+	}
+	
+	//Allow FABs to call the formatTitleTextAdmin() function via AJAX
+	public function handleAJAX() {
+		if (isset($_REQUEST['formatTitleTextAdmin']) && ze\priv::check()) {
+			echo self::formatTitleTextAdmin($_REQUEST['formatTitleTextAdmin'], (bool) ze::request('htmlescape'));
+		}
+	}
 	
 	public function showSlot() {
+		
+		//For super-users, when using slide designer, show a button at the top to show info about the selected slide,
+		//and some other tools.
+		if ($this->showSlideInfo) {
+			echo '
+				<x-zenario-superuser-slide-controls>
+					<x-zenario-superuser-slide-info
+						onclick="zenario_plugin_nest.initSlideInfoPopout(
+							\'', ze\escape::js($this->containerId), '\',
+							', (int) $this->slideLayoutId, '
+						);"
+						title="', htmlspecialchars($this->phrase('Slide info')), '"
+					></x-zenario-superuser-slide-info>
+				</x-zenario-superuser-slide-controls>
+			';
+			
+			//I can't work out how to center-align the thing using CSS, so I'm using JavaScript to do it instead.
+			$this->callScript('zenario_plugin_nest', 'setSlideControlWidth', $this->containerId);
+		}
+		
+		
 		
 		$this->mergeFields['TAB_ORDINAL'] = $this->slideNum;
 		
@@ -635,7 +713,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$sql = "
 			SELECT
 				id, id AS slide_id,
-				slide_num, name_or_title,
+				slide_num, name_or_title, use_slide_layout,
 				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
 				request_vars, hierarchical_var, global_command,
 				invisible_in_nav,
@@ -693,99 +771,271 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		}
 	}
 	
-	const BC_EGG_ID = -1;
-	
 	protected function loadTab($slideNum) {
+		
+		
+		//This bit of code prevents a small bug/exploit, where a user could show the wrong data pool
+		//on the wrong level slide by hacking the URL in a very specific way.
+		if ($this->usesConductor && $this->slideNum) {
+			if ($this->slides[$this->slideNum]['hierarchical_var'] === 'dataPoolId') {
+				foreach ($this->slides[$this->slideNum]['request_vars'] as $var) {
+					if (false !== ze\ring::chopPrefix('dataPoolId', $var)) {
+						if (isset(ze::$vars[$var])) {
+							ze::$vars['dataPoolId'] = ze::$vars[$var];
+						}
+					}
+				}
+			}
+		}
+		
+		
+		$slEggId = 0;
 		$eggs = [];
+		$bespokeSettings = [];
 		
 		//Automatically add a breadcrumb plugin to every slide, if requested in the overall-nest's plugin settings
-		if ($this->setting('bc_add') && ($bcModuleId = ze\row::get('modules', 'id', ['class_name' => 'zenario_breadcrumbs', 'status' => 'module_running']))) {
+		if ($this->setting('bc_add') && ($moduleId = ze\row::get('modules', 'id', ['class_name' => 'zenario_breadcrumbs', 'status' => 'module_running']))) {
+			
+			--$slEggId;
+			
 			$egg = [
-				'id' => self::BC_EGG_ID,
+				'id' => $slEggId,
 				'slide_num' => $slideNum,
-				'ord' => self::BC_EGG_ID,
-				'module_id' => $bcModuleId,
+				'ord' => -1,
+				'module_id' => $moduleId,
 				'framework' => 'standard',
 				'css_class' => '',
 				'cols' => (int) $this->setting('bc_cols'),
 				'small_screens' => 'show'
 			];
 			
-			$eggs[] = $egg;
-		}
-		
-		
-		//Look up every nested plugin in this slide
-		$sql = "
-			SELECT np.id, np.slide_num, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
-			FROM ". DB_PREFIX. "nested_plugins AS np
-			WHERE np.instance_id = ". (int) $this->instanceId. "
-			  AND np.is_slide = 0
-			  AND np.slide_num = ". (int) $slideNum;
-		
-		if ($specificEgg = $this->specificEgg()) {
-			$sql .= "
-			  AND np.id = ". (int) $specificEgg;
-		}
-		
-		//N.b. exclude plugins with the "Hidden, breadcrumbs only" option set
-		$sql .= "
-			  AND np.makes_breadcrumbs != 3
-			ORDER BY np.ord";
-		
-		$result = ze\sql::select($sql);
-		while ($egg = ze\sql::fetchAssoc($result)) {
-			$eggs[] = $egg;
-		}
-		
-		
-		$this->modules[$slideNum] = [];
-		$lastSlotNameNestId = false;
-		
-		foreach ($eggs as $egg) {
+			$bespokeSettings[$slEggId] = [
+				'menu_section' => $this->setting('bc_menu_section'),
+				'breadcrumb_trail' => $this->setting('bc_breadcrumb_trail'),
+				'breadcrumb_prefix_menu' => $this->setting('bc_breadcrumb_prefix_menu'),
+				'breadcrumb_trail_separator' => $this->setting('bc_breadcrumb_trail_separator'),
+				'add_conductor_slides' => $this->setting('enable_conductor')
+			];
 			
-			$slotNameNestId = $this->slotName. '-'. $egg['id'];;
-			if ($this->initEgg($slotNameNestId, $egg)) {
+			$eggs[] = $egg;
+		}
+		
+		# I was playing around with adding a timezone plugin to each slide in a conductor,
+		# but we changed our minds.
+		//if ($this->setting('tz_add') && ($moduleId = ze\row::get('modules', 'id', ['class_name' => 'zenario_timezones', 'status' => 'module_running']))) {
+		//	
+		//	foreach ($eggs as &$prEgg) {
+		//		--$prEgg['ord'];
+		//	}
+		//	
+		//	--$slEggId;
+		//	
+		//	$egg = [
+		//		'id' => $slEggId,
+		//		'slide_num' => $slideNum,
+		//		'ord' => -1,
+		//		'module_id' => $moduleId,
+		//		'framework' => 'standard',
+		//		'css_class' => '',
+		//		'cols' => (int) $this->setting('tz_cols'),
+		//		'small_screens' => 'show'
+		//	];
+		//	
+		//	$bespokeSettings[$slEggId] = [];
+		//	
+		//	$eggs[] = $egg;
+		//}
+		
+		
+		$ord = 0;
+		$specificEgg = $this->specificEgg();
+		
+		//Don't look up details on the other plugins if this is an AJAX request for one of the slide-designer plugins
+		if (!$specificEgg || $specificEgg > 0) {
+			
+			//Look up every nested plugin in this slide
+			$sql = "
+				SELECT np.id, np.slide_num, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
+				FROM ". DB_PREFIX. "nested_plugins AS np
+				WHERE np.instance_id = ". (int) $this->instanceId. "
+				  AND np.is_slide = 0
+				  AND np.slide_num = ". (int) $slideNum;
+			
+			//If this is an AJAX request for a specific plugin, don't load any of the others
+			if ($specificEgg = $this->specificEgg()) {
+				$sql .= "
+				  AND np.id = ". (int) $specificEgg;
+			}
+		
+			//N.b. exclude plugins with the "Hidden, breadcrumbs only" option set
+			$sql .= "
+				  AND np.makes_breadcrumbs != 3
+				ORDER BY np.ord";
+		
+			$result = ze\sql::select($sql);
+			while ($egg = ze\sql::fetchAssoc($result)) {
+				$ord = $egg['ord'];
+				$eggs[] = $egg;
+			}
+		}
+		
+		//Don't look up details on the slide-designer plugins if this is an AJAX request for one of the regular ones
+		if (!$specificEgg || $specificEgg < 0) {
+		
+			//Check if this slide is flagged as using a slide layout
+			if ('' !== $this->slides[$slideNum]['use_slide_layout']) {
+			
+				//Work out which slide layout this should be for
+				$sLayoutFor = $sLayoutForId = $showSlideInfoPerms = false;
+			
+				switch ($this->slides[$slideNum]['use_slide_layout']) {
+					case 'asset_schema':
+						if ($a2Prefix = ze\module::prefix('assetwolf_2')) {
+							$sLayoutFor = 'schema';
+							$sLayoutForId = ze\row::get($a2Prefix. 'nodes', 'schema_id', ze::$vars['assetId']);
+							$showSlideInfoPerms = ze\user::can('design', 'schema', $sLayoutForId);
+						}
+						break;
 				
-				//Read the minigrid information
-				$egg['cols'] = (int) $egg['cols'];
-				
-				//If this plugin should be grouped with the previous plugin (-1)...
-				if ($egg['cols'] < 0) {
-					if ($lastSlotNameNestId && isset($this->minigrid[$lastSlotNameNestId])) {
-						//...flag it on the previous plugin so we know to open the grouping
-						$this->minigrid[$lastSlotNameNestId]['group_with_next'] = true;
-					} else {
-						//...catch the case where there was no previous plugin by converting this to a full-width plugin
-						$egg['cols'] = 0;
+					case 'datapool_schema':
+						if ($a2Prefix = ze\module::prefix('assetwolf_2')) {
+							$sLayoutFor = 'schema';
+							$sLayoutForId = ze\row::get($a2Prefix. 'nodes', 'schema_id', ze::$vars['dataPoolId']);
+							$showSlideInfoPerms = ze\user::can('design', 'schema', $sLayoutForId);
+						}
+						break;
+				}
+			
+				if ($sLayoutForId !== false) {
+					$slData = false;
+					
+					//Look for slide layouts for this slide
+					$sql = "
+						SELECT id AS slide_layout_id, ord, privacy
+						FROM ". DB_PREFIX. "slide_layouts
+						WHERE layout_for = '". ze\escape::sql($sLayoutFor). "'
+						  AND layout_for_id = ". (int) $sLayoutForId. "
+						ORDER BY";
+					
+					//Have the option to request a specific one.
+					if (isset($_REQUEST['useSlideLayoutId'])) {
+						$sql .= "
+							id = ". (int) $_REQUEST['useSlideLayoutId']. " DESC,";
+					}
+					
+					//Otherwise just use the first one that we find...
+					$sql .= "
+						ord";
+					
+					//...that the current user has permissions to see.
+					foreach (ze\sql::select($sql) as $sl) {
+						if (ze\content::checkItemPrivacy($sl, $sl, ze::$cID, ze::$cType, ze::$cVersion, $roleLocationMustMatch = true)) {
+							$slData = ze\sql::fetchValue("
+								SELECT data
+								FROM ". DB_PREFIX. "slide_layouts
+								WHERE id = ". (int) $sl['slide_layout_id']
+							);
+							
+							$this->showSlideInfo = $showSlideInfoPerms;
+							$this->slideLayoutId = $sl['slide_layout_id'];
+							
+							break;
+						}
+					}
+					
+					//If we found a slide layout that the current user can see,
+					//read through the JSON data looking for all of the plugins and plugin settings,
+					//and add them as eggs with negative eggIds.
+					if ($slData
+					 && ($slData = json_decode($slData, true))
+					 && (is_array($slData))) {
+					
+						foreach ($slData as $slEgg) {
+							if (is_array($slEgg)
+							 && isset($slEgg['class_name'])) {
+							
+								if ($moduleId = ze\row::get('modules', 'id', ['class_name' => $slEgg['class_name'], 'status' => 'module_running'])) {
+									$eggs[] = [
+										'id' => --$slEggId,
+										'slide_num' => $slideNum,
+										'ord' => ++$ord,
+										'module_id' => $moduleId,
+										'cols' => $slEgg['cols'] ?? 1,
+										'framework' => $slEgg['framework'] ?? 'standard',
+										'css_class' => $slEgg['css_class'] ?? '',
+										'small_screens' => $slEgg['small_screens'] ?? 'show'
+									];
+									$bespokeSettings[$slEggId] = $slEgg['settings'] ?? [];
+								}
+							}
+						}
 					}
 				}
+			}
+		}
+		
+		
+		//Start getting information on all of the plugins we need to load
+		$lastSlotNameNestId = false;
+		$this->modules[$slideNum] = [];
+		
+		foreach ($eggs as $egg) {
+			$eggId = $egg['id'];
+			
+			//If this is an AJAX request for a specific plugin, don't load any of the others
+			if (!$specificEgg || $specificEgg == $eggId) {
 				
-				//If there are nothing but "full width" and "show on small screens" plugins,
-				//then we don't actually need to use a grid and can just leave the HTML alone.
-				//But as soon as we see a column that's not full width, or has responsive options,
-				//then enable the grid!
-				if (!$this->minigridInUse && ($egg['cols'] > 0 || $egg['small_screens'] != 'show')) {
-					$this->minigridInUse = true;
-					
-					//Look up how many columns the current slot has, or just guess 12 if we can't find out
-					$this->maxColumns = 
-						(int) ze\row::get('template_slot_link',
-							'cols',
-							[
-								'family_name' => ze::$templateFamily,
-								'file_base_name' => ze::$templateFileBaseName,
-								'slot_name' => $this->slotName]
-						) ?: 12;
+				//Come up with a container id for this nested plugin.
+				if ($eggId < 0) {
+					//If it's from Slide Designer, use the slot name, slide id and plugin ordinal
+					$slotNameNestId = $this->slotName. '-'. $this->slides[$slideNum]['id']. $eggId;
+				} else {
+					//If it has an id, we can just use that with the slot name.
+					$slotNameNestId = $this->slotName. '-'. $eggId;
 				}
 				
-				$this->minigrid[$slotNameNestId] = [
-					'cols' => min($egg['cols'], $this->maxColumns),
-					'small_screens' => $egg['small_screens'],
-					'group_with_next' => false
-				];
+				if ($this->initEgg($slotNameNestId, $egg)) {
 				
-				$lastSlotNameNestId = $slotNameNestId;
+					//Read the minigrid information
+					$egg['cols'] = (int) $egg['cols'];
+				
+					//If this plugin should be grouped with the previous plugin (-1)...
+					if ($egg['cols'] < 0) {
+						if ($lastSlotNameNestId && isset($this->minigrid[$lastSlotNameNestId])) {
+							//...flag it on the previous plugin so we know to open the grouping
+							$this->minigrid[$lastSlotNameNestId]['group_with_next'] = true;
+						} else {
+							//...catch the case where there was no previous plugin by converting this to a full-width plugin
+							$egg['cols'] = 0;
+						}
+					}
+				
+					//If there are nothing but "full width" and "show on small screens" plugins,
+					//then we don't actually need to use a grid and can just leave the HTML alone.
+					//But as soon as we see a column that's not full width, or has responsive options,
+					//then enable the grid!
+					if (!$this->minigridInUse && ($egg['cols'] > 0 || $egg['small_screens'] != 'show')) {
+						$this->minigridInUse = true;
+					
+						//Look up how many columns the current slot has, or just guess 12 if we can't find out
+						$this->maxColumns = 
+							(int) ze\row::get('template_slot_link',
+								'cols',
+								[
+									'family_name' => ze::$templateFamily,
+									'file_base_name' => ze::$templateFileBaseName,
+									'slot_name' => $this->slotName]
+							) ?: 12;
+					}
+				
+					$this->minigrid[$slotNameNestId] = [
+						'cols' => min($egg['cols'], $this->maxColumns),
+						'small_screens' => $egg['small_screens'],
+						'group_with_next' => false
+					];
+				
+					$lastSlotNameNestId = $slotNameNestId;
+				}
 			}
 		}
 		
@@ -796,15 +1046,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			
 			$overrideSettings = false;
 			
-			//If automatically adding a breadcrumbs plugin, set its plugin settings
-			if ($eggId === self::BC_EGG_ID) {
-				$overrideSettings = [
-					'menu_section' => $this->setting('bc_menu_section'),
-					'breadcrumb_trail' => $this->setting('bc_breadcrumb_trail'),
-					'breadcrumb_prefix_menu' => $this->setting('bc_breadcrumb_prefix_menu'),
-					'breadcrumb_trail_separator' => $this->setting('bc_breadcrumb_trail_separator'),
-					'add_conductor_slides' => $this->setting('enable_conductor')
-				];
+			//Add settings from any auto-generated plugin (e.g. the breadcrumbs at the top)
+			if ($eggId < 0 && isset($bespokeSettings[$eggId])) {
+				$overrideSettings = $bespokeSettings[$eggId];
 			}
 			
 			
@@ -1075,13 +1319,13 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				<x-zenario-admin-slot-wrapper class="';
 			
 			if ($noPermsMsg) {
-				echo 'zenario_slotWithContents zenario_slotWithNoPermission">';
+				echo 'zenario_nestSlot zenario_slotWithContents zenario_slotWithNoPermission">';
 			
 			} elseif ($status) {
-				echo 'zenario_slotWithContents zenario_nestSlotWithContents">';
+				echo 'zenario_nestSlot zenario_slotWithContents">';
 			
 			} else {
-				echo 'zenario_slotWithNoContents">';
+				echo 'zenario_nestSlot zenario_slotWithNoContents">';
 			}
 		}
 		
@@ -1183,37 +1427,37 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	}
 	
 	public function returnVisitorTUIXEnabled($path) {
-		if ($class = $this->getSpecificEgg()) {
+		if ($class = $this->getSpecificEgg(true)) {
 			return $class->returnVisitorTUIXEnabled($path);
 		}
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
-		if ($class = $this->getSpecificEgg()) {
+		if ($class = $this->getSpecificEgg(true)) {
 			return $class->fillVisitorTUIX($path, $tags, $fields, $values);
 		}
 	}
 	
 	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg()) {
+		if ($class = $this->getSpecificEgg(true)) {
 			return $class->formatVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
 	
 	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
-		if ($class = $this->getSpecificEgg()) {
+		if ($class = $this->getSpecificEgg(true)) {
 			return $class->validateVisitorTUIX($path, $tags, $fields, $values, $changes, $saving);
 		}
 	}
 	
 	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg()) {
+		if ($class = $this->getSpecificEgg(true)) {
 			return $class->saveVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
 	
 	public function typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, &$searchResults) {
-		if ($class = $this->getSpecificEgg()) {
+		if ($class = $this->getSpecificEgg(true)) {
 			return $class->typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, $searchResults);
 		}
 	}
@@ -1224,12 +1468,18 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		}
 	}
 	
-	protected function getSpecificEgg() {
+	protected function getSpecificEgg($checkSubClass = false) {
 		if ($this->show
 		 && ($specificEgg = $this->specificEgg())
 		 && ($slotNameNestId = ze\ray::value($this->modules[$this->slideNum], $specificEgg))
 		 && (!empty(ze::$slotContents[$slotNameNestId]['init']))) {
-			return ze::$slotContents[$slotNameNestId]['class'];
+			$class = ze::$slotContents[$slotNameNestId]['class'];
+			
+			if ($checkSubClass) {
+				$class = $class->runSubClass(get_class($class)) ?: $class;
+			}
+			
+			return $class;
 		}
 		return false;
 	}
@@ -1242,67 +1492,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	public function fillAdminSlotControls(&$controls) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
-	
-	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
-			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
-		}
-	}
-	
-	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
-			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
-		}
-	}
-	
-	
-	
-	
-	
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-	}
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	
 	
 	
 	
@@ -1332,7 +1521,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected static function addBanner($imageId, $instanceId, $slideNum = false, $inputIsSlideId = false) {
+	public static function addBanner($imageId, $instanceId, $slideNum = false, $inputIsSlideId = false) {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1370,13 +1559,13 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected function removeSlide($slideId, $instanceId, $resync = true) {
+	protected static function removeSlide($slideId, $instanceId, $resync = true) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
 
-	public static function reorderNest($ids) {
+	public static function reorderNest($instanceId, $ids, $ordinals, $parentIds) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	

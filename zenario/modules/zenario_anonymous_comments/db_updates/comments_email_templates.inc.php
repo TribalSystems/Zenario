@@ -35,7 +35,8 @@ ze\dbAdm::revision(37, "
         `body`,
         `date_created`,
         `created_by_id`,
-        `allow_attachments`
+        `allow_attachments`,
+        `use_standard_email_template`
     ) VALUES (
     	'zenario_comments__to_admin_comment_notification_en',
         'To Admin: Comment notification',
@@ -49,7 +50,8 @@ ze\dbAdm::revision(37, "
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>',
         NOW(),
         ". (int) ($_SESSION['admin_userid'] ?? false). ",
-        0
+        0,
+        1
     )
 ");
 
@@ -61,7 +63,8 @@ ze\dbAdm::revision(104, "
         `body`,
         `date_created`,
         `created_by_id`,
-        `allow_attachments`
+        `allow_attachments`,
+        `use_standard_email_template`
     ) VALUES (
     	'zenario_comments__comment_report',
         'To Admin: Reported User Comment',
@@ -79,7 +82,8 @@ ze\dbAdm::revision(104, "
 		',
         NOW(),
         ". (int) ($_SESSION['admin_userid'] ?? false). ",
-        0
+        0,
+        1
     )
 ");
 
@@ -91,7 +95,8 @@ ze\dbAdm::revision(107, "
         `body`,
         `date_created`,
         `created_by_id`,
-        `allow_attachments`
+        `allow_attachments`,
+        `use_standard_email_template`
     ) VALUES (
     	'zenario_comments__comment_awaiting_approval',
         'To Admin: Comment awaiting approval',
@@ -107,7 +112,8 @@ ze\dbAdm::revision(107, "
         <p><small>This is an auto-generated email from [[cms_url]].</small></p>',
         NOW(),
         ". (int) ($_SESSION['admin_userid'] ?? false). ",
-        0
+        0,
+        1
     )
 ");
 

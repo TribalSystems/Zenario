@@ -37,14 +37,25 @@ if (version_compare(phpversion(), '7.0.0', '<')) {
 }
 
 
-/*  
- *  Standard welcome page header.
- *  It will include the full library of functions in Zenario, including admin functions.
- *  It will only connect to the database if Zenario has been installed.
- */
-
-require '../basicheader.inc.php';
+//Attempt to include the basic header
+//We need to check two different paths, as this file can be accessed from two different ways,
+//depending on how the friendly URLs have been set up.
+if (is_file('zenario/basicheader.inc.php')) {
+	require 'zenario/basicheader.inc.php';
+} else {
+	require '../basicheader.inc.php';
+}
 header('Content-Type: text/html; charset=UTF-8');
+
+
+//Catch the case where someone comes in on the old "unfriendly" URL (i.e. zenario/admin/welcome.php),
+//and redirect them to the new "friendly" one (i.e. admin.php).
+$uri = explode('?', $_SERVER['REQUEST_URI'] ?? '', 2)[0];
+if (false !== ze\ring::chopSuffix($uri, 'zenario/admin/welcome.php')) {
+	header ('Location: ../../admin.php?'. $_SERVER['QUERY_STRING']);
+	exit;
+}
+
 
 //Check to see if Zenario is installed, and connect to the database if so
 $freshInstall = false;
@@ -136,7 +147,9 @@ if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 if ($installed) {
 	//If Zenario is installed, move on to the login check and then database updates
 	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
+	   
 		define('SHOW_SQL_ERRORS_TO_VISITORS', true);
+		
 	}
 	ze\db::connectLocal();
 	
@@ -219,13 +232,14 @@ echo
 <html>
 <head>
 	<title>', ze\admin::phrase('Welcome to Zenario'), '</title>
-	<meta name="viewport" content="initial-scale=0.5">';
+	<meta name="viewport" content="initial-scale=0.5">
+	<base href="', ze\link::absolute(), '">';
 
 $v = ze\db::codeVersion();
-ze\content::pageHead('../', 'welcome');
+ze\content::pageHead('zenario/', 'welcome');
 
 echo '
-	<link rel="stylesheet" type="text/css" href="../styles/admin_welcome.min.css?v=', $v, '" media="screen" />
+	<link rel="stylesheet" type="text/css" href="zenario/styles/admin_welcome.min.css?v=', $v, '" media="screen" />
 	<style type="text/css">
 		
 		#welcome,
@@ -247,7 +261,7 @@ echo '
 
 
 ze\content::pageBody();
-ze\content::pageFoot('../', 'welcome', false, false);
+ze\content::pageFoot('zenario/', 'welcome', false, false);
 
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::$dbL
@@ -258,7 +272,7 @@ if (ze::$dbL
 		$logoURL = ze\link::absolute(). $logoURL;
 	}
 } else {
-	$logoURL = 'images/zenario_logo.png';
+	$logoURL = 'zenario/admin/images/zenario_logo.png';
 	$logoWidth = 142;
 	$logoHeight = 57;
 }
@@ -309,7 +323,7 @@ if (ze\welcome::enableCaptchaForAdminLogins()) {
 }
 
 echo '
-<script type="text/javascript" src="../js/admin_welcome.min.js?v=', $v, '"></script>
+<script type="text/javascript" src="zenario/js/admin_welcome.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	zenarioAW.task = "', $allowedTasks[$_REQUEST['task'] ?? false] ?? false, '";
 	zenarioAW.getRequest = ', json_encode($_GET), ';

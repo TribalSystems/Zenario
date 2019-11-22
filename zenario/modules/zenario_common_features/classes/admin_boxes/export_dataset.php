@@ -172,11 +172,19 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 				return $datasetFields[$a]['ord'] > $datasetFields[$b]['ord'] ? 1 : -1;
 			});
 			
-			if ($dataset['system_table'] == 'users' && ze\module::inc('zenario_user_activity_bands') && ze::setting('zenario_user_activity_bands__add_activity_band_column')) {
-				$data[$recordId][] = zenario_user_activity_bands::getUserActivityBands($recordId);
+			if ($dataset['system_table'] == 'users') {
+				//Export user id. Make sure it's always at the front.
+				array_unshift($data[$recordId], $recordId);
+				
+				if (ze\module::inc('zenario_user_activity_bands') && ze::setting('zenario_user_activity_bands__add_activity_band_column'))
+					$data[$recordId][] = zenario_user_activity_bands::getUserActivityBands($recordId);
 			}
 		}
 		
+		//If exporting user ID, include a label. Make sure the id is always at the front.
+		if ($dataset['system_table'] == 'users') {
+			array_unshift($datasetColumns, 'user_id');
+		}
 
 		$downloadFileName = $dataset['label'].' export '.date('Y-m-d');
 		if ($values['download/type'] == 'csv') {

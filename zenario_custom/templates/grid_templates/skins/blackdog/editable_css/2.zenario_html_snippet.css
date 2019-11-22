@@ -1,0 +1,67 @@
+.zenario_html_snippet {
+	overflow:hidden;
+}
+
+.zenario_html_snippet a {
+	color:#2a98ce;
+}
+
+.zenario_html_snippet img {
+	max-width:100% !important;
+	height:auto !important;
+	padding:20px;
+}
+
+.zenario_html_snippet img.image_no_padding {
+	padding:0;
+}
+
+/* Top, phone
+--------------------------------------------------------------------------------------------------*/
+
+.Slot_Top .zenario_html_snippet p.phone {
+	padding:5px 0;
+	margin:0;
+	font-size:0.813em;
+}
+
+.Slot_Top .zenario_html_snippet p.phone:before {
+	font-size:16px;
+	position:relative;
+	top:2px;
+	padding-right:2px;
+}
+
+/* Footer address
+--------------------------------------------------------------------------------------------------*/
+
+.slot_address .zenario_html_snippet,
+.slot_address .zenario_html_snippet * {
+	color:#fff;
+}
+
+.slot_address .zenario_html_snippet h3 {
+	font-size:1.4em;
+	margin:0 0 5px;
+}
+
+/* Footer social
+--------------------------------------------------------------------------------------------------*/
+
+.slot_social .zenario_html_snippet {
+	padding-bottom:10px;
+}
+
+.slot_social .zenario_html_snippet a {
+	display: inline-block;
+	font-size:30px;
+	padding-left:10px;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.slot_social .zenario_html_snippet a:hover i {
+	opacity:0.85;
+}

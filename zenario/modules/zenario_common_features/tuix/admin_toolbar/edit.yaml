@@ -3,13 +3,7 @@
 sections:
     edit:
         buttons:
-            property_dropdown: &property_dropdown
-                label: Properties
-                hide_when_children_are_not_visible: true
-
-        # property_dropdown
             item_meta_data:
-                parent: property_dropdown
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
@@ -17,6 +11,12 @@ sections:
                 tooltip: ""
                 admin_box:
                     path: zenario_content
+
+            property_dropdown: &property_dropdown
+                label: More properties
+                hide_when_children_are_not_visible: true
+
+        # property_dropdown
             alias:
                 parent: property_dropdown
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS

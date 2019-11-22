@@ -31,7 +31,7 @@ var methods = methodsOf(zenario_cycle_interface);
 
 methods.show = function(containerId, opt, startingSlide) {
 	$('#' + containerId + ' .nest_plugins_wrap').cycle({
-		fx: opt.fx, sync: opt.sync, timeout: opt.timeout, speed: opt.speed, pause: opt.pause,
+		fx: opt.fx, sync: opt.sync, timeout: opt.timeout, speed: opt.speed, pause: !!opt.pause,
 		nowrap: !opt.next_prev_buttons_loop,
 		startingSlide:startingSlide,
 		before: function(currSlideElement, nextSlideElement, options, forwardFlag) {
@@ -43,7 +43,6 @@ methods.show = function(containerId, opt, startingSlide) {
 				$(sel).removeClass('tab').addClass('tab_on');
 			}
 		}
-		
 	});
 }
 

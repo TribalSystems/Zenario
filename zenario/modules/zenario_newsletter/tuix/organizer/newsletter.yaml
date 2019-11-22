@@ -35,7 +35,7 @@ zenario__email_template_manager:
                     title: ID
                     db_column: n.id
                     searchable: true
-                    show_by_default: true
+                    always_show: true
                     width: xsmall
                 status:
                     db_column: n.status
@@ -44,7 +44,7 @@ zenario__email_template_manager:
                     title: Name
                     db_column: n.newsletter_name
                     searchable: true
-                    show_by_default: true
+                    always_show: true
                     width: xlarge
                 subject:
                     title: Subject

@@ -214,6 +214,15 @@ diagnostics:
                             zip extension enabled in PHP
                             <br/><small>Needed for creating document extracts</small>
                     visible_if: zenarioAW.togglePressed(field)
+                optional_utf8_encode:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            xml extension enabled in PHP
+                            <br/><small>Needed for uploading PDF documents</small>
+                    visible_if: zenarioAW.togglePressed(field)
                 
                 
                 
@@ -472,6 +481,7 @@ diagnostics:
                             in your <code>zenario_siteconfig.php</code> file,
                             but you are not using a load balancer or a proxy,
                             or your load balancer or proxy is misconfigured.
+                    hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 errors_not_shown:
                     grouping: sub_table
@@ -520,7 +530,7 @@ diagnostics:
                 #            but you do not have &ldquo;Email debug mode&rdquo; enabled under
                 #            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
                 #    hide_on_install: true
-                #    visible_if: zenarioAW.togglePressed(field)
+                    visible_if: zenarioAW.togglePressed(field)
                 missing_modules: *blank_child
                 bad_extra_module_symlinks: *blank_child
                 module_errors: *blank_child
@@ -547,7 +557,46 @@ diagnostics:
                             to enable two-factor authentication.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
+                unencrypted_data:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site contains personal data for [[numberOfRecordsUnencrypted]] [[textForNumber]], but it is not being protected using personal data encryption.
+                            We recommend you ask your system administrator to encrypt the personal data stored on the site.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
+                column_not_found:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site contains hashed or encrypted data for user columns, but the corresponding plain text column is not present.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
+                consent_table_encrypted: *blank_child
                 robots_txt: *blank_child
+                unknown_files_in_zenario_root_directory: *blank_child
+                htaccess_unavailable:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: ''
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
+                friendly_urls_disabled:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            The .htaccess file exists and is readable, but Friendly URLs are disabled.
+                            Please go to <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap" target="_blank"><em>URL format, aliases and XML sitemap</em></a> in Site Settings to change this.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
                 
                 
                 

@@ -2,6 +2,7 @@ zenario_enable_site:
     priv: _PRIV_EDIT_SITE_SETTING
     key: 
         id: ""
+        isHead: false
     hide_tab_bar: true
     title: Site status
     tabs: 
@@ -16,52 +17,50 @@ zenario_enable_site:
                     type: success
                     message: Cache cleared; checked for changes.
                     show: false
+                head_warning:
+                    type: warning
+                    show: true
+                    visible_if: |
+                        lib.tuix.key.isHead
+                    html: true
+                    message: |
+                            This site is running on the &ldquo;HEAD&rdquo; development codebase of Zenario
+                            (the constant <code>ZENARIO_IS_HEAD</code> is set to true in the file
+                            <code>zenario/admin/db_updates/latest_revision_no.inc.php</code>).
+                            Because of this, we recommend that you run the site in development mode, with the Auto option.
             fields: 
                 desc:
                     snippet:
                         html: |
-                            Use this screen to set the running status of the site.
-                enable_site_production: 
-                    type: radio
-                    name: radio
-                    redraw_onchange: true
-                    label: |
-                        Site enabled; production mode
-                    note_below: |
-                        Maximum speed through use of the cache. If developers make changes to .css and .yaml files, changes may not be seen until the button below is clicked.
-                enable_site_development: 
-                    type: radio
-                    name: radio
-                    redraw_onchange: true
-                    label: |
-                        Site enabled; development mode
-                    note_below: |
-                        For designers and developers. Site will run more slowly in admin mode because Zenario will check for changes in .css and .yaml files on each page load.
-                disable_site: 
-                    type: radio
-                    name: radio
-                    format_onchange: true
-                    label: |
-                        Site disabled; development mode
-                    note_below: |
-                        Site not available to visitors, only available via admin mode. Site will run more slowly in admin mode because Zenario will check for changes in .css and .yaml files on each page load.
-                disabled_snippet:
+                            Use this to set the running status of the site.
+                
+                site_enabled:
                     indent: 1
-                    visible_if: |
-                        zenarioAB.value('disable_site')
-                    snippet:
-                        html: >
-                            Zenario will display a holding page, as follows.
+                    type: toggle
+                    pressed: true
+                    redraw_onchange: true
+                    enable_microtemplates_in_properties: true
+                    value: |
+                        <% if (lib.field('site_enabled').pressed) { %>✔ Site enabled
+                        <% } else { %>✘ Site disabled
+                        <% } %>
+                    note_below: |
+                        <% if (lib.field('site_enabled').pressed) { %>
+                            Site available to visitors
+                        <% } else { %>
+                            Site not available to visitors, only available via admin mode.
+                            Zenario will display a holding page to visitors, as follows:
+                        <% } %>
+
                 site_disabled_title:
-                    indent: 1
+                    indent: 2
                     visible_if: |
-                        zenarioAB.value('disable_site')
+                        !lib.field('site_enabled').pressed
                     label: "Browser title:"
                     type: text
                 site_disabled_message:
-                    indent: 1
-                    visible_if: |
-                        zenarioAB.value('disable_site')
+                    indent: 2
+                    hide_with_previous_field: true
                     label: "Message:"
                     type: editor
                     dont_trim: true
@@ -70,11 +69,75 @@ zenario_enable_site:
                         relative_urls: false
                     rows: 4
                     cols: 80
+                
+                
+                
+                
+                desc2:
+                    snippet:
+                        html: |
+                            Use this to switch the site between production and development mode.
+                site_mode:
+                    indent: 1
+                    type: radios
+                    values:
+                        prod:
+                            label: Production mode
+                        dev:
+                            label: 'Development mode:'
+                    redraw_onchange: true
+                    enable_microtemplates_in_properties: true
+                    note_below: |
+                        <% if (lib.value('site_mode') == 'prod') { %>
+                            In production mode the site will run more quickly for administrators,
+                            but if a developer changes a file,
+                            they will need to manually press the button below.
+                        <% } %>
+                
+                site_in_dev_mode:
+                    indent: 2
+                    hide_if_previous_outdented_value_isnt: dev
+                    type: radios
+                    values:
+                        3600:
+                            label: For 1 hour
+                        28800:
+                            label: For 8 hours
+                        129600:
+                            label: For 36 hours
+                        432000:
+                            label: For 5 days
+                        head:
+                            visible_if: |
+                                lib.tuix.key.isHead
+                            label: Auto (recommended when codebase is HEAD)
+                        timed:
+                            hidden: true
+                            label: ''
+                            pre_field_html: |
+                                <br/>
+                    redraw_onchange: true
+                    enable_microtemplates_in_properties: true
+                    note_below: |
+                        In development mode, when a developer changes a file within Zenario, the effect of any
+                        changes will be seen by administrators on next page load, so bypassing Zenario's cache;
+                        but the site will run more slowly for administrators.
+                        It will have no effect on regular website visitors or extranet users.
+                        
+                        <% if (lib.tuix.key.isHead) { %>
+                            </br></br>
+                            By choosing Auto, development mode will be enabled so long as ZENARIO_IS_HEAD is still true.
+                            When the Zenario codebase becomes a branch, this constant will be set to false and the site
+                            will be automatically switched to production mode and remain in that state.
+                        <% } %>
+                
+                
                 desc3:
                     snippet:
                         html: >
                             <p>
-                                Click the following button to clear cache and check for changes. This should only be needed in production mode.
+                                Click the following button to clear cache and check for changes.
+                                This should only be needed in production mode.
                             </p>
                 
                 clear_cache:

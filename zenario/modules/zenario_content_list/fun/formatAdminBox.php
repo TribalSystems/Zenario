@@ -52,6 +52,8 @@ switch ($path) {
 		$fields['overall_list/heading_tags']['hidden'] = 
 			($values['show_headings'] != 1);
 		
+		$fields['heading_if_no_items']['hidden'] = ($values['show_headings_if_no_items'] != 1);
+		
 		$fields['overall_list/more_link_text']['hidden'] =
 		$fields['overall_list/more_hyperlink_target']['hidden'] =
 			!$values['overall_list/show_more_link'];

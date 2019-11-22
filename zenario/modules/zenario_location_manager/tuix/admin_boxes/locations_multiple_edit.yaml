@@ -21,37 +21,37 @@ zenario_location_manager__locations_multiple_edit:
                     label: 'Name:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 address_line_1:
                     label: 'Address Line 1:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 address_line_2:
                     label: 'Address Line 2:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 locality:
                     label: 'Locality:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 city:
                     label: 'City/Town:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 state:
                     label: 'State:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 postcode:
                     label: 'Postcode/ZIP code:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 country:
                     label: 'Country:'
                     type: select
@@ -59,7 +59,7 @@ zenario_location_manager__locations_multiple_edit:
                         - '-- Select a Country --'
                     format_onchange: Yes
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 region:
                     label: 'Region:'
                     pick_items:
@@ -70,7 +70,7 @@ zenario_location_manager__locations_multiple_edit:
                         nothing_selected_phrase: No Region selected
                         select_phrase: Select Region...
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                         
                 map:
                     label: 'Map:'
@@ -84,7 +84,14 @@ zenario_location_manager__locations_multiple_edit:
                             ord: "2"
                     value: keep
                     multiple_edit:
-                        exists: Yes
+                        exists: true
+                
+                timezone:
+                    label: Timezone
+                    type: select
+                    multiple_edit:
+                        exists: true
+        
         details_plus:
             label: Details+
             edit_mode:
@@ -101,14 +108,14 @@ zenario_location_manager__locations_multiple_edit:
                     label: 'Contact Name:'
                     type: text
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                 notes:
                     label: 'Notes:'
                     type: textarea
                     cols: "20"
                     rows: "10"
                     multiple_edit:
-                        exists: Yes
+                        exists: true
                         
         content_item:
             label: Descriptive Page
@@ -130,7 +137,7 @@ zenario_location_manager__locations_multiple_edit:
                         min_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: Yes
                     multiple_edit:
-                        exists: Yes
+                        exists: true
         sectors:
             ord: "50"
             label: Sectors

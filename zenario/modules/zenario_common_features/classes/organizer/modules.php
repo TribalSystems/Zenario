@@ -168,19 +168,6 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				if (!$module['is_pluggable']
 				 || $module['status'] != 'module_running') {
 					$module['link'] = false;
-				
-				//The folder icon on nests/slideshow modules should lead to the nest/slideshow library panels instead
-				} elseif ($module['class_name'] == 'zenario_plugin_nest') {
-					$module['link'] = [
-						'path' => 'zenario__modules/panels/plugins',
-						'refiner' => 'nests'
-					];
-				
-				} elseif ($module['class_name'] == 'zenario_slideshow') {
-					$module['link'] = [
-						'path' => 'zenario__modules/panels/plugins',
-						'refiner' => 'slideshows'
-					];
 				}
 		
 				if ($mode != 'select') {

@@ -7,23 +7,28 @@
 			{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
 		"
 	
-		<% if (!zenarioA.siteSettings.site_enabled) { %>
-			class="organizer_enabled_disabled site_disabled"
-			title="Site disabled and in development mode."
-	
-		<% } else if (zenarioA.siteSettings.site_mode == 'production') { %>
-			class="organizer_enabled_disabled site_enabled"
-			title="Site enabled and in production mode."
-	
+		<% if (zenarioA.siteSettings.site_enabled) { %>
+			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
+				class="organizer_enabled_disabled site_enabled_development"
+				title="Site enabled and in development mode."
+			<% } else { %>
+				class="organizer_enabled_disabled site_enabled"
+				title="Site enabled and in production mode."
+			<% } %>
 		<% } else { %>
-			class="organizer_enabled_disabled site_enabled_development"
-			title="Site enabled and in development mode."
+			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
+				class="organizer_enabled_disabled site_disabled"
+				title="Site disabled and in development mode."
+			<% } else { %>
+				class="organizer_enabled_disabled site_disabled"
+				title="Site disabled."
+			<% } %>
 		<% } %>
 	></div>
 <% } %>
 <div
 	class="organizer_info_box"
-	data-step="16" data-position="top"
+	data-step="16" data-position="bottom-right-aligned"
 	data-intro="{{'<p><strong>Information</strong></p><p>Click here to find out the software and installation details about the CMS version you are using.</p>'|escape}}"
 	onclick="zenarioA.infoBox();"
 	title="View site info"
@@ -41,7 +46,7 @@
 ></div>
 <div
 	class="organizer_help"
-	data-step="17" data-position="top"
+	data-step="17" data-position="bottom-right-aligned"
 	data-intro="{{'<p><strong>CMS Tour guide</strong></p><p>Click here to begin the tour on how to use this software system.</p>'|escape}}"
 	onclick="zenarioA.showHelp('#zenario_fbog [data-intro]:visible');"
 	title="CMS Tour guide"

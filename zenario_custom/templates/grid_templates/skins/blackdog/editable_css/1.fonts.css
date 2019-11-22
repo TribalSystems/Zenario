@@ -1,0 +1,157 @@
+.zenario_skin {
+	font-family:'robotoregular',Arial, Helvetica, sans-serif;
+	font-size:100%;
+	line-height:22px;
+}
+
+.zenario_skin em {
+	font-family:'robotoitalic',Arial, Helvetica, sans-serif;
+}
+
+.zenario_skin h1,
+.zenario_skin h2,
+.zenario_skin h3,
+.zenario_skin h4,
+.zenario_skin h5,
+.zenario_skin h6 {
+	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+}
+
+.zenario_skin table {
+	font-size:1em;
+}
+
+.zenario_skin {
+	color:#525151;
+}
+
+.zenario_skin h1,
+.zenario_skin h2,
+.zenario_skin h3,
+.zenario_skin h4,
+.zenario_skin h5,
+.zenario_skin h6,
+.zenario_skin a {
+	color:#000;
+}
+
+.zenario_skin h1 {
+	font-size:3.5em;
+}
+
+.zenario_skin h2 {
+	font-size:3em;
+}
+
+.zenario_skin h3 {
+	font-size:2em;
+}
+
+.zenario_skin h4 {
+	font-size:1.5em;
+}
+
+.zenario_skin h5 {
+	font-size:1.375em;
+}
+
+.zenario_skin h6 {
+	font-size:1.250em;
+}
+
+.zenario_skin h2 {
+	line-height:1.1em;
+}
+
+.zenario_skin h1,
+.zenario_skin h3,
+.zenario_skin h4,
+.zenario_skin h5,
+.zenario_skin h6 {
+	line-height:1.2em;
+}
+
+.zenario_skin h1,
+.zenario_skin h2,
+.zenario_skin h3,
+.zenario_skin h4,
+.zenario_skin h5,
+.zenario_skin h6 {
+	margin-bottom:15px;
+}
+
+.zenario_skin p {
+	line-height:1.5em;
+	margin-bottom:10px;
+}
+
+.zenario_skin a {
+	text-decoration:none;
+}
+
+.zenario_skin a:hover {
+	text-decoration:underline;
+}
+
+.zenario_skin ul,
+.zenario_skin ol {
+	padding:0 0 15px 10px;
+	margin-left:30px;
+}
+
+.zenario_skin ul li {
+	list-style:disc;
+}
+
+.zenario_skin hr {
+	border:0;
+	color:#CCC;
+	background-color:#CCC;
+	height:2px;
+}
+
+.zenario_skin table {
+	width:100%;
+	margin-bottom:15px;
+}
+
+.zenario_skin table tr th {
+	background:#CCC;
+}
+
+.zenario_skin table tr th,
+.zenario_skin table tr td {
+	border:1px solid #ccc;
+	padding:10px;
+}
+
+/*  Styles for text.
+	These rules are listed in the description.yaml file in the 'style_formats', 
+	so they will be selectable in in the WYSIWYG Editor.  
+--------------------------------------------------------------------------------------------------*/
+
+.x-small {
+	font-size: .7em;
+}
+
+.small {
+	font-size: .85em;
+}
+
+.medium {
+	font-size: 1em;
+}
+
+.large {
+	font-size: 1.3em;
+	line-height:1.2em;
+}
+
+.x-large {
+	font-size: 2em;
+	line-height:1.2em;
+}
+
+.code {
+    font-family: monospace;
+}

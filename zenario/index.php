@@ -40,7 +40,7 @@ if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 		  </head>
 		  <body>
 			<script type="text/javascript">
-				document.location.href = "zenario/admin/welcome.php";
+				document.location.href = "admin.php";
 			</script>
 			<h1>Welcome to Zenario</h1>
 			<p>A new zenario-powered website is coming soon at this location.</p>
@@ -113,7 +113,7 @@ if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $isAdmin)) {
 	
 	if ($redirectNeeded === 'admin'
 	 && !ze\link::adminDomainIsPrivate()) {
-		header('location: '. ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'zenario/admin/welcome.php');
+		header('location: '. ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'admin.php');
 		exit;
 	}
 	
@@ -432,6 +432,10 @@ if (ze\lang::count() > 1) {
 		}
 	}
 }
+
+//Skin information
+echo '
+<meta name="skin" content="' . ze::$skinName . '"/>';
 
 ze\content::pageHead('zenario/', false, true, $overrideFrameworkAndCSS);
 echo "\n", ze::setting('sitewide_head'), "\n";

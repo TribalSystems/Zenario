@@ -1084,6 +1084,8 @@ additionalProperties:
                                         when this refiner is active.
                                         
                                         This works from version 7.5 onwards.
+                                        
+                                        From 8.4 onwards, you can use line breaks in "no items" messages to improve readability.
                                 
                                 no_items_in_search_message:
                                     type: string
@@ -1104,6 +1106,8 @@ additionalProperties:
                                         set this property.
                                         
                                         This works from version 8.2 onwards.
+                                        
+                                        From 8.4 onwards, you can use line breaks in "no items" messages to improve readability.
                     
                     refiner_required:
                         type: boolean

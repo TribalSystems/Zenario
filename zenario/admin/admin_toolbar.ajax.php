@@ -41,8 +41,8 @@ $modules = [];
 $debugMode = (bool) ($_GET['_debug'] ?? false);
 $settingGroup = '';
 $compatibilityClassNames = [];
-ze::$skType = $type = 'admin_toolbar';
-ze::$skPath = $requestedPath = false;
+ze::$tuixType = $type = 'admin_toolbar';
+ze::$tuixPath = $requestedPath = false;
 
 
 

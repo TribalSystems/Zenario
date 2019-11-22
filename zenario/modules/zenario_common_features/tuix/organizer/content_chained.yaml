@@ -61,7 +61,7 @@ zenario__content:
                     width: large
                     searchable: true
                     db_column: c.tag_id
-                    show_by_default: true
+                    always_show: true
                     disallow_filtering: true
                 equiv_id:
                     db_column: c.equiv_id
@@ -80,6 +80,7 @@ zenario__content:
                     title: Alias
                     searchable: true
                     db_column: c.alias
+                    hidden: true
                 title:
                     title: Title
                     db_column: v.title
@@ -102,11 +103,13 @@ zenario__content:
                     title: Filename
                     db_column: v.filename
                     searchable: true
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 file_path:
                     db_column: f.path
                 version:
                     title: Version
                     db_column: v.version
+                    width: xsmall
                 status:
                     title: Status
                     db_column: c.status
@@ -158,7 +161,7 @@ zenario__content:
                         logged_in_not_in_smart_group:
                             label: 'Permissions: Private, only show to extranet users NOT in a given smart group...'
                         with_role:
-                            label: 'Permissions: Private, only show to extranet users with a given role...'
+                            label: 'Permissions: Private, only show to extranet users with a given role (at ANY location)...'
                         call_static_method:
                             label: "Permissions: Call a module's static method to decide"
                         send_signal:
@@ -168,15 +171,17 @@ zenario__content:
                     db_column: c.first_created_datetime
                     format: datetime
                 created_datetime:
-                    title: Date/Time Latest Version Created
+                    title: Latest Version Created
                     db_column: v.created_datetime
-                    format: datetime
+                    width: large
+                    show_by_default: Yes
                 creating_author_id:
                     db_column: v.creating_author_id
                 last_modified_datetime:
-                    title: Date/Time Last Edited
+                    title: Last Edited
                     db_column: v.last_modified_datetime
-                    format: datetime
+                    width: large
+                    show_by_default: Yes
                 last_author_id:
                     db_column: v.last_author_id
                 published_datetime:
@@ -193,6 +198,7 @@ zenario__content:
                     db_column: c.lock_owner_id
                 archives_exist:
                     width: medium
+                    hidden: true
                     title: 'Archives exist?'
                     db_column: |
                         c.status != 'first_draft' AND (

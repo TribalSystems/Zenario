@@ -4,6 +4,9 @@ zenario_menu_section:
     priv: _PRIV_ADD_MENU_SECTION
     key:
         id: ""
+    identifier:
+        css_class: menu_section
+        label: Menu Section ID
     title: Creating a menu section
     max_height: 280
     hide_tab_bar: Yes

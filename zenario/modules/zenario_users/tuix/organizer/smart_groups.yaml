@@ -50,11 +50,11 @@ zenario__users:
                         sg.intended_usage = 'smart_permissions_group'
             columns:
                 name:
-                    title: Name
+                    title: Smart group name
                     db_column: sg.name
                     searchable: true
                     width: large
-                    show_by_default: true
+                    always_show: true
                 members:
                     title: Members
                     width: small

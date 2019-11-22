@@ -1,3 +1,102 @@
+{# Required to use Twig functions #}
+{% import _self as self %}
+
+{% macro featureImageOnClickEvent(menuNodeId) %}
+	if (!window.zenarioA) return true;
+	if (zenarioA.pageMode == 'menu') {
+		zenarioAB.open('zenario_menu', {'mID':'{{menuNodeId}}'}, 'feature_image');
+		return false;
+	}
+{% endmacro %}
+
+{% macro addOnMouseOver(containerId, currentLevelNodeId, topLevelNodeId, menuNodeHasOwnFeatureImage) %}
+		
+	{# This line must be included again if a function calls another function. #}
+	{% import _self as self %}
+	
+	{# Define variables to avoid having to use quotes later #}
+	{% set topLevelId = topLevelNodeId['id'] %}
+	{% set currentLevelId = currentLevelNodeId['id'] %}
+	{% set currentLevelImageLink = currentLevelNodeId['feature_image_link'] %}
+	{% set currentLevelImageSrcset = currentLevelNodeId['Image_Srcset'] %}
+	{% set currentLevelImageWidth = currentLevelNodeId['feature_image_width'] %}
+	{% set currentLevelImageHeight = currentLevelNodeId['feature_image_height'] %}
+	{% set currentLevelDestUrl = currentLevelNodeId['dest_url'] %}
+	{% set currentLevelTitle = currentLevelNodeId['title'] %}
+	{% set currentLevelText = currentLevelNodeId['text'] %}
+	{% set currentLevelLinkType = currentLevelNodeId['link_type'] %}
+	
+	onmouseover="
+		
+		{# Replace the currently displayed feature image #}
+		var el = zenario.get('{{containerId}}_node_id_{{topLevelId}}_feature_img');
+		if (el) {
+			if (zenario.addBasePath('{{currentLevelImageLink}}') != el.src) {
+				$('#' + el.id).show();
+				$('#' + el.id).stop().fadeTo(0, 0);
+				el.src='{{currentLevelImageLink}}';
+				el.srcset='{{currentLevelImageSrcset}}';
+				el.width='{{currentLevelImageWidth}}';
+				el.height='{{currentLevelImageHeight}}';
+				$('#' + el.id).stop().fadeTo(600, 1);
+			}
+			{# Allow an admin to click on the image in Edit Menu mode to edit the current menu node properties. #}
+			$('#' + el.id).removeAttr('onclick');
+			{% if menuNodeHasOwnFeatureImage %}
+				$('#' + el.id).attr('onclick', '{{self.featureImageOnClickEvent(currentLevelId)|e('js')}}');
+			{% endif %}
+		}
+		
+		{# Set the href of the feature image link to this menu node #}
+		{% if currentLevelDestUrl %}
+			$('#{{containerId}} .feature_image a').attr('href', '{{currentLevelDestUrl|e}}');
+		{% else %}
+			$('#{{containerId}} .feature_image a').removeAttr('href');
+		{% endif %}
+		
+		{% if menuNodeHasOwnFeatureImage and (currentLevelTitle or currentLevelText) %}
+			$('#{{containerId}} .feature_content').show();
+			
+			{# Process title and description. Include the link if the menu node has it. #}
+			{% if currentLevelLinkType != 'no_link' %}
+				var start_link_tag = '<a href=\'{{currentLevelDestUrl|e}}\'';
+					{% if (currentLevelNodeId['open_in_new_window'] == 1) %}
+						start_link_tag += 'target=\'_blank\'';
+					{% endif %}
+				start_link_tag += '>';
+			{% else %}
+				var start_link_tag = '';
+			{% endif %}
+			
+			var title = '<h2>{{currentLevelTitle|e('js')}}</h2>';
+				
+			{% if (currentLevelLinkType != 'no_link') %}
+				var end_link_tag = '</a>';
+			{% else %}
+				var end_link_tag = '';
+			{% endif %}
+			
+			$('#{{containerId}} .feature_title').html(start_link_tag + title + end_link_tag);
+			$('#{{containerId}} .feature_text').html('{{currentLevelText|e}}');
+			
+			{# Allow an admin to click on the title/text in Edit Menu mode to edit the current menu node properties. #}
+			$('#{{containerId}} .feature_title').removeAttr('onclick');
+			$('#{{containerId}} .feature_text').removeAttr('onclick');
+			{% if currentLevelTitle %}
+				$('#{{containerId}} .feature_title').attr('onclick', '{{self.featureImageOnClickEvent(currentLevelId)|e('js')}}');
+			{% endif %}
+			{% if currentLevelText %}
+				$('#{{containerId}} .feature_text').attr('onclick', '{{self.featureImageOnClickEvent(currentLevelId)|e('js')}}');
+			{% endif %}
+			
+		{% else %}
+			{# If there is no title or description, hide the element. #}
+			$('.feature_content').hide();
+		{% endif %}
+	"
+{% endmacro %}
+
+
 <div class="wrap_menu">
 <div class="wrap_menu_outer">
 <div class="wrap_menu_inner">
@@ -24,7 +123,13 @@
 						{% if node1.rel_tag %}rel="{{node1.rel_tag|e}}"{% endif %}
 						{% if node1.target %}target="{{node1.target|e}}"{% endif %}
 						{% if node1.title %}title="{{node1.title|e}}"{% endif %}>
-						{{node1.name|e}}
+						<span
+							{% if (nodeExtraProperties[node1.mID]['feature_image_link']) %}
+								{{self.addOnMouseOver(containerId|e, nodeExtraProperties[node1.mID], nodeExtraProperties[node1.mID], true)}}
+							{% endif %}
+						>
+							{{node1.name|e}}
+						</span>
 					</a>
 					{% if not node1.active %}
 						</em>
@@ -41,22 +146,32 @@
 									{% set currentInCol = currentInCol + 1 %}
 									{% if (nodeExtraProperties[node2.mID]['top_of_column'] == 1 and currentInCol > 1) or (currentInCol > maxInCol) %}
 										{% for i in currentInCol..maxInCol if currentInCol <= maxInCol %}
-											<div class="level3 blank"></div>
+											{% if false %}
+												<!-- We don't think this is needed. Disabling for now. -->
+												<div class="level3 blank"></div>
+											{% endif %}
 										{% endfor %}
 										{% set currentInCol = 1 %}
 										</div><div class="column">
 									{% endif %}
-									<div class="
-										level2
-										level2_{{node2.ordinal|e}}
-										{% if node2.on %}
-											level2_on
-											level2_{{node2.ordinal|e}}_on
+									<div
+										class="
+											level2
+											level2_{{node2.ordinal|e}}
+											{% if node2.on %}
+												level2_on
+												level2_{{node2.ordinal|e}}_on
+											{% endif %}
+											{% if node2.children %}has_child{% endif %}
+											{% if node2.css_class %}{{node2.css_class|e}}{% endif %}
+											zenario_menu_node
+										"
+										{% if (nodeExtraProperties[node2.mID]['feature_image_link']) %}
+											{{self.addOnMouseOver(containerId|e, nodeExtraProperties[node2.mID], nodeExtraProperties[node1.mID], true)}}
+										{% elseif (nodeExtraProperties[node1.mID]['feature_image_link']) %}
+											{{self.addOnMouseOver(containerId|e, nodeExtraProperties[node1.mID], nodeExtraProperties[node1.mID], false)}}
 										{% endif %}
-										{% if node2.children %}has_child{% endif %}
-										{% if node2.css_class %}{{node2.css_class|e}}{% endif %}
-										zenario_menu_node
-									">
+										>
 									{% if not node2.active %}
 										<em class="zenario_inactive">
 									{% endif %}
@@ -84,7 +199,8 @@
 												{% set currentInCol = 1 %}
 												</div><div class="column">
 											{% endif %}
-											<div class="
+											<div
+												class="
 												level3
 												level3_{{node3.ordinal|e}}
 												{% if node3.on %}
@@ -94,7 +210,14 @@
 												{% if node3.css_class %}{{node3.css_class|e}}{% endif %}
 												{{firstNode}}
 												zenario_menu_node
-											">
+											"
+											{% if (nodeExtraProperties[node3.mID]['feature_image_link']) %}
+												{{self.addOnMouseOver(containerId|e, nodeExtraProperties[node3.mID], nodeExtraProperties[node1.mID], true)}}
+											{% elseif (nodeExtraProperties[node1.mID]['feature_image_link']) %}
+												{{self.addOnMouseOver(containerId|e, nodeExtraProperties[node1.mID], nodeExtraProperties[node1.mID], false)}}
+											{% endif %}
+											>
+											
 											{% if not node3.active %}
 												<em class="zenario_inactive">
 											{% endif %}
@@ -126,7 +249,7 @@
 											<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
 										{% endif %}
 											<img 
-												id="{{containerId|e}}_feature_img" 
+												id="{{containerId|e}}_node_id_{{nodeExtraProperties[node1.mID]['id']}}_feature_img" 
 												width="{{nodeExtraProperties[node1.mID]['feature_image_width']}}"
 												height="{{nodeExtraProperties[node1.mID]['feature_image_height']}}"
 												src="{{nodeExtraProperties[node1.mID]['feature_image_link']|e}}"
@@ -134,37 +257,45 @@
 												{% if nodeExtraProperties[node1.mID]['Image_Srcset'] %} srcset="{{nodeExtraProperties[node1.mID]['Image_Srcset']|e}}" {% endif %}
 												{% if (nodeExtraProperties[node1.mID]['use_rollover_image'] == 1) %}
 													onmouseover="
-														this.src='{{nodeExtraProperties[node1.mID]['feature_rollover_image_link']}}';
-														this.srcset='{{nodeExtraProperties[node1.mID]['Rollover_Image_Srcset']}}';
+														this.src='{{nodeExtraProperties[node1.mID]['feature_rollover_image_link']|e}}';
+														this.srcset='{{nodeExtraProperties[node1.mID]['Rollover_Image_Srcset']|e}}';
 													"
 													onmouseout="
-														this.src='{{nodeExtraProperties[node1.mID]['feature_image_link']}}';
-														this.srcset='{{nodeExtraProperties[node1.mID]['Image_Srcset']}}';
+														this.src='{{nodeExtraProperties[node1.mID]['feature_image_link']|e}}';
+														this.srcset='{{nodeExtraProperties[node1.mID]['Image_Srcset']|e}}';
 													"
 												{% endif %}
+												onclick="
+													{{self.featureImageOnClickEvent(node1.mID)}}
+												"
 											/>
 										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
 									</div>
-									{% if (nodeExtraProperties[node1.mID]['title']) or (nodeExtraProperties[node1.mID]['text']) %}
-										<div class="feature_content">
-										{% if nodeExtraProperties[node1.mID]['title'] %}
-											<div class="feature_title">
-												{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
-												<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
-												{% endif %}
-												<h2>
-													{{nodeExtraProperties[node1.mID]['title']|e}}
-												</h2>
-												{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
-											</div>
-										{% endif %}
-										{% if nodeExtraProperties[node1.mID]['text'] %}
-											<div class="feature_text">
-												{{nodeExtraProperties[node1.mID]['text']}}
-											</div>
-										{% endif %}
-										</div>
+									
+									
+									<div class="feature_content">
+									{% if nodeExtraProperties[node1.mID]['title'] %}
+										<div class="feature_title">
+									{% else %}
+										<div class="feature_title" hidden>
 									{% endif %}
+											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
+											<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
+											{% endif %}
+											<h2>
+												{{nodeExtraProperties[node1.mID]['title']|e}}
+											</h2>
+											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
+										</div>
+									
+									{% if nodeExtraProperties[node1.mID]['text'] %}
+										<div class="feature_text">
+									{% else %}
+										<div class="feature_text" hidden>
+									{% endif %}
+											{{nodeExtraProperties[node1.mID]['text']}}
+										</div>
+									</div>
 								</div>
 							{% endif %}
 						{% endif %}

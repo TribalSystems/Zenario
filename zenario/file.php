@@ -423,6 +423,11 @@ if (!$file
 //Output the file
 header('Content-type: '. ($file['mime_type'] ?: 'application/octet-stream'));
 
+if (isset($_GET['cacheFor'])) {
+	header('Pragma: cache');
+	header('Cache-Control: max-age=' . (int)$_GET['cacheFor']);
+}
+
 if (!$filename && !empty($file['filename'])) {
 	$filename = $file['filename'];
 }

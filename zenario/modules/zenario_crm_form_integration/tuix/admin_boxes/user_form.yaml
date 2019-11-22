@@ -14,6 +14,29 @@ zenario_user_form:
                     label: 'Enable Salesforce API integration'
                     type: checkbox
                     redraw_onchange: true
+                    
+                send_api_request:
+                    indent: 1
+                    label: Send API request
+                    type: select
+                    values:
+                        always_send:
+                            label: Always send
+                        send_on_condition:
+                            label: Send on condition of consent field
+                    visible_if: zenarioAB.value('enable')
+                    format_onchange: true
+                    
+                consent_field:
+                    indent: 2
+                    label: Consent
+                    type: select
+                    visible_if: "(zenarioAB.value('enable') && (zenarioAB.value('send_api_request') == 'send_on_condition'))"
+                    empty_value: -- Select --
+                    validation: 
+                        required_if_not_hidden: Please choose a consent field.
+                    format_onchange: true
+                
                 s_object:
                     label: Salesforce Object Name
                     type: text
@@ -113,7 +136,7 @@ zenario_user_form:
                     indent: 2
                     label: Consent
                     type: select
-                    visible_if: zenarioAB.value('enable')
+                    visible_if: "(zenarioAB.value('enable') && (zenarioAB.value('send_api_request') == 'send_on_condition'))"
                     empty_value: -- Select --
                     validation: 
                         required_if_not_hidden: Please choose a consent field.
@@ -179,7 +202,29 @@ zenario_user_form:
                     label: 'Enable 360Lifecycle API integration'
                     type: checkbox
                     format_onchange: true
-                
+                    
+                send_api_request:
+                    indent: 1
+                    label: Send API request
+                    type: select
+                    values:
+                        always_send:
+                            label: Always send
+                        send_on_condition:
+                            label: Send on condition of consent field
+                    visible_if: zenarioAB.value('enable')
+                    format_onchange: true
+                    
+                consent_field:
+                    indent: 2
+                    label: Consent
+                    type: select
+                    visible_if: "(zenarioAB.value('enable') && (zenarioAB.value('send_api_request') == 'send_on_condition'))"
+                    empty_value: -- Select --
+                    validation: 
+                        required_if_not_hidden: Please choose a consent field.
+                    format_onchange: true
+                    
                 opportunity_advisor:
                     visible_if: zenarioAB.value('enable')
                     label: 'Opportunity Advisor:'
@@ -337,6 +382,27 @@ zenario_user_form:
                     label: 'Enable CRM integration'
                     type: checkbox
                     redraw_onchange: true
+                send_api_request:
+                    indent: 1
+                    label: Send API request
+                    type: select
+                    values:
+                        always_send:
+                            label: Always send
+                        send_on_condition:
+                            label: Send on condition of consent field
+                    visible_if: zenarioAB.value('enable')
+                    format_onchange: true
+                    
+                consent_field:
+                    indent: 2
+                    label: Consent
+                    type: select
+                    visible_if: "(zenarioAB.value('enable') && (zenarioAB.value('send_api_request') == 'send_on_condition'))"
+                    empty_value: -- Select --
+                    validation: 
+                        required_if_not_hidden: Please choose a consent field.
+                    format_onchange: true
                 url:
                     label: "CRM form action URL:"
                     type: text

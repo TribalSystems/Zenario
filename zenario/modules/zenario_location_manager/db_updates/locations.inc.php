@@ -56,7 +56,7 @@ _sql
 		`content_item_id` int(10) unsigned NULL,
 		`content_item_type` varchar(255) NULL,
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 ); ze\dbAdm::revision(3
 
@@ -77,7 +77,7 @@ _sql
 		`parent_id` int(10) unsigned NOT NULL DEFAULT 0,
 		`name` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -91,7 +91,7 @@ _sql
 		`ordinal` tinyint(1) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE (`name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -106,7 +106,7 @@ _sql
 		`score_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE (`location_id`,`sector_id`,`score_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(6
@@ -161,7 +161,7 @@ _sql
 	  `storekeeper_size` int(10) unsigned default NULL,
 	  PRIMARY KEY  (`location_id`,`checksum`),
 	  KEY `location_id` (`location_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(11
@@ -183,7 +183,7 @@ _sql
 		`name` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -197,7 +197,7 @@ _sql
 		`score` int(10) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`accreditor_id`,`score`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -211,7 +211,7 @@ _sql
 		`accreditor_score_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE (`location_id`,`accreditor_score_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(17
@@ -256,7 +256,7 @@ _sql
 		`sticky_flag` tinyint(1) NOT NULL DEFAULT 0,
 		PRIMARY KEY (`id`),
 		UNIQUE (`location_id`,`region_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ,<<<_sql
@@ -270,6 +270,7 @@ _sql
 	WHERE 
 			region_id IS NOT NULL
 		AND region_id <> 0
+	ORDER BY id
 _sql
 ); ze\dbAdm::revision(29
 
@@ -326,7 +327,8 @@ _sql
 		'quick' AS `value`
 	FROM [[DB_PREFIX]]site_settings
 	WHERE `name` = 'zenario_location_manager__quick_sector_management'
-		AND `value` = '1'
+	  AND `value` = '1'
+	ORDER BY `name`
 _sql
 
 , <<<_sql
@@ -335,7 +337,8 @@ _sql
 		'quick' AS `value`
 	FROM [[DB_PREFIX]]site_settings
 	WHERE `name` = 'zenario_location_manager__sector_score_management'
-		AND `value` = '1'
+	  AND `value` = '1'
+	ORDER BY `name`
 _sql
 
 );  ze\dbAdm::revision(47
@@ -758,6 +761,7 @@ if (ze\dbAdm::needRevision(135)) {
 		$sql .= "
 			id
 			FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations as l 
+			ORDER BY l.id
 			ON DUPLICATE KEY UPDATE ";
 		
 		foreach ($columnsToMigrate as $column) {
@@ -819,6 +823,7 @@ if (ze\dbAdm::needRevision(140)) {
 		$sql .= "
 			id
 			FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations as l 
+			ORDER BY l.id
 			ON DUPLICATE KEY UPDATE ";
 		
 		foreach ($columnsToMigrate as $column) {
@@ -923,6 +928,14 @@ _sql
 _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
+
+
+);	ze\dbAdm::revision(166
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	ADD COLUMN `timezone` varchar(255) CHARACTER SET ascii NOT NULL default ''
+	AFTER `hide_pin`
 _sql
 
 ); 

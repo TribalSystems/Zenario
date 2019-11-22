@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    panels:
+        plugins:
+            item_buttons:
+                plugins_in_slideshow_simple:
+                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    ord: edit.3
+                    visible_if: |
+                        item.module_class_name == 'zenario_slideshow_simple'
+                    label: Add/edit slides in slideshow
+                    hide_in_select_mode: true
+                    onclick: |
+                        zenario_slideshow_simple.openSlideManager(
+                            undefined, undefined,
+                            zenario_slideshow_simple.AJAXLink({id: zenarioO.selectedItemId()})
+                        );

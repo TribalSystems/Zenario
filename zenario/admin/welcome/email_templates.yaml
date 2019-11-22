@@ -83,9 +83,13 @@ email_templates:
             
             Our server has detected that you are logging in to [[URL]][[SUBDIRECTORY]] from a new computer or browser.
             
-            To confirm your login, please enter the following code (all UPPER CASE letters):
+            To confirm your login, please click the following button:
             
-                                [[CODE]]
+            <p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[URL]][[SUBDIRECTORY]]admin?verification_code=[[CODE]]">AUTHENTICATE</a></p>
+            
+            If the above link doesn't work, copy the following code (all UPPER CASE letters) and paste it into your browser:
+            
+            <p style="text-align: center;"><strong>[[CODE]]</strong></p>
             
             This request was made from IP address [[IP]].
             

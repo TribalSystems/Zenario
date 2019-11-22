@@ -111,7 +111,7 @@ zenario__languages:
                     with_columns_set:
                         traits.suspended: true
                     hide_in_select_mode: true
-                    traits.multiple_select: true
+                    multiple_select: true
                     multiple_select_tooltip: Activate selected Countries
                     ajax:
                         confirm:
@@ -129,7 +129,7 @@ zenario__languages:
                     with_columns_set:
                         traits.active: true
                     hide_in_select_mode: true
-                    traits.multiple_select: true
+                    multiple_select: true
                     multiple_select_tooltip: Suspend selected Countries
                     ajax:
                         confirm:
@@ -161,6 +161,7 @@ zenario__languages:
             title: Regions
             name: Regions
             view_mode: list
+            no_items_message: No regions are defined for this country.
             db_items:
                 table: |
                     [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions AS r
@@ -200,7 +201,7 @@ zenario__languages:
                     ord: "1"
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create
+                    label: Create a region
                     admin_box:
                         path: zenario_country_manager__region
                         create_another: true

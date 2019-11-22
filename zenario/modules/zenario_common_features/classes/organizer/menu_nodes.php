@@ -344,6 +344,20 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		if (!$isFlatView) {
 			$panel['columns']['path']['hidden'] = true;
 		}
+		
+		$j=0;  
+                    
+        foreach(ze\content::getContentTypes() as $content){
+
+            $j++;
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node and ".$content['content_type_name_en']; 
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM'; 
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true; 
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_dropdown'; 
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['path'] = 'zenario_content'; 
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['target_cType'] = $content['content_type_id']; 
+        }    
+
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
@@ -479,6 +493,39 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				'content_type' => $menuNodeDetails['content_type'],
 				'redundancy' => 'primary'];
 			ze\menuAdm::save($submission, $ids);
+			
+		//Duplicate menu node under iteself
+		} elseif (($_POST['duplicate_as_child'] ?? false) && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
+			$menuNodeDetails = ze\menu::details($ids);
+			
+			//We want this to be in the first position under the menu node, so we need to work out the $position to pass.
+			//The format will depend of whether there is an existing menu node under it or not.
+			$sql = '
+				SELECT id
+				FROM ' . DB_PREFIX . 'menu_nodes
+				WHERE parent_id = ' . (int)$ids . '
+				ORDER BY ordinal
+				LIMIT 1';
+			$result = ze\sql::select($sql);
+			$firstChildId = ze\sql::fetchValue($result);
+			if ($firstChildId) {
+				$position = $menuNodeDetails['section_id'] . '_' . $firstChildId . '_0';
+			} else {
+				$position = $menuNodeDetails['section_id'] . '_' . $menuNodeDetails['id'] . '_1';
+			}
+			$newIds = ze\menuAdm::addContentItems($menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'], $position);
+			
+			//Make new node primary
+			$newId = array_values($newIds)[0];
+			$newMenuNodeDetails = ze\menu::details($newId);
+			$submission = [
+				'equiv_id' => $newMenuNodeDetails['equiv_id'],
+				'target_loc' => 'int',
+				'content_type' => $newMenuNodeDetails['content_type'],
+				'redundancy' => 'primary'];
+			ze\menuAdm::save($submission, $newId);
+			
+			return $newIds;
 		}
 	}
 	

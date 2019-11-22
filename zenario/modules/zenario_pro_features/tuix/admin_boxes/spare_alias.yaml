@@ -6,6 +6,9 @@ zenario_pro_features_spare_alias:
     key:
         id: ""
         id_is_error_log_id: false
+    identifier:
+        css_class: alias_url
+        label: Spare Alias
     hide_tab_bar: Yes
     tabs:
         spare_alias:

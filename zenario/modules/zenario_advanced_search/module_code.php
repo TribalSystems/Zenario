@@ -331,7 +331,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		//We'll only be displaying the details on one content type at a time
 		//Sanitise the result set that we will be displaying, and prepare the url and other details
 		$results_by_type = &$this->results[$this->cTypeToSearch];
-		if ($results_by_type['Record_Count']) {
+		if ($results_by_type['Record_Count'] && $results_by_type['search_results']) {
 			foreach($results_by_type['search_results'] as $i => &$result) {
 				
 				$result['Result_No'] = $results_by_type['offset'] + $i;

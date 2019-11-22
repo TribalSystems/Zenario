@@ -59,6 +59,11 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 			ze\file::imageLink($width, $height, $url, ze::setting('custom_logo'), 48, 46);
 			$panel['items']['branding']['image'] = $url;
 		}
+		
+		if (!ze\module::isRunning('zenario_newsletter')) {
+			$panel['items']['email']['name'] = 'Email';
+			$panel['items']['email']['desc'] = 'Settings for sending emails from this website.';
+		}
 
 	}
 	

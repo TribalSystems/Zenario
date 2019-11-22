@@ -5,6 +5,9 @@ zenario_job:
     key:
         id: ""
         manager_class_name: ""
+    identifier:
+        css_class: zenario_scheduled_task_manager__task
+        label: Scheduled Task ID
     tabs:
         time_and_day:
             ord: "10"

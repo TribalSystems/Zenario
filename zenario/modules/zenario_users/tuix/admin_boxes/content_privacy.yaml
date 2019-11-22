@@ -41,7 +41,7 @@ zenario_content_privacy:
                             label: 'Private, only show to extranet users NOT in the smart group:'
                             split_values_if_selected: true
                         with_role:
-                            label: 'Private, only show to extranet users with the following role(s) at ANY location:'
+                            label: 'Private, only show to extranet users with a given role (at ANY location):'
                             split_values_if_selected: true
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"

@@ -2,6 +2,8 @@
 #
 #   This file contains descriptive information about your site. It should be called 
 #   site_description.yaml and be placed in your zenario_custom/ directory.
+#
+#   The original of this file is in zenario/api/sample_site_descriptions.
 #   
 #   Some of this information is descriptive: for example you can specify a license that
 #   this copy of the is made available under.

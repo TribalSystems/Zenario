@@ -293,15 +293,13 @@ _sql
 //Add a property to dataset fields for when their db column is being updated on the custom data table.
 //For long queries this can be used to avoid database errors for when the stored name and actual name 
 //is out of sync. 
-); ze\dbAdm::revision( 46305
+//(N.b. this was added in an after-branch patch in 8.3 revision 46305, so we need to check if it's not already there.)
+);	if (ze\dbAdm::needRevision(46801) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'custom_dataset_fields LIKE "db_update_running"'))	ze\dbAdm::revision( 46801
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
 	ADD COLUMN `db_update_running` tinyint(1) NOT NULL DEFAULT '0' AFTER `db_column`
 _sql
 
 );
-
-
-
 
 

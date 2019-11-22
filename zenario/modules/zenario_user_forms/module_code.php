@@ -431,10 +431,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return true;
 	}
 	
-	protected function getUserId() {
-	    return  ze\user::id();
-	}
-	
 	protected function getExtranetLinksHTML($links) {
 		$html = '';
 		$t = $this->form['translate_text'];
@@ -604,55 +600,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
-	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-	}
-	
-	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
-		}
-	}
-	
-	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
-		}
-	}
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-	}
-
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	
 	
 	
 	
@@ -744,9 +691,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 						break;
 				}
-				if ($condition['invert']) {
+				if ($condition['invert'] == 1) {
 					$visible = !$visible;
-				}
+				} 
+				
 				if (!$visible) {
 					return true;
 				}
@@ -1121,6 +1069,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				uff.invalid_field_value_error_message,
 				uff.word_count_max,
 				uff.word_count_min,
+				uff.rows,
 				uff.combined_filename,
 				uff.stop_user_editing_filename,
 				uff.show_in_summary,
@@ -1385,6 +1334,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$action = ze\link::toItem(ze::$cID, ze::$cType, false, ['formPageHash' => $this->formPageHash], ze::$alias, true), 
 			$scrollToTopOfSlot = true
 		);
+		
 		//Hidden input for SIMPLE_ACCESS cookie rediection
 		if ($this->form['simple_access_cookie_override_redirect'] && isset($_REQUEST['rci'])) {
 			$html .= '<input type="hidden" name="rci" value="' . htmlspecialchars($_REQUEST['rci']) . '"/>';
@@ -1486,7 +1436,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$html .= $this->getVisibleConditionDataValuesHTML($field, $pageId);
 					}
 					$html .= '>';
-					$html .= '<input type="hidden" name="' . htmlspecialchars(static::getFieldName($fieldId)) . '" value="' . htmlspecialchars(implode(',', $field['rows'])) . '">';
+					$html .= '<input type="hidden" name="' . htmlspecialchars(static::getFieldName($fieldId, $field['custom_code_name'])) . '" value="' . htmlspecialchars(implode(',', $field['rows'])) . '">';
 				
 					//Repeat start title
 					if ($field['label']) {
@@ -1652,7 +1602,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	private function getFieldHTML($fieldId, $pageId, $readonly) {
 		$t = $this->form['translate_text'];
 		$field = $this->fields[$fieldId];
-		$fieldName = static::getFieldName($fieldId);
+		$fieldName = static::getFieldName($fieldId, $field['custom_code_name']);
 		$fieldElementId = $this->containerId . '__' . $fieldName;
 		$value = $this->getFieldCurrentValue($fieldId);
 		$readonly = $readonly || $field['is_readonly'];
@@ -1869,7 +1819,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($field['predefined_text_target_id'] && ze::setting('zenario_user_forms_enable_predefined_text')) {
 					$html .= '<input type="button" class="set_predefined_text" value="' . htmlspecialchars($field['predefined_text_button_label']) . '" data-id="' . htmlspecialchars($fieldId) . '"/>';
 				}
-				$html .= '<textarea rows="4" cols="51"';
+				if (!$field['rows']) $field['rows'] = 4;
+				$html .= '<textarea rows="'.$field['rows'].'" cols="51"';
 				if ($field['placeholder'] !== '' && $field['placeholder'] !== null) {
 					$html .= ' placeholder="' . htmlspecialchars(static::fPhrase($field['placeholder'], [], $t)) . '"';
 				}
@@ -2326,10 +2277,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Special case for first_name and last_name dataset fields where they have an option to show both names in one
 			if ($field['split_first_name_last_name']) {
 				if ($field['db_column'] == 'first_name') {
-					$lastName = ze\dataset::fieldValue($this->dataset, 'last_name', ze\user::id(), true, false, $row);
+					$lastName = ze\dataset::fieldValue($this->dataset, 'last_name', $this->getUserId(), true, false, $row);
 					$value = $value . ' ' . $lastName;
 				} elseif ($field['db_column'] == 'last_name') {
-					$firstName = ze\dataset::fieldValue($this->dataset, 'first_name', ze\user::id(), true, false, $row);
+					$firstName = ze\dataset::fieldValue($this->dataset, 'first_name', $this->getUserId(), true, false, $row);
 					$value = $firstName . ' ' . $value;
 				}
 			}
@@ -2584,7 +2535,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	private function loadRepeatRows($repeatStartField) {
 		$fieldId = $repeatStartField['id'];
-		$fieldName = static::getFieldName($fieldId);
+		$fieldName = static::getFieldName($fieldId, static::getFieldCustomCodeName($fieldId) ?: false);
 		if (isset($_POST[$fieldName])) {
 			$rows = explode(',', $_POST[$fieldName]);
 		} elseif (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
@@ -2623,7 +2574,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$setPreDefinedTextFieldId = false;
 		foreach ($this->pages[$pageId]['fields'] as $i => $fieldId) {
 			$field = $this->fields[$fieldId];
-			$name = static::getFieldName($fieldId);
+			$name = static::getFieldName($fieldId, $field['custom_code_name']);
 			switch ($field['type']) {
 				case 'checkbox':
 				case 'group':
@@ -2929,8 +2880,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					break;
 			}
 			
-			if ($field['mandatory_condition_invert']) {
+			if ($field['mandatory_condition_invert'] == 1) {
 				$field['is_required'] = !$field['is_required'];
+			} else if ($field['mandatory_condition_invert'] == 2) {
+				$field['is_required'] = false;
+				if(in_array($requiredFieldValue, explode(',', $field['mandatory_condition_field_value']))){
+				    $field['is_required'] = true;
+				}
 			}
 		}
 		
@@ -3062,10 +3018,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Textarea wordlimit validation
 		if ($field['type'] == 'textarea') {
-			if ($field['word_count_max'] && $value && str_word_count($value) > $field['word_count_max']) {
-				return static::fNPhrase('Cannot be more than [[n]] word.', 'Cannot be more than [[n]] words.', $field['word_count_max'], ['n' => $field['word_count_max']], $t);
-			} elseif ($field['word_count_min'] && $value && str_word_count($value) < $field['word_count_min']) {
-				return static::fNPhrase('Cannot be less than [[n]] word.', 'Cannot be less than [[n]] words.', $field['word_count_min'], ['n' => $field['word_count_min']], $t);
+			
+			//Catch the case where the user has entered more characters than SQL type TEXT allows.
+			$maxColumnLength = 65535;
+			$currentLength = strlen($value);
+			if ($currentLength > $maxColumnLength){
+				return static::fPhrase('Cannot be more than [[n]] characters. Current character count: [[currentCharCount]].', ['n' => $maxColumnLength, 'currentCharCount' => $currentLength], $t);
+			} else {
+				//Otherwise, follow the min and max word count settings (if specified).
+				if ($field['word_count_max'] && $value && str_word_count($value) > $field['word_count_max']) {
+					return static::fNPhrase('Cannot be more than [[n]] word.', 'Cannot be more than [[n]] words.', $field['word_count_max'], ['n' => $field['word_count_max']], $t);
+				} elseif ($field['word_count_min'] && $value && str_word_count($value) < $field['word_count_min']) {
+					return static::fNPhrase('Cannot be less than [[n]] word.', 'Cannot be less than [[n]] words.', $field['word_count_min'], ['n' => $field['word_count_min']], $t);
+				}
 			}
 		}
 		
@@ -3121,8 +3086,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Creating users
 		} elseif ($this->form['save_data']) {
 		
-		    //Checking for consent field radio buttons
-		    if(($this->form['save_data'] == 2 && $this->getFieldCurrentValue($this->form['consent_field'])) || ($this->form['save_data'] == 1)){
+		    /**
+		        $this->form['save_data'] = 1 Always send
+		        $this->form['save_data'] = 2 Send on condition of consent field
+		    **/
+		    if(($this->form['save_data'] == 2 && $this->fields[$this->form['consent_field']]['value']) || ($this->form['save_data'] == 1)){
 			    if (isset($this->datasetFieldsColumnLink['email'])) {
 				    $email = $this->getFieldCurrentValue($this->datasetFieldsColumnLink['email']);
 				    $userId = ze\row::get('users', 'id', ['email' => $email]);
@@ -3151,16 +3119,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						    $this->sendVerificationEmail($userId);
 					    }
 				    }
-                    if ($userId) {
-                        ze\user::addToGroup($userId, $this->form['add_user_to_group']);
-                        //Log user in
-                        if ($this->form['log_user_in']) {
-                            $this->logUserIn($userId);
-                        }
-                    }
-                }
-            }
-        }
+				    if ($userId) {
+					    ze\user::addToGroup($userId, $this->form['add_user_to_group']);
+					    //Log user in
+					    if ($this->form['log_user_in']) {
+						    $this->logUserIn($userId);
+					    }
+				    }
+			    }
+		    }
+		}
+		
 		//Record consent if the terms and conditions checkbox was present and checked or there was a consent field on the form
 		if (!empty($consentFields)) {
 			$email = $firstName = $lastName = false;
@@ -3255,49 +3224,57 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			//Send an email to administrators
 			if ($sendEmailToAdmin) {
-				$adminEmailMergeFields = $this->getTemplateEmailMergeFields($userId, true);
+				$conditionFieldId = $this->form['send_email_to_admin_condition_field'];
+				if ($this->form['send_email_to_admin_condition'] == 'always_send'
+					|| ($this->form['send_email_to_admin_condition'] == 'send_on_condition'
+						&& $conditionFieldId
+						&& $this->fields[$conditionFieldId]['value'] === true
+						)
+				) {
+					$adminEmailMergeFields = $this->getTemplateEmailMergeFields($userId, true);
 				
-				//Set reply to address and name
-				$replyToEmail = false;
-				$replyToName = false;
-				if ($this->form['reply_to'] && $this->form['reply_to_email_field'] && isset($this->fields[$this->form['reply_to_email_field']])) {
-					$replyToEmail = $this->fields[$this->form['reply_to_email_field']]['value'];
-					$replyToName = '';
-					if (isset($this->fields[$this->form['reply_to_first_name']])) {
-						$replyToName .= $this->fields[$this->form['reply_to_first_name']]['value'];
-					}
-					if (isset($this->fields[$this->form['reply_to_last_name']])) {
-						$replyToName .= ' ' . $this->fields[$this->form['reply_to_last_name']]['value'];
-					}
-					if (!$replyToName) {
-						$replyToName = $replyToEmail;
-					}
-				}
-				
-				$attachments = [];
-				if (ze::setting('zenario_user_forms_admin_email_attachments')) {
-					foreach ($this->fields as $fieldId => $field) {
-						switch ($field['type']) {
-							case 'attachment':
-								if ($field['value']) {
-									$attachments[] = $field['value'];
-								}
-								break;
-							case 'file_picker':
-							case 'document_upload':
-								foreach ($field['value'] as $fileId => $file) {
-									$attachments[] = $file['path'];
-								}
-								break;
+					//Set reply to address and name
+					$replyToEmail = false;
+					$replyToName = false;
+					if ($this->form['reply_to'] && $this->form['reply_to_email_field'] && isset($this->fields[$this->form['reply_to_email_field']])) {
+						$replyToEmail = $this->fields[$this->form['reply_to_email_field']]['value'];
+						$replyToName = '';
+						if (isset($this->fields[$this->form['reply_to_first_name']])) {
+							$replyToName .= $this->fields[$this->form['reply_to_first_name']]['value'];
+						}
+						if (isset($this->fields[$this->form['reply_to_last_name']])) {
+							$replyToName .= ' ' . $this->fields[$this->form['reply_to_last_name']]['value'];
+						}
+						if (!$replyToName) {
+							$replyToName = $replyToEmail;
 						}
 					}
-				}
 				
-				if ($this->form['admin_email_use_template'] && $this->form['admin_email_template']) {
-					zenario_email_template_manager::sendEmailsUsingTemplate($this->form['admin_email_addresses'], $this->form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName);
-				} else {
-					$startLine = 'Dear admin,';
-					$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true);
+					$attachments = [];
+					if (ze::setting('zenario_user_forms_admin_email_attachments')) {
+						foreach ($this->fields as $fieldId => $field) {
+							switch ($field['type']) {
+								case 'attachment':
+									if ($field['value']) {
+										$attachments[] = $field['value'];
+									}
+									break;
+								case 'file_picker':
+								case 'document_upload':
+									foreach ($field['value'] as $fileId => $file) {
+										$attachments[] = $file['path'];
+									}
+									break;
+							}
+						}
+					}
+				
+					if ($this->form['admin_email_use_template'] && $this->form['admin_email_template']) {
+						zenario_email_template_manager::sendEmailsUsingTemplate($this->form['admin_email_addresses'], $this->form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName);
+					} else {
+						$startLine = 'Dear admin,';
+						$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true);
+					}
 				}
 			}
 		}
@@ -3334,6 +3311,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	private function sendVerificationEmail($userId) {
 		ze\userAdm::updateHash($userId);
+		
 		$emailMergeFields = ze\user::details($userId);
 		if (!empty($emailMergeFields['email']) && $this->form['verification_email_template']) {
 			$emailMergeFields['cms_url'] = ze\link::absolute();
@@ -3345,6 +3323,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	private function sendWelcomeEmail($userId) {
 		$emailMergeFields = ze\user::details($userId);
+		
 		if (!empty($emailMergeFields['email']) && $this->form['welcome_email_template']) {
 			$emailMergeFields['cms_url'] = ze\link::absolute();
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
@@ -3372,6 +3351,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$mergeFields['last_name'] = $user['last_name'];
 			$mergeFields['user_id'] = $userId;
 		}
+		
 		//Data merge fields (after user merge fields so form merge fields are not overridden)
 		foreach ($this->fields as $fieldId => $field) {
 			$column = $this->getFormFieldMergeName($field);
@@ -3382,8 +3362,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$mergeFields['last_name'] = trim(substr($field['value'], strpos($field['value'], ' ')));
 			} else {
 				$mergeFields[$column] = $displayHTML;
+				
+				if ($field['custom_code_name']) {
+					$mergeFields[$field['custom_code_name']] = $displayHTML;
+				}
 			}
 		}
+		
 		//Other merge fields
 		$mergeFields['cms_url'] = ze\link::absolute();
 		$mergeFields['users_datetime'] = ze\admin::formatDateTime(time(), '_MEDIUM');
@@ -4028,6 +4013,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected function getVisibleConditionDataValuesHTML($field, $pageId) {
 		$html = '';
 		$conditionList = static::getConditionList($field, $this->fields);
+		
+		if($conditionList[0]["invert"] == 2){
+		    $conditionList[0]["invert"] = 0;
+		}
+		
 		$html .= ' data-cfields="' . htmlspecialchars(json_encode($conditionList)) . '"';
 		return $html;
 	}
@@ -4102,7 +4092,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return false;
 	}
 	
-	
+	//An overwritable method to get the user of this form
+	protected function getUserId() {
+	    return ze\user::id();
+	}
 	
 	
 	
@@ -4110,8 +4103,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	
 	//Get the name of the field input on the form
-	public static function getFieldName($fieldId) {
-		return 'field_' . $fieldId;
+	public static function getFieldName($fieldId, $customCodeName = false) {
+		
+		if ($customCodeName) {
+			return 'field_' . $fieldId . '_' . $customCodeName;
+		} else {
+			return 'field_' . $fieldId;
+		}
+	}
+	
+	//Get the name of the field input on the form
+	public static function getFieldCustomCodeName($fieldId) {
+		return ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 'custom_code_name', $fieldId);
 	}
 	
 	public static function validateNumericInput($input) {

@@ -60,7 +60,8 @@ if (($egg = ze\pluginAdm::getNestDetails($eggId, $instanceId)) && (!$egg['is_sli
 				value, is_content, foreign_key_to, foreign_key_id, foreign_key_char, dangling_cross_references
 			FROM ". DB_PREFIX. "plugin_settings
 			WHERE instance_id = ". (int) $instanceId. "
-			  AND egg_id = ". (int) $eggId;
+			  AND egg_id = ". (int) $eggId. "
+			ORDER BY instance_id, egg_id, name";
 		
 		ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		

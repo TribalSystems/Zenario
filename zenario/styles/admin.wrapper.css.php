@@ -48,7 +48,7 @@ ze\cache::incCSS('zenario/styles/colorbox');
 
 //Include other third-party libraries
 ze\cache::incCSS('zenario/libs/manually_maintained/bsd/tokenize/jquery.tokenize');
-ze\cache::incCSS('zenario/libs/bower/intro.js/introjs');
+ze\cache::incCSS('zenario/libs/manually_maintained/mit/intro/introjs');
 ze\cache::incCSS('zenario/libs/bower/jQuery-MultiSelect/jquery.multiselect');
 ze\cache::incCSS('zenario/libs/bower/spectrum/spectrum');
 ze\cache::incCSS('zenario/libs/bower/toastr/toastr');

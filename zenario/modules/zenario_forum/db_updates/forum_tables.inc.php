@@ -50,7 +50,7 @@ _sql
 		PRIMARY KEY  (`id`),
 		INDEX (`content_id`, `content_type`),
 		INDEX (`date_updated`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Create a table to store information on threads in each forum
@@ -86,7 +86,7 @@ _sql
 		INDEX (`rating`),
 		INDEX `last_updated_order` (`forum_id`, `last_updated_order`),
 		FULLTEXT INDEX (`title`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Create a table to store user posts
@@ -113,7 +113,7 @@ _sql
 		INDEX (`employee_post`),
 		INDEX (`rating`),
 		FULLTEXT INDEX (`message_text`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Create tables to store which threads a user has/has not read
@@ -134,7 +134,7 @@ _sql
 		INDEX (`forum_id`, `reader_id`),
 		INDEX (`forum_id`, `unread_from`),
 		INDEX (`forum_id`, `unread_to`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 
@@ -240,7 +240,7 @@ _sql
 		PRIMARY KEY  (`id`),
 		UNIQUE (`post_id`, `file_id`),
 		KEY(`file_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 

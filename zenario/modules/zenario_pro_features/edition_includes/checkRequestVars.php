@@ -130,7 +130,7 @@ if (isset($a2Prefix) && $a2Prefix
  && !empty(ze::$vars['locationId'])) {
 	ze::$vars['dataPoolId'] =
 	ze::$vars['dataPoolId1'] = (int) ze\row::get(
-		$a2Prefix. 'assets',
+		$a2Prefix. 'nodes',
 		'id',
 		['owner_type' => 'location', 'owner_id' => ze::$vars['locationId'], 'is_data_pool' => 1, 'parent_id' => 0]
 	);

@@ -53,7 +53,7 @@ _sql
 		`open_in_new_window` tinyint(1) DEFAULT 0 NOT NULL,
 		PRIMARY KEY (`node_id`),
 		KEY (`image_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(4

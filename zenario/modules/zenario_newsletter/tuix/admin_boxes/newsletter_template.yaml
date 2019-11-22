@@ -4,6 +4,9 @@ zenario_newsletter_template:
     title: "Creating a newsletter template"
     key:
         id: ""
+    identifier:
+        css_class: zenario_newsletter_template
+        label: Newsletter template ID
     tabs:
         details:
             label: Body

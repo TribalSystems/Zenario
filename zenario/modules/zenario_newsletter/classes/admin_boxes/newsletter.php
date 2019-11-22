@@ -174,7 +174,9 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		if (!empty($values['meta_data/add_user_field'])) {
 			$fieldId = $values['meta_data/add_user_field'];
 			$fieldDetails = ze\dataset::fieldDetails($fieldId, 'users');
-			$values['meta_data/body'] .= trim($fieldDetails['label'], " \t\n\r\0\x0B:").': [['.$fieldDetails['db_column'].']]';
+			
+			$fieldLabel = $fieldDetails['label'] ? $fieldDetails['label'] : $fieldDetails['default_label'];
+			$values['meta_data/body'] .= trim($fieldLabel, " \t\n\r\0\x0B:").': [['.$fieldDetails['db_column'].']]';
 			$values['meta_data/add_user_field'] = '';
 		}
 		
@@ -316,7 +318,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$values['unsub_exclude/exclude_recipients_with_no_consent'] = ($newsletterConsentPolicy == 'consent_required');
 		if (!$newsletterConsentPolicy) {
 			//If the newsletter consent flag is not set, show a link to the site settings tab
-			$link= ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//zenario_newsletter__site_settings_group~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"zenario_newsletter__site_settings_group"}');
+			$link= ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"email"}');
 			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Select a flag that represents a recipients consent to receive newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
 		} else {
 			unset($fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below']);

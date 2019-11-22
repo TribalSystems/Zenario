@@ -28,7 +28,7 @@ zenario__email_template_manager:
                     title: Name
                     db_column: nt.name
                     searchable: Yes
-                    show_by_default: Yes
+                    always_show: Yes
                     width: xlarge
                 date_created:
                     title: Date created

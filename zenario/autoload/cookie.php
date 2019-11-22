@@ -129,13 +129,27 @@ class cookie {
 	//Formerly "startSession()"
 	public static function startSession() {
 		if (!isset($_SESSION)) {
-			session_name(\ze\cookie::sessionName());
+			$sessionName = \ze\cookie::sessionName();
+			session_name($sessionName);
 		
 			if (COOKIE_DOMAIN) {
 				session_set_cookie_params(SESSION_TIMEOUT, SUBDIRECTORY, COOKIE_DOMAIN);
 			} else {
 				session_set_cookie_params(SESSION_TIMEOUT, SUBDIRECTORY);
 			}
+			
+			//Make sure the session_id is valid, and if not create a new one. This stops people
+			//manually creating a bad session id on their client to cause a warning.
+			$sessionId = false;
+			if (ini_get('session.use_cookies') && isset($_COOKIE[$sessionName])) {
+				$sessionId = $_COOKIE[$sessionName];
+			} elseif (!ini_get('session.use_only_cookies') && isset($_GET[$sessionName])) {
+				$sessionId = $_GET[$sessionName];
+			}
+			if ($sessionId && !preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $sessionId)) {
+				session_id('');
+			}
+			
 			session_start();
 		
 			//Fix for a bug with the $lifetime option in session_set_cookie_params()

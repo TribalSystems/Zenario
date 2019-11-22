@@ -58,16 +58,16 @@ plugin_settings:
                 menu_number_of_levels:
                     plugin_setting:
                         name: menu_number_of_levels
-                    label: 'Number of levels:'
+                    label: 'Number of levels to display:'
                     type: select
                     values:
-                        1: "1"
-                        2: "2"
-                        3: "3"
-                        4: "4"
-                        5: "5"
-                        6: "6"
+                        1: "1 level"
+                        2: "2 levels"
+                        3: "3 levels"
+                        4: "4 levels"
+                        5: "5 levels"
                     value: "2"
+                    side_note: "If displaying 3 or more levels, the menu can be hard for users to use. Hint: use the Promo Menu plugin instead."
                 menu_start_from:
                     plugin_setting:
                         name: menu_start_from
@@ -77,22 +77,22 @@ plugin_settings:
                     values:
                         _MENU_LEVEL_1:
                             ord: "1"
-                            label: Menu level 1
+                            label: Level 1
                         _MENU_LEVEL_2:
                             ord: "2"
-                            label: Menu level 2
+                            label: Level 2
                         _MENU_LEVEL_3:
                             ord: "3"
-                            label: Menu level 3
+                            label: Level 3
                         _MENU_LEVEL_4:
                             ord: "4"
-                            label: Menu level 4
+                            label: Level 4
                         _MENU_LEVEL_5:
                             ord: "5"
-                            label: Menu level 5
+                            label: Level 5
                         _MENU_LEVEL_ABOVE:
                             ord: "10"
-                            label: Menu level above
+                            label: Menu level above current one
                         _MENU_CURRENT_LEVEL:
                             ord: "11"
                             label: Current menu level

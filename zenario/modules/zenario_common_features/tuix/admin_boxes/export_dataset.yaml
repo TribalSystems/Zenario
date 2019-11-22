@@ -9,7 +9,7 @@ zenario_export_dataset:
     hide_tab_bar: true
     save_button_message: Export
     cancel_button_message: Cancel
-    max_height: 160
+    max_height: 215
     tabs:
         download:
             label: File

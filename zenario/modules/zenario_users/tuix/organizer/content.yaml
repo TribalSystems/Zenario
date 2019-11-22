@@ -27,7 +27,7 @@ zenario__content:
                 user_access_log:
                     parent: view_dropdown
                     hide_in_select_mode: Yes
-                    css_class: log
+                    css_class: log access_log
                     label: Access log for this content item
                     link:
                         path: zenario__users/panels/access_log

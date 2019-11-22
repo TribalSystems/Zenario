@@ -42,8 +42,7 @@ require CMS_ROOT. 'zenario/basicheader.inc.php';
 require 'zenario/includes/js_minify.inc.php';
 
 
-define('IGNORE_REVERTS', false);
-define('RECOMPRESS_EVERYTHING', false);
+
 
 
 
@@ -88,6 +87,9 @@ if ($arg1 == 'p') {
 	$level = 2;
 	$specific = $arg1;
 }
+
+define('IGNORE_REVERTS', false);
+define('RECOMPRESS_EVERYTHING', $specific);
 
 
 if ($specific) {
@@ -258,9 +260,9 @@ minify('zenario/libs/manually_maintained/bsd/tokenize/', 'jquery.tokenize', $lev
 minify('zenario/libs/manually_maintained/mit/enquire/', 'enquire', $level, '.js');
 
 //Minify intro.js
-minify('zenario/libs/bower/intro.js/', 'introjs', $level, '.css');
-minify('zenario/libs/bower/intro.js/', 'introjs-rtl', $level, '.css');
-minify('zenario/libs/bower/intro.js/', 'intro', $level, '.js');
+minify('zenario/libs/manually_maintained/mit/intro/', 'introjs', $level, '.css');
+minify('zenario/libs/manually_maintained/mit/intro/', 'introjs-rtl', $level, '.css');
+minify('zenario/libs/manually_maintained/mit/intro/', 'intro', $level, '.js');
 
 //Minify jPaginator
 minify('zenario/libs/manually_maintained/mit/jpaginator/', 'jPaginator', $level, '.js');

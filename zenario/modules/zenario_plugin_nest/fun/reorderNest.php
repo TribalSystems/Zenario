@@ -27,14 +27,12 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$instanceId = ze::post('refiner__nest');
-
 //Loop through each changed slide, and set its ordinal
-foreach (explode(',', $ids) as $id) {
+foreach ($ids as $id) {
 	$key = ['id' => $id, 'instance_id' => $instanceId, 'is_slide' => 1];
 	if (ze\row::exists('nested_plugins', $key)) {
-		$newOrd = $_POST['ordinals'][$id];
-		$newParent = $_POST['parent_ids'][$id];
+		$newOrd = $ordinals[$id];
+		$newParent = $parentIds[$id];
 		
 		//Tabs sholudn't be children of other tabs
 		if (!$newParent) {
@@ -44,11 +42,11 @@ foreach (explode(',', $ids) as $id) {
 }
 
 //Loop through each changed plugin
-foreach (explode(',', $ids) as $id) {
+foreach ($ids as $id) {
 	$key = ['id' => $id, 'instance_id' => $instanceId, 'is_slide' => 0];
 	if (ze\row::exists('nested_plugins', $key)) {
-		$newOrd = $_POST['ordinals'][$id];
-		$newParent = $_POST['parent_ids'][$id];
+		$newOrd = $ordinals[$id];
+		$newParent = $parentIds[$id];
 		
 		//Plugins must be children of tabs
 		if ($newParent) {

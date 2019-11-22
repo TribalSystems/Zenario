@@ -77,15 +77,18 @@ class zenario_extranet_change_email extends zenario_extranet {
 			if ($row = ze\sql::fetchAssoc($result)){
 				$userDetails = ze\user::details($row['user_id']);
 			
-				$sql = "UPDATE "
-							. DB_PREFIX . "users 
-						SET 
-							last_profile_update_in_frontend = NOW(),
-							screen_name = IF(email=screen_name,'" . $row['new_email'] . "',screen_name),
-							email= '" . $row['new_email'] . "'
-						WHERE 
-							id = " . (int) $row['user_id'];
-				ze\sql::update($sql);
+				ze\row::update(
+					"users",
+					[
+						'last_profile_update_in_frontend' => ze\date::now(),
+						'email' => $row['new_email']
+					],
+					['id' => (int)$row['user_id']]
+				);
+				
+				if (!$userDetails['first_name'] && !$userDetails['last_name']) {
+					ze\userAdm::generateIdentifier($row['user_id']);
+				}
 				
 				ze\module::sendSignal("eventUserEmailChanged",["user_id" => $row['user_id'], "old_email" => $userDetails['email'], "new_email" => $row['new_email']]);
 				
@@ -111,7 +114,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 	public function modeChangeEmailForm(){
 		$this->addLoggedInLinks();
 		
-		echo $this->openForm();
+		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Change_Email_Form'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();

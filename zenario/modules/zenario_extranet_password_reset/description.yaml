@@ -29,6 +29,7 @@ keywords: extranet, password, reset, user
 vlp_class_name: zenario_extranet
 css_class_name: zenario_extranet_password_reset
 is_pluggable: true
+plugin_must_be_on_public_page: true
 nestable: true
 default_framework: standard
 special_pages:
@@ -36,7 +37,6 @@ special_pages:
         page_type: zenario_password_reset
         default_alias: password-reset
         default_title: Password Reset
-        footer_menu_title: Password Reset
         only_show_to_visitors_who_are_logged_out: true
         logic: create_and_maintain_in_default_language
 

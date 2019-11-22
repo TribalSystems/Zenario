@@ -32,7 +32,7 @@ switch ($path) {
 		if ($_POST['delete'] ?? false) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
-				self::deleteDocumentTag($id);
+				ze\document::deleteTag($id);
 			}
 		}
 		break;

@@ -46,6 +46,7 @@ keywords: extranet, new, register, sign, signup, user
 vlp_class_name: zenario_extranet_registration
 css_class_name: zenario_extranet_registration
 is_pluggable: true
+plugin_must_be_on_public_page: true
 can_be_version_controlled: false
 default_framework: personal
 special_pages:
@@ -53,7 +54,6 @@ special_pages:
         page_type: zenario_registration
         default_alias: register
         default_title: Register
-        footer_menu_title: Register
         only_show_to_visitors_who_are_logged_out: true
         logic: create_and_maintain_in_default_language
 

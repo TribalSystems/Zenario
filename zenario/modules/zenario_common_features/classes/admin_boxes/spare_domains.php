@@ -46,10 +46,12 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 			$values['details/requested_url'] = $record['requested_url'];
 			$values['details/content'] = $record['content_type']. '_'. $record['content_id'];
 			
-			$box['title'] = ze\admin::phrase('View/Edit a spare domain');
+			$box['title'] = ze\admin::phrase('Edit a domain name redirect');
 			$fields['requested_url']['readonly'] = true;
 			$fields['add_www']['hidden'] = true;
 		}
+		
+		ze\lang::applyMergeFields($fields['description']['snippet']['html'], ['domain_link' => 'organizer.php#zenario__administration/panels/site_settings//domains']);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -88,6 +90,16 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 
 		if (!$values['details/content']) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please select a content item.');
+		} else {
+			$cID = $cType = false;
+			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['details/content']);
+			if (!ze\link::toItem($cID, $cType)) {
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('Content item not found. Please select a different one.');
+			}
+			$contentItemStatus = ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+			if ($contentItemStatus == 'deleted') {
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('This content item was deleted. Please select a different one.');
+			}
 		}
 	}
 	

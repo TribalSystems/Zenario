@@ -18,6 +18,7 @@ keywords: extranet, image, photo, user
 vlp_class_name: zenario_extranet_user_image
 css_class_name: zenario_extranet_user_image
 is_pluggable: true
+plugin_must_be_on_private_page: true
 nestable: true
 default_framework: standard
 default_instance_name: Extranet User Image

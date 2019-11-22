@@ -31,6 +31,30 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
+		//Try to set an example URL format, for use in the SEO preview box
+		$sql = "
+			SELECT ci.id, ci.type, ci.equiv_id, ci.alias, ci.language_id
+			FROM ". DB_PREFIX. "content_items AS ci
+			LEFT JOIN ". DB_PREFIX. "special_pages AS sp
+			   ON sp.equiv_id = ci.equiv_id
+			  AND sp.content_type = ci.type
+			WHERE `type` = 'html'
+			AND sp.equiv_id IS NULL
+			ORDER BY id
+			LIMIT 1";
+		
+		if ($egContent = ze\sql::fetchAssoc($sql)) {
+			$values['meta_data/url_format'] =
+				ze\link::toItem($egContent['id'], $egContent['type'], false, '', $egContent['alias'],
+					false, $forceAliasInAdminMode = true,
+					$egContent['equiv_id'], $egContent['language_id'], false,
+					$useHierarchicalURLsIfEnabled = false, $overrideAlias = '[[alias]]', $overrideLangId = '[[langId]]'
+				);
+		}
+
+
+		
 		//Include an option to create a Menu Node and/or Content Item as a new child of an existing menu Node
 		if ($box['key']['id_is_menu_node_id'] || $box['key']['id_is_parent_menu_node_id']) {
 	
@@ -165,7 +189,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 
 		//Enforce a specific Content Type
-		$box['key']['target_cType'] = $_REQUEST['refiner__content_type'] ?? $box['key']['cType'] ?? false;
+		if ($_REQUEST['refiner__content_type'] ?? false) {
+			$box['key']['target_cType'] = $_REQUEST['refiner__content_type'] ?? false;
+		}
 		
 		if (!empty($box['key']['create_from_toolbar'])) {
 			$fields['meta_data/language_id']['disabled'] = true;
@@ -187,7 +213,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$content =
 				ze\row::get(
 					'content_items',
-					['id', 'type', 'tag_id', 'language_id', 'alias', 'visitor_version', 'admin_version', 'status'],
+					['id', 'type', 'tag_id', 'language_id', 'equiv_id', 'alias', 'visitor_version', 'admin_version', 'status'],
 					['id' => $box['key']['source_cID'], 'type' => $box['key']['cType']]);
 		}
 
@@ -204,8 +230,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 					if (!ze::setting('translations_different_aliases')) {
 						$fields['meta_data/alias']['readonly'] = true;
-						$values['meta_data/actual_alias'] = ze\content::formatTag($content['id'], $content['type'], $content['alias'], $box['key']['target_language_id']);
-						$box['tabs']['meta_data']['fields']['alias']['note_below'] = ze\admin::phrase('Note: on this site, aliases are the same on all content items in a translation chain.');
+						$box['tabs']['meta_data']['fields']['alias']['note_below'] =
+							ze\admin::phrase('Note: on this site, aliases are the same on all content items in a translation chain.');
 					}
 				}
 				
@@ -259,8 +285,14 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				
 	
 			} else {
+				//When editing an existing content item, make the example in the SEO preview box a little more accurate
+				$values['meta_data/url_format'] =
+					ze\link::toItem($content['id'], $content['type'], false, '', $content['alias'],
+						false, $forceAliasInAdminMode = true,
+						$content['equiv_id'], $content['language_id']
+					);
+
 				//The options to set the alias, categories or privacy (if it is there!) should be hidden when not creating something
-				$values['meta_data/actual_alias'] = ze\content::formatTag($content['id'], $content['type'], $content['alias'], $content['language_id']);
 				$fields['meta_data/alias']['hidden'] = true;
 				$box['tabs']['categories']['hidden'] = true;
 				$box['tabs']['privacy']['hidden'] = true;
@@ -674,14 +706,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 		if (strlen($values['meta_data/title'])<1) {
 			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_red', $titleCounterHTML);
+			$fields['meta_data/title']['note_below'] = 'Please enter a title.';
 		} elseif (strlen($values['meta_data/title'])<20)  {
 			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_orange', $titleCounterHTML);
+			$fields['meta_data/title']['note_below'] = 'For good SEO, make the title longer.';
 		} elseif (strlen($values['meta_data/title'])<40)  {
 			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_yellow', $titleCounterHTML);
+			$fields['meta_data/title']['note_below'] = 'For good SEO, make the title a little longer.';
 		} elseif (strlen($values['meta_data/title'])<66)  {
 			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_green', $titleCounterHTML);
+			$fields['meta_data/title']['note_below'] = 'This is a good title length for SEO.';
 		} else {
 			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_yellow', $titleCounterHTML);
+			$fields['meta_data/title']['note_below'] = 'The title is a little long for good SEO as it may not be fully visible.';
 		}
 		$titleCounterHTML = str_replace('[[initial_characters_count]]', strlen($values['meta_data/title']), $titleCounterHTML);
 		$box['tabs']['meta_data']['fields']['title']['post_field_html'] = $titleCounterHTML;
@@ -689,14 +726,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		if (strlen($values['meta_data/description'])<1) {
 			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_red', $descriptionCounterHTML);
+			$fields['meta_data/description']['note_below'] = 'For good SEO, enter a description. If this field is left blank, search engines will autogenerate descriptions which may not always be accurate.';
 		} elseif (strlen($values['meta_data/description'])<50)  {
 			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_orange', $descriptionCounterHTML);
+			$fields['meta_data/description']['note_below'] = 'For good SEO, make the description longer to entice people to click through from a result list.';
 		} elseif (strlen($values['meta_data/description'])<100)  {
 			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_yellow', $descriptionCounterHTML);
+			$fields['meta_data/description']['note_below'] = 'For good SEO, make the description a little longer to entice people to click through from a result list.';
 		} elseif (strlen($values['meta_data/description'])<156)  {
 			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_green', $descriptionCounterHTML);
+			$fields['meta_data/description']['note_below'] = 'This is a good description length for SEO.';
 		} else {
 			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_yellow', $descriptionCounterHTML);
+			$fields['meta_data/description']['note_below'] = 'The description is a little long for good SEO as it may not be fully visible.';
 		}
 		$descriptionCounterHTML = str_replace('[[initial_characters_count]]', strlen($values['meta_data/description']), $descriptionCounterHTML);
 		$box['tabs']['meta_data']['fields']['description']['post_field_html'] = $descriptionCounterHTML;
@@ -782,6 +824,26 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Hide these options for the 403/404 pages
 			$fields['meta_data/excluded_from_sitemap']['hidden'] = false;
 			$fields['meta_data/included_in_sitemap']['hidden'] = true;
+		}
+		
+		if (isset($box['key']['id'])) {
+			$fields['meta_data/suggest_alias_from_title']['hidden'] = true;
+			$cID = $cType = false;
+			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $box['key']['id']);
+			$equivId = ze\content::equivId($cID, $cType);
+			$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId]);
+			
+			if ($contentItemPrivacy != 'public') {
+				unset($fields['meta_data/title']['post_field_html']);
+				unset($fields['meta_data/title']['note_below']);
+				unset($fields['meta_data/description']['post_field_html']);
+				unset($fields['meta_data/description']['note_below']);
+			}
+		}
+		if (!$values['meta_data/alias_changed']) {
+			$fields['meta_data/suggest_alias_from_title']['style'] = 'display:none';
+		} else {
+			$fields['meta_data/suggest_alias_from_title']['style'] = '';
 		}
 		
 		
@@ -1368,7 +1430,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						   ON mt.menu_id = mn.id
 						  AND mt.language_id = '". ze\escape::sql(ze\content::langId($box['key']['source_cID'], $box['key']['cType'])). "'
 						WHERE mn.equiv_id = ". (int) $equivId. "
-						  AND mn.content_type = '". ze\escape::sql($box['key']['cType']). "'";
+						  AND mn.content_type = '". ze\escape::sql($box['key']['cType']). "'
+						ORDER BY mn.id";
 					ze\sql::update($sql);
 				}
 			

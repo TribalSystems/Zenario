@@ -12,7 +12,7 @@ zenario_meta_data
 "_PAGE_DESCRIPTION:","Sayfa tanımı:"
 "_PAGE_SUMMARY:","Sayfa özeti"
 "_CATEGORIES:","Kategoriler:"
-_COMMA,","
+_CATEGORY_SEPARATOR,","
 "_KEYWORDS:","Anahtar kelimeler:"
 "_LANGUAGE:","Dil kodu:"
 _WRITER_NAME:,"Yazar:"

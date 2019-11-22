@@ -40,7 +40,7 @@ div.zenario_cookie_consent,
 .Grid_Body .zenario_slot.zenario_print_page,
 .Grid_Body .zenario_slot.zenario_promo_menu,
 .Grid_Body .zenario_slot.zenario_revealable_panel,
-.Grid_Body .zenario_slot.zenario_slideshow_2,
+.Grid_Body .zenario_slot.zenario_slideshow,
 .Grid_Body .zenario_slot.zenario_user_forms {
 	display:none !important;
 }

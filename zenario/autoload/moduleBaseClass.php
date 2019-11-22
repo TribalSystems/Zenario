@@ -558,18 +558,15 @@ class moduleAPI {
 	
 	//Get HTML for google reCaptcha 2.0 and init
 	protected final function captcha2() {
-		$this->callScript($this->moduleClassName, 'recaptchaCallback');
-		return '<div id="' . $this->containerId . '_google_recaptcha"></div>';
+		\ze::requireJsLib('https://www.google.com/recaptcha/api.js?render=explicit');
+		$captchaId = $this->containerId . '_google_recaptcha';
+		$this->callScript('zenario', 'grecaptcha', $captchaId);
+		return '<div id="'. $captchaId . '"></div>';
 	}
 	
 	//Put the google reCaptcha 2.0 library on the page and the module callback
 	protected final function loadCaptcha2Lib() {
-		$captchaId = $this->containerId . '_google_recaptcha';
-		
-		if (!\ze::$googleRecaptchaElements) {
-			\ze::$googleRecaptchaElements = [];
-		}
-		\ze::$googleRecaptchaElements[] = $captchaId;
+		\ze::requireJsLib('https://www.google.com/recaptcha/api.js?render=explicit');
 	}
 	
 	//Validate google reCaptcha 2.0
@@ -727,6 +724,10 @@ class moduleAPI {
 			'&instanceId='. $this->instanceId.
 			'&slotName='. $this->slotName.
 			'&eggId='. $this->eggId.
+  		  //Plugins from the Slide Designer will have a dummy eggId, so we'll need to specify the id of the slide they're on to find them
+		  ($this->eggId && $this->eggId < 0?
+			'&slideId='. $this->slideId
+		   : '').
 			\ze\ring::urlRequest($requests);
 	}
 	
@@ -790,7 +791,11 @@ class moduleAPI {
 		   : '').
 			'&instanceId='. $this->instanceId.
 			'&slotName='. $this->slotName.
-			'&eggId='. $this->eggId;
+			'&eggId='. $this->eggId.
+		  //Plugins from the Slide Designer will have a dummy eggId, so we'll need to specify the id of the slide they're on to find them
+		  ($this->eggId && $this->eggId < 0?
+			'&slideId='. $this->slideId
+		   : '');
 	}
 	
 	
@@ -1077,20 +1082,31 @@ class moduleAPI {
 		$this->isWireframe = $this->isVersionControlled; //For backwards compatability
 		
 		$this->slotName = preg_replace('/[^\w-]/', '', $this->slotName);
-		$this->slotNameNestId = $this->slotName. ($this->eggId? '-'. $this->eggId : '');
 		$this->framework = preg_replace('/[^\w-]/', '', $this->framework);
 		
 		if ($this->slotName) {
-			//Generate a container id for the plugin
-			$this->containerId = 'plgslt_'. $this->slotName;
 			
-			if ($this->eggId) {
-				$this->containerId .= '-'. $this->eggId;
+			//Generate a container id for the plugin
+			$slotNameNestId = $this->slotName;
+			
+			if ($eggId) {
+				
+				//Come up with a container id for this nested plugin.
+				if ($eggId < 0) {
+					//If it's from Slide Designer, use the slot name, slide id and ordinal
+					$slotNameNestId .= '-'. $slideId. $eggId;
+				} else {
+					//If it has an id, we can just use that with the slot name.
+					$slotNameNestId .= '-'. $eggId;
+				}
 				
 				if (!empty(\ze::$slotContents[$this->slotName]['class'])) {
 					$this->parentNest = \ze::$slotContents[$this->slotName]['class'];
 				}
 			}
+			
+			$this->slotNameNestId = $slotNameNestId;
+			$this->containerId = 'plgslt_'. $slotNameNestId;
 		}
 		
 		if ($settings !== false) {
@@ -1241,7 +1257,7 @@ class moduleAPI {
 						//N.b. as a convience feature, I'll allow for plugin devs to send either a 401 or a 403 error,
 						//and pick the correct message here
 						if (\ze\user::id()) {
-							echo '<em>'. \ze\admin::phrase('You do not have adequate user permission to view this plugin.'). '</em>';
+							echo '<em>'. \ze\admin::phrase('You do not have permission to view this plugin, or there is a problem with its settings.'). '</em>';
 						} else {
 							echo '<em>'. \ze\admin::phrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
 						}
@@ -1278,8 +1294,14 @@ class moduleAPI {
 	public final function startInner() {
 		if (\ze::$isTwig) return;
 		
+		if (isset($this->zAPISettings['mode'])) {
+			$cm = ' '. $this->moduleClassName. '__in_mode__'. $this->zAPISettings['mode'];
+		} else {
+			$cm = '';
+		}
+		
 		return '
-					<div id="'. $this->containerId. '" class="zenario_slot '. $this->cssClass. '">';
+					<div id="'. $this->containerId. '" class="zenario_slot '. $this->cssClass. $cm. '">';
 	}
 	
 	//Close the admin controls for a slot.
@@ -1358,16 +1380,25 @@ class moduleAPI {
 	private $zAPIMainClass;
 	private $zAPISubClasses = [];
 	
-	protected final function runSubClass($filePath, $type = false, $path = false) {
+	public final function runSubClass($filePath, $type = false, $path = false) {
 		
 		//Add a check to stop subclasses calling themsevles again, which would cause an
 		//infinite loop!
 		if ($this->zAPIrunSubClassSafetyCatch) {
 			return false;
 		}
+	
+		if ($type === false) {
+			$type = \ze::$tuixType;
+		}
+		if ($path === false) {
+			$path = \ze::$tuixPath ?: $this->getMode();
+		}
 		
 		//Try to cache these, so multiple calls to the same subclass use the same instance
-		$codeName = $filePath. '`'. $type. '`'. $path;
+		$codeName = $type. '`'. $this->getModeFromPath($path);
+			//To do: This allows for multiple different sub-classes to be cached... but is there ever more than one sub class?
+			//I could do away with this and always use the previous subclass if it exists!
 		
 		if (isset($this->zAPISubClasses[$codeName])) {
 			return $this->zAPISubClasses[$codeName];
@@ -1519,6 +1550,37 @@ class moduleAPI {
 		
 		//Call Twig.
 		$this->twigFramework($mergeFields);
+	}
+	
+	
+	
+	
+	
+	
+	protected $subClass = false;
+	
+	protected function getPathFromMode($mode) {
+		return 'zenario_' . $mode;
+	}
+	
+	protected function getModeFromPath($path) {
+		return str_replace('zenario_', '', $path);
+	}
+	
+	protected function getMode() {
+		//From version 7.6, if you have a plugin, we'll only allow the plugin to run in the mode chosen in the plugin settings.
+		//If you want extra modes then you'll either need to make links in the conductor, or links to other content items.
+		if ($this->instanceId && ($mode = $this->setting('mode'))) {
+			return $mode;
+		
+		//Otherwise check the mode in the request
+		} elseif (!empty($_REQUEST['mode'])) {
+			return $_REQUEST['mode'];
+		
+		//Otherwise check the path in the request
+		} elseif (!empty($_REQUEST['path'])) {
+			return $this->getModeFromPath($_REQUEST['path']);
+		}
 	}
 }
 
@@ -1678,37 +1740,54 @@ class moduleBaseClass extends moduleAPI {
 	///////////////////////////////////////////////
 	
 	
+
 	public function returnVisitorTUIXEnabled($path) {
-		switch ($path) {
-			default:
-				//Disallow this feature by default!
-				return false;
+		if (\ze::$isTwig) return;
+		
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class))) {
+			return $this->subClass->returnVisitorTUIXEnabled($path);
 		}
+		return false;
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($this->subClass) {
+			return $this->subClass->fillVisitorTUIX($path, $tags, $fields, $values);
+		}
 	}
 	
 	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($this->subClass) {
+			return $this->subClass->formatVisitorTUIX($path, $tags, $fields, $values, $changes);
+		}
 	}
 	
 	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($this->subClass) {
+			return $this->subClass->validateVisitorTUIX($path, $tags, $fields, $values, $changes, $saving);
+		}
 	}
 	
 	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($this->subClass) {
+			return $this->subClass->saveVisitorTUIX($path, $tags, $fields, $values, $changes);
+		}
 	}
 	
 	public function typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, &$searchResults) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($this->subClass) {
+			return $this->subClass->typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, $searchResults);
+		}
 	}
 	
 	
@@ -1720,33 +1799,51 @@ class moduleBaseClass extends moduleAPI {
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if (\ze::$isTwig) return;
 		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	
@@ -1756,57 +1853,32 @@ class moduleBaseClass extends moduleAPI {
 	 //  Methods called by Organizer  //
 	///////////////////////////////////
 	
-	
-	
 	public function fillOrganizerNav(&$nav) {
 		
 		//...your PHP code...//
 	}
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
-
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		
-		//...your PHP code...//
-	}
-	
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
+		}
+	}	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		
-		//...your PHP code...//
-	}
-	
-	//depreated?
-	/**
-	 * Gives the module the option to rewrite the http headers sent to the browser,
-	 * the standard headers have already been set before call this function.
-	 * @param unknown $path
-	 * @param unknown $refinerName
-	 * @param unknown $refinerId
-	 */
-	public function rewriteHttpHeaderCSV($path, $refinerName, $refinerId) {
-
-		//...your PHP code...//
-	}
-	
-	//depreated
-	public function lineStorekeeperCSV($path, &$columns, $refinerName, $refinerId) {
-		
-		//...your PHP code...//
-	}
-	
-	//depreated
-	public function formatStorekeeperCSV($path, &$item, $refinerName, $refinerId) {
-		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
+		}
 	}
 	
 	

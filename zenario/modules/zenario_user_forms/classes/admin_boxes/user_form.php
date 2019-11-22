@@ -290,6 +290,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$fields['details/type']['snippet']['label'] = zenario_user_forms::getFormTypeEnglish($box['key']['type']);
 		
+		//Get consent fields
 		if(!empty($box['key']['id'])){
 		    $formId = $box['key']['id'];
             $consentFields = [];
@@ -303,8 +304,42 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
             }
 		    
 		    $fields['data/consent_field']['values'] = $consentFields;
+		    
+		    
+		    //Send to admin conditions: get a list of checkboxes and consent fields
+		    $formCheckboxes = [];
+		    
+		    $formFields = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['id', 'name', 'field_type'], ['user_form_id' => (int)$box['key']['id']]);
+			
+			while ($row = ze\sql::fetchAssoc($formFields)) {
+				if ($row['field_type'] == 'checkbox') {
+					if (in_array($row['id'], $consentFields)) {
+						continue;
+					} else {
+						$formCheckboxes[$row['id']] = $row['name'];//, ['parent' => 'checkboxes']];
+					}
+				}
+			}
+			
+			if (!empty($formCheckboxes)) {
+				$fields['data/send_email_to_admin_condition_fields']['values'] = $formCheckboxes;
+			}
+			
+			if (!empty($consentFields)) {
+				//Not using array_merge to preserve keys.
+				$fields['data/send_email_to_admin_condition_fields']['values'] = $fields['data/send_email_to_admin_condition_fields']['values'] + $consentFields;
+			}
+			
+			//Check the form conditions and select the correct value
+			if ($record['send_email_to_admin']) {
+				$fields['data/send_email_to_admin_condition']['value'] = $record['send_email_to_admin_condition'];
+				
+				if ($record['send_email_to_admin_condition'] == 'send_on_condition') {
+					//Note: the module select list uses the plural (fields), but the DB table uses the singular (field).
+					$fields['data/send_email_to_admin_condition_fields']['value'] = $record['send_email_to_admin_condition_field'];
+				}
+			}
 		}
-		
 	}
 	
 	protected function fillFieldValues(&$fields, &$rec){
@@ -486,14 +521,13 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		} else {
 		    $fields['data/consent_field']['hidden'] = true;
 		}
-		
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$errors = &$box['tabs']['details']['errors'];
 		
 		if (empty($values['details/name'])) {
-			$errors[] = ze\admin::phrase('Please enter a name for this Form.');
+			$fields['details/name']['error'] = ze\admin::phrase('Please enter a name for this Form.');
 		} else {
 			$sql = '
 				SELECT id
@@ -699,6 +733,17 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$record['period_to_delete_response_content'] = $values['period_to_delete_response_content'];
 		} else {
 			$record['period_to_delete_response_content'] = '';
+		}
+		
+		//Send to admin conditions
+		if ($values['send_email_to_admin'] && $values['send_email_to_admin_condition'] == 'send_on_condition') {
+			$record['send_email_to_admin_condition'] = 'send_on_condition';
+			
+			//Note: the module select list uses the plural (fields), but the DB table uses the singular (field).
+			$record['send_email_to_admin_condition_field'] = (int)$values['send_email_to_admin_condition_fields'];
+		} else {
+			$record['send_email_to_admin_condition'] = 'always_send';
+			$record['send_email_to_admin_condition_field'] = null;
 		}
 		
 		

@@ -1579,6 +1579,9 @@ class tuix {
 				} elseif (($msg = $field['validation']['no_special_characters'] ?? false) && !\ze\ring::validateScreenName(str_replace(',', '', $fieldValue), true)) {
 					$field['error'] = $msg;
 			
+				} elseif (($msg = $field['validation']['mobile_number'] ?? false) && !preg_match('/^\(?\+?([0-9]{1,4})\)?[-\. ]?(\d{3})[-\. ]?([0-9]{7})$/', trim($fieldValue))) {
+					$field['error'] = $msg;
+			
 				} else {
 					//Check if something already exists in a table with that name
 					if (!empty($field['validation']['non_present']['table'])
@@ -1695,8 +1698,8 @@ class tuix {
 		}
 	
 	
-		//Don't try and translate numbers, e.g. the hour/minute select list
-		if (is_numeric($phrase)) {
+		//Don't try and translate numbers, e.g. the hour/minute select list, or true/false values
+		if (is_numeric($phrase) || is_bool($phrase)) {
 			return;
 	
 		//Also don't try to translate any properties that contain microtemplates
@@ -1770,12 +1773,19 @@ class tuix {
 		} else {
 			if (isset($t[$i='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 			if (isset($t[$i='label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+			if (isset($t[$i='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+			if (isset($t[$i='multiple_select_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 			if (isset($t[$i='tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 			if (isset($t[$i='disabled_tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 			if (isset($t[$i='placeholder'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 			if (isset($t[$i='no_search_label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 			
 			switch ($objectType) {
+				case 'columns':
+					if (isset($t[$i='sort_asc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='sort_desc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					break;
+					
 				case 'lovs':
 					if (!empty($t) && is_array($t)) {
 						foreach ($t as $k => &$lov) {
@@ -1797,8 +1807,6 @@ class tuix {
 					break;
 		
 				case 'notices':
-					if (isset($t[$i='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					if (isset($t[$i='multiple_select_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					break;
 			
 				case 'fields':
@@ -1920,7 +1928,7 @@ class tuix {
 	}
 
 	//Formerly "setupOverridesForPhrasesInTUIX()"
-	public static function setupOverridesForPhrases(&$box, &$fields, $path = '') {
+	public static function setupOverridesForPhrases(&$box, &$fields, $path = '', $valuesInDB = null) {
 	
 		$ord = 1000;
 		$languageId = $box['key']['languageId'] ?? false;
@@ -1946,9 +1954,11 @@ class tuix {
 				'html' => $html
 			]
 		];
-	
-		$valuesInDB = [];
-		\ze\tuix::loadAllPluginSettings($box, $valuesInDB);
+		
+		if (is_null($valuesInDB)) {
+			$valuesInDB = [];
+			\ze\tuix::loadAllPluginSettings($box, $valuesInDB);
+		}
 		
 		
 		foreach (\ze\tuix::lookForPhrases($path) as $ppath => $defaultText) {
@@ -2627,9 +2637,6 @@ class tuix {
 		//	exit;
 		//}
 	
-		\ze::$skType = 'visitor';
-		\ze::$skPath = $requestedPath;
-	
 		$tags = [];
 		$originalTags = [];
 		$moduleFilesLoaded = [];
@@ -2705,7 +2712,7 @@ class tuix {
 			}
 		
 			if ($validating || $saving) {
-			
+				unset($tags['_error_on_tab']);
 	
 				$fields = [];
 				$values = [];
@@ -2722,12 +2729,13 @@ class tuix {
 			
 			
 				if ($saving) {
-					//Check if there are any errors
+					//Check if there are any errors. If so, stop the save, and switch to the tab with the errors
 					$doSave = true;
 					if (\ze\tuix::looksLikeFAB($tags)) {
-						foreach ($tags['tabs'] as &$tab) {
+						foreach ($tags['tabs'] as $tabName => &$tab) {
 							if (!empty($tab['errors'])) {
 								$doSave = false;
+								$tags['tab'] = $tabName;
 								break;
 							}
 					
@@ -2735,6 +2743,7 @@ class tuix {
 								foreach ($tab['fields'] as &$field) {
 									if (!empty($field['error'])) {
 										$doSave = false;
+										$tags['tab'] = $tabName;
 										break 2;
 									}
 								}

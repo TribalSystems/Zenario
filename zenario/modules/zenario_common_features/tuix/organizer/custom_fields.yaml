@@ -13,6 +13,11 @@ zenario__administration:
             refiners:
                 dataset_id:
                     sql: 'cdf.dataset_id = [[REFINER_ID]]'
+                custom_fields_only:
+                    sql: |
+                        cdf.dataset_id = [[REFINER_ID]]
+                        AND cdf.is_system_field = 0 
+                        AND cdf.type in ('text', 'date', 'radios', 'checkbox', 'textarea', 'consent', 'group', 'centralised_radios', 'url', 'select', 'consent', 'dataset_select', 'centralised_select')
             columns:
                 label:
                     title: Label

@@ -1,5 +1,6 @@
 {{m._html}}
 
-<% if (m.note_below) { %>
-	<div class="zfea_form_note_below">{{zenario.unfun(m.note_below)}}</div>
+<% var nb; %>
+<% if (m.note_below && $.trim(nb = zenario.unfun(m.note_below))) { %>
+	<div class="zfea_form_note_below">{{nb}}</div>
 <% } %>

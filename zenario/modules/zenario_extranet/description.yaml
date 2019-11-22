@@ -33,6 +33,7 @@ keywords: base, extranet, login, password, private, user
 vlp_class_name: zenario_extranet
 css_class_name: zenario_extranet
 is_pluggable: true
+plugin_must_be_on_public_page: true
 nestable: true
 default_framework: standard
 special_pages:
@@ -40,7 +41,6 @@ special_pages:
         page_type: zenario_login
         default_alias: login
         default_title: Login
-        footer_menu_title: Login
         only_show_to_visitors_who_are_logged_out: true
         logic: create_and_maintain_in_default_language
 

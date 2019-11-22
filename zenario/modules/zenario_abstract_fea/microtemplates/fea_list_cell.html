@@ -19,6 +19,22 @@
 <% } else if (!m.item[m.col.id] && m.col.empty_value) { %>
 	<span class="fea_empty_value">{{m.col.empty_value|escape}}</span>
 	
+
+<% } else if (m.item[m.col.id] && m.item[m.col.id]['field_type'] == "real_time") { %>
+    
+    <div class="field_value resize_text">{{m.item[m.col.id]['value']|escape}}</div>
+    
+<% } else if (m.item[m.col.id]  && m.item[m.col.id]['field_type'] == "metric") { %>
+    <div class="period_boxes">
+        <div class="previous_wrapper">
+            <div class="previous_period_label">{{m.item[m.col.id]['previous_period_label']|escape}}</div>
+            <div class="previous_period_value resize_text">{{m.item[m.col.id]['previous_period_value']|escape}}<% if(m.item[m.col.id]['previous_period_units']){ %><span> {{m.item[m.col.id]['previous_period_units']|escape}}</span><% } %></div>
+        </div>
+        <div class="this_wrapper">
+            <div class="this_period_label">{{m.item[m.col.id]['this_period_label']|escape}}</div>
+            <div class="this_period_value resize_text">{{m.item[m.col.id]['this_period_value']|escape}} <% if(m.item[m.col.id]['this_period_units']){ %><span> {{m.item[m.col.id]['this_period_units']|escape}}</span><% } %></div>
+        </div>
+    </div>
 <!--
 	Otherwise, just display the value of the column
 -->

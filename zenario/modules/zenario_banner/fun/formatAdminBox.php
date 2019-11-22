@@ -47,8 +47,12 @@ switch ($path) {
 			$values['first_tab/image_source'] != '_CUSTOM_IMAGE';
 		
 		$fields['first_tab/rollover_image']['hidden'] = 
-			$fields['first_tab/use_rollover']['hidden']
-		 || !$values['first_tab/use_rollover'];
+			$values['first_tab/advanced_behaviour'] != 'use_rollover'
+			|| !($values['first_tab/image_source'] == '_CUSTOM_IMAGE');
+			
+		//TODO disable using rollover images when the source isn't "Show an image"
+		$fields['first_tab/advanced_behaviour']['values']['use_rollover']['disabled'] =
+			!($values['first_tab/image_source'] == '_CUSTOM_IMAGE');
 		
 		$fields['first_tab/picture']['hidden'] =
 			$values['first_tab/image_source'] != '_PICTURE';
@@ -56,7 +60,7 @@ switch ($path) {
 		//Check whether an image is picked
 		$cID = $cType = $pictureCID = $pictureCType = $imageId = $imagePicked = false;
 		
-		//A little hack to make extended this module easier
+		//A little hack to make extending this module easier
 		//If the extending module doesn't use the "image_source" field, just check whether
 		//the image field is empty or not
 		if (empty($fields['first_tab/image_source'])
@@ -129,23 +133,14 @@ switch ($path) {
 			} else {
 				$merge = 'No caption set';
 			}
-			$fields['first_tab/floating_box_title_mode']['values']['use_default']['label'] = 'Use default floating box caption (' . htmlspecialchars($merge) .')';
+			$fields['first_tab/floating_box_title_mode']['values']['use_default']['label'] = 'Use the image\'s default floating box caption (' . htmlspecialchars($merge) .')';
 				
 			if ($box['first_display']) {
 				if (!$values['first_tab/floating_box_title']) {
 					$fields['first_tab/floating_box_title']['value'] = $image['floating_box_title'];
 				}
 			}
-		
-			if (($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
-				|| $values['first_tab/image_source']  == '_PICTURE' ) {
-			} else {
-				if ($values['first_tab/link_type']=='_ENLARGE_IMAGE') {
-					$fields['first_tab/link_type']['current_value'] = '_NO_LINK';
-					$fields['first_tab/link_type']['value'] = '_NO_LINK';
-				}
-			}
-				
+						
 		}
 		
 		$box['first_display'] = false;
@@ -226,25 +221,32 @@ switch ($path) {
 				ze\admin::phrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
 		
-		
-		
-		$hideMobileOptions = $values['mobile_tab/mobile_behavior'] != 'change_image';
 
-		$fields['mobile_tab/mobile_image']['hidden'] = $hideMobileOptions;
+		//Only show the image picker if "Mobile behaviour" is set to "Different image".
+		$fields['first_tab/mobile_image']['hidden'] = $values['first_tab/advanced_behaviour'] != 'mobile_change_image';
 		
-		$this->showHideImageOptions($fields, $values, 'mobile_tab', $hideMobileOptions, 'mobile_');
-		if ($values['mobile_tab/mobile_canvas'] != "unlimited") {
-			$fields['mobile_tab/mobile_canvas']['side_note'] = $retinaSideNote;
+		//Only show mobile options if "Mobile behaviour" is set to either "Different image", or "Same image, different size".
+		$hideMobileOptions = (
+			($values['first_tab/advanced_behaviour'] != 'mobile_change_image')
+			&& ($values['first_tab/advanced_behaviour'] != 'mobile_same_image_different_size')
+			);
+			
+		$this->showHideImageOptions($fields, $values, 'first_tab', $hideMobileOptions, 'mobile_');
+		if ($values['first_tab/mobile_canvas'] != "unlimited") {
+			$fields['first_tab/mobile_canvas']['side_note'] = $retinaSideNote;
 		} else {
-			$fields['mobile_tab/mobile_canvas']['side_note'] = "";
+			$fields['first_tab/mobile_canvas']['side_note'] = "";
 		}
 		
-		//Privacy warning:
+		/////////////////////////
+		//	Privacy warning:  //
+		///////////////////////
+		
+		//1) Link to a document:
+		
 		//Get selected document...
-		if (isset($box['tabs']['first_tab']['fields']['document_id']['current_value'])) {
-			$documentId = $box['tabs']['first_tab']['fields']['document_id']['current_value'];
-		} else {
-			$documentId = $box['tabs']['first_tab']['fields']['document_id']['value'];
+		if (isset($values['first_tab/document_id'])) {
+			$documentId = $values['first_tab/document_id'];
 		}
 
 		//...get privacy settings of the document and content item...
@@ -259,7 +261,29 @@ switch ($path) {
 		} else {
 			$box['tabs']['first_tab']['fields']['privacy_warning']['note_below'] = '';
 		}
-
+		
+		//2) Link to a content item:
+		
+		//Get the privacy of the target content item...
+		if ($values['first_tab/link_type'] == '_CONTENT_ITEM') {
+			if (!empty($values['first_tab/hyperlink_target'])) {
+				$targetContentItem = $values['first_tab/hyperlink_target'];
+				$cID = $cType = false;
+				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $targetContentItem);
+			
+				$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $cID, 'type' => $cType]);
+				
+				//...and display it to the admin...
+				$fields['first_tab/hide_private_item']['note_below'] = '<p>Selected content item privacy setting is:</p><p>"' . ze\contentAdm::privacyDesc($contentItemPrivacy) . '"</p>';
+				$fields['first_tab/hide_private_item']['indent'] = 2;
+				$fields['first_tab/target_blank']['indent'] = 2;
+			} else {
+				//...or don't show the note at all if no content item is selected.
+				$fields['first_tab/hide_private_item']['indent'] = 1;
+				$fields['first_tab/target_blank']['indent'] = 1;
+				unset($fields['first_tab/hide_private_item']['note_below']);
+			}
+		}
 		
 
 		break;

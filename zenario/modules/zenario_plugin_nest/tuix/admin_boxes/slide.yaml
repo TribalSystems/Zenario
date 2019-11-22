@@ -45,8 +45,10 @@ zenario_slide:
                     style: |
                         width: 400px;
                     onchange: |
-                        lib.insertText(lib.get('name_or_title'), $(this).val())
+                        var domTitle = lib.get('name_or_title');
+                        lib.insertText(domTitle, $(this).val())
                         $(this).val('').iconselectmenu('refresh');
+                        $(domTitle).change();
                 
                 invisible_in_nav:
                     visible_if: |
@@ -56,6 +58,17 @@ zenario_slide:
                     side_note: >
                         If hidden, the tab-link to this slide will not appear,
                         but the slide may still be accessed.
+                
+                use_slide_layout:
+                    visible_if: tuix.key.usesConductor
+                    label: Use a slide layout
+                    type: select
+                    empty_value: " -- Don't use a slide layout -- "
+                    values:
+                        asset_schema:
+                            label: Use the slide layout for the schema of the asset on this slide
+                        datapool_schema:
+                            label: Use the slide layout for the schema of the datapool on this slide
                 
                 show_refresh:
                     visible_if: tuix.key.usesConductor
@@ -129,10 +142,12 @@ zenario_slide:
                             label: 'Private, only show to extranet users NOT in the smart group:'
                             split_values_if_selected: true
                         with_role:
-                            label: 'Private, only show to extranet users with the following role(s) at ANY location:'
+                            label: 'Private, only show to extranet users with a given role (at ANY location):'
                             split_values_if_selected: true
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
+                        hidden:
+                            label: Hidden
                     format_onchange: true
                     validation:
                         required_if_not_hidden: Please select a visibility option

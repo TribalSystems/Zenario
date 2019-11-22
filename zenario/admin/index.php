@@ -1,4 +1,4 @@
 <?php
-	header ('Location: welcome.php?'. $_SERVER['QUERY_STRING']);
+	header ('Location: ../../admin.php?'. $_SERVER['QUERY_STRING']);
 	exit;
 ?>

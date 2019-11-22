@@ -94,32 +94,28 @@ switch ($path) {
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
 							
-					
-					
-					if (isset($fields['categories/categories']['values'][$row['category_id']])) {
-						$inCats[] = $row['category_id'];
-					
-							if($fields['categories/categories']['values'][$row['category_id']]){
-								$fields['categories/categories']['values'][$row['category_id']]['disabled'] = false;
-									if ($total > 1) {
-										$row['total'] = $total;
-										if ($row['cnt'] == $total) {
-											$fields['categories/categories']['values'][$row['category_id']]['label'] .=
-											' '. ze\admin::phrase('(all [[total]] in this category)', $row);
-										} else {
-											$fields['categories/categories']['values'][$row['category_id']]['label'] .=
-											' '. ze\admin::phrase('([[cnt]] of [[total]] in this category)', $row);
-											}
-									}
-							}		
-					}
-					
-							
-						
-			$values['categories/categories'] = ze\escape::in($inCats, false);
-			//$values['categories_add/categories_add'] = ze\escape::in($inCats, false);
-			//$values['categories_remove/categories_remove'] = ze\escape::in($inCats, false);
-		}
+				if (isset($fields['categories/categories']['values'][$row['category_id']])) {
+					$inCats[] = $row['category_id'];
+				
+						if($fields['categories/categories']['values'][$row['category_id']]){
+							$fields['categories/categories']['values'][$row['category_id']]['disabled'] = false;
+								if ($total > 1) {
+									$row['total'] = $total;
+									if ($row['cnt'] == $total) {
+										$fields['categories/categories']['values'][$row['category_id']]['label'] .=
+										' '. ze\admin::phrase('(all [[total]] in this category)', $row);
+									} else {
+										$fields['categories/categories']['values'][$row['category_id']]['label'] .=
+										' '. ze\admin::phrase('([[cnt]] of [[total]] in this category)', $row);
+										}
+								}
+						}		
+				}
+	
+				$values['categories/categories'] = ze\escape::in($inCats, false);
+				//$values['categories_add/categories_add'] = ze\escape::in($inCats, false);
+				//$values['categories_remove/categories_remove'] = ze\escape::in($inCats, false);
+			}
 		}
 		$numLanguages = ze\lang::count();
 		if ($numLanguages > 1) {
@@ -245,13 +241,11 @@ switch ($path) {
 									}
 							}		
 					}
-					
-					
-						
-			//$values['categories/categories'] = ze\escape::in($inCats, false);
-			//$values['categories_add/categories_add'] = ze\escape::in($inCats, false);
-			//$values['categories_remove/categories_remove'] = ze\escape::in($inCats, false);
-		}
+	
+				//$values['categories/categories'] = ze\escape::in($inCats, false);
+				//$values['categories_add/categories_add'] = ze\escape::in($inCats, false);
+				//$values['categories_remove/categories_remove'] = ze\escape::in($inCats, false);
+			}
 		}
 		$numLanguages = ze\lang::count();
 		if ($numLanguages > 1) {

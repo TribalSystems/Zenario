@@ -1,7 +1,7 @@
 {
   "name": "jquery-lazy",
   "description": "Lazy is a fast, feature-rich and lightweight delayed content loading plugin for jQuery and Zepto. It's designed to speed up page loading times and decrease traffic to your users by only loading the content in view. You can use Lazy in all vertical and horizontal scroll ways. It supports images in 'img' tags and backgrounds, supplied with css like 'background-image', by default. On those elements Lazy can set an default image or a placeholder while loading and supports retina displays as well. But Lazy is even able to load any other content you want by plugins and custom loaders.",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "main": "jquery.lazy.min.js",
   "license": [
     "MIT",
@@ -47,11 +47,11 @@
   "dependencies": {
     "jquery": ">=1.7.2"
   },
-  "_release": "1.7.7",
+  "_release": "1.7.8",
   "_resolution": {
     "type": "version",
-    "tag": "1.7.7",
-    "commit": "d4ff2d5e28410c5019db729607c23ad30863e34c"
+    "tag": "1.7.8",
+    "commit": "f592d3a9674ed60522ca0d0063a947aa00be86f9"
   },
   "_source": "https://github.com/eisbehr-/jquery.lazy.git",
   "_target": "*",

@@ -52,7 +52,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 			$box['title'] = ze\admin::phrase('Editing settings for "[[language]]"', ['language' => ze\lang::name($box['key']['id'])]);
 
 		} else {
-			$box['title'] = ze\admin::phrase('Enabling the Language "[[language]]" to the Site', ['language' => ze\lang::name($box['key']['id'])]);
+			$box['title'] = ze\admin::phrase('Enabling the language "[[language]]"', ['language' => ze\lang::name($box['key']['id'])]);
 			ze\priv::exitIfNot('_PRIV_MANAGE_LANGUAGE_CONFIG');
 			$box['save_button_message'] = ze\admin::phrase('Enable Language');
 	
@@ -298,7 +298,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		
 		//Go to the language in the enabled languages panel.
 		//We should also reload the page if any of the language names were changed, or if this was the first language to be added
-		ze\tuix::closeWithFlags(['go_to_url' => 'zenario/admin/welcome.php?task=reload_sk&og='. rawurlencode('zenario__languages/panels/languages//'. $box['key']['id'])]);
+		ze\tuix::closeWithFlags(['go_to_url' => 'admin.php?task=reload_sk&og='. rawurlencode('zenario__languages/panels/languages//'. $box['key']['id'])]);
 		exit;
 	}
 }

@@ -14,6 +14,7 @@ zenario__administration:
                     title: Filename
                     searchable: true
                     show_by_default: true
+                    width: large
                 size:
                     title: Size
                     format: filesize

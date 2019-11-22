@@ -5,6 +5,9 @@ zenario_country_manager__country:
     max_height: "250"
     key:
         id: ""
+    identifier:
+        css_class: zenario_country_manager_country
+        label: Country ID
     tabs:
         details:
             label: Details

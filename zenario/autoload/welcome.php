@@ -86,6 +86,8 @@ class welcome {
 
 	//Formerly "runSQL()"
 	public static function runSQL($prefix = false, $file, &$error, $patterns = false, $replacements = false) {
+		
+		\ze\dbAdm::getTableEngine();
 		$error = false;
 	
 		//Attempt to work out the location of the installer scripts, if not provided
@@ -102,8 +104,8 @@ class welcome {
 		if (!$patterns) {
 			//If no patterns have been set, go in with a few default patterns. Note I am assuming that the CMS
 			//is running here...
-			$from = ["\r", '[[DB_PREFIX]]',	'[[LATEST_REVISION_NO]]',	'[[INSTALLER_REVISION_NO]]',	'[[THEME]]'];
-			$to =	['',	DB_PREFIX,			LATEST_REVISION_NO,			INSTALLER_REVISION_NO,			INSTALLER_DEFAULT_THEME];
+			$from = ["\r", '[[DB_PREFIX]]',	'[[LATEST_REVISION_NO]]',	'[[INSTALLER_REVISION_NO]]',	'[[ZENARIO_TABLE_ENGINE]]',		'[[THEME]]'];
+			$to =	['',	DB_PREFIX,		LATEST_REVISION_NO,			INSTALLER_REVISION_NO,			ZENARIO_TABLE_ENGINE,			INSTALLER_DEFAULT_THEME];
 		} else {
 			$from = ["\r"];
 			$to = [''];
@@ -444,7 +446,7 @@ class welcome {
 			//Often the reported version of the client library can be behind the server version.
 			//Try to check the server version if possible
 			if (!\ze::setting('mysql_path')) {
-				//If mysql isn't set up in the site settings, try to guess what the settings should be
+				//If mysql isn't set up in Site Settings, try to guess what the settings should be
 				//and temporarily set it up noe
 				if (\ze\server::programPathForExec('/usr/bin/', 'mysql', $checkExecutable = true)) {
 					\ze\site::setSetting('mysql_path', '/usr/bin/', false, false, false);
@@ -573,6 +575,13 @@ class welcome {
 	
 		} else {
 			$fields['0/optional_zip']['row_class'] = $valid;
+		}
+		
+		if (!function_exists('utf8_encode')) {
+			$optionalRequirementsMet = false;
+			$fields['0/optional_utf8_encode']['row_class'] = $warning;
+		} else {
+			$fields['0/optional_utf8_encode']['row_class'] = $valid;
 		}
 	
 	
@@ -1091,7 +1100,7 @@ class welcome {
 							'label' => '',
 							'post_field_html' =>
 								'<label for="theme___'. htmlspecialchars($dir). '">
-									<img src="'. htmlspecialchars('../../'. $imageSrc). '"/>
+									<img src="'. htmlspecialchars($imageSrc). '"/>
 								</label>'
 						];
 					}
@@ -1142,6 +1151,9 @@ class welcome {
 				//Set the latest revision number
 				$merge['LATEST_REVISION_NO'] = LATEST_REVISION_NO;
 				$merge['INSTALLER_REVISION_NO'] = INSTALLER_REVISION_NO;
+				
+				\ze\dbAdm::getTableEngine();
+				$merge['ZENARIO_TABLE_ENGINE'] = ZENARIO_TABLE_ENGINE;
 			
 			
 				//Install to the database
@@ -1152,10 +1164,14 @@ class welcome {
 				\ze\sql::cacheFriendlyUpdate("SET character_set_connection='utf8'");
 				\ze\sql::cacheFriendlyUpdate("SET character_set_results='utf8'");
 				\ze\sql::cacheFriendlyUpdate("SET character_set_server='utf8'");
-			
-				if (!defined('DB_PREFIX')) {
-					define('DB_PREFIX', $merge['DB_PREFIX']);
-				}
+				
+				//Define the DB connection info, if it wasn't previously
+				\ze::define('DBHOST', $merge['DBHOST']);
+				\ze::define('DBNAME', $merge['DBNAME']);
+				\ze::define('DBUSER', $merge['DBUSER']);
+				\ze::define('DBPASS', $merge['DBPASS']);
+				\ze::define('DBPORT', $merge['DBPORT']);
+				\ze::define('DB_PREFIX', $merge['DB_PREFIX']);
 			
 			
 				//Here we restore a backup, and/or do a fresh install, depending on the choices in the installer.
@@ -1440,15 +1456,18 @@ class welcome {
 			//This will return 0 if the user wasn't found, otherwise it should return
 			//false (for user found but password didn't match)
 			} elseif (!$admin = \ze\row::get('admins', ['id', 'authtype', 'username', 'email', 'first_name', 'last_name', 'status'], ['email' => $values['forgot/email']])) {
-				$tags['tabs']['forgot']['errors'][] = \ze\admin::phrase("Sorry, we could not find that email address associated with an active Administrator on this site's database.");
+				//If email address doesn't exist, don't actually tell the user!
+				$passwordReset = true;
+				$tags['tab'] = 'login';
 		
 			//Super Admins shouldn't be trying to change their passwords on a local site
 			} elseif (isset($admin['authtype']) && $admin['authtype'] != 'local') {
 				$tags['tabs']['forgot']['errors'][] = \ze\admin::phrase("Please go to the Controller site to reset the password for a Superadmin account.");
 		
-			//Trashed admins should not be able to trigger password resets
+			//Trashed admins should not be able to trigger password resets, just as if the account didn't exist
 			} elseif ($admin['status'] == 'deleted') {
-				$tags['tabs']['forgot']['errors'][] = \ze\admin::phrase("Sorry, we could not find that email address associated with an active Administrator on this site's database.");
+				$passwordReset = true;
+				$tags['tab'] = 'login';
 		
 			} else {
 			
@@ -1462,7 +1481,13 @@ class welcome {
 				$merge['IP'] = preg_replace('[^W\.\:]', '', \ze\user::ip());
 			
 				$emailTemplate = 'new_reset_password';
+				
 				$message = $source['email_templates'][$emailTemplate]['body'];
+				$message = nl2br($message);
+				
+				if (\ze\module::inc('zenario_email_template_manager')) {
+					\zenario_email_template_manager::putBodyInTemplate($message);
+				}
 			
 				$subject = $source['email_templates'][$emailTemplate]['subject'];
 			
@@ -1479,7 +1504,7 @@ class welcome {
 					$addressFrom = false,
 					$nameFrom = $source['email_templates'][$emailTemplate]['from'],
 					false, false, false,
-					$isHTML = false);
+					$isHTML = true);
 			
 				$passwordReset = true;
 				$tags['tab'] = 'login';
@@ -1494,7 +1519,7 @@ class welcome {
 			}
 			$fields['login/remember_me']['value'] = empty($_COOKIE['COOKIE_DONT_REMEMBER_LAST_ADMIN_USER']);
 		
-			//Don't show the note about the admin login link if it is turned off in the site settings
+			//Don't show the note about the admin login link if it is turned off in Site Settings
 			if (\ze\link::adminDomainIsPrivate()) {
 				$fields['login/remember_me']['note_below'] = '';
 			}
@@ -1754,6 +1779,7 @@ class welcome {
 		$resend = !empty($fields['security_code/resend']['pressed']);
 		$tags['tabs']['security_code']['notices']['email_resent']['show'] = false;
 		$tags['tabs']['security_code']['errors'] = [];
+		
 	
 		//Handle the "back to site" button
 		if (!empty($fields['security_code/previous']['pressed'])) {
@@ -1787,8 +1813,14 @@ class welcome {
 				$subject = str_replace('[['. $pattern. ']]', $replacement, $subject);
 				$message = str_replace('[['. $pattern. ']]', $replacement, $message);
 			}
-		
+			
+			$message = nl2br($message);
 			$addressToOverriddenBy = false;
+			
+			if (\ze\module::inc('zenario_email_template_manager')) {
+				\zenario_email_template_manager::putBodyInTemplate($message);
+			}
+			
 			$emailSent = \ze\server::sendEmail(
 				$subject, $message,
 				$admin['email'],
@@ -1797,7 +1829,7 @@ class welcome {
 				$addressFrom = false,
 				$nameFrom = $source['email_templates'][$emailTemplate]['from'],
 				false, false, false,
-				$isHTML = false);
+				$isHTML = true);
 		
 			if (!$emailSent) {
 				$tags['tabs']['security_code']['errors'][] =
@@ -1809,10 +1841,8 @@ class welcome {
 	
 		//Check the code if someone is trying to submit it
 		} else
-		if (!empty($_SESSION['COOKIE_ADMIN_SECURITY_CODE'])
-		 && !empty($fields['security_code/submit']['pressed'])) {
-		
-			$code = $values['security_code/code'];
+		if ((!empty($_SESSION['COOKIE_ADMIN_SECURITY_CODE']) && !empty($fields['security_code/submit']['pressed']) && ($code = $values['security_code/code']))
+		 || (isset($getRequest['verification_code']) && ($code = $getRequest['verification_code']))) {
 		
 			if ($code == '') {
 				$tags['tabs']['security_code']['errors'][] =
@@ -1975,7 +2005,8 @@ class welcome {
 
 	//Formerly "diagnosticsAJAX()"
 	public static function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $freshInstall) {
-	
+		
+		$showContinueButton = true;
 		$showCheckAgainButton = false;
 		$showCheckAgainButtonIfDirsAreEditable = false;
 	
@@ -2347,12 +2378,12 @@ class welcome {
 		
 			if (!\ze::setting('site_enabled')) {
 				
-				$mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//site_disabled~.zenario_enable_site~tsite~k{"id"%3A"site_disabled"}')];
+				$mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//site_disabled~.zenario_enable_site~tsite~k{"id"%3A"site_disabled"}')];
 				
 				$show_warning = true;
 				$fields['0/site_disabled']['row_class'] = 'warning';
 				$fields['0/site_disabled']['snippet']['html'] =
-					\ze\admin::phrase('Your site is not enabled, so visitors will not be able to see it. Please go to <a href="[[link]]" target="_blank"><em>Site disabled</em> in the site settings</a> to change this.', $mrg);
+					\ze\admin::phrase('Your site is not enabled, so visitors will not be able to see it. Please go to <a href="[[link]]" target="_blank"><em>Site disabled</em></a> in Site Settings to change this.', $mrg);
 			} else {
 				$fields['0/site_disabled']['row_class'] = 'valid';
 				$fields['0/site_disabled']['snippet']['html'] = \ze\admin::phrase('Your site is enabled.');
@@ -2364,7 +2395,8 @@ class welcome {
 				INNER JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.id = sp.equiv_id
 				  AND c.type = sp.content_type
-				WHERE c.status NOT IN ('published_with_draft','published')";
+				WHERE c.status NOT IN ('published_with_draft','published')
+				  AND sp.allow_hide = 0";
 		
 			if (($result = \ze\sql::select($sql)) && (\ze\sql::fetchRow($result))) {
 				$show_warning = true;
@@ -2398,62 +2430,14 @@ class welcome {
 				$fields['0/public_documents']['hidden'] = true;
 			}
 		
-		
-			$mrg = [
-				'DBNAME' => DBNAME,
-				'path' => \ze::setting('automated_backup_log_path'),
-				'link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//dirs~.site_settings~tautomated_backups~k{"id"%3A"dirs"}')];
-		
-			if (!\ze::setting('check_automated_backups')) {
-				$fields['0/site_automated_backups']['row_class'] = 'valid';
-				$fields['0/site_automated_backups']['hidden'] = true;
-		
-			} elseif (!\ze::setting('automated_backup_log_path')) {
-				$show_warning = true;
-				$fields['0/site_automated_backups']['row_class'] = 'warning';
-				$fields['0/site_automated_backups']['snippet']['html'] =
-					\ze\admin::phrase('Automated backup monitoring is not set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em> in the site settings</a> to change this.', $mrg);
-		
-			} elseif (!is_file(\ze::setting('automated_backup_log_path'))) {
-				$show_warning = true;
-				$fields['0/site_automated_backups']['row_class'] = 'warning';
-				$fields['0/site_automated_backups']['snippet']['html'] =
-					\ze\admin::phrase("Automated backup monitoring is not running properly: the log file ([[path]]) could not be found.", $mrg);
-		
-			} elseif (!is_readable(\ze::setting('automated_backup_log_path'))) {
-				$show_warning = true;
-				$fields['0/site_automated_backups']['row_class'] = 'warning';
-				$fields['0/site_automated_backups']['snippet']['html'] =
-					\ze\admin::phrase("Automated backup monitoring is not running properly: the log file ([[path]]) exists but could not be read.", $mrg);
-		
-			} else {
-				//Attempt to get the date of the last backup from
-				$timestamp = \ze\welcome::lastAutomatedBackupTimestamp();
 			
-				if (!$timestamp) {
-					$show_warning = true;
-					$fields['0/site_automated_backups']['row_class'] = 'warning';
-					$fields['0/site_automated_backups']['snippet']['html'] =
-						\ze\admin::phrase('This site is not being backed-up using the automated process: database [[DBNAME]] was not listed in [[path]]. <a href="[[link]]" target="_blank">Click for more.</a>', $mrg);
-			
-				} else {
-					$days = (int) floor((time() - (int) $timestamp) / 86400);
-				
-					if ($days >= (int) \ze::setting('automated_backup_days')) {
-						$show_warning = true;
-						$fields['0/site_automated_backups']['row_class'] = 'warning';
-						$fields['0/site_automated_backups']['snippet']['html'] =
-							\ze\admin::nPhrase("Automated backups have not been run in the last day.",
-								"Automated backups have not been run in [[days]] days.",
-								$days, ['days' => $days]);
-		
-					} else {
-						$fields['0/site_automated_backups']['row_class'] = 'valid';
-						$fields['0/site_automated_backups']['snippet']['html'] =
-							\ze\admin::phrase("Automated backups are running.");
-					}
-				}
+			$warnings = \ze\welcome::getBackupWarnings();
+			$fields['0/site_automated_backups']['row_class'] = $warnings['row_class'];
+			$fields['0/site_automated_backups']['hidden'] = isset($warnings['hidden']) ? $warnings['hidden'] : false;
+			if (isset($warnings['snippet']['html'])) {
+				$fields['0/site_automated_backups']['snippet']['html'] = $warnings['snippet']['html'];
 			}
+			$show_warning = !empty($warnings['show_warning']);
 			
 			
 			//Check if the scheduled task manager is running
@@ -2489,6 +2473,19 @@ class welcome {
 				//Note: only show this message if it's in the error state; hide it otherwise
 				$fields['0/site_description_missing']['hidden'] = true;
 			}
+			
+			//Check for a missing or unreadable .htaccess file
+			if (is_readable(CMS_ROOT . '.htaccess')) {
+				$fields['0/htaccess_unavailable']['hidden'] = true;
+				if (!\ze::setting('mod_rewrite_enabled')) {
+					$fields['0/friendly_urls_disabled']['row_class'] = 'warning';
+				} else {
+					$fields['0/friendly_urls_disabled']['hidden'] = true;
+				}
+			} else {
+				$fields['0/htaccess_unavailable']['row_class'] = 'warning';
+				$fields['0/htaccess_unavailable']['snippet']['html'] = \ze\admin::phrase('The .htaccess file cannot be read or is missing. (This message needs revising.)');
+			}
 		
 			//Check to see if there are spare domains without a primary domain
 			if (!\ze::setting('primary_domain') && \ze\row::exists('spare_domain_names', [])) {
@@ -2514,7 +2511,7 @@ class welcome {
 			$fields['0/notices_shown']['hidden'] = true;
 			$fields['0/errors_not_shown']['hidden'] = true;
 		
-			if (\ze::setting('site_mode') == 'development') {
+			if (\ze\site::inDevMode()) {
 			
 				//Check to see if any developers are not showing errors/warnings
 				//Note: only show this message if it's in the error state; hide it otherwise
@@ -2552,12 +2549,12 @@ class welcome {
 			if (\ze::setting('debug_override_enable')) {
 				$mrg = [
 					'email' => htmlspecialchars(\ze::setting('debug_override_email_address')),
-					'link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tdebug~k{"id"%3A"email"}')];
+					'link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tdebug~k{"id"%3A"email"}')];
 				
 				$show_warning = true;
 				$fields['0/email_addresses_overridden']['row_class'] = 'warning';
 				$fields['0/email_addresses_overridden']['snippet']['html'] =
-					\ze\admin::phrase('You have &ldquo;Email debug mode&rdquo; enabled in <a href="[[link]]" target="_blank"><em>Email</em> in the site settings</a>. Email sent by this site will be redirected to &quot;[[email]]&quot;.', $mrg);
+					\ze\admin::phrase('You have &ldquo;Email debug mode&rdquo; enabled in <a href="[[link]]" target="_blank"><em>Email</em></a> in Site Settings. Email sent by this site will be redirected to &quot;[[email]]&quot;.', $mrg);
 			} else {
 				$fields['0/email_addresses_overridden']['hidden'] = true;
 			}
@@ -2586,8 +2583,8 @@ class welcome {
 				foreach (scandir($dir) as $mDir) {
 					if ($mDir != '.'
 					 && $mDir != '..'
-					 && is_link($dir. $mDir)
 					 && ($rp = realpath($dir. $mDir))
+					 && (rtrim($dir. $mDir, '/') != rtrim($rp, '/'))
 					 && ($rp = dirname($rp))
 					 && (is_dir($rp. '/zenario') || ($rp = dirname($rp)))
 					 && (is_dir($rp. '/zenario') || ($rp = dirname($rp)))
@@ -2600,8 +2597,9 @@ class welcome {
 			}
 		
 			if (!$fields['0/bad_extra_module_symlinks']['hidden'] = empty($badSymlinks)) {
-				$fields['0/bad_extra_module_symlinks']['row_class'] = 'warning';
-				$show_warning = true;
+				$fields['0/bad_extra_module_symlinks']['row_class'] = 'invalid';
+				$show_error = true;
+				$showContinueButton = false;
 			
 				$mrg = ['module' => array_pop($badSymlinks), 'version' => ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION];
 				if (empty($badSymlinks)) {
@@ -2624,13 +2622,17 @@ class welcome {
 			}
 			
 			
+			$storesUserData = \ze\row::exists(
+				'modules', [
+					'status' => ['module_running', 'module_suspended'],
+					'class_name' => ['zenario_extranet', 'zenario_users', 'zenario_user_forms']
+				]
+			);
+			
 			//Check if extranet sites have two-factor authentication enabled
 			$warnAboutThis = 
 				!\ze\site::description('enable_two_factor_authentication_for_admin_logins')
-			 && \ze\row::exists('modules', [
-					'status' => ['module_running', 'module_suspended'],
-					'class_name' => ['zenario_extranet', 'zenario_users', 'zenario_user_forms']
-				]);
+				&& $storesUserData;
 			
 			if (!$fields['0/two_factor_security']['hidden'] = !$warnAboutThis) {
 				$show_warning = true;
@@ -2653,24 +2655,148 @@ class welcome {
 			
 			
 			//Check if extranet sites use SSL
-			$warnAboutThis = false;
-			if (!\ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
-				
-				$sql = "
-					SELECT 1
-					FROM ". DB_PREFIX. "modules
-					WHERE `status` IN ('module_running','module_suspended')
-					  AND class_name IN ('zenario_extranet', 'zenario_users', 'zenario_user_forms')
-					LIMIT 1";
-				
-				$warnAboutThis = (bool) \ze\sql::fetchRow($sql);
-			}
+			$warnAboutThis = 
+				!\ze\site::description('enable_two_factor_authentication_for_admin_logins')
+				&& $storesUserData;
+			
 			if (!$fields['0/two_factor_security']['hidden'] = !$warnAboutThis) {
 				$show_warning = true;
 				$fields['0/two_factor_security']['row_class'] = 'warning';
 			}
 			
+			//If company key exists, and users module is running, show a warning if the consent table is not encrypted
+			$warnAboutThis = \ze\zewl::checkConfIsOkay() && $storesUserData;
+			if ($warnAboutThis) {
+				
+				$encryptedColumns = ['ip_address', 'email', 'first_name', 'last_name'];
+				$unencryptedColumns = [];
+				foreach ($encryptedColumns as $column) {
+					if (!\ze::$dbL->columnIsHashed('consents', $column)) {
+						$unencryptedColumns[] = '<code>' . $column . '</code>';
+					}
+				}
+				
+				if ($unencryptedColumns) {
+					$show_warning = true;
+					$fields['0/consent_table_encrypted']['row_class'] = 'warning';
+					
+					$fields['0/consent_table_encrypted']['snippet']['html'] = 
+						\ze\admin::phrase('The following columns should be encrypted and hashed in the consent log table: [[columns]].', ['columns' => implode(', ', $unencryptedColumns)]);
+				}
+			} else {
+				//Otherwise, hide the warning.
+				$fields['0/consent_table_encrypted']['hidden'] = true;
+			}
 			
+			
+			//Check if site contains user/contact data unencrypted
+			$warnAboutThis =(bool)(!\ze::$dbL->columnIsEncrypted('users', 'first_name') && !\ze::$dbL->columnIsEncrypted('users', 'last_name') && !\ze::$dbL->columnIsEncrypted('users', 'email') && !\ze::$dbL->columnIsEncrypted('users', 'identifier'));
+			
+			if (!$fields['0/unencrypted_data']['hidden'] = !$warnAboutThis) {
+				
+				$sql = "
+					SELECT count(*) as numberOfRecordsUnencrypted
+					FROM ". DB_PREFIX. "users";
+				$numberOfRecordsUnencrypted = \ze\sql::fetchAssoc($sql);
+				if($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] > 0){
+				    $textForNumber = '';
+				    if($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] == 1){
+				        $textForNumber = "User/Contact";
+				      
+				    }else {
+				        $textForNumber = "Users/Contacts";
+				    }    
+
+				   
+				    $numberOfRecordsUnencrypted["textForNumber"] = $textForNumber;
+				    \ze\lang::applyMergeFields($fields['0/unencrypted_data']["snippet"]["html"], $numberOfRecordsUnencrypted);
+				    $show_warning = true;
+				    $fields['0/unencrypted_data']['row_class'] = 'warning';
+				} else {
+					//If a site contains no user records, don't show the warning.
+					$fields['0/unencrypted_data']['hidden'] = true;
+				}
+			}
+			
+			//Check if site contains user/contact data encrypted and corresponding plain text column does not exist
+			$userColumns = [];
+			$fields['0/column_not_found']['hidden'] = true;
+			if(\ze::$dbL->columnIsEncrypted('users', 'first_name')|| \ze::$dbL->columnIsHashed('users', 'first_name')){
+			    $q= \ze\sql::select("SHOW COLUMNS FROM ".DB_PREFIX."users LIKE '%first_name'" );
+	            if($q){
+                    $columns = [];
+	                while($row =\ze\sql::fetchAssoc($q)){
+	                   if($row['Field'] == '%first_name' || $row['Field'] == 'first_name'){
+	                        $columns[]= $row;
+	                    }
+	                }
+	                if(count($columns) == 1){
+	                
+	                    $userColumns[] =  '<code>'.'first_name'.'</code>';
+	                }
+	                
+	            }
+	            
+			}
+			if(\ze::$dbL->columnIsEncrypted('users', 'last_name') || \ze::$dbL->columnIsHashed('users', 'last_name')){
+			    $q= \ze\sql::select("SHOW COLUMNS FROM ".DB_PREFIX."users LIKE '%last_name'" );
+	            if($q){
+                    $columns = [];
+	                while($row =\ze\sql::fetchAssoc($q)){
+	                   if($row['Field'] == '%last_name' || $row['Field'] == 'last_name'){
+	                        $columns[]= $row;
+	                    }
+	                }
+	                
+	                if(count($columns) == 1){
+	                
+	                    $userColumns[] =  '<code>'.'last_name'.'</code>';
+	                }
+	            }
+	            
+			}
+			if(\ze::$dbL->columnIsEncrypted('users', 'email') || (\ze::$dbL->columnIsHashed('users', 'email'))){
+			    $q= \ze\sql::select("SHOW COLUMNS FROM ".DB_PREFIX."users LIKE '%email'" );
+	            if($q){
+                    $columns = [];
+	                while($row =\ze\sql::fetchAssoc($q)){
+	                   if($row['Field'] == '%email' || $row['Field'] == 'email'){
+	                        $columns[]= $row;
+	                    }
+	                }
+	                
+	                if(count($columns) == 1){
+	                
+	                    $userColumns[] =  '<code>'.'email'.'</code>';
+	                }
+	            }
+	            
+			}
+			if(\ze::$dbL->columnIsEncrypted('users', 'identifier') || \ze::$dbL->columnIsHashed('users', 'identifier')){
+			    $q= \ze\sql::select("SHOW COLUMNS FROM ".DB_PREFIX."users LIKE '%identifier'" );
+	            if($q){
+                    $columns = [];
+	                while($row =\ze\sql::fetchAssoc($q)){
+	                   if($row['Field'] == '%identifier' || $row['Field'] == 'identifier'){
+	                        $columns[]= $row;
+	                    }
+	                }
+	                if(count($columns) == 1){
+	                
+	                    $userColumns[] =  '<code>'.'identifier'.'</code>';
+	                }
+	            }
+	            
+			}
+			
+			if(count($userColumns)>=1){
+	            $fields['0/column_not_found']['row_class'] = 'warning';
+	            $show_warning = true;
+	            $fields['0/column_not_found']['hidden'] = false;
+                $fields['0/column_not_found']['snippet']['html'] = \ze\admin::phrase('The following columns are encrypted/ hashed but their corresponding plain text columns are missing: [[columns]].', ['columns' => implode(', ', $userColumns)]);
+	        }
+	        
+	       
 			//Do some basic checks on the robots.txt file
 			$robotsDotTextError = false;
 			if (!file_exists(CMS_ROOT. 'robots.txt')) {
@@ -2678,17 +2804,17 @@ class welcome {
 					\ze\admin::phrase('The <code>robots.txt</code> file for this site is missing.');
 			
 			} elseif ($robotsDotTextContents = self::getTrimmedFileContents(CMS_ROOT. 'robots.txt')) {
-				
+				$robotsFileLink = 'robots.txt';
 				if (strpos($robotsDotTextContents, ' User-agent:* Disallow:/ ') !== false) {
 					$robotsDotTextError =
-						\ze\admin::phrase('This site has a <code>robots.txt</code> that is blocking search engine indexing.');
+						\ze\admin::phrase("This site has a <code>robots.txt</code> that is blocking search engine indexing. <a href=".$robotsFileLink." target='_blank'>View robots.txt file</a>");
 				
 				} else {
 				
 					if (($standardRobotsDotTextContents = self::getTrimmedFileContents(CMS_ROOT. 'zenario/includes/test_files/default_robots.txt'))
 					 && ($standardRobotsDotTextContents != $robotsDotTextContents)) {
 						$robotsDotTextError =
-							\ze\admin::phrase('This site has a <code>robots.txt</code> that has non-standard modifications.');
+							\ze\admin::phrase("This site has a <code>robots.txt</code> that has non-standard modifications. <a href=".$robotsFileLink." target='_blank'>View robots.txt file</a>");
 					}
 				}
 			}
@@ -2696,6 +2822,48 @@ class welcome {
 				$show_warning = true;
 				$fields['0/robots_txt']['row_class'] = 'warning';
 				$fields['0/robots_txt']['snippet']['html'] = $robotsDotTextError;
+			}
+			
+			/**Check if there aren't any unknown files in the public html directory.
+			This is to let us know when, for example, someone has left a script or sql backup in the public_html dir and forgot to remove it.
+			Checks for the following types:
+				.7z
+				.csv
+				.gtar
+				.gz
+				.sql
+				.tar
+				.tgz
+				.zip
+				any executables
+				any unrecognised files
+			*/
+		
+			$publicHtmlFolderContents = scandir(CMS_ROOT);
+			$unknownFiles = [];
+			foreach ($publicHtmlFolderContents as $file) {
+				if (is_file($file)) {
+					$fileParts = pathinfo($file);
+				
+					//Ignore hidden files that start with a . (like .htaccess)
+					//Ignore .php files
+					if ($fileParts['filename'] === '' || $fileParts['extension'] === 'php') {
+						continue;
+					}
+				
+					if (!\ze\file::isAllowed($file) || \ze\file::isArchive($fileParts['extension'])) {
+						$unknownFiles[] = $file;
+					}
+				}
+			}
+			
+			if (!empty($unknownFiles)) {
+				$unknownFiles = implode(', ', $unknownFiles);
+				$fields['0/unknown_files_in_zenario_root_directory']['row_class'] = 'warning';
+				$fields['0/unknown_files_in_zenario_root_directory']['snippet']['html'] = \ze\admin::phrase('There are unknown files in Zenario root directory: [[files]]. Please remove them if possible.', ['files' => $unknownFiles]);
+			} else {
+				//If there are no unknown files, hide the warning.
+				$fields['0/unknown_files_in_zenario_root_directory']['hidden'] = true;
 			}
 			
 			
@@ -2753,7 +2921,7 @@ class welcome {
 				while ($row = \ze\sql::fetchAssoc($result)) {
 					
 					if (++$i > 5) {
-						$row['link'] = 'organizer.php#zenario__content/panels/content/refiners/work_in_progress////';
+						$row['link'] = 'zenario/admin/organizer.php#zenario__content/panels/content/refiners/work_in_progress////';
 						
 						$fields['0/content_more_unpublished']['hidden'] = false;
 						$fields['0/content_more_unpublished']['row_class'] = 'warning';
@@ -2845,7 +3013,7 @@ class welcome {
 							$fields['0/administrators_active']['hidden'] = true;
 						}
 						if (++$inactiveAdminCount <= 5) {
-							$row['link'] = 'organizer.php#zenario__users/panels/administrators//' . $row['id'];
+							$row['link'] = 'zenario/admin/organizer.php#zenario__users/panels/administrators//' . $row['id'];
 						
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
@@ -2867,7 +3035,7 @@ class welcome {
 				}
 				
 				if ($inactiveAdminCount > 5) {
-					$merge = ['link' => 'organizer.php#zenario__users/panels/administrators'];
+					$merge = ['link' => 'zenario/admin/organizer.php#zenario__users/panels/administrators'];
 				
 					$fields['0/administrator_more_inactive']['hidden'] = false;
 					$fields['0/administrator_more_inactive']['row_class'] = 'warning';
@@ -2946,10 +3114,15 @@ class welcome {
 		}
 	
 	
+		//In some cases, if something is so bad, hide the continue button.
+		$fields['0/continue']['hidden'] =
+			!$showContinueButton;
+		
 		//If all of the directory info valid (or uneditable due to not being a super-admin),
 		//only show one button as there is nothing to save or recheck
 		$fields['0/check_again']['hidden'] =
-			!$showCheckAgainButton
+			$showContinueButton
+		 && !$showCheckAgainButton
 		 && (!$showCheckAgainButtonIfDirsAreEditable || $_SESSION['zenario_installer_disallow_changes_to_dirs']);
 	
 	
@@ -3078,7 +3251,7 @@ class welcome {
 	
 		if ($cID && \ze\content::checkPerm($cID, $cType)) {
 		
-			unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion']);
+			unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion'], $getRequest['verification_code']);
 		
 			return \ze\link::toItem($cID, $cType, true, http_build_query($getRequest), false, false, $forceAliasInAdminMode);
 		} else {
@@ -3123,7 +3296,127 @@ class welcome {
 		return $latestLineValues;
 	}
 
+    //Used on Diagnostics screen
+    public static function getBackupWarnings() {
+        $mrg = [
+				'DBNAME' => DBNAME,
+				'path' => \ze::setting('automated_backup_log_path'),
+				'link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//dirs~.site_settings~tautomated_backups~k{"id"%3A"dirs"}'),
+				'manageAutomatedBackupLink' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//dirs')];
+        $warnings = [];
+        if (!\ze::setting('check_automated_backups')) {
+            $warnings['row_class'] = 'valid';
+            $warnings['hidden'] = true;
 
+        } elseif (!\ze::setting('automated_backup_log_path')) {
+            $warnings['show_warning'] = true;
+            $warnings['row_class'] = 'warning';
+            $warnings['snippet']['html'] =
+                \ze\admin::phrase('Automated backup monitoring is not set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em></a> in Site Settings to change this. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>', $mrg);
+
+        } elseif (!is_file(\ze::setting('automated_backup_log_path'))) {
+            $warnings['show_warning'] = true;
+            $warnings['row_class'] = 'warning';
+             $warnings['snippet']['html'] =
+                \ze\admin::phrase('Automated backup monitoring is not running properly: the log file ([[path]]) could not be found. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>', $mrg);
+
+        } elseif (!is_readable(\ze::setting('automated_backup_log_path'))) {
+            $warnings['show_warning'] = true;
+            $warnings['row_class'] = 'warning';
+            $warnings['snippet']['html']=
+                \ze\admin::phrase('Automated backup monitoring is not running properly: the log file ([[path]]) exists but could not be read. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>', $mrg);
+
+        } else {
+            //Attempt to get the date of the last backup from
+            $timestamp = \ze\welcome::lastAutomatedBackupTimestamp();
+    
+            if (!$timestamp) {
+                $warnings['show_warning'] = true;
+                $warnings['row_class']= 'warning';
+                $warnings['snippet']['html'] =
+                    \ze\admin::phrase('This site is not being backed-up using the automated process: database [[DBNAME]] was not listed in [[path]]. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>', $mrg);
+    
+            } else {
+                $days = (int) floor((time() - (int) $timestamp) / 86400);
+        
+                if ($days >= (int) \ze::setting('automated_backup_days')) {
+                    $warnings['show_warning'] = true;
+                    $warnings['row_class']= 'warning';
+                    $warnings['snippet']['html'] =
+                        \ze\admin::nPhrase('Automated backups have not been run in the last day. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>',
+                            'Automated backups have not been run in [[days]] days. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>',
+                            $days, ['days' => $days, 'manageAutomatedBackupLink' => $mrg['manageAutomatedBackupLink']]);
+
+                } else {
+                    $warnings['row_class'] = 'valid';
+                    $warnings['snippet']['html']=
+                        \ze\admin::phrase("Automated backups are running.");
+                }
+            }
+        }
+		return $warnings;
+    
+    }
+    
+    //Used in "Backups and document storage" Site Setting FAB.
+    public static function getBackupWarningsWithoutHtmlLinks() {
+        $mrg = [
+				'DBNAME' => DBNAME,
+				'path' => \ze::setting('automated_backup_log_path')];
+        $warnings = [];
+        if (!\ze::setting('check_automated_backups')) {
+            $warnings['row_class'] = 'valid';
+            $warnings['hidden'] = true;
+
+        } elseif (!\ze::setting('automated_backup_log_path')) {
+            $warnings['show_warning'] = true;
+            $warnings['row_class'] = 'warning';
+            $warnings['snippet']['html'] =
+                \ze\admin::phrase('Automated backup monitoring is not set up.', $mrg);
+
+        } elseif (!is_file(\ze::setting('automated_backup_log_path'))) {
+            $warnings['show_warning'] = true;
+            $warnings['row_class'] = 'warning';
+             $warnings['snippet']['html'] =
+                \ze\admin::phrase('Automated backup monitoring is not running properly: the log file ([[path]]) could not be found.', $mrg);
+
+        } elseif (!is_readable(\ze::setting('automated_backup_log_path'))) {
+            $warnings['show_warning'] = true;
+            $warnings['row_class'] = 'warning';
+            $warnings['snippet']['html']=
+                \ze\admin::phrase('Automated backup monitoring is not running properly: the log file ([[path]]) exists but could not be read.', $mrg);
+
+        } else {
+            //Attempt to get the date of the last backup from
+            $timestamp = \ze\welcome::lastAutomatedBackupTimestamp();
+    
+            if (!$timestamp) {
+                $warnings['show_warning'] = true;
+                $warnings['row_class']= 'warning';
+                $warnings['snippet']['html'] =
+                    \ze\admin::phrase('This site is not being backed-up using the automated process: database [[DBNAME]] was not listed in [[path]].', $mrg);
+    
+            } else {
+                $days = (int) floor((time() - (int) $timestamp) / 86400);
+        
+                if ($days >= (int) \ze::setting('automated_backup_days')) {
+                    $warnings['show_warning'] = true;
+                    $warnings['row_class']= 'warning';
+                    $warnings['snippet']['html'] =
+                        \ze\admin::nPhrase('Automated backups have not been run in the last day.',
+                            'Automated backups have not been run in [[days]] days.',
+                            $days, ['days' => $days]);
+
+                } else {
+                    $warnings['row_class'] = 'valid';
+                    $warnings['snippet']['html']=
+                        \ze\admin::phrase("Automated backups are running.");
+                }
+            }
+        }
+		return $warnings;
+    
+    }
 
 	//Formerly "deleteNamedPluginSetting()"
 	public static function deleteNamedPluginSetting($moduleClassName, $settingName) {

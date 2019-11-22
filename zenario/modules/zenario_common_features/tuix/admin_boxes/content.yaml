@@ -56,21 +56,28 @@ zenario_content:
                     label: 'Browser title:'
                     type: text
                     maxlength: 125
-                    onkeyup: |
+                    note_below: 'title'
+                    oninput: |
                         zenarioAB.contentTitleChange();
                         cnt = $('#title').val().length;
                         if(cnt<1) {
                             $('#snippet__title_length').attr('class','title_red');
+                            seo_message_title = 'Please enter a title.';
                         } else if (cnt<20) {
                             $('#snippet__title_length').attr('class','title_orange');
+                            seo_message_title = 'For good SEO, make the title longer.';
                         } else if (cnt<40) {
                             $('#snippet__title_length').attr('class','title_yellow');
+                            seo_message_title = 'For good SEO, make the title a little longer.';
                         } else if (cnt<66) {
                             $('#snippet__title_length').attr('class','title_green');
+                            seo_message_title = 'This is a good title length for SEO.';
                         } else {
                             $('#snippet__title_length').attr('class','title_yellow');
+                            seo_message_title = 'The title is a little long for good SEO as it may not be fully visible.';
                         }
                         $('#snippet__title_counter').html(cnt);
+                        $('#row__title .zenario_note_content').text(seo_message_title);
                         
                         zenarioAB.updateSEP();
                     post_field_html: |
@@ -267,36 +274,64 @@ zenario_content:
                     label: 'Alias:'
                     type: text
                     maxlength: 75
-                    onkeyup: |
+                    oninput: |
                         zenarioAB.updateSEP();
-                    onchange: zenarioAB.tuix.___alias_changed = true;
+                        $('#suggest_alias_from_title').show();
+                    onchange: |
+                        zenarioAB.tuix.___alias_changed = true;
+                        $('#alias_changed').val(1);
                     note_below: |
                         An alias for this content item, and part of its URL.
                         The combination of the content item's alias and its language code is unique across the site.
                         Lower case only, may not contain spaces or special characters.
-                    post_field_html: '<div id="alias_warning_display"></div>'
-                actual_alias:
+                suggest_alias_from_title:
+                    ord: alias.01
+                    type: button
+                    css_class: zfab_text_link_button
+                    same_row: true
+                    value: 'Suggest alias from title'
+                    style: display:none
+                    onclick: |
+                        $('#alias_changed').val("");
+                        zenarioAB.tuix.___alias_changed = false; 
+                        zenarioAB.contentTitleChange(); 
+                        $('#suggest_alias_from_title').hide();
+                alias_warning_display_wrapper:
+                    ord: alias.02
+                    snippet:
+                        html: |
+                            <div id="alias_warning_display"></div>
+                url_format:
                     type: text
                     hidden: true
+                alias_changed:
+                    type: hidden
                 description:
                     ord: 70
                     label: 'Description meta tag:'
                     type: textarea
                     style: height:45px
-                    onkeyup: |
+                    note_below: 'description'
+                    oninput: |
                         cnt = $('#description').val().length;
                         if(cnt<1) {
                             $('#snippet__description_length').attr('class','description_red');
+                            seo_message_description = 'For good SEO, enter a description. If this field is left blank, search engines will autogenerate descriptions which may not always be accurate.';
                         } else if (cnt<50) {
                             $('#snippet__description_length').attr('class','description_orange');
+                            seo_message_description = 'For good SEO, make the description longer to entice people to click through from a result list.';
                         } else if (cnt<100) {
                             $('#snippet__description_length').attr('class','description_yellow');
+                            seo_message_description = 'For good SEO, make the description a little longer to entice people to click through from a result list.';
                         } else if (cnt<156) {
                             $('#snippet__description_length').attr('class','description_green');
+                            seo_message_description = 'This is a good description length for SEO.';
                         } else {
                             $('#snippet__description_length').attr('class','description_yellow');
+                            seo_message_description = 'The description is a little long for good SEO as it may not be fully visible.';
                         }
                         $('#snippet__description_counter').html(cnt);
+                        $('#row__description .zenario_note_content').text(seo_message_description);
                     
                         zenarioAB.updateSEP();
                     post_field_html: |
@@ -321,7 +356,7 @@ zenario_content:
                     
                     enable_microtemplates_in_properties: true
                     post_field_html: |
-                        <% link = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//xml_sitemap~.site_settings~tsitemap~k{"id"%3A"xml_sitemap"}'; %>
+                        <% link = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap~.site_settings~tsitemap~k{"id"%3A"urls_and_xml_sitemap"}'; %>
                         <a
                             target="_blank"
                             href="{{URLBasePath|e}}{{link|e}}"
@@ -371,7 +406,7 @@ zenario_content:
                     label: 'Keywords meta tag:'
                     type: textarea
                     style: height:30px
-                    onkeyup: "$('#snippet__keywords_counter').html($('#keywords').val().length);"
+                    oninput: "$('#snippet__keywords_counter').html($('#keywords').val().length);"
                     post_field_html: |
                         <div class="snippet__keywords" >
                             <div id="snippet__keywords_length" class="[[initial_class_name]]">

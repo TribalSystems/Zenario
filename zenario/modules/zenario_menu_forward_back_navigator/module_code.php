@@ -56,11 +56,12 @@ class zenario_menu_forward_back_navigator extends zenario_menu {
 		$cachingRestrictions = 0;
 		
 		
-		//Check if we're showing an "up" link
+		//Check if we're showing an "up" link.
+		//Admins should see unpublished drafts, non-admins should not.
 		if ($this->setting('show_parent')
 			//Get details of the menu node above
 		 && $parentMenuId
-		 && ($result = ze\menu::query(ze::$langId, $parentMenuId, $byParent = false))
+		 && ($result = ze\menu::query(ze::$langId, $parentMenuId, $byParent = false, false, false, false, $isAdmin))
 		 && ($row = ze\sql::fetchAssoc($result))
 			//Check if it can be seen. Admins see everything, for non-admins it checks if they can.
 		 && ($isAdmin || ze\menu::shouldShow($row, $cachingRestrictions, ze::$langId))) {
@@ -75,14 +76,15 @@ class zenario_menu_forward_back_navigator extends zenario_menu {
 		}
 		
 		
-		//Check if we're showing a left or right link
+		//Check if we're showing a left or right link.
+		//Admins should see unpublished drafts, non-admins should not.
 		if ($this->setting('show_next') || $this->setting('show_previous')) {
 			
 			//Get details of all of the menu nodes below
 			$prev = false;
 			$next = false;
 			$hadCurrent = false;
-			$result = ze\menu::query(ze::$langId, $parentMenuId, $byParent = true, $sectionId);
+			$result = ze\menu::query(ze::$langId, $parentMenuId, $byParent = true, $sectionId, false, false, $isAdmin);
 			while ($row = ze\sql::fetchAssoc($result)) {
 			
 				//Check if this is the current menu node

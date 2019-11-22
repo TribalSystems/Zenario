@@ -48,7 +48,7 @@ $debugMode = !empty($_GET['_debug']);
 $loadDefinition = true;
 $settingGroup = '';
 $compatibilityClassNames = [];
-ze::$skType = $type = 'admin_boxes';
+ze::$tuixType = $type = 'admin_boxes';
 
 
 
@@ -85,7 +85,7 @@ $requestedPath = false;
 if (!empty($_REQUEST['path'])) {
 	$requestedPath = preg_replace('/[^\w\/]/', '', $_REQUEST['path']);
 }
-ze::$skPath = $requestedPath;
+ze::$tuixPath = $requestedPath;
 
 //The Plugin Settings Admin Boxes are a special case for looking up XML files.
 //They need to include the Settings from the Plugin in question, and any modules it is compatable with

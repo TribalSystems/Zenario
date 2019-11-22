@@ -31,13 +31,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$instance = ze\plugin::details($_GET['refiner__nest'] ?? false);
-		$c = $instance['class_name'];
+		$instance = ze\plugin::details(ze::get('refiner__nest'));
+		$c = 'zenario_plugin_nest';
 		
-		$panel['key']['skinId'] = $_REQUEST['skinId'] ?? false;
-		$panel['key']['cID'] = $_REQUEST['parent__cID'] ?? $_REQUEST['cID'] ?? false;
-		$panel['key']['cType'] = $_REQUEST['parent__cType'] ?? $_REQUEST['cType'] ?? false;
-		$panel['key']['cVersion'] = $_REQUEST['parent__cVersion'] ?? $_REQUEST['cVersion'] ?? false;
+		$panel['key']['skinId'] = ze::request('skinId');
+		$panel['key']['cID'] = $_REQUEST['parent__cID'] ?? ze::request('cID');
+		$panel['key']['cType'] = $_REQUEST['parent__cType'] ?? ze::request('cType');
+		$panel['key']['cVersion'] = $_REQUEST['parent__cVersion'] ?? ze::request('cVersion');
 		
 		$this->setTitleAndCheckPermissions($path, $panel, $refinerName, $refinerId, $mode, $instance);
 		
@@ -212,12 +212,15 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
 		$statesToSlides = [];
-		if ($panel['key']['usesConductor'] = ze\pluginAdm::conductorEnabled($_GET['refiner__nest'] ?? false)) {
+		if ($panel['key']['usesConductor'] = ze\pluginAdm::conductorEnabled(ze::get('refiner__nest'))) {
 			foreach ($panel['items'] as $id => &$item) {
 				if ($item['states']) {
 					foreach (explode(',', $item['states']) as $state) {
 						$statesToSlides[$state] = $item['ordinal'];
 					}
+				}
+				if (!empty($item['is_slide'])) {
+					$item['name_or_title'] = zenario_plugin_nest::formatTitleTextAdmin($item['name_or_title']);
 				}
 			}
 		}
@@ -307,10 +310,10 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		} elseif ($instance['content_id'] && !ze\priv::check('_PRIV_EDIT_DRAFT', $instance['content_id'], $instance['content_type'], $instance['content_version'])) {
 			exit;
 		
-		} elseif (!$instance['content_id'] && !($_POST['reorder'] ?? false) && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+		} elseif (!$instance['content_id'] && !(ze::post('reorder')) && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			exit;
 		
-		} elseif (!$instance['content_id'] && ($_POST['reorder'] ?? false) && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+		} elseif (!$instance['content_id'] && (ze::post('reorder')) && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			exit;
 		}
 		
@@ -330,51 +333,56 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		
 		//Add a slide.
 		//Also, if we're adding a new plugin, ensure that at least one slide has been made.
-		if (($_POST['add_slide'] ?? false) || ($_POST['upload_banner'] ?? false) || ($_POST['add_plugin'] ?? false) || ($_POST['add_twig_snippet'] ?? false) || ($_POST['copy_plugin_instance'] ?? false)) {
-			if (($_POST['add_slide'] ?? false) || !ze\row::exists('nested_plugins', ['instance_id' => $instanceId, 'is_slide' => 1])) {
+		if (ze::post('add_slide')
+		 || ze::post('upload_banner')
+		 || ze::post('add_plugin')
+		 || ze::post('add_twig_snippet')
+		 || ze::post('copy_plugin_instance')) {
+			if (ze::post('add_slide')
+			 || !ze\row::exists('nested_plugins', ['instance_id' => $instanceId, 'is_slide' => 1])) {
 				static::addSlide($instanceId);
 			}
 		}
 		
 		//Add a new plugin or banner
-		if ($_POST['add_plugin'] ?? false) {
-			return static::addPlugin($_POST['moduleId'] ?? false, $instanceId, $ids, false, true);
+		if (ze::post('add_plugin')) {
+			return static::addPlugin(ze::post('moduleId'), $instanceId, $ids, false, true);
 		
-		} elseif ($_POST['copy_plugin_instance'] ?? false) {
+		} elseif (ze::post('copy_plugin_instance')) {
 			if ($ids2) {
 				return static::addPluginInstance($ids2, $instanceId, $ids, true);
 			} else {
 				return static::addPluginInstance($ids, $instanceId);
 			}
 		
-		} elseif ($_POST['upload_banner'] ?? false) {
+		} elseif (ze::post('upload_banner')) {
 			if ($imageId = ze\file::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true)) {
 				return static::addBanner($imageId, $instanceId, $ids, true);
 			} else {
 				return false;
 			}
 		
-		//} elseif ($_POST['add_twig_snippet'] ?? false) {
-		//	return static::addTwigSnippet($_POST['moduleClassName'] ?? false, ($_POST['snippetName'] ?? false), $instanceId, $ids, true);
+		//} elseif (ze::post('add_twig_snippet')) {
+		//	return static::addTwigSnippet(ze::post('moduleClassName'), (ze::post('snippetName')), $instanceId, $ids, true);
 		
-		} elseif ((($_GET['duplicate_plugin'] ?? false) || ($_GET['duplicate_plugin_and_add_tab'] ?? false))) {
+		} elseif (ze::get('duplicate_plugin') || ze::get('duplicate_plugin_and_add_tab')) {
 			echo $this->duplicatePluginConfirm($ids);
 			
-		} elseif ($_POST['duplicate_plugin'] ?? false) {
+		} elseif (ze::post('duplicate_plugin')) {
 			return static::duplicatePlugin($ids, $instanceId);
 		
-		} elseif ($_POST['duplicate_plugin_and_add_tab'] ?? false) {
+		} elseif (ze::post('duplicate_plugin_and_add_tab')) {
 			static::addSlide($instanceId);
 			return static::duplicatePlugin($ids, $instanceId);
 		
 		//Change the number of columns that a plugin takes up
-		} elseif ($_POST['set_cols'] ?? false) {
+		} elseif (ze::post('set_cols')) {
 			
-			$cols = (int) ($_POST['cols'] ?? false);
+			$cols = (int) (ze::post('cols'));
 			
 			foreach (explode(',', $ids) as $id) {
 				ze\row::update('nested_plugins',
-					['cols' => ($_POST['cols'] ?? false)],
+					['cols' => (ze::post('cols'))],
 					['instance_id' => $instanceId, 'is_slide' => 0, 'id' => $id]);
 				
 				//"only" is only a valid option for full width columns (0) or groupings (-1).
@@ -387,19 +395,19 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			}
 		
 		//Set a plugin to either show or hide on mobile view.
-		} elseif (($_POST['small_screens'] ?? false) && ze::in($_POST['small_screens'] ?? false, 'show', 'hide')) {
+		} elseif (ze::in(ze::post('small_screens'), 'show', 'hide')) {
 			foreach (explode(',', $ids) as $id) {
 				ze\row::update('nested_plugins',
-					['small_screens' => ($_POST['small_screens'] ?? false)],
+					['small_screens' => (ze::post('small_screens'))],
 					['instance_id' => $instanceId, 'is_slide' => 0, 'id' => $id]);
 			}
 		
 		//Set a plugin to only be shown on mobile view.
 		//Note that this is only valid for full width columns (0) or groupings (-1).
-		} elseif (($_POST['small_screens'] ?? false) && ($_POST['small_screens'] ?? false) == 'only') {
+		} elseif (ze::post('small_screens') == 'only') {
 			foreach (explode(',', $ids) as $id) {
 				ze\row::update('nested_plugins',
-					['small_screens' => ($_POST['small_screens'] ?? false)],
+					['small_screens' => (ze::post('small_screens'))],
 					['instance_id' => $instanceId, 'is_slide' => 0, 'cols' => [-1, 0], 'id' => $id]);
 			}
 		
@@ -420,27 +428,27 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				);
 			}
 		
-		} elseif ($_GET['remove_plugin'] ?? false) {
+		} elseif (ze::get('remove_plugin')) {
 			echo $this->removePluginConfirm($ids, $instanceId);
 			
-		} elseif ($_POST['remove_plugin'] ?? false) {
+		} elseif (ze::post('remove_plugin')) {
 			//Loop through each id and remove it. Make sure to also set the resync option on the last one!
 			foreach (array_reverse(ze\ray::explodeAndTrim($ids, true), true) as $notLast => $id) {
 				static::removePlugin($id, $instanceId, !$notLast);
 			}
 		
-		} elseif ($_GET['remove_tab'] ?? false) {
+		} elseif (ze::get('remove_tab')) {
 			echo $this->removeSlideConfirm($ids, $instanceId);
 			
-		} elseif ($_POST['remove_tab'] ?? false) {
+		} elseif (ze::post('remove_tab')) {
 			//Loop through each id and remove it. Make sure to also set the resync option on the last one!
 			foreach (array_reverse(ze\ray::explodeAndTrim($ids, true), true) as $notLast => $id) {
-				$this->removeSlide($id, $instanceId, !$notLast);
+				static::removeSlide($id, $instanceId, !$notLast);
 			}
 			
-		} elseif ($_POST['reorder'] ?? false) {
+		} elseif (ze::post('reorder')) {
 			//Each specific Nest may have it's own rules for ordering, so be sure to call the correct reorder method for this Nest
-			self::reorderNest($ids);
+			self::reorderNest(ze::post('refiner__nest'), explode(',', $ids), $_POST['ordinals'], $_POST['parent_ids']);
 			self::resyncNest($instanceId);
 		}
 	}

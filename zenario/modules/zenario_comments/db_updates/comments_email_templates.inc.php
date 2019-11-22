@@ -35,7 +35,8 @@ ze\dbAdm::revision(80, "
         `body`,
         `date_created`,
         `created_by_id`,
-        `allow_attachments`
+        `allow_attachments`,
+        `use_standard_email_template`
     ) VALUES (
     	'zenario_comments__comment_subs_en',
         'To User: Comment notification',
@@ -52,7 +53,8 @@ ze\dbAdm::revision(80, "
         <p><small>This is an auto-generated email. Please visit [[cms_url]] to change your notification settings.</small></p>',
         NOW(),
         ". (int) ($_SESSION['admin_userid'] ?? false). ",
-        0
+        0,
+        1
     )
 ");
 

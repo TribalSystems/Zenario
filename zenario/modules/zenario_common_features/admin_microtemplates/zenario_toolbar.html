@@ -38,7 +38,7 @@
 		</div>
 		<div class="zenario_at_container zenario_at_toolbar_container">
 			<div id="zenario_at_toolbars">
-		
+				
 				<!--
 					The "display: none;" is to hide these icons when drawing the temporary HTML in the
 					pageBodyAdminToolbar() function.
@@ -60,27 +60,27 @@
 					></div>
 				
 					<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
-						<% if (zenario.engToBoolean(zenarioA.siteSettings.site_enabled)) { %>
-							<% if (zenarioA.siteSettings.site_mode == 'production') { %>
-								<div
-									class="zenario_at_dev_icon site_enabled"
-									onclick="zenarioAB.enableOrDisableSite();"
-									title="Site enabled; production mode"
-								></div>
-							<% } else { %>
-								<div
+						<div
+							onclick="zenarioAB.enableOrDisableSite();"
+						
+							<% if (zenarioA.siteSettings.site_enabled) { %>
+								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
 									class="zenario_at_dev_icon site_enabled_development"
-									onclick="zenarioAB.enableOrDisableSite();"
 									title="Site enabled; development mode"
-								></div>
+								<% } else { %>
+									class="zenario_at_dev_icon site_enabled"
+									title="Site enabled; production mode"
+								<% } %>
+							<% } else { %>
+								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
+									class="zenario_at_dev_icon site_disabled"
+									title="Site disabled; development mode"
+								<% } else { %>
+									class="zenario_at_dev_icon site_disabled"
+									title="Site disabled"
+								<% } %>
 							<% } %>
-						<% } else { %>
-							<div
-								class="zenario_at_dev_icon site_disabled"
-								onclick="zenarioAB.enableOrDisableSite();"
-								title="Site disabled; development mode"
-							></div>
-						<% } %>
+						></div>
 					<% } %>
 				</div>
 		

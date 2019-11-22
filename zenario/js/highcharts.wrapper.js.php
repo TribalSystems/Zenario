@@ -41,6 +41,8 @@ if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php'
 //Include highcharts if this site has brought a license and included it in the
 //zenario/libs/not_to_redistribute/highcharts/ directory
 ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/highcharts');
+ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/highcharts-more');
+ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/solid-gauge');
 //ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/adapt-chart-to-legend');
 ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/exporting');
 ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/export-csv');

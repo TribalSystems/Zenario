@@ -40,7 +40,7 @@ _sql
 		`url` varchar(250) NULL,
 		`stop_dates` text,
 		UNIQUE KEY  (`id`,`version`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(38

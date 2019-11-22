@@ -47,16 +47,15 @@ Options -Indexes
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	
-	# Redirect admin/ to zenario/admin/
-	RewriteRule ^admin$ zenario/redirect.php?redirect=admin/ [L]
-	RewriteRule ^admin/(.*)$ zenario/redirect.php?redirect=admin/$1 [L,QSA]
-
 	# Correct any bad relative-URLs
 	RewriteRule ^[\/,A-Za-z0-9~_-]*\/(public|private|zenario|zenario_custom|zenario_extra_modules)/(.*)$ zenario/redirect.php?redirectdir=$1&redirect=$2 [L,QSA]
 	
 	
 	# Favicons
 	RewriteRule ^favicon.ico$ zenario/file.php?usage=favicon [L]
+	
+	# Admin URL:
+	RewriteRule ^admin(|\.\w+)$ zenario/admin/welcome.php [L,QSA]
 	
 	# Friendly URLs:
 	RewriteCond %{REQUEST_URI} !/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)/

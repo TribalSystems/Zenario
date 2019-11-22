@@ -47,7 +47,7 @@ zenario_trash:
                             label: 'Delete the plugin(s) altogether'
                     value: remove
                     hidden: true
-    max_height: 150
+    max_height: 160
     hide_tab_bar: true
     save_button_message: Trash
     cancel_button_message: Cancel

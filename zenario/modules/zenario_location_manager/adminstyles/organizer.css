@@ -8,8 +8,13 @@
 	background: url('images/icon-locations-on.svg') no-repeat center / auto 16px;
 }
 
-.organizer_item_image.zenario_location_manager_location {
+.organizer_item_image.zenario_location_manager_location,
+#zenario_at_top_left_menu .organizer_item_image.all_locations {
 	background: url('images/icon-locations.svg') no-repeat center / auto 18px;
+}
+
+#zenario_at_top_left_menu .organizer_item_image.all_locations {
+	background-position:6px center;
 }
 
 .organizer_item_image.zenario_location_manager_sector {

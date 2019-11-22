@@ -111,6 +111,27 @@ class row {
 	
 	
 		if ($isWhere && is_array($val)) {
+			
+			//Catch the case where someone tries to do an IN() on an empty list
+			if ($val === []) {
+				if (substr($sign, 0, 1) == '!' || $sign == 'NOT LIKE') {
+					//"Not in empty list" is always true.
+					//(Though don't bother writing "AND TRUE" as that's redundant.)
+				} else {
+					//"In empty list" is always false.
+					if ($first) {
+						$first = false;
+						$sql .= '
+							WHERE FALSE';
+					} else {
+						$sql .= '
+							  AND FALSE ';
+					}
+				}
+				
+				return;
+			}
+			
 			$firstIn = true;
 			foreach ($val as $sign2 => &$val2) {
 				if (is_numeric($sign2) || substr($sign2, 0, 1) == '=') {

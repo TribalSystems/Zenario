@@ -85,7 +85,7 @@ class zenario_common_features__organizer__menu_position extends ze\moduleBaseCla
 					case 'create':
 						$item['menu_path'] =
 							$this->getParentPath($parentId, $item).
-							($item['name'] = ze\admin::phrase('[ Create at the end ]'));
+							($item['name'] = ze\admin::phrase('[ Create here ]'));
 						break;
 					
 					case 'move':

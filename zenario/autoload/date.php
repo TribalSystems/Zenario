@@ -157,16 +157,71 @@ class date {
 		
 		return $date->format('T');
 	}
+	
+	
+	//This function gets the timezone as set on the database server
+	private static $sqlTZ = null;
+	public static function sqlTimezone() {
+		
+		if (is_null(self::$sqlTZ)) {
+			if ($tdiff = \ze\sql::fetchValue('SELECT TIMEDIFF(NOW(), UTC_TIMESTAMP)')) {
+				$tdiff = substr($tdiff, 0, -3);
+				
+				if ($tdiff[0] != '-'
+				 && $tdiff[0] != '+') {
+					$tdiff = '+'. $tdiff;
+				}
+			
+			} else {
+				$tdiff = '+00:00';
+			}
+			
+			self::$sqlTZ = $tdiff;
+		}
+		
+		return self::$sqlTZ;
+	}
+	
+	//Create a new date object from a integer or a string
+	public static function new($time) {
+		
+		//UNIX timestamps (in seconds, not in ms)
+		if (is_numeric($time)) {
+			return new \DateTime('@'. (int) $time);
+		
+		} elseif (is_string($time)) {
+			//Dates from MySQL, in server time
+			if (($time[4] ?? '') === '-'
+			 && ($time[7] ?? '') === '-'
+			 && strrpos($time, '-', 8) === false
+			 && strrpos($time, '+', 8) === false) {
+				return new \DateTime($time. self::sqlTimezone());
+			
+			//Generic fallback to catch anything else!
+			} else {
+				$time = new \DateTime($time);
+			}
+		}
+		
+		//Catch the case where this is already a date object (i.e. this function won't cause an error if someone accidentally calls it twice!)
+		return $time;
+	}
 
 
 
 	const relativeFromTwig = true;
 	//Formerly "getRelativeDate()"
 	public static function relative($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false, $showDateTime = false) {
-	
-		$time = \ze\user::convertToUsersTimeZone($timestamp);
-		if (!is_numeric($timestamp)) {
-			$timestamp = strtotime($timestamp . ' UTC');
+		
+		if (is_object($timestamp)) {
+			$time = $timestamp;
+			$timestamp = (int) $time->format('U');
+		
+		} else {
+			$time = \ze\user::convertToUsersTimeZone($timestamp);
+			if (!is_numeric($timestamp)) {
+				$timestamp = (int) $time->format('U');
+			}
 		}
 	
 		$etime = time() - (int) $timestamp;

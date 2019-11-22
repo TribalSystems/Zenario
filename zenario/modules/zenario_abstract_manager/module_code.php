@@ -69,7 +69,7 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 					`record_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL default '',
 					PRIMARY KEY (`id`),
 					KEY (`record_name`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 			");
 		}
 		

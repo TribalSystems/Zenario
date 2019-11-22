@@ -76,6 +76,26 @@ body .ace_editor.ace_autocomplete {
 	font-weight:bold;
 }
 
+table.table_list.zfea_group_by {
+	margin-left:30px;
+	width:calc(100% - 30px);
+}
+
+table.table_list.zfea_group_by tr.zfea_list_grouping td {
+	padding-top:10px;
+	padding-left:0;
+}
+
+table.table_list.zfea_group_by tr.zfea_list_grouping td h5 {
+	position:relative;
+	margin-left:-28px;
+}
+
+table.table_list.zfea_group_by tr.zfea_list_outer_grouping td h4 {
+	position:relative;
+	margin-left:-38px;
+}
+
 /* Form
 --------------------------------------------------------------------------------------------------*/
 
@@ -108,6 +128,10 @@ body .ace_editor.ace_autocomplete {
 .zenario_skin .zenario_textbox_with_autocomplete input[type="text"],
 .zenario_skin .zenario_textbox_with_autocomplete input[type="button"] {
 	float:left;
+}
+
+.zfea_popout.zenario_slide_info .zfea_form_row .zfea_row_fields select#change_slide_layout {
+	width:100%;
 }
 
 /* Courier new
@@ -191,7 +215,9 @@ table.table_list tr th:last-child {
 }
 
 .zfea_assetwolf_list_data_pools.aw_list table tr th.sorted_buttons,
-.zfea_assetwolf_list_data_pools.aw_list table tr td.sorted_buttons {
+.zfea_assetwolf_list_data_pools.aw_list table tr td.sorted_buttons,
+.zfea_assetwolf_list_data_scheduled_calcs table tr th.sorted_buttons,
+.zfea_assetwolf_list_data_scheduled_calcs table tr td.sorted_buttons {
 	width:auto;
 	white-space:nowrap;
 }
@@ -348,6 +374,42 @@ table tr td.no_items_message:last-child {
 	margin-left:0 !important;
 }
 
+/* Search sort */
+
+.zfea_assetwolf_list_data_pools.aw_list .zfea_list_search_sort_wrapper {
+	text-align:right;
+}
+
+.zfea_assetwolf_list_data_pools.aw_list .zfea_list_search_sort_wrapper select.zfea_list_sort {
+	width: 150px;
+  	padding: 5px 35px 5px 5px;
+  	font-size: 13px;
+  	border: 0;
+  	height: 32px;
+  	-webkit-appearance: none;
+  	-moz-appearance: none;
+  	appearance: none;
+  	color:#fff;
+  	background: #00468C url('images/icon-arrow-down-white.png') 96% / 16px auto no-repeat;
+}
+
+body.webkit .zfea_assetwolf_list_data_pools.aw_list .zfea_list_search_sort_wrapper select.zfea_list_sort {
+	padding:0 35px 5px 8px;
+}
+
+/* CAUTION: IE hackery ahead */
+.zfea_assetwolf_list_data_pools.aw_list .zfea_list_search_sort_wrapper select.zfea_list_sort::-ms-expand { 
+    display: none; /* remove default arrow on ie10 and ie11 */
+}
+
+/* target Internet Explorer 9 to undo the custom arrow */
+@media screen and (min-width:0\0) {
+    .zfea_assetwolf_list_data_pools.aw_list .zfea_list_search_sort_wrapper select.zfea_list_sort {
+        background:none\9;
+        padding: 5px\9;
+    } 
+}
+
 /* Assetwolf Edit schema
 --------------------------------------------------------------------------------------------------*/
 
@@ -466,6 +528,75 @@ table tr td.no_items_message:last-child {
 	height:36px;
 }
 
+/* Other tables styles color
+--------------------------------------------------------------------------------------------------*/
+
+.zfea_assetwolf_list_events table.table_list tr th {
+	background:#D9DADC;
+	color:#494f6b;
+}
+
+.zfea table.table_grid tr th,
+.zfea table.table_grid tr td,
+.zenario_users_fea .zfea .zfea_form_row tr th,
+.zenario_users_fea .zfea .zfea_form_row tr td,
+.zfea.zfea_assetwolf_asset table tr th,
+.zfea.zfea_assetwolf_asset table tr:nth-child(2) th,
+.zfea.zfea_assetwolf_asset table tr td {
+	border:2px solid #FFF;
+}
+
+.zfea table.table_grid tr th,
+.zfea.zfea_assetwolf_asset table tr:nth-child(2) th,
+.zenario_users_fea .zfea .zfea_form_row tr th {
+	background:#777b90;
+	color:#FFF;
+}
+
+.zfea table.table_grid tr td,
+.zfea.zfea_assetwolf_asset table tr td,
+.zenario_users_fea .zfea .zfea_form_row tr td {
+	background:#d2d3da;
+}
+
+.zenario_company_locations_fea table tr td,
+.zenario_company_listing_fea table tr td,
+.zenario_company_location_listing_fea table tr td,
+.zenario_location_fea table tr td,
+.zenario_company_users_fea table tr td {
+	background:#d9dadb;
+}
+
+table tr td div.col_child_value label {
+	color:#333;
+}
+
+.zfea_assetwolf_view_asset_keys_and_data tr th {
+	background:#777b90;
+	color:#FFF;
+}
+
+.zfea_assetwolf_view_asset_keys_and_data tr {
+	background:#f0f0f0;
+}
+
+.zfea_assetwolf_view_asset_keys_and_data tr:nth-child(even) {
+	background:#fff;
+}
+
+table.mqtt_details tr td,
+.list_of_assets table tr td,
+.list_of_assets_resource_usage table tr td {
+	border:3px solid #FFF;
+	background:#F0F0F0;
+}
+
+.list_of_assets table tr td[colspan],
+.list_of_assets_resource_usage table tr td[colspan] {
+	background:#494f6b;
+	color:#FFF;
+}
+
 /* Tables rows
 --------------------------------------------------------------------------------------------------*/
 
@@ -511,6 +642,8 @@ table tr td.no_items_message:last-child {
 
 .zfea table.table_grid tr th,
 .zfea table.table_grid tr td,
+.zenario_users_fea .zfea .zfea_form_row tr th,
+.zenario_users_fea .zfea .zfea_form_row tr td,
 .zfea.zfea_assetwolf_asset table tr th,
 .zfea.zfea_assetwolf_asset table tr:nth-child(2) th,
 .zfea.zfea_assetwolf_asset table tr td {
@@ -579,7 +712,8 @@ table.mqtt_details tr td,
 	padding:5px 10px;
 }
 
-.mqtt_message.asset pre {
+.mqtt_message.asset pre,
+.assetwolf_2__in_mode__view_last_mqtt_message pre {
   white-space: pre-wrap;       /* css-3 */
  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
  white-space: -pre-wrap;      /* Opera 4-6 */
@@ -1164,7 +1298,8 @@ table.mqtt_details tr td,
 .orange_comms_icon,
 .green_comms_icon,
 .not_monitored_comms_icon,
-.never_communicated_comms_icon {
+.never_communicated_comms_icon,
+.simulated_comms_icon {
 	display:inline-block;
 	width:22px;
 	height:22px;
@@ -1201,11 +1336,17 @@ table.mqtt_details tr td,
 	background: url('images/icon-comms-asset-white.svg') no-repeat center center / 18px 20px;
 }
 
+.simulated_comms_icon,
+.simulated_comms_list_icon {
+	background: url('images/icon-comms-asset-simulate.svg') no-repeat center center / 18px 20px;
+}
+
 .red_comms_list_icon,
 .orange_comms_list_icon,
 .green_comms_list_icon,
 .grey_comms_list_icon,
-.never_comms_list_icon {
+.never_comms_list_icon,
+.simulated_comms_list_icon {
 	display:inline-block;
 	padding-left:30px;
 	min-height:22px;
@@ -1763,6 +1904,32 @@ body.mobile .zfea_assetwolf_list_node_hierarchy .search_form {
 	opacity:1;
 }
 
+.assetwolf_graph_base .highcharts-data-table table {
+	max-width: calc(100% - 20px);
+    margin: 10px auto;
+}
+
+.assetwolf_graph_base .highcharts-data-table table tr th,
+.assetwolf_graph_base .highcharts-data-table table tr td {
+	border:1px solid #777;
+	padding:5px 12px;
+	vertical-align:top;
+}
+
+.assetwolf_graph_base .highcharts-data-table table tr th {
+	text-align:center;
+}
+
+.assetwolf_graph_base .highcharts-data-table table tr th,
+.assetwolf_graph_base .highcharts-data-table table tr td:first-child {
+	background:#777;
+	color:#fff;
+}
+
+.assetwolf_graph_base .highcharts-data-table table tr td {
+	text-align:right;
+}
+
 /* Form grouping
 --------------------------------------------------------------------------------------------------*/
 
@@ -2240,6 +2407,147 @@ table tr td div.col_value.asset_status {
 	display:none;
 }
 
+/* Export data
+--------------------------------------------------------------------------------------------------*/
+
+.assetwolf_2 .mode_export_panel form {
+	display:none;
+}
+
+.assetwolf_2 .mode_export_panel .reveal_button h4 {
+	height:27px;
+	line-height:26px;
+	font-size:1em;
+	font-weight:normal;
+    display: inline-block;
+    padding: 0 12px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-transition: opacity 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
+    cursor: pointer;
+    
+    background-color: #000;
+    border: 1px solid #000;
+    color: #FFF;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker > label, 
+.assetwolf_2 .mode_export_panel .form_date_picker > select, 
+.assetwolf_2 .mode_export_panel .form_date_picker > div, 
+.assetwolf_2 .mode_export_panel .form_date_picker > input, 
+.assetwolf_2 .mode_export_panel .form_date_picker > span {
+	float:none;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker select[name="ts_format"] {
+	max-width:none;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker span.note {
+	font-size:12px;
+	font-style:italic;
+	margin-left:10px;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap {
+	padding:10px 10px 5px;
+	border-bottom:5px solid #FFF;
+	margin:0;
+	background:#F5F5F5;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap:first-child label {
+	margin-right:8px;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap.same_label_size > label,
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap label.label_from {
+	width:130px;
+	text-align:left;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap,
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields {
+	overflow:hidden;
+	clear:both;
+	display:block;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields {
+	clear:left !important;
+	padding-left:135px;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields input[type="radio"] {
+	margin-top:3px;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields > span:not(.subtitle):not(.indented_schema_field),
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__metric_data_fields .zfea_form_group {
+	float:none;
+	height:auto;
+	margin-top:8px;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields > span:not(.subtitle):not(.indented_schema_field) label {
+	height:auto;
+	line-height:1.4em;
+	margin-bottom:0;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields span.indented_schema_field,
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__metric_data_fields .zfea_form_group span.indented_schema_field {
+	display:block;
+	float:none;
+	height:auto;
+	line-height:1.8em;
+	margin-left:30px;
+	font-size:95%;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields span.subtitle,
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__granular_data_fields .zfea_form_group span.subtitle,
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__metric_data_fields .zfea_row_fields span.subtitle {
+	float:none;
+	display:block;
+	height: 34px;
+	line-height: 34px;
+	margin:5px 0 8px;
+	padding:0 10px;
+	background:#e2e2e2;
+	border-bottom:1px solid #ccc;
+}
+
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__granular_data_fields .zfea_form_group,
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__metric_data_fields .zfea_row_fields {
+	max-width:400px;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields input[type="checkbox"] {
+	top:4px;
+}
+
+.assetwolf_2 .mode_export_panel .form_date_picker .form_date_picker_wrap .schema_fields input[type="checkbox"],
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__granular_data_fields .zfea_form_group input[type="checkbox"] {
+	position:relative;
+	margin-left:10px;
+}
+
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__granular_data_fields .zfea_form_group {
+	padding-bottom:4px;
+}
+
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__granular_data_fields .zfea_form_group label {
+	padding-bottom:0;
+}
+
+.assetwolf_2 .zfea_assetwolf_export_all_data .zfea_form_row__monthly_metrics_error {
+	margin:10px 0 15px;
+}
+
 /* Edit box
 --------------------------------------------------------------------------------------------------*/
 
@@ -2650,6 +2958,11 @@ fieldset.zfea_form_grouping.zfea_form_grouping__last_edit_info {
 	margin-bottom:10px;
 }
 
+.form_date_picker div input,
+.form_date_picker div span {
+	margin-bottom:0;
+}
+
 .form_date_picker label,
 .form_date_picker select,
 .form_date_picker div,
@@ -2710,7 +3023,7 @@ span.awf_data_out_of_date,
 	background:url('images/icon-warning-triangle-orange.png') no-repeat left center;
 }
 
-.warning_icon {
+.zenario_skin .warning_icon {
 	width:17px;
 	height:17px;
 	margin-right:3px;
@@ -2793,57 +3106,35 @@ span.awf_data_out_of_date,
 	margin-top: -12px;
 }
 
-/* Common styles, popup
+/* Common styles, for Assetwolf
 --------------------------------------------------------------------------------------------------*/
 
-.zfea_popout {
-	position: fixed;
-	top: -100px;
-	left: -100px;
-	padding: 20px;
-	z-index: 10;
-	width: 200%; 
-	height: 200%;
-}
-
-.zfea_popout .zfea_popout_inner {
-	padding: 20px;
-	z-index: 12;
-	width: 32%; 
-	min-height: 30%;
-	min-width: 400px;
-	position: fixed; 
-	top: 20%; 
-	left: 35%;
-	border-radius: 8px;
-}
-
-.mobile .zfea_popout .zfea_popout_inner {
-	width:calc(80% - 40px);
-	min-width:auto;
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner {
+	width:60%;
+	max-width:600px;
 	left:0;
 	right:0;
 	margin:auto;
 }
 
-.zfea_popout .zfea_popout_inner #close_popout__2 {
-	position: absolute;
-    z-index: 11;
-    top: 12px;
-    right: 12px;
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    text-indent: -999;
-    font-size: 0;
-    line-height: 0;
-}
-
-.zfea_popout .zfea_popout_inner .zfea_popout_form {
-	margin-top: 20px;
+.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner > input.close_popout_x {
+	position:absolute;
+	z-index:2;
+	top:10px;
+	right:10px;
+	width:22px;
+	height:22px;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
+	background:#CCC url('images/close-cross.svg') no-repeat center center / 10px 10px;
+	border:0;
+	padding:0;
 }
 
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form {
+    max-height: 70vh;
+    overflow-y: auto;
 	margin-top:0;
 	text-align:center;
 }
@@ -2886,69 +3177,6 @@ span.awf_data_out_of_date,
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form input[type="checkbox"],
 .zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner .zfea_popout_form input[type="radio"] {
 	margin:3px 5px 0 0;
-}
-
-.zfea_popout .zfea_popout_inner .zfea_popout_form input[type="text"],
-.zfea_popout .zfea_popout_inner .zfea_popout_form textarea {
-	width:calc(100% - 22px);
-	max-width:450px;
-}
-
-.zfea_popout .zfea_popout_inner .zfea_slider {
-	text-align: right;
-	margin: 20px;
-}
-
-.zfea_popout .zfea_popout_inner .zfea_slider a.zfea_slider_clear {
-	background-color: #777;
-	background-image:url('images/icon-white-clear-x.svg');
-	background-repeat:no-repeat;
-	background-position:center center;
-	background-size:10px;
-	float:right;
-	margin:8px;
-    color: #fff !important;
-    -webkit-border-radius: 50%;
-    -moz-border-radius: 50%;
-    border-radius: 50%;
-    display: inline-block;
-    width:20px;
-    height:20px;
-    text-indent:-999px;
-    font-size:0;
-    line-height:0;
-	-webkit-transition:background-color 0.3s ease 0s;  
-   	-moz-transition:background-color 0.3s ease 0s;  
-   	-o-transition:background-color 0.3s ease 0s;  
-   	transition:background-color 0.3s ease 0s; 
-}
-
-.zfea_popout .zfea_popout_inner .zfea_slider a.zfea_slider_clear:hover {
-	opacity:0.7;
-	text-decoration:none;
-}
-
-.zfea_popout .zfea_popout_inner .ui-widget-content {
-	width: 50%;
-    display: inline-block;
-    margin: 0 10px;
-}
-
-.zfea_popout .zfea_popout_inner .zfea_slider > input[type="text"] {
-	width: 50px;
-	text-align: right;
-}
-
-.zfea_popout {
-	background: url('images/overlay_layer.png');
-}
-
-.zfea_popout .zfea_popout_inner #close_popout__2 {
-    background: url('images/close-cross.svg') no-repeat;
-}
-
-.zfea_popout .zfea_popout_inner #close_popout__2:hover {
-	background: url('images/close-cross-over.svg') no-repeat;
 }
 
 /* Colorbox, popup aw data entry
@@ -3001,6 +3229,27 @@ span.awf_data_out_of_date,
 .zfea_popout.assetwolf_data_entry_popout .zfea_form_row.zfea_row_for_button,
 .zfea_assetwolf_send_command_popout .zfea_form_row.zfea_row_for_button {
 	text-align:right;
+}
+
+/* Triggers
+--------------------------------------------------------------------------------------------------*/
+
+.assetwolf_2 .zfea_assetwolf_edit_trigger table.table_with_lines {
+	width:auto;
+}
+
+.zfea_assetwolf_edit_trigger .table_with_lines input[type="text"] {
+	width:80px !important;
+}
+
+.zfea_assetwolf_edit_trigger .table_with_lines tr th:last-child,
+.zfea_assetwolf_edit_trigger .table_with_lines tr td:last-child {
+	text-align:right;
+}
+
+.zfea_assetwolf_edit_trigger .table_with_lines tr th {
+	background:#999;
+	color:#fff;
 }
 
 /* Date Range Selector
@@ -3973,7 +4222,7 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 /* Block list / popups
 --------------------------------------------------------------------------------------------------*/
 
-.aw_list .zfea_block_list_wrap > div p.column_name {
+.aw_list .zfea_block_list_wrap > div > div.column_name {
 	text-align:left;
 	color:#333333;
 	font-size:1.714em;
@@ -3982,72 +4231,66 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 	padding-left:80px;
 }
 
-.aw_list .zfea_block_list_wrap > div p.column_status,
+.aw_list .zfea_block_list_wrap > div div.column_status,
 .assetwolf_2_schematics .info .hotspot_popup div.asset_status {
-	/*min-height:24px;*/
 	line-height:1.2em;
 	padding:0 0 10px 28px;
+	min-height:16px;
 }
 
-.aw_a_list.aw_list .zfea_block_list_wrap > div p.column_status,
+.aw_a_list.aw_list .zfea_block_list_wrap > div div.column_status,
 .assetwolf_2_schematics .info .hotspot_popup div.asset_status {
 	padding-top:2px;
 	padding-bottom:12px;
 }
 
-.aw_list .zfea_block_list_wrap > div p.column_status,
+.aw_list .zfea_block_list_wrap > div div.column_status,
 .assetwolf_2_schematics .info .hotspot_popup div.asset_status {
 	background-repeat:no-repeat;
 	background-position:left 0;
 }
 
-.aw_list .zfea_block_list_wrap > div p.column_status .comms_wrap,
+.aw_list .zfea_block_list_wrap > div div.column_status .comms_wrap,
 .assetwolf_2_schematics .info .hotspot_popup div.asset_status .comms_wrap {
 	position:relative;
 	top:8px;
 }
 
 .aw_list .zfea_block_list_wrap > div div.wrap_div,
-.aw_dp_list.aw_list .zfea_block_list_wrap > div.zfea_block > p.column_id {
+.aw_dp_list.aw_list .zfea_block_list_wrap > div.zfea_block > div.column_id {
 	position:absolute !important;
 	left:15px;
 	top:18px;
 }
 
-.aw_list .zfea_block_list_wrap > div div.wrap_div p {
+.aw_list .zfea_block_list_wrap > div div.wrap_div > div {
 	display:inline-block;
 	float:left;
 	padding-right:5px;
 }
-
-.aw_dp_list.aw_list .zfea_block_list_wrap > div p[class*="column_field"], 
-.assetwolf_2_schematics .info .hotspot_popup p[class*="column_field"] {
+ 
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field"],
+.assetwolf_2_schematics .info .hotspot_popup div[class*="column_field"] {
 	position:relative;
 	line-height:1.2em;
 	height:52px;
 	margin-bottom:10px !important;
 }
 
-.aw_dp_list.aw_list .zfea_block_list_wrap > div p[class*="column_field"] span,
-.assetwolf_2_schematics .info .hotspot_popup p[class*="column_field"] {
-	background-color:#AAA;
-	color:#fff;
-}
-
-.assetwolf_2_schematics .info .hotspot_popup.blue_dis_schema p[class*="column_field"] .label,
-.assetwolf_2_schematics .info .hotspot_popup.soap_dis_schema p[class*="column_field"] .label {
+.assetwolf_2_schematics .info .hotspot_popup.blue_dis_schema div[class*="column_field"] .label,
+.assetwolf_2_schematics .info .hotspot_popup.soap_dis_schema div[class*="column_field"] .label {
 	position:static;
 	transform:none;
 }
 
-.aw_list .zfea_block_list_wrap > div p.column_id,
-.aw_list .zfea_block_list_wrap > div p.column_parent_name,
-.aw_list .zfea_block_list_wrap > div p.column_schema_name {
+.aw_list .zfea_block_list_wrap > div div.column_id,
+.aw_list .zfea_block_list_wrap > div div.column_parent_name,
+.aw_list .zfea_block_list_wrap > div div.column_schema_name {
 	text-align:center;
 	color:#333;
 }
 
-.aw_dp_list.aw_list .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block p:first-child {
+.aw_dp_list.aw_list .zfea_blocks.aw_list .zfea_block_list_wrap .zfea_block > div:first-child {
 	font-weight:400;
 	font-size:1em;
 }
@@ -4056,19 +4299,156 @@ body.mobile .assetwolf_2_schematics div.schematic_builder .controls .buttons sel
 	border: 2px solid #888;
 }
 
-body.mobile .aw_list .zfea_block_list_wrap > div p.column_status .label {
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field"],
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field"] {
+	position:relative;
+	line-height:1.2em;
+	height:50px;
+	margin-bottom:10px !important;
+	overflow:hidden;
+	background:#999;
+	color:#fff;
+}
+
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field"] {
+	font-size:13px;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.icon,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.icon {
+	width:auto;
+	height:50px;
+	padding:0;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:auto 32px;
+}
+
+.zfea_blocks .zfea_block_list_wrap .zfea_block div:first-child .label .field_label, 
+.zfea_blocks .zfea_block_list_wrap .zfea_block > div:first-child .label .field_label {
+	display:inline-block;
+}
+
+.zfea_blocks .zfea_block_list_wrap .zfea_block .wrap_div div:first-child .label .field_label, 
+.zfea_blocks .zfea_block_list_wrap .zfea_block .wrap_div > div:first-child .label .field_label {
+	display:none;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.icon,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.icon,
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label {
+	float:left;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label {
+	width:calc(100% - 40px);
+	height:40px;
+	padding:5px 25px 5px 10px;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .previous_wrapper, 
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .this_wrapper, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .previous_wrapper, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .this_wrapper {
+	width:63px;
+	height:40px;
+	float:right;
+	margin-left:5px;
+	padding:0 5px;
+	display:inline-block;
+	background-color:#222222;
+	color:#fff;
+	font-size:14px;
+	text-align:center;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .field_label,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .field_label {
+	width:calc(100% - 156px);
+	display:inline-block;
+	float:left;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .period_boxes,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .period_boxes {
+	width:156px;
+	display:inline-block;
+	float:right;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .period_boxes .previous_wrapper, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .period_boxes .previous_wrapper,
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .period_boxes .this_wrapper, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .period_boxes .this_wrapper {
+	float:left;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .previous_wrapper .previous_period_label, 
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .this_wrapper .this_period_label, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .previous_wrapper .previous_period_label, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .this_wrapper .this_period_label {
+	padding-top:1px;
+	font-size:9px;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label.real_time .field_label,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label.real_time .field_label {
+	width:calc(100% - 93px);
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label.real_time .field_value,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label.real_time .field_value {
+	width:83px;
+	height:22px;
+	padding-top:20px;
+	background:url('images/icon-gauge.png') no-repeat center;
+	color:#fff;
+	text-align:center;
+	font-size:14px;
+	float:right;
+	position:relative;
+	top:-2px;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .info_icon, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .info_icon {
+	position:absolute;
+	top:7px;
+	right:5px; 
+}
+
+/*body.mobile .aw_list .zfea_block_list_wrap > div div.column_status .label {
 	position: absolute;
 	top: 50%;
 	transform: translateY(-50%);
-}
+}*/
 
-body.mobile .aw_list .zfea_block_list_wrap > div p.column_name,
+body.mobile .aw_list .zfea_block_list_wrap > div > div.column_name,
 body.mobile .assetwolf_2_schematics .info .hotspot_popup h3 {
 	font-size:1.5em;
 }
 
-body.mobile .aw_list .zfea_block_list_wrap > div div.wrap_div p {
+body.mobile .aw_list .zfea_block_list_wrap > div div.wrap_div div {
 	font-size:0.875em;
+}
+
+/*  Resize text function, just works for the class set here
+--------------------------------------------------------------------------------------------------*/
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field"] .resize_text, 
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field"] .resize_text {
+	width:100%;
+	height:18px;
+}
+
+.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field"] .resize_text.field_label,
+.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field"] .resize_text.field_label {
+	height:32px;
 }
 
 /*  Simulator
@@ -4380,7 +4760,7 @@ input.datepicker[type="text"] {
 }
 
 input[readonly].datepicker {
-	background:#FFF !important;
+	background-color:#FFF !important;
 	color:#57585a !important;
 }
 
@@ -4403,7 +4783,7 @@ img.ui-datepicker-trigger {
 }
 
 #ui-datepicker-div.ui-datepicker {
-	/*z-index:99999 !important;*/
+	z-index:99999 !important;
 }
 
 /* Ace editor
@@ -4604,9 +4984,16 @@ img.ui-datepicker-trigger {
     background-position: 15px 15px
 }
 
-.toast-title {
+.toast-title,
+.toast-message h2 {
   font-weight: bold;
 }
+
+.toast-message h2 {
+	font-size:1.1em;
+	padding-bottom:5px;
+}
+
 .toast-message {
   -ms-word-wrap: break-word;
   word-wrap: break-word;
@@ -5135,6 +5522,63 @@ button.toast-close-button {
 	}
 }
 
+/* Layout max-width: 768px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 769px) {
+
+	.assetwolf_2_schematics .mode_view .canvas_container,
+	.assetwolf_2_schematics .mode_edit .canvas_container,
+	.assetwolf_2_schematics .info,
+	.assetwolf_2_schematics .mode_view p.nothing_selected {
+		width:100%;
+		float:none;
+	}
+	
+	.assetwolf_2_schematics .mode_view {
+		padding-bottom:55px;
+	}
+	
+	.assetwolf_2_schematics .mode_view p.nothing_selected {
+		top:auto;
+		bottom:0;
+		padding:5px;
+		font-size:1em;
+		background:#FFFFBF;
+	}
+	
+	.assetwolf_2_schematics .mode_view p.nothing_selected:after {
+		bottom: 100%;
+		left: 50%;
+		border: solid transparent;
+		content: " ";
+		height: 0;
+		width: 0;
+		position: absolute;
+		pointer-events: none;
+		border-color: rgba(255, 255, 191, 0);
+		border-bottom-color: #FFFFBF;
+		border-width: 10px;
+		margin-left: -10px;
+	}
+	
+	.assetwolf_2_schematics .info {
+		margin-top:20px;
+	}
+	
+	.assetwolf_2_schematics .info .hotspot_popup::after {	
+		bottom: 100%;
+		left: 50%;
+		border-bottom-color: #CCCCCC;
+		margin-left: -14px;
+		
+		right: 0;
+    	top: auto;
+    	margin-top: 0 !important;
+    	border-right-color:transparent !important;
+	}
+}
+
 /* Layout max-width: 680px
 --------------------------------------------------------------------------------------------------*/
 
@@ -5171,22 +5615,6 @@ button.toast-close-button {
 		float:none;
 	}
 	
-	.assetwolf_2_schematics .mode_view .canvas_container,
-	.assetwolf_2_schematics .mode_edit .canvas_container,
-	.assetwolf_2_schematics .info,
-	.assetwolf_2_schematics .mode_view p.nothing_selected {
-		width:100%;
-		float:none;
-	}
-	
-	.assetwolf_2_schematics .mode_view p.nothing_selected {
-		position:static;
-	}
-	
-	.assetwolf_2_schematics .info {
-		margin-top:10px;
-	}
-	
 	.form_date_picker select[name="ts_format"] {
 		max-width:100%;
 	}
@@ -5219,6 +5647,80 @@ button.toast-close-button {
 	.zfea_assetwolf_scheduled_calc.zfea_edit_box .zfea_form_grouping.zfea_form_grouping__fields_grouping .zfea_form_row.zfea_form_row__manual_entry_source_list .ui-selectmenu-button {
 		min-width:90%;
 	}
+	
+	.zfea_popout.zfea_popout_edit_schemas .zfea_popout_inner {
+		width:90%;
+		max-width:none;
+	}
+}
+
+/* Layout max-width: 530px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 531px) {
+
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field"],
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field"] {
+		height:auto;
+		min-height:50px;
+	}
+	
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label,
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label {
+		height:auto;
+		min-height:40px;
+		font-size:12px;
+	}
+	
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .period_boxes, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .period_boxes, 
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label.real_time .field_value, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label.real_time .field_value {
+		margin-top:0;
+	}
+	
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .previous_wrapper, 
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .this_wrapper, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .previous_wrapper, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .this_wrapper {
+		width:calc(50% - 10px);
+		height:auto;
+		min-height:auto;
+		margin:0;
+	}
+
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label.metric .field_label, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label.metric .field_label {
+		width:35%;
+	}
+	
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label.metric .period_boxes, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label.metric .period_boxes {
+		width:65%;
+	}
+	
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label.real_time .field_label,
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label.real_time .field_label {
+		width:65%;
+	}
+
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label.real_time .field_value, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label.real_time .field_value {
+		width:35%;
+		padding-top:3px !important;
+	}
+	
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .previous_wrapper,
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .previous_wrapper {
+		margin-left:0;
+	}
+	
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .previous_wrapper, 
+	.aw_dp_list.aw_list .zfea_block_list_wrap > div div[class*="column_field__"] div.label .this_wrapper, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .previous_wrapper, 
+	.assetwolf_2_schematics .mode_view .info .hotspot_popup div[class*="column_field__"] div.label .this_wrapper {
+		top:0;
+	}
 }
 
 /* Layout max-width: 520px
@@ -5236,8 +5738,5 @@ button.toast-close-button {
 		width:calc(100% - 30px);
 		float:none;
 	}
-	
-	
-
 
 }

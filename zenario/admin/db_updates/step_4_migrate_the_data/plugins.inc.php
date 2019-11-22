@@ -432,3 +432,19 @@ if (ze\dbAdm::needRevision(45351)) {
 	runNewModuleDependency('zenario_salesforce_api_form_integration', 'zenario_crm_form_integration');
 	ze\dbAdm::revision(45351);
 }
+
+//Rename the Slideshow 2 module to the Slideshow (simple) module
+if (ze\dbAdm::needRevision(47160)) {
+	renameModuleDirectory('zenario_slideshow_2', 'zenario_slideshow_simple', true);
+	
+	//Also, the Slideshow (simple) module now has a dependancy on the base slideshow (which in turn has a dependancy on the nest module)
+	runNewModuleDependency('zenario_slideshow_simple', 'zenario_plugin_nest');
+	runNewModuleDependency('zenario_slideshow_simple', 'zenario_slideshow');
+	ze\dbAdm::revision(47160);
+}
+
+//The location manager module now needs the timezones module to run
+if (ze\dbAdm::needRevision(47200)) {
+	runNewModuleDependency('zenario_location_manager', 'zenario_timezones');
+	ze\dbAdm::revision(47200);
+}

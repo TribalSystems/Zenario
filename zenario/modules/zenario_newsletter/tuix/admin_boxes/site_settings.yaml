@@ -1,15 +1,14 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-    setting_group: zenario_newsletter__site_settings_group
-    title: Editing settings for newsletters
+    setting_group: email
     tabs:
         zenario_newsletter__site_settings:
             edit_mode:
                 enabled: Yes
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: Yes
-            label: Details
+            label: Newsletters
             fields:
                 zenario_newsletter__default_from_name:
                     label: 'Default "From" name:'
@@ -86,31 +85,3 @@ site_settings:
                     site_setting:
                         name: zenario_newsletter__enable_opened_emails
                     type: checkbox
-
-        styles:
-            label: Pre-defined styles
-            edit_mode:
-                enabled: false
-            fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: |
-                            These pre-defined styles will be available when composing a newsletter or an email template.
-                            You can add more by editing the <code>zenario_custom/site_description.yaml</code> file.
-                email_style_formats:
-                    type: code_editor
-                    tall_as_possible: true
-                    dont_trim: true
-                    language: yaml
-                    style: |
-                        height: 30em;
-                        width: 99%;
-                description2:
-                    full_width: true
-                    snippet:
-                        html: |
-                            See
-                                <a href="http://www.tinymce.com/wiki.php/Configuration:style_formats" target="_blank">
-                                    http://www.tinymce.com/wiki.php/Configuration:style_formats</a>
-                            for more information.

@@ -32,7 +32,7 @@ class zenario_newsletter__admin_boxes__site_settings extends zenario_newsletter 
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch($settingGroup) {
-			case 'zenario_newsletter__site_settings_group':
+			case 'email':
 				$fields['zenario_newsletter__all_newsletters_opt_out']['values'] =
 					ze\datasetAdm::listCustomFields('users', $flat = false, 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 				

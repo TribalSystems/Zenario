@@ -52,8 +52,10 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					uff.field_type,
 					uff.ord,
 					uff.page_id,
+					uff.custom_code_name,
 					p.name AS page_name,
-					p.ord AS page_ord
+					p.ord AS page_ord,
+					cdf.field_name
 				FROM '. DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
 					ON uff.page_id = p.id
@@ -68,6 +70,7 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 				'ord' => -1,
 				'label' => ze\admin::phrase('Add all to template')
 			];
+			
 			while ($row = ze\sql::fetchAssoc($result)) {
 				if (!in_array($row['field_type'], ['section_description', 'repeat_start', 'repeat_end', 'restatement'])) {
 					if (!isset($formFields['page_' . $row['page_id']])) {
@@ -76,15 +79,24 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 							'label' => $row['page_name']
 						];
 					}
+					
+					if ($row['custom_code_name']) {
+						$mergeFieldName = $row['custom_code_name'];
+					} elseif ($row['field_name']) {
+						$mergeFieldName = $row['field_name'];
+					} else {
+						$mergeFieldName = 'unlinked_' . $row['field_type'] . '_' . $row['id'];
+					}
+					
 					$formFields[$row['id']] = [
 						'ord' => $row['ord'] + 10,
-						'label' => trim($row['name'], " \t\n\r\0\x0B:"),
+						'label' => trim($row['name'], " \t\n\r\0\x0B:") . ': [[' . $mergeFieldName . ']]',
 						'parent' => 'page_' . $row['page_id']
 					];
 				}
 			}
-			$fields['meta_data/user_form_field']['values'] = $formFields;
 			
+			$fields['meta_data/user_form_field']['values'] = $formFields;
 			
 			if ($formFieldId = $values['meta_data/user_form_field']) {
 				//Add form field mergefield onto end of email template
@@ -92,6 +104,7 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					SELECT 
 						IFNULL(uff.name, cdf.label) AS name, 
 						IFNULL(cdf.db_column, CONCAT(\'unlinked_\', uff.field_type, \'_\', uff.id)) AS mergefield,
+						uff.custom_code_name,
 						uff.split_first_name_last_name
 					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
@@ -115,13 +128,22 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					if ($row['name']) {
 						$mergeFields .= trim($row['name'], " \t\n\r\0\x0B:"). ': ';
 					}
-					if ($row['split_first_name_last_name']) {
-						$mergeFields .= '[[first_name]] [[last_name]]';
+					if ($values['meta_data/use_standard_email_template'] == 'twig') {
+						if ($row['split_first_name_last_name']) {
+							$mergeFields .= '{{first_name}} {{last_name}}';
+						} else {
+							$mergeFields .= '{{'. ($row['custom_code_name'] ? $row['custom_code_name'] : $row['mergefield']) . '}}';
+						}
 					} else {
-						$mergeFields .= '[['.$row['mergefield'].']]';
+						if ($row['split_first_name_last_name']) {
+							$mergeFields .= '[[first_name]] [[last_name]]';
+						} else {
+							$mergeFields .= '[['. ($row['custom_code_name'] ? $row['custom_code_name'] : $row['mergefield']) . ']]';
+						}
 					}
 					$mergeFields .= '</p>';
 				}
+				
 				$values['meta_data/body'] .= $mergeFields;
 				$values['meta_data/user_form_field'] = '';
 			}

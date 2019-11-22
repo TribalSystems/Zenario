@@ -35,7 +35,7 @@ ze\dbAdm::revision(1
 		`name` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -45,7 +45,7 @@ _sql
 		`score` int(10) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`accreditor_id`,`score`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -55,7 +55,7 @@ _sql
 		`accreditor_score_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE (`location_id`,`accreditor_score_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(2

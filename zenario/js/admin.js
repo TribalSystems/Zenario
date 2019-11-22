@@ -285,6 +285,26 @@ zenarioA.notification = function(message) {
 		}});
 };
 
+//Given a URL and (optionally) some post variables, that point to a download file, do the download.
+//This is done in a hidden iframe, so the user does not see an empty blank tab appear in their browser that they then must close.
+//Note that for this to work, the server must send the "Content-Disposition: attachment" header correctly to ensure the file is a download.
+zenarioA.doDownload = function(url, postRequests) {
+	
+	var key, value,
+		html = '',
+		domForm = get('zenario_iframe_form');
+	
+	if (postRequests) {
+		foreach (postRequests as key => value) {
+			html += '<input type="hidden" name="' + htmlspecialchars(key) + '" value="' + htmlspecialchars(value) + '"/>';
+		}
+	}
+	
+	domForm.action = url;
+	domForm.innerHTML = html;
+	domForm.submit();
+};
+
 
 zenarioA.showHelp = function(selector) {
 	var intro = introJs(),
@@ -2802,12 +2822,21 @@ zenarioA.savePageMode = function(async, data) {
 };
 
 zenarioA.draftSetCallback = function(aId) {
-	zenarioA.savePageMode(false, {_draft_set_callback: aId});
+	zenarioA.savePageMode(false, {
+		_draft_set_callback: aId,
+		_scroll_pos: zenario.scrollTop()
+	});
 };
 
-zenarioA.draftDoCallback = function(aId) {
+zenarioA.draftDoCallback = function(aId, scrollPos) {
 	zenarioA.draftDoingCallback = true;
-	$('#' + aId).click();
+	
+	if (scrollPos) {
+		zenario.scrollTop(scrollPos, undefined, undefined, true);
+	}
+	
+	$('#' + aId).click();;
+	
 	delete zenarioA.draftDoingCallback;
 };
 
@@ -3012,6 +3041,26 @@ zenarioA.checkCookiesEnabled = function() {
 	return cb;
 };
 
+
+zenarioA.checkPasswordStrength = function(password) {
+	var lower_case = password.match(/[a-z]/g),
+		upper_case = password.match(/[A-Z]/g),
+        numbers = password.match(/[0-9]/g),
+        symbols = password.match(/[^a-zA-Z0-9]/g),
+        password_requirement_match = true,
+        siteSettings = zenarioA.siteSettings;
+	
+	if (    (password.length < siteSettings.min_extranet_user_password_length)
+			|| (siteSettings['a_z_lowercase_characters'] && !lower_case)
+			|| (siteSettings['a_z_uppercase_characters'] && !upper_case)
+			|| (siteSettings['0_9_numbers_in_user_password'] && !numbers)
+			|| (siteSettings['symbols_in_user_password'] && !symbols)) {
+				
+				password_requirement_match = false;
+	}
+	
+	return password_requirement_match;
+};
 
 //Check all hyperlinks on the page and add its status
 zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {

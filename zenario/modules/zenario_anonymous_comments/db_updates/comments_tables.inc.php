@@ -52,7 +52,7 @@ _sql
 		INDEX (`content_id`, `content_type`),
 		INDEX (`poster_id`),
 		FULLTEXT KEY (`message_text`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Create a table to store extra information on content items with comments
@@ -70,7 +70,7 @@ _sql
 		`post_count` int(10) unsigned NOT NULL default 0,
 		`locked` tinyint(1) NOT NULL default 0,
 		PRIMARY KEY (`content_id`, `content_type`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 

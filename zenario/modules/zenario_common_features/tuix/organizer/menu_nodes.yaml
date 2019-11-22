@@ -180,27 +180,29 @@ zenario__menu:
                 create_dropdown:
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
-                    label: Create
+                    label: New
                 
-                create_menu_node:
-                    priv: _PRIV_ADD_MENU_ITEM
-                    hide_in_select_mode: true
-                    hide_on_filter: true
-                    parent: create_dropdown
-                    label: Menu node
-                    admin_box:
-                        path: zenario_menu
+                
                 create_menu_node_and_content_item:
                     priv: _PRIV_ADD_MENU_ITEM
                     hide_in_select_mode: true
                     hide_on_filter: true
+                    hidden: true
                     parent: create_dropdown
                     label: Menu node and content item
                     admin_box:
                         path: zenario_content
                         key:
                             id_is_menu_node_id: 1
-                
+                create_menu_node:
+                    priv: _PRIV_ADD_MENU_ITEM
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    parent: create_dropdown
+                    label: Menu node (unlinked)
+                    ord: 99
+                    admin_box:
+                        path: zenario_menu
                 tree_explorer:
                     hide_in_select_mode: true
                     label: Open Tree Explorer
@@ -339,6 +341,14 @@ zenario__menu:
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             mass_add_to_menu: 1
+                duplicate_as_child:
+                    priv: _PRIV_ADD_MENU_ITEM
+                    label: Duplicate as child
+                    parent: action_dropdown
+                    tooltip: Duplicate this menu node as a child and make it the primary node
+                    ajax:
+                        request:
+                            duplicate_as_child: 1
                 move:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_MENU_ITEM

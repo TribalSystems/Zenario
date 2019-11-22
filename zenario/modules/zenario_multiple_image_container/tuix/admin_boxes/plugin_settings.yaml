@@ -151,5 +151,9 @@ plugin_settings:
                 # your placeholder methods!
                 test:
                     hidden: true
+                no_captions:
+                    snippet:
+                        html: 'Captions can be attached to images. Please upload some images, then return to this tab to add captions.'
+                    readonly: true
                     
                         

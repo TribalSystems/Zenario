@@ -29,25 +29,25 @@ zenario__user_forms:
                     format: id
                     db_column: f.id
                     searchable: false
-                    show_by_default: true
                     align_right: true
+                    always_show: true
                     width: xxsmall
                 name:
-                    title: Name
+                    title: Form name
                     db_column: f.name
-                    show_by_default: true
                     searchable: true
+                    always_show: true
                     width: xlarge
                 type:
                     title: Type
                     db_column: f.type
                     parent: name
-                    show_by_default: true
+                    always_show: true
                 form_email_addresses:
                     title: Email
                     db_column: f.admin_email_addresses
                     width: xlarge
-                    show_by_default: true
+                    always_show: true
                 
                 field_count:
                     title: Field count

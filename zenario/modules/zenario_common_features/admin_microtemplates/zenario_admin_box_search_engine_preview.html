@@ -1,6 +1,14 @@
+<% var urlFormat, link; %>
+<% var alias = zenarioAB.currentValue('alias', 'meta_data') || zenarioAB.value('alias', 'meta_data'); %>
 <% var desc = zenarioAB.cutText(zenarioAB.currentValue('description'), 155); %>
 <% var title = zenarioAB.cutText(zenarioAB.currentValue('title'), 65); %>
-<% var alias = zenarioAB.value('actual_alias') || zenarioAB.currentValue('alias'); %>
+<% var langId = zenarioAB.tuix.key.target_language_id || zenarioAB.value('language_id', 'meta_data'); %>
+
+<% if (urlFormat = zenarioAB.value('url_format', 'meta_data')) { %>
+	<% link = urlFormat.replace(/\[\[alias\]\]/g, alias).replace(/\[\[langId\]\]/g, langId); %>
+<% } else { %>
+	<% link = alias; %>
+<% } %>
 
 <div class="zfab_search_engine_preview">
 	<h3 class="zfab_sep_title">
@@ -14,7 +22,7 @@
 	</h3>
 	<div class="zfab_sep_url">
 		<div>
-			<cite id="zfab_sep_url">{{URLBasePath|e}}{{alias|e}}</cite>
+			<cite id="zfab_sep_url">{{zenario.addBasePath(link)|e}}</cite>
 		</div>
 		<span id="zfab_sep_desc" class="zfab_sep_desc">
 			{{desc|e}}

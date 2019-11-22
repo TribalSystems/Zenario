@@ -1,5 +1,9 @@
 <%
-	var containerId = m.lib.containerId, tuix = m.tuix, lib = m.lib;
+	var containerId = m.lib.containerId,
+		tuix = m.tuix,
+		lib = m.lib,
+		sortingEnabled = lib.sortingEnabled(),
+		showSortControls = lib.checkThingEnabled('sort_col_headers');
 	zenario.sendSignal('eventListPreDisplay', {containerId: containerId, microTemplate: 'fea_list', tuix: tuix, lib: lib});
 %>
 
@@ -76,6 +80,9 @@
 			<table class="
 				table_list
 				{{m.tuix.table_css_class|e}}
+				<% if (lg = m.tuix.list_groupings) {%>
+				zfea_group_by
+				<% } %>
 			">
 				<% foreach (m.thus.sortedListOuterGroupings as oi => logName) { %>
 					<% log = m.tuix.list_outer_groupings && m.tuix.list_outer_groupings[logName] || {}; %>
@@ -83,7 +90,12 @@
 					<% if (log.label) { %>
 						<tr class="zfea_list_outer_grouping">
 							<td colspan="99">
-								<h4>{{log.label|escape}}</h4>
+								<h4>
+								    <% if (log.image) { %>
+    								    {{log.image}}
+								    <% } %>
+								    {{log.label|escape}}
+								</h4>
 							</td>
 						</tr>
 					<% } %>
@@ -98,7 +110,12 @@
 							<% if (lg = m.tuix.list_groupings && m.tuix.list_groupings[lgName]) { %>
 								<tr class="zfea_list_grouping">
 									<td colspan="99">
-										<h5>{{lg.label|escape}}</h5>
+										<h5>
+                                            <% if (lg.image) { %>
+                                               {{lg.image}}
+                                            <% } %>
+										    {{lg.label|escape}}
+										</h5>
 									</td>
 								</tr>
 							<% } %>
@@ -124,8 +141,27 @@
 													<% if (ci < alVisCols) { %>
 														zfea_always_visible
 													<% } %>
+													
+													<% if (sortingEnabled && (col.sort_asc || col.sort_desc)) { %>
+														<% if (showSortControls) { %>
+															zfea_col_sortable
+														<% } %>
+														
+														<% if (col.id == m.tuix.key.sortCol) { %>
+															zfea_col_sorted
+														
+															<% if (m.tuix.key.sortDesc) { %>
+																zfea_col_sorted_desc
+															<% } %>
+														<% } %>
+													<% } %>
 												"
-											><div><span>{{col.title|e}}</span></div></th>
+												<% if (showSortControls && (col.sort_asc || col.sort_desc)) { %>
+													onclick="{{m.lib.fun('changeSortCol')}}('{{col.id|e}}');"
+												<% } %>
+											><div>
+												<span>{{col.title|e}}</span>
+											</div></th>
 										<% } %>
 										<% if (m.tuix.__itemHasItemButton || m.thus.sortedCollectionButtons.length) { %>
 											<th class="sorted_buttons">

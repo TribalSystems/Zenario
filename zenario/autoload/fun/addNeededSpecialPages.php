@@ -39,7 +39,17 @@ $firstSetup = !\ze\row::exists('special_pages', ['equiv_id' => ['!' => 0]]);
 
 
 //Look for any special pages
-if ($resultSp = \ze\row::query('special_pages', true, [])) {
+$sql = "
+	SELECT *
+	FROM ". DB_PREFIX. "special_pages
+	ORDER BY
+		module_class_name = 'zenario_common_features' DESC,
+		page_type = 'zenario_home' DESC,
+		module_class_name,
+		page_type";
+
+
+if ($resultSp = \ze\sql::select($sql)) {
 	while ($sp = \ze\sql::fetchAssoc($resultSp)) {
 		
 		if (!$firstSetup

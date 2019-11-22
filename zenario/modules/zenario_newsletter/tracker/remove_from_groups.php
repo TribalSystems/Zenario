@@ -37,6 +37,7 @@ if (file_exists('../../../zenario/visitorheader.inc.php')) {
 echo '
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+		<link rel="stylesheet" type="text/css" media="screen" href="stylesheet.css"/>
 		<title>', ze\lang::phrase('Unsubscribe'), '</title>
 	</head>
 	<body style="text-align: center; margin-top: 20%;">';
@@ -55,26 +56,36 @@ if (!ze\module::inc('zenario_newsletter')) {
 if ($link = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', ['user_id', 'newsletter_id'], ['remove_hash' => ($_REQUEST['t'] ?? false)])) {
 	
 	if (!ze\user::isInGroup(ze::setting('zenario_newsletter__all_newsletters_opt_out'), $link['user_id'])) {
-		if (!($_POST['confirm'] ?? false)) {
+	
+		if(isset($_POST['cancel']) &&  $_POST['cancel']!=null){
+		    echo '<h1>'.ze\lang::phrase('Unsubscribe Cancelled').'</h1>';
+		    echo '<p>'.ze\lang::phrase('No action has been taken.').'</p>';
+		}
+		
+		elseif (!($_POST['confirm'] ?? false) && !($_POST['cancel'] ?? false)) {
+			
+			echo '<h1>'.ze\lang::phrase('Unsubscribe').'</h1>';
 			echo '
 				<form method="post">
-					', ze\lang::phrase('Please confirm that you wish to unsubscribe.'), '
-					<br/>
-					<input type="hidden" name="t" value="', htmlspecialchars($_REQUEST['t']), '"/>
-					<input type="submit" name="confirm" value="', ze\lang::phrase('Confirm'), '"/>
+					<p>', ze\lang::phrase('Please confirm that you wish to unsubscribe.'), '</p>
+					<div class="buttons_wrap">
+						<input type="hidden" name="t" value="', htmlspecialchars($_REQUEST['t']), '"/>
+						<input type="submit" class="cancel" name="cancel" value="', ze\lang::phrase('Cancel'), '"/>
+						<input type="submit" name="confirm" value="', ze\lang::phrase('Confirm'), '"/>
+					</div>
 				</form>';
 		
 		} else {
 			ze\user::addToGroup($link['user_id'], ze::setting('zenario_newsletter__all_newsletters_opt_out'));
-			
-			echo ze\lang::phrase('You have been unsubscribed.');
+			echo '<h1>'.ze\lang::phrase('Unsubscribed').'</h1>';
+			echo '<p class="msg_sucess">'.ze\lang::phrase('You have been unsubscribed.').'</p>';
 		}
 	} else {
 		echo ze\lang::phrase('You have already been unsubscribed.');
 	}
 	
 } else {
-	echo ze\lang::phrase("Sorry, that's an invalid tracker id.");
+	echo '<p class="msg_error">'.ze\lang::phrase("Sorry, that's an invalid tracker id.").'</p>';
 }
 
 

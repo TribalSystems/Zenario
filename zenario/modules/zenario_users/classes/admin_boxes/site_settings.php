@@ -107,24 +107,24 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 											//Check if this field is one of the permissions
 											if (($permName = ze\ring::chopPrefix('perm.', $fieldId))
 											 && (ze\user::checkNamedPermExists($permName, $directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations))) {
-											
+												
 												//Break the permission code-name up into chunks
 												$perm = explode('.', $fieldId);
-											
+												
 												//Show the ze\user::canCreate() shortcut function if this is a create permission
 												if ($thingToCreate = ze\ring::chopPrefix('create-', $perm[1])) {
 													$field['side_note'] = '<code>ze\\user::canCreate(\''. htmlspecialchars($thingToCreate). '\'';
 												} else {
 													$field['side_note'] = '<code>ze\\user::can(\''. htmlspecialchars($perm[1]). '\'';
 												}
-											
+												
 												//Companies and locations always use the "unassigned" option, so don't bother showing it
 												if ($fieldId != 'perm.create-company.unassigned'
 												 && $fieldId != 'perm.create-location.unassigned') {
-												
+													
 													//Show the target
 													$field['side_note'] .= ', \''. htmlspecialchars($perm[2]). '\'';
-												
+													
 													//Except for unassigned/oneself, show a number as an example for the third input
 													if ($perm[2] != 'unassigned' && $perm[2] != 'oneself') {
 														$field['side_note'] .= ', 123';
@@ -199,6 +199,9 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$min = ze\row::min('user_signin_log', 'login_datetime');
 					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 				}
+				
+				$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__users/nav/sign_in_log/panel';
+				$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 				$fields['data_protection/period_to_delete_sign_in_log']['note_below'] = $note;
 				
 				$count = ze\row::count('user_content_accesslog');
@@ -208,6 +211,9 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$min = ze\row::min('user_content_accesslog', 'hit_datetime');
 					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 				}
+				
+				$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__users/panels/access_log';
+				$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 				$fields['data_protection/period_to_delete_the_user_content_access_log']['note_below'] = $note;
 				
 				break;

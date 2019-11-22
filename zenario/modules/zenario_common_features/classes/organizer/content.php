@@ -68,7 +68,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		} elseif ($_GET['refiner__content_type'] ?? false) {
 			$panel['key']['cType'] = $_GET['refiner__content_type'] ?? false;
 		}
-
+		
 		//Attempt to customise the defaults slightly depending on the content type
 		//These options are only defaults and will be overridden if the Administrator has ever set or changed them.
 		if ($panel['key']['cType']) {
@@ -477,7 +477,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		foreach (ze\content::getContentTypes() as $cType) {
 			$panel['columns']['type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
 		}
-
+        
 		//If this is full, quick or select mode, and the admin looking at this only has permissions
 		//to edit specific content items, we'll need to check if the current admin can edit each
 		//content item.
@@ -486,20 +486,28 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 
 		foreach ($panel['items'] as $id => &$item) {
 			
-			//If a content item has ever been edited, show last modified date and admin who modified it, but not created date...
-			if ($item['last_modified_datetime']) {
+			//Show last modified date and admin who modified it (WIP dropdown).
+			if ($item['last_author_id'] != 0) {
+				$item['last_modified_by_admin'] = ze\admin::formatName($item['last_author_id']);
+			} else {
+				$item['last_modified_by_admin'] = ze\admin::formatName($item['creating_author_id']);
+			}
+			
+			if (!empty($item['created_datetime'])) {
+				$item['created_datetime'] = ze\date::relative($item['created_datetime']);
+			}
+			
+			if (!empty($item['last_modified_datetime'])) {
+				$item['last_modified_datetime'] = ze\date::relative($item['last_modified_datetime']);
 				$item['unpublished_content_info'] =
 					 ze\admin::phrase('Last edit [[time]] by [[admin]].', [
-					 	'time' => ze\date::relative($item['last_modified_datetime']),
-					 	'admin' => ze\admin::formatName($item['last_author_id'])
-					 ]);
-			} else {
-				//... otherwise, show created date and admin who created it.
+						'time' => $item['last_modified_datetime'],
+						'admin' => $item['last_modified_by_admin']]);
+			} elseif ($item['created_datetime']) {
 				$item['unpublished_content_info'] =
 					 ze\admin::phrase('Created [[time]] by [[admin]].', [
-					 	'time' => ze\date::relative($item['created_datetime']),
-					 	'admin' => ze\admin::formatName($item['creating_author_id'])
-					 ]);
+					 	'time' => $item['created_datetime'],
+					 	'admin' => $item['last_modified_by_admin']]);
 			}
 			
 			$item['cell_css_classes'] = [];
@@ -633,6 +641,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					}
 			
 					$item['navigation_path'] = 'zenario__content/panels/content//'. $id;
+					
 				}
 			}
 	
@@ -754,9 +763,33 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			unset($panel['item_buttons']['zenario_trans__view']);
 			unset($panel['columns']['zenario_trans__links']);
 		}
-		
+
 		if (!empty($panel['key']['cType']) && isset($panel['collection_buttons']['export'])) {
 			$panel['collection_buttons']['export']['admin_box']['key']['type'] = $panel['key']['cType'];
+		}
+		if((isset($_REQUEST['refinerName']) && $_REQUEST['refinerName']!='work_in_progress') ){
+            
+		    $panel['collection_buttons']['create']['label']  = "New ".ze\content::getContentTypeName(!empty($_REQUEST['refinerId'])? $_REQUEST['refinerId'] : $_REQUEST['refinerName']);
+		    if(isset($_REQUEST['refinerName'])  && ($_REQUEST['refinerName'] == "trash" || $_REQUEST['refinerName'] == "special_pages")){
+		        $panel['collection_buttons']['create']['hidden'] = true;
+		        $panel['collection_buttons']['new_node_dropdown']['hidden'] = true;
+		    } 
+		   
+		}else {//All content items
+		    $panel['collection_buttons']['create']['hidden'] = true;
+		    $j=0;  
+                    
+            foreach(ze\content::getContentTypes() as $content){
+
+                $j++;
+                $panel['collection_buttons']['new_node_'.$j]['label'] = $content['content_type_name_en']; 
+                $panel['collection_buttons']['new_node_'.$j]['priv'] = '_PRIV_CREATE_FIRST_DRAFT'; 
+                $panel['collection_buttons']['new_node_'.$j]['hide_in_select_mode'] = $panel['collection_buttons']['new_node_'.$j]['hide_on_filter'] = true; 
+                $panel['collection_buttons']['new_node_'.$j]['parent'] = 'new_dropdown'; 
+                $panel['collection_buttons']['new_node_'.$j]['admin_box']['path'] = 'zenario_content'; 
+                $panel['collection_buttons']['new_node_'.$j]['admin_box']['key']['target_cType'] = $content['content_type_id']; 
+            }    
+   
 		}
 	}
 	

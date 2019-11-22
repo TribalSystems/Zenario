@@ -364,6 +364,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 			<html>
 				<head>
 					<title>', ('Grid Preview'), '</title>
+					<link rel="stylesheet" type="text/css" href="../../styles/grid.min.css" media="screen" />
 					<link rel="stylesheet" type="text/css" href="../../styles/admin_grid_maker.min.css" media="screen" />
 					<style type="text/css">';
 			
@@ -381,11 +382,11 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 				
 				ze\content::pageBody('iframe', '
 					onload="
-						if (self.parent && self.parent.zenarioG) {
-							self.parent.zenarioG.resizePreview();
+						if (self.parent && self.parent.zenarioGM) {
+							self.parent.zenarioGM.resizePreview();
 						} else
-						if (window.opener && window.opener.zenarioG) {
-							window.opener.zenarioG.resizePreview();
+						if (window.opener && window.opener.zenarioGM) {
+							window.opener.zenarioGM.resizePreview();
 						}
 					"
 				'),

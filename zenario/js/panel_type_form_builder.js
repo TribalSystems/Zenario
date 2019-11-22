@@ -822,6 +822,12 @@ methods.addTUIXTabEvents = function(itemType, itemId, tuixTabId) {
 			$('#field__div_wrap_class').on('keyup', function() {
 				$('#organizer_form_field_' + itemId + ' .form_field_classes .div').toggle(!!$(this).val()).prop('title', $(this).val());
 			});
+
+			$('#field__rows').on('keyup', function() {
+				$('#organizer_form_field_' + itemId + ' :input').attr("rows", $(this).val());
+				
+			});
+			
 			
 		} else if (tuixTabId == 'values') {
 			
@@ -1225,7 +1231,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 				if (conditionField.type != 'checkboxes' && conditionField.type != 'checkbox' && conditionField.type != 'group') {
 					tags.tabs[tab].fields.visible_condition_field_type.values.visible_if_one_of = {label: 'Visible if one of...'};
 					tags.tabs[tab].fields.visible_condition_field_value.empty_value = '-- Any value --';
-					tags.tabs[tab].fields.visible_condition_field_value.values = conditionField.lov;
+					tags.tabs[tab].fields.visible_condition_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
 				
 					if (item.visible_condition_field_type == 'visible_if_one_of') {
 						tags.tabs[tab].fields.visible_condition_field_value.hidden = true;
@@ -1240,7 +1246,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 				}
 			
 				if (conditionField.type != 'checkbox' && conditionField.type != 'group') {
-					tags.tabs[tab].fields.visible_condition_checkboxes_field_value.values = conditionField.lov;
+					tags.tabs[tab].fields.visible_condition_checkboxes_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
 				}
 			}
 		}
@@ -1286,14 +1292,20 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 					var conditionField = thus.getItem('field', item.mandatory_condition_field_id);
 					if (conditionField) {
 						if (conditionField.type == 'checkboxes') {
-							tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.values = conditionField.lov;
+							tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
 							tags.tabs[tab].fields.mandatory_condition_field_value.hidden = true;
 							tags.tabs[tab].fields.mandatory_condition_checkboxes_operator.hidden = false;
 						} else {
 							tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.hidden = true;
 							if (conditionField.type != 'checkbox' && conditionField.type != 'group') {
-								tags.tabs[tab].fields.mandatory_condition_field_value.values = conditionField.lov;
+							    tags.tabs[tab].fields.mandatory_condition_field_type.values.mandatory_if_one_of = {label: 'Mandatory if one of...'};
+								tags.tabs[tab].fields.mandatory_condition_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
 								tags.tabs[tab].fields.mandatory_condition_field_value.empty_value = '-- Any value --';
+								if (item.mandatory_condition_field_type == 'mandatory_if_one_of') {
+                                    tags.tabs[tab].fields.mandatory_condition_field_value.hidden = true;
+                                    tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
+                                    tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.hidden = false;
+                                }
 							}
 						}
 					}
@@ -1374,7 +1386,11 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 					tags.tabs[tab].fields.default_value_lov.values = JSON.parse(JSON.stringify(item.lov));
 				}
 				
-				tags.tabs[tab].fields.merge_name.snippet.html = '<div><b>Merge name:</b> ' + thus.getFormFieldMergeName(item.id) + '</div>'
+				if (item.custom_code_name) {
+					tags.tabs[tab].fields.merge_name.snippet.html = '<div><b>Merge names:</b> ' + item.custom_code_name + ', ' + thus.getFormFieldMergeName(item.id) + '</div>';
+				} else {
+					tags.tabs[tab].fields.merge_name.snippet.html = '<div><b>Merge name:</b> ' + thus.getFormFieldMergeName(item.id) + '</div>';
+				}
 				
 				break;
 			
@@ -1472,30 +1488,126 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 								tags.tabs[tab].fields.mandatory_condition_field_value.error = 'Please select a mandatory on condition form field value.';
 							}
 						}
-					
 						if (item.visibility == 'hidden') {
 							tags.tabs[tab].fields.visibility.error = 'A field cannot be mandatory while hidden.';
-						} else if (item.visibility == 'visible_on_condition' && item.readonly_or_mandatory == 'conditional_mandatory'
-							&& item.visible_condition_field_id && item.mandatory_condition_field_id
-							&& ((item.visible_condition_field_id != item.mandatory_condition_field_id)
-								|| item.visible_condition_field_type == 'visible_if' && item.mandatory_condition_field_type == 'mandatory_if_not'
-								|| item.visible_condition_field_type == 'visible_if_not' && item.mandatory_condition_field_type == 'mandatory_if'
-								|| ((conditionField = thus.getItem('field', item.mandatory_condition_field_id))
-									&& (conditionField.type != 'checkboxes'
-										&& (item.visible_condition_field_value != item.mandatory_condition_field_value)
-									)
-									|| (conditionField.type == 'checkboxes'
-										&& (item.visible_condition_checkboxes_operator != item.mandatory_condition_checkboxes_operator
-											|| !_.isEqual(item.visible_condition_checkboxes_field_value, item.mandatory_condition_checkboxes_field_value)
-										)
-									)
-								)
-							)
-						) {
-							tags.tabs[tab].fields.visibility.error = 'A field cannot be mandatory while hidden. If this field is both mandatory and visible on a condition, both fields and values must be the same.';
-						}
-					}
-				}
+						}else if(item.visible_condition_field_type == "visible_if_one_of" && item.visible_condition_field_id!="" && _.isEmpty(item.visible_condition_checkboxes_field_value)){
+						    tags.tabs[tab].fields.visibility.error = "Please select a checkbox for visibility condition.";
+
+					    }else if(item.visible_condition_field_type == "visible_if_one_of" && item.mandatory_condition_field_type != "mandatory_if_one_of") {
+					        error = 0;
+					        switch(item.mandatory_condition_field_type) {
+					            case "mandatory_if_not":
+                                    if( (item.mandatory_condition_field_value=="" && !_.isEmpty(item.visible_condition_checkboxes_field_value)) 
+                                    || (item.mandatory_condition_field_value=="" && _.isEmpty(item.visible_condition_checkboxes_field_value))
+                                    || (!_.contains(item.visible_condition_checkboxes_field_value,item.mandatory_condition_field_value)) ){
+                                        error = 1;
+                                    }
+                                    break;
+                                    
+                                case "mandatory_if":
+                                    if(item.mandatory_condition_field_value==""){
+                                        //any value
+                                        error = 1;
+                                    } else if(item.visible_condition_checkboxes_field_value){
+                                        if(_.contains(item.visible_condition_checkboxes_field_value,item.mandatory_condition_field_value)){
+                                            error = 0;
+                                        } else {
+                                            error = 1;
+                                        }
+                                    } 
+                                    break;
+                            
+                                default:
+                                    break;    
+					        }
+					        if(error == 1) {
+					            tags.tabs[tab].fields.visibility.error = "A field cannot be mandatory while hidden. If this field is both mandatory and visible on a condition, both fields and values must be the same.";
+					        }
+					    
+					    }
+					    else if(item.mandatory_condition_field_type == "mandatory_if_one_of"){
+                            error =0;
+                            if(_.isEmpty(item.mandatory_condition_checkboxes_field_value) && item.mandatory_condition_field_id!=""){
+                                tags.tabs[tab].fields.mandatory_condition_field_value.error = "Please select a checkbox for mandatory condition.";
+                            }
+                            else {
+                                if(item.visibility =='visible') {
+                                     error =0;
+                                }
+                                else if(item.visible_condition_field_id != item.mandatory_condition_field_id){
+                                    error = 1;
+                                } else{
+                                    switch(item.visible_condition_field_type) {
+                                        case "visible_if_one_of":
+                                            if(item.visible_condition_checkboxes_field_value!= ''){
+                                                if(item.mandatory_condition_checkboxes_field_value){
+                                                    for (i = 0; i < item.mandatory_condition_checkboxes_field_value.length; i++) {
+                                                        if(!_.contains(item.visible_condition_checkboxes_field_value,item.mandatory_condition_checkboxes_field_value[i])){
+                                                            error = 1;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                
+                                        case "visible_if_not":
+                                            if( (item.visible_condition_field_value=="" && !_.isEmpty(item.mandatory_condition_checkboxes_field_value)) 
+                                            || (item.visible_condition_field_value=="" && _.isEmpty(item.mandatory_condition_checkboxes_field_value))
+                                            || (_.contains(item.mandatory_condition_checkboxes_field_value, item.visible_condition_field_value)) ){
+                                                error = 1;
+                                            }
+                                            break;
+                                    
+                                        case "visible_if":
+                                            if(item.visible_condition_field_value==""){
+                                                //any value
+                                            }
+                                            else if(item.mandatory_condition_checkboxes_field_value && item.mandatory_condition_checkboxes_field_value.length!=1){
+                                                error = 1;
+                                            } else if(item.mandatory_condition_checkboxes_field_value){
+                                                for (i = 0; i < item.mandatory_condition_checkboxes_field_value.length; i++) {
+                                                    if(item.mandatory_condition_checkboxes_field_value[i] != item.visible_condition_field_value){
+                                                        error = 1;
+                                                        break;
+                                                    }
+                                                }
+                                            } 
+                                            break;
+                                    
+                                        default:
+                                            break;    
+                        
+                                    }
+                                }
+                                if(error != 0){
+                                     tags.tabs[tab].fields.mandatory_condition_field_value.error = 'A field cannot be mandatory while hidden. If this field is both mandatory and visible on a condition, both fields and values must be the same.';
+                                }
+                            }
+                        }  else if (item.visibility == 'visible_on_condition' && item.readonly_or_mandatory == 'conditional_mandatory'
+                            && item.visible_condition_field_id && item.mandatory_condition_field_id
+                            && ((item.visible_condition_field_id != item.mandatory_condition_field_id)
+                                || item.visible_condition_field_type == 'visible_if' && item.mandatory_condition_field_type == 'mandatory_if_not'
+                                || item.visible_condition_field_type == 'visible_if_not' && item.mandatory_condition_field_type == 'mandatory_if'
+                                || ((conditionField = thus.getItem('field', item.mandatory_condition_field_id))
+                                    && (conditionField.type != 'checkboxes'
+                                        && (item.visible_condition_field_value != item.mandatory_condition_field_value)
+                                    )
+                                    || (conditionField.type == 'checkboxes'
+                                        && (item.visible_condition_checkboxes_operator != item.mandatory_condition_checkboxes_operator
+                                            || !_.isEqual(item.visible_condition_checkboxes_field_value, item.mandatory_condition_checkboxes_field_value)
+                                        )
+                                    )
+                                )
+                            )
+                        ) {
+                        
+                               tags.tabs[tab].fields.visibility.error = 'A field cannot be mandatory while hidden. If this field is both mandatory and visible on a condition, both fields and values must be the same.';
+
+                        
+                          }
+                    }
+                }
 				
 				if (item.field_validation && item.field_validation != 'none') {
 					if (!item.field_validation_error_message) {
@@ -1575,6 +1687,13 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 							tags.tabs[tab].fields.word_count_min.error = 'Please enter a valid number for the min word count.';
 						} else if (item.word_count_min < 1) {
 							tags.tabs[tab].fields.word_count_min.error = 'Word count must be greater than 0.';
+						}
+					}
+					if (item.rows) {
+						if (+item.rows != item.rows) {
+							tags.tabs[tab].fields.rows.error = 'Please enter a valid number for the rows.';
+						} else if (item.rows < 1 || item.rows > 100) {
+							tags.tabs[tab].fields.rows.error = 'Rows must be greater than 0 and less than 100.';
 						}
 					}
 				}
@@ -2026,7 +2145,7 @@ methods.saveChanges = function() {
 		editingThing: thus.editingThing,
 		editingThingId: thus.editingThingId
 	};
-	
+
 	zenarioA.nowDoingSomething('saving', true);
 	
 	thus.sendAJAXRequest(actionRequests).after(function(info) {

@@ -231,7 +231,7 @@ _COUNTRY_NAME_TO,Tonga
 _COUNTRY_NAME_TR,Turquia
 _COUNTRY_NAME_TT,Trinidad e Tobago
 _COUNTRY_NAME_TV,Tuvalu
-_COUNTRY_NAME_TW,"Taiwan, Província da China"
+_COUNTRY_NAME_TW,"Taiwan"
 _COUNTRY_NAME_TZ,"Tanzânia, República Unida da"
 _COUNTRY_NAME_UA,Ucrânia
 _COUNTRY_NAME_UG,Uganda

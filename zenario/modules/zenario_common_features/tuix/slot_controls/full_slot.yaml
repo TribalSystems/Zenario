@@ -93,7 +93,7 @@ full_slot:
                 normal: Edit contents
                 cant_make_draft: View contents
                 trashed: View content (to edit, click Re-draft)
-                hidden: View content (to edit, click Unhide)
+                hidden: View content (to edit, click Re-draft)
                 settings: ~Plugin~ properties
                 view_settings: View ~plugin~ properties
             locked_label: View contents

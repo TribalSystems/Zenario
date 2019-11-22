@@ -35,7 +35,8 @@ ze\dbAdm::revision(6, "
 		`body`,
 		`date_created`,
 		`created_by_id`,
-		`allow_attachments`
+		`allow_attachments`,
+		`use_standard_email_template`
 	) VALUES 
 		(
 		 'zenario_users__to_user_account_activated',
@@ -50,7 +51,8 @@ ze\dbAdm::revision(6, "
 		<p>This is an auto-generated email from [[cms_url]] .</p>',
 		 NOW(),
 		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
-		 0
+		 0,
+		 1
 		)
 "
 ); ze\dbAdm::revision(40,
@@ -72,7 +74,8 @@ ze\dbAdm::revision(43,
 		`body`,
 		`date_created`,
 		`created_by_id`,
-		`allow_attachments`
+		`allow_attachments`,
+		`use_standard_email_template`
 	) VALUES (
 		'zenario_users__inactive_user_short_time',
 		'To User: Inactive User (Short Time)',
@@ -80,7 +83,8 @@ ze\dbAdm::revision(43,
 		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a while. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',
 		NOW(),
 		". (int) ze\admin::id(). ",
-		0
+		0,
+		1
 	)"
 	);
 	
@@ -92,7 +96,8 @@ ze\dbAdm::revision(44,
 		`body`,
 		`date_created`,
 		`created_by_id`,
-		`allow_attachments`
+		`allow_attachments`,
+		`use_standard_email_template`
 	) VALUES (
 		'zenario_users__inactive_user_long_time',
 		'To User: Inactive User (Long Time)',
@@ -100,7 +105,8 @@ ze\dbAdm::revision(44,
 		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a long time. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',
 		NOW(),
 		". (int) ze\admin::id(). ",
-		0
+		0,
+		1
 	)"
 );
 

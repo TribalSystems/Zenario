@@ -693,7 +693,8 @@ class menuAdm {
 				) SELECT
 					section_id, ". (int) $menuId. ", ancestor_id, separation + 1
 				FROM ". DB_PREFIX. "menu_hierarchy
-				WHERE child_id = ". (int) $parentId;
+				WHERE child_id = ". (int) $parentId. "
+				ORDER BY section_id, child_id, ancestor_id, separation";
 			\ze\sql::update($sql);
 		}
 	}
@@ -728,7 +729,8 @@ class menuAdm {
 			) SELECT
 				section_id, id, id, 0
 			FROM ". DB_PREFIX. "menu_nodes
-			WHERE section_id = ". (int) $sectionId;
+			WHERE section_id = ". (int) $sectionId. "
+			ORDER BY id";
 		\ze\sql::update($sql);
 	
 		$sql = "
@@ -741,7 +743,8 @@ class menuAdm {
 				CONCAT(section_id, '_', id, '_', 0),
 				section_id, id, 0
 			FROM ". DB_PREFIX. "menu_nodes
-			WHERE section_id = ". (int) $sectionId;
+			WHERE section_id = ". (int) $sectionId. "
+			ORDER BY id";
 		\ze\sql::update($sql);
 	
 		$sql = "
@@ -754,7 +757,8 @@ class menuAdm {
 				CONCAT(section_id, '_', id, '_', 1),
 				section_id, id, 1
 			FROM ". DB_PREFIX. "menu_nodes
-			WHERE section_id = ". (int) $sectionId;
+			WHERE section_id = ". (int) $sectionId. "
+			ORDER BY id";
 		\ze\sql::update($sql);
 	
 		$ancestors = [];
@@ -828,7 +832,8 @@ class menuAdm {
 				'0',
 				CONCAT(id, '_', 0, '_', 0),
 				id, 0, 0
-			FROM ". DB_PREFIX. "menu_sections";
+			FROM ". DB_PREFIX. "menu_sections
+			ORDER BY id";
 		\ze\sql::update($sql);
 	
 		//Insert new entries
@@ -841,7 +846,8 @@ class menuAdm {
 				CONCAT(id, '_', 0, '_', 0),
 				CONCAT(id, '_', 0, '_', 1),
 				id, 0, 1
-			FROM ". DB_PREFIX. "menu_sections";
+			FROM ". DB_PREFIX. "menu_sections
+			ORDER BY id";
 		\ze\sql::update($sql);
 	}
 

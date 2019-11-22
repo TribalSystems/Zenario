@@ -38,27 +38,43 @@ class zenario_content_notifications extends ze\moduleBaseClass {
 		);
 	}
 	
-	public static function getNoteHeader($adminId, $datetime, $cID, $cType, $cVersion, $title = false, $link = false) {
-		$header = '';
+	public static function getNoteMergeFields($adminId, $datetime, $cID, $cType, $cVersion, $title = false) {
+		$mrg = [];
 		
 		if ($title) {
 			switch ($title) {
 				case 'request':
-					$title = ze\admin::phrase('Request:');
+					$mrg['title'] = ze\admin::phrase('Request:');
 					break;
 				case 'note':
-					$title = ze\admin::phrase('Note:');
+					$mrg['title'] = ze\admin::phrase('Note:');
 					break;
 				default:
-					$title = ze\admin::phrase($title);
+					$mrg['title'] = ze\admin::phrase($title);
 					break;
 			}
-			$header .= ze\admin::phrase('<b><u>[[title]]</u></b>', ['title' => $title]) . '<br>';
 		}
 		
-		$header .= ze\admin::phrase('<b>By:</b> [[by]]', ['by' => ze\admin::formatName($adminId)]) . '<br>';
-		$header .= ze\admin::phrase('<b>On:</b> [[on]]', ['on' => ze\admin::formatDateTime($datetime)]) . '<br>';
-		$header .= ze\admin::phrase('<b>For:</b> [[content]] (Version [[version]])', ['content' => ze\content::formatTag($cID, $cType), 'version' => $cVersion]);
+		$mrg['by'] = ze\admin::formatName($adminId);
+		$mrg['on'] = ze\admin::formatDateTime($datetime);
+		$mrg['content'] = ze\content::formatTag($cID, $cType);
+		$mrg['version'] = $cVersion;
+		
+		return $mrg;
+	}
+	
+	public static function getNoteHeader($adminId, $datetime, $cID, $cType, $cVersion, $title = false, $link = false) {
+		$header = '';
+		
+		$mrg = self::getNoteMergeFields($adminId, $datetime, $cID, $cType, $cVersion, $title);
+		
+		if ($title) {
+			$header .= ze\admin::phrase('<b><u>[[title]]</u></b>', $mrg) . '<br>';
+		}
+		
+		$header .= ze\admin::phrase('<b>By:</b> [[by]]', $mrg) . '<br>';
+		$header .= ze\admin::phrase('<b>On:</b> [[on]]', $mrg) . '<br>';
+		$header .= ze\admin::phrase('<b>For:</b> [[content]] (Version [[version]])', $mrg);
 		
 		if ($link) {
 			$header .= '<br>' . ze\link::toItem($cID, $cType, $fullPath = true);;
@@ -136,37 +152,6 @@ class zenario_content_notifications extends ze\moduleBaseClass {
 			unset($adminToolbar['sections']['restricted_editing']['buttons']['request_trash']);
 		}
 	}
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-	}
-
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-	}
-
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-
 	
 
 	

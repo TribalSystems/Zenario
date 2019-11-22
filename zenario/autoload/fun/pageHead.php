@@ -257,32 +257,12 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 	}
 }
 
-
-//Create the callback for google recaptcha for all modules on this page
-if (!empty(\ze::$googleRecaptchaElements)) {
+if ($grsk = \ze::setting('google_recaptcha_site_key')) {
 	echo '
-<script type="text/javascript">
-	var google_recaptcha = {
-			sitekey: "' . \ze\escape::js(\ze::setting('google_recaptcha_site_key')) . '",
-			theme: "' . \ze\escape::js(\ze::setting('google_recaptcha_widget_theme')) . '"
-		},
-		recaptchaCallback = function() {
-			if (window.grecaptcha && grecaptcha.render) {
-				var el, elId;';
-	
-	foreach (\ze::$googleRecaptchaElements as $elementId) {
-		echo '
-				if ((el = document.getElementById(elId = "' . \ze\escape::js($elementId) . '")) && (el.innerHTML === "")) {
-					grecaptcha.render(elId, google_recaptcha);
-				}';
-	}
-	
-	echo '
-			}
-		};
-</script>';
-	echo '
-<script src="https://www.google.com/recaptcha/api.js?onload=recaptchaCallback&render=explicit"></script>';
+<script type="text/javascript">var google_recaptcha = {
+	sitekey: "' . \ze\escape::js($grsk) . '",
+	theme: "' . \ze\escape::js(\ze::setting('google_recaptcha_widget_theme')) . '"
+};</script>';
 }
 
 

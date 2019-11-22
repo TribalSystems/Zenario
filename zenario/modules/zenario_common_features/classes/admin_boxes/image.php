@@ -178,7 +178,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				INSERT IGNORE INTO ". DB_PREFIX. "image_tag_link (image_id, tag_id)
 				SELECT ". (int) $box['key']['id']. ", id
 				FROM ". DB_PREFIX. "image_tags
-				WHERE name IN (". $tagNames. ")";
+				WHERE name IN (". $tagNames. ")
+				ORDER BY id";
 			ze\sql::update($sql);
 		
 		} else {

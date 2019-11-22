@@ -43,6 +43,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				ze\priv::exitIfNot('_PRIV_VIEW_REUSABLE_PLUGIN');
 			}
 			
+			$values['details/use_slide_layout'] = $details['use_slide_layout'];
 			$values['details/invisible_in_nav'] = $details['invisible_in_nav'];
 			$values['details/show_back'] = $details['show_back'];
 			$values['details/show_embed'] = $details['show_embed'];
@@ -162,10 +163,25 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				"\n".
 				ze\admin::phrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
+		
+		if ($box['key']['usesConductor']) {
+			$fields['details/name_or_title']['onchange'] = "
+				zenario.ajax(zenario_plugin_nest.AJAXLink({formatTitleTextAdmin: this.value, htmlescape: true})).after(function(html) {
+					$('#zenario__title_merge_fields__note').html(html);
+				});
+			";
+		}
 	}
 	
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($box['key']['usesConductor']) {
+			$fields['details/title_merge_fields']['post_field_html'] =
+				'<br/>
+				<span id="zenario__title_merge_fields__note">'.
+					zenario_plugin_nest::formatTitleTextAdmin($values['details/name_or_title'], true).
+				'</span>';
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -218,6 +234,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			'param_1' => '',
 			'param_2' => '',
 			'always_visible_to_admins' => 1,
+			'use_slide_layout' => '',
 			'show_back' => 0,
 			'show_embed' => $values['details/show_embed'],
 			'show_refresh' => 0,
@@ -233,6 +250,9 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		if ($box['key']['usesConductor']) {
 			$details['show_back'] = $values['details/show_back'];
+			$details['global_command'] = $values['details/global_command'];
+			$details['use_slide_layout'] = $values['details/use_slide_layout'] ?: '';
+			
 			if ($details['show_refresh'] = $values['details/show_refresh']) {
 				if ($details['show_auto_refresh'] = $values['details/show_auto_refresh']) {
 					if ($values['details/auto_refresh_interval'] > 0) {
@@ -240,7 +260,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 					}
 				}
 			}
-			$details['global_command'] = $values['details/global_command'];
 		}
 		
 		switch ($details['privacy']) {

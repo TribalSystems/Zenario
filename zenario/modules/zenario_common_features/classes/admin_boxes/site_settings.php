@@ -369,10 +369,27 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}';
 				ze\lang::applyMergeFields($box['tabs']['cookie_content']['notices']['individual_cookie_consent_not_enabled']['message'], ['link' => htmlspecialchars($link)]);
 			}
+			
+		} elseif ($settingGroup == 'dirs') {
+            $warnings = ze\welcome::getBackupWarningsWithoutHtmlLinks();
+            if (!empty($warnings) && isset($warnings['show_warning'])) {
+                if (isset($warnings['snippet']['html'])) {
+                    $box['tabs']['automated_backups']['notices']['show_warning_message']['message']= $warnings['snippet']['html'];
+                }
+            } else {
+                $box['tabs']['automated_backups']['notices']['show_warning_message']['show'] = false;
+            }
 		}
-		
 		$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 		$fields['email/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store sent email logs.', ['link' => htmlspecialchars($link)]);
+		
+		if ($box['setting_group'] == 'email' && !ze\module::isRunning('zenario_newsletter')) {
+			$box['title'] = 'Editing email settings';
+		}
+		
+		
+		
+		
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -440,16 +457,27 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				ze\admin::formatDate(ze\date::now(), $values['dates/vis_date_format_long'], true);
 		}
 
-		if (isset($fields['sitemap/sitemap_url'])) {
-			if (!$fields['sitemap/sitemap_url']['hidden'] = !$values['sitemap/sitemap_enabled']) {
-				if (ze::setting('mod_rewrite_enabled')) {
-					$fields['sitemap/sitemap_url']['value'] =
-					$fields['sitemap/sitemap_url']['current_value'] = ze\link::protocol() . ze\link::primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
-				} else {
-					$fields['sitemap/sitemap_url']['value'] =
-					$fields['sitemap/sitemap_url']['current_value'] = ze\link::protocol() . ze\link::primaryDomain(). SUBDIRECTORY. DIRECTORY_INDEX_FILENAME. '?method_call=showSitemap';
+		if (isset($fields['urls/mod_rewrite_enabled']) && $values['urls/mod_rewrite_enabled']) {
+			$fields['urls/friendly_urls_disabled_warning']['hidden'] = true;
+			$fields['sitemap/sitemap_enabled']['hidden'] = false;
+			$fields['sitemap/sitemap_disabled_warning']['hidden'] = true;
+			if (isset($fields['sitemap/sitemap_url'])) {
+				if (!$fields['sitemap/sitemap_url']['hidden'] = !$values['sitemap/sitemap_enabled']) {
+					if (ze::setting('mod_rewrite_enabled')) {
+						$fields['sitemap/sitemap_url']['value'] =
+						$fields['sitemap/sitemap_url']['current_value'] = ze\link::protocol() . ze\link::primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
+					} else {
+						$fields['sitemap/sitemap_url']['value'] =
+						$fields['sitemap/sitemap_url']['current_value'] = ze\link::protocol() . ze\link::primaryDomain(). SUBDIRECTORY. DIRECTORY_INDEX_FILENAME. '?method_call=showSitemap';
+					}
 				}
 			}
+		} elseif (isset($fields['urls/mod_rewrite_enabled']) && !$values['urls/mod_rewrite_enabled']) {
+			$fields['urls/friendly_urls_disabled_warning']['hidden'] = false;
+			$fields['sitemap/sitemap_enabled']['hidden'] = true;
+			$fields['sitemap/sitemap_url']['hidden'] = true;
+			$values['sitemap/sitemap_url'] = false;
+			$fields['sitemap/sitemap_disabled_warning']['hidden'] = false;
 		}
 		
 		if (isset($box['tabs']['caching'])) {

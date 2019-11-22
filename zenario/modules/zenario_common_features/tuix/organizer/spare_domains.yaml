@@ -18,15 +18,17 @@ zenario__administration:
                     title: Domain
                     db_column: sdn.requested_url
                     searchable: Yes
-                    show_by_default: Yes
+                    always_show: Yes
                     width: xlarge
+                    html: true
                 content_item:
                     title: Target
                     show_by_default: Yes
                     db_column: "CONCAT(sdn.content_type, '_', sdn.content_id)"
                     item_link: content_item
                     width: xlarge
-            default_sort_column: url
+                    always_show: Yes
+            default_sort_column: frontend_link
             item:
                 css_class: url_item
             collection_buttons:
@@ -34,7 +36,7 @@ zenario__administration:
                     priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create
+                    label: Create a domain name redirect
                     admin_box:
                         path: zenario_spare_domains
                         create_another: true
@@ -49,7 +51,7 @@ zenario__administration:
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
-                    label: Properties
+                    label: Edit
                     admin_box:
                         path: zenario_spare_domains
                 delete:
@@ -58,7 +60,7 @@ zenario__administration:
                     hide_in_select_mode: Yes
                     ajax:
                         confirm:
-                            message: 'Are you sure that you wish to delete the domain name redirect "[[frontend_link]]"?'
+                            message: 'Are you sure that you wish to delete the domain name redirect "[[name]]"?'
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

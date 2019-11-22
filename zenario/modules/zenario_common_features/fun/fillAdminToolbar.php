@@ -1072,57 +1072,100 @@ foreach ($showVersions as $showVersion => $dummy) {
 		
 		$tuixId = 'version_'. ++$i;
 		
-		if (ze\content::isDraft(ze::$status)
-		 && $v['version'] == ze::$adminVersion
-		 && $v['version'] != ze::$visitorVersion) {
-			if (ze\contentAdm::checkIfVersionChanged($v)) { //('last_author_id', 'last_modified_datetime', 'creating_author_id', 'created_datetime')
-				$labelPhrase = 'v[[version]] (draft)';
-				$tooltipPhrase = 'Version [[version]], Draft modified by [[name]], [[time]] [[date]]';
-				$cssClass = 'zenario_at_icon_version_draft';
-				$lastAction = ($v['last_modified_datetime'] ?: $v['created_datetime']);
-				$lastActionBy = $v['last_author_id'];
+		switch (ze\contentAdm::versionStatus($v['version'], ze::$visitorVersion, ze::$adminVersion, ze::$status)) {
+			case 'draft':
+				if (ze\contentAdm::checkIfVersionChanged($v)) { //('last_author_id', 'last_modified_datetime', 'creating_author_id', 'created_datetime')
+					$labelPhrase = 'v[[version]] (draft)';
+					$tooltipPhrase = 'Version [[version]], Draft modified by [[name]], [[time]] [[date]]';
+					$cssClass = 'zenario_at_icon_version_draft';
+					$lastAction = ($v['last_modified_datetime'] ?: $v['created_datetime']);
+					$lastActionBy = $v['last_author_id'];
 
-			} else {
-				$labelPhrase = 'v[[version]] (draft)';
-				$tooltipPhrase = 'Version [[version]], Draft created by [[name]], [[time]] [[date]], no edits made';
-				$cssClass = 'zenario_at_icon_version_draft';
-				$lastAction = $v['created_datetime'];
-				$lastActionBy = $v['creating_author_id'];
-			}
+				} else {
+					$labelPhrase = 'v[[version]] (draft)';
+					$tooltipPhrase = 'Version [[version]], Draft created by [[name]], [[time]] [[date]], no edits made';
+					$cssClass = 'zenario_at_icon_version_draft';
+					$lastAction = $v['created_datetime'];
+					$lastActionBy = $v['creating_author_id'];
+				}
+				break;
+			
+			case 'published':
+				$labelPhrase = 'v[[version]] (published)';
+				$tooltipPhrase = 'Version [[version]], published by [[name]], [[time]] [[date]]';
+				$cssClass = 'zenario_at_icon_version_published';
+				$lastAction = $v['published_datetime'];
+				$lastActionBy = $v['publisher_id'];
+				break;
+
+			case 'hidden':
+				$labelPhrase = 'v[[version]] (hidden)';
+				$tooltipPhrase = 'Version [[version]], hidden by [[name]], [[time]] [[date]]';
+				$cssClass = 'zenario_at_icon_version_hidden';
+				
+				if (!is_null($v['concealed_datetime'])) {
+					$lastAction = $v['concealed_datetime'];
+				} elseif (!is_null($v['last_modified_datetime'])) {
+					$lastAction = $v['last_modified_datetime'];
+				} else {
+					$lastAction = $v['created_datetime'];
+				}
+				
+				if ($v['concealer_id'] != 0) {
+					$lastActionBy = $v['concealer_id'];
+				} elseif ($v['last_author_id'] != 0) {
+					$lastActionBy = $v['last_author_id'];
+				} else {
+					$lastActionBy = $v['creating_author_id'];
+				}
+				
+				break;
 	
-		} elseif (($v['version'] == ze::$adminVersion && ze::$status == 'published')
-			   || ($v['version'] == ze::$visitorVersion && ze::$status == 'published_with_draft')) {
-		
-			$labelPhrase = 'v[[version]] (published)';
-			$tooltipPhrase = 'Version [[version]], published by [[name]], [[time]] [[date]]';
-			$cssClass = 'zenario_at_icon_version_published';
-			$lastAction = $v['published_datetime'];
-			$lastActionBy = $v['publisher_id'];
-
-		} elseif (($v['version'] == ze::$adminVersion && ze::$status == 'hidden')
-			   || ($v['version'] == ze::$adminVersion - 1 && ze::$status == 'hidden_with_draft')) {
+			case 'trashed':
+				$labelPhrase = 'v[[version]] (trashed)';
+				$tooltipPhrase = 'Version [[version]], trashed by [[name]], [[time]] [[date]]';
+				$cssClass = 'zenario_at_icon_version_trashed';
+				
+				if (!is_null($v['concealed_datetime'])) {
+					$lastAction = $v['concealed_datetime'];
+				} elseif (!is_null($v['last_modified_datetime'])) {
+					$lastAction = $v['last_modified_datetime'];
+				} else {
+					$lastAction = $v['created_datetime'];
+				}
+				
+				if ($v['concealer_id'] != 0) {
+					$lastActionBy = $v['concealer_id'];
+				} elseif ($v['last_author_id'] != 0) {
+					$lastActionBy = $v['last_author_id'];
+				} else {
+					$lastActionBy = $v['creating_author_id'];
+				}
+				
+				break;
 	
-			$labelPhrase = 'v[[version]] (hidden)';
-			$tooltipPhrase = 'Version [[version]], hidden by [[name]], [[time]] [[date]]';
-			$cssClass = 'zenario_at_icon_version_hidden';
-			$lastAction = $v['concealed_datetime'];
-			$lastActionBy = $v['concealer_id'];
-
-		} elseif (($v['version'] == ze::$adminVersion && ze::$status == 'trashed')
-			   || ($v['version'] == ze::$adminVersion - 1 && ze::$status == 'trashed_with_draft')) {
-		
-			$labelPhrase = 'v[[version]] (trashed)';
-			$tooltipPhrase = 'Version [[version]], trashed by [[name]], [[time]] [[date]]';
-			$cssClass = 'zenario_at_icon_version_trashed';
-			$lastAction = $v['concealed_datetime'];
-			$lastActionBy = $v['concealer_id'];
-
-		} else {
-			$labelPhrase = 'v[[version]] (archived)';
-			$tooltipPhrase = 'Version [[version]], archived by [[name]], [[time]] [[date]]';
-			$cssClass = 'zenario_at_icon_version_archived';
-			$lastAction = $v['concealed_datetime'];
-			$lastActionBy = $v['concealer_id'];
+			case 'archived':
+				$labelPhrase = 'v[[version]] (archived)';
+				$tooltipPhrase = 'Version [[version]], archived by [[name]], [[time]] [[date]]';
+				$cssClass = 'zenario_at_icon_version_archived';
+				
+				if (!is_null($v['concealed_datetime'])) {
+					$lastAction = $v['concealed_datetime'];
+				} elseif (!is_null($v['last_modified_datetime'])) {
+					$lastAction = $v['last_modified_datetime'];
+				} else {
+					$lastAction = $v['created_datetime'];
+				}
+				
+				if ($v['concealer_id'] != 0) {
+					$lastActionBy = $v['concealer_id'];
+				} elseif ($v['last_author_id'] != 0) {
+					$lastActionBy = $v['last_author_id'];
+				} else {
+					$lastActionBy = $v['creating_author_id'];
+				}
+				
+				break;
 		}
 	
 		$mrg = [];

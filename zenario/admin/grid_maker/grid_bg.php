@@ -1,7 +1,8 @@
 <?php
 
-require '../../adminheader.inc.php';
+//require '../../adminheader.inc.php';
 
+require '../../visitorheader.inc.php';
 require_once CMS_ROOT. 'zenario/libs/manually_maintained/lgpl/wideimage/WideImage.php';
 
 

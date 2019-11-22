@@ -32,17 +32,60 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		if (ze::setting('site_enabled')) {
-			if (ze::setting('site_mode') == 'production') {
-				$box['tabs']['site']['fields']['enable_site_production']['value'] = 1;
-			} else {
-				$box['tabs']['site']['fields']['enable_site_development']['value'] = 1;
-			}
-		} else {
-			$box['tabs']['site']['fields']['disable_site']['value'] = 1;
-		}
+		$box['key']['isHead'] = ZENARIO_IS_HEAD;
+		
+		$fields['site/site_enabled']['pressed'] = (bool) ze::setting('site_enabled');
 		$box['tabs']['site']['fields']['site_disabled_title']['value'] = ze::setting('site_disabled_title');
 		$box['tabs']['site']['fields']['site_disabled_message']['value'] = ze::setting('site_disabled_message');
+		
+		$devModeSetting = \ze::setting('site_in_dev_mode');
+		
+		if (is_numeric($devModeSetting)) {
+			$devModeSetting = (int) $devModeSetting - time();
+			
+			if ($devModeSetting < 1) {
+				$devModeSetting = 0;
+			} else {
+				
+				$label = ze\admin::phrase('Site is in development mode for the next');
+				
+				$showSeconds = true;
+				$showMinutes = true;
+				
+				if ($devModeSetting > 86400) {
+					$days = (int) floor($devModeSetting / 86400);
+					$devModeSetting -= $days * 86400;
+					$label .= ' '. ze\admin::nPhrase('1 day', '[[count]] days', $days);
+					$showMinutes = false;
+				}
+				
+				if ($devModeSetting > 3600) {
+					$hours = (int) floor($devModeSetting / 3600);
+					$devModeSetting -= $hours * 3600;
+					$label .= ' '. ze\admin::nPhrase('1 hour', '[[count]] hours', $hours);
+					$showSeconds = false;
+				}
+				
+				if ($showMinutes && $devModeSetting > 60) {
+					$minutes = (int) floor($devModeSetting / 60);
+					$devModeSetting -= $minutes * 60;
+					$label .= ' '. ze\admin::nPhrase('1 minute', '[[count]] minutes', $minutes);
+					$showSeconds = false;
+				}
+				
+				if ($showSeconds) {
+					$label .= ' '. ze\admin::nPhrase('1 second', '[[count]] seconds', $devModeSetting);
+				}
+				
+				$devModeSetting = 'timed';
+			
+				$fields['site/site_in_dev_mode']['values']['timed']['hidden'] = false;
+				$fields['site/site_in_dev_mode']['values']['timed']['label'] = $label;
+			}
+		}
+		
+		$values['site/site_mode'] = $devModeSetting? 'dev' : 'prod';
+		$values['site/site_in_dev_mode'] = $devModeSetting;
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -53,7 +96,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 			
 			ze\skinAdm::clearCache(true);
 			
-			$box['tabs']['site']['show_errors_after_field'] = 'desc2';
+			$box['tabs']['site']['show_errors_after_field'] = 'desc3';
 		} else {
 			unset($box['tabs']['site']['show_errors_after_field']);
 		}
@@ -62,8 +105,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if ($values['site/enable_site_production']
-		 || $values['site/enable_site_development']) {
+		if ($fields['site/site_enabled']['pressed']) {
 		 	$moduleErrors = '';
 			if (ze\dbAdm::checkIfUpdatesAreNeeded($moduleErrors, $andDoUpdates = false)) {
 				$box['tabs']['site']['errors'][] =
@@ -71,8 +113,8 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 			}
 			
 			if (!ze\row::exists('languages', [])) {
-				$box['tabs']['site']['errors'][] =
-					ze\admin::phrase('You must enable a Language before you can enable your site.');
+				//Catch the edge-case where someone does a site reset, has not added any languages, and tries to enable dev mode.
+				//Allow them to do this without raising an error.
 			
 			//If the site isn't currently live, force people to review and publish all of the special pages before doing so
 			} elseif (!ze::setting('site_enabled')) {
@@ -81,7 +123,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 				$result = ze\row::query(
 					'special_pages',
 					['equiv_id', 'content_type'],
-					['logic' => ['create_and_maintain_in_default_language','create_and_maintain_in_all_languages']],
+					['logic' => ['create_and_maintain_in_default_language','create_and_maintain_in_all_languages'], 'allow_hide' => 0],
 					['page_type']);
 				
 				while ($row = ze\sql::fetchAssoc($result)) {
@@ -115,20 +157,27 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 			ze\site::setSetting('site_disabled_title', $values['site/site_disabled_title']);
 			ze\site::setSetting('site_disabled_message', $values['site/site_disabled_message']);
 			
-			if ($values['site/enable_site_production']) {
-				ze\site::setSetting('site_mode', 'production');
+			if ($fields['site/site_enabled']['pressed']) {
 				ze\site::setSetting('site_enabled', 1);
 				$box['key']['id'] = 'site_enabled';
-			
-			} elseif ($values['site/enable_site_development']) {
-				ze\site::setSetting('site_mode', 'development');
-				ze\site::setSetting('site_enabled', 1);
-				$box['key']['id'] = 'site_enabled';
-			
 			} else {
-				ze\site::setSetting('site_mode', 'development');
 				ze\site::setSetting('site_enabled', '');
 				$box['key']['id'] = 'site_disabled';
+			}
+			
+			if ($values['site/site_mode'] == 'prod') {
+				$devModeSetting = 0;
+			} else {
+				$devModeSetting = $values['site/site_in_dev_mode'];
+			}
+			
+			if ($devModeSetting !== 'timed') {
+			
+				if ($devModeSetting && is_numeric($devModeSetting)) {
+					$devModeSetting = (int) $devModeSetting + time();
+				}
+			
+				ze\site::setSetting('site_in_dev_mode', $devModeSetting);
 			}
 		}
 	}

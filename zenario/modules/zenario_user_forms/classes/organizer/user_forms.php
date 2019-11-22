@@ -47,8 +47,18 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 		
 		if ($refinerName == 'email_address_setting') {
 			unset($panel['collection_buttons']);
+			unset($panel['item_buttons']);
 			$panel['title'] = ze\admin::phrase('Summary of email addresses used by forms');
 			$panel['no_items_message'] = ze\admin::phrase('No forms send emails to a specific address.');
+			
+			$panel['columns']['field_count']['hidden'] = true;
+			$panel['columns']['response_count']['hidden'] = true;
+			$panel['columns']['latest_response']['hidden'] = true;
+			$panel['columns']['where_used']['hidden'] = true;
+			$panel['columns']['name']['html'] = true;
+			foreach ($panel['items'] as &$item) {
+				$item['name'] = '<a href="organizer.php#zenario__user_forms/panels/user_forms//' . $item['id'] . '" target="_blank">' . $item['name'] . '</a>';
+			}
 		} else {
 			unset($panel['columns']['form_email_addresses']);
 		}

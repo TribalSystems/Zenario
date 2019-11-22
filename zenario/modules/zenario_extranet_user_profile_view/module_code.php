@@ -46,19 +46,29 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 			$this->mergeFields['Last_Name'] = htmlspecialchars($userDetails['last_name']);
 			
 			$this->subSections['Bus_Phone'] = ze\ray::issetArrayKey($userDetails,"bus_phone");
-			$this->mergeFields['Bus_Phone'] = htmlspecialchars($userDetails['bus_phone']);
+			if ($this->subSections['Bus_Phone']) {
+				$this->mergeFields['Bus_Phone'] = htmlspecialchars($userDetails['bus_phone']);
+			}
 			
 			$this->subSections['Mobile'] = ze\ray::issetArrayKey($userDetails,"mobile");			
-			$this->mergeFields['Mobile'] = htmlspecialchars($userDetails['mobile']);
+			if ($this->subSections['Mobile']) {
+				$this->mergeFields['Mobile'] = htmlspecialchars($userDetails['mobile']);
+			}
 
 			$this->subSections['Fax'] = ze\ray::issetArrayKey($userDetails,"fax");			
-			$this->mergeFields['Fax'] = htmlspecialchars($userDetails['fax']);
+			if ($this->subSections['Fax']) {
+				$this->mergeFields['Fax'] = htmlspecialchars($userDetails['fax']);
+			}
 			
 			$this->subSections['Email'] = ze\ray::issetArrayKey($userDetails,"email");			
-			$this->mergeFields['Email'] = htmlspecialchars($userDetails['email']);
+			if ($this->subSections['Email']) {
+				$this->mergeFields['Email'] = htmlspecialchars($userDetails['email']);
+			}
 			
 			$this->subSections['Website'] = ze\ray::issetArrayKey($userDetails,"website");						
-			$this->mergeFields['Website'] = htmlspecialchars($userDetails['website']);
+			if ($this->subSections['Website']) {
+				$this->mergeFields['Website'] = htmlspecialchars($userDetails['website']);
+			}
 			
 			$this->subSections['Bus_Address'] = (
 													ze\ray::issetArrayKey($userDetails,"bus_address1") ||
@@ -71,25 +81,39 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 												);
 												
 			$this->subSections['Bus_Address1'] = ze\ray::issetArrayKey($userDetails,"bus_address1");			
-			$this->mergeFields['Bus_Address1'] = htmlspecialchars($userDetails['bus_address1']);
+			if ($this->subSections['Bus_Address1']) {
+				$this->mergeFields['Bus_Address1'] = htmlspecialchars($userDetails['bus_address1']);
+			}
 			
 			$this->subSections['Bus_Address2'] = ze\ray::issetArrayKey($userDetails,"bus_address2");			
-			$this->mergeFields['Bus_Address2'] = htmlspecialchars($userDetails['bus_address2']);
+			if ($this->subSections['Bus_Address2']) {
+				$this->mergeFields['Bus_Address2'] = htmlspecialchars($userDetails['bus_address2']);
+			}
 			
 			$this->subSections['Bus_Address3'] = ze\ray::issetArrayKey($userDetails,"bus_address3");			
-			$this->mergeFields['Bus_Address3'] = htmlspecialchars($userDetails['bus_address3']);
+			if ($this->subSections['Bus_Address3']) {
+				$this->mergeFields['Bus_Address3'] = htmlspecialchars($userDetails['bus_address3']);
+			}
 			
 			$this->subSections['Bus_Town'] = ze\ray::issetArrayKey($userDetails,"bus_town");			
-			$this->mergeFields['Bus_Town'] = htmlspecialchars($userDetails['bus_town']);
+			if ($this->subSections['Bus_Town']) {
+				$this->mergeFields['Bus_Town'] = htmlspecialchars($userDetails['bus_town']);
+			}
 			
 			$this->subSections['Bus_State'] = ze\ray::issetArrayKey($userDetails,"bus_state");			
-			$this->mergeFields['Bus_State'] = htmlspecialchars($userDetails['bus_state']);
+			if ($this->subSections['Bus_State']) {
+				$this->mergeFields['Bus_State'] = htmlspecialchars($userDetails['bus_state']);
+			}
 			
 			$this->subSections['Bus_Postcode'] = ze\ray::issetArrayKey($userDetails,"bus_postcode");			
-			$this->mergeFields['Bus_Postcode'] = htmlspecialchars($userDetails['bus_postcode']);
+			if ($this->subSections['Bus_Postcode']) {
+				$this->mergeFields['Bus_Postcode'] = htmlspecialchars($userDetails['bus_postcode']);
+			}
 
 			$this->subSections['Bus_Country'] = ze\ray::issetArrayKey($userDetails,"bus_country_id");			
-			$this->mergeFields['Bus_Country'] = zenario_country_manager::adminPhrase(ze::$visLang,"_COUNTRY_NAME_" . $userDetails['bus_country_id']);
+			if ($this->subSections['Bus_Country']) {
+				$this->mergeFields['Bus_Country'] = zenario_country_manager::adminPhrase(ze::$visLang,"_COUNTRY_NAME_" . $userDetails['bus_country_id']);
+			}
 			
 			// Make custom dataset fields available for custom frameworks
 			$C = [];

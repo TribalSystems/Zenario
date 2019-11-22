@@ -777,6 +777,10 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 				$fields['calendar/first_day_of_week']['hidden'] = ($values['calendar/view_mode'] ?? false) != 'month_view';
 				$fields['calendar/months_format']['hidden'] = ($values['calendar/view_mode'] ?? false) == 'month_view';
 				
+				if ($values['calendar/view_mode'] == 'year_view' && empty($values['calendar/months_format'])) {
+					$values['calendar/months_format'] = 'months_short_name';
+				}
+				
 				$hidden = !$values['calendar/show_sticky_images'];
 				$this->showHideImageOptions($fields, $values, 'calendar', $hidden);
 				break;

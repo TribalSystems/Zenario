@@ -256,7 +256,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$box['key']['moduleClassNameForPhrases'] = $module['vlp_class'];
 				
 				if ($box['key']['framework']) {
-					$this->setupOverridesForPhrases($box, $valuesInDB);
+					self::setupOverridesForPhrasesInFrameworks(false, $box, $valuesInDB);
 				}
 				
 				
@@ -356,9 +356,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						case 'zenario_plugin_nest':
 							$title = ze\admin::phrase('Nest');
 							break;
-						case 'zenario_slideshow':
-							$title = ze\admin::phrase('Slideshow');
-							break;
 						default:
 							$title = $titleMrg['module'];
 					}
@@ -367,9 +364,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					switch ($module['class_name']) {
 						case 'zenario_plugin_nest':
 							$title = ze\admin::phrase('New nest');
-							break;
-						case 'zenario_slideshow':
-							$title = ze\admin::phrase('New slideshow');
 							break;
 						default:
 							$title = 
@@ -632,7 +626,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					if ($box['key']['lastMode'] != $mode) {
 						$box['key']['lastMode'] = $box['key']['mode'] = $mode;
 					
-						$this->setupOverridesForPhrases($box);
+						self::setupOverridesForPhrasesInFrameworks(true, $box);
 					}
 				}
 				
@@ -1342,27 +1336,29 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 	
 	//This function scans the module code/framework of a plugin, looking for simple cases of phrases being used.
 	//It then creates a tab with plugin settings that serve as overrides for these.
-	public static function setupOverridesForPhrases(&$box, $valuesInDB = []) {
+	public static function setupOverridesForPhrasesInFrameworks($hideExistingFields, &$box, $valuesInDB = [], $moduleClassName = null, $moduleClassNameForPhrases = null, $mode = null, $framework = null) {
 		
 		$fields = &$box['tabs']['phrases.framework']['fields'];
 		
 		//Disable and hide any previous fields, so they're not shown and don't get saved in the plugin settings table
-		if (!empty($fields)) {
+		if ($hideExistingFields && !empty($fields)) {
 			foreach ($fields as &$field) {
-				if (is_array($field) && !empty($field)) {
+				if (is_array($field) && !empty($field) && !ze::in($field['type'] ?? '', 'button', 'submit')) {
 					$field['hidden'] = true;
 				}
 			}
 		}
 		
-		$mode = $box['key']['mode'];
+		$mode = $box['key']['mode'] ?? $mode;
+		$moduleClassName = $box['key']['moduleClassName'] ?? $moduleClassName;
+		$moduleClassNameForPhrases = $box['key']['moduleClassNameForPhrases'] ?? $moduleClassNameForPhrases;
 		$phrases = [];
 		$pInCode = false;
 		$pInTwig = false;
 		
 		//Get the contents of the framework file
-		if (($framework = $box['key']['framework'])
-		 && ($frameworkFile = ze\plugin::frameworkPath($framework, $box['key']['moduleClassName']))
+		if (($framework = $box['key']['framework'] ?? $framework)
+		 && ($frameworkFile = ze\plugin::frameworkPath($framework, $moduleClassName))
 		 && ($twig = file_get_contents(CMS_ROOT. $frameworkFile))) {
 		
 			//If there's a sub-framework for this mode, get the contents of that as well
@@ -1385,53 +1381,66 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 		
 		
-		
-		
-		//Attempt to get phrases from the PHP code as well.
-		//If this is a modal plugin, look for the mode in the classes subdirectory, otherwise try looking at the module_code.php.
-		//Note that I am not handling modules/classes that extend other modules/classes right now.
-		if ($mode
-		 && file_exists($modeDir = CMS_ROOT. ze::moduleDir($box['key']['moduleClassName'], 'classes/visitor/'. $mode. '.php', true))) {
-			$php = file_get_contents($modeDir);
-		} else {
-			$php = file_get_contents(CMS_ROOT. ze::moduleDir($box['key']['moduleClassName'], 'module_code.php'));
-		}
-		
-		if ($php) {
-			//Use token_get_all() to parse the file.
-			//This is a lot more reliable than trying to use a regular expression.
-			$tokens = token_get_all($php);
-			
-			foreach ($tokens as &$token) {
-				if (!is_string($token)) {
-					$token = $token[1];
-				}
+		$limit = 5;
+		do {
+			$nextMode = false;
+			//Attempt to get phrases from the PHP code as well.
+			//If this is a modal plugin, look for the mode in the classes subdirectory, otherwise try looking at the module_code.php.
+			//Note that I am not handling modules/classes that extend other modules/classes right now.
+			if ($usesClassesDir = $mode && file_exists($modeDir = CMS_ROOT. ze::moduleDir($moduleClassName, 'classes/visitor/'. $mode. '.php', true))) {
+				$php = file_get_contents($modeDir);
+			} else {
+				$php = file_get_contents(CMS_ROOT. ze::moduleDir($moduleClassName, 'module_code.php'));
 			}
-			unset($token);
+		
+			if ($php) {
+				//Use token_get_all() to parse the file.
+				//This is a lot more reliable than trying to use a regular expression.
+				$tokens = token_get_all($php);
+			
+				foreach ($tokens as &$token) {
+					if (!is_string($token)) {
+						$token = $token[1];
+					}
+				}
+				unset($token);
+			
+				//Remove any whitespaces
+				$tokens = array_values(array_filter(array_map('trim', $tokens)));
 			
 			
-			//Look through the tokens we got, looking for calls to $this->phrase()
-			$mi = count($tokens) - 4;
+				//Look through the tokens we got, looking for calls to $this->phrase()
+				$mi = count($tokens) - 4;
 			
-			for ($i = 0; $i < $mi; ++$i) {
+				for ($i = 0; $i < $mi; ++$i) {
 	
-				if ($tokens[$i    ] == '$this'
-				 && $tokens[$i + 1] == '->'
-				 && $tokens[$i + 2] == 'phrase'
-				 && $tokens[$i + 3] == '(') {
-					$phrase = $tokens[$i + 4];
+					if ($tokens[$i    ] == '$this'
+					 && $tokens[$i + 1] == '->'
+					 && $tokens[$i + 2] == 'phrase'
+					 && $tokens[$i + 3] == '(') {
+						$phrase = $tokens[$i + 4];
 					
-					//Check that the phrase code is a string.
-					//(We won't try to handle the case where it's a variable.)
-					if ($phrase[0] == "'"
-					 || $phrase[0] == '"') {
-					 	$code = stripslashes(substr($phrase, 1, -1));
-						$phrases[$code] = $code;
-						$pInCode = true;
+						//Check that the phrase code is a string.
+						//(We won't try to handle the case where it's a variable.)
+						if ($phrase[0] == "'"
+						 || $phrase[0] == '"') {
+							$code = stripslashes(substr($phrase, 1, -1));
+							$phrases[$code] = $code;
+							$pInCode = true;
+						}
+					}
+				
+					//Watch out for plugin modes that extend other plugins
+					if ($usesClassesDir
+					 && $tokens[$i    ] == 'class'
+					 && $tokens[$i + 1] == $moduleClassName. '__visitor__'. $mode
+					 && $tokens[$i + 2] == 'extends'
+					 && ($extendedMode = ze\ring::chopPrefix($moduleClassName. '__visitor__', $tokens[$i + 3]))) {
+						$nextMode = $extendedMode;
 					}
 				}
 			}
-		}
+		} while (--$limit > 0 && ($mode = $nextMode));
 
 		
 		
@@ -1483,7 +1492,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					FROM ". DB_PREFIX. "visitor_phrases
 					WHERE `code` = '". ze\escape::sql($code). "'
 					  AND language_id = '". ze\escape::sql(ze::$defaultLang). "'
-					  AND module_class_name = '". ze\escape::sql($box['key']['moduleClassNameForPhrases']). "'
+					  AND module_class_name = '". ze\escape::sql($moduleClassNameForPhrases). "'
 				") ?: $defaultText;
 			}
 		}

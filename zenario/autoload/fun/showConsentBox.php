@@ -36,7 +36,7 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
 	$url =
 		(\ze::setting('admin_use_ssl')? 'https://' : \ze\link::protocol()).
 		\ze\link::adminDomain(). SUBDIRECTORY.
-		'zenario/admin/welcome.php?';
+		'admin.php?';
 	$importantGetRequests = \ze\link::importantGetRequests(true);
 
 	//If this is a 401/403/404 page, include the requested cID and cType,

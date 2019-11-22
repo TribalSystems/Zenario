@@ -27,6 +27,13 @@ plugin_settings:
                         Please see the Module description to get a full list of
                         Merge Fields which can be used in the selected Email
                         Template.
+                block_email_enumeration:
+                    plugin_setting:
+                        name: block_email_enumeration
+                    label: Block email enumeration
+                    type: checkbox
+                    side_note: >
+                        If this option is enabled, users will not be told whether or not they entered a valid email address.
                 stop_users_reseting_passwords:
                     plugin_setting:
                         name: stop_users_reseting_passwords

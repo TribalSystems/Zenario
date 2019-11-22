@@ -157,10 +157,10 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$this->showSections['categories'][] = $section;
 			}
 			
-			$comma = $this->phrase('_COMMA');
+			$separator = $this->phrase('_CATEGORY_SEPARATOR');
 			foreach ($this->showSections['categories'] as $i => &$section) {
 				if ($i != $c) {
-					$section['Comma'] = $comma;
+					$section['Separator'] = $separator;
 				}
 			}
 			$this->mergeFields['Categories'] = ['html_tag' => $this->setting('categories_html_tag'), 'label' => 'Categories', 'class' => 'categories'];

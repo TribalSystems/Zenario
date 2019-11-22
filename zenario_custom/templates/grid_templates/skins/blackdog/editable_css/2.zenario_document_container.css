@@ -1,0 +1,40 @@
+.zenario_document_container__default_style .document_wrap {
+	overflow:hidden;
+	border-bottom:1px dotted #777;
+	padding:20px 0;
+}
+
+.zenario_document_container__default_style .document_wrap div.thumbnail {
+	float:left;
+	margin-right:20px;
+}
+
+.zenario_document_container__default_style .document_wrap div.thumbnail img {
+	border:2px solid #ccc;
+}
+
+.zenario_document_container__default_style .document_wrap .level_1 {
+	overflow:hidden;
+}
+
+.zenario_document_container__default_style .document_wrap .level_1 a {
+	clear:both;
+}
+
+.zenario_document_container__default_style .document_wrap .level_1 span {
+	display:block;
+}
+
+.zenario_document_container__default_style .document_wrap .level_1 a:first-child {
+	color:#2a98ce;
+}
+
+.zenario_document_container .folder_title h2 {
+	font-size:1.5em;
+}
+
+.zenario_document_container .folder_title h2:before {
+	font-family: 'FontAwesome';
+	content:"\f07c";
+	padding-right:8px;
+}

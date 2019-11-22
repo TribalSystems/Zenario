@@ -9,7 +9,7 @@
 }
 
 .organizer_item_image.zenario_email_template_panel {
-	background: url('images/icon-templates.svg') no-repeat center / 16px auto;
+	background: url('images/icon-email-template-dark.svg') no-repeat center / 18px auto;
 }
 
 .zenario_email_template_manager_log__failed span {

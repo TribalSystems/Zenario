@@ -153,6 +153,9 @@ directionality	ltr rtl
 		init_instance_callback: function(instance) {
 			zenario.removeLinkStatus($editor);
 			zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
+			
+			//Attempt to put the cursor immediately in the field when it loads with the editor
+			instance.focus();
 		}
 	});
 	

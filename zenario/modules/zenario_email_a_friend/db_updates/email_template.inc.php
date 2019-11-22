@@ -37,7 +37,8 @@ ze\dbAdm::revision(1,
 		`body`,
 		`date_created`,
 		`created_by_id`,
-		`allow_attachments`
+		`allow_attachments`,
+		`use_standard_email_template`
 	) VALUES (
 		 'zenario_email_a_friend__to_visitor_email_this_page_to_friend_en',
 		 'To Visitor: Email this page to a friend',
@@ -56,7 +57,8 @@ ze\dbAdm::revision(1,
 		<p>This is an auto-generated email from [[link_to_page]] .</p>',
 		 NOW(),
 		 " .(int)$_SESSION['admin_userid'] . ",
-		 0
+		 0,
+		 1
 		)
 "
 ); ze\dbAdm::revision(3,

@@ -30,37 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features extends zenario_common_features {
 	
 	
-	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
-		}
-	}
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-	}
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-	}
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
 	
 	
 	
@@ -88,35 +57,76 @@ class zenario_pro_features extends zenario_common_features {
 		//...your PHP code...//
 	}
 	
+	public function fillAdminToolbar(&$adminToolbar, $cID, $cType, $cVersion) {
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->fillAdminToolbar($adminToolbar, $cID, $cType, $cVersion);
+		}
+	}
+	
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
-		//...your PHP code...//
-	}
-	
-	public function lineStorekeeperCSV($path, &$columns, $refinerName, $refinerId) {
-		
-		//...your PHP code...//
-	}
-	
-	public function formatStorekeeperCSV($path, &$item, $refinerName, $refinerId) {
-		
-		//...your PHP code...//
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
+		if ($c = $this->runSubClass(static::class)) {
+			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
+		}
+	}
+	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		//...your PHP code...//
+		switch ($path) {
+			default:
+				if ($c = $this->runSubClass(static::class)) {
+					return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
+				}
+		}
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			default:
+				if ($c = $this->runSubClass(static::class)) {
+					return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+				}
+		}
+	}
+	
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		switch ($path) {
+			default:
+				if ($c = $this->runSubClass(static::class)) {
+					return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
+				}
+		}
+	}
+	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			default:
+				if ($c = $this->runSubClass(static::class)) {
+					return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+				}
+		}
 	}
 	
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		//...your PHP code...//
+		switch ($path) {
+			default:
+				if ($c = $this->runSubClass(static::class)) {
+					return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
+				}
+		}
 	}
 	
 	

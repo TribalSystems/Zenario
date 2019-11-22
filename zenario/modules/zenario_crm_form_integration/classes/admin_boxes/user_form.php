@@ -40,9 +40,27 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 		
 		//Load generic CRM details
 		if ($formId = $box['key']['id']) {
-			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_link', ['id', 'url', 'enable'], ['form_id' => $formId, 'crm_id' => 'generic']);
+			//load consent fields
+			$consentFields = [];
+			$sql = "select f.id, f.name, df.dataset_id 
+						from ".DB_PREFIX.ZENARIO_USER_FORMS_PREFIX."user_form_fields f inner join ".DB_PREFIX."custom_dataset_fields df 
+						where df.type='consent' and f.user_form_id=".(int)$formId." and df.id= f.user_field_id";
+		
+			$result = ze\sql::select($sql);
+			while($row = ze\sql::fetchAssoc($result)){
+				$consentFields[$row['id']] = $row['name'];
+			}
+			$fields['crm_integration/consent_field']['values'] = $consentFields;
+			
+			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_link', ['id', 'url', 'enable', 'consent_field'], ['form_id' => $formId, 'crm_id' => 'generic']);
 			$values['crm_integration/url'] = $crmLink['url'];
 			$values['crm_integration/enable'] = $crmLink['enable'];
+			$values['crm_integration/consent_field'] = $crmLink['consent_field'];
+			if($values['crm_integration/consent_field'] != 0){
+				$values['crm_integration/send_api_request'] = 'send_on_condition';
+			} else {
+				$values['crm_integration/send_api_request'] = 'always_send';
+			}
 			
 			$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['name', 'value', 'ord'], ['link_id' => $crmLink['id']], 'ord');
 			while ($row = ze\sql::fetchAssoc($result)) {
@@ -58,12 +76,19 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 			//Hide salesforce tab if not enabled in site-settings
 			$box['tabs']['salesforce_integration']['hidden'] = true;
 		} elseif ($formId) {
-			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable'], ['form_id' => $formId, 'crm_id' => 'salesforce']);
-			$values['salesforce_integration/enable'] = $crmLink['enable'];
-			
+			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable', 'consent_field'], ['form_id' => $formId, 'crm_id' => 'salesforce']);
 			$crmData = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_data', ['s_object'], $formId);
+			
+			$values['salesforce_integration/enable'] = $crmLink['enable'] ?? false;
+			$values['salesforce_integration/consent_field'] = $crmData['consent_field'] ?? false;
+			if($values['salesforce_integration/consent_field'] != 0){
+				$values['salesforce_integration/send_api_request'] = 'send_on_condition';
+			} else {
+				$values['salesforce_integration/send_api_request'] = 'always_send';
+			}
+			
 			if ($crmData) {
-				$values['salesforce_integration/s_object'] = $crmData['s_object'];
+				$values['salesforce_integration/s_object'] = $crmData['s_object'] ?? false;
 			}
 			
 			$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['name', 'value', 'ord'], ['link_id' => $crmLink['id']], 'ord');
@@ -71,6 +96,10 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 				$values['salesforce_integration/name' . $row['ord']] = $row['name'];
 				$values['salesforce_integration/value' . $row['ord']] = $row['value'];
 			}
+			
+			//populate consent fields
+			$fields['salesforce_integration/consent_field']['values'] = $consentFields;
+			
 		}
 		
 		//Load MailChimp CRM details
@@ -80,19 +109,20 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 			//Hide mailchimp tab if not enabled in site-settings
 			$box['tabs']['mailchimp_integration']['hidden'] = true;
 		} elseif ($formId) {
-			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable'], ['form_id' => $formId, 'crm_id' => 'mailchimp']);
+			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable', 'consent_field'], ['form_id' => $formId, 'crm_id' => 'mailchimp']);
 			$values['mailchimp_integration/enable'] = $crmLink['enable'];
+			$values['mailchimp_integration/consent_field'] = $crmLink['consent_field'];
+			if($values['mailchimp_integration/consent_field'] != 0){
+				$values['mailchimp_integration/send_api_request'] = 'send_on_condition';
+			} else {
 			
-			$crmData = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', ['mailchimp_list_id', 'consent_field'], $formId);
+				$values['mailchimp_integration/send_api_request'] = 'always_send';
+			}
+			
+			
+			$crmData = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', ['mailchimp_list_id'], $formId);
 			if ($crmData) {
 				$values['mailchimp_integration/mailchimp_list_id'] = $crmData['mailchimp_list_id'];
-				$values['mailchimp_integration/consent_field'] = $crmData['consent_field'];
-				if($values['mailchimp_integration/consent_field'] != 0){
-				    $values['mailchimp_integration/send_api_request'] = 'send_on_condition';
-				} else {
-				
-				    $values['mailchimp_integration/send_api_request'] = 'always_send';
-				}
 			}
 			
 			$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['name', 'value', 'ord'], ['link_id' => $crmLink['id']], 'ord');
@@ -100,18 +130,9 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 				$values['mailchimp_integration/name' . $row['ord']] = $row['name'];
 				$values['mailchimp_integration/value' . $row['ord']] = $row['value'];
 			}
+			//populate consent fields
+			$fields['mailchimp_integration/consent_field']['values'] = $consentFields;
 		}
-		$consentFields = [];
-        $sql = "select f.id, f.name, df.dataset_id 
-                    from ".DB_PREFIX.ZENARIO_USER_FORMS_PREFIX."user_form_fields f inner join ".DB_PREFIX."custom_dataset_fields df 
-                    where df.type='consent' and f.user_form_id=".(int)$formId." and df.id= f.user_field_id";
-
-        $result = ze\sql::select($sql);
-        while($row = ze\sql::fetchAssoc($result)){
-            $consentFields[$row['id']] = $row['name'];
-        }
-		$fields['mailchimp_integration/consent_field']['values'] = $consentFields;
-		
 		
 		
 		//Load 360Lifecycle CRM details
@@ -120,8 +141,15 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 		if (!ze::setting('zenario_crm_form_integration__enable_360lifecycle')) {
 			$box['tabs']['360lifecycle_integration']['hidden'] = true;
 		} elseif ($formId) {
-			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable'], ['form_id' => $formId, 'crm_id' => '360lifecycle']);
+			$crmLink = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['id', 'enable', 'consent_field'], ['form_id' => $formId, 'crm_id' => '360lifecycle']);
 			$values['360lifecycle_integration/enable'] = $crmLink['enable'];
+			$values['360lifecycle_integration/consent_field'] = $crmLink['consent_field'];
+			if($values['360lifecycle_integration/consent_field'] != 0){
+				$values['360lifecycle_integration/send_api_request'] = 'send_on_condition';
+			} else {
+			
+				$values['360lifecycle_integration/send_api_request'] = 'always_send';
+			}
 			
 			$crmData = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . '360lifecycle_data', true, $formId);
 			if ($crmData) {
@@ -129,6 +157,8 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 				$values['360lifecycle_integration/opportunity_lead_source'] = $crmData['opportunity_lead_source'];
 				$values['360lifecycle_integration/opportunity_lead_type'] = $crmData['opportunity_lead_type'];
 			}
+			//populate consent fields
+			$fields['360lifecycle_integration/consent_field']['values'] = $consentFields;
 		}
 	}
 	
@@ -176,22 +206,22 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 			$box['tabs']['mailchimp_integration']['notices']['missing_email']['show'] = $missingEmailCRMField && $values['mailchimp_integration/enable'];
 		}
 		
-		if($values['mailchimp_integration/send_api_request'] == 'send_on_condition'){//radio button for consent field condition
-		    $fields['mailchimp_integration/consent_field']['hidden'] = false;
-		    
-		} else {
-		    $fields['mailchimp_integration/consent_field']['hidden'] = true;
-		}
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($formId = $box['key']['id']) {
 			$crmPreviouslyEnabled = ze\row::exists(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', ['form_id' => $formId, 'enable' => true]);
 			
+			if ($values['crm_integration/send_api_request'] == "send_on_condition" && $values['crm_integration/consent_field']) {
+				$consentValue = $values['crm_integration/consent_field'];
+			} else {
+				$consentValue = 0;
+			}
+			
 			//Save generic CRM details
 			$linkId = ze\row::set(
 				ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_link', 
-				['url' => $values['crm_integration/url'], 'enable' => $values['crm_integration/enable']], 
+				['url' => $values['crm_integration/url'], 'enable' => $values['crm_integration/enable'], 'consent_field' => $consentValue], 
 				['form_id' => $formId, 'crm_id' => 'generic']
 			);
 			
@@ -212,9 +242,16 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 			
 			//Save Salesforce CRM details
 			if (ze::setting('zenario_salesforce_api_form_integration__enable')) {
+				
+				if ($values['salesforce_integration/send_api_request'] == "send_on_condition" && $values['salesforce_integration/consent_field']) {
+					$consentValue = $values['salesforce_integration/consent_field'];
+				} else {
+					$consentValue = 0;
+				}
+				
 				$linkId = ze\row::set(
 					ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_link', 
-					['enable' => $values['salesforce_integration/enable']], 
+					['enable' => $values['salesforce_integration/enable'], 'consent_field' => $consentValue], 
 					['form_id' => $formId, 'crm_id' => 'salesforce']
 				);
 				
@@ -241,29 +278,22 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 			
 			//Save MailChimp CRM details
 			if (ze::setting('zenario_crm_form_integration__enable_mailchimp')) {
+				if ($values['mailchimp_integration/send_api_request'] == "send_on_condition" && $values['mailchimp_integration/consent_field']) {
+					$consentValue = $values['mailchimp_integration/consent_field'];
+				} else {
+					$consentValue = 0;
+				}
 				$linkId = ze\row::set(
 					ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_link', 
-					['enable' => $values['mailchimp_integration/enable']], 
+					['enable' => $values['mailchimp_integration/enable'], 'consent_field' => $consentValue], 
 					['form_id' => $formId, 'crm_id' => 'mailchimp']
 				);
+				ze\row::set(
+					ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', 
+					['mailchimp_list_id' => $values['mailchimp_integration/mailchimp_list_id']], 
+					['form_id' => $formId]
+				);
 				
-				  
-				 
-				if($values['mailchimp_integration/send_api_request'] == "send_on_condition" && $values['mailchimp_integration/consent_field']){
-				   
-				     ze\row::set(
-					    ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', 
-					    ['mailchimp_list_id' => $values['mailchimp_integration/mailchimp_list_id'], 'consent_field' => $values['mailchimp_integration/consent_field']], 
-					    ['form_id' => $formId]
-				    );
-				    
-				} else{
-				    ze\row::set(
-					    ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', 
-					    ['mailchimp_list_id' => $values['mailchimp_integration/mailchimp_list_id'], 'consent_field' => 0], 
-					    ['form_id' => $formId]
-				    );
-				}
 				ze\row::delete(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['link_id' => $linkId]);
 				for ($i = 1; $i <= 10; $i++) {
 					if ($values['mailchimp_integration/name' . $i]) {
@@ -282,9 +312,15 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 			
 			//Save 360LifeCycle CRM details
 			if (ze::setting('zenario_crm_form_integration__enable_360lifecycle')) {
+				if ($values['360lifecycle_integration/send_api_request'] == "send_on_condition" && $values['360lifecycle_integration/consent_field']) {
+					$consentValue = $values['360lifecycle_integration/consent_field'];
+				} else {
+					$consentValue = 0;
+				}
+				
 				$linkId = ze\row::set(
 					ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_link', 
-					['enable' => $values['360lifecycle_integration/enable']], 
+					['enable' => $values['360lifecycle_integration/enable'], 'consent_field' => $consentValue], 
 					['form_id' => $formId, 'crm_id' => '360lifecycle']
 				);
 				ze\row::set(
@@ -321,6 +357,9 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 					}
 				}
 			}
+		
+		
+		
 			
 		}
 	}

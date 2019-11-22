@@ -3,6 +3,18 @@
 		{{m.css_class|escape}}
 		{{m.disabled? 'organizer_button_disabled' : ''}}
 	">
+		<% if (m.itemCSSClass) { %>
+			<div class="organizer_item_toolbar_image">
+				<div class="listicon organizer_item_image {{m.itemCSSClass|escape}}">
+					<div class="organizer_items_selected">
+						<% if (m.itemsSelected > 1) { %>
+							{{m.itemsSelected}} items
+						<% } %>
+					</div>
+				</div>
+			</div>
+		<% } %>
+		
 		<a
 			title="{{m.tooltip|escape}}"
 			onclick="{{m.onclick|escape}}"

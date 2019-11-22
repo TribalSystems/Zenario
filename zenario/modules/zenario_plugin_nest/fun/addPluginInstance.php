@@ -85,7 +85,8 @@ if (($instance = ze\plugin::details($addPluginInstance))
 			foreign_key_char,
 			dangling_cross_references
 		FROM ". DB_PREFIX. "plugin_settings
-		WHERE instance_id = ". (int) $addPluginInstance;
+		WHERE instance_id = ". (int) $addPluginInstance. "
+		ORDER BY instance_id, egg_id, name";
 	ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 	
 	ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);

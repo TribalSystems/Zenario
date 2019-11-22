@@ -10,6 +10,11 @@ site_settings:
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
+            notices: 
+                show_warning_message:
+                    type: warning
+                    show: true
+
             fields:
                 check_automated_backups:
                     site_setting:

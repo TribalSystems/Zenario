@@ -136,13 +136,23 @@ foreach (\ze::$jsLibs as $lib => $stylesheet) {
 		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, htmlspecialchars($stylesheet). '?', $v, '"/>';
 	}
 	
-	if ($checkPrefixes) {
-		if ($lib[0] != '/'
-		 && strpos($lib, '://') === false) {
+	if ($lib[0] != '/'
+	 && strpos($lib, '://') === false) {
+		
+		if ($checkPrefixes) {
 			$lib = $prefix. '../'. $lib;
 		}
+		
+		if (strpos($lib, '?v=') === false
+		 && strpos($lib, '&v=') === false) {
+			if (strpos($lib, '?') === false) {
+				$lib .= '?'. $v;
+			} else {
+				$lib .= '&'. $v;
+			}
+		}
 	}
-	echo "\n", $scriptTag, ' src="', htmlspecialchars($lib). '?', $v, '"></script>';
+	echo "\n", $scriptTag, ' src="', htmlspecialchars($lib), '"></script>';
 }
 	
 
@@ -182,7 +192,10 @@ if ($isAdmin && \ze::$cID) {
 		echo '
 		'. $scriptTag. '>
 			$(document).ready(function() {
-				zenarioA.draftDoCallback("', \ze\escape::js($_SESSION['zenario_draft_callback']), '");
+				zenarioA.draftDoCallback(
+					"', \ze\escape::js($_SESSION['zenario_draft_callback']), '",
+					', (int) ($_SESSION['zenario_draft_callback_scroll_pos'] ?? 0), '
+				);
 			});
 		</script>';
 		

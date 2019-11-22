@@ -27,7 +27,6 @@ special_pages:
         page_type: zenario_logout
         default_alias: logout
         default_title: Logout
-        footer_menu_title: Logout
         only_show_to_visitors_who_are_logged_in: true
         logic: create_and_maintain_in_default_language
 

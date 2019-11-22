@@ -92,35 +92,38 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$addressReplyTo = false, $nameReplyTo = false,
 		$ccs = '', $bccs = '', $debugOverride = ''
 	){
-
-		mb_regex_encoding('UTF-8');
-		foreach ($mergeFields as $K=>&$V) {
-			$search = '\[\[' . $K . '\]\]';
+		
+		if (!empty($mergeFields)) {
+		
+			mb_regex_encoding('UTF-8');
+			foreach ($mergeFields as $K=>&$V) {
+				$search = '\[\[' . $K . '\]\]';
 			
-			if (is_array($disableHTMLEscaping)? !empty($disableHTMLEscaping[$K]) : $disableHTMLEscaping) {
-				$replace = &$V;
-			} else {
-				$replace = nl2br(htmlspecialchars($V));
+				if (is_array($disableHTMLEscaping)? !empty($disableHTMLEscaping[$K]) : $disableHTMLEscaping) {
+					$replace = &$V;
+				} else {
+					$replace = nl2br(htmlspecialchars($V));
+				}
+			
+				$body = mb_ereg_replace($search, $replace, $body);
+				$subject = mb_ereg_replace($search, $replace, $subject);
+				$nameFrom = mb_ereg_replace($search, $replace, $nameFrom);
+				$addressFrom = mb_ereg_replace($search, $replace, $addressFrom);
+				unset($replace);
 			}
-			
-			$body = mb_ereg_replace($search, $replace, $body);
-			$subject = mb_ereg_replace($search, $replace, $subject);
-			$nameFrom = mb_ereg_replace($search, $replace, $nameFrom);
-			$addressFrom = mb_ereg_replace($search, $replace, $addressFrom);
-			unset($replace);
-		}
 		
-		$regex_filter = '\[\[[^\]]*\]\]';
-		$body = mb_ereg_replace ($regex_filter,'',$body);
-		$subject = mb_ereg_replace ($regex_filter,'',$subject);
-		$nameFrom = mb_ereg_replace ($regex_filter,'',$nameFrom);
-		$addressFrom = mb_ereg_replace ($regex_filter,'',$addressFrom);
+			$regex_filter = '\[\[[^\]]*\]\]';
+			$body = mb_ereg_replace ($regex_filter,'',$body);
+			$subject = mb_ereg_replace ($regex_filter,'',$subject);
+			$nameFrom = mb_ereg_replace ($regex_filter,'',$nameFrom);
+			$addressFrom = mb_ereg_replace ($regex_filter,'',$addressFrom);
 		
-		if($addressReplyTo) {
-			$addressReplyTo = mb_ereg_replace ($regex_filter,'',$addressReplyTo);
-		}
-		if($nameReplyTo) {
-			$nameReplyTo = mb_ereg_replace ($regex_filter,'',$nameReplyTo);
+			if($addressReplyTo) {
+				$addressReplyTo = mb_ereg_replace ($regex_filter,'',$addressReplyTo);
+			}
+			if($nameReplyTo) {
+				$nameReplyTo = mb_ereg_replace ($regex_filter,'',$nameReplyTo);
+			}
 		}
 		
 		$result = true;
@@ -146,7 +149,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 						$subject, $body, $debugEmail, $addressToOverriddenBy,
 						false, $addressFrom, $nameFrom,
 						$attachments, $attachmentFilenameMappings,
-						'bulk', true, false,
+						'bulk', $isHTML = true, false,
 						$addressReplyTo, $nameReplyTo, false,
 						$ccs, $bccs
 					);
@@ -167,7 +170,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 					$subject, $body,$addressTo, $addressToOverriddenBy,
 					false, $addressFrom, $nameFrom,
 					$attachments, $attachmentFilenameMappings,
-					'bulk', true, false,
+					'bulk', $isHTML = true, false,
 					$addressReplyTo, $nameReplyTo, false,
 					$ccs, $bccs
 				);
@@ -359,6 +362,15 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false
 	) {
 		if ($template = self::getTemplateByCode($templateCode)) {
+			
+			//Have the option to use Twig code in an email template
+			if ($template['use_standard_email_template'] == 2) {
+				//Call twig on the body, with the merge fields provided.
+				$template['body'] = ze\twig::render("\n". $template['body'], $mergeFields);
+				
+				//Clear the merge fields so we don't do the merge field's string replacements later.
+				$mergeFields = [];
+			}
 			
 			if ($template['head']) {
 				static::putHeadOnBody($template['head'], $template['body']);

@@ -86,6 +86,7 @@ class dataset {
 		}
 	}
 
+	const fieldsDetailsFromTwig = true;
 	//Formerly "getDatasetFieldsDetails()"
 	public static function fieldsDetails($dataset, $indexById = false) {
 		if (!is_numeric($dataset)) {
@@ -390,6 +391,7 @@ class dataset {
 	
 	private static $ord;
 
+	const fieldLOVFromTwig = true;
 	//Formerly "getDatasetFieldLOV()"
 	public static function fieldLOV($field, $flat = true, $filter = false) {
 		if (!is_array($field)) {

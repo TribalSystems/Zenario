@@ -49,8 +49,15 @@ methods.idVarName = function() {
 	return thus.specifiedIdVarName || 'id';
 };
 
-
-
+methods.resizeToFit = function(containerId){
+    var elements =  $('#'+containerId +' .resize_text');
+    elements.each(function(i, el) {
+        do {
+            elNewFontSize = (parseInt($(el).css('font-size').slice(0, -2)) - 1) + 'px';
+            $(el).css('font-size', elNewFontSize);
+        } while (el.scrollHeight >  el.offsetHeight);
+    });
+};
 
 //Extend the parent function validateFormatOrRedrawForField() and add the
 //option to have a save button
@@ -101,14 +108,21 @@ methods.visitorTUIXLink = function(requests, mode, useSync) {
 };
 
 
+methods.modifyPostOnLoad = function() {
+	return false;
+};
+
+
 methods.ffov = function(action) {
 	
 	var cb = new zenario.callback,
 		url = thus.url = thus.visitorTUIXLink(thus.request, action, true),
-		post = false,
+		post,
 		goneToURL = false;
 	
-	if (action != 'fill') {
+	if (action == 'fill') {
+		post = thus.modifyPostOnLoad();
+	} else {
 		thus.prevPath = thus.path;
 		thus.checkValues();
 		post = {_format: true, _tuix: thus.sendStateToServer()};
@@ -119,24 +133,48 @@ methods.ffov = function(action) {
 		
 		var after = function(tuix) {
 			thus.hideLoader();
-		
+			
 			if (action == 'fill') {
 				thus.tuix = tuix;
 			} else {
 				thus.setData(tuix);
 			}
 			
+			var js = thus.tuix.js,
+				runAfter = thus.tuix.js_after,
+				runAfterString;
+		
+			//Reload the opener if the reload_parent flag was set
 			if (thus.tuix.reload_parent) {
 				thus.reloadParent();
 			}
 			
-			if (thus.tuix.js) {
-				zenarioT.eval(thus.tuix.js, thus);
+			//If the js flag was set, execute that code
+			if (js) {
+				zenarioT.eval(js, thus);
 			}
 			
-		
+			if (runAfter && !_.isFunction(runAfter)) {
+				runAfterString = runAfter;
+				
+				runAfter = function() {
+					zenarioT.eval(runAfterString, thus);
+				};
+			}
+			
+			//If this is a popout, and the close_popout flag was set, slode it
+			if (thus.tuix.close_popout && thus.inPopout) {
+				thus.closePopout();
+			}
+			
+			//If the stop_flow property was set, don't do a go() or a draw().
+			if (thus.tuix.stop_flow) {
+				return;
+			}
+			
+			
 			if (thus.tuix.go) {
-				thus.go(thus.tuix.go);
+				thus.go(thus.tuix.go, undefined, undefined, runAfter);
 			
 			} else if (thus.tuix.go_to_url && !goneToURL) {
 				zenario.goToURL(thus.tuix.go_to_url);
@@ -148,9 +186,6 @@ methods.ffov = function(action) {
 					after(tuix);
 				}, 350);
 			
-			} else if (thus.tuix.close_popout && thus.inPopout) {
-				thus.closePopout();
-			
 			} else {
 				thus.sortOutTUIX();
 				thus.draw();
@@ -158,6 +193,10 @@ methods.ffov = function(action) {
 				
 				if (action == 'save' && thus.tuix.scroll_after_save) {
 					zenario.scrollToSlotTop(thus.containerId, true);
+				}
+				
+				if (runAfter) {
+					runAfter();
 				}
 			}
 		};
@@ -238,6 +277,7 @@ methods.putHTMLOnPage = function(html) {
 	
 	thus.cb.done();
 	thus.addJQueryElements('#' + sel);
+	thus.resizeToFit(containerId);
 	
 	if (zenario.adminId) {
 		var nestContainerId = zenario.getContainerIdFromSlotName(zenario.getSlotnameFromEl(sel));
@@ -259,6 +299,19 @@ methods.closePopout = function() {
 			$(get(outerWrap)).remove();
 		}
 	}
+};
+
+methods.openCustomPopout = function(options, id) {
+
+	var popout = _.extend({}, options);
+	
+	if (id) {
+		popout.href = zenario.addRequest(popout.href, 'id', id);
+	}
+
+	zenarioT.action(thus, {
+		popout: popout
+	});
 };
 
 methods.reloadParent = function() {
@@ -439,7 +492,6 @@ methods.logic = function(request, callWhenLoaded) {
 	}
 };
 
-
 methods.loadData = function(request, json) {
 	
 	thus.request = request;
@@ -451,6 +503,7 @@ methods.loadData = function(request, json) {
 	//setTimeout() is used as a hack to ensure the conductor is fully loaded first
 	
 	$(document).ready(function() {
+	
 		switch (thus.typeOfLogic()) {
 			case 'list':
 				thus.url = thus.visitorTUIXLink(thus.request);
@@ -550,7 +603,6 @@ methods.drawList = function() {
 
 
 methods.getPathFromMode = function(mode) {
-	//N.b. "create" is just an alias for "edit" to give a nicer URL
 	return 'zenario_' + mode;
 };
 methods.getModeFromPath = function(path) {
@@ -707,7 +759,7 @@ methods.typeaheadSearchEnabled = function(field, id, tab) {
 
 methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 	
-	return thus.visitorTUIXLink({_tab: tab, _field: id}, 'tas');
+	return thus.visitorTUIXLink(_.extend({_tab: tab, _field: id}, thus.tuix.key), 'tas');
 };
 
 methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
@@ -773,8 +825,45 @@ methods.doSearch = function(e, searchValue, page) {
 	return false;
 };
 
+methods.changeSortCol = function(colId, sortDesc) {
+	var columns = thus.tuix.columns || {},
+		col = columns[colId] || {},
+		req = {};
+	
+	if (col.sort_asc || col.sort_desc) {
+		
+		if (thus.key('page') || thus.request.page) {
+			req.page = 1;
+		}
+		
+		if (col.sort_asc && !col.sort_desc) {
+			sortDesc = 0;
+		
+		} else if (!col.sort_asc && col.sort_desc) {
+			sortDesc = 1;
+		
+		} else if (!defined(sortDesc)) {
+			sortDesc = engToBoolean(thus.key('sortCol') == colId && !thus.key('sortDesc'));
+		}
+		
+		req.sortDesc = sortDesc;
+		req.sortCol = colId;
+		
+		thus.go(req);
+	}
+};
 
-methods.go = function(request, itemId, wasInitialLoad) {
+
+methods.checkThingEnabled = function(thing) {
+	return thus.tuix.enable && thus.tuix.enable[thing];
+};
+
+methods.sortingEnabled = function(thing) {
+	return thus.checkThingEnabled('sort_list') || thus.checkThingEnabled('sort_col_headers');
+};
+
+
+methods.go = function(request, itemId, wasInitialLoad, runAfter) {
 	request = request || {};
 	
 	var page,
@@ -794,7 +883,7 @@ methods.go = function(request, itemId, wasInitialLoad) {
 	if (command) {
 		delete request.path;
 		delete request.mode;
-		zenario_conductor.go(containerId, command, request);
+		zenario_conductor.go(containerId, command, request, runAfter);
 	
 	//Check if the link should be directed to a different page
 	} else
@@ -819,6 +908,9 @@ methods.go = function(request, itemId, wasInitialLoad) {
 			}
 			if (!wasInitialLoad) {
 				thus.recordRequestsInURL(request);
+			}
+			if (runAfter) {
+				runAfter();
 			}
 		});
 	}
@@ -1173,13 +1265,28 @@ methods.setupButtonLinks = function(button, itemId) {
 			onclick = onPrefix;
 			
 			if (defined(itemId)) {
-				onclick += "var button = (lib.tuix.item_buttons||{})['" + jsEscape(button.id) + "'],"
-						+ "itemId = '" + jsEscape(itemId) + "',"
-						+ "item = (lib.tuix.items||{})[itemId];";
+                var itemIds = (itemId + '').split(',');
+                    count = itemIds.length;
+				
+				if (count < 2) {
+                    onclick += "var button = (lib.tuix.item_buttons||{})['" + jsEscape(button.id) + "'],"
+                            + "itemId = '" + jsEscape(itemId) + "',"
+                            + "itemIds = [itemId],"
+                            + "item = (lib.tuix.items||{})[itemId],"
+                            + "items = {}; items[itemId] = item;";
+                } else {
+                    onclick += "var button = (lib.tuix.item_buttons||{})['" + jsEscape(button.id) + "'],"
+                            + "itemId = '" + jsEscape(itemId) + "',"
+                            + "itemIds = itemId.split(','),"
+                            + "item,"
+    						+ "items = _.pick(lib.tuix.items, itemIds);";
+                }
 			} else {
 				onclick += "var button = (lib.tuix.collection_buttons||{})['" + jsEscape(button.id) + "'],"
 						+ "itemId,"
-						+ "item;";
+						+ "itemIds=[],"
+						+ "item,"
+						+ "items = {};";
 			}
 			
 			onclick += "lib.button(this, button, item, itemId";
@@ -1423,8 +1530,12 @@ methods.updateItemButtons = function() {
 		});
 		
 		
-		
-		$div.html(thus.microTemplate(thus.mtPrefix + '_button', thus.getSortedItemButtons(itemIds, true)));
+		buttons = thus.getSortedItemButtons(itemIds, true);
+		if (buttons.length > 0) {
+			$div.html(thus.microTemplate(thus.mtPrefix + '_button', thus.getSortedItemButtons(itemIds, true)));
+		} else {
+			$div.html('No actions available');
+		}
 		zenario.addJQueryElements(prefix + containerId + ' ');
 		
 		
@@ -1841,6 +1952,7 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 		m.continueAnyway = resp.zenario_continueAnyway && resp.data;
 		
 		$.colorbox({
+			className: 'zfea_error_box',
 			transition: 'none',
 			closeButton: false,
 			html: thus.microTemplate(thus.mtPrefix + '_error', m)
@@ -1874,14 +1986,42 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 };
 
 
+methods.initPopout = function(moduleClassName, library, path, mode, popoutClass, request, showCloseButtonAtTopRight) {
+	return zenario_abstract_fea.initPopout(moduleClassName, library, path, mode, popoutClass, thus.containerId, request, thus, showCloseButtonAtTopRight);
+};
 
-zenario_abstract_fea.setupAndInit = function(moduleClassName, library, containerId, path, request, mode, pages, idVarName, noPlugin, parent, inPopout, popoutClass) {
+zenario_abstract_fea.initPopout = function(moduleClassName, library, path, mode, popoutClass, parentContainerId, request, parent, showCloseButtonAtTopRight) {
+	
+	var pages = undefined,
+		noPlugin = true,
+		inPopout = true;
+		popoutContainerId = mode + '_' + parentContainerId;
+	
+	if (!popoutClass) {
+		popoutClass = path;
+	}
+	
+	if (!parent) {
+		parent = parentContainerId;
+	}
+	
+	zenario_abstract_fea.setupAndInit(moduleClassName, library, popoutContainerId, path, request, mode, pages, undefined, noPlugin, parent, inPopout, popoutClass, showCloseButtonAtTopRight);
+	
+	//Return false so any buttons do not continue running AJAX requests
+	return false;
+};
+
+
+
+zenario_abstract_fea.setupAndInit = function(moduleClassName, library, containerId, path, request, mode, pages, idVarName, noPlugin, parent, inPopout, popoutClass, showCloseButtonAtTopRight) {
 
 	var globalName = moduleClassName + '_' + containerId.replace(/\-/g, '__');
 	
 	if (!window[globalName]) {
 		window[globalName] = new library();
 	}
+	
+	window[globalName].showCloseButtonAtTopRight = showCloseButtonAtTopRight;
 	
 	window[globalName].init(globalName, 'fea', moduleClassName, containerId, path, request, mode, pages, idVarName, noPlugin, parent, inPopout, popoutClass);
 	

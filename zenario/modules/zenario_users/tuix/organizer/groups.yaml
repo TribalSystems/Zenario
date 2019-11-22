@@ -35,11 +35,11 @@ zenario__users:
                     align_right: true
                     show_by_default: false
                 label:
-                    title: Name
+                    title: Group name
                     db_column: cdf.label
                     searchable: true
                     width: large
-                    show_by_default: true
+                    always_show: true
                 db_column:
                     title: Code name
                     db_column: cdf.db_column

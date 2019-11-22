@@ -10,10 +10,10 @@ zenario_menu:
             fields:
                 show_image:
                     ord: 2.1
-                    label: 'Show an image beside the menu node'
+                    label: 'Show an image beside the menu node text'
                     type: checkbox
                     format_onchange: true
-                    side_note: "An image will show up next to the menu node."
+                    side_note: "Show a small image beside the text of the menu node."
                 image_id:
                     visible_if: "zenarioAB.value('show_image')"
                     ord: 2.2
@@ -70,7 +70,7 @@ zenario_menu:
                     ord: 1.01
                     type: checkbox
                     format_onchange: true
-                    side_note: "A feature image appears as a large image on a promotional menu during hover over this menu node. Only supported if the menu plugin supports images (e.g. Promo image plugin)"
+                    side_note: "A feature image appears as a large image on a promotional menu during hover over this menu node. Only supported if the menu plugin supports images (e.g. Menu with Promo Images, zenario_promo_menu)"
                 zenario_promo_menu__feature_image:
                     indent: 1
                     ord: 1.02

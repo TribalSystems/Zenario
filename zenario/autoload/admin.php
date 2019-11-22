@@ -285,7 +285,7 @@ class admin {
 		'_MONTH_LONG_06' => 'June',
 		'_MONTH_LONG_07' => 'July',
 		'_MONTH_LONG_08' => 'August',
-		'_MONTH_LONG_09' => 'Septemper',
+		'_MONTH_LONG_09' => 'September',
 		'_MONTH_LONG_10' => 'October',
 		'_MONTH_LONG_11' => 'November',
 		'_MONTH_LONG_12' => 'December',
@@ -351,7 +351,7 @@ class admin {
 				\ze\admin::phrase('Are you sure you want to logout?');
 		}
 	
-		$url = 'zenario/admin/welcome.php?task=logout&'. http_build_query(\ze\link::importantGetRequests(true));
+		$url = 'admin.php?task=logout&'. http_build_query(\ze\link::importantGetRequests(true));
 	
 		return 
 	
@@ -427,16 +427,6 @@ class admin {
 		
 			session_destroy();
 		}
-	}
-
-
-
-	//Formerly "languageIdForDatesInAdminMode()"
-	public static function languageIdForDatesInAdminMode() {
-		return \ze::ifNull(
-			\ze\row::get('visitor_phrases', 'language_id', ['code' => '_WEEKDAY_0', 'language_id' => ['en', 'en-gb', 'en-us']]),
-			\ze::$defaultLang,
-			'en-us');
 	}
 
 

@@ -42,8 +42,9 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 } elseif (isset($_POST['_draft_set_callback'])) {
 	
 	$_SESSION['zenario_draft_callback'] = $_POST['_draft_set_callback'];
-	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'];
-	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
+	$_SESSION['zenario_draft_callback_scroll_pos'] = $_POST['_scroll_pos'] ?? 0;
+	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'] ?? '';
+	$_SESSION['page_mode'] = $_POST['_save_page_mode'] ?? '';
 
 
 } elseif (isset($_POST['_save_page_mode'])) {
@@ -60,6 +61,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
         ze\priv::exitIfNot();
         
         $data = [];
+        $spareAliases = ze\row::getArray('spare_aliases', 'alias', []);
         
         foreach ($links as $i => $link) {
             $linkStatus = 'content_not_found';
@@ -82,6 +84,10 @@ if (!empty($_REQUEST['keep_session_alive'])) {
             $cID = $cType = $redirectNeeded = $aliasInURL = false;
             ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $get, $request, $post);
             
+            if (in_array($aliasInURL, $spareAliases)) {
+            	$linkStatus = 'spare_alias';
+        	}
+        	
             if ($cID && $cType) {
             	
             	//This is a bit of a hack, but I need to change the $_GET and $_REQUEST to the $get from each link,
@@ -189,6 +195,9 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 						case 'hidden_with_draft':
 						case 'hidden':
 							$linkStatus = 'hidden';
+							break;
+						case 'spare_alias':
+							$linkStatus = 'spare_alias';
 							break;
 					}
 				}

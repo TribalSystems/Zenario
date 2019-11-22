@@ -82,6 +82,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 			$this->sections['Tab'][$slide['slide_num']] = [
 				'TAB_ORDINAL' => $tabOrd,
 				'Class' => 'tab_'. $tabOrd. ' tab',
+				'Slide_Class' => 'slide_'. $tabOrd,
 				'Tab_Link' => $link,
 				'Tab_Name' => $this->formatTitleText($slide['name_or_title'], true)
 			];
@@ -135,6 +136,12 @@ class zenario_slideshow extends zenario_plugin_nest {
 		
 		if ($mode = $this->setting('mode')) {
 			
+			if ($mode == 'cycle') {
+				ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery.cycle.all.min.js');
+			} elseif ($mode == 'cycle2') {
+				ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery.cycle2.min.js');
+			}
+			
 			$opt = [
 				'timeout' => $this->setting('use_timeout')? (int) $this->setting('timeout') : 0,
 				'pause' => $this->setting('use_timeout')? (int) $this->setting('pause') : 0,
@@ -148,6 +155,11 @@ class zenario_slideshow extends zenario_plugin_nest {
 					$opt['sync'] = (bool) $this->setting('sync');
 					$opt['speed'] = (int) $this->setting('speed');
 					break;
+				case 'cycle2':
+					$opt['fx'] = $this->setting('cycle2_fx');
+					$opt['sync'] = (bool) $this->setting('cycle2_sync');
+					$opt['speed'] = (int) $this->setting('cycle2_speed');
+					break;
 				
 				case 'roundabout':
 					$opt['shape'] = $this->setting('shape');
@@ -155,7 +167,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 					$opt['speed'] = (int) $this->setting('roundabout_speed');
 					break;
 			}
-				
+			
 				
 			$this->callScript('zenario_slideshow', 'show',
 				'zenario_'. $mode. '_interface',
@@ -213,27 +225,4 @@ class zenario_slideshow extends zenario_plugin_nest {
 		zenario_plugin_nest::fillAdminSlotControls($controls);
 	}
 
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		}
-	}
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
-	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		}
-	}
-	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($c = $this->runSubClass(__FILE__)) {
-			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		}
-	}
 }

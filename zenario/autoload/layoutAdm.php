@@ -548,9 +548,17 @@ class layoutAdm {
 
 	//Check how many items use a Layout or a Template Family
 	//Formerly "checkTemplateUsage()"
-	public static function usage($layoutId, $templateFamily = false, $publishedOnly = false, $skinId = false) {
-		$sql = "
-			SELECT COUNT(DISTINCT c.tag_id) AS ctu_". (int) $layoutId. "_". \ze\ring::engToBoolean($templateFamily). "_". \ze\ring::engToBoolean($publishedOnly). "_". (int) $skinId. "
+	public static function usage($layoutId, $templateFamily = false, $publishedOnly = false, $skinId = false, $countItems = true) {
+		
+		if ($countItems) {
+			$sql = "
+				SELECT COUNT(DISTINCT c.tag_id)";
+		} else {
+			$sql = "
+				SELECT DISTINCT c.tag_id";
+		}
+		
+		$sql .= "
 			FROM ". DB_PREFIX. "content_items AS c
 			INNER JOIN ". DB_PREFIX. "content_item_versions as v
 			   ON c.id = v.id
@@ -588,9 +596,11 @@ class layoutAdm {
 			  AND IF(t.skin_id != 0, t.skin_id, f.skin_id) = ". (int) $skinId;
 		}
 	
-		$result = \ze\sql::select($sql);
-		$row = \ze\sql::fetchRow($result);
-		return $row[0];
+		if ($countItems) {
+			return \ze\sql::fetchValue($sql);
+		} else {
+			return \ze\sql::fetchValues($sql);
+		}
 	}
 
 

@@ -127,13 +127,18 @@ class dbAdm {
 	//to see if database updates are needed from the updates directory
 	//Formerly "checkIfDBUpdatesAreNeeded()"
 	public static function checkIfUpdatesAreNeeded(&$moduleErrors, $andDoUpdates = false, $uninstallPluginOnFail = false, $quickCheckForUpdates = true) {
+		
+		if ($andDoUpdates) {
+			\ze\dbAdm::getTableEngine();
+		}
+		
+		
 		//As part of the migration process, modules can be enabled, or modules can be switched for other modules
 		//There's an issue where if this happens, and the new module(s) need their own database updates, they won't get them
 		//So as a workaround, for database updates, we'll loop round the main body of this function twice.
 
 		//This can also be used as a work-around for Modules that want to insert data in other Modules tables;
 		//The tables will be created in the first loop, then the data can be inserted in the second loop in a run-every-update file
-
 		for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 			$revisionsNeeded = false;
 			$currentRevisionOut = false;
@@ -966,6 +971,7 @@ class dbAdm {
 	//Reset a site, putting all of its tables back to an initial state
 	//Formerly "resetSite()"
 	public static function resetSite() {
+		\ze\dbAdm::getTableEngine();
 	
 		//Make sure to load the values of site_disabled_title and site_disabled_message,
 		//which aren't usually loaded into memory, so we can restore them later.
@@ -1101,6 +1107,20 @@ class dbAdm {
 	//Formerly "generateRandomSiteIdentifierKey()"
 	public static function generateRandomSiteIdentifierKey() {
 		return substr(base64_encode(microtime()), 3);
+	}
+	
+	//If running on MySQL 5.6 or later, use InnoDB. Otherwise use MyISAM.
+	public static function getTableEngine() {
+		if (!defined('ZENARIO_TABLE_ENGINE')) {
+			if (($mysqlVersion = \ze\sql::fetchValue('SELECT version()'))
+			 && (version_compare($mysqlVersion, '5.7.0', '>='))) {
+				define('ZENARIO_TABLE_ENGINE', 'InnoDB');
+			} else {
+				define('ZENARIO_TABLE_ENGINE', 'MyISAM');
+			}
+		}
+		
+		return ZENARIO_TABLE_ENGINE;
 	}
 
 

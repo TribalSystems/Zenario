@@ -56,10 +56,17 @@ properties:
             panel in organizer.
     is_pluggable:
         type: boolean
-        default: "(Intelligent default)"
         description: >
             If your module is pluggable then you should set this property.
             A module that is pluggable can generate plugins.
+    plugin_must_be_on_public_page:
+        type: boolean
+        description: >
+            If your module is pluggable, and your plugins need to be on a public page, then set this property.
+    plugin_must_be_on_private_page:
+        type: boolean
+        description: >
+            If your module is pluggable, and your plugins need to be on a private page, then set this property.
     is_abstract:
         type: boolean
         description: >
@@ -82,7 +89,6 @@ properties:
             You can use this from version 7.3 onwards.
     fill_organizer_nav:
         type: boolean
-        default: "(Intelligent default)"
         description: >
             If you set this property, Organizer will call your module's fillOrganizerNav() method
             when loading Organizer.
@@ -539,6 +545,13 @@ properties:
                             A normal page will be created if this module is running on the first install of the site.
                             This page will not be flagged as "special", can't be found using the langSpecialPage() function,
                             and can be deleted by an administrator.
+                allow_hide:
+                    type: boolean
+                    description: >
+                        If you set this property to true, admins will be allowed to hide the special pages
+                        (effectively taking them offline without a warning).
+                        
+                        Set this if your module uses special pages, but they are supposed to be optional.
                 
                 publish:
                     type: boolean

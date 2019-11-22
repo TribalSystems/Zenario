@@ -40,8 +40,16 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		$this->mode = 'modeResetPasswordStage1';
 		
 		if ($_POST['extranet_send_reset_email'] ?? false) {
+			
+			//Add a short delay to make it a tiny bit harder to repeatedly spam this plugin
+			usleep(500000);
+			
 			if ($this->sendResetEmail()) {
-				$this->message = $this->phrase('You have been sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
+				if ($this->setting('block_email_enumeration')) {
+					$this->message = $this->phrase('If the email address you provided matches your email on this site, you will be sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
+				} else {
+					$this->message = $this->phrase('You have been sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
+				}
 				$this->mode = 'modeLogin';
 			}
 		} elseif (($_REQUEST['extranet_reset_password'] ?? false) && ($userId = $this->getUserIdFromHashCode($_REQUEST['hash'] ?? false))) {
@@ -74,7 +82,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			$this->framework('Outer', $this->objects, $this->subSections);
 			
 		} else {
-			echo $this->openForm();
+			echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 				$this->subSections['Main_Title'] = true;
 				$this->subSections['Reset_Password_Form'] = true;
 				$this->framework('Outer', $this->objects, $this->subSections);
@@ -87,7 +95,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		$this->objects['hash'] = $_REQUEST['hash'] ?? false;
 		$this->objects['extranet_reset_password'] = $_REQUEST['extranet_reset_password'] ?? false;
 		
-		echo $this->openForm();
+		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Main_Title'] = true;
 			$this->subSections['Reset_Password_Form_Passwords'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
@@ -98,7 +106,12 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		if (!$this->validateFormFields('Reset_Password_Form')) {
 			// Function displays error message so no action here
 		} elseif (!$userDetails = $this->getDetailsFromEmail($_POST['extranet_email'] ?? false)) {
-			$this->errors[] = ['Error' => $this->phrase('Sorry, we couldn\'t find an account associated with that email address.')];
+			if ($this->setting('block_email_enumeration')) {
+				//If the block_email_enumeration option is enabled, don't tell the user that the email address doesn't exist!
+				return true;
+			} else {
+				$this->errors[] = ['Error' => $this->phrase("Sorry, we couldn't find an account associated with that email address.")];
+			}
 		} else {
 			if (ze\row::exists('users', ['email' => ($_POST['extranet_email'] ?? false), 'status' => 'pending', 'email_verified' => false  ])) {
 				$this->errors[] = ['Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.')];

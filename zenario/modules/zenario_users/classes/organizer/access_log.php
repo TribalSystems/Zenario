@@ -30,10 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__organizer__access_log extends zenario_users {
 	
 	
-	public function formatStorekeeperCSV($path, &$item, $refinerName, $refinerId) {
-		$item['Content_Item_Title'] =
-		ze\content::title($item['Content_Item_Id'], $item['Content_Item_Type'], $item['Content_Item_Version']);
-	}
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		

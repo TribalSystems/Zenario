@@ -28,26 +28,15 @@ content_types:
         description_field: optional
         keywords_field: hidden
         summary_field: optional
-        release_date_field: optional
+        release_date_field: hidden
 special_pages:
     zenario_home:
         page_type: zenario_home
         default_alias: home
         default_title: Home
-        default_content: |
-            <h1>Welcome to your new Zenario site!</h1>
-            <p>Congratulations, you have just installed your new Zenario site.</p>
-            <p>You may add another page by clicking "Menu" on the Admin Toolbar, then clicking a yellow icon with the "star" symbol. When you do this, you can create an HTML web page content item and a menu node linking to it.</p>
-            <p>Content items will be visible to administrators only until published. Click on the "Publish" button to make them visible to regular site visitors.</p>
-            <p>You will also need to make your site visible to visitors by enabling it
-                in Organizer, in the
-                <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//site_disabled">Configuration -&gt; Site settings</a>
-                section.
-            </p>
-            <p>You can get support and downloads at <a href="http://zenar.io" target="_blank">http://zenar.io</a>.</p>
-            <p>We hope you enjoy using Zenario.</p>
         menu_title: Home
         footer_menu_title: Home
+        publish: Yes
         logic: create_and_maintain_in_all_languages
         layout: Home page
     zenario_not_found:
@@ -56,7 +45,7 @@ special_pages:
         default_title: Not Found
         default_content: |
             <h1>Error 404: Page or CMS Item Not Found</h1>
-                            <p>The requested Item was not found on this server or may not be accessed.</p>
+            <p>The requested Item was not found on this server or may not be accessed.</p>
         publish: Yes
         logic: create_and_maintain_in_default_language
     zenario_no_access:
@@ -65,47 +54,51 @@ special_pages:
         default_title: No Access
         default_content: |
             <h1>Access Permission Denied (401)</h1>
-                            <p>Sorry, you have tried to access an item that requires a higher level of permissions than you currently possess.</p>
+            <p>Sorry, you have tried to access an item that requires a higher level of permissions than you currently possess.</p>
         publish: Yes
         logic: create_and_maintain_in_default_language
     zenario_example_page:
         page_type: zenario_example_page
         default_alias: second-page
         default_title: Second page
-        default_content: |
-            <h1>This is a simple content page</h1>
-            
-            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis
-                dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
-                Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
-
-            <p>In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.
-                Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
-                Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.</p>
-
-            <p>Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper
-                ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing
-                sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus.
-                Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla
-                mauris sit amet nibh. Donec sodales sagittis magna.</p>
-            
-            <h2>This is a simple content page</h2>
-            
-            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis
-                dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
-                Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
-
-            <p>In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.
-                Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
-                Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.</p>
-
-            <p>Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper
-                ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing
-                sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus.
-                Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla
-                mauris sit amet nibh. Donec sodales sagittis magna.</p>
         menu_title: Second page
         logic: create_in_default_language_on_install
+        default_content: |
+            <h1>
+                <img
+                    src="zenario/file.php?c=kgp-3&amp;width=424&amp;height=424&amp;k=8SRE2KWqzq&amp;filename=seed-portfolio-image1.jpg"
+                    alt="seed portfolio image1"
+                    width="424"
+                    height="424"
+                    align="right"
+                />
+                Second page
+            </h1>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur euismod ullamcorper nibh sit amet congue.
+                Nullam rutrum orci vitae lacus luctus, eu facilisis urna varius. Morbi nec orci sed lacus tincidunt tincidunt sit amet et justo.
+                Nunc gravida convallis leo, vitae mattis massa tempor quis. Ut quis nisl imperdiet, semper lacus ac, lobortis urna.
+                Integer bibendum pretium tortor, non sodales turpis feugiat sed. Nullam molestie nulla leo, non vestibulum quam porttitor nec.
+                In hac habitasse platea dictumst. Morbi aliquam malesuada hendrerit. Ut quis elit lorem. Praesent ut elit consequat, mattis est sed, dictum ligula.
+                Duis ut mi orci. Integer urna lacus, hendrerit nec arcu sit amet, bibendum pretium nulla. Nam consequat dignissim tellus sit amet aliquam.
+            </p>
+            <h2>Vestibulum sed ornare felis, ut blandit ipsum.</h2>
+            <p>
+                Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+                Vivamus dapibus, ipsum eu consectetur accumsan, purus ipsum laoreet mi, vel sollicitudin est ex vitae turpis. Proin in mauris ante.
+                Pellentesque pretium mollis ligula. Duis sed tincidunt lacus. Nunc rutrum ornare arcu, vel vestibulum ante aliquet nec.
+                Aliquam euismod ante leo, et lacinia nulla vulputate scelerisque. Duis efficitur, nibh in sagittis egestas, ipsum orci interdum sem,
+                sed aliquet tellus nulla vel metus. Duis semper purus vel turpis elementum, id accumsan velit sollicitudin.
+            </p>
+    zenario_privacy_policy:
+        page_type: zenario_privacy_policy
+        default_alias: privacy-policy
+        default_title: Privacy Policy
+        default_content: |
+            <h1>Privacy Policy</h1>
+            <p>Here you can state your company's privacy policy.</p>
+            <p>Include information about any cookies you may use, how you process confidential data, or any other relevant information.</p>
+        logic: create_and_maintain_in_all_languages
 pagination_types:
     pagSelectList:
         function_name: pagSelectList

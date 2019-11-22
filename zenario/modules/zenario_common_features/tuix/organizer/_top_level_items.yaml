@@ -226,9 +226,9 @@ zenario__administration:
                 path: zenario__administration/panels/custom_datasets
         spare_domains:
             #css_class: alias_urls_collection
-            label: Domain name redirects
+            label: Domain redirects
             tooltip: >
-                Configure spare domain names that redirect to HTML pages
+                Configure domain name redirects (301 redirects), so that the site can be found under various domain names
             link:
                 path: zenario__administration/panels/spare_domains
         file_types:

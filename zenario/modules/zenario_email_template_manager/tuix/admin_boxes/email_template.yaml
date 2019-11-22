@@ -7,6 +7,7 @@ zenario_email_template:
         id: ""
         numeric_id: ""
         duplicate: ""
+        lastFormatOption: ''
     identifier:
         css_class: zenario_email_template_panel
         label: 'ID:'
@@ -132,12 +133,15 @@ zenario_email_template:
                         Tip: You can enter multiple email addresses separated by commas.
                 
                 use_standard_email_template:
+                    label: 'Format:'
                     type: radios
                     values:
-                        yes:
-                            label: Use standard email template ([[link]])
                         no:
-                            label: Customise entire email
+                            label: Create a custom email that doesn't use the standard email template. Edit the entire email, using rich text.
+                        yes:
+                            label: Use the standard email template ([[link]]) for the header and the footer. Edit the body, using rich text.
+                        twig:
+                            label: Use the standard email template ([[link]]) for the header and the footer. Edit the body, using HTML and Twig code (advanced).
                     format_onchange: true
                 body:
                     label: 'Email body:'
@@ -149,6 +153,7 @@ zenario_email_template:
                     style: |
                         width: 98%;
                     rows: 30
+                    language: twig
                     insert_image_button:
                         pick_items:
                             path: 'zenario__content/panels/image_library'

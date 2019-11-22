@@ -22,7 +22,7 @@ _sql
 	`value5` varchar(255)  NULL,
 	`enable_crm_integration` tinyint DEFAULT 0,
 	PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 
@@ -60,7 +60,7 @@ _sql
 	`custom_input_value_5` varchar(255)  NULL,
 	`enable_crm_integration` tinyint DEFAULT 0,
 	PRIMARY KEY (`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 
@@ -73,7 +73,7 @@ _sql
 	`form_field_id` int(10),
 	`custom_field` varchar(255),
 	PRIMARY KEY (`form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 
@@ -90,7 +90,7 @@ _sql
 	`value` varchar(255) NOT NULL,
 	PRIMARY KEY (`form_field_value_id`),
 	KEY(`form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 
@@ -114,7 +114,7 @@ _sql
 	PRIMARY KEY (`form_field_id`),
 	KEY(`form_field_value_dataset_id`),
 	KEY(`form_field_value_unlinked_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 
@@ -133,7 +133,7 @@ _sql
 	KEY(`form_field_value_dataset_id`),
 	KEY(`form_field_value_unlinked_id`),
 	KEY(`form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 
@@ -202,7 +202,7 @@ _sql
 		`request` MEDIUMTEXT,
 		`datetime` DATETIME NOT NULL,
 		PRIMARY KEY (`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(25
@@ -217,7 +217,7 @@ _sql
 		`value` varchar(255) DEFAULT NULL,
 		PRIMARY KEY (`form_id`, `ord`),
 		KEY(`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 );
@@ -267,7 +267,7 @@ _sql
 		`url` varchar(255) DEFAULT NULL,
 		PRIMARY KEY (`id`),
 		KEY (`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -280,7 +280,7 @@ _sql
 		`name` varchar(255) NOT NULL,
 		`value` varchar(255) NOT NULL,
 		PRIMARY KEY (`link_id`, `ord`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -292,7 +292,7 @@ _sql
 		`name` varchar(255) NOT NULL,
 		`ord` int(10) unsigned NOT NULL DEFAULT '1',
 		PRIMARY KEY (`form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -311,7 +311,7 @@ _sql
 		KEY (`form_field_value_dataset_id`),
 		KEY (`form_field_value_unlinked_id`),
 		KEY (`form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Migrate data
@@ -396,7 +396,7 @@ _sql
 		`form_id` int(10) UNSIGNED NOT NULL,
 		`s_object` varchar(255) NOT NULL DEFAULT 'Case',
 		PRIMARY KEY (`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -416,7 +416,7 @@ _sql
 		PRIMARY KEY (`id`),
 		KEY (`form_id`),
 		KEY (`response_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 );
@@ -511,7 +511,7 @@ _sql
 		`form_id` int(10) UNSIGNED NOT NULL,
 		`mailchimp_list_id` varchar(255) NOT NULL,
 		PRIMARY KEY (`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Table to store 360lifecycle form specific data
@@ -526,11 +526,11 @@ _sql
 		`opportunity_lead_source` varchar(255) NOT NULL DEFAULT '',
 		`opportunity_lead_type` varchar(255) NOT NULL DEFAULT '',
 		PRIMARY KEY (`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
-	
+
 //Added a column for consent dropdown on malchimp	
-); ze\dbAdm::revision(41
+); ze\dbAdm::revision(43
 ,  <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]mailchimp_data`
 	DROP COLUMN `consent_dropdown`
@@ -541,4 +541,40 @@ _sql
 	ADD COLUMN `consent_field` int(5) NOT NULL DEFAULT '0'
 _sql
 
+//Added a column for consent dropdown on generic crm (now used for all) 
+); ze\dbAdm::revision(44
+,  <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_link`
+	ADD COLUMN `consent_field` int(5) NOT NULL DEFAULT '0'
+_sql
+
+//Migrate mailchimp consent field then crop column
+, <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_link` l
+	INNER JOIN `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]mailchimp_data` d
+		ON l.form_id = d.form_id
+		AND l.crm_id = 'mailchimp'
+	SET l.consent_field = d.consent_field
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]mailchimp_data`
+	DROP COLUMN `consent_field`
+_sql
+
+
 );
+
+if (ze\dbAdm::needRevision(45) && ze\module::inc('zenario_users')) {
+	
+	$usersDatasetId = ze\dataset::details('users', 'id');
+	$lastElement = ze\row::max('custom_dataset_fields', 'ord', ['dataset_id' => $usersDatasetId,'tab_name' => 'details']);
+	ze\row::insert('custom_dataset_fields', ['dataset_id' => $usersDatasetId, 'tab_name' => 'details', 'label' => 'Salesforce ID', 'type' => 'text', 'db_column' => 'salesforce_id', 'ord' => ++$lastElement, 'admin_box_visibility' => 'hide'], $ignore = true);
+	ze\dbAdm::revision(45
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]users_custom_data`
+	ADD COLUMN `salesforce_id` tinytext DEFAULT NULL
+_sql
+
+	);
+}

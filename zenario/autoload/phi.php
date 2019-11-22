@@ -73,13 +73,17 @@ class phi {
 		}
 	}
 
-	public static function setValue($key, $value) {
-		self::$outputs[$key] = $value;
+	public static function setValue($key = '', $value = null) {
+		self::$outputs['v'. $key] = $value;
+	}
+
+	public static function fireTrigger($codeName = '', $explanation = '') {
+		self::$outputs['t'. $codeName] = (string) $explanation;
 	}
 	
 	
 	//Dummy functions; these won't actually be called but are reserved words used as a flag for a
-	//preg_replace() in the Phi_Twig_Cache class
+	//preg_replace() in the Zenario_Phi_Twig_Cache class
 	public static function _zPhiSNAK_(&$array, $value) {
 		$array[] = $value;
 	}
@@ -165,6 +169,7 @@ class phi {
 			'print' => 'ze\\phi::varDump',
 			'var_dump' => 'ze\\phi::varDump',
 			'setValue' => 'ze\\phi::setValue',
+			'fireTrigger' => 'ze\\phi::fireTrigger',
 			'_zPhiGetRV_' => 'ze\\phi::getReturnValue',
 			'_zPhiRV_' => 'ze\\phi::returnValue',
 			'_zPhiR_' => 'return',

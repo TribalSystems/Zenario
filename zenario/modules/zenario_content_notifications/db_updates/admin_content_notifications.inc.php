@@ -42,7 +42,7 @@ _sql
 		`published_notification` tinyint(1) NOT NULL default 0,
 		`menu_node_notification` tinyint(1) NOT NULL default 0,
 		PRIMARY KEY  (`admin_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 
@@ -82,7 +82,7 @@ _sql
 		KEY (`admin_id`),
 		KEY (`action_requested`),
 		KEY (`datetime_requested`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Fix a bad column definition that's causing problems on MySQL 5.7

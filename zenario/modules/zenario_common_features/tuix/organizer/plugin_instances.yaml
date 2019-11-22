@@ -6,6 +6,7 @@ zenario__modules:
             key:
                 skinId: ''
                 moduleId: ''
+                moduleIds: ''
             title: Plugin library
             select_mode_title: Select a plugin
             view_mode: list
@@ -18,7 +19,7 @@ zenario__modules:
                     AND pi.module_id NOT IN (
                         SELECT id
                         FROM [[DB_PREFIX]]modules
-                        WHERE class_name IN ('zenario_plugin_nest', 'zenario_slideshow')
+                        WHERE class_name IN ('zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple')
                     )
             refiners:
                 plugin:
@@ -32,7 +33,7 @@ zenario__modules:
                     title: Slideshow library
                     select_mode_title: Select a slideshow
                     sql: |
-                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
+                        pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow' OR class_name = 'zenario_slideshow_simple')
                 
                 plugins_using_form:
                     sql: |
@@ -83,7 +84,7 @@ zenario__modules:
                         )
                 slideshows_using_image:
                     sql: |
-                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
+                        pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow' OR class_name = 'zenario_slideshow_simple')
                         AND pi.id IN (
                             SELECT foreign_key_id
                             FROM [[DB_PREFIX]]inline_images AS iiu
@@ -116,10 +117,10 @@ zenario__modules:
                     searchable: true
                     width: xxsmall
                 name:
-                    title: Name
+                    title: Plugin name
                     db_column: pi.name
                     searchable: true
-                    show_by_default: true
+                    always_show: true
                 module_id:
                     title: Module ID
                     hidden: true
@@ -128,7 +129,7 @@ zenario__modules:
                     values: {}
                 module_name:
                     title: Module
-                    show_by_default: true
+                    always_show: true
                     visible_if: |
                         !tuix.key.moduleId
                     db_column: plg.display_name
@@ -201,7 +202,7 @@ zenario__modules:
                     css_class: zenario_create_a_new
                     hide_when_children_are_not_visible: true
                     hide_on_refiner: email_address_setting
-                    label: Create a plugin
+                    label: Create a ~plugin~
             item_buttons:
                 edit:
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
@@ -227,6 +228,10 @@ zenario__modules:
                             type: image
                     with_columns_set:
                         has_image: true
+                    visible_if: |
+                        item.module_class_name != 'zenario_plugin_nest' &&
+                        item.module_class_name != 'zenario_slideshow' &&
+                        item.module_class_name != 'zenario_slideshow_simple'
                 usage_layouts:
                     parent: view_dropdown
                     label: "Layouts using this ~plugin~"

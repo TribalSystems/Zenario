@@ -1,0 +1,21 @@
+display_name: BlackDog
+
+type: usable
+
+import:
+	- zenario/styles/fea/fea_font_awesome.css
+
+style_formats:
+	-
+		title: "Image no padding"
+		selector: "img"
+		classes: "image_no_padding"
+	-
+		title: "Link like button"
+		selector: "a"
+		classes: "nice_button"
+	-
+		title: "Section title"
+		selector: "p"
+		classes: "section_title"
+

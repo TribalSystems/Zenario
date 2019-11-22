@@ -9,61 +9,50 @@
 ?>
 
 <script type="text/javascript">
-	zenarioL.init({"cols":12,"minWidth":769,"maxWidth":1140,"fluid":true,"responsive":true,"bp1":600,"bp2":900});
+	zenarioL.init({"cols":12,"minWidth":769,"maxWidth":1366,"fluid":true,"responsive":true,"bp1":0,"bp2":0});
 </script>
 
 <?php if (file_exists(CMS_ROOT. ze::$templatePath. '/includes/header.inc.php')) {
 	require CMS_ROOT. ze::$templatePath. '/includes/header.inc.php';
 }?>
 
-<div class="Grid_Header">
+<div class="slot Slot_Top slot_top">
+	<?php ze\plugin::slot('Slot_Top', 'outside_of_grid'); ?>
+</div>
+<div class="Grid_Header Fixed">
 	<div class="container container_12">
-		<div class="span span12 span1_1 alpha omega responsive_only slot small_slot Top_Mobile_Menu">
-			<?php ze\plugin::slot('Top_Mobile_Menu', 'grid'); ?>
+		<div class="span span3 span1_4 slot_logo alpha slot small_slot Slot_Logo">
+			<?php ze\plugin::slot('Slot_Logo', 'grid'); ?>
+		</div>
+		<div class="span span9 span3_4 slot_menu omega responsive slot small_slot Slot_Menu">
+			<?php ze\plugin::slot('Slot_Menu', 'grid'); ?>
 		</div>
 		<div class="grid_clear"></div>
-		<div class="span span12 span1_1 Top_Area alpha omega">
-			<div class="span span3 span1_4 alpha slot small_slot Top_1">
-				<?php ze\plugin::slot('Top_1', 'grid'); ?>
-			</div>
-			<div class="span span7 span7_12 responsive slot small_slot Top_2">
-				<?php ze\plugin::slot('Top_2', 'grid'); ?>
-			</div>
-			<div class="span span2 span1_6 omega slot small_slot Top_3">
-				<?php ze\plugin::slot('Top_3', 'grid'); ?>
-			</div>
+		<div class="span span12 span1_1 slot_responsive_menu alpha omega responsive_only slot small_slot Slot_Responsive_Menu">
+			<?php ze\plugin::slot('Slot_Responsive_Menu', 'grid'); ?>
 		</div>
 	</div>
 </div>
+<div class="slot Slot_Masthead slot_masthead">
+	<?php ze\plugin::slot('Slot_Masthead', 'outside_of_grid'); ?>
+</div>
 <div class="Grid_Body">
 	<div class="container container_12">
-		<div class="span span12 span1_1 alpha omega slot small_slot Full_Width">
-			<?php ze\plugin::slot('Full_Width', 'grid'); ?>
-		</div>
-		<div class="grid_clear"></div>
 		<div class="span span12 span1_1 Main_Area alpha omega">
-			<div class="span span8 span2_3 alpha slot small_slot Main_1">
-				<?php ze\plugin::slot('Main_1', 'grid'); ?>
-			</div>
-			<div class="span span4 span1_3 omega slot small_slot Side_1">
-				<?php ze\plugin::slot('Side_1', 'grid'); ?>
+			<div class="span span12 span1_1 slot_breadcrumbs alpha omega slot small_slot Slot_Breadcrumbs">
+				<?php ze\plugin::slot('Slot_Breadcrumbs', 'grid'); ?>
 			</div>
 			<div class="grid_clear"></div>
-			<div class="span span8 span2_3 Main_Slots alpha">
-				<div class="span span8 span1_1 alpha omega slot small_slot Main_2">
-					<?php ze\plugin::slot('Main_2', 'grid'); ?>
-				</div>
-				<div class="grid_clear"></div>
-				<div class="span span8 span1_1 alpha omega slot small_slot Main_3">
-					<?php ze\plugin::slot('Main_3', 'grid'); ?>
-				</div>
-				<div class="grid_clear"></div>
-				<div class="span span8 span1_1 alpha omega slot small_slot Main_4">
-					<?php ze\plugin::slot('Main_4', 'grid'); ?>
-				</div>
+			<div class="span span12 span1_1 alpha omega slot small_slot Slot_Main_1">
+				<?php ze\plugin::slot('Slot_Main_1', 'grid'); ?>
 			</div>
-			<div class="span span4 span1_3 omega slot small_slot Side_2">
-				<?php ze\plugin::slot('Side_2', 'grid'); ?>
+			<div class="grid_clear"></div>
+			<div class="span span12 span1_1 alpha omega slot small_slot Slot_Main_2">
+				<?php ze\plugin::slot('Slot_Main_2', 'grid'); ?>
+			</div>
+			<div class="grid_clear"></div>
+			<div class="span span12 span1_1 alpha omega slot small_slot Slot_Main_3">
+				<?php ze\plugin::slot('Slot_Main_3', 'grid'); ?>
 			</div>
 		</div>
 	</div>
@@ -71,31 +60,33 @@
 <div class="Grid_Footer">
 	<div class="container container_12">
 		<div class="span span12 span1_1 Footer_Area alpha omega">
-			<div class="span span2 span1_6 Space_In_Footer alpha responsive grid_space">
-				<span class="pad_slot">&nbsp;</span>
+			<div class="span span6 span1_2 slot_address alpha slot small_slot Slot_Address">
+				<?php ze\plugin::slot('Slot_Address', 'grid'); ?>
 			</div>
-			<div class="span span8 span2_3 slot small_slot Footer">
-				<?php ze\plugin::slot('Footer', 'grid'); ?>
-			</div>
-			<div class="span span2 span1_6 omega slot small_slot Built_On">
-				<?php ze\plugin::slot('Built_On', 'grid'); ?>
+			<div class="span span6 span1_2 Grouping_Footer omega">
+				<div class="span span6 span1_1 slot_social alpha omega slot small_slot Slot_Social">
+					<?php ze\plugin::slot('Slot_Social', 'grid'); ?>
+				</div>
+				<div class="grid_clear"></div>
+				<div class="span span6 span1_1 slot_footer alpha omega slot small_slot Slot_Footer">
+					<?php ze\plugin::slot('Slot_Footer', 'grid'); ?>
+				</div>
+				<div class="grid_clear"></div>
+				<div class="span span6 span1_1 slot_copyright alpha omega slot small_slot Slot_Copyright">
+					<?php ze\plugin::slot('Slot_Copyright', 'grid'); ?>
+				</div>
 			</div>
 		</div>
+		<div class="grid_clear"></div>
+		<div class="span span12 span1_1 slot_contact_popup alpha omega slot small_slot Slot_Contact_Popup">
+			<?php ze\plugin::slot('Slot_Contact_Popup', 'grid'); ?>
+		</div>
 	</div>
-</div>
-<div class="slot Slot_Both">
-	<?php ze\plugin::slot('Slot_Both', 'outside_of_grid'); ?>
-</div>
-<div class="slot Slot_Desktop_Only responsive">
-	<?php ze\plugin::slot('Slot_Desktop_Only', 'outside_of_grid'); ?>
-</div>
-<div class="slot Slot_Mobile_Only responsive_only">
-	<?php ze\plugin::slot('Slot_Mobile_Only', 'outside_of_grid'); ?>
 </div>
 
 <?php if (file_exists(CMS_ROOT. ze::$templatePath. '/includes/footer.inc.php')) {
 	require CMS_ROOT. ze::$templatePath. '/includes/footer.inc.php';
 }?>
 
-<?php //data:eJydVFtvgjAU_i99Nosgccrb5qYzmTHRLT4shlSo2FgoobBLjP99p9xWLjVOn-jpd2m_c-wJuYQxgeyPE_qiXnJAtmH2kB9Tz9nFBB-RncQpKSquEI7LsAA8msnCC8EeidG5V2MLxpOSF-KAAPqNR86C7ygjzoKEKQJQgBmDHR6yn6aA6iOZD3ASoLSOOtB6GarkvRZmKgc5UI-oLP1FBui8bZz42sAeude6bYfLNGXM2WSQC9EsMA212Yw6hTNKLRyrE7eGMOq4UYf3Gojin-ZmQ1SHG1yJs-rNuHAd8_a2TTlP2nOuwnKEthuyzRF2SWmjUtdyw5mHpYt-JLtjaB-ue6geU8oSZxleE4NK747kfYX-4gU0jHZ7Wm8Rnmwawk9EHBP42y3lS6EP51a_9bzhV7xTDbv8ndpC67hsrXQLaLgpXpjhGJb4u1gahtXvoT1LqVd6BzSOeYzsPWYCljEREQ8F_awmwp9UuvKzUAIZf5Ymsr-2dWf2az-z2nwl--TZ84lKWFH_oBSz2pSlGp2aTAarSJVQWc4CNuDW_XJhInucLSIoD_OvvHb-BfOTFgY,//v2// ?>
-<?php //checksum:I5afAcJK59wFN7Iyds-KZqbNfCQ,// ?>
+<?php //data:eJydVMtuwjAQ_JXKZw4JSFTNDWihB1ArqNRDVUUmNsGqE0e204IQ_961SUJIHR69eWdnZ9a7lncoopwrFHzs0A8jeo0Cv9tBsWQkXEqKv1CgZU47SHGhy7PNRkqFEccKatHEAI8vqINSnFAAFsAO30QGSJ1nREIN8L5zwc5t8UwxofJuzDaU1DV6p_3Vm5iKWLi64AavSTy0S8xomoOESjDngK0ZoS7FxNAaF2uTnFOViVSxb9pUFynfutTlscJldO0Eh4JsL9deXrbVaYwJK72GBTlnU-Ya1nXiDLM0HEAbRsD1KNuGOYQaEsk8WSqX97KWvnI9thX_Jnb3JnYP7T__ucGxEJrKc4M8MFpH2W_vbUAIvDPnFHGRqvn2T2kTKfKMpXHZ4W3WCxExzF3O6pA5NW6TOXo3ZVZ_5nZGZiSyrWTxWruUoioJS2yusV0x1TjS4avIcue3GBWEzBL2n0ARZnpGNGHp-8Hivg8fVYI3Rej3-nCLFc8ZKU0TJqWQKFhhriA8_hvVsxpVuuZYKHkQTXJtRmS-0-I8pSv9RGKo9Stsbq5-BC025vmh7KTKohWnqith-9h9uJPnFUEX_mEbZL7taJkB4u1_Ad4NQU0,//v2// ?>
+<?php //checksum:-1bUuH6N0OlvSuWkIfpjhe17QRA,// ?>

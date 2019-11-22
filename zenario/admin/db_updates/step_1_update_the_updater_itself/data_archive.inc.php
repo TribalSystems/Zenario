@@ -48,20 +48,37 @@ ze\dbAdm::revision( 44390
 		`revision_no` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`path`,`patchfile`),
 		KEY `revision_no` (`revision_no`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 
-//Fix a mistake where a table had the wrong engine/character-set chosen by mistake.
+//Fix a mistake where a table had the wrong character-set chosen by mistake.
 );	ze\dbAdm::revision( 46200
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX_DA]]data_archive_revision_numbers`
-	ENGINE=MyISAM
-_sql
-
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX_DA]]data_archive_revision_numbers`
 	CONVERT TO CHARACTER SET utf8
 _sql
 
 );
+
+
+
+
+//Automatically convert any table that's not using our preferred engine to that engine
+if (ze\dbAdm::needRevision(46500)) {
+	
+	foreach (ze\sqlDA::fetchValues("
+		SELECT `TABLE_NAME`
+		FROM information_schema.tables
+		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME_DA). "'
+		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX_DA). "%'
+		  AND `ENGINE` != '". ze\escape::sql(ZENARIO_TABLE_ENGINE). "'
+	") as $tableName) {
+		ze\sqlDA::update("
+			ALTER TABLE `". ze\escape::sql($tableName). "`
+			ENGINE=". ze\escape::sql(ZENARIO_TABLE_ENGINE)
+		);
+	}
+	
+	ze\dbAdm::revision(46500);
+}

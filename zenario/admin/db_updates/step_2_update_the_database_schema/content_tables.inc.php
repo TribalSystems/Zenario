@@ -81,6 +81,7 @@ ze\dbAdm::revision( 38660
 	WHERE np.is_slide = 1
 	  AND np.states != ''
 	GROUP BY np.instance_id, ps.is_content
+	ORDER BY np.instance_id, ps.is_content
 _sql
 
 );	ze\dbAdm::revision(38669
@@ -211,7 +212,7 @@ _sql
 		`link_to_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`link_from`, `link_from_id`, `link_from_char`, `link_to`, `link_to_id`),
 		KEY (`link_to`, `link_to_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
 _sql
 
 
@@ -220,12 +221,14 @@ _sql
 	INSERT INTO `[[DB_PREFIX]]group_link`
 	SELECT 'chain', equiv_id, content_type, 'group', group_id
 	FROM `[[DB_PREFIX]]group_content_link`
+	ORDER BY equiv_id, content_type, group_id
 _sql
 
 , <<<_sql
 	INSERT INTO `[[DB_PREFIX]]group_link`
 	SELECT 'slide', slide_id, '', 'group', group_id
 	FROM `[[DB_PREFIX]]group_slide_link`
+	ORDER BY slide_id, group_id
 _sql
 
 
@@ -349,6 +352,7 @@ _sql
 	  ps.`is_content`
 	FROM `[[DB_PREFIX]]plugin_settings` AS ps
 	WHERE ps.name = 'mobile_behavior'
+	ORDER BY ps.instance_id, ps.egg_id
 _sql
 
 
@@ -739,6 +743,7 @@ _sql
 	  ps.`is_content`
 	FROM `[[DB_PREFIX]]plugin_settings` AS ps
 	WHERE ps.name = 'show_custom_css_code'
+	ORDER BY ps.instance_id, ps.egg_id
 _sql
 
 //Create a table to store redirects from replaced documents to replace the old short_checksum_list column
@@ -753,7 +758,7 @@ _sql
 		`file_id` int(10) unsigned NOT NULL,
 		`path` varchar(255) NOT NULL,
 		PRIMARY KEY (`document_id`, `path`(10))
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8mb4
 _sql
 
 //Rename "possible events" to "triggers"
@@ -889,7 +894,7 @@ _sql
 		`value` varchar(255) CHARACTER SET ascii,
 		PRIMARY KEY (`name`),
 		KEY (`value`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
 _sql
 
 , <<<_sql
@@ -903,6 +908,7 @@ _sql
 	SELECT SUBSTR(name, 6), value
 	FROM `[[DB_PREFIX]]site_settings`
 	WHERE name LIKE 'perm.%'
+	ORDER BY name
 _sql
 
 //Rename a plugin setting in some Assetwolf plugins
@@ -1099,7 +1105,7 @@ _sql
 		`name` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
 _sql
 
 //Insert some initial values
@@ -1176,7 +1182,7 @@ _sql
 		`value` varchar(255) CHARACTER SET ascii,
 		PRIMARY KEY (`name`),
 		KEY (`value`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
 _sql
 
 
@@ -1387,6 +1393,7 @@ _sql
 			FROM `[[DB_PREFIX]]modules` AS m
 			WHERE m.class_name = 'zenario_meta_data'
 		)
+	ORDER BY pi.id
 _sql
 
 , <<<_sql
@@ -1424,6 +1431,7 @@ _sql
 			FROM `[[DB_PREFIX]]modules` AS m
 			WHERE m.class_name = 'zenario_meta_data'
 		)
+	ORDER BY pi.id, np.id
 _sql
 
 , <<<_sql
@@ -1496,6 +1504,7 @@ _sql
 			FROM `[[DB_PREFIX]]modules` AS m
 			WHERE m.class_name = 'zenario_search_entry_box'
 		)
+	ORDER BY pi.id
 _sql
 
 , <<<_sql
@@ -1533,6 +1542,7 @@ _sql
 			FROM `[[DB_PREFIX]]modules` AS m
 			WHERE m.class_name = 'zenario_search_entry_box'
 		)
+	ORDER BY pi.id, np.id
 _sql
 
 , <<<_sql
@@ -1567,6 +1577,7 @@ _sql
 			FROM `[[DB_PREFIX]]modules` AS m
 			WHERE m.class_name = 'zenario_search_entry_box_predictive_probusiness'
 		)
+	ORDER BY pi.id
 _sql
 
 , <<<_sql
@@ -1604,6 +1615,7 @@ _sql
 			FROM `[[DB_PREFIX]]modules` AS m
 			WHERE m.class_name = 'zenario_search_entry_box_predictive_probusiness'
 		)
+	ORDER BY pi.id, np.id
 _sql
 
 , <<<_sql
@@ -1634,7 +1646,7 @@ _sql
 		`first_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
 		`last_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
 _sql
 
 //Change default email template "from" address and name to use site_settings rather than custom
@@ -1662,6 +1674,7 @@ _sql
 	  `is_content`
 	FROM `[[DB_PREFIX]]plugin_settings` AS ps
 	WHERE ps.name = "show_location"
+	ORDER BY instance_id, egg_id
 _sql
 
 );	ze\dbAdm::revision( 45193
@@ -1870,21 +1883,11 @@ _sql
 _sql
 
 
-//Fix a mistake where a couple of tables had the wrong engine/character-set chosen by mistake.
+//Fix a mistake where a couple of tables had the wrong character-set chosen by mistake.
 );	ze\dbAdm::revision( 46200
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]lov_salutations`
-	ENGINE=MyISAM
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]lov_salutations`
 	CONVERT TO CHARACTER SET utf8
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]user_perm_settings`
-	ENGINE=MyISAM
 _sql
 
 , <<<_sql
@@ -1909,8 +1912,26 @@ _sql
 	WHERE name = 'assetwolf__view_data_pool_details__show_meta_data'
 _sql
 
+
+//Add a new option for special pages, that allows them to be hidden
+);  ze\dbAdm::revision(46501
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]special_pages`
+	ADD COLUMN `allow_hide` tinyint(1) NOT NULL default 0
+	AFTER `logic`
+_sql
+
+
+//Rename "scheduled calculations" to "metrics" in the scheduled tasks table
+);  ze\dbAdm::revision(46615
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]jobs`
+	SET job_name = 'jobCalculateMetrics'
+	WHERE job_name = 'jobRunScheduledCalculator'
+_sql
+
 //Enable "Show a heading" (show_a_heading) setting in Zenario Document Container if "Show selected folder name as title" (show_folder_name_as_title) was enabled
-);	ze\dbAdm::revision( 46302
+);	ze\dbAdm::revision( 46616
 , <<<_sql
 	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
 	  `instance_id`,
@@ -1927,15 +1948,160 @@ _sql
 	  `is_content`
 	FROM `[[DB_PREFIX]]plugin_settings` AS ps
 	WHERE ps.name = "show_folder_name_as_title"
+	ORDER BY instance_id, egg_id
 _sql
 
-);	ze\dbAdm::revision(46306
+//Some Banner module settings were changed. Adjust these:
+);	ze\dbAdm::revision( 46618
+//Set the Advanced Behaviour select list to "Show as a background image" if it was selected before (used to be a checkbox).
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'advanced_behaviour',
+	  'background_image',
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'background_image'
+		AND value = 1
+	ORDER BY instance_id, egg_id
+_sql
+
+//Set the Advanced Behaviour select list to "Use a rollover image" if it was selected before (used to be a checkbox).
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'advanced_behaviour',
+	  'use_rollover',
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'use_rollover'
+		AND value = 1
+	ORDER BY instance_id, egg_id
+_sql
+
+//Set the Advanced Behaviour select list to "Hide image" if it was selected before (used to be a checkbox on a separate tab, "Mobile image").
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'advanced_behaviour',
+	  'mobile_hide_image',
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'mobile_behavior'
+		AND value = "hide_image"
+	ORDER BY instance_id, egg_id
+_sql
+
+//Set the Advanced Behaviour select list to "Change image" if it was selected before (used to be a checkbox on a separate tab, "Mobile image").
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `egg_id`,
+	  `name`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT
+	  `instance_id`,
+	  `egg_id`,
+	  'advanced_behaviour',
+	  'mobile_change_image',
+	  `is_content`
+	FROM `[[DB_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = "mobile_behavior"
+		AND value = "change_image"
+	ORDER BY instance_id, egg_id
+_sql
+
+
+//Add a table for slide layouts
+);  ze\dbAdm::revision(46700
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]slide_layouts`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]slide_layouts` (
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`layout_for` enum('schema') NOT NULL,
+		`layout_for_id` int(10) unsigned NOT NULL,
+		`ord` smallint(4) unsigned NOT NULL default 1,
+		`name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`privacy` enum('public', 'logged_out', 'logged_in', 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group', 'with_role') NOT NULL default 'public',
+		`smart_group_id` int(10) unsigned NOT NULL default 0,
+		`data` mediumtext CHARACTER SET utf8mb4,
+		`created` datetime NOT NULL,
+		`last_edited` datetime default NULL,
+		`last_edited_admin_id` int(10) unsigned NOT NULL default 0,
+		`last_edited_user_id` int(10) unsigned NOT NULL default 0,
+		PRIMARY KEY (`id`),
+		UNIQUE KEY (`layout_for`, `layout_for_id`, `ord`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] default CHARSET=utf8 
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]group_link`
+	MODIFY COLUMN `link_from` enum('chain', 'slide', 'slide_layout') NOT NULL
+_sql
+
+
+//Remove the smart group options from slide layouts
+);  ze\dbAdm::revision(46740
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]slide_layouts`
+	DROP COLUMN `smart_group_id`
+_sql
+
+//Add a column to the nested plugins table for selecting a slide layout for a slide.
+//Currently there are only two options: asset schema and datapool schema
+);	ze\dbAdm::revision(46800
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD COLUMN `use_slide_layout` enum('', 'asset_schema', 'datapool_schema') NOT NULL default ''
+	AFTER `is_slide`
+_sql
+
+//Add a "hidden" privacy option for slides
+); ze\dbAdm::revision(46802
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	MODIFY COLUMN `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','with_role','hidden') NOT NULL DEFAULT 'public'
+_sql
+
+
+//(N.b. this was added in an after-branch patch in 8.3 revision 46306, so we need to check if it's not already there.)
+);	if (ze\dbAdm::needRevision(46803) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'menu_nodes LIKE "custom_get_requests"')) ze\dbAdm::revision(46803
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
 	ADD COLUMN `custom_get_requests` varchar(255) DEFAULT NULL
 _sql
 
-);	ze\dbAdm::revision(46307
+//(N.b. this was added in an after-branch patch in 8.3 revision 46307, so we need to check if it's not already there.)
+);	if (ze\dbAdm::needRevision(47035) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'categories LIKE "code_name"')) ze\dbAdm::revision(47035
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]categories`
 	ADD COLUMN `code_name` varchar(255) CHARACTER SET ascii DEFAULT NULL AFTER `name`,
@@ -1943,17 +2109,33 @@ _sql
 _sql
 
 //Enable categories for Event content types
-); ze\dbAdm::revision(46309
+); ze\dbAdm::revision(47251
 ,<<<_sql
 	UPDATE `[[DB_PREFIX]]content_types`
 	SET enable_categories = 1
 	WHERE content_type_name_en = "Event"
 _sql
 
+//Rename a plugin setting
+);  ze\dbAdm::revision(46300
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+	SET name = 'show_keys'
+	WHERE name = 'data_pool_custom_column_keys'
+_sql
+
+//Add a "must be public/must be private" option for plugins
+);	ze\dbAdm::revision(47800
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules`
+	ADD COLUMN `must_be_on` enum('', 'public_page', 'private_page') NOT NULL default ''
+	AFTER `is_pluggable`
+_sql
+
 
 //Fix a bug where it was possible to put invalid characters in a filename when renaming it.
 //Adding a DB query to sanitise anywhere it's previously happened.
-);	ze\dbAdm::revision(46312
+);	ze\dbAdm::revision(47803
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]files`
 	SET filename =
@@ -1962,6 +2144,42 @@ _sql
 			filename
 		, '\\\\', ''), '/', ''), ':', ''), ';', ''), '*', ''),
 		'?', ''), '"', ''), '<', ''), '>', ''), '|', '')
+_sql
+
+
+//For anyone using the Black Dog skin, attempt to update the logic for the CSS animations to use the new library.
+//Note: This patch was from 8.6, but it's safe to re-run so there's no harm in back-patching it.
+);	ze\dbAdm::revision(47804
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/blackdog/js/animation_load.js'></script>", '')
+	WHERE name = 'sitewide_foot'
+	  AND value IS NOT NULL
+	  AND value != ''
+_sql
+	
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/blackdog/js/css3-animate-it.js'></script>", '')
+	WHERE name = 'sitewide_foot'
+	  AND value IS NOT NULL
+	  AND value != ''
+_sql
+	
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]layouts`
+	SET head_html = CONCAT(IFNULL(head_html, ''), '\n<link rel="stylesheet" href="zenario/libs/yarn/animate.css/animate.min.css"/>')
+	WHERE family_name = 'grid_templates'
+	  AND file_base_name = 'L02'
+	  AND (head_html IS NULL OR head_html NOT LIKE '%animate.min.css%')
+_sql
+	
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]layouts`
+	SET foot_html = CONCAT(IFNULL(foot_html, ''), '\n<script type="text/javascript" src="zenario/libs/yarn/wowjs/dist/wow.min.js"></script>\n<script type="text/javascript" src="zenario_custom/templates/grid_templates/skins/blackdog/js/animation_load.js"></script>')
+	WHERE family_name = 'grid_templates'
+	  AND file_base_name = 'L02'
+	  AND (foot_html IS NULL OR foot_html NOT LIKE '%wow.min.js%')
 _sql
 
 );

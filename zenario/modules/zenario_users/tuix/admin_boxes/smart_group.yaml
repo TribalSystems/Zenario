@@ -19,6 +19,9 @@ zenario_smart_group:
         locationsExist: false
         rolesExist: false
         activityBandsExist: false
+    identifier:
+        css_class: zenario_smart_group
+        label: Smart Group ID
     hide_tab_bar: true
     title: ''
     tabs:

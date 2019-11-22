@@ -1,0 +1,11 @@
+<div>
+	<input id="{{m.name|e}}__{{m.value|e}}" type="radio" name="{{m.name|e}}" value="{{m.value|e}}"
+		<% if (m.selected) { %>
+			checked="checked"
+		<% } %>
+		<% if (m.format_onchange) { %>
+			onchange="zenario_slideshow_simple.selectSlide('{{m.id|e}}', '{{m.imageType|e}}')"
+		<% } %>
+	>
+	<label for="{{m.name|e}}__{{m.value|e}}">{{m.label|e}}</label>
+</div>

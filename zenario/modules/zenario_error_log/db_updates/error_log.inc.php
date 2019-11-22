@@ -8,7 +8,7 @@ ze\dbAdm::revision( 2
 		referrer_url varchar(255) NOT NULL DEFAULT '',
 		page_alias varchar(255) NOT NULL,
 		PRIMARY KEY (id)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision( 7

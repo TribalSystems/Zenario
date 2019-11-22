@@ -12,7 +12,7 @@ zenario_meta_data
 "_PAGE_DESCRIPTION:","Page description:"
 "_PAGE_SUMMARY:","Page summary:"
 "_CATEGORIES:","Categories:"
-_COMMA,","
+_CATEGORY_SEPARATOR,","
 "_KEYWORDS:","Keywords:"
 "_LANGUAGE:","Language code:"
 _CONTRIBUTED_BY:,"Contributed by:"

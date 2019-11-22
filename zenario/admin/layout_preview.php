@@ -63,7 +63,6 @@ $version = [
 	'created_datetime' => ze\date::now(),
 	'rss_nest' => '',
 	'rss_slot_name' => '',
-	'version' => 1,
 	'layout_id' => $layout['layout_id']];
 
 
@@ -129,7 +128,7 @@ ze\content::pageFoot($prefix, $mode, $includeOrganizer = true, $includeAdminTool
 
 
 echo '
-<script type="text/javascript" src="../js/admin_layout_preview.min.js?v=', $v, '"></script>';
+<script type="text/javascript" src="../js/admin_layout_preview.min.js?v=', $version['version'], '"></script>';
 
 ?>
 

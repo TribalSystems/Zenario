@@ -40,7 +40,7 @@ class zenario_banner extends ze\moduleBaseClass {
 	protected $editorId = '';
 	protected $request = '';
 	
-	protected $styles = '';
+	protected $styles = [];
 	
 	protected $normalImage = false;
 	protected $retinaImage = false;
@@ -175,9 +175,12 @@ class zenario_banner extends ze\moduleBaseClass {
 				 || !(($equivId = ze\content::equivId($cID, $cType))
 				   && ze\row::exists('content_items', ['equiv_id' => $equivId, 'type' => $cType, 'status' => ['!1' => 'trashed', '!2' => 'deleted']]))) {
 					
-					$this->setSetting($link_type, '_NO_LINK', true);
-					$this->setSetting($hyperlink_target, '', true);
-					$this->setSetting($target_blank, '', true);
+					//Don't update the settings if this was just a preview!
+					if (empty($_POST['overrideSettings'])) {
+						$this->setSetting($link_type, '_NO_LINK', true);
+						$this->setSetting($hyperlink_target, '', true);
+						$this->setSetting($target_blank, '', true);
+					}
 				}
 			
 			//If a document that this banner was linking to has been removed, update the settingas not no-link as well.
@@ -193,8 +196,11 @@ class zenario_banner extends ze\moduleBaseClass {
 						}
 					
 					} else {
-						$this->setSetting($link_type, '_NO_LINK', true);
-						$this->setSetting('document_id', '', true);
+						//Don't update the settings if this was just a preview!
+						if (empty($_POST['overrideSettings'])) {
+							$this->setSetting($link_type, '_NO_LINK', true);
+							$this->setSetting('document_id', '', true);
+						}
 					}
 				}
 			
@@ -243,6 +249,7 @@ class zenario_banner extends ze\moduleBaseClass {
 		}
 		
 		
+		$addWidthAndHeight = false;
 		$imageId = false;
 		$fancyboxLink = false;
 		$cID = $cType = false;
@@ -258,7 +265,7 @@ class zenario_banner extends ze\moduleBaseClass {
 		if (($this->setting('image_source') == '_CUSTOM_IMAGE'
 		  && ($imageId = $this->setting('image')))
 		
-		 || ($this->setting('image_source') == '_PICTURE'
+		 || ($this->setting('image_source') == '_PICTURE' //TODO looks like a variable that was removed
 		  && (ze\content::getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $this->setting("picture")))
 		  && ($imageId = ze\row::get("versions", "file_id", ["id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)])))
 		 
@@ -429,9 +436,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				$this->mergeFields['Image_Height'] = $height;
 				$this->mergeFields['Image_Width'] = $width;
 				$this->mergeFields['Image_Style'] = 'id="'. $this->containerId. '_img"';
-				//$this->mergeFields['Image_Style'] .= 'style="width: '. $width. 'px; height: '. $height. 'px;"';
-				
-				$this->styles = '#'. $this->containerId. '_img { width: '. $width. 'px; height: '. $height. 'px; }';
+				$addWidthAndHeight = $addWidthAndHeightInline = true;
 				
 				//Deprecated merge field for old frameworks
 				$this->mergeFields['Image_Src'] = htmlspecialchars($url);
@@ -440,9 +445,19 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				//Set a responsive version of the image
 				if (ze::$minWidth) {
-					switch ($this->setting('mobile_behavior')) {
-						case 'change_image':
-							$mobile_image = $this->setting('mobile_image');
+					switch ($this->setting('advanced_behaviour')) {
+						case 'mobile_change_image':
+						case 'mobile_same_image_different_size':
+							
+							switch ($this->setting('advanced_behaviour')) {
+								case 'mobile_change_image':
+									$mobile_image = $this->setting('mobile_image');
+									break;
+								case 'mobile_same_image_different_size':
+									$mobile_image = $this->setting('image');
+									break;
+							}
+							
 							$mobile_canvas = $this->setting('mobile_canvas');
 							$mobile_width = $this->setting('mobile_width');
 							$mobile_height = $this->setting('mobile_height');
@@ -473,31 +488,32 @@ class zenario_banner extends ze\moduleBaseClass {
 						
 								if ($respWidth != $width
 								 || $respHeight != $height) {
-									$this->styles .= "\n". 'body.mobile #'. $this->containerId. '_img { width: '. $respWidth. 'px; height: '. $respHeight. 'px; }';
+									$this->styles[] = 'body.mobile #'. $this->containerId. '_img { width: '. $respWidth. 'px; height: '. $respHeight. 'px; }';
+									$addWidthAndHeightInline = false;
 								}
 							}
 							
 							break;
 						
 						//Hide the image on mobiles, and add some hacks to try and make sure that they never even try to download it
-						case 'hide_image':
+						case 'mobile_hide_image':
 							$this->mergeFields['Mobile_Media'] = '(max-width: '. (ze::$minWidth - 1). 'px)';
 							$trans = ze\link::absoluteIfNeeded(). 'zenario/admin/images/trans.png';
 							$this->mergeFields['Mobile_Srcset'] = $trans. ' 1x, '. $trans. ' 2x';
-							$this->styles .= "\n". 'body.mobile #'. $this->containerId. '_img { display: none; }';
+							$this->styles[] = 'body.mobile #'. $this->containerId. '_img { display: none; }';
 					}
 				}
 				
 				
 				
 				//Set a rollover version of the image
-				if ($this->setting('use_rollover')
-				 && $this->setting('image_source') == '_CUSTOM_IMAGE') {
+				if ($this->setting('advanced_behaviour')
+				 && ($this->setting('advanced_behaviour') == 'use_rollover')
+				 && $this->setting('image_source') == '_CUSTOM_IMAGE'
+				 && ($rollover_image = $this->setting('rollover_image'))) {
 					
 					$rollSrcset = '';
 					$normalSrcset = '';
-					
-					$rollover_image = $this->setting('rollover_image');
 					
 					$rWidth = $rHeight = $rollURL = false;
 					if (ze\file::imageLink($rWidth, $rHeight, $rollURL, $rollover_image, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
@@ -536,7 +552,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				
 				
-				} elseif (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (empty($this->mergeFields['Link_Href']))){
+				} if (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (empty($this->mergeFields['Link_Href']))){
 					if (ze\file::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
 						if ($this->setting('disable_rel')) {
 							$this->mergeFields['Link_Href'] =
@@ -565,6 +581,9 @@ class zenario_banner extends ze\moduleBaseClass {
 				}
 			}
 		}
+		
+		//Enable lazy load in the framework if enabled.
+		$this->mergeFields['Lazy_Load'] = ($this->setting('advanced_behaviour') && $this->setting('advanced_behaviour') == 'lazy_load');
 		
 		$this->subSections['Text'] = (bool) $this->setting('text') || $this->editing;
 		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;
@@ -637,38 +656,41 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 			//Enable an option to use a background images instead of <picture><img/></picture>
-			if ($this->setting('background_image') && $this->normalImage) {
+			if ($this->setting('advanced_behaviour') && ($this->setting('advanced_behaviour') == 'background_image') && $this->normalImage) {
 				$this->mergeFields['Wrap'] = '';
 				$this->mergeFields['Background_Image'] = true;
 				$this->mergeFields['Image_css_id'] = $this->containerId. '_img';
 				
-				$this->styles .= "\n". '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
+				$this->styles[] = '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
 				
 				if ($this->retinaImage) {
-					$this->styles .= "\n". 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
-				}
-				
-				if ($this->rolloverImage) {
-					$this->styles .= "\n". 'div.banner_wrap:hover #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->rolloverImage).  '\'); }';
-					
-					if ($this->retinaRolloverImage) {
-						$this->styles .= "\n". 'body.retina div.banner_wrap:hover #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRolloverImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
-					}
+					$this->styles[] = 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
 				}
 				
 				if ($this->respImage) {
-					$this->styles .= "\n". 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImage).  '\'); }';
+					$this->styles[] = 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImage).  '\'); }';
 					
 					if ($this->retinaRespImage) {
-						$this->styles .= "\n". 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImage).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
+						$this->styles[] = 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImage).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
 					}
+				}
+				
+				$addWidthAndHeightInline = false;
+			}
+			
+			if ($addWidthAndHeight) {
+				if ($addWidthAndHeightInline) {
+					$this->mergeFields['Image_Style'] .= 'style="width: '. $width. 'px; height: '. $height. 'px;"';
+			
+				} else {
+					array_unshift($this->styles, '#'. $this->containerId. '_img { width: '. $width. 'px; height: '. $height. 'px; }');
 				}
 			}
 			
 			//If we're reloading via AJAX, we need to call a JavaScript function to add the style to the head.
 			//Otherwise we can use addToPageHead() below.
-			if ($this->styles !== '' && $this->methodCallIs('refreshPlugin')) {
-				$this->callScriptBeforeAJAXReload('zenario', 'addStyles', $this->containerId, $this->styles);
+			if ($this->styles !== [] && $this->methodCallIs('refreshPlugin')) {
+				$this->callScriptBeforeAJAXReload('zenario', 'addStyles', $this->containerId, implode("\n", $this->styles));
 			}
 			
 			return true;
@@ -676,8 +698,8 @@ class zenario_banner extends ze\moduleBaseClass {
 	}
 	
 	public function addToPageHead() {
-		if ($this->styles !== '') {
-			echo "\n", '<style type="text/css" id="', $this->containerId, '-styles">', "\n", $this->styles, "\n", '</style>';
+		if ($this->styles !== []) {
+			echo "\n", '<style type="text/css" id="', $this->containerId, '-styles">', "\n", implode("\n", $this->styles), "\n", '</style>';
 		}
 	}
 	

@@ -22,6 +22,8 @@ zenario_location_manager__location:
                 name:
                     label: 'Name:'
                     type: text
+                    validation:
+                        required: You must enter a name.
                 address_line_1:
                     label: 'Address line 1:'
                     type: text
@@ -132,6 +134,12 @@ zenario_location_manager__location:
                     dataset_label: '[Map zoom (hidden)]'
                     same_row: true
                     type: hidden
+                
+                timezone:
+                    ord: 9996
+                    label: Timezone
+                    type: select
+                
                 last_updated:
                     label: 'Last updated:'
                     type: date
@@ -218,6 +226,10 @@ zenario_location_manager__sector:
     key:
         id: ""
         parent_id: ""
+    identifier:
+        css_class: zenario_location_manager_sector
+        label: Sector ID
+    max_height: 150
     tabs:
         details:
             label: Details

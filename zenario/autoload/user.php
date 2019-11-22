@@ -270,20 +270,6 @@ class user {
 		}
 	}
 
-	const usernameFromTwig = true;
-	//Formerly "userUsername()"
-	public static function username($userId = 'session') {
-		if ($userId === 'session') {
-			$userId = $_SESSION['extranetUserID'] ?? false;
-		}
-	
-		if ($userId) {
-			return getUsername($userId);
-		} else {
-			return false;
-		}
-	}
-
 	const fieldDisplayValueFromTwig = true;
 	//Formerly "userFieldDisplayValue()"
 	public static function fieldDisplayValue($cfield, $userId = -1, $returnCSV = true) {
@@ -520,6 +506,7 @@ class user {
 			case 'create-trigger.oneself':
 			case 'create-procedure.oneself':
 			case 'create-schedule.oneself':
+			case 'design.schema':
 			case 'manage.command':
 				//Superusers only
 				return true;
@@ -678,7 +665,7 @@ class user {
 			//If this is a check on something for assetwolf, note down which table this is for
 			switch ($target) {
 				case 'asset':
-					$awTable = 'assets';
+					$awTable = 'nodes';
 					$isAW = true;
 					break;
 				case 'schema':
@@ -1112,14 +1099,7 @@ class user {
 	//Formerly "convertToUserTimezone()"
 	public static function convertToUsersTimeZone($time, $specificTimeZone = false) {
 	
-		//Accept either dates in UTC/GMT, or UNIX timestamps (in seconds, not in ms)
-		//Also accept a PHP date object (i.e. this function won't cause an error if someone accidentally calls it twice!)
-		if (is_numeric($time)) {
-			$time = new \DateTime('@'. (int) $time);
-	
-		} elseif (is_string($time)) {
-			$time = new \DateTime($time);
-		}
+		$time = \ze\date::new($time);
 	
 		if ($specificTimeZone) {
 			$time->setTimeZone(new \DateTimeZone($specificTimeZone));

@@ -39,7 +39,8 @@ ze\dbAdm::revision(43, "
 		`body`,
 		`date_created`,
 		`created_by_id`,
-		`allow_attachments`
+		`allow_attachments`,
+		`use_standard_email_template`
 	) VALUES (
 		'zenario_extranet_change_password',
 		'zenario_extranet_change_password_notification_en',
@@ -52,7 +53,8 @@ ze\dbAdm::revision(43, "
 		<p>This is an automated email, please do not try to reply.</p>',
 		NOW(),
 		". (int) ze\admin::id(). ",
-		0
+		0,
+		1
 	)
 "
 );

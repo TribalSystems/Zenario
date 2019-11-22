@@ -192,6 +192,29 @@ plugin_settings:
                     type: text
                     value: '»'
                     style: 'width: 5em;'
+                
+                
+                # I was playing around with adding a timezone plugin to each slide in a conductor,
+                # but we changed our minds.
+                #tz_add:
+                #    plugin_setting:
+                #        name: tz_add
+                #    indent: 1
+                #    hide_if_previous_outdented_value_isnt: conductor
+                #    type: checkbox
+                #    label: Show timezone
+                #    redraw_onchange: true
+                #tz_cols:
+                #    plugin_setting:
+                #        name: tz_cols
+                #    indent: 2
+                #    hide_with_previous_outdented_field: true
+                #    hide_if_previous_outdented_value_isnt: 1
+                #    title: Columns
+                #    type: select
+                #    label: Columns
+                #    empty_value: Full-width
+                #    values: grid_cols
         
         
                 show_heading:

@@ -5,6 +5,9 @@ zenario_user_form:
         id: ""
         type: ""
         tab: ""
+    identifier:
+        css_class: zenario_user_forms
+        label: Form ID
     tabs:
         details:
             label: Details
@@ -248,8 +251,6 @@ zenario_user_form:
                     label: Consent
                     type: select
                     empty_value: -- Select --
-                    validation: 
-                        required_if_not_hidden: Please choose a consent field.
                     format_onchange: true
                 #registration form options
                 verification_email_template:
@@ -450,6 +451,25 @@ zenario_user_form:
                     type: checkbox
                     format_onchange: true
                 # BEGIN send_email_to_admin options
+                send_email_to_admin_condition:
+                    indent: 1
+                    label: "Send email to admin condition:"
+                    type: select
+                    values:
+                        always_send:
+                            label: "Always send"
+                        send_on_condition:
+                            label: "Send on condition"
+                    value: always_send
+                    visible_if: zenarioAB.value('send_email_to_admin');
+                    format_onchange: true
+                send_email_to_admin_condition_fields:
+                    indent: 2
+                    label: "Select a condition field"
+                    type: select
+                    values: {}
+                    empty_value: -- Select --
+                    visible_if: (zenarioAB.value('send_email_to_admin') && (zenarioAB.value('send_email_to_admin_condition') == 'send_on_condition'));
                 admin_email_addresses:
                     label: 'Administrator email address(s):'
                     type: text

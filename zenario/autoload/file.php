@@ -446,6 +446,22 @@ class file {
 				return false;
 		}
 	}
+	
+	public static function isArchive($extension) {
+		switch (strtolower($extension)) {
+			case '7z':
+			case 'csv':
+			case 'gtar':
+			case 'gz':
+			case 'sql':
+			case 'tar':
+			case 'tgz':
+			case 'zip':
+				return true;
+			default:
+				return false;
+		}
+	}
 
 	//Formerly "contentFileLink()"
 	public static function contentLink(&$url, $cID, $cType, $cVersion) {

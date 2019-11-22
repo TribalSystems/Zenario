@@ -38,7 +38,7 @@ CREATE TABLE [[DB_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_email
 	`new_email` varchar(100) NOT NULL,
 	`hash` varchar(255)  NOT NULL,
 	PRIMARY KEY(`user_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 );
 ze\dbAdm::revision(4, "

@@ -59,7 +59,7 @@ zenario__modules:
                 slotable_only:
                     sql: |
                         m.status = 'module_running' AND m.is_pluggable = 1
-                        AND m.class_name NOT IN ('zenario_plugin_nest', 'zenario_slideshow')
+                        AND m.class_name NOT IN ('zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple')
                 nestable_wireframes_only:
                     sql: |
                         m.status = 'module_running' AND m.is_pluggable = 1 AND m.nestable = 1 AND m.can_be_version_controlled = 1

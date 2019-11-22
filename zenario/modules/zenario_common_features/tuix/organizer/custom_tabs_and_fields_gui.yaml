@@ -21,7 +21,6 @@ zenario__administration:
                                 values: boolean_fields
                                 empty_value: -- No conditional display --
                                 visible_if: |
-                                    
                                     !item.is_system_field 
             
             dataset_field_details:
@@ -170,7 +169,6 @@ zenario__administration:
                                     hide:
                                         label: Hide
                                 format_onchange: true
-                                
                                 visible_if: |
                                     item.type != 'other_system_field' || item.tuix_type == 'pick_items'
                             parent_id:

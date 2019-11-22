@@ -108,7 +108,7 @@ _sql
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
 		`code` varchar(255) NOT NULL UNIQUE,
 		`description` text NULL
-	)ENGINE=MyISAM DEFAULT CHARSET=utf8
+	)ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -121,7 +121,7 @@ _sql
 		`code_id` int(10) unsigned NOT NULL,
 		`group_id` int(10) unsigned NOT NULL,
 		UNIQUE KEY `code_group` (`code_id`,`group_id`)
-	)ENGINE=MyISAM DEFAULT CHARSET=utf8
+	)ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(90,
@@ -158,6 +158,27 @@ _sql
 
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]code_groups`
+_sql
+
+); ze\dbAdm::revision(108,
+
+<<<_sql
+	UPDATE [[DB_PREFIX]]plugin_instances
+	SET `framework` = 'email and name'
+	WHERE `framework` = 'personal' and `id` = 42
+_sql
+
+); ze\dbAdm::revision(109,
+<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Thank you for registering on <a href=\"[[cms_url]]\">[[cms_url]]</a> .</p>
+		<p>In order to complete your registration please click the link below to confirm your email address.</p>
+		<p>&nbsp;</p>
+		<p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href=\"[[email_confirmation_link]]\">VERIFY EMAIL ADDRESS</a></p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]] .</p>'
+	WHERE `code` = "zenario_extranet_registration__to_user_email_verification_en"
 _sql
 
 );

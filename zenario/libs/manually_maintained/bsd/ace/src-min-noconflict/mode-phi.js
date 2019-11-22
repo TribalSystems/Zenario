@@ -140,7 +140,8 @@
 			'rev': {input: 'array', returns: 'array'},
 			'reverse': {input: 'array', returns: 'array'},
 			'trim': {input: 'string', returns: 'string'},
-			'setValue': {input: 'key, value', returns: 'null'}
+			'setValue': {input: 'key, value', returns: 'null'},
+			'fireTrigger': {input: 'triggerCodeName, explanation', returns: 'null'}
 			
 		};
 			//N.b. left out from Twig was "|block|constant|divisibleby|include|parent|sameas|source|template_from_string"

@@ -871,7 +871,7 @@ body.ie6 .headerPanel .secondToolbar {
 }
 
 #organizer_header .disabled #organizer_listViewOptionsDropdown a {
-	background: url('../admin/images/icon-listViewOptionsDropdown-grey.png') no-repeat center center;
+	background: url('../admin/images/icon-filter-glasses-grey.svg') no-repeat center / 18px 18px;
 }
 
 .headerPanel .viewMode .organizer_switch_view.organizer_switch_to_list_view a {
@@ -901,7 +901,7 @@ body.ie6 .headerPanel .secondToolbar {
 }
 
 .headerPanel .viewMode .organizer_switch_view.organizer_switch_to_compact_list_view a {
-	background: url('../admin/images/icon-compact-view.png') no-repeat center;
+	background: url('../admin/images/icon-compact-view.svg') no-repeat center / 16px 14px;
 }
 
 /*
@@ -950,13 +950,12 @@ body.ie6 .headerPanel .secondToolbar {
 	top:10px;
 	height: 22px;
 	width: 22px;
-	border:1px solid #B3B3B3;
-	background: url('../admin/images/sprites/org-icons-v5.png') no-repeat -313px -163px;
+	background:url('../admin/images/icon-close-off-state-light-grey.svg') no-repeat center center / 14px 13px;
 	cursor: pointer;
 }
 
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader a:hover {
-	background-color:#007FA3;
+	background:url('../admin/images/icon-close-hover-state-blue.svg') no-repeat center center / 14px 13px;
 }
 
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader a { 
@@ -1142,7 +1141,7 @@ body.ie7 #zenario_fbAdminViewModeOptions .organizer_mov_col {
 }
 
 #zenario_fbAdminViewModeOptions div.organizer_togglefilter input.togglefilter_closed {
-	background:url("../admin/images/sprites/org-icons-v5.png") no-repeat -109px -63px;
+	background:url("../admin/images/icon-filter-blue.svg") no-repeat 12px bottom / auto 11px;
 }
 
 /*  Hack by Chris to move the cross inline with the filter funnel above!  */
@@ -1270,8 +1269,7 @@ div.organizer_pageSize {
 .zenario_toolbar_header .toolbar div.organizer_button_separator {
 	width: 1px;
 	height: 28px;
-	background-image: url('../admin/images/sprites/org-bg-1.png');
-	background-position:-78px -323px;
+	background:url('../admin/images/store_keeper/org_toolbar_separator.gif') no-repeat right 10px;
 }
 
 .zenario_toolbar_header .toolbar .button {
@@ -1351,8 +1349,15 @@ div.organizer_pageSize {
 	height:18px;
 	display:block;
 	float:left;
-	margin-top:8px;
 	cursor:pointer;
+}
+
+.zenario_debugInfo .organizer_info_box,
+#organizer_topRightIcons .organizer_enabled_disabled,
+#organizer_topRightIcons .organizer_info_box,
+#organizer_topRightIcons .organizer_help,
+#organizer_topRightIcons .organizer_diagnostics {
+	margin-top:8px;
 }
 
 #organizer_topRightIcons .organizer_info_box,
@@ -1386,11 +1391,7 @@ div.organizer_pageSize {
 }
 
 #zenario_at_top_left_menu .organizer_item_image.all_languages {
-	background: 15% 30% no-repeat url('../admin/images/icon-all-languages-black.png');
-}
-
-#zenario_at_top_left_menu .organizer_item_image.all_locations {
-	background: 15% 30% no-repeat url('../admin/images/icon-all-locations-black.png');
+	background: 15% 30% no-repeat url('../admin/images/icon-languages.svg') / auto 18px;
 }
 
 #organizer_topRightIcons .organizer_help,
@@ -1853,8 +1854,7 @@ div.organizer_pageSize {
 
 .organizer_toolbar .toolbarButtons div.organizer_button_separator {
 	width:2px;
-	background-image: url('../admin/images/sprites/org-bg-1.png');
-	background-position:-323px -116px;
+	background:url('../admin/images/store_keeper/org_toolbar_separator.gif') no-repeat;
 }
 
 .organizer_toolbar .toolbarButtons {
@@ -2158,6 +2158,11 @@ div.organizer_pageSize {
 	height: 26px;
 	background-position: left center;
 }
+
+.organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_image div {
+	background-position: center center;
+}
+
 .organizer_toolbar .toolbar .toolbarButtons .organizer_items_selected {
 	white-space: nowrap;
 	padding: 5px 0 0 26px;
@@ -3169,7 +3174,7 @@ div.organizer_pageSize {
 }
 
 .organizer_item_image.zenario_nest_tab {
-	background:url('../admin/images/tab-icon.png') no-repeat center center;
+	background:url('../admin/images/icon-tabs.svg') no-repeat center center / 20px auto;
 }
 
 #organizer_rightColumn div.organizer_slidedown_view .listicon,
@@ -3220,6 +3225,21 @@ div.organizer_pageSize {
 	width: 18px;
 	height: 18px;
 }
+
+/*	Placeholder styles for testing layout inline buttons  */
+.organizer_inline_buttons .zenario_ib_active {
+	background:url('../admin/images/icon-layout-active.svg') no-repeat center center / 16px 16px;
+}
+
+.organizer_inline_buttons .zenario_ib_default {
+	background:url('../admin/images/icon-layout-default-active.svg') no-repeat center center / 16px 16px;
+}
+
+.organizer_inline_buttons .zenario_ib_archived {
+	background:url('../admin/images/icon-layout-archived.svg') no-repeat center center / 16px 16px;
+}
+
+
 
 .zenario_inline_warning {
 	background:url('../admin/images/icon-warning.svg') no-repeat left center / 18px 18px;
@@ -3377,8 +3397,10 @@ body.ie8 .organizer_item_image.ghost {
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cells_items div.view_frontend {
-	background: url('../admin/images/sprites/inline-view-icons-list-view.png') no-repeat;
+.Token .organizer_item_image.ghost {
+	opacity:1;
+	-webkit-filter: invert(.8);
+  	filter: invert(.8);
 }
 
 #organizer_hierarchy_view .organizer_column__invisible_menu_node__cell {
@@ -3391,11 +3413,11 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 #organizer_hierarchy_view .organizer_column__invisible_menu_node__cell {
-	background:url('../admin/images/icon-eye-visible.svg') no-repeat center center / 16px 16px;
+	background:url('../admin/images/icon-eye-visible.svg') no-repeat center 6px / 16px 16px;
 }
 
 #organizer_hierarchy_view .organizer_column__invisible_menu_node__cell.invisible_menu_node {
-	background:url('../admin/images/icon-eye-hidden.svg') no-repeat center center / 16px 16px;
+	background:url('../admin/images/icon-eye-hidden.svg') no-repeat center 6px / 16px 16px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.privacy_inline_button a {
@@ -3472,7 +3494,7 @@ body.ie8 .organizer_item_image.ghost {
 */
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.debug_mode {
-	background: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -17px -1396px;
+	background: url('../admin/images/sprites/icon-bug.png') no-repeat center center / auto 14px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.view_frontend,
@@ -3522,7 +3544,7 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.zenario_smart_perms_group {
-	background: url('../admin/images/icon-smart-permissions-group-placeholder.png') no-repeat center center;
+	background: url('../admin/images/icon-smart-permissions.svg') no-repeat center center / 18px;
 }
 
 .organizer_item_image.zenario_smart_news_group {
@@ -3633,7 +3655,7 @@ body.ie8 .organizer_item_image.ghost {
 
 #organizer_rightColumn div.organizer_row div.organizer_cell.special_content_draft_hidden,
 .organizer_item_image.special_content_draft_hidden {
-	background:url("../admin/images/icon-content-special-draft-hidden.png") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-special-draft-hidden.svg") no-repeat center center / 20px 23px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell.special_content_hidden,
@@ -3812,8 +3834,28 @@ body.ie8 .organizer_item_image.ghost {
 	/* to add */
 }
 
+/*	Currently this image...  */
 .organizer_item_image.log {
 	background: url('../admin/images/icon-sign-in-log.svg') no-repeat center center / 16px;
+}
+
+/*	...is used for these six icons!  */
+.organizer_item_image.email_log {
+}
+
+.organizer_item_image.sign_in_log {
+}
+
+.organizer_item_image.scheduled_task_log {
+}
+
+.organizer_item_image.access_log {
+}
+
+.organizer_item_image.order_status_log {
+}
+
+.organizer_item_image.license {
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.media_images,
@@ -3877,7 +3919,8 @@ body.ie8 .organizer_item_image.ghost {
 	background: url('../admin/images/icon-menu-sections-edit-dark.svg') no-repeat center center / auto 16px;
 }
 
-.organizer_item_image.menu_node {
+.organizer_item_image.menu_node,
+.organizer_item_image.zenario_menunode_internal_unique {
 	background: url('../admin/images/icon-menu-node-dark.svg') no-repeat center center / auto 16px;
 }
 
@@ -3943,52 +3986,6 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_hidden {/* currently not used */
-	background: no-repeat -20px -17px url('../admin/images/sprites/dataset-icons.png');
-}
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_protected_hidden {/* currently not used */
-	background: no-repeat -20px -78px url('../admin/images/sprites/dataset-icons.png');
-}
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_protected_visible {/* currently not used */
-	background: no-repeat -20px -139px url('../admin/images/sprites/dataset-icons.png');
-}
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_visible {/* currently not used */
-	background: no-repeat -20px -200px url('../admin/images/sprites/dataset-icons.png');
-}
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_tab_hidden {/* currently not used */
-	background: no-repeat -20px -261px url('../admin/images/sprites/dataset-icons.png');
-}
-
-.organizer_item_image.custom_tab_visible {
-	background: no-repeat -20px -322px url('../admin/images/sprites/dataset-icons.png');
-}
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.system_field_hidden {/* currently not used */
-	background: no-repeat -20px -383px url('../admin/images/sprites/dataset-icons.png');
-}
-
-.organizer_item_image.system_field_visible {
-	background: no-repeat -20px -444px url('../admin/images/sprites/dataset-icons.png');
-}
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.system_tab_hidden {/* currently not used */
-	background: no-repeat -20px -505px url('../admin/images/sprites/dataset-icons.png');
-}
-
-.organizer_item_image.system_tab_visible {
-	background: no-repeat -20px -568px url('../admin/images/sprites/dataset-icons.png');
-}
-
-
-
-
-
-
 .organizer_item_image.xml_sitemap {
 	background: url('../admin/images/icon-xml-site-map.svg') no-repeat center center / auto 19px;
 }
@@ -3999,14 +3996,21 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.zenario_newsletter_draft {
-	background: url('../admin/images/icon-newsletters.svg') no-repeat center center / auto 18px;
+	background: url('../admin/images/icon-newsletter-dark.svg') no-repeat center center / auto 16px;
+}
+
+.organizer_item_image.zenario_newsletter_template {
+	background: url('../admin/images/icon-newsletter-template-dark.svg') no-repeat center center / auto 16px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_newsletter_in_progress_newsletter,
 #organizer_rightColumn #organizer_panelTitle div.zenario_newsletter_in_progress_newsletter,
 .organizer_item_image.zenario_newsletter_sent_newsletter {
-	background:  -15px -3094px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-list-icons-single-col-v2.png');
+	background: url('../admin/images/icon-sent-newsletter-dark.svg') no-repeat center center / auto 20px;
+}
+
+.organizer_item_image.log.email_log {
+	background: url('../admin/images/icon-sent-email-in-log-dark.svg') no-repeat center center / auto 16px;
 }
 
 #organizer_rightColumn div.organizer_list_view div.organizer_item {
@@ -6482,6 +6486,26 @@ span.video_title {
 	padding:5px 0;
 }
 
+.organizer_form_builder_view .form_fields_palette .field_details .field:before,
+.organizer_form_builder_view .form_fields_palette .field_details .field:after {
+	content: '.';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.organizer_form_builder_view .form_fields_palette .field_details .field:after {
+	clear: both;
+}
+
+.organizer_form_builder_view .form_fields_palette .field_details .field table {
+	width:100%;
+}
+
 .organizer_form_builder_view .form_fields_palette .field_details .title,
 .organizer_admin_box_builder_view .form_fields_palette .field_details .title,
 .organizer_admin_box_builder_view .form_fields_palette .tab_details .title {
@@ -6578,19 +6602,25 @@ span.video_title {
 
 .organizer_form_builder_view .zenario_indent_level_1,
 .organizer_admin_box_builder_view .zenario_indent_level_1 {
-	width:calc(100% - 15px) !important;
+	width:calc(100% - 15px - 102px) !important;
 	margin-left:15px;
+}
+
+.organizer_form_builder_view .zenario_indent_level_1 .zenario_indent_level_1,
+.organizer_admin_box_builder_view .zenario_indent_level_1 .zenario_indent_level_1 {
+	width:100% !important;
+	margin-left:0;
 }
 
 .organizer_form_builder_view .zenario_indent_level_2,
 .organizer_admin_box_builder_view .zenario_indent_level_2 {
-	width:calc(100% - 30px) !important;
+	width:calc(100% - 30px - 102px) !important;
 	margin-left:30px;
 }
 
 .organizer_form_builder_view .zenario_indent_level_3,
 .organizer_admin_box_builder_view .zenario_indent_level_3 {
-	width:calc(100% - 45px) !important;
+	width:calc(100% - 45px - 102px) !important;
 	margin-left:45px;
 }
 
@@ -6970,7 +7000,7 @@ span.video_title {
 
 .form_outer .form .form_field .form_field_inline_buttons .drag_icon,
 .field_value .form_field_value_inline_buttons .drag_icon {
-	background:url('../admin/images/icon-builder-drag.png') no-repeat center center;
+	background:url('../admin/images/icon-vertical-drag-cursor.svg') no-repeat center center / auto 18px;
 }
 
 .form_outer .form .form_field .form_field_inline_buttons .delete_icon,
@@ -7039,6 +7069,7 @@ span.video_title {
 	border:1px solid #B9B9B9;
 	color:#000;
 	float:right;
+	margin-bottom:5px;
 }
 
 .organizer_form_builder_view .form_fields_palette .field_type_section input[type="button"] {
@@ -7169,6 +7200,11 @@ div.ui-tooltip.zenario_link_status_tooltip .ui-tooltip-content {
 	background:#baefba;
 }
 
+.zenario_panel_type__form_builder #organizer_buttons,
+.zenario_panel_type__admin_box_builder #organizer_buttons {
+	background:transparent;
+}
+
 #organizer_collectionToolbarWrap {
 	padding-left:5px;
 	padding-right:0;
@@ -7183,6 +7219,9 @@ div.ui-tooltip.zenario_link_status_tooltip .ui-tooltip-content {
 	border: 1px solid #ccc;
     height: 37px;
     margin-top: 6px;
+}
+
+#organizer_itemToolbarWrap #organizer_itemToolbar .toolbarButtons > ul:first-child > li:first-child {
     padding-left: 10px;
 }
 
@@ -7268,4 +7307,9 @@ div.ui-tooltip.zenario_link_status_tooltip .ui-tooltip-content {
 #organizer_applyCancelToolbar ul li,
 #organizer_applyCancelToolbar ul li:hover {
 	background:transparent;
+}
+
+.zenario_panel_type__form_builder #organizer_applyCancelToolbar,
+.zenario_panel_type__admin_box_builder #organizer_applyCancelToolbar {
+	padding-top:0;
 }

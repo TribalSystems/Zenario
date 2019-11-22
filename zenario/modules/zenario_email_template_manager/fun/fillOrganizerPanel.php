@@ -131,6 +131,15 @@ switch ($path) {
 			$panel['columns']['plugin']['show_by_default'] = true;
 			$panel['columns']['plugin']['ord'] = 0.5;
 			$panel['bold_columns_in_list_view'] = 'plugin';
+			$panel['columns']['code']['html'] = true;
+			$panel['columns']['where_used']['hidden'] = true;
+			$panel['columns']['framework']['hidden'] = true;
+			unset($panel['collection_buttons']);
+			unset($panel['item_buttons']);
+			
+			foreach ($panel['items'] as &$item) {
+				$item['code'] = '<a href="organizer.php#zenario__modules/panels/plugins//' . ze\ring::chopPrefix('P', $item['code']) . '" target="_blank">' . $item['code'] . '</a>';
+			}
 		} else {
 			unset($panel['columns']['plugin_email_address']);
 		}

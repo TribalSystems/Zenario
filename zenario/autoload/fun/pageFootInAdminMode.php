@@ -104,7 +104,7 @@ if (!empty(\ze::$siteConfig)) {
 			 || $setting == 'organizer_title'
 			 || $setting == 'organizer_date_format'
 			 || $setting == 'primary_domain'
-			 || $setting == 'site_mode'
+			 || $setting == 'site_in_dev_mode'
 			 || $setting == 'vis_time_format') {
 				$settings[$setting] = \ze::$siteConfig[$setting];
 			

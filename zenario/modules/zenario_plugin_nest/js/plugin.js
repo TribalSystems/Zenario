@@ -152,6 +152,29 @@ zenario_conductor.setVars = function(slot, vars) {
 };
 
 
+//When a user presses a "back" button on the conductor, wipe clear all variables from states below this one in the conductor hierarchy
+zenario_conductor.resetVarsOnBackNav = function(slot, backCommandDetails) {
+	
+	if (backCommandDetails
+	 && backCommandDetails.descendants) {
+		foreach (backCommandDetails.descendants as di => ds) {
+			delete slot.vars[ds];
+		}
+	}
+	delete slot.vars[slot.state];
+};
+
+//Version of the above for when the user presses the browser back button
+zenario_conductor.resetVarsOnBrowserBackNav = function() {
+	
+	var si, slot, backCommandDetails;
+	
+	foreach (slots as si => slot) {
+		zenario_conductor.resetVarsOnBackNav(slot, slot.commands.back);
+	}
+};
+
+
 
 zenario_conductor.confirmOnCloseMessage = function() {
 	var s, slot;
@@ -273,7 +296,7 @@ zenario_conductor.confirmOnClose = function(slot, checkChangedOnClose, confirmOn
 };
 
 
-zenario_conductor.go = function(slot, command, requests) {
+zenario_conductor.go = function(slot, command, requests, runAfter) {
 	slot = getSlot(slot);
 	
 	if (slot.exists) {
@@ -284,7 +307,8 @@ zenario_conductor.go = function(slot, command, requests) {
 		
 		var commandDetails = slot.commands[command],
 			containerId = 'plgslt_' + slot.slotName,
-			di, ds;
+			di, ds,
+			scrollToTopOfSlot = true;
 		
 		//Remove any code editors from the page, as a work-around to prevent
 		//a bug where the editors sometimes fail to display correctly when displayed a second
@@ -303,11 +327,8 @@ zenario_conductor.go = function(slot, command, requests) {
 	
 			if (command == 'back') {
 				
-				//If this is a back-link, wipe clear all variables from previous states
-				foreach (commandDetails.descendants as di => ds) {
-					delete slot.vars[ds];
-				}
-				delete slot.vars[slot.state];
+				//If this is a back-link, wipe clear all variables from states below this one in the conductor hierarchy
+				zenario_conductor.resetVarsOnBackNav(slot, commandDetails);
 				
 				//Show a fade-out and back in tranisition for pressing the back link
 				zenario_conductor.transitionOut(slot, {
@@ -325,6 +346,9 @@ zenario_conductor.go = function(slot, command, requests) {
 				//(Also, for some reason I can't work out yet, putting a fade-out animation here causes a problem where the
 				// new content does not reappear in!)
 				
+				//Oh, and don't change the scroll position if we're refreshing.
+				scrollToTopOfSlot = false;
+				
 			} else {
 				//Show a fade-out, right scroll, and back in tranisition for any other type of command
 				zenario_conductor.transitionOut(slot, {
@@ -339,7 +363,7 @@ zenario_conductor.go = function(slot, command, requests) {
 			}
 		
 			//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
-			zenario.refreshPluginSlot(slot.slotName, 'lookup', zenario_conductor.request(slot, commandDetails, requests), true).after(function() {
+			zenario.refreshPluginSlot(slot.slotName, 'lookup', zenario_conductor.request(slot, commandDetails, requests), true, scrollToTopOfSlot).after(function() {
 				if (command == 'back') {
 					//Show a fade-out and back in tranisition for pressing the back link
 					zenario_conductor.transitionIn(slot, {
@@ -375,6 +399,10 @@ zenario_conductor.go = function(slot, command, requests) {
 						}
 					});
 				}
+				
+				if (runAfter) {
+					runAfter();
+				}
 			});
 		}
 		
@@ -401,6 +429,16 @@ zenario_conductor.stopAutoRefresh = function(slotName) {
 
 zenario_conductor.refresh = function(slot) {
 	return zenario_conductor.go(slot, 'refresh');
+};
+
+zenario_conductor.refreshAll = function() {
+	var s, slot;
+	
+	foreach (slots as s => slot) {
+		if (s) {
+			zenario_conductor.refresh(slot);
+		}
+	}
 };
 
 zenario_conductor.reloadAfterDelay = function(delay, slot) {
@@ -627,10 +665,53 @@ zenario_conductor.goBack = function(slot, confirmed) {
 				zenario_conductor.goBack(slot, true);
 			});
 		} else {
-			zenario_conductor.go(slot, 'back', {}, true);
+			zenario_conductor.go(slot, 'back', {});
 		}
 	}
 };
+
+
+
+
+//For super-users, open the FEA popout that shows information about the current slide layout
+zenario_conductor.initSlideInfoPopout = 
+zenario_plugin_nest.initSlideInfoPopout = function(parentContainerId, slideLayoutId, parent) {
+	
+	var slotName = zenario.getSlotnameFromEl(parentContainerId),
+		slot = zenario.slots[slotName],
+		cSlot = zenario_conductor.getSlot(slotName),
+		state = cSlot.state,
+		//vars = cSlot.vars[state] || {},
+		request = {
+			cID: zenario.cID,
+			cType: zenario.cType,
+			cVersion: zenario.cVersion,
+			state: state,
+			slotName: slotName,
+			instanceId: slot.instanceId,
+			slideId: slot.slideId,
+			slideLayoutId: slideLayoutId,
+			commands: JSON.stringify(_.keys(cSlot.commands))
+		};
+	
+	return zenario_abstract_fea.initPopout('zenario_plugin_nest', zenarioAWF, 'zenario_slide_info', 'slide_info', 'zenario_slide_info', parentContainerId, request, parent, true);
+};
+
+
+
+//I can't work out how to center-align the thing using CSS, so I'm using JavaScript to do it instead.
+zenario_plugin_nest.setSlideControlWidth = function(containerId) {
+	
+	var $container = $('#' + containerId),
+		$slideControls = $container.find('x-zenario-superuser-slide-controls');
+	
+	$slideControls
+		.css('margin-left', Math.floor(($container.width() - $slideControls.width()) / 2) + 'px')
+		.css('visibility', 'visible');
+};
+
+
+
 
 
 zenario.shrtNms(zenario_conductor, true);

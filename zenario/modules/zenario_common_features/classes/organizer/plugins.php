@@ -33,6 +33,10 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__modules/panels/plugins') return;
 		
+		$nestModuleId = ze\module::id('zenario_plugin_nest');
+		$slideshowModuleId = ze\module::id('zenario_slideshow');
+		$slideshow2ModuleId = ze\module::id('zenario_slideshow_simple');
+		
 		switch ($refinerName) {
 			case 'nests':
 			case 'nests_using_form':
@@ -41,7 +45,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$isSlideshow = false;
 				$pluginAdminName = \ze\admin::phrase('nest');
 				$ucPluginAdminName = \ze\admin::phrase('Nest');
-				$panel['key']['moduleId'] = ze\module::id('zenario_plugin_nest');
+				$panel['key']['moduleId'] = $nestModuleId;
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No nests match your search');
 				break;
 			
@@ -52,7 +56,21 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$isSlideshow = true;
 				$pluginAdminName = \ze\admin::phrase('slideshow');
 				$ucPluginAdminName = \ze\admin::phrase('Slideshow');
-				$panel['key']['moduleId'] = ze\module::id('zenario_slideshow');
+				
+				$moduleIds = [];
+				if ($moduleId = $slideshowModuleId) {
+					$moduleIds[] = $moduleId;
+				}
+				if ($moduleId = $slideshow2ModuleId) {
+					$moduleIds[] = $moduleId;
+				}
+				
+				if (count($moduleIds) > 1) {
+					$panel['key']['moduleIds'] = implode(',', $moduleIds);
+				} elseif (count($moduleIds) == 1) {
+					$panel['key']['moduleId'] = $moduleIds[0];
+				}
+				
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No slideshows match your search');
 				break;
 			
@@ -131,7 +149,10 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		if (!$panel['key']['moduleId'] && isset($panel['collection_buttons']['create_dropdown'])) {
 			//Get a list of modules that can be pluggable
 			$key = ['status' => 'module_running', 'is_pluggable' => 1];
-			$modules = ze\row::getValues('modules', 'display_name', ['status' => 'module_running', 'is_pluggable' => 1], 'display_name');
+			if ($panel['key']['moduleIds']) {
+				$key['id'] = explode(',', $panel['key']['moduleIds']);
+			}
+			$modules = ze\row::getValues('modules', 'display_name', $key, 'display_name');
 			$ord = 222;
 			
 			//Automatically create drop-down menus for quickly adding plugins
@@ -204,19 +225,45 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		#	unset($panel['quick_filter_buttons']['all_modules']);
 
 		
-		//By default, don't show nests and slideshows with other library plugins
-		if (!$isNest) {
-			$panel['db_items']['where_statement'] .= ' '. $panel['db_items']['custom__exclude_nests_and_slideshows'];
+		if ($panel['key']['moduleId']) {
+			$mrg = ['name' => ze\module::displayName($panel['key']['moduleId'])];
 			
-			if ($panel['key']['moduleId']) {
+			switch ($panel['key']['moduleId']) {
+				case $nestModuleId:
+					$panel['title'] =
+					$panel['select_mode_title'] =
+						ze\admin::phrase('Nests', $mrg);
+					$panel['no_items_message'] =
+						ze\admin::phrase('There are no nests. Click the "Create" button to create one.', $mrg);
+					break;
 				
-				$mrg = ['name' => ze\module::displayName($panel['key']['moduleId'])];
-				$panel['title'] =
-				$panel['select_mode_title'] =
-					ze\admin::phrase('"[[name]]" plugins in the library', $mrg);
-				$panel['no_items_message'] =
-					ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', $mrg);
+				case $slideshowModuleId:
+					$panel['title'] =
+					$panel['select_mode_title'] =
+						ze\admin::phrase('Slideshows (advanced)', $mrg);
+					$panel['no_items_message'] =
+						ze\admin::phrase('There are no advanced slideshows. Click the "Create" button to create one.', $mrg);
+					break;
+				
+				case $slideshow2ModuleId:
+					$panel['title'] =
+					$panel['select_mode_title'] =
+						ze\admin::phrase('Slideshows (simple)', $mrg);
+					$panel['no_items_message'] =
+						ze\admin::phrase('There are no slideshows. Click the "Create" button to create one.', $mrg);
+					break;
+				
+				default:
+					$panel['title'] =
+					$panel['select_mode_title'] =
+						ze\admin::phrase('"[[name]]" plugins in the library', $mrg);
+					$panel['no_items_message'] =
+						ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', $mrg);
 			}
+		
+		//By default, don't show nests and slideshows with other library plugins
+		} elseif (!$isNest) {
+			$panel['db_items']['where_statement'] .= ' '. $panel['db_items']['custom__exclude_nests_and_slideshows'];
 		}
 	}
 	

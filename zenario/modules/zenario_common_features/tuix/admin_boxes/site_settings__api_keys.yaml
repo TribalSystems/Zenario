@@ -4,6 +4,28 @@ site_settings:
     title: Editing API keys
     setting_group: api_keys
     tabs:
+        google_maps:
+            label: Google Maps
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This site can display a Google Map on a web page. To make it do so, please enter an API key in the box below.
+                google_maps_api_key:
+                    site_setting:
+                        name: google_maps_api_key
+                    label: 'Google Maps API key:'
+                    type: text
+                    note_below: You can obtain an API key <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank">here</a>.
+                google_maps_geocode_api_key:
+                    site_setting:
+                        name: google_maps_geocode_api_key
+                    label: 'Google Maps Geocode API key:'
+                    type: text
+                    note_below: Geocode API key should only be used for Location Map and Listing module. For all other purposes, please use the regular API key (above).
         dropbox:
             label: Dropbox
             edit_mode:
@@ -13,7 +35,7 @@ site_settings:
                 description:
                     full_width: Yes
                     snippet:
-                        html: This tab contains API keys for dropbox.
+                        html: When choosing files to upload to Zenario (e.g. documents and images), you can choose to pick them from Dropbox. To enable this feature, you will need an API Key from Dropbox entered into the field below.
                 dropbox_api_key:
                     site_setting:
                         name: dropbox_api_key
@@ -25,33 +47,3 @@ site_settings:
                                                         <a href="https://www.dropbox.com/developers/apps" target="_blank">
                                                             https://www.dropbox.com/developers/apps
                                                         </a>.
-        google_maps:
-            label: Google Maps
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-            fields:
-                google_maps_api_key:
-                    site_setting:
-                        name: google_maps_api_key
-                    label: 'Google Maps API key:'
-                    type: text
-                google_maps_geocode_api_key:
-                    site_setting:
-                        name: google_maps_geocode_api_key
-                    label: 'Google Maps Geocode API key:'
-                    type: text
-                    note_below: Geocode API key should only be used for Location Map and Listing module. For all other purposes, please use the regular API key (above).
-        vimeo:
-            label: Vimeo
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-            fields:
-                vimeo_access_token:
-                    site_setting:
-                        name: vimeo_access_token
-                    label: 'Vimeo access token:'
-                    type: text
-                    note_below: |
-                        Create an access token here: <a href="https://developer.vimeo.com/apps" target="_blank">https://developer.vimeo.com/apps</a>

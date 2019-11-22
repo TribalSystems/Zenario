@@ -59,12 +59,13 @@
 			</select>
 			
 		<% } else if (m.type == 'text') { %>
+		    
 			<span class="label">{{m.label|e}}</span>
 			<input type="text" value="" readonly placeholder="{{m.placeholder}}"/>
 		
 		<% } else if (m.type == 'textarea') { %>
 			<span class="label">{{m.label|e}}</span>
-			<textarea disabled placeholder="{{m.placeholder}}"></textarea>
+			<textarea disabled placeholder="{{m.placeholder}}" rows="{{m.rows}}"></textarea>
 		
 		<% } else if (m.type == 'url') { %>
 			<span class="label">{{m.label|e}}</span>

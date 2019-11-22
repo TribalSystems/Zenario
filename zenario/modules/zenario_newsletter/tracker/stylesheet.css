@@ -1,0 +1,50 @@
+body {
+	background:#f0f0f0;
+	font-family:Verdana, Geneva, sans-serif;
+	font-size:100%;
+}
+
+form input {
+	font-family:Verdana, Geneva, sans-serif;
+	font-size:15px;
+}
+
+form input[type="button"],
+form input[type="submit"] {
+	height:40px;
+	line-height:40px;
+	padding:0 20px;
+	margin:0 5px;
+	border:0;
+	cursor:pointer;
+	background:#0e76bc;
+	color:#FFF;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+form input[type="button"].cancel,
+form input[type="submit"].cancel {
+	background:#DDD;
+	color:#333;
+}
+
+form input[type="button"]:hover,
+form input[type="submit"]:hover {
+	opacity:0.85;
+}
+
+form .buttons_wrap {
+	overflow:hidden;
+	padding-top:10px;
+}
+
+.msg_sucess {
+	color:#228B22;
+}
+
+.msg_error {
+	color:#c91414;
+}

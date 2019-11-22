@@ -70,7 +70,7 @@ class fileAdm {
 	}
 
 	//Formerly "putUploadFileIntoCacheDir()"
-	public static function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false) {
+	public static function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false, $cacheFor = false) {
 		
 		//Catch the case where the browser or the server URLencoded the filename
 		$filename = rawurldecode($filename);
@@ -171,9 +171,12 @@ To correct this, please ask your system administrator to perform a
 		} else {
 			$file['id'] = \ze\ring::encodeIdForOrganizer($sha. '/'. $file['filename']);
 		}
-	
+		
 		$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
-	
+		if ($cacheFor) {
+			$file['link'] .= '&cacheFor=' . (int)$cacheFor;
+		}
+		
 		if ($html5_backwards_compatibility_hack) {
 			echo '
 				<html>

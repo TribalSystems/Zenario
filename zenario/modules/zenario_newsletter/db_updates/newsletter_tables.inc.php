@@ -58,7 +58,7 @@ _sql
 		UNIQUE INDEX (`newsletter_name`),
 		INDEX (`status`),
 		INDEX (`date_modified`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 
@@ -81,7 +81,7 @@ _sql
 		INDEX `user_id` (`newsletter_id`, `email_sent`, `user_id`),
 		INDEX `time_sent` (`newsletter_id`, `time_sent`),
 		UNIQUE (`tracker_hash`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Fix some errors in MySQL strict mode
@@ -163,7 +163,7 @@ _sql
 		`include` tinyint(1) NOT NULL default 1,
 		`sent_newsletter_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY  (`newsletter_id`,`include`,`sent_newsletter_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 
@@ -380,7 +380,7 @@ _sql
 	(
 		`newsletter_id` int(10) unsigned NOT NULL,
 		`smart_group_id` int(10) unsigned NOT NULL
-	)  ENGINE=MyISAM DEFAULT CHARSET=utf8
+	)  ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -391,7 +391,8 @@ _sql
 	FROM 
 		`[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	WHERE 
-		IFNULL(smart_group_id, 0) <> 0;
+		IFNULL(smart_group_id, 0) <> 0
+	ORDER BY id
 _sql
 
 , <<<_sql
@@ -430,7 +431,7 @@ _sql
 		PRIMARY KEY  (`id`),
 		INDEX (`newsletter_id`),
 		INDEX (`link_ordinal`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 
@@ -493,7 +494,7 @@ _sql
 		`date_modified` datetime DEFAULT NULL,
 		`modified_by_id` int(10) unsigned NOT NULL DEFAULT '0',
 		PRIMARY KEY (`id`)
-	)  ENGINE=MyISAM DEFAULT CHARSET=utf8
+	)  ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Add some sample designs
@@ -1067,6 +1068,12 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 	DROP COLUMN `identifier`
+_sql
+
+);	ze\dbAdm::revision( 184
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	MODIFY COLUMN `date_created` datetime NULL DEFAULT NULL
 _sql
 
 );

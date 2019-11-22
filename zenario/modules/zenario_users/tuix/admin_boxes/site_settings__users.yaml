@@ -1,321 +1,328 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-	setting_group: users
-	title: Editing settings for users
-	tabs:
-		names:
-			label: Sign-in
-			show_errors_after_field: description
-			edit_mode:
-				enabled: true
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: false
+    setting_group: users
+    title: Editing settings for users
+    tabs:
+        names:
+            label: Sign-in
+            show_errors_after_field: description
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
 
-			notices:
-				turning_off_screen_names:
-					show: false
-					type: warning
-					message: >
-						If you turn off screen names, the identifier for all users and contacts
-						will be changed to first name+last name (+suffix number, if non-unique).
-						For users and contacts without a first name or last name,
-						the start of their email address will be used instead.
-				turning_on_screen_names:
-					show: false
-					type: warning
-					message: >
-						If you turn on screen names, the identifier for all users and contacts will be changed
-						to their screen name if they have one.
-			
-			fields:
-				description:
-					full_width: true
-					snippet:
-						html: "This tab contains settings related to sign-in behaviour."
-				data_protection_link:
-					snippet:
-						html: ''
-				user_use_screen_name:
-					site_setting:
-						name: user_use_screen_name
-					label: 'Use screen names'
-					type: checkbox
-					format_onchange: true
-					value: 1
-					side_note: |
-						For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
-						If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
-						Login Module will have the option to allow users to log in using their screen name (rather than an email address).
-		passwords:
-			label: Passwords
-			edit_mode:
-				enabled: true
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: false
-			fields:
-				min_extranet_user_password_length:
-					label: 'Minimum password length:'
-					site_setting:
-						name: min_extranet_user_password_length
-					type: text
-					style: "width:50px;"
-					validation:
-						required: Please enter a number for minimum password length between 3 and 32.
-						numeric: The minimum password length must be between 3 and 32.
-				info:
-					label: 'Characters used to auto-generate passwords:'
-				a_z_uppercase_characters_in_user_password:
-					label: 'A-Z'
-					site_setting:
-						name: a_z_uppercase_characters
-					type: checkbox
-					value: true
-				a_z_lowercase_characters_in_user_password:
-					label: 'a-z'
-					site_setting:
-						name: a_z_lowercase_characters
-					type: checkbox
-					value: true
-				0_9_numbers_in_user_password:
-					label: '0-9'
-					site_setting:
-						name: 0_9_numbers_in_user_password
-					type: checkbox
-					value: true
-				symbols_in_user_password:
-					label: 'Symbols'
-					site_setting:
-						name: symbols_in_user_password
-					type: checkbox
-					value: false
-						
-				min_extranet_user_password_strength:
-					label: 'Minimum password strength:'
-					site_setting:
-						name: min_extranet_user_password_strength
-					type: select
-					value: _MEDIUM
-					values:
-						_WEAK: Weak
-						_MEDIUM: Medium
-						_STRONG: Strong
-						_VERY_STRONG: Very strong
-				
-		filesizes:
-			label: File Sizes
-			edit_mode:
-				enabled: true
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: false
-			fields:
-				description:
-					full_width: true
-					snippet:
-						html: This tab contains settings for file uploads.
-				max_user_image_filesize:
-					site_setting:
-						name: max_user_image_filesize
-					label: 'Maximum User Image File Size:'
-					type: text
-					value: "50000"
-					side_note: >
-						Maximum allowed file size for avatar images uploaded by
-						Extranet Users, in bytes.
-					validation:
-						required: Please enter a Maximum User Image File Size.
-						numeric: The Maximum User Image File Size must be numeric.
-		unconfirmed_users:
-			label: Unconfirmed users
-			edit_mode:
-				enabled: true
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: false
-			fields:
-				description:
-					full_width: true
-					snippet:
-						html: |
-							<p>
-								Zenario can delete the accounts of people who sign up, but who never confirm their email address. Use the setting below to have these users deleted after a period of time.
-							</p>
-				remove_inactive_users:
-					site_setting:
-						name: remove_inactive_users
-					label: 'Delete unconfirmed user accounts'
-					type: checkbox
-					format_onchange: true
-					side_note: Accounts for users will be deleted where their status is Pending and the email verified flag is not set.
-				max_days_user_inactive:
-					site_setting:
-						name: max_days_user_inactive
-					label: 'If a user fails to confirm their email address after signing up, delete account after:'
-					type: select
-					values:
-						2:
-							label: 2 days
-							ord: 1
-						3:
-							label: 3 days
-							ord: 2
-						7:
-							label: 7 days
-							ord: 3
-						14:
-							label: 14 days
-							ord: 4
-						21:
-							label: 21 days
-							ord: 5
-						28:
-							label: 28 days
-							ord: 6
-						45:
-							label: 45 days
-							ord: 7
-						60:
-							label: 60 days
-							ord: 8
-						90:
-							label: 90 days
-							ord: 9
-					value: 90
-					side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".
-		groups:
-			label: Groups
-			edit_mode:
-				enabled: true
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: false
-			fields:
-				default_groups_dataset_tab:
-					site_setting:
-						name: default_groups_dataset_tab
-					label: 'Default tab for Groups:'
-					type: select
-					value: details
-					side_note: |
-						When a group is created from the Groups panel, add the Group to this tab of the Edit User/Contacts admin box. Go to Datasets->Users to re-arrange.
-		inactive_user_email:
-			label: Inactive user email
-			edit_mode:
-				enabled: true
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: false
-			fields:
-				description:
-					full_width: true
-					snippet:
-						html: |
-							<p>
-								This option allow you send up to 2 emails to inactive users in different periods.
-								
-								These emails will be sent by a scheduled task.
-							</p>
-				time_user_inactive_1:
-					site_setting:
-						name: time_user_inactive_1
-					label: 'Select user inactivity period:'
-					type: select
-					values:
-						2_weeks:
-							label: 2 weeks
-							ord: 1
-						3_weeks:
-							label: 3 weeks
-							ord: 2
-						4_weeks:
-							label: 4 weeks
-							ord: 3
-						6_weeks:
-							label: 6 weeks
-							ord: 4
-						2_months:
-							label: 2 months
-							ord: 5
-						3_months:
-							label: 3 months
-							ord: 6
-						6_months:
-							label: 6 months
-							ord: 7
-						9_months:
-							label: 9 months
-							ord: 8
-						1_year:
-							label: 1 year
-							ord: 9
-					empty_value: "-- Select --"
-					value: ''
-					format_onchange: true
-					side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
-				inactive_user_email_template_1:
-					site_setting:
-						name: inactive_user_email_template_1
-					label: 'Email template:'
-					indent: 1
-					pick_items:
-						path: zenario__email_template_manager/panels/email_templates
-						target_path: zenario__email_template_manager/panels/email_templates
-						min_path: zenario__email_template_manager/panels/email_templates
-						max_path: zenario__email_template_manager/panels/email_templates
-						disallow_refiners_looping_on_min_path: Yes
-						nothing_selected_phrase: No email template selected
-						select_phrase: Select an email template...
-				time_user_inactive_2:
-					site_setting:
-						name: time_user_inactive_2
-					label: 'Select user inactivity period:'
-					type: select
-					values:
-						2_weeks:
-							label: 2 weeks
-							ord: 1
-						3_weeks:
-							label: 3 weeks
-							ord: 2
-						4_weeks:
-							label: 4 weeks
-							ord: 3
-						6_weeks:
-							label: 6 weeks
-							ord: 4
-						2_months:
-							label: 2 months
-							ord: 5
-						3_months:
-							label: 3 months
-							ord: 6
-						6_months:
-							label: 6 months
-							ord: 7
-						9_months:
-							label: 9 months
-							ord: 8
-						1_year:
-							label: 1 year
-							ord: 9
-					empty_value: "-- Select --"
-					value: ''
-					format_onchange: true
-					side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
-				inactive_user_email_template_2:
-					site_setting:
-						name: inactive_user_email_template_2
-					label: 'Email template:'
-					indent: 1
-					pick_items:
-						path: zenario__email_template_manager/panels/email_templates
-						target_path: zenario__email_template_manager/panels/email_templates
-						min_path: zenario__email_template_manager/panels/email_templates
-						max_path: zenario__email_template_manager/panels/email_templates
-						disallow_refiners_looping_on_min_path: Yes
-						nothing_selected_phrase: No email template selected
-						select_phrase: Select an email template...
-				user_dataset_field_to_receive_emails: 
-					label: 'Only send if user dataset field checked:'
-					site_setting: 
-						name: user_dataset_field_to_receive_emails
-					type: select
-					empty_value: ' -- Select -- '
-					value: ""
+            notices:
+                turning_off_screen_names:
+                    show: false
+                    type: warning
+                    message: >
+                        If you turn off screen names, the identifier for all users and contacts
+                        will be changed to first name+last name (+suffix number, if non-unique).
+                        For users and contacts without a first name or last name,
+                        the start of their email address will be used instead.
+                turning_on_screen_names:
+                    show: false
+                    type: warning
+                    message: >
+                        If you turn on screen names, the identifier for all users and contacts will be changed
+                        to their screen name if they have one.
+        
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: "This tab contains settings related to sign-in behaviour."
+                data_protection_link:
+                    snippet:
+                        html: ''
+                user_use_screen_name:
+                    site_setting:
+                        name: user_use_screen_name
+                    label: 'Use screen names'
+                    type: checkbox
+                    format_onchange: true
+                    value: 1
+                    side_note: |
+                        For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
+                        If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
+                        Login Module will have the option to allow users to log in using their screen name (rather than an email address).
+        passwords:
+            label: Passwords
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                min_extranet_user_password_length:
+                    label: 'When user chooses password, require minimum length:'
+                    site_setting:
+                        name: min_extranet_user_password_length
+                    type: text
+                    style: "width:50px;"
+                    validation:
+                        required: Please enter a number for minimum password length between 3 and 32.
+                        numeric: The minimum password length must be between 3 and 32.
+                min_extranet_user_password_strength:
+                    label: 'When user chooses password, require minimum strength:'
+                    site_setting:
+                        name: min_extranet_user_password_strength
+                    type: select
+                    value: _MEDIUM
+                    values:
+                        _WEAK:
+                            label: Weak
+                        _MEDIUM:
+                            label: Medium
+                        _STRONG:
+                            label: Strong
+                        _VERY_STRONG:
+                            label: Very strong
+                    note_below: |
+                        <p>Password strength is calculated by counting lower case, upper case, numeric and non-alphanumeric characters.</p>
+                        <p>Longer passwords, and passwords which use each character type twice or more, tend to score higher.</p>
+            
+                info:
+                    label: 'Characters used to auto-generate passwords:'
+                a_z_uppercase_characters_in_user_password:
+                    label: 'A-Z'
+                    site_setting:
+                        name: a_z_uppercase_characters
+                    type: checkbox
+                    value: true
+                a_z_lowercase_characters_in_user_password:
+                    label: 'a-z'
+                    site_setting:
+                        name: a_z_lowercase_characters
+                    type: checkbox
+                    value: true
+                0_9_numbers_in_user_password:
+                    label: '0-9'
+                    site_setting:
+                        name: 0_9_numbers_in_user_password
+                    type: checkbox
+                    value: true
+                symbols_in_user_password:
+                    label: 'Symbols'
+                    site_setting:
+                        name: symbols_in_user_password
+                    type: checkbox
+                    value: false
+            
+        filesizes:
+            label: File Sizes
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: This tab contains settings for file uploads.
+                max_user_image_filesize:
+                    site_setting:
+                        name: max_user_image_filesize
+                    label: 'Maximum User Image File Size:'
+                    type: text
+                    value: "50000"
+                    side_note: >
+                        Maximum allowed file size for avatar images uploaded by
+                        Extranet Users, in bytes.
+                    validation:
+                        required: Please enter a Maximum User Image File Size.
+                        numeric: The Maximum User Image File Size must be numeric.
+        unconfirmed_users:
+            label: Unconfirmed users
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                Zenario can delete the accounts of people who sign up, but who never confirm their email address. Use the setting below to have these users deleted after a period of time.
+                            </p>
+                remove_inactive_users:
+                    site_setting:
+                        name: remove_inactive_users
+                    label: 'Delete unconfirmed user accounts'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: Accounts for users will be deleted where their status is Pending and the email verified flag is not set.
+                max_days_user_inactive:
+                    site_setting:
+                        name: max_days_user_inactive
+                    label: 'If a user fails to confirm their email address after signing up, delete account after:'
+                    type: select
+                    values:
+                        2:
+                            label: 2 days
+                            ord: 1
+                        3:
+                            label: 3 days
+                            ord: 2
+                        7:
+                            label: 7 days
+                            ord: 3
+                        14:
+                            label: 14 days
+                            ord: 4
+                        21:
+                            label: 21 days
+                            ord: 5
+                        28:
+                            label: 28 days
+                            ord: 6
+                        45:
+                            label: 45 days
+                            ord: 7
+                        60:
+                            label: 60 days
+                            ord: 8
+                        90:
+                            label: 90 days
+                            ord: 9
+                    value: 90
+                    side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".
+        groups:
+            label: Groups
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                default_groups_dataset_tab:
+                    site_setting:
+                        name: default_groups_dataset_tab
+                    label: 'Default tab for Groups:'
+                    type: select
+                    value: details
+                    side_note: |
+                        When a group is created from the Groups panel, add the Group to this tab of the Edit User/Contacts admin box. Go to Datasets->Users to re-arrange.
+        inactive_user_email:
+            label: Inactive user email
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                This option allow you send up to 2 emails to inactive users in different periods.
+                            
+                                These emails will be sent by a scheduled task.
+                            </p>
+                time_user_inactive_1:
+                    site_setting:
+                        name: time_user_inactive_1
+                    label: 'Select user inactivity period:'
+                    type: select
+                    values:
+                        2_weeks:
+                            label: 2 weeks
+                            ord: 1
+                        3_weeks:
+                            label: 3 weeks
+                            ord: 2
+                        4_weeks:
+                            label: 4 weeks
+                            ord: 3
+                        6_weeks:
+                            label: 6 weeks
+                            ord: 4
+                        2_months:
+                            label: 2 months
+                            ord: 5
+                        3_months:
+                            label: 3 months
+                            ord: 6
+                        6_months:
+                            label: 6 months
+                            ord: 7
+                        9_months:
+                            label: 9 months
+                            ord: 8
+                        1_year:
+                            label: 1 year
+                            ord: 9
+                    empty_value: "-- Select --"
+                    value: ''
+                    format_onchange: true
+                    side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
+                inactive_user_email_template_1:
+                    site_setting:
+                        name: inactive_user_email_template_1
+                    label: 'Email template:'
+                    indent: 1
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        disallow_refiners_looping_on_min_path: Yes
+                        nothing_selected_phrase: No email template selected
+                        select_phrase: Select an email template...
+                time_user_inactive_2:
+                    site_setting:
+                        name: time_user_inactive_2
+                    label: 'Select user inactivity period:'
+                    type: select
+                    values:
+                        2_weeks:
+                            label: 2 weeks
+                            ord: 1
+                        3_weeks:
+                            label: 3 weeks
+                            ord: 2
+                        4_weeks:
+                            label: 4 weeks
+                            ord: 3
+                        6_weeks:
+                            label: 6 weeks
+                            ord: 4
+                        2_months:
+                            label: 2 months
+                            ord: 5
+                        3_months:
+                            label: 3 months
+                            ord: 6
+                        6_months:
+                            label: 6 months
+                            ord: 7
+                        9_months:
+                            label: 9 months
+                            ord: 8
+                        1_year:
+                            label: 1 year
+                            ord: 9
+                    empty_value: "-- Select --"
+                    value: ''
+                    format_onchange: true
+                    side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
+                inactive_user_email_template_2:
+                    site_setting:
+                        name: inactive_user_email_template_2
+                    label: 'Email template:'
+                    indent: 1
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        disallow_refiners_looping_on_min_path: Yes
+                        nothing_selected_phrase: No email template selected
+                        select_phrase: Select an email template...
+                user_dataset_field_to_receive_emails: 
+                    label: 'Only send if user dataset field checked:'
+                    site_setting: 
+                        name: user_dataset_field_to_receive_emails
+                    type: select
+                    empty_value: ' -- Select -- '
+                    value: ""

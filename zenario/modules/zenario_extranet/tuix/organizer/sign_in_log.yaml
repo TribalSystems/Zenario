@@ -71,7 +71,7 @@ zenario__users:
 				item:
 					name: sign-in Log
 					names: sign-in Logs
-					css_class: log
+					css_class: log sign_in_log
 				#collection_buttons:
 				#	export:
 				#		css_class: export

@@ -87,7 +87,7 @@ class zenario_export_tools extends ze\moduleBaseClass {
 				 && ($importFile = ze\file::getPathOfUploadInCacheDir($values['import/file']))
 				 && (is_file($importFile))) {
 					$targetCID = $targetCType = $error = false;
-					$mimeType = ze\file::mimeType($values['import/file']);
+					$mimeType = ze\file::mimeType($importFile);
 					
 					if ($mimeType == 'text/html' || $mimeType == 'application/xhtml+xml') {
 						if (zenario_export_tools::importContentItem(file_get_contents($importFile), false, true, $targetCID, $targetCType, $error, $box['key']['cID'], $box['key']['cType'])) {
@@ -808,9 +808,15 @@ class zenario_export_tools extends ze\moduleBaseClass {
 		}
 		
 		
-		//echo '<pre>', htmlspecialchars($xml), '</pre>'; exit;
-		if (!$xml = ze\deprecated::SimpleXMLString($xml)) {
-			$error = ze\admin::phrase('The file format has been corrupted and the file could not be read.');
+		//Don't send error emails if someone is trying to import a file from a different site
+		//(meaning site IDs don't match)
+		ze::ignoreErrors();
+			$xml = ze\deprecated::SimpleXMLString($xml);
+		ze::noteErrors();
+
+
+		if (!$xml) {
+			$error = ze\admin::phrase('The file could not be read. Either it comes from a different site, or the file format has been corrupted.');
 			return false;
 		
 		} else {

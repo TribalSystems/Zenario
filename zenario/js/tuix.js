@@ -80,19 +80,25 @@ var htmlBaseFun = function(tag, a, noOffset) {
 	if (selfCloses) {
 		html += '/>';
 	} else {
-		html += '>';
 	
 		//Was there an odd number of attribute/value pairs?
 		//If so, the last one should be the inner HTML of the element
 		if (c % 2? noOffset : !noOffset) {
 			postFieldHTML = a[c-1];
 		
-			//Use ">" as a flag to not close a tag and just return with it open
-			if (postFieldHTML === '>') {
+			//Use " " as a flag to return an unfinished tag
+			if (postFieldHTML === ' ') {
 				return html;
 			}
 		
-			html += postFieldHTML;
+			//Use ">" as a flag to not close a tag and just return with it open
+			if (postFieldHTML === '>') {
+				return html + '>';
+			}
+		
+			html += '>' + postFieldHTML;
+		} else {
+			html += '>';
 		}
 	}
 
@@ -113,7 +119,7 @@ var htmlBaseFun = function(tag, a, noOffset) {
 //	zenarioT.label = funciton() {};
 //	zenarioT.p = funciton() {};
 //	zenarioT.h1 = funciton() {};
-_.each(['', 'div', 'input', 'select', 'option', 'span', 'label', 'p', 'h1'], function(el) {
+_.each(['', 'div', 'input', 'select', 'option', 'span', 'label', 'p', 'h1', 'ul', 'li'], function(el) {
 	zenarioT[el || 'html'] = function(tag) {
 		return htmlBaseFun(el || tag, arguments, el);
 	}
@@ -131,7 +137,9 @@ zenarioT.lib = function(fun) {
 		zenarioT.span,
 		zenarioT.label,
 		zenarioT.p,
-		zenarioT.h1
+		zenarioT.h1,
+		zenarioT.ul,
+		zenarioT.li
 	);
 };
 
@@ -722,7 +730,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			}
 		}
 		
-		if (sameWindow || frontend_link.substr(0, 25) == 'zenario/admin/welcome.php') {
+		if (sameWindow || frontend_link.substr(0, 25) == 'admin.php') {
 			zenario.goToURL(zenario.addBasePath(frontend_link));
 		
 		//If there is a prototal (e.g. http://) in the URL, open it in a new window, unless it is a link
@@ -1121,6 +1129,10 @@ zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, f
 		}
 		//If all calls were fine then return true
 		return true;
+	
+	//Catch the case where this is alreay a function, and just run it
+	} else if (typeof condition == 'function') {
+		return condition();
 	
 	//Otherwise assume this is some code that we need to evaulate
 	} else {

@@ -360,12 +360,15 @@ zenario__users:
                     only_show_on_refiner: group_members
                     hide_in_select_mode: true
                     label: Remove user from this Group
+                    multiple_select_label: Remove users from this Group
                     multiple_select: true
                     ajax:
                         confirm:
                             button_message: Remove
                             cancel_button_message: Cancel
                             message_type: warning
+                            multiple_select_message: 'Are you sure you wish to remove the [[item_count]] selected users/contacts from the group "[[label]]"?'
+                            #The merge field "label" is overridden fillOrganizerPanel.
                         request:
                             remove_users_from_this_group: "1"
                 image_dropdown:

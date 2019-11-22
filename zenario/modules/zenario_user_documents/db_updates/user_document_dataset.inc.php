@@ -36,7 +36,7 @@ _sql
 	CREATE TABLE [[DB_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents_custom_data (
 		`user_document_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`user_document_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
  
 );

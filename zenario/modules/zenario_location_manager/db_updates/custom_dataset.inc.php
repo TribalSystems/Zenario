@@ -38,12 +38,12 @@ _sql
 	CREATE TABLE [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations_custom_data (
 		`location_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`location_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
  
 );
 
-if (ze\dbAdm::needRevision(165)) {
+if (ze\dbAdm::needRevision(166)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	$datasetId = ze\datasetAdm::register(
@@ -86,11 +86,13 @@ if (ze\dbAdm::needRevision(165)) {
 	ze\datasetAdm::registerSystemField($datasetId, 'textarea', 'summary', 'summary');
 	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'url last accessed', 'last_accessed');
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_location_manager::locationStatus');
-	//ze\datasetAdm::registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 	
 	//sectors
 	
 	ze\datasetAdm::registerSystemField($datasetId, 'checkboxes', 'sectors', 'sectors');
+	
+	ze\datasetAdm::registerSystemField($datasetId, 'centralised_select', 'details', 'timezone', 'timezone', 'none', 'zenario_timezones::getTimezones');
+	//ze\datasetAdm::registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 
-	ze\dbAdm::revision(165);
+	ze\dbAdm::revision(166);
 }

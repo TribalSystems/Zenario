@@ -1,3 +1,12 @@
+jquery.cycle2.min.js
+	This library uses a duplicated slide stripped of id, name and rel tags to calculate its responsive size
+	but removing the id looses the width and height so it looks buggy.
+	Bugfix
+		Replaced:
+				e.removeAttr("id name rel").find("[id],[name],[rel]").removeAttr("id name rel")
+		With:
+				e.removeAttr("name rel").find("[name],[rel]").removeAttr("name rel")
+
 Modifications for jQuery 1.9
 	jquery.cycle.all.js
 		Replaced:
@@ -156,8 +165,6 @@ jquery-ui.slider.js
 
 jquery-ui.spinner.js
 	This is the Spinner Widget from jQuery UI
-
-
 
 
 css/jqueryui/jquery-ui.css

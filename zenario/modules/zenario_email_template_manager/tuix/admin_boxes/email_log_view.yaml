@@ -5,7 +5,7 @@ zenario_email_log_view:
     key:
         id: ""
     identifier: 
-        css_class: log
+        css_class: log email_log
         label: Email log ID
     tabs:
         email:

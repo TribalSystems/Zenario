@@ -1,5 +1,10 @@
 {{m.lib.pMicroTemplate('dev_tools', m)}}
 
+
+<% if (m.lib.showCloseButtonAtTopRight) { %>
+	<div class="zfea_close" onclick="{{m.lib.fun('closePopout')}}();"></div>
+<% } %>
+
 <div class="
 	zfea
 	zfea_{{m.lib.path|escape}}

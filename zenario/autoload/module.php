@@ -180,11 +180,11 @@ class module {
 	//Formerly "includeModuleSubclass()"
 	public static function incSubclass($filePathOrModuleClassName, $type = false, $path = false, $raiseFileMissingErrors = false) {
 	
-		if (!$type) {
-			$type = \ze::$skType;
+		if ($type === false) {
+			$type = \ze::$tuixType;
 		}
-		if (!$path) {
-			$path = \ze::$skPath;
+		if ($path === false) {
+			$path = \ze::$tuixPath;
 		}
 	
 		//Catch a renamed variable

@@ -628,6 +628,21 @@ class moduleAdm {
 		} else {
 			$category = \ze\ring::engToBoolean($desc['is_pluggable'])? 'pluggable' : 'management';
 		}
+		
+		$mustBeOn = '';
+		if (\ze\ring::engToBoolean($desc['is_pluggable'])) {
+			if (empty($desc['plugin_must_be_on_public_page'])) {
+				if (empty($desc['plugin_must_be_on_private_page'])) {
+				} else {
+					$mustBeOn = 'private_page';
+				}
+			} else {
+				if (empty($desc['plugin_must_be_on_private_page'])) {
+					$mustBeOn = 'public_page';
+				} else {
+				}
+			}
+		}
 
 		$sql = "
 			UPDATE ". DB_PREFIX. "modules SET
@@ -636,6 +651,7 @@ class moduleAdm {
 				default_framework = '". \ze\escape::sql($desc['default_framework']). "',
 				css_class_name = '". \ze\escape::sql($desc['css_class_name']). "',
 				is_pluggable = ". \ze\ring::engToBoolean($desc['is_pluggable']). ",
+				must_be_on = '". \ze\escape::sql($mustBeOn). "',
 				fill_organizer_nav = ". \ze\ring::engToBoolean($desc['fill_organizer_nav']). ",
 				can_be_version_controlled = ". \ze\ring::engToBoolean(\ze\ring::engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
 				for_use_in_twig = ". \ze\ring::engToBoolean($desc['for_use_in_twig']). ",
@@ -721,8 +737,11 @@ class moduleAdm {
 							[
 								'module_class_name' => $moduleClassName,
 								'logic' => $logic,
-								'publish' => \ze\ring::engToBoolean($page['publish'] ?? false),
-								'page_type' => $page['page_type']]);
+								'allow_hide' => \ze\ring::engToBoolean($page['allow_hide'] ?? 0),
+								'publish' => \ze\ring::engToBoolean($page['publish'] ?? 0),
+								'page_type' => $page['page_type']
+							]
+						);
 			
 					} elseif (!$specialPage['module_class_name'] || $specialPage['module_class_name'] == $moduleClassName) {
 						$specialPageChanges = true;
@@ -731,9 +750,13 @@ class moduleAdm {
 							[
 								'module_class_name' => $moduleClassName,
 								'logic' => $logic,
-								'publish' => \ze\ring::engToBoolean($page['publish'] ?? false)],
+								'allow_hide' => \ze\ring::engToBoolean($page['allow_hide'] ?? 0),
+								'publish' => \ze\ring::engToBoolean($page['publish'] ?? 0)
+							],
 							[
-								'page_type' => $page['page_type']]);
+								'page_type' => $page['page_type']
+							]
+						);
 			
 					} elseif (!$specialPage['equiv_id']) {
 						$specialPageChanges = true;

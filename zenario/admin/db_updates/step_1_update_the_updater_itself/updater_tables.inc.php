@@ -36,3 +36,24 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //These updates are run before any other updates in any other files are run
 
 
+
+
+//Automatically convert any table that's not using our preferred engine to that engine
+if (ze\dbAdm::needRevision(46500)) {
+	
+	foreach (ze\sql::fetchValues("
+		SELECT `TABLE_NAME`
+		FROM information_schema.tables
+		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME). "'
+		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX). "%'
+		  AND `ENGINE` != '". ze\escape::sql(ZENARIO_TABLE_ENGINE). "'
+	") as $tableName) {
+		ze\sql::update("
+			ALTER TABLE `". ze\escape::sql($tableName). "`
+			ENGINE=". ze\escape::sql(ZENARIO_TABLE_ENGINE)
+		);
+	}
+	
+	ze\dbAdm::revision(46500);
+}
+

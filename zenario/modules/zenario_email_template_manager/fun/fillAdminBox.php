@@ -32,7 +32,13 @@ switch ($path) {
 	case 'zenario_email_template':
 		
 		$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~ttemplate~k{"id"%3A"email"}';
-		ze\lang::applyMergeFields($fields['meta_data/use_standard_email_template']['values']['yes']['label'], ['link' => '<a href="' . htmlspecialchars($href) . '" target="_blank">view</a>']);
+		$mrg = ['link' => '<a href="' . htmlspecialchars($href) . '" target="_blank">view</a>'];
+		ze\lang::applyMergeFields(
+			$fields['meta_data/use_standard_email_template']['values']['yes']['label'],
+			$mrg);
+		ze\lang::applyMergeFields(
+			$fields['meta_data/use_standard_email_template']['values']['twig']['label'],
+			$mrg);
 				
 		if ($box['key']['id']) {
 			$details = $this->getTemplateByCode($box['key']['id']);
@@ -67,7 +73,18 @@ switch ($path) {
 			$values['meta_data/send_bcc'] = $details['send_bcc'];
 			$values['meta_data/bcc_email_address'] = $details['bcc_email_address'];
 			
-			$values['meta_data/use_standard_email_template'] = $details['use_standard_email_template'] ? 'yes' : 'no';
+			switch ($details['use_standard_email_template']) {
+				case 0:
+					$values['meta_data/use_standard_email_template'] = 'no';
+					break;
+				case 1:
+					$values['meta_data/use_standard_email_template'] = 'yes';
+					break;
+				case 2:
+					$values['meta_data/use_standard_email_template'] = 'twig';
+					break;
+			}
+			
 			$values['meta_data/body'] = $details['body'];
 			$values['advanced/head'] = $details['head'];
 			
@@ -171,6 +188,9 @@ switch ($path) {
 				$min = ze\row::min(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log', 'sent_datetime');
 				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
+			
+			$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__email_template_manager/panels/email_log';
+			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 			$fields['data_protection/period_to_delete_the_email_template_sending_log_headers']['note_below'] = $note;
 			
 		}

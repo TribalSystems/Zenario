@@ -6,6 +6,9 @@ common_definitions:
     stringy: &stringy
         - number
         - string
+    booly: &booly
+        - boolean
+        - string
     variable: &variable
         - boolean
         - number
@@ -212,6 +215,10 @@ additionalProperties:
                                     type: boolean
                                     description: >
                                         The notice will only be shown if this is set.
+                                        
+                                        From version 8.4 onwards, you can also use the visible_if property to control whether the notice is displayed,
+                                        however the show property must still be set to true otherwise the notice will not display.
+                                visible_if: *visible_if
                                 message:
                                     type: string
                                     description: >
@@ -416,6 +423,21 @@ additionalProperties:
                         type: boolean
                         description: >
                             Set this to align the values in a column to the right.
+                    
+                    sort_asc:
+                        type: *booly
+                        description: >
+                            Set this to flag that your populateItemsOrderBy() method supports sorting
+                            by this column (ascending).
+                            
+                            You can provide a string, e.g. "Name (A-Z)", or just set this to true.
+                    sort_desc:
+                        type: *booly
+                        description: >
+                            Set this to flag that your populateItemsOrderBy() method supports sorting
+                            by this column (descending).
+                            
+                            You can provide a string, e.g. "Name (Z-A)", or just set this to true.
                     
                     html:
                         type: boolean
@@ -1006,33 +1028,7 @@ additionalProperties:
                 
                 If you don't specify a message, the errors from the fields will be repeated instead.
                     
-                    
         confirm_on_close: *confirm
-        
-        go:
-            type: object
-            required:
-                - command
-            properties: *go_properties
-            additionalProperties:
-                type: *variable
-                description: >
-                    A variable to add to the request/URL.
-                    
-                    Alternately you can set the request to an object of the form
-                    {replace_with_field_from_item: 'field_code_name'}
-                    to automatically put the value of a field into this request.
-            description: >
-                This property allows you to trigger navigation in TUIX forms.
-                It is ignored when the form is first displayed, but will be followed when
-                the form is re-displayed (e.g. because the user pressed the save button).
-        
-        go_to_url:
-            type: string
-            description: >
-                This property allows you to trigger navigation in TUIX forms.
-                It is ignored when the form is first displayed, but will be followed when
-                the form is re-displayed (e.g. because the user pressed the save button).
         
         
         
@@ -1068,18 +1064,73 @@ additionalProperties:
             description: >
                 If sorting is being done on the server, the CMS will put an array of ids
                 (sorted into the correct order) into this variable.
+        
+        
+        
+        
 
+        js:
+            type:
+                - string
+                - object
+            description: >
+                Runs some JavaScript code before the FEA is displayed or redisplayed,
+                or before any the navigation logic is followed if you're about to navigate away
+                using the go property.
+                
+                The format is the same as the visible_if property.
+        
         close_popout:
             type: boolean
             description: >
                 If this FEA plugin was opened in a popout, this sends a signal to close it.
 
-        js:
-            description: >
-                Runs some JavaScript code before the FEA is displayed or redisplayed;
-                the format is the same as the visible_if property.
-
         reload_parent:
             type: boolean
             description: >
                 If this FEA plugin was opened in a popout from another FEA, this sends a signal to reload the parent FEA.
+
+        stop_flow:
+            type: boolean
+            description: >
+                This interupts the redrawing for the FEA, or any navigation with the go
+                property.
+                
+                You would probably want to use this at the same time as the close_popout
+                property.
+        
+        go:
+            type: object
+            required:
+                - command
+            properties: *go_properties
+            additionalProperties:
+                type: *variable
+                description: >
+                    A variable to add to the request/URL.
+                    
+                    Alternately you can set the request to an object of the form
+                    {replace_with_field_from_item: 'field_code_name'}
+                    to automatically put the value of a field into this request.
+            description: >
+                This property allows you to trigger navigation in TUIX forms.
+                It is ignored when the form is first displayed, but will be followed when
+                the form is re-displayed (e.g. because the user pressed the save button).
+        
+        go_to_url:
+            type: string
+            description: >
+                This property allows you to trigger navigation in TUIX forms.
+                It is ignored when the form is first displayed, but will be followed when
+                the form is re-displayed (e.g. because the user pressed the save button).
+        
+        js_after:
+            type:
+                - string
+                - object
+            description: >
+                Runs some JavaScript code after the FEA is displayed or redisplayed,
+                or after the navigation logic is finished if you just navigated away
+                using the go property.
+                
+                The format is the same as the visible_if property.

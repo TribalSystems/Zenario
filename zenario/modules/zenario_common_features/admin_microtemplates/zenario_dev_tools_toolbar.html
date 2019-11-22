@@ -47,6 +47,7 @@
 		<% } %>
 		<optgroup label="{{++i|escape}}. Current">
 			<option value="current" {{'current' == m.selectedFile? ' selected="selected"' : ''}}>Current value (dynamic)</option>
+			<option value="visible" {{'visible' == m.selectedFile? ' selected="selected"' : ''}}>Current value, excluding objects that are hidden</option>
 		</optgroup>
 	<% } %>
 </select>

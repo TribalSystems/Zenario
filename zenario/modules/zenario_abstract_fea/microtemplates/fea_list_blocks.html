@@ -50,7 +50,7 @@
 	
 	<% if (m.thus.sortedCollectionButtons.length) { %>
 		<div class="sorted_buttons">
-			<% if (zenarioT.find(m.thus.sortedCollectionButtons, false)) { %>
+			<% if (zenarioT.find(m.thus.sortedCollectionButtons, false) && !_.isEmpty(m.tuix.columns)) { %>
 				{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
 			<% } %>
 		</div>
@@ -108,7 +108,7 @@
 								<% } %>
 						
 								<% tag = col.tag ? col.tag : 'p'; %>
-								<{{tag|e}}
+								<div
 									id="{{('zfea_' + m.lib.containerId + '_row_' + ii + '_col_' + ci)|e}}"
 									data-label="{{col.title|e}}" 
 									class="
@@ -121,15 +121,25 @@
 											{{item.cell_css_classes[col.id]|e}}
 										<% } %>"
 								>
-									<span class="icon"></span>
-									<span class="label">
-										{{col.blocks_title|e}}
+									<div class="icon"></div>
+									<% if (m.lib.mode == 'view_data_pool_block' && item[col.id]['field_type'] =='metric') { %>
+									<div class="label metric">
+									<% } else if(m.lib.mode == 'view_data_pool_block' && item[col.id]['field_type'] =='real_time') { %>
+									<div class="label real_time">
+									<% } else {%>
+									<div class="label">
+									<% } %>
+										<% if (m.lib.mode == 'view_data_pool_block') { %>
+   										<div class='field_label resize_text'>{{col.blocks_title|e}}</div>
+   										<% } else { %>
+										    {{col.blocks_title|e}}
+										<% } %>
 										{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
 										<% if (item.cell_tooltips && item.cell_tooltips[col.id]) { %>
 										    <i class="info_icon" title="{{item.cell_tooltips[col.id]|e}}"></i>
 										<% } %>
-									</span>
-								</{{tag|e}}>
+									</div>
+								</div>
 						
 								<% if (col.same_row && sameRow && (!m.thus.sortedColumns[+ci + 1] || !m.thus.sortedColumns[+ci + 1].same_row)) { %>
 									<% sameRow = false; %>

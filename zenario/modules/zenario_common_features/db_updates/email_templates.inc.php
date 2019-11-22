@@ -40,7 +40,8 @@ ze\dbAdm::revision(217, "
 		`body`,
 		date_created,
 		created_by_id,
-		allow_attachments
+		allow_attachments,
+		use_standard_email_template
 	) VALUES (
 		'zenario_common_features',
 		'zenario_common_features__notification_to_new_admin_no_password',
@@ -59,7 +60,8 @@ ze\dbAdm::revision(217, "
 <p>This is an auto-generated email from [[cms_url]]&nbsp;, please do not try to reply.<br> <br> Thank you.&nbsp;</p>',
 		NOW(),
 		". (int) ze\admin::id(). ",
-		0
+		0,
+		1
 	)
 	ON DUPLICATE KEY UPDATE
 		module_class_name = VALUES(module_class_name),
@@ -71,6 +73,60 @@ ze\dbAdm::revision(217, "
 	UPDATE [[DB_PREFIX]]site_settings
 	SET value = "zenario_common_features__notification_to_new_admin_no_password"
 	WHERE name = "notification_to_new_admin"
+_sql
+,
+	"
+	INSERT INTO [[DB_PREFIX]]email_templates (
+		module_class_name,
+		`code`,
+		template_name,
+		`subject`,
+		`body`,
+		date_created,
+		created_by_id,
+		allow_attachments,
+		use_standard_email_template
+	) VALUES (
+		'zenario_common_features',
+		'zenario_common_features__to_admin_contact_form_submission',
+		'To Admin: Contact Form Submission',
+		'Contact Form Submission',
+		'<p>Dear Admin,</p>
+<p>A Contact Us popup form submission has been made with the following details:</p>
+<p><strong>Name:</strong> [[first_name]] [[last_name]]</p>
+<p><strong>Email:</strong> [[email]]</p>
+<p><strong>Message:</strong></p>
+<p>[[unlinked_textarea_4]]</p>
+<p><strong>User has accepted terms and conditions:</strong> [[terms_and_conditions_accepted]]</p>
+<p>&nbsp;</p>
+<p>This is an auto-generated email from [[cms_url]] .</p>',
+		NOW(),
+		". (int) ze\admin::id(). ",
+		0,
+		1
+	)
+	ON DUPLICATE KEY UPDATE
+		module_class_name = VALUES(module_class_name),
+		`subject` = VALUES(`subject`),
+		`body` = VALUES(`body`)
+	"
+
+); ze\dbAdm::revision(228,
+<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = '<h1>Administrator account created</h1>
+		<p>Dear&nbsp;[[first_name]] [[last_name]],</p>
+		<p><br>You have been created an administrator account on [[cms_url]].</p>
+		<p>Your username is <strong>[[username]]</strong>.</p>
+		<p>&nbsp;</p>
+		<p>What to do now:</p>
+		<p>1) Follow this link to create a password:</p>
+		<br /><p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[new_admin_cms_url]]">CREATE A PASSWORD</a></p><br />
+		<p>2) Login and start administering your site!</p>
+		<p>Remember that you can always log in with administrator access by putting \"/admin\" after your site\'s domain name. Also please note that this is an Administrator login, not an Extranet User login (if the site has a password-protected area for visitors).</p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]]&nbsp;, please do not try to reply.<br> <br> Thank you.&nbsp;</p>'
+	WHERE `code` = "zenario_common_features__notification_to_new_admin_no_password"
 _sql
 
 );

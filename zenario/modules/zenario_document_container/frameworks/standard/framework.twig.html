@@ -50,9 +50,16 @@
 							{% if item.Upload_Date %}
 								<span class="upload_date">{{item.Upload_Date|e}}</span>
 							{% endif %}
+							
+							{% if View_Button %}
+								<div class="view_button">
+									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{'View'|trans}}</a>
+								</div>
+							{% endif %}
+							
 							{% if Download_Link %}
 								<div class="download_link">
-									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{Download_Link_Phrase|trans}}</a>
+									<a href="{{item.Document_Link}}" onclick="{{item.Google_Analytics_Link}}" download>{{Download_Link_Phrase|trans}}</a>
 								</div>
 							{% endif %}
 						</div>

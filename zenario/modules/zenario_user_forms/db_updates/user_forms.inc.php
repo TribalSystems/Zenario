@@ -51,7 +51,7 @@ _sql
 		`partial_completion_message` varchar(255) DEFAULT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY `name` (`name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
@@ -109,7 +109,7 @@ _sql
 		`min_rows` int(10) unsigned NOT NULL DEFAULT '0',
 		`max_rows` int(10) unsigned NOT NULL DEFAULT '0',
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision( 10
@@ -124,7 +124,7 @@ _sql
 		`form_id` int(10) unsigned NOT NULL,
 		`response_datetime` datetime NOT NULL,
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -137,7 +137,7 @@ _sql
 		`form_field_id` int(10) unsigned NOT NULL,
 		`value` text NOT NULL,
 		PRIMARY KEY (`user_response_id`, `form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision (11
@@ -168,26 +168,31 @@ _sql
 		`ord` int(10) unsigned NOT NULL,
 		`label` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 );
 
-// Make an initial sample form
+// Make initial sample forms:
 if (ze\dbAdm::needRevision(19)) {
-	if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX. 'user_forms', ['name' => 'Simple contact form'])) {
+	//Simple Contact us
+	if (!ze\row::exists(ZENARIO_USER_FORMS_PREFIX. 'user_forms', ['name' => 'Simple Contact us'])) {
 		// Create form
 		$userFormId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_forms', [
-			'name' => 'Simple contact form',
+			'name' => 'Simple Contact us',
+			'title' => 'Send us a message',
 			'send_email_to_admin' => 1,
 			'admin_email_addresses' => ze::setting('email_address_admin'),
-			'save_data' => 1,
+			'save_data' => 0,
 			'save_record' => 1,
 			'user_status' => 'contact',
 			'show_success_message' => 1,
-			'success_message' => 'Thank you!',
+			'success_message' => '<h2>Message sent</h2>
+<p>Thank you for your message! We will get back to you shortly.</p>',
 			'user_duplicate_email_action' => 'merge',
-			'title' => 'Please enter your details'
+			'submit_button_text' => 'Send',
+			'admin_email_use_template' => 1,
+			'admin_email_template' => 'zenario_common_features__to_admin_contact_form_submission'
 		]);
 		
 		// Create form fields
@@ -199,9 +204,10 @@ if (ze\dbAdm::needRevision(19)) {
 			'is_required' => 1,
 			'label' => 'Email',
 			'name' => 'Email',
-			'required_error_message' => 'Please enter your email address',
+			'required_error_message' => 'This field is required.',
 			'validation' => 'email',
-			'validation_error_message' => 'Please enter a valid email address'
+			'validation_error_message' => 'Please enter a valid email address.',
+			'placeholder' => 'Your email'
 		]);
 		$firstNameFieldId = ze\row::get('custom_dataset_fields', 'id', ['field_name' => 'first_name', 'is_system_field' => 1]);
 		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', [
@@ -209,9 +215,10 @@ if (ze\dbAdm::needRevision(19)) {
 			'user_field_id' => $firstNameFieldId,
 			'ord' => 2,
 			'is_required' => 1,
-			'label' => 'First name',
-			'name' => 'First name',
-			'required_error_message' => 'Please enter your first name'
+			'label' => 'First Name',
+			'name' => 'First Name',
+			'required_error_message' => 'This field is required.',
+			'placeholder' => 'Your first name'
 		]);
 		$lastNameFieldId = ze\row::get('custom_dataset_fields', 'id', ['field_name' => 'last_name', 'is_system_field' => 1]);
 		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', [
@@ -219,9 +226,31 @@ if (ze\dbAdm::needRevision(19)) {
 			'user_field_id' => $lastNameFieldId,
 			'ord' => 3,
 			'is_required' => 1,
-			'label' => 'Last name',
-			'name' => 'Last name',
-			'required_error_message' => 'Please enter your last name'
+			'label' => 'Last Name',
+			'name' => 'Last Name',
+			'required_error_message' => 'This field is required.',
+			'placeholder' => 'Your last name'
+		]);
+		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', [
+			'user_form_id' => $userFormId,
+			'ord' => 4,
+			'is_required' => 1,
+			'label' => 'Message',
+			'name' => 'Message',
+			'field_type' => 'textarea',
+			'required_error_message' => 'This field is required.',
+			'placeholder' => 'Your message'
+		]);
+		$consentFieldId = ze\row::get('custom_dataset_fields', 'id', ['field_name' => 'terms_and_conditions_accepted', 'is_system_field' => 1]);
+		ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', [
+			'user_form_id' => $userFormId,
+			'user_field_id' => $consentFieldId,
+			'ord' => 5,
+			'is_required' => 1,
+			'label' => 'I consent to my data being stored so that I may be contacted in connection with your products and services.',
+			'name' => 'Consent',
+			'required_error_message' => 'This field is required.',
+			'note_to_user' => 'Please read our <a href="privacy-policy" target="_blank">privacy policy</a>.'
 		]);
 	}
 	ze\dbAdm::revision(19);
@@ -244,7 +273,7 @@ _sql
 		`source_field_id` int(10) unsigned NOT NULL,
 		`target_field_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`source_field_id`, `target_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision( 26
@@ -277,7 +306,7 @@ _sql
 		PRIMARY KEY (`id`),
 		KEY (`user_id`),
 		KEY (`form_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -290,7 +319,7 @@ _sql
 		`form_field_id` int(10) unsigned NOT NULL,
 		`value` text NOT NULL,
 		PRIMARY KEY (`user_partial_response_id`, `form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 ); ze\dbAdm::revision(36
@@ -1002,7 +1031,7 @@ _sql
 		`previous_button_text` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT 'Previous',
 		`hide_in_page_switcher` tinyint(1) NOT NULL DEFAULT '0',
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -1352,7 +1381,7 @@ _sql
 		`form_field_id` int(10) unsigned NOT NULL,
 		`button_label` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
 		PRIMARY KEY (`form_field_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 , <<<_sql
@@ -1367,7 +1396,7 @@ _sql
 		`ord` int(10) unsigned NOT NULL DEFAULT 0,
 		`text` text,
 		PRIMARY KEY (`id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Add individual options to forms on the period to delete the response
@@ -1425,7 +1454,6 @@ _sql
 	MODIFY COLUMN `welcome_message` text CHARACTER SET utf8mb4 DEFAULT NULL
 _sql
 
-
 //Merge "autocomplete" and "enable_suggested_values" options into somthing that makes more sense
 ); ze\dbAdm::revision(215
 , <<<_sql
@@ -1471,7 +1499,17 @@ _sql
 	ADD COLUMN `consent_field` int(5) NOT NULL DEFAULT '0'
 _sql
 
-); ze\dbAdm::revision(220
+//Fix legacy form pages with "Page end" as the first pages name
+); ze\dbAdm::revision(250
+, <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
+	SET `name` = 'Page 1', `label` = 'Page 1'
+	WHERE `name` = 'Page end'
+	AND `ord` = 1
+_sql
+
+//(N.b. this was added in an after-branch patch in 8.3 revision 220, but is safe to re-run.)
+); ze\dbAdm::revision(251
 ,  <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
 	SET period_to_delete_response_headers = 0
@@ -1498,10 +1536,28 @@ _sql
 	AND value = 'never_save'
 _sql
 
-);ze\dbAdm::revision(221
+); ze\dbAdm::revision(253
+,  <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN rows int(10) unsigned default NULL
+_sql
+); ze\dbAdm::revision(254
 , <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	MODIFY COLUMN `visible_condition_field_value` longtext CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
+); ze\dbAdm::revision(255
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	MODIFY COLUMN `mandatory_condition_field_value` longtext CHARACTER SET utf8mb4 DEFAULT NULL
+_sql
+
+); ze\dbAdm::revision(256
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `send_email_to_admin_condition` enum('always_send','send_on_condition') NOT NULL DEFAULT 'always_send' AFTER `send_email_to_admin`,
+	ADD COLUMN `send_email_to_admin_condition_field` int(5) unsigned NULL AFTER `send_email_to_admin_condition`
 _sql
 
 );

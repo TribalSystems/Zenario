@@ -140,3 +140,5 @@ if (ze::$locked) {
 } else {
 	$class .= ' zenario_pageIsntLocked';
 }
+
+$class .= ' zenario_status_'. \ze\contentAdm::versionStatus(\ze::$cVersion, \ze::$visitorVersion, \ze::$adminVersion, \ze::$status);

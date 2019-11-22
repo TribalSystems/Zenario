@@ -66,7 +66,18 @@ switch ($path) {
 				($columns['send_bcc'] = $values['meta_data/send_bcc'])? $values['meta_data/bcc_email_address'] : '';
 			
 			
-			$columns['use_standard_email_template'] = $values['meta_data/use_standard_email_template'] == 'yes';
+			switch ($values['meta_data/use_standard_email_template']) {
+				case 'no':
+					$columns['use_standard_email_template'] = 0;
+					break;
+				case 'yes':
+					$columns['use_standard_email_template'] = 1;
+					break;
+				case 'twig':
+					$columns['use_standard_email_template'] = 2;
+					break;
+			}
+			
 			$columns['body'] = $values['meta_data/body'];
 			$htmlChanged = false;
 			ze\file::addImageDataURIsToDatabase($columns['body'], ze\link::absolute());

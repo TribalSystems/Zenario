@@ -6,7 +6,7 @@ CREATE TABLE `[[DB_PREFIX]]admin_setting_defaults` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `default_value` mediumtext,
   PRIMARY KEY (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]categories`;
@@ -20,7 +20,7 @@ CREATE TABLE `[[DB_PREFIX]]categories` (
   PRIMARY KEY (`id`),
   KEY `name` (`name`,`parent_id`),
   KEY `public` (`public`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]category_item_link`;
@@ -30,7 +30,7 @@ CREATE TABLE `[[DB_PREFIX]]category_item_link` (
   `content_type` char(20) CHARACTER SET ascii NOT NULL,
   PRIMARY KEY (`category_id`,`content_type`,`equiv_id`),
   KEY `equiv_id` (`equiv_id`,`content_type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]centralised_lists`;
@@ -40,7 +40,7 @@ CREATE TABLE `[[DB_PREFIX]]centralised_lists` (
   `method_name` varchar(255) NOT NULL,
   `label` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]characteristic_user_link`;
@@ -53,7 +53,7 @@ CREATE TABLE `[[DB_PREFIX]]characteristic_user_link` (
   UNIQUE KEY `user_characteristic_value` (`user_id`,`characteristic_id`,`characteristic_value_id`),
   KEY `characteristic_id` (`characteristic_id`),
   KEY `characteristic_value_id` (`characteristic_value_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_cache`;
@@ -69,7 +69,7 @@ CREATE TABLE `[[DB_PREFIX]]content_cache` (
   KEY `extract_wordcount` (`extract_wordcount`),
   FULLTEXT KEY `text` (`text`),
   FULLTEXT KEY `extract` (`extract`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_item_versions`;
@@ -132,7 +132,7 @@ CREATE TABLE `[[DB_PREFIX]]content_item_versions` (
   FULLTEXT KEY `description` (`description`),
   FULLTEXT KEY `keywords` (`keywords`),
   FULLTEXT KEY `content_summary` (`content_summary`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_items`;
@@ -161,7 +161,7 @@ CREATE TABLE `[[DB_PREFIX]]content_items` (
   KEY `admin_version` (`admin_version`),
   KEY `status` (`status`),
   KEY `lock_owner_id` (`lock_owner_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_types`;
@@ -190,7 +190,7 @@ CREATE TABLE `[[DB_PREFIX]]content_types` (
   KEY `content_type_id` (`content_type_id`),
   KEY `plugin_id` (`module_id`),
   KEY `default_layout_id` (`default_layout_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_field_values`;
@@ -203,7 +203,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_field_values` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `field_id` (`field_id`,`id`),
   KEY `field_id_2` (`field_id`,`ord`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_fields`;
@@ -256,7 +256,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_fields` (
   KEY `field_name` (`field_name`),
   KEY `protected` (`protected`),
   KEY `organizer_visibility` (`organizer_visibility`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_files_link`;
@@ -269,7 +269,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_files_link` (
   KEY `dataset_id` (`dataset_id`),
   KEY `linking_id` (`linking_id`),
   KEY `file_id` (`file_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_tabs`;
@@ -283,7 +283,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_tabs` (
   `is_system_field` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`dataset_id`,`name`),
   KEY `ord` (`ord`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_dataset_values_link`;
@@ -294,7 +294,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_values_link` (
   PRIMARY KEY (`value_id`,`linking_id`),
   UNIQUE KEY `linking_id` (`linking_id`,`value_id`),
   KEY `dataset_id` (`dataset_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_datasets`;
@@ -311,7 +311,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_datasets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `table` (`table`),
   UNIQUE KEY `label` (`label`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]document_public_redirects`;
@@ -320,7 +320,7 @@ CREATE TABLE `[[DB_PREFIX]]document_public_redirects` (
   `file_id` int(10) unsigned NOT NULL,
   `path` varchar(255) NOT NULL,
   PRIMARY KEY (`document_id`,`path`(10))
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8mb4;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]document_rules`;
@@ -340,7 +340,7 @@ CREATE TABLE `[[DB_PREFIX]]document_rules` (
   `stop_processing_rules` tinyint(1) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `ordinal` (`ordinal`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]document_tag_link`;
@@ -352,7 +352,7 @@ CREATE TABLE `[[DB_PREFIX]]document_tag_link` (
   UNIQUE KEY `document_tag_link` (`document_id`,`tag_id`),
   KEY `type` (`document_id`),
   KEY `folder_id` (`tag_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]document_tags`;
@@ -361,7 +361,7 @@ CREATE TABLE `[[DB_PREFIX]]document_tags` (
   `tag_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tag_name` (`tag_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]document_types`;
@@ -371,7 +371,7 @@ CREATE TABLE `[[DB_PREFIX]]document_types` (
   `custom` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`type`),
   KEY `custom` (`custom`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]documents`;
@@ -395,14 +395,14 @@ CREATE TABLE `[[DB_PREFIX]]documents` (
   KEY `ordinal` (`ordinal`),
   KEY `type` (`type`),
   KEY `folder_id` (`folder_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]documents_custom_data`;
 CREATE TABLE `[[DB_PREFIX]]documents_custom_data` (
   `document_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`document_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]email_templates`;
@@ -433,7 +433,7 @@ CREATE TABLE `[[DB_PREFIX]]email_templates` (
   UNIQUE KEY `template_name` (`template_name`),
   UNIQUE KEY `code` (`code`),
   KEY `date_modified` (`date_modified`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]files`;
@@ -488,7 +488,7 @@ CREATE TABLE `[[DB_PREFIX]]files` (
   KEY `thumbnail_64x64_height` (`thumbnail_64x64_height`),
   KEY `thumbnail_24x23_width` (`thumbnail_24x23_width`),
   KEY `thumbnail_24x23_height` (`thumbnail_24x23_height`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]group_link`;
@@ -500,7 +500,7 @@ CREATE TABLE `[[DB_PREFIX]]group_link` (
   `link_to_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`link_from`,`link_from_id`,`link_from_char`,`link_to`,`link_to_id`),
   KEY `link_to` (`link_to`,`link_to_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]image_tag_link`;
@@ -509,7 +509,7 @@ CREATE TABLE `[[DB_PREFIX]]image_tag_link` (
   `tag_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`image_id`,`tag_id`),
   KEY `tag_id` (`tag_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]image_tags`;
@@ -520,7 +520,7 @@ CREATE TABLE `[[DB_PREFIX]]image_tags` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `color` (`color`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]inline_images`;
@@ -536,7 +536,7 @@ CREATE TABLE `[[DB_PREFIX]]inline_images` (
   KEY `file_id` (`image_id`),
   KEY `in_use` (`in_use`),
   KEY `archived` (`archived`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]job_logs`;
@@ -552,7 +552,7 @@ CREATE TABLE `[[DB_PREFIX]]job_logs` (
   KEY `status` (`status`),
   KEY `started` (`started`),
   KEY `finished` (`finished`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]jobs`;
@@ -587,7 +587,7 @@ CREATE TABLE `[[DB_PREFIX]]jobs` (
   KEY `plugin_id` (`module_id`),
   KEY `first_n_days_of_month` (`first_n_days_of_month`),
   KEY `manager_class_name` (`manager_class_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]languages`;
@@ -605,7 +605,7 @@ CREATE TABLE `[[DB_PREFIX]]languages` (
   KEY `sync_assist` (`sync_assist`),
   KEY `translate_phrases` (`translate_phrases`),
   KEY `domain` (`domain`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]last_sent_warning_emails`;
@@ -614,7 +614,7 @@ CREATE TABLE `[[DB_PREFIX]]last_sent_warning_emails` (
   `timestamp` datetime NOT NULL,
   `warning_code` enum('document_container__private_file_in_public_folder','module_missing') NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]layouts`;
@@ -648,7 +648,7 @@ CREATE TABLE `[[DB_PREFIX]]layouts` (
   KEY `content_type` (`content_type`),
   KEY `status` (`status`),
   KEY `skin_id` (`skin_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]local_revision_numbers`;
@@ -658,7 +658,7 @@ CREATE TABLE `[[DB_PREFIX]]local_revision_numbers` (
   `revision_no` int(10) unsigned NOT NULL,
   PRIMARY KEY (`path`,`patchfile`),
   KEY `revision_no` (`revision_no`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_hierarchy`;
@@ -671,7 +671,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_hierarchy` (
   KEY `child_id` (`child_id`),
   KEY `separation` (`separation`),
   KEY `section_id` (`section_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_nodes`;
@@ -707,7 +707,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_nodes` (
   KEY `target_loc` (`target_loc`),
   KEY `invisible` (`invisible`),
   KEY `section_id` (`section_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_positions`;
@@ -720,7 +720,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_positions` (
   PRIMARY KEY (`tag`),
   UNIQUE KEY `section_id` (`section_id`,`menu_id`,`is_dummy_child`),
   KEY `parent_tag` (`parent_tag`)
-) ENGINE=MyISAM DEFAULT CHARSET=ascii;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=ascii;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_sections`;
@@ -729,7 +729,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_sections` (
   `section_name` varchar(20) CHARACTER SET utf8mb4 NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `section_name` (`section_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_text`;
@@ -741,7 +741,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_text` (
   `descriptive_text` mediumtext CHARACTER SET utf8mb4,
   PRIMARY KEY (`menu_id`,`language_id`),
   KEY `language_id` (`language_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]module_dependencies`;
@@ -754,7 +754,7 @@ CREATE TABLE `[[DB_PREFIX]]module_dependencies` (
   KEY `type` (`type`),
   KEY `module_class_name` (`module_class_name`,`type`),
   KEY `dependency_class_name` (`dependency_class_name`,`type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]modules`;
@@ -779,7 +779,7 @@ CREATE TABLE `[[DB_PREFIX]]modules` (
   KEY `uses_wireframes` (`can_be_version_controlled`),
   KEY `fill_organizer_nav` (`fill_organizer_nav`),
   KEY `edition` (`edition`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]nested_paths`;
@@ -792,7 +792,7 @@ CREATE TABLE `[[DB_PREFIX]]nested_paths` (
   `commands` text,
   PRIMARY KEY (`instance_id`,`from_state`,`equiv_id`,`content_type`,`to_state`),
   KEY `instance_id` (`instance_id`,`to_state`,`from_state`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]nested_plugins`;
@@ -826,7 +826,7 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `always_visible_to_admins` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `instance_id` (`instance_id`,`is_slide`,`slide_num`,`ord`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]page_preview_sizes`;
@@ -840,7 +840,7 @@ CREATE TABLE `[[DB_PREFIX]]page_preview_sizes` (
   `type` enum('desktop','laptop','tablet','tablet_landscape','smartphone') NOT NULL DEFAULT 'desktop',
   PRIMARY KEY (`id`),
   KEY `ordinal` (`ordinal`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_instance_cache`;
@@ -851,7 +851,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_instance_cache` (
   `last_updated` datetime NOT NULL,
   `cache` mediumtext CHARACTER SET utf8mb4 NOT NULL,
   PRIMARY KEY (`instance_id`,`method_name`,`request`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_instances`;
@@ -869,7 +869,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_instances` (
   KEY `name` (`name`),
   KEY `wireframe_instance` (`content_id`,`content_type`,`content_version`,`slot_name`,`module_id`),
   KEY `module_id` (`module_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_item_link`;
@@ -886,7 +886,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_item_link` (
   KEY `instance_id` (`instance_id`,`content_type`),
   KEY `slot_name` (`instance_id`,`slot_name`),
   KEY `reusable_plugin_item_link` (`instance_id`,`content_id`,`content_type`,`content_version`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_layout_link`;
@@ -901,7 +901,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_layout_link` (
   UNIQUE KEY `family_name` (`family_name`,`layout_id`,`slot_name`),
   KEY `slot_name` (`instance_id`,`slot_name`),
   KEY `layout_id` (`layout_id`,`slot_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_setting_defs`;
@@ -912,7 +912,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_setting_defs` (
   `default_value` mediumtext,
   PRIMARY KEY (`module_id`,`name`),
   KEY `module_class_name` (`module_class_name`(75),`name`(175))
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_settings`;
@@ -935,7 +935,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_settings` (
   KEY `value` (`value`(64)),
   KEY `foreign_key_char` (`foreign_key_to`,`foreign_key_char`),
   KEY `format` (`format`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]signals`;
@@ -948,7 +948,7 @@ CREATE TABLE `[[DB_PREFIX]]signals` (
   UNIQUE KEY `event_name` (`signal_name`,`module_class_name`),
   KEY `suppresses_plugin_class` (`suppresses_module_class_name`),
   KEY `plugin_id` (`module_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]site_settings`;
@@ -959,7 +959,7 @@ CREATE TABLE `[[DB_PREFIX]]site_settings` (
   `encrypted` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`name`),
   KEY `value` (`value`(64))
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]skins`;
@@ -979,7 +979,7 @@ CREATE TABLE `[[DB_PREFIX]]skins` (
   KEY `name` (`name`),
   KEY `display_name` (`display_name`),
   KEY `extension_of_skin` (`extension_of_skin`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_opt_outs`;
@@ -991,7 +991,7 @@ CREATE TABLE `[[DB_PREFIX]]smart_group_opt_outs` (
   PRIMARY KEY (`smart_group_id`,`user_id`),
   KEY `opted_out_on` (`opted_out_on`),
   KEY `opt_out_method` (`opt_out_method`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_rules`;
@@ -1009,7 +1009,7 @@ CREATE TABLE `[[DB_PREFIX]]smart_group_rules` (
   `not` tinyint(1) NOT NULL DEFAULT '0',
   `value` text,
   PRIMARY KEY (`smart_group_id`,`ord`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_groups`;
@@ -1025,7 +1025,7 @@ CREATE TABLE `[[DB_PREFIX]]smart_groups` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `intended_usage` (`intended_usage`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_aliases`;
@@ -1041,7 +1041,7 @@ CREATE TABLE `[[DB_PREFIX]]spare_aliases` (
   KEY `target_loc` (`target_loc`),
   KEY `ext_url` (`ext_url`),
   KEY `created_datetime` (`created_datetime`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_domain_names`;
@@ -1051,7 +1051,7 @@ CREATE TABLE `[[DB_PREFIX]]spare_domain_names` (
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL,
   PRIMARY KEY (`requested_url`),
   KEY `content_type` (`content_type`,`content_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]special_pages`;
@@ -1065,7 +1065,7 @@ CREATE TABLE `[[DB_PREFIX]]special_pages` (
   PRIMARY KEY (`page_type`),
   UNIQUE KEY `content_type` (`content_type`,`equiv_id`),
   KEY `module_class_name` (`module_class_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]template_families`;
@@ -1075,7 +1075,7 @@ CREATE TABLE `[[DB_PREFIX]]template_families` (
   `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`family_name`),
   KEY `skin_id` (`skin_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]template_files`;
@@ -1084,7 +1084,7 @@ CREATE TABLE `[[DB_PREFIX]]template_files` (
   `file_base_name` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`family_name`,`file_base_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]template_slot_link`;
@@ -1096,7 +1096,7 @@ CREATE TABLE `[[DB_PREFIX]]template_slot_link` (
   `cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `small_screens` enum('show','hide','only','first') DEFAULT 'show',
   PRIMARY KEY (`family_name`,`file_base_name`,`slot_name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]translation_chain_privacy`;
@@ -1108,7 +1108,7 @@ CREATE TABLE `[[DB_PREFIX]]translation_chain_privacy` (
   `param_1` varchar(200) NOT NULL DEFAULT '',
   `param_2` varchar(200) NOT NULL DEFAULT '',
   PRIMARY KEY (`equiv_id`,`content_type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]translation_chains`;
@@ -1118,7 +1118,7 @@ CREATE TABLE `[[DB_PREFIX]]translation_chains` (
   `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','send_signal','with_role') NOT NULL DEFAULT 'public',
   `smart_group_id` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`equiv_id`,`type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]tuix_file_contents`;
@@ -1133,7 +1133,7 @@ CREATE TABLE `[[DB_PREFIX]]tuix_file_contents` (
   `checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
   PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
   KEY `panel_type` (`panel_type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values`;
@@ -1146,7 +1146,7 @@ CREATE TABLE `[[DB_PREFIX]]user_characteristic_values` (
   `help_text` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `characteristic_id` (`characteristic_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values_link`;
@@ -1154,7 +1154,7 @@ CREATE TABLE `[[DB_PREFIX]]user_characteristic_values_link` (
   `user_id` int(10) unsigned NOT NULL,
   `user_characteristic_value_id` int(10) NOT NULL,
   PRIMARY KEY (`user_id`,`user_characteristic_value_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_content_accesslog`;
@@ -1175,7 +1175,7 @@ CREATE TABLE `[[DB_PREFIX]]user_content_accesslog` (
   KEY `content_id_2` (`content_id`),
   KEY `content_type_2` (`content_type`),
   KEY `new_ip` (`ip`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_signin_log`;
@@ -1191,7 +1191,7 @@ CREATE TABLE `[[DB_PREFIX]]user_signin_log` (
   KEY `user_id` (`user_id`),
   KEY `login_datetime` (`login_datetime`),
   KEY `ip` (`ip`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_sync_log`;
@@ -1200,7 +1200,7 @@ CREATE TABLE `[[DB_PREFIX]]user_sync_log` (
   `last_synced_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
   KEY `last_synced_timestamp` (`last_synced_timestamp`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]users`;
@@ -1248,14 +1248,14 @@ CREATE TABLE `[[DB_PREFIX]]users` (
   KEY `last_updated_timestamp` (`last_updated_timestamp`),
   KEY `status` (`status`),
   KEY `send_delayed_registration_email` (`send_delayed_registration_email`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]users_custom_data`;
 CREATE TABLE `[[DB_PREFIX]]users_custom_data` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]visitor_phrases`;
@@ -1275,7 +1275,7 @@ CREATE TABLE `[[DB_PREFIX]]visitor_phrases` (
   KEY `seen_in_visitor_mode` (`seen_in_visitor_mode`),
   KEY `seen_in_file` (`seen_in_file`),
   KEY `module_class_name` (`module_class_name`(100),`language_id`,`code`(150))
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 REPLACE INTO `[[DB_PREFIX]]local_revision_numbers` VALUES
  ('admin/db_updates/step_2_update_the_database_schema','content_tables.inc.php',[[INSTALLER_REVISION_NO]]),

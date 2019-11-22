@@ -1,0 +1,37 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: 'Modified BSD License'
+display_name: Slideshow (simple)
+description: |
+    <p>
+        This module allows you to create a simple animated slideshow of images.
+    </p><p>
+        Each image can have extra HTML added and a few other options such as a hyperlink and privacy controls.
+    </p><p>
+        You can create dynamic effects for your visitors, controlling all aspects of display and slide transitions.
+        The slides can auto-advance after a set delay, or slides can be set to only advance when a visitor clicks Next or Prev.
+    </p>
+category: pluggable
+keywords: >
+    masthead, callout, call-out, document, download, image,
+    picture, gif, jpg, jpeg, png, link, hyperlink, url
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_plugin_nest
+css_class_name: zenario_slideshow
+is_pluggable: true
+nestable: false
+can_be_version_controlled: false
+default_framework: standard
+default_instance_name: Untitled Slideshow
+dependencies:
+    zenario_slideshow: true
+inheritance:
+    inherit_settings_from_module: zenario_slideshow
+    inherit_frameworks_from_module: zenario_slideshow
+    include_javascript_from_module: zenario_slideshow

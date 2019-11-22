@@ -47,22 +47,10 @@ class zenario_common_features__organizer__spare_domains extends ze\moduleBaseCla
 		if (!empty($panel['items']) && is_array($panel['items'])) {
 			foreach ($panel['items'] as &$item) {
 				if ($item['frontend_link']) {
-					$item['frontend_link'] = 'http://'. $item['frontend_link'];
+					$item['name'] = 'http://' . $item['frontend_link']; //Confirmation messages use this (e.g. deleting a domain). It's to prevent these messages from displaying html tags.
+					$item['frontend_link'] = '<a href="http://'. $item['frontend_link'] . '" target="_blank">http://' . $item['frontend_link'] . '</a>';
 				}
 			}
-		}
-	}
-	
-	public function lineStorekeeperCSV($path, &$columns, $refinerName, $refinerId) {
-		if (ze::setting('primary_domain')) {
-			$panel['no_items_message'] .= ' '.
-				ze\admin::phrase('No Spare Domain Names have been defined.');
-		} else {
-			$panel['no_items_message'] .= ' '.
-				ze\admin::phrase('You currently cannot use Spare Domain Names on your site as you have not set a primary domain. Please go to Configuration -> Site settings -> Domains to set a primary domain.');
-				
-			unset($panel['db_items']);
-			unset($panel['collection_buttons']['create']);
 		}
 	}
 	

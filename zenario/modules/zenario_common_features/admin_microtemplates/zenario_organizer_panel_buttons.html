@@ -16,20 +16,19 @@
 			
 				<div id="organizer_itemToolbarButtons" class="toolbarButtons">
 			
-					<% if (m.itemCSSClass) { %>
-						<div class="organizer_item_toolbar_image">
-							<div class="listicon organizer_item_image {{m.itemCSSClass|escape}}">
-								<div class="organizer_items_selected">
-									<% if (m.itemsSelected > 1) { %>
-										{{m.itemsSelected}} items
-									<% } %>
-								</div>
-							</div>
-						</div>
-					<% } %>
-				
+					
 					<% if (m.itemButtons && m.itemButtons.length) { %>
-						{{zenarioT.microTemplate('zenario_organizer_button', m.itemButtons)}}
+						
+						<% var bi, button; %>
+						<% foreach (m.itemButtons as bi => button) { %>
+							<% if (bi == 0 && m.itemCSSClass) { %>
+								<% button.itemCSSClass = m.itemCSSClass; %>
+							<% } %>
+							
+							{{zenarioT.microTemplate('zenario_organizer_button', button)}}
+							
+							<% delete button.itemCSSClass; %>
+						<% } %>
 					<% } %>
 				</div>
 			</div>

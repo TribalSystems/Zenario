@@ -33,24 +33,18 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		$phrases = [];
-		$sql = "
-			SELECT COUNT(*)
-			FROM (
-				SELECT DISTINCT code, module_class_name
-				FROM ". DB_PREFIX. "visitor_phrases
-			) AS c";
-		$result = ze\sql::select($sql);
-		list($phrases['total']) = ze\sql::fetchRow($result);
+		$phrases['total'] = ze\sql::fetchValue("
+			SELECT COUNT(DISTINCT code, module_class_name)
+			FROM ". DB_PREFIX. "visitor_phrases"
+		);
+		$phrases['present'] = ze\sql::fetchValue("
+			SELECT COUNT(DISTINCT code, module_class_name)
+			FROM ". DB_PREFIX. "visitor_phrases
+			WHERE language_id = '". ze\escape::sql($box['key']['id']). "'
+			  AND local_text IS NOT NULL
+			  AND local_text != ''"
+		);
 		
-		$sql = "
-			SELECT COUNT(*)
-			FROM (
-				SELECT DISTINCT code, module_class_name
-				FROM ". DB_PREFIX. "visitor_phrases
-				WHERE language_id = '". ze\escape::sql($box['key']['id']). "'
-			) AS c";
-		$result = ze\sql::select($sql);
-		list($phrases['present']) = ze\sql::fetchRow($result);
 		$phrases['missing'] = $phrases['total'] - $phrases['present'];
 		$phrases['lang'] = ze\lang::name($box['key']['id']);
 		$phrases['def_lang'] = ze\lang::name(ze::$defaultLang);
@@ -146,6 +140,8 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			   ON phrases.code = codes.code
 			  AND phrases.module_class_name = codes.module_class_name
 			  AND phrases.language_id = '". ze\escape::sql($languageId). "'
+			  AND phrases.local_text IS NOT NULL
+			  AND phrases.local_text != ''
 			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS reference
 			   ON reference.code = codes.code
 			  AND reference.module_class_name = codes.module_class_name

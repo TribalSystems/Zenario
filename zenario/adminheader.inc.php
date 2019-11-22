@@ -67,7 +67,7 @@ if (!ze\priv::check()) {
 	//Also don't do the redirect for index.php or organizer.php
 	} elseif (($location[0] ?? false) != DIRECTORY_INDEX_FILENAME && ($location[0] ?? false) != 'index.php' && ($location[0] ?? false) != 'organizer.php') {
 		//Otherwise attempt to redirect the user to the login screen
-		header('location: '. ze\link::protocol(). $_SERVER["HTTP_HOST"]. SUBDIRECTORY. 'zenario/admin/welcome.php?desturl='. urlencode($_SERVER['REQUEST_URI']));
+		header('location: '. ze\link::protocol(). $_SERVER["HTTP_HOST"]. SUBDIRECTORY. 'admin.php?desturl='. urlencode($_SERVER['REQUEST_URI']));
 		exit;
 	}
 

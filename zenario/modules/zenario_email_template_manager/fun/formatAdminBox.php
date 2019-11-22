@@ -50,16 +50,41 @@ switch ($path) {
 		} else {
 			$fields['data_deletion/period_to_delete_log_headers']['post_field_html'] = '';
 		}
-				
-		//Update body label
-		if ($values['meta_data/use_standard_email_template'] == 'yes') {
-			$fields['meta_data/body']['label'] = ze\admin::phrase('Email body:');
+		
+		//Use a code editor or a rich text editor depending on the options
+		if ($values['meta_data/use_standard_email_template'] == 'twig') {
+			$fields['meta_data/body']['type'] = 'code_editor';
 		} else {
+			$fields['meta_data/body']['type'] = 'editor';
+		}
+		
+		//Watch out for when someone changes the format. Attempt to change the merge fields between each format (where this is simple to do).
+		if ($box['key']['lastFormatOption']
+		 && $box['key']['lastFormatOption'] != $values['meta_data/use_standard_email_template']) {
+			
+			//Catch the case where they change it from Twig to HTML
+			if ($box['key']['lastFormatOption'] == 'twig'
+			 && $values['meta_data/use_standard_email_template'] != 'twig') {
+				$values['meta_data/body'] = preg_replace('@\{\{(\s*\w+?\s*)\}\}@', '[[$1]]', $values['meta_data/body']);
+			
+			//Catch the case where they change it from HTML to Twig
+			} else
+			if ($box['key']['lastFormatOption'] != 'twig'
+			 && $values['meta_data/use_standard_email_template'] == 'twig') {
+				$values['meta_data/body'] = preg_replace('@\[\[(\s*\w+?\s*)\]\]@', '{{$1}}', $values['meta_data/body']);
+			}
+		}
+		$box['key']['lastFormatOption'] = $values['meta_data/use_standard_email_template'];
+		
+		//Update body label
+		if ($values['meta_data/use_standard_email_template'] == 'no') {
 			$fields['meta_data/body']['label'] = ze\admin::phrase('Entire email:');
+		} else {
+			$fields['meta_data/body']['label'] = ze\admin::phrase('Email body:');
 		}
 		
 		//Only show the preview when using the standard email template
-		$box['tabs']['preview']['hidden'] = $values['meta_data/use_standard_email_template'] != 'yes';
+		$box['tabs']['preview']['hidden'] = $values['meta_data/use_standard_email_template'] == 'no';
 		
 		//Show a preview if using the standard email template
 		$values['preview/body'] = $values['meta_data/body'];
@@ -78,8 +103,13 @@ switch ($path) {
 				$adminDetails = ze\admin::details($_SESSION['admin_userid'] ?? false);
 				
 				$body = $values['meta_data/body'];
+				
+				if ($values['meta_data/use_standard_email_template'] == 'twig') {
+					$body = ze\twig::render("\n". $body, []);
+				}
+				
 				static::putHeadOnBody($values['advanced/head'], $body);
-				if ($values['meta_data/use_standard_email_template'] == 'yes') {
+				if ($values['meta_data/use_standard_email_template'] != 'no') {
 					static::putBodyInTemplate($body);
 				}
 				

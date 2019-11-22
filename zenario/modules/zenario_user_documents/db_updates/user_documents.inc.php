@@ -22,7 +22,7 @@ _sql
 		KEY `user_id` (`user_id`),
 		KEY `type` (`type`),
 		KEY `folder_id` (`folder_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 _sql
 );
 ze\dbAdm::revision( 4
@@ -38,7 +38,7 @@ _sql
 		UNIQUE KEY `document_tag_link` (`user_document_id`,`tag_id`),
 		KEY `user_document_id` (`user_document_id`),
 		KEY `tag_id` (`tag_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 _sql
 );
 ze\dbAdm::revision( 5

@@ -50,7 +50,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 					ze\row::update('users', ['screen_name_confirmed' => 1], ['id' => $userId]);
 					$this->data['extranet_screen_name_confirmed_message'] = $this->phrase('You\'ve confirmed you\'re happy to use "[[screen_name]]" as your public screen name.', ['screen_name' => $screenName]);
 				} else {
-					$this->data['extranet_openForm'] = $this->openForm();
+					$this->data['extranet_openForm'] = $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 					$this->data['extranet_closeForm'] = $this->closeForm();
 					$this->data['extranet_screen_name_unconfirmed'] = true;
 					$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', ['screen_name' => $screenName]);

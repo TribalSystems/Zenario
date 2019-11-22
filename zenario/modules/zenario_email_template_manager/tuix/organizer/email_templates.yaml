@@ -132,13 +132,12 @@ zenario__email_template_manager:
                 test:
                     priv: _PRIV_EDIT_SITE_SETTING
                     hide_in_select_mode: true
-                    label: Send test email
-                    tooltip: Manage Email Settings and send a Test Email
+                    label: Email settings
+                    hide_in_select_mode: "1"
                     admin_box:
                         path: site_settings
                         key:
                             id: email
-                        tab: test
             item_buttons:
                 edit_template:
                     label: Edit email template

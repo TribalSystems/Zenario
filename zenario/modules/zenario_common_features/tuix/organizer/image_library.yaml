@@ -66,7 +66,7 @@ zenario__content:
                     width: large
                     searchable: true
                     db_column: f.filename
-                    show_by_default: true
+                    always_show: true
                     get_tags_from_column: tags
                 
                 tags:
@@ -85,7 +85,7 @@ zenario__content:
                 is_featured_image:
                     title: Feature image
                     db_column: v.feature_image_id = f.id
-                    show_by_default: true
+                    always_show: true
                     parent: filename
                     format: yes_or_no
                     yes_phrase: Featured image
@@ -94,7 +94,7 @@ zenario__content:
                 in_use_here:
                     title: In use here
                     db_column: ii.in_use
-                    show_by_default: true
+                    always_show: true
                     parent: filename
                     format: yes_or_no
                     yes_phrase: ''
@@ -103,7 +103,7 @@ zenario__content:
                 
                 duplicate_filename:
                     title: Name not unique 
-                    show_by_default: true
+                    always_show: true
                     parent: filename
                     db_column: |
                         (
@@ -154,7 +154,7 @@ zenario__content:
                     title: Size
                     format: filesize
                     db_column: f.size
-                    show_by_default: true
+                    always_show: true
                     width: small
                 
                 width:
@@ -163,7 +163,7 @@ zenario__content:
                     db_column: f.height
                 dimensions:
                     parent: size
-                    show_by_default: true
+                    always_show: true
                     title: Dimensions
                     microtemplate: |
                         {{m.item.width|e}} × {{m.item.height|e}}px
@@ -171,7 +171,7 @@ zenario__content:
                 privacy:
                     title: Privacy
                     db_column: f.privacy
-                    show_by_default: true
+                    always_show: true
                     width: small
                     format: enum
                     values:

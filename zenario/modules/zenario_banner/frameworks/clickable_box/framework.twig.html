@@ -15,12 +15,16 @@
 	{% elseif Image %}
 		<div class="banner_image" > 
 				
-				<picture>
-					{% if Mobile_Media %}
-						<source media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}">
-					{% endif %}
-					<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} srcset="{{Image_Srcset|e}}" {% endif %} />
-				</picture>
+				{% if Lazy_Load %} 
+					<img class="lazy" data-src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} data-srcset="{{Image_Srcset|e}}" {% endif %} />
+				{% else %}
+					<picture>
+						{% if Mobile_Media %}
+							<source media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}">
+						{% endif %}
+						<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} srcset="{{Image_Srcset|e}}" {% endif %} />
+					</picture>
+				{% endif %}
 				{{Rollover_Images}}
 			
 				{% if Enlarge_Image %}

@@ -14,14 +14,15 @@ description: |
 category: management
 keywords: geographical, location, place
 dependencies:
-    zenario_country_manager: Yes
+    zenario_country_manager: true
+    zenario_timezones: true
 signals:
     signal1:
         name: eventContentDeleted
-        static: Yes
+        static: true
     signal2:
         name: eventLocationDeleted
-        static: Yes
+        static: true
     signal3:
         name: eventSectorDeleted
-        static: Yes
+        static: true

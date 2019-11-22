@@ -5,7 +5,7 @@ zenario_create_vlp:
     title: Defining a language
     key:
         id: ""
-    max_height: "375"
+    max_height: 410
     hide_tab_bar: Yes
     tabs:
         details:
@@ -54,4 +54,4 @@ zenario_create_vlp:
                     side_note: |
                         Any language pickers on your site will use this CSS class name when they wish to show a flag.
                     validation:
-                        required: Please enter a class name
+                        required: Please enter a class name.

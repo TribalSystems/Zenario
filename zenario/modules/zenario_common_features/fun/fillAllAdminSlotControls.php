@@ -265,6 +265,16 @@ if (!$moduleId) {
 	//Set the right CSS class around the slot and control box
 	$controls['css_class'] .= ' zenario_level'. $level;
 	
+	//Flag where a plugin is overriding another plugin on the layout level
+	if ($overriddenPlugin) {
+		$controls['css_class'] .= ' zenario_overriddenPlugin';
+	}
+	if ($isVersionControlled) {
+		$controls['css_class'] .= ' zenario_versionControlledPlugin';
+	} else {
+		$controls['css_class'] .= ' zenario_libraryPlugin';
+	}
+	
 	if (isset(ze::$slotContents[$slotName]['class']) && !empty(ze::$slotContents[$slotName]['class'])) {
 		
 		$status = false;

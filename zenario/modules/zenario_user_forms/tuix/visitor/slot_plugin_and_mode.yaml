@@ -1,0 +1,9 @@
+slot_plugin_and_mode:
+    lovs:
+        modes:
+            zenario_user_forms:
+                label: Form container
+            zenario_user_forms`:
+                disabled: true  #When this mode is implemented, please remove this line
+                parent: zenario_user_forms
+                label: Show a form

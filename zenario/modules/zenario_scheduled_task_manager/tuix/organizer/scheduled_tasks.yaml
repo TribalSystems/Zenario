@@ -189,7 +189,7 @@ zenario__administration:
                         path: zenario_job
                 view_log:
                     ord: 50
-                    css_class: log
+                    css_class: log scheduled_task_log
                     label: View log
                     link:
                         path: >
@@ -248,7 +248,7 @@ zenario__administration:
                                 disallow_sorting: true
                         default_sort_column: finished
                         item:
-                            css_class: log
+                            css_class: log scheduled_task_log
                         collection_buttons:
                             truncate:
                                 css_class: delete

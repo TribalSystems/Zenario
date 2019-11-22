@@ -57,7 +57,8 @@ zenario.lib(function(
 		scrollBody,
 		di,
 		docClasses = {},
-		docClassesSplit = document.body.className.split(' ');
+		docClassesSplit = document.body.className.split(' '),
+		zenarioCSSJSVersionNumber;
 	
 	for (di in docClassesSplit) {
 		docClasses[docClassesSplit[di]] = true;
@@ -372,6 +373,7 @@ zenario.lib(function(
 		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
 			eggId = zenario.getEggIdFromEl(slotNameOrContainedElement),
 			slot = zenario.slots[slotName],
+			slideId = eggId && eggId < 0 && slot && slot.slideId,	//Plugins from the Slide Designer will have a dummy eggId, so we'll need to specify the id of the slide they're on to find them
 			instanceId = slot && slot.instanceId,
 			moduleClassName = moduleClassName || (slot && slot.moduleClassName);
 		
@@ -385,6 +387,8 @@ zenario.lib(function(
 			'&slotName=' + slotName +
 		  (eggId?
 			'&eggId=' + eggId : '') +
+		  (slideId?
+			'&slideId=' + slideId : '') +
 			zenario.urlRequest(requests);
 	};
 	
@@ -509,6 +513,7 @@ zenario_conductor.go =
 zenario_conductor.goBack =
 zenario_conductor.link =
 zenario_conductor.refresh =
+zenario_conductor.resetVarsOnBrowserBackNav =
 zenario_conductor.setCommands ==> {  };
 
 
@@ -602,7 +607,7 @@ methods.add = function(cb) {
 	return this;
 };
 
-//Force a callback to run it's functions even if nothing has been registered yet
+//Force a callback to run its functions even if nothing has been registered yet
 //(If something has been registered, this will do nothing.)
 methods.poke = function() {
 	this.wasPoked = true;
@@ -1033,7 +1038,8 @@ var loadingScripts = {},
 zenario.loadScript =
 zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 	
-	var library =
+	var pathWithCacheKiller,
+		library =
 			loadedScripts[path] =
 				loadedScripts[path] || {
 					cb: new zenario.callback
@@ -1054,8 +1060,15 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 			$('head').append($('<link rel="stylesheet" type="text/css" href="' + htmlspecialchars(stylesheet) + '">'));
 		}
 		
+		//If this is a URL to this site/subdirectory, automatically add the cache killer if it's not already there
+		if (path.substr(0, URLBasePath.length) == URLBasePath && !path.match(/[\?\&]v=/)) {
+			pathWithCacheKiller = zenario.addRequest(path, 'v', zenarioCSSJSVersionNumber);
+		} else {
+			pathWithCacheKiller = path;
+		}
+		
 		$.ajax({
-			url: path,
+			url: pathWithCacheKiller,
 			async: !!callback,
 			cache: true,
 			dataType: 'script',
@@ -1076,6 +1089,7 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 		});
 	}
 };
+
 
 
 //Lazy-load the datepicker library when needed
@@ -1180,7 +1194,6 @@ zenario.addRequest = function(url, request, value) {
 	return url + (url.match(/\?/)? '&' : '?') + encodeURIComponent(request) + '=' + encodeURIComponent(value);
 };
 
-
 //Reverse of the above, as per http://stackoverflow.com/questions/8648892/convert-url-parameters-to-a-javascript-object
 zenario.toObject = function(object, clone) {
 
@@ -1259,12 +1272,15 @@ zenario.parseContainerId = function(elId, getContainerId, getEggId) {
 		split = elId.split('-'),
 		slotName = chopRight(split[0], 7);
 	
-	//There are two possible patterns:
+	//There are three possible patterns:
 		//plgslt_SlotName
 		//plgslt_SlotName-eggId
+		//plgslt_SlotName-slideId-eggNum
 	if (split.length == 1) {
 	} else if (split.length == 2 && isNumeric(split[1])) {
 		eggId = 1*split[1];
+	} else if (split.length == 3 && isNumeric(split[1]) && isNumeric(split[2])) {
+		eggId = -1*split[2];
 	} else {
 		return false;
 	}
@@ -1459,7 +1475,7 @@ zenario.linkToItem = function(cID, cType, request, adminlogin) {
 		canonicalURL,
 		basePath = URLBasePath;
 	if (adminlogin) {
-		basePath += 'zenario/admin/welcome.php';
+		basePath += 'admin.php';
 	} else {
 		basePath += zenario.indexDotPHP;
 	}
@@ -1700,6 +1716,10 @@ if (window.history && history.pushState) {
 			//If there was, give the Admin a chance to stop leaving the page
 			if (!defined(message) || confirm(message)) {
 				
+				//If there is a conductor on the page that uses it's own navigation,
+				//and the user is potentially messing around with this by using the browser navigation,
+				//call a function to warn the conductor about this so it can clear up it's own variables.
+				zenario_conductor.resetVarsOnBrowserBackNav();
 				
 				zenario.refreshPluginSlot(slotName, 'lookup',
 					
@@ -1906,7 +1926,7 @@ zenario.uneschyp = function(string) {
 	return string.replace(/`r/g, "\r").replace(/`n/g, "\n").replace(/`h/g, "-").replace(/`c/g, ":").replace(/`t/g, "`");
 };
 
-//Given a message that might have flags in it, parse the flags then strip them from the messages
+//Given a message that might have flags in it, parse the flags then strip them from the message.
 //Flags can look like this: <!--Flag-->
 //...or like this: <!--Flag:Value-->
 zenario.splitFlagsFromMessage = function(resp) {
@@ -2610,7 +2630,7 @@ zenario.microTemplates = {};
 
 //A wrapper function to the underscore.js function's template library
 window.microTemplate =
-zenario.microTemplate = (template, data, filter, microTemplates, i) => {
+zenario.microTemplate = function(template, data, filter, microTemplates, i) {
 	
 	var j, l, html;
 	
@@ -3567,7 +3587,7 @@ zenario.sGetItem = function(session, name, isObject) {
 
 
 zenario.init = function(
-	zenarioCSSJSVersionNumber,
+	zenarioCSSJSVersionNumberIn,
 	userId,
 	langId,
 	datePickerFormat,
@@ -3583,7 +3603,7 @@ zenario.init = function(
 	visLang
 ) {
 
-	window.zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumber;
+	window.zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumberIn;
 	
 	zenario.userId = userId;
 	zenario.langId = langId;
@@ -3712,7 +3732,8 @@ zenario.exitFullScreen = function() {
 
 
 
-var shrtNms = zenario.shrtNms = function(lib, wipeOldShortcuts) {
+var shrtNms =
+zenario.shrtNms = function(lib, wipeOldShortcuts) {
 	var funs = [],
 		f, fun,
 		shortName, name,

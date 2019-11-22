@@ -241,7 +241,7 @@ class document {
 		return (count(scandir($dir)) == 2);
 	}
 	
-	public function deleteTag($tagId) {
+	public static function deleteTag($tagId) {
 		\ze\row::delete('document_tags', ['id' => $tagId]);
 		
 	}

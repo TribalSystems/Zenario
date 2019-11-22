@@ -1,0 +1,62 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_slideshow_simple
+    tabs:
+        size:
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            Simple slideshows consist of one or more slides, with each slide having one image, plus additional properties in the same way as a Banner plugin. The values you choose here will apply to all slides in this slideshow.
+                banner_canvas:
+                    value: fixed_width_and_height
+                    values:
+                        fixed_width_and_height:
+                            label: Constrain by width and height (recommended)
+                enlarge_image:
+                    hidden: true
+                
+                mobile_canvas:
+                    plugin_setting:
+                        name: mobile_canvas
+                    label: 'Mobile size constraint:'
+                    type: select
+                    value: fixed_width
+                    values:
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height (recommended)
+                        resize_and_crop:
+                            label: Resize and crop
+                    format_onchange: true
+                mobile_width:
+                    plugin_setting:
+                        name: mobile_width
+                    indent: 1
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    value: 750
+                mobile_height:
+                    plugin_setting:
+                        name: mobile_height
+                    indent: 1
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'

@@ -9,5 +9,5 @@ zenario_content:
                     indent: 1
                     visible_if: |
                         lib.value('create_menu_node')
-                    label: 'Invisible in the Menu Tree'
+                    label: 'Invisible in the menu tree'
                     type: checkbox

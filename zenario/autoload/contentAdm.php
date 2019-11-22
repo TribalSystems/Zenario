@@ -87,6 +87,34 @@ class contentAdm {
 			 && (\ze::moduleDir(\ze\module::className($moduleId)))
 			);
 	}
+	
+	public static function versionStatus($cVersion, $visitorVersion, $adminVersion, $status) {
+
+		if (\ze\content::isDraft($status)
+		 && $cVersion == $adminVersion
+		 && $cVersion != $visitorVersion) {
+			return 'draft';
+	
+		} elseif (($cVersion == $adminVersion && $status == 'published')
+			   || ($cVersion == $visitorVersion && $status == 'published_with_draft')) {
+		
+			return 'published';
+
+		} elseif (($cVersion == $adminVersion && $status == 'hidden')
+			   || ($cVersion == $adminVersion - 1 && $status == 'hidden_with_draft')) {
+	
+			return 'hidden';
+
+		} elseif (($cVersion == $adminVersion && $status == 'trashed')
+			   || ($cVersion == $adminVersion - 1 && $status == 'trashed_with_draft')) {
+	
+			return 'trashed';
+
+		} else {
+			return 'archived';
+		}
+	}
+	
 
 	//Convert the format of the menu position as saved in the content-type settings to
 	//a position in the format that the position selector used
@@ -993,9 +1021,14 @@ class contentAdm {
 	//\ze\priv::check("_PRIV_PUBLISH_CONTENT_ITEM")
 	//Formerly "allowHide()"
 	public static function allowHide($cID, $cType, $status = false) {
-	
-		if (\ze\content::isSpecialPage($cID, $cType) && !\ze\contentAdm::allowRemoveEquivalence($cID, $cType)) {
+		
+		//Check for special pages without the allow_hide option set.
+		//(Though even without the allow_hide option, still allow this page to be hidden if it's a translation.)
+		if (($sp = \ze\content::isSpecialPage($cID, $cType))
+		 && !(\ze\row::get('special_pages', 'allow_hide', $sp)
+		  || \ze\contentAdm::allowRemoveEquivalence($cID, $cType))) {
 			return false;
+		
 		} else {
 			if ($status === false) {
 				$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
@@ -1544,7 +1577,8 @@ class contentAdm {
 			) SELECT ". (int) $newEquivId. ", content_type, category_id
 			FROM ". DB_PREFIX. "category_item_link
 			WHERE equiv_id = ". (int) $oldEquivId. "
-			  AND content_type = '". \ze\escape::sql($cType). "'";
+			  AND content_type = '". \ze\escape::sql($cType). "'
+			ORDER BY category_id";
 		\ze\sql::update($sql);
 	
 		$sql = "
@@ -1554,7 +1588,8 @@ class contentAdm {
 			FROM ". DB_PREFIX. "group_link
 			WHERE link_from = 'chain'
 			  AND link_from_id = ". (int) $oldEquivId. "
-			  AND link_from_char = '". \ze\escape::sql($cType). "'";
+			  AND link_from_char = '". \ze\escape::sql($cType). "'
+			ORDER BY `link_to`, `link_to_id`";
 		\ze\sql::update($sql);
 	
 		$sql = "

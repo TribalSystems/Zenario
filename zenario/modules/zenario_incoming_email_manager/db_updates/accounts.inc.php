@@ -51,7 +51,7 @@ _sql
 		UNIQUE KEY (`fetch_server`, `fetch_username`),
 		KEY (`script_enable`),
 		KEY (`fetch_enable`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 //Add a new column for the error mailbox
@@ -77,7 +77,7 @@ _sql
 		`email_subject` varchar(255) NOT NULL default '',
 		PRIMARY KEY  (`log_id`),
 		UNIQUE KEY (`job_id`, `log_id`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
 
 );

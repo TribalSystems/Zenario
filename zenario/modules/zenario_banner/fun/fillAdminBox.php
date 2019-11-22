@@ -57,7 +57,7 @@ switch ($path) {
 		 && (ze\module::className($nestedPlugin['module_id']) == 'zenario_banner')) {
 			$box['tabs']['first_tab']['fields']['canvas']['note_below'] =
 			$box['tabs']['first_tab']['fields']['enlarge_canvas']['note_below'] =
-				ze\admin::phrase('This setting may be overwritten by the settings of the nest.');
+				ze\admin::phrase('If placed in a nest or slideshow, the canvas size setting will be overridden by the setting of the nest or slideshow.');
 		}
 		
 		break;

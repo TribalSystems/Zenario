@@ -32,7 +32,7 @@ site_settings:
                 caching_debug_info:
                     site_setting:
                         name: caching_debug_info
-                    label: 'Show debug info'
+                    label: 'Show caching debug info'
                     type: checkbox
                     visible_if: |
                         zenarioAB.value('caching_enabled') &&
@@ -42,8 +42,20 @@ site_settings:
                     side_note: |
                         This allows you to click on a button at the bottom right of each page in visitor mode
                         to see debug information on caching.
+                        
+                        <br/><br/>
+                        
+                        Look out for one of these icons:
                         <br/>
-                        As this information is shown to visitors, you should not enable this setting on a live site.
+                        <span class="zenario_cache_info_icon_example zenario_cache_disabled"></span>
+                        <span class="zenario_cache_info_icon_example zenario_from_cache"></span>
+                        <span class="zenario_cache_info_icon_example zenario_cache_in_use"></span>
+                        <span class="zenario_cache_info_icon_example zenario_not_cached"></span>
+                        
+                        <br/><br/>
+                        
+                        To see this, you will need to log out of admin mode and clear your cookies.
+                        (Tip: to save time, use an incognito window instead.)
                 limit_caching_debug_info_by_ip:
                     label: ''
                     type: checkbox

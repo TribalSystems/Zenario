@@ -229,7 +229,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$subSections['Password_Error_Display'] = $this->errors;
 		$old_password = !empty($this->old_password) ? $this->old_password : ($_POST['old_password'] ?? false);
 		
-		echo $this->openForm();
+		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			echo $this->remember('user_id', $this->user_id);
 			echo $this->remember('old_password', $old_password);
 			$this->framework('Change_Password_Form', $mergeFields, $subSections);
@@ -248,7 +248,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
 		$mergeFields['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
 		
-		echo $this->getLoginOpenForm();
+		echo $this->getLoginOpenForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			echo $this->remember('accept_terms_and_conditions', 1);
 			echo $this->remember('user_id', $this->user_id);
 			echo $this->remember('user_password', $this->user_password);
@@ -282,7 +282,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 			return $this->openForm(
 				'',' class="form-horizontal"',
 				$action = false,
-				$scrollToTopOfSlot = false, $fadeOutAndIn = true,
+				$scrollToTopOfSlot = true, $fadeOutAndIn = true,
 				$usePost = true, $autoAddRequests = false
 			);
 		} else {

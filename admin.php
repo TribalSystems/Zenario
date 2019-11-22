@@ -1,0 +1,1 @@
+<?php require 'zenario/admin/welcome.php'; ?>

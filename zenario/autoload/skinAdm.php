@@ -290,7 +290,7 @@ class skinAdm {
 			$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
 	
 		//Don't run this in production mode unless $forceScan or $runInProductionMode is set
-		} elseif (!$runInProductionMode && \ze::setting('site_mode') == 'production') {
+		} elseif (!$runInProductionMode && !\ze\site::inDevMode()) {
 			return false;
 	
 		//Otherwise, check if there have been any files changed since the last modification time

@@ -120,6 +120,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		('m3u', 'audio/x-mpegurl', 0),
 		('m4v', 'video/x-m4v', 0),
 		('man', 'application/x-troff-man', 0),
+		('md', 'text/markdown', 0),
 		('mdb', 'application/x-msaccess', 0),
 		('me', 'application/x-troff-me', 0),
 		('mht', 'message/rfc822', 0),

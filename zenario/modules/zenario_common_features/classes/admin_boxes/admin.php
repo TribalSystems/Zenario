@@ -506,7 +506,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				'last_name' => $values['details/last_name'],
 				'email' => $values['details/email'],
 				'cms_url' => ze\link::absolute(),
-				'new_admin_cms_url' => ze\link::absolute() . 'zenario/admin/welcome.php?task=new_admin&hash=' . $hash
+				'new_admin_cms_url' => ze\link::absolute() . 'admin.php?task=new_admin&hash=' . $hash
 			];
 			
 			zenario_email_template_manager::sendEmailsUsingTemplate($email_details['email'], ze::setting('notification_to_new_admin'), $email_details, []);

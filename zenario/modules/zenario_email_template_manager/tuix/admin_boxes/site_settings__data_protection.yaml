@@ -10,6 +10,7 @@ site_settings:
                     site_setting:
                         name: period_to_delete_the_email_template_sending_log_headers
                     type: select
+                    ord: 5
                     values:
                         0:
                             label: Don't save
@@ -36,6 +37,7 @@ site_settings:
                     site_setting:
                         name: delete_email_template_sending_log_content_sooner
                     label: Delete email body sooner (just save headers)
+                    ord: 6
                     type: checkbox
                     redraw_onchange: true
                 
@@ -45,6 +47,7 @@ site_settings:
                     indent: 2
                     site_setting:
                         name: period_to_delete_the_email_template_sending_log_content
+                    ord: 7
                     type: select
                     values:
                         0:

@@ -248,7 +248,8 @@ class link {
 	public static function toItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
-		$equivId = false, $languageId = false, $stayInCurrentLanguage = false
+		$equivId = false, $languageId = false, $stayInCurrentLanguage = false,
+		$useHierarchicalURLsIfEnabled = true, $overrideAlias = false, $overrideLangId = false
 	) {
 	
 		//Catch the case where a tag id is entered, not a cID and cType
@@ -330,6 +331,14 @@ class link {
 			} else {
 				return false;
 			}
+		}
+		
+		//For admin previews
+		if ($overrideAlias !== false) {
+			$alias = $overrideAlias;
+		}
+		if ($overrideLangId !== false) {
+			$languageId = $overrideLangId;
 		}
 
 		//Add important requests to the URL, if the content item being linked to is the current content item,
@@ -432,7 +441,7 @@ class link {
 		}
 	
 		//If enabled in the site settings, attempt to add the full menu tree into the friendly URL
-		if ($useAlias && $mod_rewrite_slashes) {
+		if ($useAlias && $mod_rewrite_slashes && $useHierarchicalURLsIfEnabled) {
 			$aliasOrCID = \ze\link::hierarchicalAlias($equivId, $cType, $languageId, $aliasOrCID);
 		}
 	

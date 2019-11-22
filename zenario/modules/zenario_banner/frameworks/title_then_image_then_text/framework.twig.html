@@ -9,7 +9,7 @@
 	{% if Title %}
 		<div class="banner_title">
 			<{{Title_Tags}}>
-				{% if Link_Href %}
+				{% if Link_Href and not Enlarge_Image %}
 					<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
 				{% else %}
 					{{Title}}
@@ -27,12 +27,16 @@
 				<a {{Image_Link_Href}}{{Target_Blank}}>
 			{% endif %}
 			
-				<picture>
-					{% if Mobile_Media %}
-						<source media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}">
-					{% endif %}
-					<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} srcset="{{Image_Srcset|e}}" {% endif %} />
-				</picture>
+				{% if Lazy_Load %} 
+					<img class="lazy" data-src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} data-srcset="{{Image_Srcset|e}}" {% endif %} />
+				{% else %}
+					<picture>
+						{% if Mobile_Media %}
+							<source media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}">
+						{% endif %}
+						<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} srcset="{{Image_Srcset|e}}" {% endif %} />
+					</picture>
+				{% endif %}
 				{{Rollover_Images}}
 			
 			

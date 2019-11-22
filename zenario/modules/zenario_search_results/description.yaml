@@ -44,6 +44,5 @@ special_pages:
         page_type: zenario_search
         default_alias: search
         default_title: Search
-        footer_menu_title: Search
         menu_rel_tag: search
         logic: create_and_maintain_in_all_languages

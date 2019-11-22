@@ -1,0 +1,10 @@
+.zenario_google_map > div {
+	width:100% !important;
+}
+
+.zenario_skin .zenario_google_map button {
+	min-width:0;
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+	border-radius:0;
+}

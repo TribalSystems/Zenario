@@ -62,6 +62,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_settings`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]signals`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]site_settings`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]skins`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]slide_layouts`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_opt_outs`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_rules`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_groups`;

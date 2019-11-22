@@ -449,6 +449,10 @@ additionalProperties:
                                     type: boolean
                                     description: >
                                         The notice will only be shown if this is set.
+                                        
+                                        From version 8.4 onwards, you can also use the visible_if property to control whether the notice is displayed,
+                                        however the show property must still be set to true otherwise the notice will not display.
+                                visible_if: *visible_if
                                 message:
                                     type: string
                                     description: >
@@ -1506,6 +1510,14 @@ additionalProperties:
                                                 field.
                                                 
                                                 From version 8 onwards, you can enter a value of true to highlight the field in red without a message.
+                                        mobile_number:
+                                            type: *booly
+                                            description: >
+                                                An error message to display if an invalid mobile number is entered.
+                                                
+                                                You can enter a value of true to highlight the field in red without a message.
+                                                
+                                                This works from version 8.4 onwards.
                                         
                                         #New rules for image validation in 7.0.5 and 7.0.7
                                         must_be_image:
@@ -2123,6 +2135,12 @@ additionalProperties:
                                             onkeyup:
                                                 type: string
                                                 description: Sets the onkeyup HTML attribute on a checkbox or radio option.
+                                            onpaste:
+                                                type: string
+                                                description: Sets the onpaste HTML attribute on a checkbox or radio option.
+                                            oninput:
+                                                type: string
+                                                description: Sets the oninput HTML attribute on a checkbox or radio option.
                                             onmousedown:
                                                 type: string
                                                 description: Sets the onmousedown HTML attribute on a checkbox or radio option.
@@ -2629,6 +2647,8 @@ additionalProperties:
                                     - onclick
                                     - ondblclick
                                     - onfocus
+                                    - oninput
+                                    - onpaste
                                     - onmousedown
                                     - onmousemove
                                     - onmouseout
@@ -2671,6 +2691,8 @@ additionalProperties:
                                     - onclick
                                     - ondblclick
                                     - onfocus
+                                    - oninput
+                                    - onpaste
                                     - onmousedown
                                     - onmousemove
                                     - onmouseout

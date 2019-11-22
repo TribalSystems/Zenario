@@ -44,13 +44,16 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				if (!ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 					unset($panel['collection_buttons']['add']);
 					unset($panel['collection_buttons']['upload']);
+					unset($panel['collection_buttons']['add_to_content_item']);
 				}
+				
+				$mrg = [
+					'tag' => ze\content::formatTag($cID, $cType),
+					'version' => ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType])
+				];
 		
-				$panel['title'] =
-					ze\admin::phrase('Images attached to the content item [[tag]], version [[version]]', [
-						'tag' => ze\content::formatTag($cID, $cType),
-						'version' => ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType])
-					]);
+				$panel['title'] = ze\admin::phrase('Images attached to the content item [[tag]], version [[version]]', $mrg);
+				$panel['no_items_message'] = ze\admin::phrase('There are no images attached to the content item [[tag]], version [[version]]', $mrg);
 				
 				//If we're showing images for content items, remove all of the action-buttons if the current admin doesn't
 				//have access to this content item

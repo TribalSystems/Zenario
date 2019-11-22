@@ -49,13 +49,6 @@ function removeUnwantedCode($path) {
 	}
 }
 
-removeUnwantedCode('gridster/src');
-removeUnwantedCode('gridster/test');
-removeUnwantedCode('intro.js/BUILD');
-removeUnwantedCode('intro.js/docs');
-removeUnwantedCode('intro.js/example');
-removeUnwantedCode('intro.js/minified');
-removeUnwantedCode('intro.js/themes');
 removeUnwantedCode('jquery/src');
 removeUnwantedCode('respond/cross-domain');
 removeUnwantedCode('respond/src');

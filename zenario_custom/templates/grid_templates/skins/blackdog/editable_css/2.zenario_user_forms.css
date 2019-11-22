@@ -1,0 +1,378 @@
+.zenario_user_forms .form_field {
+	padding:10px 0;
+}
+
+.zenario_user_forms .form_field .field_title {
+	padding:0 0 8px 8px;
+}
+
+.zenario_user_forms .form_field.mandatory .field_title:after {
+	content:" *";
+}
+
+.zenario_user_forms .form_field.has_error input[type='text'], 
+.zenario_user_forms .form_field.has_error input[type='password'], 
+.zenario_user_forms .form_field.has_error input[type='email'], 
+.zenario_user_forms .form_field.has_error input[type='search'], 
+.zenario_user_forms .form_field.has_error textarea, 
+.zenario_user_forms .form_field.has_error select {
+	border-color:#AF0615;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap {
+	padding-left:10px;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap .field_radio input[type='radio'] {
+	margin-right:4px;
+}
+
+.zenario_user_forms .form_field.field_checkbox {
+	overflow:hidden;
+}
+
+.zenario_user_forms .form_field.field_checkbox input {
+	float:left;
+	margin-top:4px;
+}
+
+.zenario_user_forms .form_field.field_checkbox .field_title {
+	display:inline-block;
+	float:left;
+	width:calc(100% - 30px);
+}
+
+.zenario_user_forms .form_field.field_checkbox .note_to_user {
+	clear:both;
+	float:none;
+	font-size:0.857em;
+	font-style:italic;
+	margin-left:20px;
+}
+
+.zenario_user_forms .form_field.field_checkbox .note_to_user a {
+	text-decoration:underline;
+}
+
+/* User forms, default styles
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms.zenario_user_forms__default_style .form_wrapper {
+	max-width:740px;
+	margin:auto;
+	overflow:hidden;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_wrapper h2 {
+	text-align:center;
+	font-size:2em;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons {
+	overflow:hidden;
+	margin-top:20px;
+	text-align:center;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons .next,
+.zenario_user_forms.zenario_user_forms__default_style fieldset .form_buttons .next.submit {
+	float:right;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons .previous {
+	float:left;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons .next.submit {
+	float:none;
+}
+
+/* User forms, Grouping_Contact
+------------------------------------------------------------------------------------------------- */
+
+.Grouping_Contact .zenario_user_forms .form_wrapper {
+	margin-left:30px;
+}
+
+/* User forms, popup
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms.form_popup {
+	width:300px !important;
+	position:fixed;
+	z-index:100;
+	bottom:0;
+	right:50px;
+	display:none;
+}
+
+.zenario_user_forms.form_popup .form_wrapper {
+	position:absolute;
+	bottom:0;
+	right:0;
+	width:300px;
+	height:38px;
+}
+
+.zenario_user_forms.form_popup,
+.zenario_user_forms.form_popup .form_wrapper,
+.zenario_user_forms.form_popup .form_wrapper > h2,
+.zenario_user_forms.form_popup .success > h2 {
+	-webkit-border-top-left-radius: 4px;
+	-webkit-border-top-right-radius: 4px;
+	-moz-border-radius-topleft: 4px;
+	-moz-border-radius-topright: 4px;
+	border-top-left-radius: 4px;
+}
+
+.zenario_user_forms.form_popup .form_wrapper > h2,
+.zenario_user_forms.form_popup .success > h2 {
+	height:18px;
+	padding:10px; 
+	margin:0;
+	font-size:16px;
+	line-height:15px;
+	background:#ec5c30;
+	color:#FFF;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	text-align:left;
+	cursor:pointer;
+}
+
+.zenario_user_forms.form_popup .form_wrapper > h2:before,
+.zenario_user_forms.form_popup .success > h2:before {
+	font-family: 'FontAwesome';
+	content: "\f0e0";
+	position:relative;
+	left:0;
+	top:0;
+	padding-right:12px;
+}
+
+.zenario_user_forms.form_popup .form_wrapper > h2 {
+	background-image:url('../images/background-contact.png');
+	background-position:right top;
+	background-repeat:no-repeat;
+}
+
+.zenario_user_forms.form_popup .user_form {
+	height:442px;
+	padding:10px 20px 20px;
+	-webkit-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	-moz-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	position:relative;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field {
+	padding-top:10px;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.field_section_description {
+	padding-top:0;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.field_section_description .description p {
+	margin-bottom:0;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field .field_title,
+.zenario_user_forms.form_popup.hide .close {
+	display:none;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.field_checkbox .field_title  {
+	display:block;
+}
+
+.zenario_user_forms.form_popup.show .close {
+	position:absolute;
+	top:442px;
+	right:-25px;
+	padding-top:0;
+	width:25px;
+	height:28px;
+	display:block;
+	-webkit-border-top-right-radius: 4px;
+	-webkit-border-bottom-right-radius: 4px;
+	-moz-border-radius-topright: 4px;
+	-moz-border-radius-bottomright: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	cursor:pointer;
+	
+	text-indent:-999;
+	font-size:0;
+	line-height:0;
+}
+
+.zenario_user_forms.form_popup.show .close:before {
+	font-family: 'FontAwesome';
+	content: "\f00d";
+	font-size:18px;
+	padding-left:5px;
+	text-indent:initial;
+	font-size:18px;
+	line-height:24px;
+}
+
+.zenario_user_forms.form_popup .user_form input[type="text"], 
+.zenario_user_forms.form_popup .user_form input[type="email"],  
+.zenario_user_forms.form_popup .user_form textarea {
+	width:calc(100% - 20px);
+	border:0;
+	color:#808285;
+	-moz-box-shadow:    0 0 0 1px #888;
+  	-webkit-box-shadow: 0 0 0 1px #888;
+  	box-shadow:         0 0 0 1px #888;
+}
+
+.zenario_user_forms.form_popup .user_form input[type="text"], 
+.zenario_user_forms.form_popup .user_form input[type="email"] {
+	height:34px;
+	line-height:34px;
+	padding-top:0;
+	padding-bottom:0;
+}
+
+.zenario_user_forms.form_popup .user_form textarea {
+	height:100px;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"],
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"],
+.zenario_user_forms.form_popup .user_form .form_field.has_error textarea {
+	-moz-box-shadow:    0 0 0 2px red;
+  	-webkit-box-shadow: 0 0 0 2px red;
+  	box-shadow:         0 0 0 2px red;
+	background:#fff url('../images/icon-error-space.png') no-repeat right 8px;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"]:focus,
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"]:focus,
+.zenario_user_forms.form_popup .user_form .form_field.has_error textarea:focus {
+	border-color:#B4B4B4;
+	background:#fff;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.has_error .form_error {
+	display:none;
+}
+
+.zenario_user_forms.form_popup .user_form .form_buttons {
+	text-align:center;
+}
+
+.zenario_user_forms.form_popup .user_form .form_buttons input[type="button"] {
+	width:100%;
+	height:50px;
+	margin-top:10px;
+	font-size:15px;
+	padding:0 0 3px;
+}
+
+.zenario_user_forms.form_popup.hide .form_wrapper {
+    -webkit-transition: all 0.8s ease-in;
+    -moz-transition: all 0.8s ease-in;
+    -o-transition: all 0.8s ease-in;
+    transition: all 0.8s ease-in;
+}
+
+.zenario_user_forms.form_popup.show .form_wrapper {
+	bottom:442px;
+    -webkit-transition: all 0.8s ease-in;
+    -moz-transition: all 0.8s ease-in;
+    -o-transition: all 0.8s ease-in;
+    transition: all 0.8s ease-in;
+}
+
+.zenario_user_forms.form_popup .success p {
+	padding:20px;
+	text-align:center;
+}
+
+.zenario_user_forms.form_popup .success {
+	opacity:1;
+	width:280px;
+	height:430px;
+	padding:40px 10px 0;
+	font-size:16px;
+	line-height:24px;
+	margin-bottom:0;
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+	border-radius:0;
+	-webkit-border-top-left-radius: 4px;
+	-webkit-border-top-right-radius: 4px;
+	-moz-border-radius-topleft: 4px;
+	-moz-border-radius-topright: 4px;
+	border-top-left-radius: 4px;
+	-webkit-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	-moz-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+    -webkit-transition: all 0.4s ease-in;
+    -moz-transition: all 0.4s ease-in;
+    -o-transition: all 0.4s ease-in;
+    transition: all 0.4s ease-in;
+}
+
+.zenario_user_forms.form_popup.hide .success {
+	opacity:0;
+    -webkit-transition: all 0.4s ease-in;
+    -moz-transition: all 0.4s ease-in;
+    -o-transition: all 0.4s ease-in;
+    transition: all 0.4s ease-in;
+}
+
+.zenario_user_forms.form_popup .user_form,
+.zenario_user_forms.form_popup.show .close,
+.zenario_user_forms.form_popup .success {
+	background:#FFF;
+}
+
+.zenario_user_forms.form_popup .user_form,
+.zenario_user_forms.form_popup.show .close,
+.zenario_user_forms.form_popup.show .close:before,
+.zenario_user_forms.form_popup .success,
+.zenario_user_forms.form_popup .success p {
+	color:#000;
+}
+
+.zenario_user_forms.form_popup .user_form .field_section_description.bottom_text {
+	text-align:center;
+	font-size:14px;
+	line-height:18px;
+}
+
+.zenario_user_forms.form_popup .user_form .field_section_description.bottom_text .field_title {
+	display:block;
+	color:#f6c7d4;
+	font-weight:700;
+}
+
+.zenario_user_forms.form_popup .user_form .field_section_description.bottom_text p {
+	margin-bottom:0;
+	font-weight:500;
+}
+
+.zenario_user_forms.form_popup.hide .success {
+	display:none;
+}
+
+.Grid_Footer .zenario_user_forms.form_popup .form_field.field_checkbox {
+	padding-top:0;
+}
+
+.Grid_Footer .zenario_user_forms.form_popup .form_field.field_checkbox * {
+	color:#333 !important;
+}
+
+.zenario_user_forms.form_popup .form_field.field_checkbox .field_title {
+	padding-bottom:2px;
+}
+
+.zenario_user_forms.form_popup .form_field.field_checkbox .field_title,
+.zenario_user_forms.form_popup .form_field.field_checkbox .note_to_user {
+	font-size:0.8em;
+	line-height:1.2em;
+}

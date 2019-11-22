@@ -5,6 +5,9 @@ zenario_salutation:
     title_for_existing_records: Editing the salutation "[[details/name]]"
     key:
         id: ''
+    identifier:
+        css_class: zenario_forum__forum
+        label: Salutation ID
     max_height: 175
     hide_tab_bar: true
     tabs:

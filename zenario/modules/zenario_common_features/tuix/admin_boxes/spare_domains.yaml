@@ -5,8 +5,11 @@ zenario_spare_domains:
     title: Creating a domain name redirect
     key:
         id: ""
+    identifier:
+        css_class: url_item
+        label: Spare domain
     hide_tab_bar: Yes
-    max_height: 350
+    max_height: 360
     tabs:
         details:
             edit_mode:
@@ -17,9 +20,8 @@ zenario_spare_domains:
                     full_width: Yes
                     snippet:
                         html: |
-                            You can define a domain name redirect, so that visitors to that Domain Name are redirected to a specified Content Item under the Admin URL. 
-                            Use this panel to define a domain name redirect and the target Content Item. 
-                            Note that DNS and your web server must be correctly set up to map the Spare Domain to the CMS directory.
+                            Use this panel to define a domain name redirect, so that requests to the given domain are 301-redirected to a specified content item. Visitors will be redirected to the <a href="[[domain_link]]" target="_blank">primary domain</a> if one is set.
+                            Note that DNS records for the domain name must point to this web server, and the web server must be correctly set up to map the spare domain to the Zenario home directory of this site.
                 requested_url:
                     label: |
                         Domain name:
@@ -29,7 +31,7 @@ zenario_spare_domains:
                     
                 add_www:
                     label: |
-                        Add www subdomain:
+                        Add www subdomain
                     type: checkbox
                     note_below: |
                         For example, if you entered "website.com" in the field above, ticking this checkbox would automatically add "www.website.com" for you as well.
@@ -44,3 +46,4 @@ zenario_spare_domains:
                         target_path: zenario__content/panels/content
                         select_phrase: Select content item...
                         hide_remove_button: Yes
+                    value: html_1

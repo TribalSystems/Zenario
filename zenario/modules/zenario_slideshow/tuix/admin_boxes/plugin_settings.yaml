@@ -17,7 +17,7 @@ plugin_settings:
                         name: heading_text
                     indent: 1
                     visible_if: zenarioAB.value('show_heading')
-                    label: Heading
+                    label: 'Heading:'
                     type: text
                     placeholder: 'Type your heading here'
                 heading_tag: 
@@ -53,7 +53,7 @@ plugin_settings:
                 mode:
                     plugin_setting:
                         name: mode
-                    label:  'Animation library for slides'
+                    label:  'Animation library for slides:'
                     type: radios
                     value: cycle
                     values:
@@ -67,6 +67,10 @@ plugin_settings:
                             label: 'Cycle (recommended)'
                             side_note: |
                                 The jQuery Cycle library will be used to power the transitions.
+                        cycle2:
+                            label: 'Cycle 2'
+                            side_note: |
+                                The newer version of the jQuery Cycle library. Cannot be used on the same page as the old Cycle library.
                         roundabout:
                             label: 'Roundabout'
                             side_note: |
@@ -88,7 +92,7 @@ plugin_settings:
                         name: timeout
                     visible_if: zenarioAB.value('mode') && zenarioAB.value('use_timeout')
                     indent: 2
-                    label: 'Display duration'
+                    label: 'Display duration:'
                     type: text
                     slider:
                         min: 0
@@ -97,6 +101,7 @@ plugin_settings:
                         range: min
                         before_field: true
                     validation:
+                        required_if_not_hidden: Please enter a display duration.
                         numeric: The display duration must be a number.
                     value: 4000
                     style: |
@@ -116,7 +121,7 @@ plugin_settings:
                 next_prev_buttons_loop:
                     plugin_setting:
                         name: next_prev_buttons_loop
-                    visible_if: zenarioAB.value('mode') == 'cycle'
+                    visible_if: zenarioAB.value('mode') == 'cycle' || zenarioAB.value('mode') == 'cycle2'
                     indent: 1
                     label: 'Loop slides'
                     type: checkbox
@@ -162,7 +167,7 @@ plugin_settings:
                             label: Blind (Vertical)
                         blindZ:
                             label: Blind (Diagonal)
-                        Cover:
+                        cover:
                             label: Cover
                         curtainX:
                             label: Curtain (Horizontal)
@@ -226,6 +231,49 @@ plugin_settings:
                     label: 'Animation duration:'
                     type: text
                     validation:
+                        required_if_not_hidden: Please enter an animation duration.
+                        numeric: The animation duration must be a number.
+                    value: 1000
+                    slider:
+                        min: 0
+                        max: 5000
+                        step: 50
+                        range: min
+                        before_field: true
+                    style: |
+                        width: 4em;
+                    post_field_html: ms
+        cycle2_effects:
+            label: Effects
+            fields:
+                fx:
+                    plugin_setting:
+                        name: cycle2_fx
+                    label: 'Effect for Transitions:'
+                    type: select
+                    values:
+                        none:
+                            label: None
+                        fade:
+                            label: Fade
+                        fadeout:
+                            label: Fadeout
+                        scrollHorz:
+                            label: Scroll (Horizontal)
+                    value: fade
+                sync:
+                    plugin_setting:
+                        name: cycle2_sync
+                    label: 'Hide/show effects happen simultaneously'
+                    type: checkbox
+                    value: 1
+                speed:
+                    plugin_setting:
+                        name: cycle2_speed
+                    label: 'Animation duration:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an animation duration.
                         numeric: The animation duration must be a number.
                     value: 1000
                     slider:
@@ -291,6 +339,7 @@ plugin_settings:
                     label: 'Animation duration:'
                     type: text
                     validation:
+                        required_if_not_hidden: Please enter an animation duration.
                         numeric: The animation duration must be a number.
                     value: 1000
                     slider:
@@ -316,7 +365,7 @@ plugin_settings:
                 banner_canvas:
                     plugin_setting:
                         name: banner_canvas
-                    label: Size constraint
+                    label: 'Size constraint:'
                     type: select
                     value: unlimited
                     values:
@@ -360,7 +409,7 @@ plugin_settings:
                 enlarge_image:
                     plugin_setting:
                         name: enlarge_image
-                    label: 'Enlarge images in a floating box:'
+                    label: 'Enlarge images in a floating box'
                     type: checkbox
                     format_onchange: true
                 enlarge_canvas:

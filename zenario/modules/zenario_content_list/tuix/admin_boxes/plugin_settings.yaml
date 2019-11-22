@@ -397,8 +397,6 @@ plugin_settings:
                     type: text
                     value: 'No content to list'
                     indent: 1
-                    visible_if: |
-                        zenarioAB.value('show_headings_if_no_items')
                 order:
                     plugin_setting:
                         name: order
@@ -808,8 +806,8 @@ plugin_settings:
                         20: "20"
                         50: "50"
                     value: "0"
-                    side_below: >
-                        e.g. if you select 1 your results will start from the 2nd resulting content item
+                    side_note: >
+                        e.g. if you select 1, your results will start from the 2nd resulting content item
                 page_size:
                     plugin_setting:
                         name: page_size

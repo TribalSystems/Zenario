@@ -5,7 +5,7 @@ zenario_page_preview_size:
     title: Create a new page preview size
     key: 
         id: ''
-    max_height: 300
+    max_height: 430
     hide_tab_bar: true
     tabs:
         details:

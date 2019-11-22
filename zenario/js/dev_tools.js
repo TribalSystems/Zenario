@@ -429,6 +429,22 @@ devTools.updateToolbar = function(refresh) {
 	get('toolbar').innerHTML = zenarioT.microTemplate('zenario_dev_tools_toolbar', merge);
 };
 
+devTools.removeHiddenItems = function(tuix) {
+	
+	var k, v;
+	
+	foreach (tuix as k => v) {
+		if ('object' == typeof v) {
+			if (v._was_hidden_before) {
+				delete tuix[k];
+			} else {
+				devTools.removeHiddenItems(v);
+			}
+		}
+	}
+	
+};
+
 
 devTools.lastView = false;
 devTools.updateEditor = function() {
@@ -455,9 +471,12 @@ devTools.updateEditor = function() {
 	var padding = '\n\n\n\n';
 	
 	//Show the current TUIX
-	if (view == 'current') {
+	if (view == 'current' || view == 'visible') {
 		var tuix = windowOpener[devTools.mode].tuix;
-		//tuix = {testing: 3432, test: {cfewfw: 32, greger: 'dwqdwqdq'}};
+		if (view == 'visible') {
+			tuix = JSON.parse(JSON.stringify(tuix));
+			devTools.removeHiddenItems(tuix);
+		}
 		editor.setValue(devTools.toFormat(tuix, format) + padding);
 		//editor.setReadOnly(false);
 		devTools.rootPath = devTools.tagPath;
@@ -668,7 +687,7 @@ devTools.highlightFilesContainingSelection = function(path) {
 			text = text.substr(2);
 		}
 		
-		if (view == 'current') {
+		if (view == 'current' || view == 'visible') {
 			contains = devTools.checkPathIsInData(localPath, windowOpener[devTools.mode].focus);
 		
 		} else if (view == 'orgmap') {
@@ -829,7 +848,7 @@ devTools.formatRequiredPropertiesInSchema = function(sche) {
 devTools.validate = function() {
 	
 	var session = editor.getSession(),
-		showErrors = devTools.lastView == 'current' || devTools.lastView == 'combined' || devTools.lastView == 'orgmap',
+		showErrors = devTools.lastView == 'current' || devTools.lastView == 'visible' || devTools.lastView == 'combined' || devTools.lastView == 'orgmap',
 		showWarnings = devTools.lastView != 'query_ids' && devTools.lastView != 'query_select_count' && devTools.lastView != 'query_full_select';
 	
 	if (!showErrors && !showWarnings) {
