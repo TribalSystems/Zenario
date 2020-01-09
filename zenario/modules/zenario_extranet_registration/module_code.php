@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2019, Tribal Limited
+ * Copyright (c) 2020, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -604,7 +604,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$_POST['slotName'] = $this->slotName;
 			$_POST['instanceId'] = $this->instanceId;
 			$_POST['containerId'] = $this->containerId;
-			$_POST['containerId'] = $this->cVersion;
+			$_POST['cVersion'] = $this->cVersion;
 		}
 		
 		switch ($this->setting('verified_account_status')) {

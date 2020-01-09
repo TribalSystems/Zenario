@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2019, Tribal Limited
+ * Copyright (c) 2020, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -812,7 +812,7 @@ class miscAdm {
 
 	//Formerly "checkScheduledTaskRunning()"
 	public static function checkScheduledTaskRunning($jobName) {
-		return \ze\module::inc('zenario_scheduled_task_manager') && zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName, true);
+		return \ze\module::inc('zenario_scheduled_task_manager') && \zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName, true);
 	}
 
 

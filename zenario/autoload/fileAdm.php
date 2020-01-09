@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2019, Tribal Limited
+ * Copyright (c) 2020, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -124,45 +124,41 @@ To correct this, please ask your system administrator to perform a
 		
 				touch($path);
 				\ze\cache::chmod($path, 0666);
-		
-				//Attempt to use wget to fetch the file
-				if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
-					try {
-						//Don't fetch via ssh, as this doesn't work when calling wget from php
-						$httpDropboxLink = str_replace('https://', 'http://', $dropboxLink);
-					
-						//$output = $return_var = false;
-						//$return = exec('wget '. escapeshellarg($httpDropboxLink). ' -O '. escapeshellarg($path), $output, $return_var);
-						//var_dump($output);
-						//var_dump($return_var);
-						//var_dump($return);
-						//var_dump($path);
-						//var_dump(filesize($path));
-					
-						exec('wget -q '. escapeshellarg($httpDropboxLink). ' -O '. escapeshellarg($path));
-					
-						$failed = false;
-		
-					} catch (\Exception $e) {
-						//echo 'Caught exception: ',  $e->getMessage(), "\n";
-					}
-				}
-		
-				//If that didn't work, try using php
-				if ($failed || !filesize($path)) {
-					$in = fopen($dropboxLink, 'r');
+				
+				//Attempt to use PHP to load the file
+				if ($in = fopen($dropboxLink, 'r')) {
 					$out = fopen($path, 'w');
 					while (!feof($in)) {
 						fwrite($out, fread($in, 65536));
 					}
 					fclose($out);
 					fclose($in);
+					
+					clearstatcache();
+					$failed = !filesize($path);
 				}
-		
-				if ($failed || !filesize($path)) {
+				
+				//Attempt to use wget to fetch the file
+				if ($failed && !\ze\server::isWindows() && \ze\server::execEnabled()) {
+					try {
+						//Don't fetch via ssh, as this doesn't work when calling wget from php
+						$httpDropboxLink = str_replace('https://', 'http://', $dropboxLink);
+						
+						exec('wget -q '. escapeshellarg($httpDropboxLink). ' -O '. escapeshellarg($path));
+						
+						clearstatcache();
+						$failed = !filesize($path);
+						
+					} catch (\Exception $e) {
+						//echo 'Caught exception: ',  $e->getMessage(), "\n";
+					}
+				}
+				
+				if ($failed) {
 					echo \ze\admin::phrase('Could not get the file from Dropbox!');
 					exit;
 				}
+				
 			} else {
 				move_uploaded_file($tempnam, $path);
 			}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Tribal Limited
+ * Copyright (c) 2020, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1178,7 +1178,6 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	display:inline-block;
 	
    	overflow: hidden;
-   	background: url(http://i62.tinypic.com/2e3ybe1.jpg) no-repeat right center;
    	height: 30px;
    	width: 340px;
    	background-color: #efefef;
@@ -1193,10 +1192,20 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
    
    	border: 1px solid #ccc;
    	height: 30px;
-   	width: 368px;
    	color: #000;
    	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
 	font-size:12px;
+	
+	width:100%;
+	-moz-appearance: none;
+  	-webkit-appearance: none;
+  	appearance: none;
+  
+  	background-repeat: no-repeat;
+  	background-size: 9px 6px;
+  	background-position: right 8px center;
+  	background-image: url('../admin/images/icon-arrow-down.svg');
+  	padding-right: 20px;
 }
 
 #zenario_fbAdminInner td.title input.multiple_edit {

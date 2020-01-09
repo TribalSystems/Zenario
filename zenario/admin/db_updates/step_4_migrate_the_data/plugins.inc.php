@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2019, Tribal Limited
+ * Copyright (c) 2020, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,7 @@ function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false, 
 	
 	if ($uninstallOldModule && $oldId) {
 		ze\row::update('modules', ['status' => 'module_not_initialized'], $oldId);
+		ze\row::delete('special_pages', ['module_class_name' => $oldName]);
 	}
 }
 
@@ -447,4 +448,11 @@ if (ze\dbAdm::needRevision(47160)) {
 if (ze\dbAdm::needRevision(47200)) {
 	runNewModuleDependency('zenario_location_manager', 'zenario_timezones');
 	ze\dbAdm::revision(47200);
+}
+
+
+//Fix a bug where the "password reminder" page was not unflagged as a special page when then zenario_extranet_password_reminder module was replaced
+if (ze\dbAdm::needRevision(48646)) {
+	ze\row::delete('special_pages', ['module_class_name' => 'zenario_extranet_password_reminder']);
+	ze\dbAdm::revision(48646);
 }

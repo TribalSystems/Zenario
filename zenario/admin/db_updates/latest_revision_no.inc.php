@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2019, Tribal Limited
+ * Copyright (c) 2020, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 48645);	//N.b. 8.6 starts at revision #49800
+define('LATEST_REVISION_NO', 48646);	//N.b. 8.6 starts at revision #49800
 define('LATEST_BIG_CHANGE_REVISION_NO', 48644);
 define('INSTALLER_REVISION_NO', 41600);
 define('INSTALLER_DEFAULT_THEME', 'blackdog');
@@ -37,6 +37,6 @@ define('ZENARIO_VERSION', '8.5');
 define('ZENARIO_MAJOR_VERSION', '8');
 define('ZENARIO_MINOR_VERSION', '5');
 define('ZENARIO_IS_BUILD', true);
-define('ZENARIO_REVISION', '50567');
+define('ZENARIO_REVISION', '50837');
 
 define('TINYMCE_DIR', 'zenario/libs/manually_maintained/lgpl/tinymce_4_7_3/');
