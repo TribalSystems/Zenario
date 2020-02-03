@@ -31,6 +31,7 @@ require '../basicheader.inc.php';
 
 //Get a list of module ids from the url
 $modules = array_unique(explode(',', $_GET['ids'] ?? false));
+$moduleIds = [];
 $moduleDetails = [];
 
 //Ensure that the site name and subdirectory are part of the ETag, as modules can have different ids on different servers
@@ -38,8 +39,9 @@ $ETag = 'zenario-plugin-js-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST"]. '
 
 //Add the id of each running Plugin to the ETag
 foreach ($modules as $moduleId) {
-	if ($moduleId) {
-		$ETag .= '-'. (int) $moduleId;
+	if ($moduleId = (int) $moduleId) {
+		$moduleIds[] = $moduleId; 
+		$ETag .= '-'. $moduleId;
 	}
 }
 
@@ -56,6 +58,11 @@ if (!empty($_GET['admin_frontend'])) {
 //Cache this combination of running Plugin JavaScript
 ze\cache::useBrowserCache($ETag);
 
+//Catch a bug where someone could cause a database error by not passing a list of ids
+if ($moduleIds === []) {
+	exit;
+}
+
 
 //Run pre-load actions
 
@@ -67,11 +74,15 @@ ze\db::loadSiteConfig();
 
 
 //Get a list of each Plugin
-foreach ($modules as $moduleId) {
-	if ($moduleId) {
-		$module = ze\module::details($moduleId);
+foreach ($moduleIds as $moduleId) {
+	if ($module = ze\module::details($moduleId)) {
 		$moduleDetails[$module['class_name']] = $module;
 	}
+}
+
+//Catch a bug where someone could cause a database error by not passing a list of ids
+if ($moduleDetails === []) {
+	exit;
 }
 
 //Add Plugin inheritances as well
