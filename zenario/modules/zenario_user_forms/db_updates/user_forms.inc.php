@@ -1539,7 +1539,7 @@ _sql
 ); ze\dbAdm::revision(253
 ,  <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
-	ADD COLUMN rows int(10) unsigned default NULL
+	ADD COLUMN `rows` int(10) unsigned default NULL
 _sql
 ); ze\dbAdm::revision(254
 , <<<_sql
