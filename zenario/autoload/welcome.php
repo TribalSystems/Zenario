@@ -2620,7 +2620,9 @@ class welcome {
 				}
 			} else {
 				$fields['0/htaccess_unavailable']['row_class'] = 'warning';
-				$fields['0/htaccess_unavailable']['snippet']['html'] = \ze\admin::phrase('The .htaccess file cannot be read or is missing. (This message needs revising.)');
+				$fields['0/htaccess_unavailable']['snippet']['html'] = \ze\admin::phrase('The .htaccess file cannot be read or is missing.');
+				
+				$fields['0/friendly_urls_disabled']['hidden'] = true;
 			}
 		
 			//Check to see if there are spare domains without a primary domain

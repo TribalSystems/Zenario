@@ -466,7 +466,9 @@ class zenario_forum extends zenario_comments {
 				$filesToUpload = &$_FILES['filesToUpload'];
 				$files_count = count($filesToUpload['name']);
 				for($i=0; $i < $files_count; ++$i){
-					$this->manageOneUpload($postId, $filesToUpload['tmp_name'][$i], $filesToUpload['name'][$i]);
+					if (empty($filesToUpload['error'][$i])) {
+						$this->manageOneUpload($postId, $filesToUpload['tmp_name'][$i], $filesToUpload['name'][$i]);
+					}
 				}
 			}
 			
