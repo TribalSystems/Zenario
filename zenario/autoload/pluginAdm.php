@@ -438,7 +438,9 @@ class pluginAdm {
 					module_id,
 					framework,
 					css_class,
+					makes_breadcrumbs,
 					is_slide,
+					use_slide_layout,
 					invisible_in_nav,
 					show_back,
 					show_embed,
@@ -446,6 +448,7 @@ class pluginAdm {
 					show_auto_refresh,
 					auto_refresh_interval,
 					request_vars,
+					hierarchical_var,
 					global_command,
 					states,
 					name_or_title,
@@ -465,7 +468,9 @@ class pluginAdm {
 					module_id,
 					framework,
 					css_class,
+					makes_breadcrumbs,
 					is_slide,
+					use_slide_layout,
 					invisible_in_nav,
 					show_back,
 					show_embed,
@@ -473,6 +478,7 @@ class pluginAdm {
 					show_auto_refresh,
 					auto_refresh_interval,
 					request_vars,
+					hierarchical_var,
 					global_command,
 					states,
 					name_or_title,
@@ -493,6 +499,7 @@ class pluginAdm {
 			$sql = "
 				INSERT INTO ". DB_PREFIX. "nested_paths (
 					instance_id,
+					slide_num,
 					from_state,
 					to_state,
 					equiv_id,
@@ -505,6 +512,7 @@ class pluginAdm {
 					is_forwards
 				) SELECT
 					". (int) $instanceId. ",
+					slide_num,
 					from_state,
 					to_state,
 					equiv_id,

@@ -1241,19 +1241,20 @@ methods.drawEditor = function(
 		//Make all the cells (except responsive children) resizable
 		//(Note that this logic glitches out if you call it recursively, it must be run at the end on everything at once.)
 		$('#' + thisContId + ' .zenario_grid_cell_resizable').each(function(i, el) {
-			var offset = $(el).width() - 1 * $(el).data('displayed_width'),
-				gColAndGutterWidth = 1 * $(el).data('col_and_gutter_width'),
-				marginLeft = 1 * $(el).data('displayed_margin_left'),
-				minWidth = 1 * $(el).data('minwidth'),
-				maxWidth = 1 * $(el).data('maxwidth'),
-				level = 1 * $(el).data('level');
+			var $el = $(el),
+				offset = $el.width() - 1 * $el.data('displayed_width'),
+				gColAndGutterWidth = 1 * $el.data('col_and_gutter_width'),
+				marginLeft = 1 * $el.data('displayed_margin_left'),
+				minWidth = 1 * $el.data('minwidth'),
+				maxWidth = 1 * $el.data('maxwidth'),
+				level = 1 * $el.data('level');
 			
-			$(el).resizable({
+			$el.resizable({
 				cancel: 'a,button,input,select',
 				handles: 'se',
 				grid: gColAndGutterWidth,
-				minHeight: $(el).height(),
-				maxHeight: $(el).height(),
+				minHeight: $el.height(),
+				maxHeight: $el.height(),
 				
 				//Here I actually want minWidth and maxWidth to be equal to minWidth and maxWidth,
 				//but there is some sort of weird rounding error in jQuery 1.10, so I'm adding half
@@ -1265,10 +1266,10 @@ methods.drawEditor = function(
 				start: function(event, ui) {
 				    
 				   
-					if ($(el).hasClass('zenario_grid_nest')) {
+					if ($el.hasClass('zenario_grid_nest')) {
 						$(document.body).addClass('zenario_grid_resizing_nest').removeClass('zenario_grid_resizing_cell').removeClass('zenario_grid_resizing_space_cell');
 					
-					} else if ($(el).hasClass('zenario_grid_space_cell')) {
+					} else if ($el.hasClass('zenario_grid_space_cell')) {
 						$(document.body).removeClass('zenario_grid_resizing_nest').removeClass('zenario_grid_resizing_cell').addClass('zenario_grid_resizing_space_cell');
 					
 					} else {
@@ -1304,7 +1305,7 @@ methods.drawEditor = function(
 						$(document.body).removeClass('zenario_grid_resizing_nest').removeClass('zenario_grid_resizing_cell').removeClass('zenario_grid_resizing_space_cell');
 					
 					var i = 1*ui.element.data('i'),
-						levels = ui.element.data('levels'),
+						levels = thus.getLevels(ui.element),
 						data = thus.data;
 					
 					
@@ -1312,7 +1313,7 @@ methods.drawEditor = function(
 					//(This will either be the thus.data object or a subsection if the cells being re-ordered are
 					// children of another cell.)
 					if (levels) {
-						levels = ('' + levels).split('-');
+						levels = levels.split('-');
 						foreach (levels as var l) {
 							l *= 1;
 							data = data.cells[1*levels[l]];
@@ -1326,7 +1327,7 @@ methods.drawEditor = function(
     					
     					//Update the width of the cell that was just resized
 					    oldWidthCols = resizedCell.width,
-					    newWidthCols = resizedCell.width = Math.round((ui.element.width() + $(el).data('gutter') / 2) / gColAndGutterWidth),
+					    newWidthCols = resizedCell.width = Math.round((ui.element.width() + $el.data('gutter') / 2) / gColAndGutterWidth),
 					    groupCells = data.cells[i].cells,
 					    checkWidths = function(groupCells) {
                             if (groupCells) {
@@ -1350,29 +1351,29 @@ methods.drawEditor = function(
 		//Hack to set the correct position for the resize handles - unlike the delete button I can't set this manually when drawing the HTML
 		$('#' + thisContId + ' .ui-resizable-handle').each(function(i, el) {
 			
-			var handle = $(el),
-				prev = handle.prev(),
+			var $el = $(el),
+				prev = $el.prev(),
 				grouping = prev.children().first();
 			
 			
 			if (grouping && grouping.length && grouping.hasClass('zenario_grids')) {
 				//For nested cells, put the resize tool for the nest at the very bottom of the nest
-				handle.css('right', '-2px');
-				handle.css('top', (prev.height() - 12) + 'px');
-				handle.attr('title', phrase.gridResizeNestedCells);
+				$el.css('right', '-2px');
+				$el.css('top', (prev.height() - 12) + 'px');
+				$el.attr('title', phrase.gridResizeNestedCells);
 			
 			} else {
-				handle.css('right', prev.css('marginRight').replace(/\D/g, '') * 1);
+				$el.css('right', prev.css('marginRight').replace(/\D/g, '') * 1);
 				
 				//For cells, put the resize tool at the bottom of the visible section
 					//To get this right, we'll need to take the height of the visible section,
 					//then manually add in the upper margin, upper border, upper padding, lower padding and lower border,
 					//then subtract the height of the resize button.
-				handle.css('top', (prev.height() + 10 + 2 + 10 + 10 + 2 - 19) + 'px');
-				handle.attr('title', phrase.gridResizeSlot);
+				$el.css('top', (prev.height() + 10 + 2 + 10 + 10 + 2 - 19) + 'px');
+				$el.attr('title', phrase.gridResizeSlot);
 				
-				if (thus.globalName == 'zenarioSD' && handle.parent().data('level') == 1) {
-				    handle.remove();
+				if (thus.globalName == 'zenarioSD' && $el.parent().data('level') == 1) {
+				    $el.remove();
 				}
 			}
 		});
@@ -1453,14 +1454,14 @@ methods.deleteCell = function(el) {
 	if ((cell = $(el).data('for'))
 	 && (cell = $('#' + cell))) {
 		var i = cell.data('i'),
-			levels = cell.data('levels'),
+			levels = thus.getLevels(cell),
 			data = thus.data;
 		
 		//The data variable should be a pointer to the right location in the thus.data object.
 		//(This will either be the thus.data object or a subsection if the cells being re-ordered are
 		// children of another cell.)
 		if (levels) {
-			levels = ('' + levels).split('-');
+			levels = levels.split('-');
 			foreach (levels as var l) {
 				l *= 1;
 				data = data.cells[1*levels[l]];
@@ -1477,8 +1478,9 @@ methods.deleteCell = function(el) {
 //Add something (using the popup form)
 methods.add = function(el, type, respClass) {
 	//Try to get the level that the add button was for
-	var levels = $(el).data('levels'),
-		newWidth = $(el).attr('data-new-width') || 1,
+	var $el = $(el),
+		levels = thus.getLevels($el),
+		newWidth = $el.attr('data-new-width') || 1,
 		data = thus.data;
 	
 	$.colorbox.close();
@@ -1488,7 +1490,7 @@ methods.add = function(el, type, respClass) {
 		//(This will either be the thus.data object or a subsection if the cells being re-ordered are
 		// children of another cell.)
 		if (levels) {
-			levels = ('' + levels).split('-');
+			levels = levels.split('-');
 			foreach (levels as var l) {
 				l *= 1;
 				data = data.cells[1*levels[l]];
@@ -1550,6 +1552,16 @@ methods.add = function(el, type, respClass) {
 	}
 };
 
+methods.getLevels = function($el) {
+	var levels = $el.data('levels');
+	
+	if (defined(levels)) {
+		return '' + levels;
+	} else {
+		return '';
+	}
+};
+
 //Rename a slot
 methods.saveProperties = function(el, params) {
 	//Try to get the cell that the name was for
@@ -1557,14 +1569,14 @@ methods.saveProperties = function(el, params) {
 	if ((cell = $(el).data('for'))
 	 && (cell = $('#' + cell))) {
 		var i = cell.data('i'),
-			levels = cell.data('levels'),
+			levels = thus.getLevels(cell),
 			data = thus.data;
 		
 		//The data variable should be a pointer to the right location in the thus.data object.
 		//(This will either be the thus.data object or a subsection if the cells being re-ordered are
 		// children of another cell.)
 		if (levels) {
-			levels = ('' + levels).split('-');
+			levels = levels.split('-');
 			foreach (levels as var l) {
 				l *= 1;
 				data = data.cells[1*levels[l]];

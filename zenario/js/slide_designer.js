@@ -373,13 +373,13 @@ zenarioSD.editProperties = function(el) {
 		//Get the data for that element
 		$el = $('#' + forEl),
 		i = $el.data('i'),
-		levels = $el.data('levels'),
+		levels = thus.getLevels($el),
 		oLevels = levels,
 		data = zenarioSD.data;
 	
 	//Naviagte down through any recursion, and get the specific data for this slot
 	if (levels) {
-		levels = ('' + levels).split('-');
+		levels = levels.split('-');
 		foreach (levels as var l) {
 			l *= 1;
 			data = data.cells[1*levels[l]];

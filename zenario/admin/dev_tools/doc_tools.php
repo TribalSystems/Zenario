@@ -33,7 +33,7 @@ echo
 		}
 		
 		//Prefer to document HEAD if possible
-		$apiDir = '/var/www/zenario-source/HEAD/zenario/api/';
+		$apiDir = '/var/www/zenario-source/HEAD/zenario/reference/';
 		if (!is_dir($apiDir)) {
 			$apiDir = CMS_ROOT. 'zenario/api/';
 		}

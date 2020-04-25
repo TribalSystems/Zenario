@@ -4723,10 +4723,10 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 					href = ' style="cursor: default;"';
 					
 					if (item_link == 'menu_item') {
-						href += ' title="' + htmlspecialchars(item.name) + '|"';
+						href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|"';
 					
 					} else if (item_link == 'content_item' || item_link == 'content_item_or_url') {
-						href += ' title="' + htmlspecialchars(item.name) + '|"';
+						href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|"';
 					}
 				
 				} else {
@@ -4774,14 +4774,14 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 					
 					if (isSKLink) {
 						if (item_link == 'menu_item') {
-							href += ' title="' + htmlspecialchars(item.name) + '|' + phrase.clkToViewLinkedMenuNode + '"';
+							href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|' + phrase.clkToViewLinkedMenuNode + '"';
 						
 						} else if (item_link == 'content_item' || item_link == 'content_item_or_url') {
-							href += ' title="' + htmlspecialchars(item.name) + '|' + phrase.clkToViewLinkedCItem + '"';
+							href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|' + phrase.clkToViewLinkedCItem + '"';
 						}
 					
 					} else if (isURL) {
-						href += ' title="' + htmlspecialchars(item.name) + '|' + phrase.clkToViewLinkInNewWindow + '"';
+						href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|' + phrase.clkToViewLinkInNewWindow + '"';
 					}
 				}
 				
@@ -4789,7 +4789,7 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 				switch (item_link) {
 					case 'content_item':
 					case 'content_item_or_url':
-						itemName = item.name;
+						itemName = htmlspecialchars(item.name);
 						break;
 			
 					case 'menu_item':

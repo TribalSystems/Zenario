@@ -2846,8 +2846,13 @@ class welcome {
 					$fileParts = pathinfo($file);
 				
 					//Ignore hidden files that start with a . (like .htaccess)
-					//Ignore .php files
-					if ($fileParts['filename'] === '' || $fileParts['extension'] === 'php') {
+					if ($fileParts['filename'] === ''
+						//Ignore .php files
+					 || $fileParts['extension'] === 'php'
+						//Ignore .lock files (e.g. generated from a package builder)
+					 || $fileParts['extension'] === 'lock'
+						//Ignore the alternate .htaccess files
+					 || $fileParts['extension'] === 'htaccess') {
 						continue;
 					}
 				
@@ -2857,10 +2862,11 @@ class welcome {
 				}
 			}
 			
-			if (!empty($unknownFiles)) {
+			if ($count = count($unknownFiles)) {
 				$unknownFiles = implode(', ', $unknownFiles);
 				$fields['0/unknown_files_in_zenario_root_directory']['row_class'] = 'warning';
-				$fields['0/unknown_files_in_zenario_root_directory']['snippet']['html'] = \ze\admin::phrase('There are unknown files in Zenario root directory: [[files]]. Please remove them if possible.', ['files' => $unknownFiles]);
+				$fields['0/unknown_files_in_zenario_root_directory']['snippet']['html'] =
+					\ze\admin::nphrase('There is an unknown file in the Zenario root directory: [[files]]. Please remove this if possible.', 'There are [[count]] unknown files in the Zenario root directory: [[files]]. Please remove them if possible.', $count, ['files' => $unknownFiles]);
 			} else {
 				//If there are no unknown files, hide the warning.
 				$fields['0/unknown_files_in_zenario_root_directory']['hidden'] = true;
