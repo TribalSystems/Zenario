@@ -50,6 +50,11 @@ $content = [
 	'visitor_version' => 0,
 	'lock_owner_id' => 0];
 
+$chain = [
+	'equiv_id' => -1,
+	'type' => $layout['content_type'],
+	'privacy' => 'public',
+	'smart_group_id' => 0];
 
 $version = [
 	'version' => 1,
@@ -66,7 +71,7 @@ $version = [
 	'layout_id' => $layout['layout_id']];
 
 
-ze\content::setShowableContent($content, $version);
+ze\content::setShowableContent($content, $chain, $version, false);
 
 
 

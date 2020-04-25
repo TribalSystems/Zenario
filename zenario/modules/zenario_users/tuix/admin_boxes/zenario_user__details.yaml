@@ -88,10 +88,16 @@ zenario_user__details:
                     snippet:
                         html: |
                             <input type="button" value="Suggest" onclick="
-                                    screen_name_field = zenario.get('screen_name');
-                                    if (screen_name_field) {
-                                        screen_name_field.value = zenario.nonAsyncAJAX('zenario/admin/quick_ajax.php', {screen_name_suggestion: 1, first_name: zenario.get('first_name').value, last_name: zenario.get('last_name').value, email: zenario.get('email').value}, false, false);
+                                zenario.ajax(
+                                    'zenario/admin/quick_ajax.php',
+                                    {screen_name_suggestion: 1, first_name: zenario.get('first_name').value, last_name: zenario.get('last_name').value, email: zenario.get('email').value},
+                                    false, false
+                                ).after(function(screen_name) {
+                                    var screen_name_field;
+                                    if (screen_name_field = zenario.get('screen_name')) {
+                                        screen_name_field.value = screen_name;
                                     }
+                                });
                             "/>
                 screen_name_confirmed:
                     grouping: screen_name_grouping
@@ -133,18 +139,18 @@ zenario_user__details:
                     
                     # This is a little hack to try and stop Google Chrome auto-filling a username and password in here
                     # http://stackoverflow.com/questions/15738259/disabling-chrome-autofill
-                    autocomplete: "off"
+                    autocomplete: "off_yes_really_i_want_this_off"
                     oninput: |
                         zenario.updatePasswordNotifier('#password', '#snippet_password_message');
                         
                     pre_field_html: |
-                        <input type="text" name="dummy_username" autocomplete="off" tabindex="-1" style="
+                        <input type="text" name="dummy_username" autocomplete="off_yes_really_i_want_this_off" tabindex="-1" style="
                             position: fixed;
                             top: -1000px;
                             width: 1px;
                             height: 1px;
                         "/>
-                        <input type="password" name="dummy_password" autocomplete="off" tabindex="-1" style="
+                        <input type="password" name="dummy_password" autocomplete="off_yes_really_i_want_this_off" tabindex="-1" style="
                             position: fixed;
                             top: -1000px;
                             width: 1px;
@@ -189,14 +195,14 @@ zenario_user__details:
                     snippet:
                         html: |
                             <input type="button" value="Suggest" onclick="
-                                var password = zenario.nonAsyncAJAX('zenario/admin/quick_ajax.php', {password_suggestion: 1}, false, false),
-                                    passwordEl;
-                            
-                                if (passwordEl = zenario.get('password')) {
-                                    passwordEl.value = password;
-                                }
+                                zenario.ajax('zenario/admin/quick_ajax.php', {password_suggestion: 1}, false, false).after(function(password) {
+                                    var passwordEl;
+                                    if (passwordEl = zenario.get('password')) {
+                                        passwordEl.value = password;
+                                    }
                                 
-                                $('#password').trigger('oninput');
+                                    $('#password').trigger('oninput');
+                                });
                             "/>
                 
                 
@@ -257,16 +263,6 @@ zenario_user__details:
                 zenarioAB.tuix.key.id
             label: Dates/History
             fields:
-                created_date: 
-                    label: "Created Date:"
-                    type: text
-                    change_month_and_year: true
-                    readonly: true
-                modified_date: 
-                    label: "Modified Date:"
-                    type: DateTime
-                    change_month_and_year: true
-                    readonly: true
                 last_login: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
@@ -274,6 +270,7 @@ zenario_user__details:
                     type: DateTime
                     change_month_and_year: true
                     readonly: true
+                    show_as_a_span: true
                 last_profile_update_in_frontend: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
@@ -281,13 +278,15 @@ zenario_user__details:
                     type: DateTime
                     change_month_and_year: true
                     readonly: true
+                    show_as_a_span: true
                 suspended_date: 
                     visible_if: |
-                        zenarioAB.value('status', 'details') != 'suspended'
+                        zenarioAB.value('status', 'details') == 'suspended'
                     label: "Suspended date:"
                     type: DateTime
                     change_month_and_year: true
                     readonly: true
+                    show_as_a_span: true
                 consents_log:
                     label: 'Consents log:'
                     snippet:

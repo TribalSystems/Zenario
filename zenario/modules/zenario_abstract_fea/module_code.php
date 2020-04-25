@@ -38,6 +38,15 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
+		if (\ze::$isTwig) return;
+		
+		if (!$this->isSubClass()) {
+			if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
+				return $this->subClass->fillVisitorTUIX($path, $tags, $fields, $values);
+			}
+		}
+		
+		
 		$this->checkThingEnabled();
 		$tags['enable'] = $this->thingsEnabled;
 		
@@ -63,6 +72,45 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			$libraryName = $this->moduleClassName;
 			
 			$this->runVisitorTUIX2($libraryName, $path, $requests, $mode, $pages);
+		}
+	}
+	
+	//Get a link to the page where TUIX Snippets are edited, if possible
+	private static $tsLink;
+	private function getTUIXSnippetLink() {
+		
+		//No need to get the link if no TUIX snippet is being used.
+		//Also, we can cache the link for any other FEA plugins, as part from the ID, the page will be the same each time.
+		if ($this->tuixSnippetId && self::$tsLink === null) {
+		
+			$sql = "
+				SELECT ci.id, ci.type, ci.visitor_version, ci.alias, path.to_state
+				FROM ". DB_PREFIX. "nested_paths AS path
+				INNER JOIN ". DB_PREFIX. "plugin_item_link AS pil
+				   ON pil.instance_id = path.instance_id
+				INNER JOIN ". DB_PREFIX. "content_items AS ci
+				   ON ci.id = pil.content_id
+				  AND ci.type = pil.content_type
+				  AND ci.visitor_version = pil.content_version
+				WHERE path.command = 'edit_tuix_snippet'
+				ORDER BY ci.language_id = '". ze\escape::sql(ze::$visLang). "' DESC";
+		
+			if (($cItem = ze\sql::fetchAssoc($sql))
+			 && (ze\content::checkPerm($cItem['id'], $cItem['type'], $cItem['visitor_version']))) {
+				self::$tsLink = ze\link::toItem($cItem['id'], $cItem['type'], false, ['state' => $cItem['to_state']], $cItem['alias']). '&id=';
+		
+			} elseif (ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
+				self::$tsLink = 'zenario/admin/organizer.php?fromCID='. $this->cID. '&fromCType='. $this->cType. '#zenario__modules/panels/tuix_snippets//';
+			
+			} else {
+				self::$tsLink = false;
+			}
+		}
+		
+		if ($this->tuixSnippetId && self::$tsLink) {
+			return self::$tsLink. $this->tuixSnippetId;
+		} else {
+			return false;
 		}
 	}
 	
@@ -111,8 +159,10 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 				$this->returnGlobalName(),
 				'loadData',
 				$requests,
-				ze\tuix::stringify($tags)
+				ze\tuix::stringify($tags),
+				$this->getTUIXSnippetLink()
 			);
+			
 		}
 	}
 	
@@ -181,6 +231,11 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		return !empty($this->thingsEnabled[$thing]);
 	}
 	
+	protected $newThing = false;
+	protected function checkNewThing($table, $clear = true) {
+		$this->newThing = ze\db::getNewThingFromSession($table, $clear);
+	}
+	
 	protected function sortingEnabled() {
 		return $this->checkThingEnabled('sort_list') || $this->checkThingEnabled('sort_col_headers');
 	}
@@ -238,6 +293,9 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	protected function populateItemsIdCol($path, &$tags, &$fields, &$values) {
 		return 'id';
+	}
+	protected function populateItemsIdColDB($path, &$tags, &$fields, &$values) {
+		return $this->populateItemsIdCol($path, $tags, $fields, $values);
 	}
 	protected function populateItemsSelect($path, &$tags, &$fields, &$values) {
 		return "SELECT id, name";
@@ -325,36 +383,107 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	
 	protected function applyTwigSnippets($id, &$item, $path, &$tags, &$fields, &$values) {
-		if ($this->checkIfTwigSnippetsAreUsed($tags)) {
-			foreach ($tags['columns'] as $key => $col) {
-				if (!empty($col['twig_snippet'])) {
+		if ($this->hasCustomisedColumns($tags)) {
+			foreach ($tags['columns'] as $key => &$col) {
+				
+				if (!$this->customVisibility('column', $key, $col, $id, $item)) {
+					if (isset($item[$key])) {
+						$item[$key] = null;
+					}
+					
+					if (!isset($tags['_hiddenColumns'][$key])) {
+						$tags['_hiddenColumns'][$key] = [];
+					}
+					$tags['_hiddenColumns'][$key][$id] = true;
+				
+				} elseif (!empty($col['twig_snippet'])) {
 					$item[$key] = $this->twigFramework(
 						['id' => $id, 'item' => $item, 'column' => $col, 'tuix' => $tags],
 						true, $col['twig_snippet']
 					);
+				
+				} else {
+					$this->setCustomColumnValue($key, $col, $item);
+				}
+			}
+		}
+		
+		if ($this->hasCustomisedItemButtons($tags)) {
+			foreach ($tags['item_buttons'] as $key => &$button) {
+				
+				if (!$this->customVisibility('item_button', $key, $button, $id, $item)) {
+					if (!isset($tags['_hiddenItemButtons'][$key])) {
+						$tags['_hiddenItemButtons'][$key] = [];
+					}
+					$tags['_hiddenItemButtons'][$key][$id] = true;
 				}
 			}
 		}
 	}
 	
-	protected $twigSnippetsUsed;
-	protected function checkIfTwigSnippetsAreUsed(&$tags) {
+	protected $hasCC;
+	protected function hasCustomisedColumns(&$tags) {
 		
-		if (!isset($this->twigSnippetsUsed)) {
-			$this->twigSnippetsUsed = false;
+		if (!isset($this->hasCC)) {
+			$this->hasCC = false;
 			
 			if (!empty($tags['columns'])
 			 && is_array($tags['columns'])) {
-				foreach ($tags['columns'] as $col) {
-					if (!empty($col['twig_snippet'])) {
-						$this->twigSnippetsUsed = true;
+				foreach ($tags['columns'] as $key => $ob) {
+					if (!empty($ob['twig_snippet'])) {
+						$this->hasCC = true;
+						break;
+					
+					} elseif ($this->checkIfCustomLogicIsUsed('column', $key, $ob)) {
+						$this->hasCC = true;
 						break;
 					}
 				}
 			}
+			
+			if (!isset($tags['_hiddenColumns'])) {
+				$tags['_hiddenColumns'] = [];
+			}
 		}
 		
-		return $this->twigSnippetsUsed;
+		return $this->hasCC;
+	}
+	
+	protected $hasCIB;
+	protected function hasCustomisedItemButtons(&$tags) {
+		
+		if (!isset($this->hasCIB)) {
+			$this->hasCIB = false;
+			
+			if (!empty($tags['item_buttons'])
+			 && is_array($tags['item_buttons'])) {
+				foreach ($tags['item_buttons'] as $key => $ob) {
+					if ($this->checkIfCustomLogicIsUsed('item_button', $key, $ob)) {
+						$this->hasCIB = true;
+						break;
+					}
+				}
+			}
+			
+			if (!isset($tags['_hiddenItemButtons'])) {
+				$tags['_hiddenItemButtons'] = [];
+			}
+		}
+		
+		return $this->hasCIB;
+	}
+	
+	
+	protected function checkIfCustomLogicIsUsed($obType, $obCodeName, &$ob) {
+		return false;
+	}
+	
+	protected function customVisibility($obType, $obCodeName, &$ob, $itemId, &$item) {
+		return true;
+	}
+	
+	protected function setCustomColumnValue($colCodeName, &$col, &$item) {
+		//...
 	}
 	
 	
@@ -393,9 +522,26 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		$sql = $this->populateItemsSelect($path, $tags, $fields, $values). "
 				". $this->populateItemsFrom($path, $tags, $fields, $values). "
 				". $this->populateItemsWhere($path, $tags, $fields, $values). "
-				". $this->populateItemsGroupBy($path, $tags, $fields, $values). "
-				". $this->populateItemsOrderBy($path, $tags, $fields, $values). "
-				". $limit;
+				". $this->populateItemsGroupBy($path, $tags, $fields, $values);
+		
+		$orderBy = $this->populateItemsOrderBy($path, $tags, $fields, $values);
+		
+		//If there is something newly created, try to place it at the top of the list
+		if ($this->newThing !== false) {
+			$pos = stripos($orderBy, 'ORDER BY');
+			
+			if ($pos !== false) {
+				$orderBy =
+					substr($orderBy, 0, $pos + 8). ' '.
+					$this->populateItemsIdColDB($path, $tags, $fields, $values). " = '".
+					ze\escape::sql($this->newThing). "' DESC, ".
+					substr($orderBy, $pos + 8);
+			}
+		}
+		
+		$sql .= "
+			". $orderBy. "
+			". $limit;
 		
 		$result = $this->sqlSelect($sql);
 		
@@ -409,6 +555,17 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		while ($item = ze\sql::fetchAssoc($result)) {
 			$id = $item[$idCol];
 			$this->formatItemRow($item, $path, $tags, $fields, $values);
+			
+			//Automatically add the "newly created item" glow if a created item was set
+			if ($this->newThing !== false
+			 && $this->newThing == $id) {
+			 	if (isset($item['row_class'])) {
+					$item['row_class'] .= ' zfea_new_row';
+				} else {
+					$item['row_class'] = 'zfea_new_row';
+				}
+			}
+			
 			$this->applyTwigSnippets($id, $item, $path, $tags, $fields, $values);
 			
 			$tags['items'][$id] = $item;
@@ -449,11 +606,13 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		}
 	}
 	
+	private $tuixSnippetId = false;
 	protected function mergeCustomTUIX(&$tags) {
-		if (($custom = $this->setting('~custom_json~'))
+		if (($this->tuixSnippetId = $this->setting('~tuix_snippet~'))
+		 && ($custom = ze\sql::fetchValue('SELECT custom_json FROM '. DB_PREFIX. 'tuix_snippets WHERE id = '. (int) $this->tuixSnippetId))
 		 && ($custom = json_decode($custom, true))
-		 && (!empty($custom))
-		 && (is_array($custom))) {
+		 && (is_array($custom))
+		 && (!empty($custom))) {
 			ze\tuix::merge($tags, $custom);
 		}
 	}

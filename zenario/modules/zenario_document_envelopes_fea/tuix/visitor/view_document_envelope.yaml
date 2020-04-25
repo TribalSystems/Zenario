@@ -1,0 +1,72 @@
+zenario_view_document_envelope:
+    key:
+        envelopeId: ''
+    title: "[[envelope_name]] ([[envelopeId]]) details"
+    tab: details
+    tabs:
+        details:
+            fields:
+                last_updated:
+                    type: text
+                    show_as_a_span: true
+                    hide_if_empty: true
+                    row_class: zfea_form_row__last_edited
+                
+                grouping:
+                    <div class="rows_group">:
+                thumbnail_id:
+                    snippet:
+                        html: ''
+                code:
+                    type: text
+                    show_as_a_span: true
+                name:
+                    type: text
+                    show_as_a_span: true
+                language_id:
+                    type: text
+                    show_as_a_span: true
+                created:
+                    type: text
+                    show_as_a_span: true
+                custom_field_1: &custom_field
+                    hidden: true
+                custom_field_2: *custom_field
+                custom_field_3: *custom_field
+                gropuing_end:
+                    </div>:
+                description:
+                    type: text
+                    show_as_a_span: true
+                keywords:
+                    type: textarea
+                    show_as_a_span: true
+    
+    collection_buttons:
+        edit_document_envelope:
+            visible_if: |
+                tuix.enable.edit_document_envelope && lib.navigationEnabled('edit_document_envelope') && tuix.perms.manage
+            css_class: icon_button edit_icon
+            location: top
+            label: Edit document envelope
+            go:
+                mode: edit_document_envelope
+                command: edit_document_envelope
+        delete_document_envelope:
+            visible_if: |
+                tuix.enable.delete_document_envelope && tuix.perms.manage
+            css_class: icon_button delete_icon
+            location: top
+            label: Delete document envelope
+            ajax:
+                is_delete: true
+                confirm:
+                    title: 'Delete document envelope'
+                    message: 'Are you sure you wish to delete the selected document envelope?'
+                    button_message: Delete
+                    button_css_class: delete_button
+                    cancel_button_message: Cancel
+                request:
+                    command: delete_document_envelope
+            go:
+                command: back

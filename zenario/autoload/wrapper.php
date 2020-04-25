@@ -219,9 +219,11 @@ class wrapper {
 		
 			if ($file[0] != '.') {
 				if (is_dir($skinPath. $file)) {
-					\ze\wrapper::includeSkinFilesR(
-						$req, $specialFiles, $files, $skinPath. $file. '/', $skinPathURL. rawurlencode($file). '/',
-						false, $topLevel && $file === 'editable_css', $limit);
+					if ($file != 'adminstyles') {
+						\ze\wrapper::includeSkinFilesR(
+							$req, $specialFiles, $files, $skinPath. $file. '/', $skinPathURL. rawurlencode($file). '/',
+							false, $topLevel && $file === 'editable_css', $limit);
+					}
 			
 				} elseif (substr($file, -4) == '.css') {
 				

@@ -1,4 +1,7 @@
-<span class="{{m.css_class|escape}}">
+<span class="
+	{{m.css_class|escape}}
+	{{m.disabled? 'zenario_at_button_disabled' : ''}}
+">
 	<a <% if (m.href) { %> href="{{m.href|escape}}" <% } %>
 		title="{{m.tooltip|escape}}"
 		data-tooltip-options="{show: {duration: 250, easing: 'linear'} }"

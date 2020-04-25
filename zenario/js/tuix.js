@@ -1094,44 +1094,76 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 };
 
 
+zenarioT.generateGlobalName = function() {
+	var i, globalName;
+	for (i = 1; window[globalName = 'zenarioLib' + i]; ++i) {};
+	return globalName;
+};
+
+
+zenarioT.newSimpleForm = function(containerId, globalName) {
+	var form = new zenarioF();
+	
+	if (!globalName) {
+		globalName = zenarioT.generateGlobalName();
+	}
+	
+	form.init(globalName, 'fea', containerId);
+	
+	return window[globalName] = form;
+}
+
+
 
 zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix) {
 	
-	var functionDetails, libName, methodName, ev;
+	var functionDetails, libName, methodName, ev, andLogicIsBeingUsed = true;
 	
 	tuix = tuix || (lib && lib.tuix) || undefined;
 	tuixObject = tuixObject || button || column || field || item || section || tab;
 	
-	//From version 7.5 onwards we're allowing arrays/objects to be passed in,
-	//which should contain the name of a method and the inputs to give that method.
-	//This should be a lot more efficient than calling eval
+	//If this is an object, loop through each element
 	if (typeof condition == 'object') {
 		
-		//Loop through each function requested, try to call each one, and
-		//return false if any call fails.
 		foreach (condition as functionDetails => ev) {
 			
-			functionDetails = functionDetails.split('.', 2);
-			libName = functionDetails[0];
-			methodName = functionDetails[1];
+			if (functionDetails == 1*functionDetails) {
+				//From version 8.6 onwards, allow arrays (or array like objects, if the arrays have been mangled by the parser).
+				//These should contain a list of conditions for OR type logic; if any one of the conditions returns true, show the object.
+				andLogicIsBeingUsed = false;
+				
+				if (zenarioT.eval(ev, lib, tuixObject, item, id, button, column, field, section, tab, tuix)) {
+					return true;
+				}
 			
-			if (!methodName) {
-				methodName = libName;
-				lib = window;
-			
-			} else if (libName != 'lib') {
-				if (!(lib = window[libName])) {
+			} else {
+				//From version 7.5 onwards allow objects to be passed in,
+				//which should contain the name of a method (as keys) and the inputs to give that method (as values).
+				//This should be a lot more efficient than calling eval.
+				//Note AND type logic is used.
+				functionDetails = functionDetails.split('.', 2);
+				libName = functionDetails[0];
+				methodName = functionDetails[1];
+		
+				if (!methodName) {
+					methodName = libName;
+					lib = window;
+		
+				} else if (libName != 'lib') {
+					if (!(lib = window[libName])) {
+						return false;
+					}
+				}
+		
+				//Call each function requested, and return false if any call fails.
+				if (!lib[methodName]
+				 || !lib[methodName].apply(lib, zenarioT.tuixToArray(ev))) {
 					return false;
 				}
 			}
-			
-			if (!lib[methodName]
-			 || !lib[methodName].apply(lib, zenarioT.tuixToArray(ev))) {
-				return false;
-			}
 		}
-		//If all calls were fine then return true
-		return true;
+		//If all calls were fine then return true (for AND logic) or false (for OR logic)
+		return andLogicIsBeingUsed;
 	
 	//Catch the case where this is alreay a function, and just run it
 	} else if (typeof condition == 'function') {
@@ -1337,13 +1369,13 @@ zenarioT.sortArrayDesc = function(a, b) {
 	return zenarioT.sortArrayForOrganizer(b, a);
 };
 
-zenarioT.csvToObject = function(aString) {
+zenarioT.csvToObject = function(aString, splitter) {
 	
 	if (_.isString(aString)) {
 		
 		var anArrayIndex,
 			anObject = {},
-			anArray = aString.split(',');
+			anArray = aString.split(splitter || ',');
 		
 		for (anArrayIndex in anArray) {
 			if (anArray[anArrayIndex] !== '') {
@@ -1639,6 +1671,11 @@ zenarioT.filter = function(filter) {
 		return function(button) {
 			return button.location == filter;
 		};
+	
+	} else if (_.isArray(filter)) {
+		return function(button) {
+			return -1 !== filter.indexOf(button.location);
+		};
 	}
 	
 	return filter;
@@ -1646,6 +1683,12 @@ zenarioT.filter = function(filter) {
 
 zenarioT.find = function(collection, filter) {
 	return _.find(collection, zenarioT.filter(filter));
+};
+
+//A wrapper for the underscore.string numberFormat function, which automatically enters the settings
+//for decimal points/thousand-separators that were entered into the language properties
+zenarioT.numberFormat = function(number, decimals) {
+	return s.numberFormat(number, decimals, zenario.decPoint, zenario.thousandsSep);
 };
 
 

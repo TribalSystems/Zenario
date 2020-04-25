@@ -80,15 +80,15 @@ zenario__modules:
                     format: enum
                     values:
                         1:
-                            label: Able to generate breadcrumbs
+                            label: Can generate smart breadcrumbs
                         2:
-                            label: Generating breadcrumbs
+                            label: Generating smart breadcrumbs
                         3:
-                            label: Hidden, used for generating breadcrumbs only
+                            label: Hidden, used for generating smart breadcrumbs only
                         12:
-                            label: 'Generating breadcrumbs (Warning: Breadcrumbs link not set in conductor settings)'
+                            label: 'Generating smart breadcrumbs (Warning: Breadcrumbs link not set in conductor settings)'
                         13:
-                            label: 'Hidden, used for generating breadcrumbs only (Warning: Breadcrumbs link not set in conductor settings)'
+                            label: 'Hidden, used for generating smart breadcrumbs only (Warning: Breadcrumbs link not set in conductor settings)'
                 
                 parent:
                     hidden: true
@@ -417,7 +417,7 @@ zenario__modules:
                         is_slide: true
                     multiple_select: true
                     disabled_if_for_all_selected_items: item.ordinal == 1
-                    tooltip: "[[delete_tooltip]]"
+                    disabled_tooltip: You cannot delete the first slide
                     ajax:
                         confirm:
                             html: true

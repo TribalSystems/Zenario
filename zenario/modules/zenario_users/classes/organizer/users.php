@@ -147,14 +147,12 @@ class zenario_users__organizer__users extends zenario_users {
 				$item['user_type'] = 'user';
 			}
 			
-			//if ($item['last_login']) {
-			//	$item['last_login'] = ze\admin::formatDate($item['last_login'], ze::setting('vis_date_format_med'));
-			//	$item['readable_last_login'] = ze\admin::phrase('Last login: [[last_login]]', ['last_login' => $item['last_login']]);
-			//} elseif ($item['status'] != 'contact') {
-			//	$item['readable_last_login'] = ze\admin::phrase('Last login: Never');
-			//}
-			
-			//$item['readable_name'] = implode(' ', array_filter([$item['salutation'], $item['first_name'], $item['last_name']]));
+			if ($item['last_login']) {
+				$lastLoginDate = ze\admin::formatDate($item['last_login'], ze::setting('vis_date_format_med'));
+				$item['last_login'] = ze\admin::phrase('[[last_login]]', ['last_login' => $lastLoginDate]);
+			} elseif ($item['status'] != 'contact') {
+				$item['last_login'] = ze\admin::phrase('Never logged in');
+			}
 			
 			// Get a users groups
 			$groups = ze\user::groups($id, true, true);
@@ -293,6 +291,10 @@ class zenario_users__organizer__users extends zenario_users {
 			foreach (explode(',', $ids) as $id) {
 				static::suspendUser($id);
 			}
+			
+			echo '<!--Toast_Type:success-->';
+			echo '<!--Toast_Message:'. ze\escape::hyp(ze\admin::phrase('Item saved, but your filter prevents it from appearing')). '-->';
+			
 			
 		//Set a new avatar for a User/Users
 		} elseif (($_POST['upload_image'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {

@@ -79,7 +79,9 @@ echo '
 	(int) \ze::$equivId, ',',
 	(int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",',
 	(int) \ze::$skinId, ',',
-	(int) \ze::setting('mod_rewrite_slashes');
+	json_encode(\ze::$isPublic), ',',
+	(int) \ze::setting('mod_rewrite_slashes'), ',"',
+	\ze\escape::js(\ze::$langs[\ze::$visLang]['thousands_sep'] ?? ''), '","', \ze\escape::js(\ze::$langs[\ze::$visLang]['dec_point'] ?? ''), '"';
 
 if (\ze::$visLang && \ze::$visLang != $currentLangId) {
 	echo ',"', \ze\escape::js(\ze::$visLang), '"';
@@ -109,9 +111,9 @@ if ($isAdmin) {
 
 if ($isAdmin || $isWelcomeOrWizard) {
 	//...or on the admin-login screen
-	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.admin.min.js');
-	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
 	\ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
+	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.interactions.min.js');
+	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
 	\ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
 	\ze::requireJsLib('zenario/js/admin.wrapper.js.php');
 }

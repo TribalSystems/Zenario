@@ -127,7 +127,7 @@ class zenario_slideshow_simple extends zenario_slideshow {
 			case 'file_upload':
 				ze\priv::exitIfNot('_PRIV_MANAGE_REUSABLE_PLUGIN');
 				
-				ze\fileAdm::exitIfUploadError();
+				ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
 				
 				//Outputs file URL
 				ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], ($_REQUEST['_html5_backwards_compatibility_hack'] ?? false), $dropboxLink = false, $cacheFor = 3600);

@@ -162,7 +162,7 @@ class categoryAdm {
 	
 		foreach ($categoryAncestors as $parentId) {
 			if ($parentId) {
-				$path = \ze\row::get('categories', 'name', $parentId). ' -> '. $path;
+				$path = \ze\row::get('categories', 'name', $parentId). ' › '. $path;
 			}
 		}
 	

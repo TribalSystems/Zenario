@@ -59,8 +59,37 @@ zenario_content_type_details:
                         logged_in:
                             label: Private, only show to extranet users who are logged in
                 
-                hide_private_item:
+                menu_nodes:
                     indent: 1
+                    label: 'Menu nodes:'
+                
+                prompt_to_create_a_menu_node:
+                    visible_if: tuix.key.id != 'html'
+                    indent: 2
+                    type: radios
+                    values:
+                        prompt:
+                            label: Prompt the administrator to create a menu node, and show a warning if they do not
+                        dont_prompt:
+                            disabled_if: tuix.key.id == 'html'
+                            label: Do not prompt the administrator to create a menu node, and show no warning if they do not
+                    value: prompt
+                
+                menu_node_position_edit:
+                    visible_if: tuix.key.id != 'html'
+                    indent: 2
+                    label: 'Menu position:'
+                    type: radios
+                    values:
+                        suggest:
+                            label: Show suggested menu positions
+                        force:
+                            disabled_if: tuix.key.id == 'html'
+                            label: Enforce menu positions - [[content_type_plural_en]] always go under the designated [[content_type_name_en]] menu node(s)
+                    value: suggest
+                
+                hide_private_item:
+                    indent: 2
                     label: 'Default privacy for menu nodes:'
                     type: select
                     values:
@@ -80,21 +109,8 @@ zenario_content_type_details:
                         If the linked-to content item is private, you can control
                         when the menu node is displayed.
                 
-                menu_node_position_edit:
-                    visible_if: tuix.key.id != 'html'
-                    indent: 1
-                    label: 'Menu position:'
-                    type: select
-                    values:
-                        suggest:
-                            label: Show suggested menu positions
-                        force:
-                            disabled_if: tuix.key.id == 'html'
-                            label: Enforce menu positions - [[content_type_plural_en]] always go under the designated [[content_type_name_en]] menu node(s)
-                    value: suggest
-                
                 hide_menu_node:
-                    indent: 1
+                    indent: 2
                     label: 'Invisible in menu navigation'
                     type: checkbox
                     side_note: |
@@ -177,6 +193,7 @@ zenario_content_type_details:
                             label: 'Enabled'
                         mandatory:
                             label: 'Enabled and mandatory'
+                    side_note: "Allows administrators to save their name as writer of a content item (although the name may be edited). For example, use this for blog content items."
                 summary_field:
                     label: 'Content summary:'
                     type: radios
@@ -188,6 +205,7 @@ zenario_content_type_details:
                             label: 'Enabled'
                         mandatory:
                             label: 'Enabled and mandatory'
+                    side_note: "This allows administrators to save a WYSIWYG summary of the content item. Summaries are usually displayed by Content Summary List plugins. For example, use this for showing a summary of a news content item."
                     redraw_onchange: true
                 enable_summary_auto_update:
                     label: 'Enable auto-update of summaries'

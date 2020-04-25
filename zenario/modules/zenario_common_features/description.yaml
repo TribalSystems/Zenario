@@ -24,7 +24,7 @@ content_types:
         content_type_id: html
         content_type_name_en: HTML page
         content_type_plural_en: HTML pages
-        enable_summary_auto_update: No
+        enable_summary_auto_update: false
         description_field: optional
         keywords_field: hidden
         summary_field: hidden
@@ -36,9 +36,10 @@ special_pages:
         default_title: Home
         menu_title: Home
         footer_menu_title: Home
-        publish: Yes
-        logic: create_and_maintain_in_all_languages
         layout: Home page
+        publish: true
+        logic: create_and_maintain_in_default_language
+        allow_hide: false
     zenario_not_found:
         page_type: zenario_not_found
         default_alias: not-found
@@ -46,8 +47,9 @@ special_pages:
         default_content: |
             <h1>Error 404: Page or CMS Item Not Found</h1>
             <p>The requested Item was not found on this server or may not be accessed.</p>
-        publish: Yes
+        publish: true
         logic: create_and_maintain_in_default_language
+        allow_hide: false
     zenario_no_access:
         page_type: zenario_no_access
         default_alias: no-access
@@ -55,8 +57,9 @@ special_pages:
         default_content: |
             <h1>Access Permission Denied (401)</h1>
             <p>Sorry, you have tried to access an item that requires a higher level of permissions than you currently possess.</p>
-        publish: Yes
+        publish: true
         logic: create_and_maintain_in_default_language
+        allow_hide: false
     zenario_example_page:
         page_type: zenario_example_page
         default_alias: second-page
@@ -98,7 +101,7 @@ special_pages:
             <h1>Privacy Policy</h1>
             <p>Here you can state your company's privacy policy.</p>
             <p>Include information about any cookies you may use, how you process confidential data, or any other relevant information.</p>
-        logic: create_and_maintain_in_all_languages
+        logic: create_and_maintain_in_default_language
         allow_hide: true
 pagination_types:
     pagSelectList:
@@ -130,28 +133,41 @@ pagination_types:
         label: Nearby page numbers with First/Next/Previous/Last
 jobs:
     -
+        name: jobCleanDirectories
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: >
+            0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
+        minutes: 0m,30m
+        log_on_action: false
+        log_on_no_action: false
+        email_on_action: false
+        email_on_no_action: false
+        enabled_by_default: true
+    -
         name: jobPublishContent
-        static: Yes
+        static: true
         months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
         days: mon,tue,wed,thr,fri,sat,sun
         hours: >
             0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
         minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m,59m
-        log_on_action: Yes
-        log_on_no_action: No
-        email_on_action: No
-        email_on_no_action: No
+        log_on_action: true
+        log_on_no_action: false
+        email_on_action: false
+        email_on_no_action: false
     -
         name: jobDataProtectionCleanup
-        static: Yes
+        static: true
         months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
         days: mon,tue,wed,thr,fri,sat,sun
         hours: 0h
         minutes: 0m
-        log_on_action: Yes
-        log_on_no_action: No
-        email_on_action: No
-        email_on_no_action: No
+        log_on_action: true
+        log_on_no_action: false
+        email_on_action: false
+        email_on_no_action: false
 centralised_lists:
     -
         method_name: getSalutations

@@ -254,14 +254,38 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			}
 		}
 		
-		
-		
+		$i = -1;
+		$cTypes = [];
 		foreach (ze\row::getAssocs('content_types', ['content_type_plural_en'], [], 'content_type_plural_en') as $cType => $cTypeDetails) {
-			if ($cType != 'html') {
+			if ($cType == 'html') {
+				$fields['advanced/restrict_child_content_types']['empty_value'] = 
+					ze\admin::phrase('Suggest only [[content_type_plural_en]] be created under here', $cTypeDetails);
+			} else {
 				$fields['advanced/restrict_child_content_types']['values'][$cType] = 
-					ze\admin::phrase('Only allow [[content_type_plural_en]] to be created under here', $cTypeDetails);
+					ze\admin::phrase('Suggest [[content_type_plural_en]] be created under here', $cTypeDetails);
+				
+				if ($i > 0) {
+					$cTypes[$i - 1] = ', ';
+				}
+				if ($i >= 0) {
+					$cTypes[++$i] = ' and ';
+				}
+				$cTypes[++$i] = $cTypeDetails['content_type_plural_en'];
 			}
 		}
+		
+		if (empty($cTypes)) {
+			$cTypes = [ze\admin::phrase('Blog entries and News articles')];
+		}
+		
+		$mrg = [
+			'link' => ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/content_types',
+			'content_types' => implode('', $cTypes)];
+		
+		
+		
+		$fields['advanced/content_restriction_desc']['snippet']['html'] =
+			ze\admin::phrase($fields['advanced/content_restriction_desc']['snippet']['html'], $mrg);
 
 	}
 

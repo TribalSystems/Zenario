@@ -66,7 +66,7 @@ if ($includeOrganizer) {
 	
 	if (isset($panelTypes['network_graph'])) {
 		echo '
-'. $scriptTag. ' src="', $prefix, 'libs/manually_maintained/mit/cytoscape/cytoscape.min.js"></script>';
+'. $scriptTag. ' src="', $prefix, 'libs/yarn/cytoscape/dist/cytoscape.min.js"></script>';
 	}
 	
 	echo '
@@ -95,7 +95,7 @@ zenarioA.maxUploadF = "', \ze\escape::js(\ze\lang::formatFilesizeNicely($apacheM
 
 $settings = [];
 if (!empty(\ze::$siteConfig)) {
-	foreach (\ze::$siteConfig as $setting => &$value) {
+	foreach (\ze::$siteConfig[0] as $setting => &$value) {
 		if ($value) {
 			if (is_numeric($value)
 			 || $setting == 'admin_domain'
@@ -106,7 +106,7 @@ if (!empty(\ze::$siteConfig)) {
 			 || $setting == 'primary_domain'
 			 || $setting == 'site_in_dev_mode'
 			 || $setting == 'vis_time_format') {
-				$settings[$setting] = \ze::$siteConfig[$setting];
+				$settings[$setting] = \ze::$siteConfig[0][$setting];
 			
 			} elseif (substr($setting, -5) == '_path') {
 				$settings[$setting] = true;
@@ -128,7 +128,8 @@ if (!empty(\ze::$adminSettings)) {
 
 //Add any privs here that you need to check for in JavaScript
 $adminPrivs = [
-	'_PRIV_EDIT_SITE_SETTING' => \ze\priv::check('_PRIV_EDIT_SITE_SETTING')
+	'_PRIV_EDIT_SITE_SETTING' => \ze\priv::check('_PRIV_EDIT_SITE_SETTING'),
+	'_PRIV_VIEW_DIAGNOSTICS' => \ze\priv::check('_PRIV_VIEW_DIAGNOSTICS')
 ];
 
 $importantGetRequests = \ze\link::importantGetRequests();

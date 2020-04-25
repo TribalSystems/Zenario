@@ -353,7 +353,9 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		
 		//Upload a new file
 		if (($_POST['upload'] ?? false) && $privCheck) {
-
+			
+			ze\fileAdm::exitIfUploadError(false, false, true, 'Filedata');
+			
 			//Check to see if an identical file has already been uploaded
 			$existingFilename = false;
 			if ($_FILES['Filedata']['tmp_name']
@@ -417,6 +419,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		} elseif (($_POST['mark_as_public'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\row::update('files', ['privacy' => 'public'], $id);
+				ze\file::addPublicImage($id);
 			}
 
 		//Mark images as private
@@ -425,6 +428,15 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				ze\row::update('files', ['privacy' => 'private'], $id);
 				ze\file::deletePublicImage($id);
 			}
+		
+		//Try to fix any broken links in the images directory
+		} elseif ($_POST['regenerate_public_links'] ?? false) {
+			//ze\priv::exitIfNot('_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS');
+			ze\priv::exitIfNot('_PRIV_MANAGE_MEDIA');
+			
+			set_time_limit(60 * 10);
+			ze\file::checkAllImagePublicLinks($check = false);
+			\ze\skinAdm::emptyPageCache();
 
 		//Delete an unused image
 		} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {

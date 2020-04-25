@@ -240,43 +240,40 @@ class cache {
 	private static $cleanedCacheDir = null;
 	
 	//Formerly "cleanCacheDir()", "cleanDownloads()"
-	public static function cleanDirs() {
-		//Only allow this function to run at most once per page-load
-		if (self::$cleanedCacheDir !== null) {
-			return self::$cleanedCacheDir;
-	
-		} else {
-			$time = time();
+	public static function cleanDirs($forceRun = false) {
 		
-			//Check to see if anyone has done a "rm -rf" on the images directory
-			//If so skip the "every 5 minutes rule" and run now.
-			if (is_dir(CMS_ROOT. 'public/images')
-			 && is_dir(CMS_ROOT. 'private/images')
-			 && is_dir(CMS_ROOT. 'cache/frameworks')) {
-			
-				//Check if this function was last run within the last 30 minutes
-				$lifetime = 30 * 60;
-				if (file_exists($accessed = 'cache/stats/clean_downloads/accessed')) {
-					$timeA = fileatime($accessed);
-					$timeM = filemtime($accessed);
-			
-					if (!$timeA || $timeA < $timeM) {
-						$timeA = $timeM;
-					}
-			
-					if ($timeA > $time - $lifetime) {
-						//If it was run in the last 30 minutes, don't run it again now...
-						return self::$cleanedCacheDir = true;
-					}
+		//Only allow this function to run at most once per page-load
+		if (!$forceRun && self::$cleanedCacheDir !== null) {
+			return self::$cleanedCacheDir;
+		}
+		
+		//Check to see if anyone has done a "rm -rf" on the images directory
+		//If so ignore the throttling rule, don't wait for the scheduled task, and run now.
+		$forceRun = $forceRun
+			|| !is_dir(CMS_ROOT. 'public/images')
+			|| !is_dir(CMS_ROOT. 'private/images')
+			|| !is_dir(CMS_ROOT. 'cache/frameworks');
+		
+		$time = time();
+		
+		//Check if this function was last run within the last 60 minutes
+		if (!$forceRun) {
+			$lifetime = 60 * 60;
+			if (file_exists($accessed = 'cache/stats/clean_downloads/accessed')) {
+				$timeM = filemtime($accessed);
+		
+				if ($timeM > $time - $lifetime) {
+					//If it was run in the last 60 minutes, don't run it again now...
+					return self::$cleanedCacheDir = true;
 				}
 			}
-		
-			//...otherwise, continue running \ze\cache::cleanDirs(), and call the \ze\cache::createDir() function to create/touch
-			//the cache/stats/clean_downloads/accessed file so we know that we last ran \ze\cache::cleanDirs() at this current time
-			\ze\cache::createDir('clean_downloads', 'stats', true, false);
-		
-			return require \ze::funIncPath(__FILE__, __FUNCTION__);
 		}
+		
+		//Call call the \ze\cache::createDir() function to create/touch the cache/stats/clean_downloads/accessed file,
+		//so we know that we last ran \ze\cache::cleanDirs() at this current time.
+		\ze\cache::createDir('clean_downloads', 'stats', true, false);
+		
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 

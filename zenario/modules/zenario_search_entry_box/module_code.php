@@ -40,6 +40,17 @@ class zenario_search_entry_box extends zenario_search_results {
 			ze\content::langSpecialPage('zenario_search', $cID, $cType);
 		}
 		
+		if (!$cID) {
+			if (ze\priv::check()) {
+				echo
+					'<p class="error">',
+						ze\admin::phrase('To show a search entry box, you must either publish the <em>Search</em> special page, or enter a search page in the plugin settings.'),
+					'</p>';
+			}
+			
+			return;
+		}
+		
 		if ($cID == $this->cID && $cType == $this->cType) {
 			$cID = $cType = false;
 		}

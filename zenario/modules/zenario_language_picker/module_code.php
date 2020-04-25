@@ -61,9 +61,15 @@ class zenario_language_picker extends ze\moduleBaseClass {
 		}
 		
 		
-		
 		//Loop through all of the languages enabled on this site, adding the details of each to an array
 		foreach (ze\lang::getLanguages() as $langId => $langCfg) {
+			
+			$lpl = $langCfg['language_picker_logic'];
+			
+			if ($lpl === 'always_hidden') {
+				continue;
+			}
+			
 			$lang = [
 				'cID' => false,
 				'cType' => false,
@@ -96,8 +102,9 @@ class zenario_language_picker extends ze\moduleBaseClass {
 				//Look up the cID of the homepage in each language and note that down as well
 				ze\content::langSpecialPage('zenario_home', $lang['cID'], $lang['cType'], $langId, true);
 				$lang['equivId'] = ze::$homeEquivId;
+			}
 			
-			} else {
+			if (!$lang['cID'] && $lpl === 'visible_or_hidden') {
 				continue;
 			}
 			
@@ -120,10 +127,12 @@ class zenario_language_picker extends ze\moduleBaseClass {
 			//Loop through each language, generate a link.
 			//This is done in showSlot() and not init() to give other plugins time to register GET requests.
 			foreach ($this->langs as $langId => &$lang) {
-				$lang['link'] = ze\link::toItem(
-					$lang['cID'], $lang['cType'], false, $lang['request'] ?? '', $lang['alias'] ?? false,
-					$autoAddImportantRequests = true, false,
-					$lang['equivId'], $langId);
+				if ($lang['cID']) {
+					$lang['link'] = ze\link::toItem(
+						$lang['cID'], $lang['cType'], false, $lang['request'] ?? '', $lang['alias'] ?? false,
+						$autoAddImportantRequests = true, false,
+						$lang['equivId'], $langId);
+				}
 			}
 			
 			$this->sections['Languages'] = $this->langs;

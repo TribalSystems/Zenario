@@ -65,6 +65,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$values['details/hide_private_item'] = $details['hide_private_item'];
 		$values['details/hide_menu_node'] = $details['hide_menu_node'];
 		
+		$values['details/prompt_to_create_a_menu_node'] = $details['prompt_to_create_a_menu_node']? 'prompt' : 'dont_prompt';
 		$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
 		
 		
@@ -101,6 +102,38 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				//Event release dates must be hidden as it is overridden by another field
 				$box['tabs']['details']['fields']['release_date_field']['hidden'] = true;
 		}
+		
+		
+		$suggestedPositions = [];
+		if ($box['key']['id'] != 'html') {
+			foreach (ze\row::getAssocs('menu_nodes', ['id', 'section_id'], ['restrict_child_content_types' => $box['key']['id']]) as $menuNode) {
+				
+				//Menu positions are in the format CONCAT(section_id, '_', menu_id, '_', child_options)
+				//Possible options for "child_options" are:
+				$beforeNode = 0;
+				$underNode = 1;
+				$underNodeAtStart = 2;	//N.b. this option is not supported by position pickers using Organizer Select, but supported by ze\menuAdm::addContentItems() when saving
+				$defaultPos = '';
+				
+				$mPath = ze\menuAdm::pathWithSection($menuNode['id'], true). ' › '. ze\admin::phrase('[ Create at the start ]');
+				$mVal = $menuNode['section_id']. '_'. $menuNode['id']. '_'. $underNodeAtStart;
+				
+				$suggestedPositions[$mVal] = htmlspecialchars($mPath);
+			}
+			
+			if (empty($suggestedPositions)) {
+				$fields['details/menu_node_position_edit']['note_below'] =
+					ze\admin::phrase('No positions in the menu have been set for [[content_type_plural_en]]. You can set a position by editing a menu node and going to the <em style="font-style: italic;">Advanced</em> tab.', $details);
+			} else {
+				$fields['details/menu_node_position_edit']['note_below'] =
+					ze\admin::nphrase('The following position in the menu has been set for [[content_type_plural_en]]:',
+						'The following positions in the menu have been set for [[content_type_plural_en]]:',
+						count($suggestedPositions), $details).
+					'<ul><li>'. implode('</li><li>', $suggestedPositions). '</li></ul>'.
+					ze\admin::phrase('You can set a position by editing a menu node and going to the <em style="font-style: italic;">Advanced</em> tab.', $details);
+			}
+		}
+
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -135,6 +168,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				'enable_summary_auto_update' => 0,
 				'enable_categories' => ($values['details/enable_categories'] == 'enabled') ? 1 : 0,
 				'default_layout_id' => $values['details/default_layout_id'],
+				'prompt_to_create_a_menu_node' => (int) ($values['details/prompt_to_create_a_menu_node'] == 'prompt'),
 				'menu_node_position_edit' => $values['details/menu_node_position_edit'] ?: 'suggest',
 				'default_permissions' => $values['details/default_permissions'],
 				'hide_private_item' => $values['details/hide_private_item'],

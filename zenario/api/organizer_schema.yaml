@@ -154,7 +154,7 @@ common_definitions:
         description: >
             Do not show this button when not in Quick Mode.
     
-            Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
+            Note: if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
             this button will appear in both Select Mode and Quick Mode.
     only_show_on_refiner: &only_show_on_refiner
         type:
@@ -296,6 +296,45 @@ additionalProperties:
                             A different title to display when in select mode with multiple selection enabled.
                         default: (defaults to the select_mode_title property)
                     
+
+                    notice:
+                        type: object
+                        required:
+                            - type
+                        dependencies_if_true:
+                            show:
+                                - message
+                        description: >
+                            Use this to show a notice bar at the top of the panel.
+                            
+                            This works from version 8.6 onwards.
+                        properties:
+                            show:
+                                type: boolean
+                                description: >
+                                    The notice will only be shown if this is set.
+                                    
+                                    You can also use the visible_if property to control whether the notice is displayed,
+                                    however the show property must still be set to true otherwise the notice will not display.
+                            visible_if: *visible_if
+                            message:
+                                type: string
+                                description: >
+                                    A message to show.
+                            type:
+                                enum:
+                                    - error
+                                    - warning
+                                    - question
+                                    - information
+                                    - success
+                                description: >
+                                    The type of notice. A different styling will be applied for each different type.
+                            html:
+                                type: boolean
+                                description: >
+                                    If this is set, the message will not be html-escaped.
+                    
                     panel_type:
                         type: string
                         static: true
@@ -371,7 +410,7 @@ additionalProperties:
                                     Automatically call the encodeItemIdForOrganizer() function on the id column.
                                     You should do this if the id is not numeric.
                                     
-                                    Note that while the *encoding* will be automatic, the *decoding* is not, and
+                                    Note: while the *encoding* will be automatic, the *decoding* is not, and
                                     you'll still need to call decodeItemIdForOrganizer() manually in the
                                     appropriate places.
             
@@ -644,7 +683,7 @@ additionalProperties:
                                         data to the client; the data will not be visible as a column but can still
                                         be used by confirm messages, label properties, and so on.
                                 
-                                        Note that the column's definition will always be sent to the client.
+                                        Note: the column's definition will always be sent to the client.
             
             
                                         This property must be written in your .yaml file,
@@ -789,7 +828,7 @@ additionalProperties:
                                         If there is a column where the display value is a different format to the
                                         actual value then you should include this property to avoid confusing the Admin.
                                 
-                                        Note that sorting works slightly differently depending on whether the
+                                        Note: sorting works slightly differently depending on whether the
                                         <code>client_side</code> property is set.
                                 
                                         • If it is set, then the searching will be done in JavaScript on the client.
@@ -951,7 +990,7 @@ additionalProperties:
                                     description: >
                                         The value of the column to use.
                                         
-                                        (Note that you don't need to enter this for "Yes or no"-type columns.)
+                                        (Note: you don't need to enter this for "Yes or no"-type columns.)
                                         
                                         For enums, if you enter an asterisk (*) as the value, this will match any non-empty value.
                                         (Or match any empty value if you set the invert property as well.)
@@ -1181,7 +1220,7 @@ additionalProperties:
                                     description: >
                                         A URL for an icon/image in grid view. Will be displayed at up to 180 × 130 pixels in size.
                                 
-                                        Note that if you don't include a http:// in your URL then it will be
+                                        Note: if you don't include a http:// in your URL then it will be
                                         automatically prefixed by the URLBasePath.
                                 
                                 #disable_reorder:
@@ -1257,7 +1296,7 @@ additionalProperties:
                                 description: >
                                     A CSS class name to use as a default if you omit the <code>css_class</code> property in an
                                     item.
-                                    Note that for each item, you must either provide an <code>image</code> or a <code>css_class</code>.
+                                    Note: for each item, you must either provide an <code>image</code> or a <code>css_class</code>.
                             tooltip:
                                 type: string
                                 description: >
@@ -1314,7 +1353,7 @@ additionalProperties:
                             You can use all of the features from http://zenar.io/customising-popout-messages-in-admin-mode
                             in order to customise the message.
                     
-                            Note that this will clash with the <code>popout_message</code> property for Admin Boxes;
+                            Note: this will clash with the <code>popout_message</code> property for Admin Boxes;
                             you can use one or the other, but not both at the same time.
 
                     toast:
@@ -1479,7 +1518,8 @@ additionalProperties:
                                                         If this is an item or inline button, your message may contain [[merge_field]]s
                                                         which match up to the column names, and will be populated according to the item
                                                         which is selected.
-                                                        (Note that this won't work if multiple items are selected.)
+                                                        
+                                                        (Note: this won't work if multiple items are selected.)
                                                 
                                                         If you don't want a hard-coded warning message, then you can omit the message
                                                         property completely. This will cause the CMS will launch an AJAX call to your
@@ -1868,7 +1908,7 @@ additionalProperties:
                                             description: >
                                                 Whether to allow drag-and-drop uploads for browsers that support HTML 5.
                                         
-                                                Note that only one button at a time may use a drag-and-drop upload.
+                                                Note: only one button at a time may use a drag-and-drop upload.
                                                 
                                                 Currently only works for item buttons and collection buttons, and not inline buttons.
                                         request: *request
@@ -2442,7 +2482,7 @@ additionalProperties:
                             You can set this property to overwrite an administrator's saved preference on a temporary basis
                             and force them into a specific view mode.
                             
-                            Note that if they change their view options whilst using your chosen view mode
+                            Note: if they change their view options whilst using your chosen view mode
                             then it will be set in their preferences; otherwise their view will snap back
                             to its previous value when this property is removed.
                     
@@ -2595,7 +2635,7 @@ additionalProperties:
                             with a link), they will not be able to return to the Panel by clicking
                             Organizer's back button.
                     
-                            Note that this property does not disable the Browser's back button, nor does it stop
+                            Note: this property does not disable the Browser's back button, nor does it stop
                             an Admin navigating by typing a path into the URL bar.
                     disable_periodic_refresh:
                         type: boolean
@@ -2966,5 +3006,5 @@ commented_out_html_description: |
     <p>When developing Organizer Apps, the flow of the Schema is one-way. Your YAML files are read by the CMS on the server and turned into a PHP array, which then passes them to the client as JSON. The client does not pass the JSON object back, but instead replies using <code>GET</code> or&nbsp;<code>POST</code> AJAX requests.</p>
     <h2>The top level items</h2>
     <p>The first things in the Organizer Schema are the top level items. These add links to the left-hand panel in Organizer.</p>
-    <p>Note that if you wish to include functionality in Organizer you must either create a top level item to contain it, or to place your functionality within another Module's top level item.</p>
+    <p>Note: if you wish to include functionality in Organizer you must either create a top level item to contain it, or to place your functionality within another Module's top level item.</p>
 

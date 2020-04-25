@@ -170,6 +170,15 @@ zenario__modules:
                 Library of plugins that may be used on visitor-facing pages
             link:
                 path: zenario__modules/panels/plugins
+        tuix_snippets:
+            ord: 99
+            css_class: zenario_separator_before_this
+            label: TUIX Snippets
+            tooltip: >
+                Use this panel to create snippets of customised TUIX code that can be used to
+                modify the appearance and/or behaviour of the FEA plugins on this site.
+            link:
+                path: zenario__modules/panels/tuix_snippets
     data-step: 13
     data-position: right
     data-intro: >

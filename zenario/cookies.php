@@ -48,6 +48,7 @@ ze\cookie::startSession();
 if (!empty($_REQUEST['clear_admin_cookie'])) {
 	ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
 	ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
+	ze\cookie::clear('COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED');
 
 } elseif (!empty($_REQUEST['accept_cookies'])) {
 	ze\cookie::setConsent();

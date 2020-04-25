@@ -234,7 +234,7 @@ if ($requestedPath) {
 			$tagPath .= '/'. $path;
 		
 		} else {
-			echo ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', ['path' => $requestedPath]);
+			echo ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to Zenario, you will need to reload the page and possibly reload Zenario\'s cache.', ['path' => $requestedPath]);
 			exit;
 		}
 	}
@@ -268,7 +268,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 	ze\tuix::checkOrganizerPanel($tags);
 	
 	if (isset($tags['priv']) && !ze\priv::check($tags['priv'])) {
-		echo ze\admin::phrase('You do not have permissions to see this Panel.');
+		echo ze\admin::phrase('You do not have permissions to see this panel.');
 		exit;
 	}
 	
@@ -1460,7 +1460,7 @@ if ($mode == 'get_item_data') {
 				unset($item['cell_css_classes']);
 			
 				if ($needToSetMenuName) {
-					$item['name'] = ze\menuAdm::path($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' -> ');
+					$item['name'] = ze\menuAdm::path($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' › ');
 				}
 			}
 		}

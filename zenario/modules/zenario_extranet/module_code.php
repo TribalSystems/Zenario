@@ -615,7 +615,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 				case 'instanceId':
 				case 'slotName':
 				case 'tab':
-					continue;
+					break;
 				default:
 					$fields[$name] = $value;
 			}

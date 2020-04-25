@@ -90,10 +90,24 @@ methods.get = function(el) {
 	return (thus.containerId && ($el = $('#' + thus.containerId + ' #' + zenario.cssEscape(el))) && ($el[0])) || get(el);
 };
 
-methods.microTemplate = function(template, data, filter) {
+methods.tooltips = function(target, options) {
+	if (thus.isAdminFacing()) {
+		zenarioA.tooltips(target, options);
+	} else {
+		zenario.tooltips(target, options);
+	}
+};
+
+//zenario.microTemplate = function(template, data, filter, microTemplates, i, preMicroTemplate, postMicroTemplate) {
+methods.microTemplate = function(template, data, filter, preMicroTemplate, postMicroTemplate) {
+	
+	//When displaying a list of buttons at a specific location, allow the caller to pass in the
+	//name of the location (or an array if a location might have multiple names) to create
+	//a filter function that only shows buttons at that location.
+	filter = zenarioT.filter(filter);
 	
 	var needsTidying = zenario.addLibPointers(data, thus),
-		html = zenario.microTemplate(template, data, filter);
+		html = zenario.microTemplate(template, data, filter, undefined, undefined, preMicroTemplate, postMicroTemplate);
 	
 	if (needsTidying) {
 		zenario.tidyLibPointers(data);
@@ -103,7 +117,15 @@ methods.microTemplate = function(template, data, filter) {
 };
 
 methods.pMicroTemplate = function(template, data, filter) {
-	return thus.microTemplate(thus.mtPrefix + '_' + template, data, filter);
+	
+	return thus.microTemplate(thus.mtPrefix + '_' + template, data, filter,
+		thus.tuix
+	 && thus.tuix.pre_microtemplate
+	 && thus.tuix.pre_microtemplate[template],
+		thus.tuix
+	 && thus.tuix.post_microtemplate
+	 && thus.tuix.post_microtemplate[template]
+	);
 };
 
 methods.fun = function(functionName) {
@@ -988,7 +1010,7 @@ methods.focusFirstField = function() {
 				type: field.type,
 				empty: domField.value == '',
 				focusable:
-					(isPickerField || zenario.IN(field.type, 'password', 'checkbox', 'select', 'text', 'textarea'))
+					(isPickerField || zenario.IN(field.type, 'password', 'checkbox', 'currency', 'select', 'text', 'textarea'))
 				 && !engToBoolean(domField.disabled)
 				 && !engToBoolean(domField.readonly)
 				 && !thus.fieldIsReadonly(fieldId, field)
@@ -1244,7 +1266,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		pick_items = field.pick_items,
 		disabled = field.disabled,
 		validation = field.validation || {},
+		isCurrency = fieldType == 'currency',
 		isDatePicker = fieldType == 'date' || fieldType == 'datetime',
+		isFormattedNumber = isCurrency || !!validation.numeric,
+		dps = field.decimal_places,
 		hidden,
 		hideOnOpen,
 		indent,
@@ -1302,6 +1327,20 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	if (defined(field.disabled_if)
 	 && zenarioT.eval(field.disabled_if, thus, undefined, undefined, id, undefined, undefined, field)) {
 		readOnly = true;
+	}
+	
+	
+	//Don't allow decimal places to be undefined if this is a currency field.
+	if (isFormattedNumber) {
+		if (!defined(dps)) {
+			if (isCurrency) {
+				dps = 2;
+			} else {
+				dps = undefined;
+			}
+		} else {
+			dps = 1*dps;
+		}
 	}
 	
 	
@@ -1440,6 +1479,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		
 			  || zenarioT.hidden(undefined, thus, undefined, id, undefined, undefined, field)
 			  
+			  || field.hide_if_empty && !value
 			  || readOnly && field.hide_when_readonly
 			
 			  || (engToBoolean(hiddenFieldsByIndent && hiddenFieldsByIndent.last? field.hide_with_previous_field : field.hide_if_previous_field_is_not_hidden))
@@ -1457,8 +1497,15 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			  || (engToBoolean(field.hide_with_previous_indented_fields)
 			   && !visibleFieldsOnIndent[indent])
 		
+			  || (defined(field.hide_if_previous_value_is)
+			   && zenario.inList(field.hide_if_previous_value_isnt, fieldValuesByIndent && fieldValuesByIndent.last))
+		
 			  || (defined(field.hide_if_previous_value_isnt)
 			   && !zenario.inList(field.hide_if_previous_value_isnt, fieldValuesByIndent && fieldValuesByIndent.last))
+		
+			  || (defined(field.hide_if_previous_outdented_value_is)
+			   && indent > 0
+			   && zenario.inList(field.hide_if_previous_outdented_value_is, fieldValuesByIndent && fieldValuesByIndent[indent - 1]))
 		
 			  || (defined(field.hide_if_previous_outdented_value_isnt)
 			   && indent > 0
@@ -1669,7 +1716,11 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	if (fieldType != 'checkboxes'
 	 && (tag = thus.displayAsTag(field, readOnly))) {
 		
-		displayVal = htmlspecialchars(value);
+		if (isFormattedNumber) {
+			displayVal = htmlspecialchars(zenarioT.numberFormat(1*value, dps));
+		} else {
+			displayVal = htmlspecialchars(value);
+		}
 		
 		if (fieldType == 'select' || fieldType == 'radios') {
 			if (field.values && field.values[value]) {
@@ -1854,10 +1905,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			extraAtt['class'] += 'disabled ';
 		}
 		
-		if (validation.numeric) {
+		if (isFormattedNumber) {
 			extraAtt.onkeyup =
 				(extraAtt.onkeyup || '') +
-				"lib.keepNumeric(this)";
+				"lib.keepNumeric(this, " + (!!field.allow_negative_numbers) + ", " + dps + ")";
 		}
 		
 		if (field.return_key_presses_button && !readOnly) {
@@ -1943,7 +1994,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						}, 5000);
 					});
 					
-					var language, langTools, isHTML;
+					var language, langTools, isHTML, codeEditorOptions;
 		
 					//Attempt to set the correct language
 					if (language = field.language) {
@@ -1962,19 +2013,24 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							langTools = ace.require("ace/ext/language_tools");
 							codeEditor.session.setMode(language);
 							
+							//Check if any specific options are set
+							codeEditorOptions = field.code_editor_options || {};
+							
+							//Try to set a few options to some sensible default values
+							if (!defined(codeEditorOptions.enableBasicAutocompletion)) {
+								codeEditorOptions.enableBasicAutocompletion = !isHTML;
+							}
+							if (!defined(codeEditorOptions.enableLiveAutocompletion)) {
+								codeEditorOptions.enableLiveAutocompletion = !isHTML;
+							}
+							
 							if (isHTML) {
 								langTools.setCompleters([]);
-								codeEditor.setOptions({
-									enableBasicAutocompletion: false,
-									enableLiveAutocompletion: false
-								});
 							} else {
 								langTools.setCompleters([langTools.keyWordCompleter]);
-								codeEditor.setOptions({
-									enableBasicAutocompletion: true,
-									enableLiveAutocompletion: true
-								});
 							}
+							
+							codeEditor.setOptions(codeEditorOptions);
 				
 						} catch (e) {
 							console.log('Ace editor could not load this language', language);
@@ -2272,6 +2328,16 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						(extraAtt.onblur || '') +
 						"if(this.value && !this.value.match('://') && $.trim(this.value)[0] != '#') this.value = 'http://' + this.value;";
 		
+				} else if (isCurrency) {
+					html += '<input';
+					extraAtt.type = 'text';
+					extraAtt.onfocus =
+						"this.value = $(this).data('og_value');" +
+						(extraAtt.onfocus || '');
+					extraAtt.onblur =
+						"$(this).data('og_value', this.value); this.value = zenarioT.numberFormat(1*this.value, " + dps + ");" +
+						(extraAtt.onblur || '');
+		
 				} else {
 					if (field.slider) {
 						hasSlider = true;
@@ -2382,9 +2448,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			html += ' value="' + htmlspecialchars(zenario.formatDate(value, fieldType == 'datetime')) + '"/>';
 			html += _$input('type', 'hidden', 'id', '_value_for__' + id, 'value', value);
 			
-			if (!readOnly) {
+			if (!readOnly && !field.hide_clear_button) {
 				html += _$input('type', 'button', 'class', 'zenario_remove_date', 'value', 'x', 'onclick', thus.globalName + '.blankField("' + jsEscape(id) + '"); $(' + thus.globalName + '.get("' + jsEscape(id) + '")).change();');
 			}
+		
+		} else if (isCurrency) {
+			html += ' value="' + htmlspecialchars(zenarioT.numberFormat(1*value, dps)) + '" data-og_value="' + s.numberFormat(1*value, dps, '.', '') + '"/>';
 		
 		} else if (defined(value)) {
 			html += ' value="' + valAttribute + '"/>';
@@ -2446,6 +2515,14 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				}
 				
 				$field.autocomplete(options);
+				
+				//The jQuery automcomplete library tries to be helpful and turn autocomplete off.
+				//However it doesn't do it in a way that's compatible with Chrome, so if a dev has
+				//specified what they want the autocomplete to be in the TUIX then restore that value
+				//rather than keeping the "off" value that jQuery automcomplete overrid.
+				if (defined(field.autocomplete)) {
+					$field.attr('autocomplete', field.autocomplete);
+				}
 				
 				//Show the autocomplete when the admin clicks or focuses into the field rather
 				//than waiting for them to type something
@@ -2637,8 +2714,7 @@ methods.defineLibVarBeforeCode = function(att) {
 		//Catch the case where someone makes a library without a global name and then calls this function.
 		//If this library doesn't have a global name, come up with one now.
 		if (!thus.globalName) {
-			for (var i = 1; window[thus.globalName = 'zenarioLib' + i]; ++i) {};
-			window[globalName] = thus;
+			window[thus.globalName = zenarioT.generateGlobalName()] = thus;
 		}
 		
 		return 'var lib = ' + htmlspecialchars(thus.globalName) + '; '
@@ -2676,8 +2752,39 @@ methods.testURL = function(id) {
 
 
 //Ensure a numeric field stays numeric
-methods.keepNumeric = function(el) {
-	var val = el.value.replace(/[^\d\.]/g, '').replace(/\.(.*)\./g, '.$1')
+methods.keepNumeric = function(el, allowMinus, limitDPs) {
+	var val = el.value,
+		minus = '';
+	
+	if (allowMinus && val[0] == '-')  {
+		minus = '-';
+		val = val.substr(1);
+	}
+	
+	val = val.replace(/[^\d\.]/g, '');
+	val = val.replace(/\.(.*)\./g, '.$1');
+	
+	if (limitDPs !== undefined) {
+		switch (limitDPs) {
+			case 0:
+				val = val.replace(/\.\d*/, '');
+				break;
+			case 1:
+				val = val.replace(/(\d*\.\d)\d*/, '$1');
+				break;
+			case 2:
+				val = val.replace(/(\d*\.\d\d)\d*/, '$1');
+				break;
+			case 3:
+				val = val.replace(/(\d*\.\d\d\d)\d*/, '$1');
+				break;
+			case 4:
+				val = val.replace(/(\d*\.\d\d\d\d)\d*/, '$1');
+				break;
+		}
+	}
+	
+	val = minus + val;
 	
 	if (el.value != val) {
 		el.value = val;
@@ -2697,6 +2804,11 @@ methods.hierarchicalSelect = function(picked_items, field, tabTUIX, sortOrder, p
 	
 	foreach (sortOrder as i => v) {
 		val = field.values[v];
+		
+		if (val === undefined) {
+			continue;
+		}
+		
 		disabled = false;
 		selected = false;
 		
@@ -2828,6 +2940,8 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 				thus.addToPickedItems(value, id, tab);
 			}
 			thus.$getPickItemsInput(id).focus();
+			
+			thus.tooltips('#name_for_' + id + ' .TokensContainer *[title]');
 		},
 		maxElements: multiple_select? 0 : 1,
 		
@@ -3582,7 +3696,24 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 		}
 	}
 	
+	return thus.drawPickedItem2(id, pick_items, inDropDown, mi);
+};
+
+
+methods.drawPickedItem2 = function(id, pick_items, inDropDown, mi) {
+	
 	if (inDropDown) {
+		
+		//Little hack to try and add tooltips even though there's no placehodler function in the right place to do it properly
+		thus.__addTT = true;
+		
+		setTimeout(function() {
+			if (thus.__addTT) {
+				thus.tooltips('#name_for_' + id + ' .Dropdown *[title]');
+			}
+			delete thus.__addTT;
+		}, 1);
+		
 		return thus.microTemplate(pick_items.dropdown_item_microtemplate || thus.mtPrefix + '_dropdown_item', mi);
 	} else {
 		return thus.microTemplate(pick_items.picked_item_microtemplate || thus.mtPrefix + '_picked_item', mi);
@@ -3982,6 +4113,7 @@ methods.meChange = function(changed, id, confirm) {
 };
 
 
+
 methods.currentValue = function(f, tab, readOnly) {
 	
 	if (!readOnly
@@ -4048,8 +4180,16 @@ methods.value = function(f, tab, readOnly) {
 	}
 };
 
+methods.fieldChanged = function(f, tab) {
+	return thus.currentValue(f, tab) != thus.originalValue(f, tab);
+};
+
 methods.mode = function(k) {
 	return thus.value('mode', 'global_area') || thus.value('mode');
+};
+
+methods.scope = function(k) {
+	return thus.value('scope', 'first_tab') || thus.value('scope');
 };
 
 methods.keyIn = function(k) {
@@ -4068,12 +4208,40 @@ methods.modeIn = function() {
 	return _.contains(arguments, thus.mode());
 };
 
+methods.modeNotIn = function() {
+	return !_.contains(arguments, thus.mode());
+};
+
 methods.modeIs = function(m) {
 	return thus.mode() == m;
 };
 
+methods.modeIsNot = function(m) {
+	return thus.mode() != m;
+};
+
+methods.scopeIn = function() {
+	return _.contains(arguments, thus.scope());
+};
+
+methods.scopeNotIn = function() {
+	return !_.contains(arguments, thus.scope());
+};
+
+methods.scopeIs = function(m) {
+	return thus.scope() == m;
+};
+
+methods.scopeIsNot = function(m) {
+	return thus.scope() != m;
+};
+
 methods.valueIn = function(f) {
 	return _.contains(arguments, thus.value(f), 1);
+};
+
+methods.valueNotIn = function(f) {
+	return !_.contains(arguments, thus.value(f), 1);
 };
 
 methods.valueInArray = function(f, a) {
@@ -4134,6 +4302,7 @@ methods.readField = function(f) {
 	var value = undefined,
 		tab = thus.tuix.tab,
 		field = thus.field(f, tab),
+		fieldType = field.type,
 		el;
 	
 	//Non-field types
@@ -4152,7 +4321,7 @@ methods.readField = function(f) {
 	}
 	
 	//Multiple Checkboxes/Radiogroups have values stored in several different places
-	if (field.type == 'checkboxes' || field.type == 'radios') {
+	if (fieldType == 'checkboxes' || fieldType == 'radios') {
 		if (!readOnly && !hidden && field.values) {
 			var v, current_value = '', first = true;
 			
@@ -4182,18 +4351,18 @@ methods.readField = function(f) {
 		field.current_value = value = thus.get('_value_for__' + f).value;
 	
 	//Editors
-	} else if ((field.type == 'editor' || field.type == 'code_editor') && !readOnly) {
+	} else if ((fieldType == 'editor' || fieldType == 'code_editor') && !readOnly) {
 		
 		var content,
 			editor,
 			codeEditor;
 		
-		if (field.type == 'editor') {
+		if (fieldType == 'editor') {
 			if (editor = window.tinyMCE && tinyMCE.get(f)) {
 				content = zenario.tinyMCEGetContent(editor);
 			}
 		
-		} else if (field.type == 'code_editor') {
+		} else if (fieldType == 'code_editor') {
 			if (codeEditor = ace.edit(f)) {
 				content = codeEditor.getValue();
 				
@@ -4224,40 +4393,44 @@ methods.readField = function(f) {
 			return field.current_value;
 		}
 	
+	
 	//Normal fields
-	} else {
-		if (!readOnly && (el = thus.get(f))) {
-			if (field.type == 'checkbox' || field.type == 'radio') {
-				value = el.checked? true : false;
-			
-			} else if (field.type == 'color_picker' || field.type == 'colour_picker') {
-				//For colour pickers, make sure we get the colour in hex, as for some reason spectrum often
-				//loves to output values in hsv which isn't a supported format!
-				try {
-					value = $(el).spectrum('get').toHexString();
-				} catch (e) {
-					value = $(el).val();
-				}
-			
-			} else {
+	} else if (!readOnly && (el = thus.get(f))) {
+		
+		//Currency fields, always get the data from the ogValue property
+		if (fieldType == 'currency') {
+				value = $(el).data('og_value');
+		
+		} else if (fieldType == 'checkbox' || fieldType == 'radio') {
+			value = el.checked? true : false;
+		
+		} else if (fieldType == 'color_picker' || fieldType == 'colour_picker') {
+			//For colour pickers, make sure we get the colour in hex, as for some reason spectrum often
+			//loves to output values in hsv which isn't a supported format!
+			try {
+				value = $(el).spectrum('get').toHexString();
+			} catch (e) {
 				value = $(el).val();
 			}
-			
-			//Don't allow null/undefined values from jQuery; convert these into an empty string.
-			if (!defined(value)) {
-				value = '';
-			}
-			//Don't allow arrays from jQuery; convert these into CSV
-			if (_.isArray(value)) {
-				value = value.join(',');
-			}
-			
-			field.current_value = value;
 		
 		} else {
-			delete field.current_value;
-			value = field.value;
+			value = $(el).val();
 		}
+		
+		//Don't allow null/undefined values from jQuery; convert these into an empty string.
+		if (!defined(value)) {
+			value = '';
+		}
+		//Don't allow arrays from jQuery; convert these into CSV
+		if (_.isArray(value)) {
+			value = value.join(',');
+		}
+		
+		field.current_value = value;
+	
+	} else {
+		delete field.current_value;
+		value = field.value;
 	}
 	
 	return value;
@@ -4353,11 +4526,28 @@ methods.returnAJAXURL = function(action) {
 
 //Some shortcuts
 methods.editModeOn = function(tab) {
-	return true;
+	
+	if (!thus.tuix || !thus.tuix.tabs) {
+		return false;
+	}
+	
+	if (!tab) {
+		tab = thus.tuix.tab;
+	}
+	
+	if (thus.tuix.tabs[tab].edit_mode) {
+		return thus.tuix.tabs[tab].edit_mode.on =
+			engToBoolean(thus.tuix.tabs[tab].edit_mode.enabled)
+		 && (engToBoolean(thus.tuix.tabs[tab].edit_mode.on)
+		  || thus.editModeAlwaysOn(tab));
+	
+	} else {
+		return false;
+	}
 };
 
 methods.editModeAlwaysOn = function(tab) {
-	return true
+	return true;
 };
 
 methods.editCancelEnabled = function(tab) {

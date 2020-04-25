@@ -179,36 +179,6 @@ class zenario_users extends ze\moduleBaseClass {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	
-	
-	
-	//These are just for testing...
-	public static function returnTrue() {
-		return true;
-	}
-	
-	public static function returnNull() {
-		return null;
-	}
-	
-	public static function returnZero() {
-		return 0;
-	}
-	
-	public static function returnEmptyString() {
-		return '';
-	}
-	
-	public static function returnFalse() {
-		return false;
-	}
-	
-	
-	
-	
-	
-	
-	
 	//Various API and internal functions
 	
 	protected static function savePrivacySettings($tagIds, $values) {
@@ -493,6 +463,9 @@ class zenario_users extends ze\moduleBaseClass {
 	}
 	
 	public static function uploadUserImage($userIds) {
+		
+		ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
+		
 		$imageId = ze\file::addToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 		if ($imageId) {
 			foreach (explode(',', $userIds) as $userId) {
@@ -510,15 +483,16 @@ class zenario_users extends ze\moduleBaseClass {
 	}
 	
 	public function suspendUser($userId) {
-		$sql ="
-			UPDATE " . DB_PREFIX . "users
-			SET 
-				status='suspended',
-				suspended_date=NOW()
-			WHERE
-				id = " . (int)$userId;
-		ze\sql::update($sql);
-		ze\module::sendSignal("eventUserStatusChange",["userId" => $userId, "status" => "suspended"]);
+		$cols = [];
+		ze\admin::setLastUpdated($cols, $creating = false);
+		$cols['modified_date'] = $cols['last_edited'];
+		$cols['suspended_date'] = $cols['last_edited'];
+		unset($cols['last_edited']);
+		$cols['status'] = 'suspended';
+		
+		ze\row::update('users', $cols, $userId);
+		
+		ze\module::sendSignal("eventUserStatusChange", ["userId" => $userId, "status" => "suspended"]);
 	}
 	
 	public static function requestVarMergeField($name) {

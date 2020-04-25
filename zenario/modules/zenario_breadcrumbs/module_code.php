@@ -174,10 +174,40 @@ class zenario_breadcrumbs extends zenario_menu {
 			//Loop through each back link
 			$copy = $nodes[$ni];
 			$first = true;
+			$nextName = null;
 			$ci = 0;
 			foreach ($backs as $state => $back) {
 				
-				$name = $this->parentNest->formatTitleText($this->phrase($back['slide']['name_or_title']));
+				//Prefer to use the name from the previous smart-breadcrumbs if we can,
+				//but otherwise use the name from the slide.
+				if ($nextName !== null) {
+					$name = $nextName;
+				} else {
+					$name = $this->parentNest->formatTitleText($back['slide']['name_or_title']);
+				}
+				
+				//Check if any smart breadcrumbs have been defined
+				$smart = [];
+				$nextName = null;
+				if (!empty($back['smart'])) {
+					foreach ($back['smart'] as $vbc) {
+						$copy['name'] = $vbc['name'];
+						$copy['current'] = $vbc['current'];
+						$copy['css_class'] = $vbc['css_class'] ?? '';
+						$copy['open_in_new_window'] = false;
+						$copy['url'] = ze\link::toItem(
+							ze::$cID, ze::$cType, false, $vbc['request'], ze::$alias,
+							$autoAddImportantRequests = false
+						);
+						$smart[] = $copy;
+						
+						//Remember the name of the current smart breadrcumb for the next loop
+						if ($vbc['current']) {
+							$nextName = $vbc['name'];
+						}
+					}
+				}
+				
 				$url = ze\link::toItem(
 					ze::$cID, ze::$cType, false, $back['requests'], ze::$alias,
 					$autoAddImportantRequests = false
@@ -204,20 +234,7 @@ class zenario_breadcrumbs extends zenario_menu {
 					$nodes[++$ni] = $copy;
 				}
 				
-				if (!empty($back['smart'])) {
-					$nodes[$ni]['smart'] = [];
-					
-					foreach ($back['smart'] as $vbc) {
-						$copy['name'] = $vbc['name'];
-						$copy['current'] = $vbc['current'];
-						$copy['open_in_new_window'] = false;
-						$copy['url'] = ze\link::toItem(
-							ze::$cID, ze::$cType, false, $vbc['request'], ze::$alias,
-							$autoAddImportantRequests = false
-						);
-						$nodes[$ni]['smart'][] = $copy;
-					}
-				}
+				$nodes[$ni]['smart'] = $smart;
 			}
 		}
 		

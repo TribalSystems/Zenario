@@ -218,3 +218,59 @@
 	text-transform:uppercase;
 	padding-top:8px;
 }
+
+/* Accordion (note: make sure you have the JS file)
+--------------------------------------------------------------------------------------------------*/
+
+.nest_accordion.zenario_plugin_nest .zenario_banner {
+	margin-bottom:20px;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title,
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_text {
+	background:#eee;
+	padding:10px 20px;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title {
+	padding-bottom:15px;
+	cursor:pointer;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_text {
+	display:none;
+	padding-top:5px;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title > * {
+	font-family:'robotoregular',Arial, Helvetica, sans-serif;
+	font-size:1.2em;
+	margin:0;
+	padding:0;
+	position:relative;
+	padding-right:10px;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title > *:after {
+	font-family:"FontAwesome";
+	content:"\f107";
+	position:absolute;
+	right:0;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner.active .banner_title > *:after {
+	content:"\f106";
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title *,
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title > *:after {
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title:hover *,
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_title:hover > *:after {
+	color:#2a98ce;
+}

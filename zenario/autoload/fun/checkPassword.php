@@ -70,7 +70,7 @@ if (\ze\db::connectGlobal()) {
 			FROM ". DB_PREFIX_GLOBAL ."admins
 			WHERE ". $whereStatement. "
 			  AND status = 'active'";
-		$result = \ze\sqlGlobal::select($sql);
+		$result = \ze\sql\g::select($sql);
 	
 	//Is there a superadmin with that name?
 	if ($details = \ze\sql::fetchAssoc($result)) {

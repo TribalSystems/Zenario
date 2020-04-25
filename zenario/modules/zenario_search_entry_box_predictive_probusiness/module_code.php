@@ -47,6 +47,17 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 			ze\content::langSpecialPage('zenario_search', $cID, $cType);
 		}
 		
+		if (!$cID) {
+			if (ze\priv::check()) {
+				echo
+					'<p class="error">',
+						ze\admin::phrase('To show a search entry box, you must either publish the <em>Search</em> special page, or enter a search page in the plugin settings.'),
+					'</p>';
+			}
+			
+			return;
+		}
+		
 		if ($cID == $this->cID && $cType == $this->cType) {
 			$cID = $cType = false;
 		}
@@ -126,6 +137,11 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		if ($values['first_tab/page_size'] == 'maximum_of' && $values['first_tab/maximum_results_number'] < 0) {
+			$box['tabs']['first_tab']['fields']['maximum_results_number']['error'] = ze\admin::phrase('The page size cannot be a negative number.');
+		} elseif ($values['first_tab/page_size'] == 'maximum_of' && $values['first_tab/maximum_results_number'] > 999) {
+			$box['tabs']['first_tab']['fields']['maximum_results_number']['error'] = ze\admin::phrase('The page size cannot exceed 999.');
+		}
 	}
 	
 	

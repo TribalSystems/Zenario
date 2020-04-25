@@ -1,0 +1,22 @@
+.organizer_item_image.document_envelope,
+.organizer_item_image.envelope {
+	background: url('images/icon-dark-envelope.svg') no-repeat center / 15px 15px;
+}
+
+#organizer_leftColumn .organizer_legend a.document_envelopes_top_level,
+#organizer_leftColumn .organizer_legend a.document_envelopes_top_level:hover,
+#organizer_leftColumn .organizer_legend.legend_on a.document_envelopes_top_level,
+#zenario_at_top_left_menu .organizer_top_level_image.document_envelopes_top_level {
+	background: url('images/icon-white-envelope.svg') no-repeat center / 15px 15px;
+}
+
+#organizer_leftColumn .organizer_legend a.document_envelopes_top_level {
+	-webkit-filter:opacity(80%);
+	filter:opacity(80%);
+}
+
+#organizer_leftColumn .organizer_legend a.document_envelopes_top_level:hover,
+#organizer_leftColumn .organizer_legend.legend_on a.document_envelopes_top_level {
+	-webkit-filter:opacity(100%);
+	filter:opacity(100%);
+}

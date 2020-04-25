@@ -101,6 +101,12 @@
 }
 
 
+body._NO_PRIV_EDIT_SITE_SETTING #zenario_page_caching {
+	filter: grayscale(75%);
+	cursor: not-allowed;
+}
+
+
 
 
 

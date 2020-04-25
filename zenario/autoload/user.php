@@ -198,7 +198,7 @@ class user {
 				$admin = \ze\row::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_userid'], 'status' => 'active']);
 		
 			} elseif (\ze\db::connectGlobal()) {
-				$admin = \ze\rowGlobal::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_global_id'], 'status' => 'active']);
+				$admin = \ze\row\g::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_global_id'], 'status' => 'active']);
 			}
 		
 			//If not, log them out
@@ -482,6 +482,8 @@ class user {
 			case 'manage.conference':
 			//Permissions for changing site settings
 			case 'manage.options-assetwolf':
+			//Permissions for changing plugin settings in the advanced interface tools plugin
+			case 'edit.pluginSetting':
 			//Possible permissions for companies, locations and users
 			case 'create-company.unassigned':
 			case 'delete.company':
@@ -494,6 +496,7 @@ class user {
 			//Permissions for ecommerce
 			case 'view.invoice':
 			case 'edit.order':
+			case 'manage.envelope':
 				//Superusers only
 				return true;
 			case 'view.company':
@@ -1199,5 +1202,167 @@ class user {
 	public static function deleteConsent($consentId) {
 		\ze\row::delete('consents', $consentId);
 	}
-
+	
+	public static function formatLastUpdated($row, $relativeDate = false, $relativeDateAddFullTime = false) {
+		return \ze\user::getLastEditedOrCreatedDatetimeForFrontEndOrFAB(
+			false,
+			$row['last_edited'],
+			$row['last_edited_admin_id'],
+			$row['last_edited_user_id'],
+			$row['last_edited_username'],
+			$row['created'],
+			$row['created_admin_id'],
+			$row['created_user_id'],
+			$row['created_username'],
+			$relativeDate, $relativeDateAddFullTime
+		);
+	}
+	
+	public static function formatUserLastUpdated($row, $relativeDate = false, $relativeDateAddFullTime = false) {
+		return \ze\user::getLastEditedOrCreatedDatetimeForFrontEndOrFAB(
+			false,
+			$row['modified_date'],
+			$row['last_edited_admin_id'],
+			$row['last_edited_user_id'],
+			$row['last_edited_username'],
+			$row['created_date'],
+			$row['created_admin_id'],
+			$row['created_user_id'],
+			$row['created_username'],
+			$relativeDate, $relativeDateAddFullTime
+		);
+	}
+	
+	public static function getLastEditedOrCreatedDatetimeForFrontEndOrFAB(
+		$adminFacing,
+		$lastEdited = false,
+		$lastEditedAdminId = false,
+		$lastEditedUserId = false,
+		$lastEditedUsername = false,
+		$created = false,
+		$createdAdminId = false,
+		$createdUserId = false,
+		$createdUsername = false,
+		$relativeDate = false,
+		$relativeDateAddFullTime = false
+	) {
+		
+		//Check for backwards compatability
+		if (!is_bool($adminFacing)) {
+			$adminFacing = $adminFacing == 'fab';
+		}
+		
+		
+		if (!empty($lastEdited) || !empty($created)) {
+			
+			$array = [];
+			
+			if(!empty($created)) {
+				$array[] = [
+					'string' => "Created [[date]] by [[user_or_admin]]",
+					'editedOrCreated' => $created,
+					'editedOrCreatedAdminId' => $createdAdminId,
+					'editedOrCreatedUserId' => $createdUserId,
+					'editedOrCreatedUsername' => $createdUsername
+				];
+			}
+			
+			if (!empty($lastEdited)) {
+				$array[] = [
+					'string' => "Last edited [[date]] by [[user_or_admin]]",
+					'editedOrCreated' => $lastEdited,
+					'editedOrCreatedAdminId' => $lastEditedAdminId,
+					'editedOrCreatedUserId' => $lastEditedUserId,
+					'editedOrCreatedUsername' => $lastEditedUsername
+				];
+			}
+			
+			$strings = [];
+			foreach ($array as &$row) {
+			
+				if ($adminFacing) {
+					//It's ok to display the admin's first name, last name and username in a FAB.
+					$getFullAdminDetails = true;
+					$row['string'] = \ze\admin::phrase($row['string']);
+				} else {
+					//Do not display the admin details on the front end (data protection reasons).
+					$getFullAdminDetails = false;
+					$row['string'] = \ze\lang::phrase($row['string']);
+				}
+			
+				if (!empty($row['editedOrCreatedAdminId'])) {
+					if ($adminFacing) {
+						if ($lastUpdatedByAdmin = \ze\row::get("admins", "id", ["id" => $row['editedOrCreatedAdminId']])) {
+							$userOrAdmin = \ze\admin::formatName($row['editedOrCreatedAdminId']);
+						} else {
+							$userOrAdmin = "an administrator (admin account deleted)";
+						}
+					} else {
+						$userOrAdmin = "an administrator";
+					}
+				} elseif (!empty($row['editedOrCreatedUserId']) && $lastUpdatedByUser = \ze\user::details($row['editedOrCreatedUserId'])) {
+					$userOrAdmin = ($lastUpdatedByUser['identifier'] ?? false) . " (user)";
+				} elseif (!empty($row['editedOrCreatedUsername'])) {
+					$userOrAdmin = ($row['editedOrCreatedUsername'] ?? false) . " (user account deleted)";
+				} else {
+					if ($adminFacing) {
+						$userOrAdmin = "unknown admin";
+					} else {
+						$userOrAdmin = "(no user account found)";
+					}
+				}
+			
+				if (!empty($relativeDate)) {
+					$date = \ze\date::relative($row['editedOrCreated'], 'day', ($relativeDateAddFullTime ? true : false), 'vis_date_format_short');
+				} else {
+					$date = \ze\date::formatDateTime($row['editedOrCreated'], 'vis_date_format_short');
+				}
+			
+				\ze\lang::applyMergeFields($row['string'], ['date' => $date, 'user_or_admin' => $userOrAdmin]);
+				
+				$strings[] = $row['string'];
+			}
+			
+			return implode("; ", $strings);
+			
+		} else {
+			return false;
+		}
+	}
+	
+	
+	public static function setLastUpdated(&$details, $creating) {
+		
+		$userId = \ze\user::id() ?? null;
+		
+		$userIdentifier = null;
+		if ($userId) {
+			$userIdentifier = \ze\user::identifier($userId) ?? null;
+		}
+		
+		if ($creating) {
+			$details['created'] = \ze\date::now();
+			$details['created_admin_id'] = null;
+			$details['created_user_id'] = $userId;
+			$details['created_username'] = $userIdentifier;
+		} else {
+			$details['last_edited'] = \ze\date::now();
+			$details['last_edited_admin_id'] = null;
+			$details['last_edited_user_id'] = $userId;
+			$details['last_edited_username'] = $userIdentifier;
+		}
+	}
+	
+	public static function setUserLastUpdated(&$details, $creating) {
+		static::setLastUpdated($details, $creating);
+		
+		if ($creating) {
+			$details['creation_method'] = 'admin';
+			$details['created_date'] = $details['created'];
+			unset($details['created']);
+		} else {
+			$details['modified_date'] = $details['last_edited'];
+			unset($details['last_edited']);
+		}
+	}
 }

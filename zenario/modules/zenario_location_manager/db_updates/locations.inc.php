@@ -853,7 +853,7 @@ _sql
 _sql
 
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
-);	ze\dbAdm::revision( 160
+); ze\dbAdm::revision( 160
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
 _sql
@@ -931,13 +931,24 @@ _sql
 _sql
 
 
-);	ze\dbAdm::revision(166
+); ze\dbAdm::revision(166
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
 	ADD COLUMN `timezone` varchar(255) CHARACTER SET ascii NOT NULL default ''
 	AFTER `hide_pin`
 _sql
 
+); ze\dbAdm::revision(167
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	CHANGE `last_updated` `last_edited` datetime DEFAULT NULL,
+	CHANGE `last_updated_admin_id` `last_edited_admin_id` int(10) unsigned DEFAULT NULL,
+	ADD COLUMN `created` datetime DEFAULT NULL AFTER `content_type`,
+	ADD COLUMN `created_admin_id` int(10) unsigned DEFAULT NULL AFTER `created`,
+	ADD COLUMN `created_user_id` int(10) unsigned DEFAULT NULL AFTER `created_admin_id`,
+	ADD COLUMN `created_username` varchar(255) DEFAULT NULL after `created_user_id`,
+	ADD COLUMN `last_edited_user_id` int(10) unsigned DEFAULT NULL AFTER `last_edited_admin_id`,
+	ADD COLUMN `last_edited_username` varchar(255) DEFAULT NULL after `last_edited_user_id`
+_sql
+
 ); 
-
-

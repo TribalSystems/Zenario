@@ -11,7 +11,7 @@ update_no_permission:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>This site has had a software update</h1>
+                            <h1>The Zenario software on this server has been updated</h1>
                             <p>
                                 Your site's database needs to be updated, but your administrator
                                 account doesn't have permission to authorise the updates.

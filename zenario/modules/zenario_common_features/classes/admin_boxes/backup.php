@@ -99,6 +99,10 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 			$box['key']['id'] = false;
 			$box['title'] = ze\admin::phrase('Create a database backup on site');
 			$box['save_button_message'] = ze\admin::phrase('Create a database backup on site');
+			
+			if (ze\module::isRunning('assetwolf_2')) {
+				$box['tabs']['details']['notices']['assetwolf_threads']['show'] = true;
+			}
 		
 		} else {
 			$box['download'] = true;
@@ -203,8 +207,8 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 			}
 			
 			//Make this page into a download
-			header('Content-Disposition: attachment; filename="'. $filename. '"');
 			header('Content-Length: '. filesize($filepath)); 
+			header('Content-Disposition: attachment; filename="'. $filename. '"');
 			ze\cache::end();
 			readfile($filepath);
 		}

@@ -168,6 +168,15 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 			messageType = flags.Message_Type.toLowerCase();
 		}
 	}
+	
+	//Show a toast
+	if (flags.Toast_Message) {
+		zenarioA.toast({
+			message: flags.Toast_Message,
+			message_type: flags.Toast_Type,
+			title: flags.Toast_Title
+		});
+	}
 
 
 	//Commands
@@ -251,6 +260,10 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		}
 		
 		modal = true;
+	
+	//Don't show a blank box for no reason
+	} else if (!message) {
+		return true;
 	}
 
 	zenarioA.floatingBox(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase, onOkay);
@@ -3191,6 +3204,12 @@ zenarioA.init = function(
 	zenarioA.lang = lang;
 	zenarioA.spareDomains = spareDomains;
 	zenarioA.draftMessage = draftMessage;
+	
+	//Add CSS classes for every priv needed in JavaScript
+	var priv, hasPriv;
+	foreach (adminPrivs as priv => hasPriv) {
+		zenarioL.set(hasPriv, priv, '_NO' + priv);
+	}
 	
 	
 	

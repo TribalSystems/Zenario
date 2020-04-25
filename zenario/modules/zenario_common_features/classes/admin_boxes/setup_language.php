@@ -38,7 +38,10 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		} elseif ($lang = ze\row::get('languages', true, $box['key']['id'])) {
 			$values['settings/detect'] = $lang['detect'];
 			$values['settings/detect_lang_codes'] = $lang['detect_lang_codes'];
+			$values['settings/language_picker_logic'] = $lang['language_picker_logic'];
 			$values['settings/search_type'] = $lang['search_type'];
+			$values['settings/thousands_sep'] = $lang['thousands_sep'];
+			$values['settings/dec_point'] = $lang['dec_point'];
 			$values['settings/translate_phrases'] = $lang['translate_phrases'];
 			$values['settings/show_untranslated_content_items'] = $lang['show_untranslated_content_items'];
 			$values['settings/sync_assist'] = $lang['sync_assist'];
@@ -77,7 +80,43 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 					$values['settings/search_type'] = 'full_text';
 					break;
 			}
-
+			
+			//Set sensible default values for the Thousands separator & Decimal point fields.
+			switch ($box['key']['id']) {
+				//Albanian, Bulgarian, Czech, French, Estonian, Finnish, Hungarian, Latvian,
+				//Lithuanian, Polish, Russian, Slovak, Swedish, Ukrainian and Vietnamese
+				//all use spaces and commas instead of commas and periods
+				case 'sq':
+				case 'bg':
+				case 'cs':
+				case 'fr':
+				case 'et':
+				case 'fi':
+				case 'hu':
+				case 'lv':
+				case 'lt':
+				case 'pl':
+				case 'ru':
+				case 'sk':
+				case 'sv':
+				case 'uk':
+				case 'vi':
+					$values['settings/thousands_sep'] = ' ';
+					$values['settings/dec_point'] = ',';
+					break;
+				
+				//...and Italian, Norwegian and Spanish use periods and commas
+				case 'it':
+				case 'no':
+				case 'es':
+					$values['settings/thousands_sep'] = '.';
+					$values['settings/dec_point'] = ',';
+					break;
+				
+				default:
+					$values['settings/thousands_sep'] = ',';
+					$values['settings/dec_point'] = '.';
+			}
 		}
 
 		$fields['settings/domain']['placeholder'] = $box['key']['id']. '.'. ze\link::primaryDomain();
@@ -240,9 +279,12 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 					'detect' => $values['settings/detect'], 
 					'detect_lang_codes' => $values['settings/detect_lang_codes'], 
 					'translate_phrases' => $values['settings/translate_phrases'], 
+					'language_picker_logic' => $values['settings/language_picker_logic'], 
 					'show_untranslated_content_items' => $values['settings/show_untranslated_content_items'], 
 					'sync_assist' => $values['settings/sync_assist'], 
-					'search_type'=> ($values['settings/search_type'] == 'simple'? 'simple' : 'full_text'),
+					'search_type' => ($values['settings/search_type'] == 'simple'? 'simple' : 'full_text'),
+					'thousands_sep' => $values['settings/thousands_sep'], 
+					'dec_point' => $values['settings/dec_point'], 
 					'domain'=> ($values['settings/use_domain'] && ze\lang::count() > 1? $values['domain'] : '')
 				],
 				$box['key']['id']);

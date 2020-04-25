@@ -8,7 +8,7 @@ license_info: 'Modified BSD License'
 display_name: Event Calendar
 description: |
     <p>When a Plugin from this Module is inserted into a Slot on a visitor-facing page, it displays a calendar in either month-view or year-view format, highlighting any days/months that contain Events. </p>
-            <p>When a visitor clicks on a populated day or month, it displays a popout panel that floats above the web page, inside which are displayed summary details of the relevant event(s). The summaries can contain a hyperlink to the full web page for the event (the Event Content Item).</p>
+            <p>When a visitor clicks on a populated day or month, it displays a popup panel that floats above the web page, inside which are displayed summary details of the relevant event(s). The summaries can contain a hyperlink to the full web page for the event (the Event Content Item).</p>
             <p>You can set the Filter to display all Events, or limit the calendar to display just Events in a given Category.</p>
             <p>You can also use the Filter to show just Events in the current visitor web page language, or to show Events described irrespective of Language.</p>
             <p>Dates and times can be formatted in various ways to support translation into multiple languages (the names of months and days, and the format of dates and times).</p>

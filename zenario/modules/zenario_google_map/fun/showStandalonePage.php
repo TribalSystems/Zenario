@@ -82,6 +82,8 @@ echo '<!DOCTYPE HTML>
 			//lat = getFromOpener(lat) || lat || options.lat;
 			//lng = getFromOpener(lng) || lng || options.lng;
 			
+			lat = getFromOpener(lat) || lat || options.lat;
+			lng = getFromOpener(lng) || lng || options.lng;
 			stylesheet = getFromOpener(stylesheet) || stylesheet || options.stylesheet;
 			customIcon = getFromOpener(customIcon) || customIcon || options.customIcon;
 			

@@ -106,7 +106,7 @@ foreach ($documentIds as $documentId) {
 					
 					//Get the details of this field
 					if (empty($fields[$rule['field_id']])) {
-						continue;
+						break;
 					}
 					$field = $fields[$rule['field_id']];
 					

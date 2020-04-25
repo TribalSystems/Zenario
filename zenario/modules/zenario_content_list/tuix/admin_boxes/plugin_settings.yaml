@@ -232,7 +232,7 @@ plugin_settings:
                             label: Choose categories to filter by
                         show_content_with_matching_categories:
                             label: Show content with categories matching the current content item
-                    value: choose_categories_to_display_or_omit
+                    value: ""
                     
                 refine_type_content_with_matching_categories:
                     plugin_setting:
@@ -268,6 +268,8 @@ plugin_settings:
                         zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
                     side_note: |
                         Only show content items in this category.
+                    validation:
+                        required_if_not_hidden: "Please select at least one category."
                 
                 refine_type:
                     plugin_setting:

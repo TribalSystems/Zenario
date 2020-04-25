@@ -140,16 +140,18 @@ zenario_location_manager__location:
                     label: Timezone
                     type: select
                 
-                last_updated:
-                    label: 'Last updated:'
+                last_edited:
+                    label: 'Last edited:'
                     type: date
                     readonly: Yes
+                    hidden: true
                     row_class: disabled_map_fields
                     ord: 9998
-                last_updated_by:
-                    label: 'Last updated by:'
+                last_edited_by:
+                    label: 'Last edited by:'
                     type: text
                     readonly: Yes
+                    hidden: true
                     row_class: disabled_map_fields
                     ord: 9999
         content_item:

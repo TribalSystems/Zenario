@@ -43,22 +43,24 @@ $step = (int) $argv[1];
 if ($step == 1 || $step == 2) {
 	//Steps 1 and 2 should fork from their parent
 	//Try to fork this process into a child
-	$pid = @pcntl_fork();
+	if (function_exists('pcntl_fork')) {
+		$pid = @pcntl_fork();
 	
-	if ($pid == 0) {
-		//If this is the child:
-		//Detach the child from the parent
-		posix_setsid();
+		if ($pid == 0) {
+			//If this is the child:
+			//Detach the child from the parent
+			posix_setsid();
 	
-	} elseif ($pid < 0) {
-		//Continue running as best we can if we failed to fork
+		} elseif ($pid < 0) {
+			//Continue running as best we can if we failed to fork
 	
-	} else {
-		//Otherwise if this is the parent:
-		//Stop the parent running
-		if (is_resource(STDOUT)) fclose(STDOUT);
-		if (is_resource(STDERR)) fclose(STDERR);
-		exit;
+		} else {
+			//Otherwise if this is the parent:
+			//Stop the parent running
+			if (is_resource(STDOUT)) fclose(STDOUT);
+			if (is_resource(STDERR)) fclose(STDERR);
+			exit;
+		}
 	}
 }
 

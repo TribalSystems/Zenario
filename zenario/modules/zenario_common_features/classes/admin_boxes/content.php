@@ -1163,8 +1163,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 	protected function fillMenu(&$box, &$fields, &$values, $contentType, $content, $version) {
 		
+		//Menu positions are in the format CONCAT(section_id, '_', menu_id, '_', child_options)
+		//Possible options for "child_options" are:
 		$beforeNode = 0;
 		$underNode = 1;
+		$underNodeAtStart = 2;	//N.b. this option is not supported by position pickers using Organizer Select, but supported by ze\menuAdm::addContentItems() when saving
 		$defaultPos = '';
 		
 		//If a content item was set as the "from" or "source", attempt to get details of its primary menu node
@@ -1188,8 +1191,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$suggestedPositions = [];
 		if ($box['key']['cType'] != 'html') {
 			foreach (ze\row::getAssocs('menu_nodes', ['id', 'section_id'], ['restrict_child_content_types' => $box['key']['cType']]) as $menuNode) {
-				$mPath = ze\menuAdm::pathWithSection($menuNode['id'], true). ' -> '. ze\admin::phrase('[ Create at the end ]');
-				$mVal = $menuNode['section_id']. '_'. $menuNode['id']. '_'. $underNode;
+				$mPath = ze\menuAdm::pathWithSection($menuNode['id'], true). ' › '. ze\admin::phrase('[ Create at the start ]');
+				$mVal = $menuNode['section_id']. '_'. $menuNode['id']. '_'. $underNodeAtStart;
 				
 				$suggestedPositions[$mVal] = $mPath;
 			}
@@ -1259,6 +1262,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				if ($box['key']['target_menu_section']) {
 					$values['meta_data/menu_pos_specific'] = $box['key']['target_menu_section']. '_0_'. $underNode;
 				}
+				
+				//Default the "create a menu node" checkbox to the value in the content type settings
+				$values['meta_data/create_menu_node'] = $contentType['prompt_to_create_a_menu_node'] ?? 1;
+			}
+			
+			if (empty($contentType['prompt_to_create_a_menu_node'])) {
+				$fields['meta_data/no_menu_warning']['hidden'] = true;
 			}
 			
 			//If there were some suggestions, default the radio-group to select them over the specific option

@@ -14,7 +14,9 @@
 		    window.onbeforeunload = null;
 		});
 		
-		this.startPoking();
+		if (!zenario.isPublic) {
+			zenario.startPoking(this, 10 * 60 * 1000);
+		}
 		
 		if (showLeavingPageMessage) {
             if (maxPageReached > 1) {
@@ -882,22 +884,7 @@
 		$form.submit();
 	};
 	
-	module.stopPoking = function() {
-        if (module.poking) {
-            clearInterval(module.poking);
-        }
-        module.poking = false;
-    };
-
-    module.startPoking = function() {
-        if (!module.poking) {
-            module.poking = setInterval(module.poke, 2 * 60 * 1000);
-        }
-    };
-
-    module.poke = function() {
-        zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
-    };
+	
     
    	module.toggleForm = function(containerId) {
    		$('#' + containerId).toggleClass('show').toggleClass('hide');

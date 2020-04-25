@@ -210,20 +210,23 @@ class skinAdm {
 		}
 	}
 
+	//If the Pro Features module is installed and page/plugin caching is enabled,
+	//empty the page cache. (We do this by telling it that the site settings have changed.)
+	public static function emptyPageCache() {
+		$sql = '';
+		$ids = $values = [];
+		$table = 'site_settings';
+		\ze::$dbL->reviewQueryForChanges($sql, $ids, $values, $table);
+	}
+
 	//This function clears as many cached/stored things as possible!
 	//Formerly "zenarioClearCache()"
 	public static function clearCache($checkForGridChanges = false) {
 	
 		//Update the data-revision number in the database to clear anything stored in Organizer's local storage
 		\ze\db::updateDataRevisionNumber();
-	
-		//If the Pro Features module is installed and page/plugin caching is enabled,
-		//empty the page cache. (We do this by telling it that the site settings have changed.)
-		$sql = '';
-		$ids = $values = [];
-		$table = 'site_settings';
-		\ze::$dbL->reviewQueryForChanges($sql, $ids, $values, $table);
 		
+		\ze\skinAdm::emptyPageCache();
 		\ze\skinAdm::clearCacheDir();
 	
 		//Check for changes in TUIX, Layout and Skin files

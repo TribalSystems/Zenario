@@ -420,6 +420,29 @@ zenario__content:
                         multiple_select: true
                         request:
                             add: 1
+                        
+                regenerate_public_links:
+                    #priv: _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS
+                    priv: _PRIV_MANAGE_MEDIA
+                    hide_on_filter: true
+                    hide_on_refiner: true
+                    hide_in_select_mode: true
+                    hide_in_quick_mode: true
+                    label: Re-generate cache
+                    ajax:
+                        confirm:
+                            message: >
+                                This action will re-generate the cache of all publicly-accessible images in the
+                                Zenario directory public/images from the originals in the database.
+                                This can be necessary after a site move or if the public directory has been emptied.
+                                
+                                
+                                Proceed?
+                            button_message: Re-generate
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            regenerate_public_links: true
             
             
             
@@ -463,12 +486,8 @@ zenario__content:
                             view_public_link: 1
                 
                 
-                action_dropdown:
-                    label: Actions
-                    multiple_select: true
-                    hide_when_children_are_not_visible: true
-                
                 mark_as_public:
+                    parent: actions_dropdown
                     priv: _PRIV_MANAGE_MEDIA
                     label: Make public
                     multiple_select: true
@@ -493,6 +512,7 @@ zenario__content:
                             mark_as_public: 1
                 
                 mark_as_private:
+                    parent: actions_dropdown
                     priv: _PRIV_MANAGE_MEDIA
                     label: Make private
                     multiple_select: true

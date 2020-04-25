@@ -32,7 +32,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $cID = $cType = false;
 
 //Check to see if there is a valid destination URL
-$validDestURL = false;
+$validDestURL = $homePageRequested = false;
 $privacy = false;
 if ($_SESSION['destURL'] ?? false) {
 	$validDestURL = true;
@@ -42,6 +42,8 @@ if ($_SESSION['destURL'] ?? false) {
 		if ($specialPage = ze\content::isSpecialPage($_SESSION['destCID'] ?? false, ($_SESSION['destCType'] ?? false))) {
 			if ($specialPage != 'zenario_home') {
 				$validDestURL = false;
+			} else {
+				$homePageRequested = true;
 			}
 		}
 		//Check to see if the destination URL is private or public
@@ -50,11 +52,16 @@ if ($_SESSION['destURL'] ?? false) {
 	}
 }
 
-//Follow redirect rules
+//Follow redirect rules. Conditions below explained:
+//1) Redirect based on rules: always redirect;
+//2) Redirect based on rules, user page request is prioritised: special page requested;
+//3) Redirect based on rules, user page request is prioritised: public content item requested;
+//4) Redirect based on rules, user page request is prioritised: home page (with privacy setting set to private) requested.
 if ($showWelcomePage
 	&& ( $this->setting('show_welcome_page') == '_ALWAYS'
 	||  ($this->setting('show_welcome_page') == '_IF_NO_PREVIOUS_PAGE' && !$validDestURL)
-	||  ($this->setting('show_welcome_page') == '_IF_NO_PREVIOUS_PAGE' && ($privacy == 'public')))
+	||  ($this->setting('show_welcome_page') == '_IF_NO_PREVIOUS_PAGE' && ($privacy == 'public'))
+	||  ($this->setting('show_welcome_page') == '_IF_NO_PREVIOUS_PAGE' && $homePageRequested && ($privacy != 'public')))
 ) {
 	//..Get page according to redirect rules
 	$allowRoleRedirectRules = ze\module::inc('zenario_organization_manager');

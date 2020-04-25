@@ -3,6 +3,7 @@
 zenario__administration:
     panels:
         site_settings:
+            priv: _PRIV_VIEW_SITE_SETTING
             title: Site Settings
             view_mode: list
             disable_grid_view: true

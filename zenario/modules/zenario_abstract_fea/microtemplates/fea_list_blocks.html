@@ -1,16 +1,13 @@
 <%
 	var containerId = m.lib.containerId, tuix = m.tuix, lib = m.lib;
-	zenario.sendSignal('eventListPreDisplay', {containerId: containerId, microTemplate: 'fea_list_blocks', tuix: tuix, lib: lib});
+	zenario.sendSignal("eventListPreDisplay", {containerId: containerId, microTemplate: "fea_list_blocks", tuix: tuix, lib: lib});
 %>
 
 
-{{m.lib.pMicroTemplate('dev_tools', m)}}
+{{m.lib.displayDevTools()}}
 
 
-<div class="
-	zfea zfea_blocks zfea_{{m.lib.path|e}}
-	{{m.tuix.css_class|e}}
-">
+<div class="{{m.lib.wrapperClassName()|e}} zfea_blocks">
 	{{m.tuix.header_html}}
 	
 	<% if (m.tuix.title !== undefined) { %>
@@ -22,19 +19,19 @@
 	<% } %>
 	
 	<div class="zfea_back_button">
-		<% if (zenarioT.find(m.thus.sortedCollectionButtons, 'back')) { %>
-			{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'back')}}
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, "back")) { %>
+			{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, "back")}}
 		<% } %>
 	</div>
 	<div class="zfea_buttons zfea_top_buttons">
-		<% if (zenarioT.find(m.thus.sortedCollectionButtons, 'top')) { %>
-			{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'top')}}
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, "top")) { %>
+			{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, "top")}}
 		<% } %>
 	</div>
 	
-	<% var ci, col, chi, child, bi, button, oi, log, logName, gi, lg, lgName, ii, item, tag, headerId = false, firstItem = true; %>
+	<% var ci, col, chi, child, bi, button, oi, log, logName, gi, lg, lgName, ii, item, tag, showParent, headerId = false, firstItem = true; %>
 	
-	{{m.lib.pMicroTemplate('list_search', m)}}
+	{{m.lib.pMicroTemplate("list_search_and_sort", m)}}
 	
 	<% if (m.tuix.item_count_message && m.tuix.__item_count__ > 1) { %>
 		<div class="item_count">
@@ -50,35 +47,37 @@
 	
 	<% if (m.thus.sortedCollectionButtons.length) { %>
 		<div class="sorted_buttons">
-			<% if (zenarioT.find(m.thus.sortedCollectionButtons, false) && !_.isEmpty(m.tuix.columns)) { %>
-				{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
+			<% if (zenarioT.find(m.thus.sortedCollectionButtons, ["above_list", "column_header", undefined]) && !_.isEmpty(m.tuix.columns)) { %>
+				{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, ["above_list", "column_header", undefined])}}
 			<% } %>
 		</div>
 	<% } %>
 	
 	<% if (!_.isEmpty(m.tuix.columns)) { %>
+	
 		<% foreach (m.thus.sortedListOuterGroupings as oi => logName) { %>
-			<% log = m.tuix.list_outer_groupings && m.tuix.list_outer_groupings[logName] || {}; %>
+			<% log = m.tuix.list_outer_groupings && m.tuix.list_outer_groupings[logName]; %>
 			
-			<% if (log.label) { %>
-				<h4>{{log.label|escape}}</h4>
+			<% if (log) { %>
+				{{m.lib.pMicroTemplate("list_block_outer_grouping", log)}}
 			<% } %>
-			
+	
 			<% foreach (m.thus.sortedListGroupings as gi => lgName) { %>
-				<% lg = m.tuix.list_groupings && m.tuix.list_groupings[lgName] || {}; %>
+				<% lg = m.tuix.list_groupings && m.tuix.list_groupings[lgName]; %>
+				
+				<% if (lg) { %>
 					
-				<% if (m.tuix.list_outer_groupings && lg.list_outer_grouping != logName) { %>
-					<% continue; %>
-				<% } %>
-		
-				<% if (lg = m.tuix.list_groupings && m.tuix.list_groupings[lgName]) { %>
-					<h5>{{lg.label|escape}}</h5>
+					<% if (log && logName != lg.list_outer_grouping) { %>
+						<% continue; %>
+					<% } %>
+					
+					{{m.lib.pMicroTemplate("list_block_grouping", lg)}}
 				<% } %>
 		
 				<div class="zfea_block_list_wrap">
 					<% foreach (m.thus.sortedItems as ii => item) { %>
-			
-						<% if (m.tuix.list_groupings && item.list_grouping != lgName) { %>
+		
+						<% if (lg && lgName != item.list_grouping) { %>
 							<% continue; %>
 						<% } %>
 				
@@ -95,23 +94,43 @@
 						<% } %>
 				
 						<div class="zfea_block item_{{item.id|e}} {{item.row_class|e}}">
+							
+							<% if (item.__sortedItemButtons.length && zenarioT.find(item.__sortedItemButtons, "top")) { %>
+								<div class="buttons block_buttons_top">
+									{{m.lib.pMicroTemplate("button", item.__sortedItemButtons, "top")}}
+								</div>
+							<% } %>
+							
 							<% var sameRow = false; %>
 							<% foreach (m.thus.sortedColumns as ci => col) { %>
 						
-								<% if (item[col.id] === undefined) {
-									continue;
-								} %>
+								<% if (!(showParent = m.lib.columnVisibleForItem(col.id, item.id))) { %>
+									<% var blockInvis = true; %>
+									
+									<% if (col.children) { %>
+										<% foreach (col.children as chi => child) { %>
+											<% if (m.lib.columnVisibleForItem(child.id, item.id)) { %>
+												<% blockInvis = false; %>
+											<% } %>
+										<% } %>
+									<% } %>
+									
+									<% if (blockInvis) { %>
+										<% continue; %>
+									<% } %>
+								<% } %>
 						
 								<% if (m.thus.sortedColumns[+ci + 1] && m.thus.sortedColumns[+ci + 1].same_row && !sameRow) { %>
 									<% sameRow = true; %>
 									<div class="wrap_div">
 								<% } %>
 						
-								<% tag = col.tag ? col.tag : 'p'; %>
+								<% tag = col.tag ? col.tag : "p"; %>
 								<div
 									id="{{('zfea_' + m.lib.containerId + '_row_' + ii + '_col_' + ci)|e}}"
 									data-label="{{col.title|e}}" 
 									class="
+										block_view_box
 										column_{{col.id|e}} 
 										{{col.css_class|e}}
 										<% if (ci == 0) { %>
@@ -119,24 +138,75 @@
 										<% } %>
 										<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
 											{{item.cell_css_classes[col.id]|e}}
-										<% } %>"
+										<% } %>
+									"
 								>
 									<div class="icon"></div>
-									<% if (m.lib.mode == 'view_data_pool_block' && item[col.id]['field_type'] =='metric') { %>
-									<div class="label metric">
-									<% } else if(m.lib.mode == 'view_data_pool_block' && item[col.id]['field_type'] =='real_time') { %>
-									<div class="label real_time">
-									<% } else {%>
-									<div class="label">
-									<% } %>
-										<% if (m.lib.mode == 'view_data_pool_block') { %>
-   										<div class='field_label resize_text'>{{col.blocks_title|e}}</div>
-   										<% } else { %>
-										    <% if (col.show_title_in_block_view && col.title) { %>{{col.title|e}} <% } %>{{col.blocks_title|e}}
+									
+									<div class="
+										label
+										<% if (col._is_block) { %>
+											<% if (col._is_metric) { %>
+												metric
+											<% } else { %>
+												real_time
+											<% } %>
 										<% } %>
-										{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
-										<% if (item.cell_tooltips && item.cell_tooltips[col.id]) { %>
-										    <i class="info_icon" title="{{item.cell_tooltips[col.id]|e}}"></i>
+									">
+									    <% if (col.show_title_in_block_view && col.title) { %>
+   											<div class="field_label resize_text">{{col.title|e}}</div>
+										<% } %>
+										
+										<% if (zenario.defined(col.previous_label) && zenario.defined(item["prev__" + col.id])) { %>
+											<div class="block_boxes period_boxes">
+												<div class="box_wrapper this_wrapper">
+													<div class="box_label">
+														{{col.current_label|e}}
+													</div>
+													<div class="resize_text">
+														{{item[col.id]|e}}
+													</div>
+												</div>
+												<div class="box_wrapper previous_wrapper">
+													<div class="box_label">
+														{{col.previous_label|e}}
+													</div>
+													<div class="resize_text">
+														{{item["prev__" + col.id]|e}}
+													</div>
+												</div>
+											</div>
+											
+
+										<% } else if (col.children) { %>
+											<div class="block_boxes parent_child_boxes">
+												<% if (showParent && zenario.defined(item[col.id])) { %>
+													<div class="box_wrapper parent_wrapper">
+														<div class="resize_text">
+															{{m.lib.pMicroTemplate("list_cell", {col: col, item: item})}}
+														</div>
+													</div>
+												<% } %>
+												
+												<% foreach (col.children as chi => child) { %>
+													<% if (m.lib.columnVisibleForItem(child.id, item.id)) { %>
+														<div class="box_wrapper child_wrapper child_wrapper_{{child.id|e}} {{child.css_class|e}}">
+															<div class="resize_text">
+																{{m.lib.pMicroTemplate('list_cell', {col: child, item: item})}}
+															</div>
+														</div>
+													<% } %>
+												<% } %>
+											</div>
+											
+										<% } else { %>
+											<div class="field_value resize_text">
+												{{m.lib.pMicroTemplate("list_cell", {col: col, item: item})}}
+											</div>
+										<% } %>
+										
+										<% if (col.cell_tooltip) { %>
+										    <i class="info_icon" title="{{col.cell_tooltip|e}}"></i>
 										<% } %>
 									</div>
 								</div>
@@ -146,9 +216,10 @@
 									</div>
 								<% } %>
 							<% } %>
-							<% if (item.__sortedItemButtons.length) { %>
-								<div class="buttons">
-									{{m.lib.pMicroTemplate('button', item.__sortedItemButtons)}}
+							
+							<% if (item.__sortedItemButtons.length && zenarioT.find(item.__sortedItemButtons, ["bottom", undefined])) { %>
+								<div class="buttons block_buttons_bottom">
+									{{m.lib.pMicroTemplate("button", item.__sortedItemButtons, ["bottom", undefined])}}
 								</div>
 							<% } %>
 						</div>
@@ -156,10 +227,10 @@
 					<% } %>
 			
 					<%
-						if (!zenarioL.mobile && m.lib.mode != 'view_data_pool_block') {
+						if (!zenarioL.mobile && m.lib.mode != "view_data_pool_block") {
 							m.lib.after(function() {
 								var maxHeight = 0;
-								$('#' + m.lib.containerId + ' .zfea_block_list_wrap .zfea_block')
+								$("#" + m.lib.containerId + " .zfea_block_list_wrap .zfea_block")
 									.each(function() { maxHeight = Math.max(maxHeight, $(this).height()); })
 									.height(maxHeight);
 							});
@@ -171,11 +242,19 @@
 						<% } %>
 					<% } %>
 				</div>
+						
+				<% if (lg) { %>
+					{{m.lib.pMicroTemplate("list_block_grouping_end", lg)}}
+				<% } %>
+			<% } %>
+			
+			<% if (log) { %>
+				{{m.lib.pMicroTemplate("list_block_outer_grouping_end", log)}}
 			<% } %>
 		<% } %>
 	<% } %>
 	
-	{{m.lib.pMicroTemplate('list_pagination', m)}}
+	{{m.lib.pMicroTemplate("list_pagination", m)}}
 	
 	{{m.tuix.footer_html}}
 </div>
@@ -183,6 +262,6 @@
 
 <%
 	m.lib.after(function() {
-		zenario.sendSignal('eventListPostDisplay', {containerId: containerId, microTemplate: 'fea_list_blocks', tuix: tuix, lib: lib});
+		zenario.sendSignal("eventListPostDisplay", {containerId: containerId, microTemplate: "fea_list_blocks", tuix: tuix, lib: lib});
 	});
 %>

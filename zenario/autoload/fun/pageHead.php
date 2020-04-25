@@ -281,6 +281,15 @@ if ($isAdmin) {
 <link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.wrapper.css.php?', $w, '&amp;ids=', $cssModuleIds, '&amp;admin_frontend=1" media="screen" />';
 		}
 	}
+	
+	//Add the CSS file for skin-specific admin styles, if it exists
+	if (\ze::$skinId && ($skinPath = \ze\content::skinPath())) {
+		if (is_file(CMS_ROOT. ($filePath = $skinPath. 'adminstyles/admin_frontend.css'))) {
+			echo '
+	<link rel="stylesheet" type="text/css" media="screen" href="', $absURL, $filePath, '"/>';
+		}
+	}
+	
 
 //Add the CSS for the login link for admins if this looks like a logged out admin
 } else if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\link::adminDomainIsPrivate()) { 

@@ -224,6 +224,27 @@ class phi {
 		foreach ($whitelist as $twigName => $phpName) {
 			self::$twig->addFunction(new \Twig\TwigFunction($twigName, $phpName));
 		}
+		
+		
+		//Blacklist a few functions and variables.
+		//(Note there's already another check for these in the parser, but an extra redundant check as safety net wouldn't hurt...)
+		$blacklist = [
+			'_self',
+			'block',
+			'constant',
+			'include',
+			'parent',
+			'source',
+			'template_from_string'
+		];
+		
+		foreach ($blacklist as $twigName) {
+			self::$twig->addFunction(new \Twig\TwigFunction($twigName, '\ze\\phi::returnNull'));
+		}
+	}
+	
+	public static function returnNull() {
+		return null;
 	}
 	
 	public static function toArray($in, &$out, $topLevel = true) {

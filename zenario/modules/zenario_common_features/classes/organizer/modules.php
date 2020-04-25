@@ -364,9 +364,9 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 			$module = ze\module::details($ids);
 	
 			if ($_GET['remove'] ?? false) {
-				echo ze\admin::phrase('Are you sure that you wish to remove the Module "[[display_name]]"?', $module);
+				echo ze\admin::phrase('Are you sure that you wish to remove the module "[[class_name]]" ([[display_name]])?', $module);
 			} else {
-				echo ze\admin::phrase('Are you sure that you wish to uninitialise the Module "[[display_name]]"?', $module);
+				echo ze\admin::phrase('Are you sure that you wish to uninitialise the module "[[class_name]]" ([[display_name]])?', $module);
 			}
 	
 			echo "\n\n";
@@ -374,24 +374,24 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 			echo ze\admin::phrase('All of its data, ');
 	
 			if ($module['vlp_class'] && $module['vlp_class'] == $module['class_name']) {
-				echo ze\admin::phrase('all of its Phrases, ');
+				echo ze\admin::phrase('all of its phrases, ');
 			}
 	
 			if ($module['is_pluggable']) {
-				echo ze\admin::phrase('all Plugins derived from this Module, ');
+				echo ze\admin::phrase('all plugins derived from this module, ');
 			}
 	
 			if (ze\row::exists('special_pages', ['module_class_name' => $module['class_name']])) {
-				echo ze\admin::phrase('all Special Pages for this Module, ');
+				echo ze\admin::phrase('all special pages for this module, ');
 			}
 	
 			if (ze\row::exists('centralised_lists', ['module_class_name' => $module['class_name']])) {
-				echo ze\admin::phrase('all centralised lists for this Module, ');
+				echo ze\admin::phrase('all centralised lists for this module, ');
 			}
 	
 			$result = ze\row::query('content_types', 'content_type_name_en', ['module_id' => $ids], 'content_type_name_en');
 			while ($contentType = ze\sql::fetchAssoc($result)) {
-				echo ze\admin::phrase('all Content Items of the "[[content_type_name_en]]" Content Type, ', $contentType);
+				echo ze\admin::phrase('all content items of the "[[content_type_name_en]]" content type, ', $contentType);
 			}
 	
 			echo ze\admin::phrase('WILL BE DELETED.');

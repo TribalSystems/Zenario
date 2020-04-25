@@ -39,6 +39,7 @@ special_pages:
         default_title: Password Reset
         only_show_to_visitors_who_are_logged_out: true
         logic: create_and_maintain_in_default_language
+        allow_hide: true
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

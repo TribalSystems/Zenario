@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!$details = ze\row::get(
 			'files',
-			['id','filename', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum'],
+			['id', 'filename', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum', 'privacy'],
 			$box['key']['id'])
 		) {
 			exit;
@@ -75,6 +75,33 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		$box['tabs']['details']['fields']['tags']['value'] = implode(',', $pickedTagNames);
 		$box['tabs']['details']['fields']['tags']['tag_colors'] = ze\contentAdm::getImageTagColours($byId = false, $byName = true);
+		
+		
+		switch ($details['privacy']) {
+			case 'auto':
+				$fields['details/privacy_auto']['hidden'] = false;
+				break;
+			
+			case 'private':
+				$fields['details/privacy_private']['hidden'] = false;
+				break;
+			
+			case 'public':
+				$fields['details/privacy_public']['hidden'] = false;
+				
+				$mrg = [];
+				$mrg['path'] = 'public/images/'. $details['short_checksum']. '/'. ze\file::safeName($details['filename']);
+				$mrg['link'] = ze\link::absolute(). $mrg['path'];
+				
+				$fields['details/privacy_public']['note_below'] =
+					ze\admin::phrase('This image can be publicly accessed via the URL [[link]], internal references to the image should be via [[path]]', $mrg);
+				
+				if (!file_exists(CMS_ROOT. $mrg['path'])) {
+					$fields['details/missing_public_image']['hidden'] = false;
+				}
+				
+				break;
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

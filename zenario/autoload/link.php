@@ -212,9 +212,28 @@ class link {
 				false, $forceAliasInAdminMode,
 				false, $languageId
 			);
-		} else {
-			return false;
 		}
+		return false;
+	}
+
+	const toPluginPageFromTwig = true;
+	public static function toPluginPage(
+		$moduleClassName, $mode = '', $languageId = false, $fullPath = false, $request = '', $forceAliasInAdminMode = false
+	) {
+		
+		if ($pluginPage = \ze\row::get('plugin_pages_by_mode',
+			['equiv_id', 'content_type', 'state'],
+			['module_class_name' => $moduleClassName, 'mode' => $mode]
+		)) {
+			if ($pluginPage['state']) {
+				if (is_array($request)) {
+					$request = http_build_query($request);
+				}
+				$request .= '&state='. $pluginPage['state'];
+			}
+			return \ze\link::toEquivalentItem($pluginPage['equiv_id'], $pluginPage['content_type'], $languageId, $fullPath, $request, $forceAliasInAdminMode);
+		}
+		return false;
 	}
 
 

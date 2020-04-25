@@ -16,6 +16,9 @@ zenario_backup:
                 mysqldump_unavailable:
                     type: warning
                     message: Zenario cannot call mysqldump directly.
+                assetwolf_threads:
+                    type: warning
+                    message: The MQTT listener, Data processor, Metrics calculator and Data repeater will all be paused whilst the backup is being generated.
             fields:
                 desc1a:
                     visible_if: |

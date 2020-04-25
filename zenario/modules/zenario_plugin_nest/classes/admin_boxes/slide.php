@@ -128,6 +128,30 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		//display the options for the back/refresh buttons
 		$box['key']['usesConductor'] = ze\pluginAdm::conductorEnabled($box['key']['instanceId']);
 		
+		//If using conductor, check whether any smart breadcrumbs will be overriding the title
+		if ($box['key']['usesConductor']) {
+			$sql = "
+				SELECT 1
+				FROM ". DB_PREFIX. "nested_plugins AS ts
+				INNER JOIN ". DB_PREFIX. "nested_paths AS p
+				   ON p.instance_id = ts.instance_id
+				  AND FIND_IN_SET(p.to_state, ts.states)
+				  AND p.is_forwards = 1
+				INNER JOIN ". DB_PREFIX. "nested_plugins AS b
+				   ON b.instance_id = p.instance_id
+				  AND b.slide_num = p.slide_num
+				  AND b.is_slide = 0
+				  AND b.makes_breadcrumbs != 0
+				WHERE ts.id = ". (int) $box['key']['id'];
+			
+			if (ze\sql::fetchRow($sql)) {
+				$box['key']['breadcrumbsOverridden'] = true;
+			}
+		}
+		
+		
+		
+		$values['details/css_class'] = $details['css_class'] ?? '';
 		$values['details/name_or_title'] = $details['name_or_title'];
 		
 		
@@ -143,8 +167,13 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		
 		if ($box['key']['usesConductor']) {
-			$fields['details/name_or_title']['note_below'] =
-				ze\admin::phrase('This title will appear on links (e.g. breadcrumb-links) to this slide.');
+			if ($box['key']['breadcrumbsOverridden']) {
+				$fields['details/name_or_title']['note_below'] =
+					ze\admin::phrase('This title will not appear on links breadcrumb-links, as it is overridden by a plugin generating smart breadcrumbs on the slide above this one in the navigation.');
+			} else {
+				$fields['details/name_or_title']['note_below'] =
+					ze\admin::phrase('This title will appear on links (e.g. breadcrumb-links) to this slide.');
+			}
 		
 		} else {
 			$fields['details/name_or_title']['note_below'] =
@@ -152,7 +181,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		}
 		
 		
-		if (!$instance['content_id'] && (ze\lang::count() > 1)) {
+		if (!$instance['content_id'] && !$box['key']['breadcrumbsOverridden'] && (ze\lang::count() > 1)) {
 			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
@@ -164,18 +193,25 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				ze\admin::phrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
 		
-		if ($box['key']['usesConductor']) {
+		if ($box['key']['usesConductor'] && !$box['key']['breadcrumbsOverridden']) {
 			$fields['details/name_or_title']['onchange'] = "
 				zenario.ajax(zenario_plugin_nest.AJAXLink({formatTitleTextAdmin: this.value, htmlescape: true})).after(function(html) {
 					$('#zenario__title_merge_fields__note').html(html);
 				});
 			";
 		}
+		
+		if ($slideNum = $instance['slideNum'] ?? $box['key']['slideNum'] ?? false) {
+			$fields['details/css_class']['pre_field_html'] =
+				'<span class="zenario_css_class_label">'.
+					'nest_plugins slide_'. $slideNum.
+				'</span> ';
+		}
 	}
 	
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($box['key']['usesConductor']) {
+		if ($box['key']['usesConductor'] && !$box['key']['breadcrumbsOverridden']) {
 			$fields['details/title_merge_fields']['post_field_html'] =
 				'<br/>
 				<span id="zenario__title_merge_fields__note">'.
@@ -225,6 +261,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		}
 		
 		$details = [
+			'css_class' => $values['details/css_class'],
 			'name_or_title' => $values['details/name_or_title'],
 			'invisible_in_nav' => $values['details/invisible_in_nav'],
 			'privacy' => 'public',

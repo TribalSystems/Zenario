@@ -450,9 +450,15 @@ if (ze\dbAdm::needRevision(47200)) {
 	ze\dbAdm::revision(47200);
 }
 
+//The Assetwolf module now needs the Advanced interface tools FEA module to run
+if (ze\dbAdm::needRevision(50500)) {
+	runNewModuleDependency('assetwolf_2', 'zenario_advanced_interface_tools_fea');
+	ze\dbAdm::revision(50500);
+}
+
 
 //Fix a bug where the "password reminder" page was not unflagged as a special page when then zenario_extranet_password_reminder module was replaced
-if (ze\dbAdm::needRevision(48646)) {
+if (ze\dbAdm::needRevision(50535)) {
 	ze\row::delete('special_pages', ['module_class_name' => 'zenario_extranet_password_reminder']);
-	ze\dbAdm::revision(48646);
+	ze\dbAdm::revision(50535);
 }

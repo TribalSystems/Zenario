@@ -1,0 +1,212 @@
+---
+
+
+
+
+
+
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: Assetwolf Front-End Administration Schema
+
+type: object
+additionalProperties:
+
+    properties:
+        item_buttons:
+            additionalProperties:
+                type: object
+                properties: &custom_visibility
+                    hide_on_lists:
+                        type: boolean
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's hidden on lists.
+                    only_show_on_lists:
+                        type: boolean
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            on lists, and not in block views or schematics.
+                    hide_on_schematics:
+                        type: boolean
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's hidden on schematics.
+                    only_show_on_schematics:
+                        type: boolean
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            on schematics, and not on lists or details view.
+                    hide_on_view_details:
+                        type: boolean
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's hidden on the details view.
+                    only_show_on_view_details:
+                        type: boolean
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            on the details view, and not in lists or schematics.
+                    visible_if_schema_is:
+                        type: string
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            for nodes of a specific schema.
+                            
+                            Note you need to enter the code name of the schema,
+                            not the name or id.
+                    visible_if_schema_in:
+                        type:
+                            - string
+                            - object
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            for nodes of specific schemas.
+                            
+                            You can enter either a comma-separated list, or an array
+                            of values.
+                            
+                            Note you need to enter the code names of the schema,
+                            not their names or ids.
+                    visible_if_metadata_set:
+                        type: string
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            for nodes with a specific option set in their metadata.
+                    visible_if_hierarchical_metadata_set:
+                        type: string
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            for nodes with a specific option set in their metadata,
+                            or in the metadata on one of their parent nodes.
+                    visible_if_child_exists:
+                        type:
+                            - object
+                        description: >
+                            When showing assets or data pools,
+                            this option lets you have a column or item button that's only visible
+                            depending on what children the selected node has.
+                            
+                            If a child does match, and this is an item button with
+                            an onclick, you'll be able to use the childId variable in
+                            your JavaScript code when writing the onclick.
+                            (If there are multiple matches, only one ID will be passed.)
+                        properties:
+                            visible_if_schema_is:
+                                type: string
+                                description: >
+                                    This lets you look for children of a specific schema.
+                                    
+                                    Note you need to enter the code name of the schema,
+                                    not the name or id.
+                            visible_if_schema_in:
+                                type:
+                                    - string
+                                    - object
+                                description: >
+                                    This lets you look for children of specific schemas.
+                                    
+                                    You can enter either a comma-separated list, or an array
+                                    of values.
+                                    
+                                    Note you need to enter the code names of the schema,
+                                    not their names or ids.
+                            visible_if_field_value_in:
+                                type:
+                                    - string
+                                    - object
+                                description: >
+                                    This lets you look for children with a specific field set 
+                                    to a specific value or values.
+                                    
+                                    You can enter either a comma-separated list, or an array.
+                                    
+                                    The first entry should be the key of the field you are checking.
+                                    
+                                    Subsequent entries should be the acceptable values.
+                            visible_if_user_can:
+                                type:
+                                    - object
+                                description: >
+                                    This lets you call the ze\user::can() function to run a permission
+                                    check for this item.
+                                    
+                                    You can enter either a comma-separated list, or an array of
+                                    parameters. The first should be the $action, the second should
+                                    be the target (defaults to "unassigned").
+                                    
+                                    For example:
+                                        enterData, asset
+                                    or:
+                                        sendSimpleCommandTo, asset
+                                    
+                                    The third input, the id of the node, will be automatically filled in.
+
+        columns:
+            additionalProperties:
+                type: object
+                properties: *custom_visibility
+                    load_value: 
+                        type: string
+                        description: >
+                            When showing an asset or a data pool in a list or a block view,
+                            you can use this to load a value in for this column.
+                            
+                            You need to enter the key of the field you wish to load in.
+                            You can enter the key of incoming data, calculated fields,
+                            or metric fields.
+                            
+                            The getNodeFieldValue() function will be used to load the value.
+                            
+                            Setting this property will automatically set the units, title and
+                            show_title_in_block_view properties for a column. However this may
+                            not always be desirable, e.g. if you are showing nodes from multiple
+                            different schemas with the same key. In this case you may need to
+                            specify these properties on the column and not rely on the auto-fill-in
+                            logic.
+                    load_value_from_parent:
+                        type: boolean
+                        description: >
+                            Set this to true to show the value of a field from the node's parent,
+                            not the node itself.
+                            
+                            Useful if you want to show something on a schematic but show properties
+                            from the node above it when clicked on.
+                    hide_units:
+                        type: boolean
+                        description: >
+                            Set this column to hide the units of the column.
+                            E.g. if rather than displaying the text "1,234 activations",
+                            you just want to display the text "1,234".
+                    show_prev_period:
+                        type: boolean
+                        description: >
+                            If you are using the load_value property in block view,
+                            you can set this to true to show the previous period as well.
+                            
+                            Only works for metric fields, where the "Time-summable" option
+                            has been checked.
+                            
+                            Note you can't use the show_prev_period and the show_prev_period
+                            properties together.
+                    show_total:
+                        type: string
+                        enum:
+                            - daily
+                            - monthly
+                            - yearly
+                        description: >
+                            If you are using the load_value property in block view,
+                            you can set this to true to show a daily/monthly/yearly total as well.
+                            
+                            Only works for metric fields, where the "Time-summable" option
+                            has been checked.
+                            
+                            Note you can't use the show_prev_period and the show_prev_period
+                            properties together.

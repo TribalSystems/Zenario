@@ -74,7 +74,7 @@ foreach ($datasetFieldIds as $datasetFieldId) {
 		$newInput['values'] = ze\dataset::fieldLOV($datasetField, $flat);
 	}
 	
-	//Merge any custom tuix with fields
+	//Merge any TUIX snippets with fields
 	if ($datasetField['db_column']) {
 		$identifier = $datasetField['db_column'];
 		if (isset($tags['tabs'][$tab]['fields']['custom_field_' . $datasetFieldId])) {

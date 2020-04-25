@@ -65,19 +65,19 @@ class zenario_pro_features extends zenario_common_features {
 	
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
 		}
 	}
@@ -114,7 +114,7 @@ class zenario_pro_features extends zenario_common_features {
 				break;
 			
 			default:
-				if ($c = $this->runSubClass(static::class)) {
+				if ($c = $this->runSubClass(static::class, false, $path)) {
 					return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
 				}
 		}
@@ -132,7 +132,7 @@ class zenario_pro_features extends zenario_common_features {
 				break;
 			
 			default:
-				if ($c = $this->runSubClass(static::class)) {
+				if ($c = $this->runSubClass(static::class, false, $path)) {
 					return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 				}
 		}
@@ -188,7 +188,7 @@ class zenario_pro_features extends zenario_common_features {
 				break;
 			
 			default:
-				if ($c = $this->runSubClass(static::class)) {
+				if ($c = $this->runSubClass(static::class, false, $path)) {
 					return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
 				}
 		}
@@ -296,7 +296,7 @@ class zenario_pro_features extends zenario_common_features {
 				break;
 			
 			default:
-				if ($c = $this->runSubClass(static::class)) {
+				if ($c = $this->runSubClass(static::class, false, $path)) {
 					return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 				}
 		}
@@ -328,7 +328,7 @@ class zenario_pro_features extends zenario_common_features {
 				break;
 			
 			default:
-				if ($c = $this->runSubClass(static::class)) {
+				if ($c = $this->runSubClass(static::class, false, $path)) {
 					return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
 				}
 		}

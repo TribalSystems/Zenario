@@ -684,7 +684,7 @@ zenarioO.parseNavigationPath = function(pathAndItem, len, includeSelectedItem) {
 			linkTo = link.to;
 			
 			if (!linkTo) {
-				zenarioA.showMessage('The requested path "' + pathAndItem.join('//') + '" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', undefined, 'error', false, true);
+				zenarioA.showMessage('The requested path "' + pathAndItem.join('//') + '" was not found in the system. If you have just updated or added files to Zenario, you will need to reload the page and possibly clear Zenario\'s cache.', undefined, 'error', false, true);
 				return false;				
 			}
 			
@@ -3219,7 +3219,7 @@ zenarioO.action2 = function() {
 		get('organizer_preloader_circle').style.display = 'block';
 		
 		zenario.ajax(zenarioO.actionTarget, zenarioO.actionRequests, false, false, true).after(function(message) {
-			//Check that this isn't an out-of-date request that has come in syncronously via AJAX
+			//Check that this isn't an out-of-date request that has come in synchronously via AJAX
 			if (goNum != zenarioO.goNum) {
 				return;
 			}
@@ -6153,12 +6153,19 @@ zenarioO.getPageCount = function() {
 
 
 zenarioO.setPanelTitle = function() {
+	
+	var notice, title, width,
+		domRightCol,
+		domNoticeBar;
+	
 	if (zenarioO.pi
 	 && zenarioO.tuix
-	 && get('organizer_rightColumnTitle')) {
-		get('organizer_rightColumnTitle').style.display = '';
+	 && (domRightCol = get('organizer_rightColumnTitle'))) {
+		domNoticeBar = get('organizer_noticeBar');
 		
-		var title = zenarioO.pi.returnPanelTitle();
+		domRightCol.style.display = '';
+		
+		title = zenarioO.pi.returnPanelTitle();
 		
 		if (zenarioO.tuix.item && zenarioO.tuix.item.css_class) {
 			get('organizer_panelTitle').innerHTML =
@@ -6167,7 +6174,7 @@ zenarioO.setPanelTitle = function() {
 			get('organizer_panelTitle').innerHTML = htmlspecialchars(title);
 		}
 		
-		var width = Math.max(0, ($('#organizer_rightColumnTitle').width() || 0) - 75 - ($('#organizer_collectionToolbar').width() || 90));
+		width = Math.max(0, ($('#organizer_rightColumnTitle').width() || 0) - 75 - ($('#organizer_collectionToolbar').width() || 90));
 		
 		//get('organizer_panelTitle').style.fontSize = Math.min(18, 1.6 * Math.round((width) / ('' + title).length)) + 'px';
 		//$('#organizer_panelTitle').width(width);
@@ -6177,7 +6184,33 @@ zenarioO.setPanelTitle = function() {
 		if (zenarioA.isFullOrganizerWindow) {
 			document.title = zenarioO.pageTitle + phrase.colon + title;
 		}
+		
+		
+		//Check if a notice is set on this panel, and display/hide it if so/not so.
+		notice = zenarioO.tuix.notice;
+		
+		if (notice
+		 && engToBoolean(notice.show)
+		 && !zenarioT.hidden(notice, zenarioO)
+		 && {error: 1, warning: 1, question: 1, information: 1, success: 1}[notice.type]) {
+			
+			domNoticeBar.className = notice.type;
+			
+			if (notice.html) {
+				$(domNoticeBar).html(notice.message);
+			} else {
+				$(domNoticeBar).text(notice.message);
+			}
+			
+			$(domNoticeBar).show();
+			return true;
+		
+		} else {
+			$(domNoticeBar).hide().html('');
+		}
 	}
+	
+	return false;
 };
 
 
@@ -6442,13 +6475,13 @@ zenarioO.sizing = false;
 zenarioO.lastSize = false;
 zenarioO.size = function(refresh) {
 			
-	var headerHeight = 46,
-		footerHeight = 57,
+	var footerHeight = 57,
 		contentGap = 40,
 		titleHeight = 0,
 		buttonsHeight = 30,
 		bordersWidth = 2,
 		rightColumnContentBorderWidth = 2,
+		noticeBarHeight = 0,
 		headerHeight = 35,
 		headerToolbar = 55,
 		bottomWrapHeight = 45,
@@ -6485,6 +6518,22 @@ zenarioO.size = function(refresh) {
 		}
 		
 		if (refresh || zenarioO.lastSize != width + 'x' + height) {
+			
+			//Set the panel title, and the notice bar.
+			//If the notice bar is visible, we need to move the rest of the design down a bit and cut the total height of the panel to make up for this.
+			var noticeVisible = zenarioO.setPanelTitle(),
+				$noticeBar = $(get('organizer_noticeBar'));
+			
+			if (noticeVisible) {
+				$noticeBar.show();
+				noticeBarHeight += $noticeBar.height() + 6;
+			
+			} else {
+				$noticeBar.hide();
+			}
+			
+			//Move the search box to just after the notice bar.
+			get('organizer_search').style.top = (noticeBarHeight + 45) + 'px';
 			
 			//Check whether we should show the left-hand-nav
 			if (zenarioO.pi) {
@@ -6538,7 +6587,7 @@ zenarioO.size = function(refresh) {
 				}
 			}
 			
-			var rightColumnContentHeight = ((1*height - headerHeight - footerHeight - contentGap - buttonsHeight - bordersWidth - zenarioO.columnPadding + titleHeight - headerToolbar) - 13);
+			var rightColumnContentHeight = ((1*height - noticeBarHeight - headerHeight - footerHeight - contentGap - buttonsHeight - bordersWidth - zenarioO.columnPadding + titleHeight - headerToolbar) - 13);
 			if (domPanel) {
 				domPanel.style.height = rightColumnContentHeight + 'px';
 			}
@@ -6589,7 +6638,6 @@ zenarioO.size = function(refresh) {
 				domChooseButtonWrap.style.width = "25%";
 			}
 			
-			zenarioO.setPanelTitle();
 			
 			
 			

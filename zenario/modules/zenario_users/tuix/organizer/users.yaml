@@ -134,7 +134,6 @@ zenario__users:
                 last_login:
                     title: Last Login
                     db_column: u.last_login
-                    format: datetime
                     width: xsmall
                 checksum:
                     db_column: f.checksum

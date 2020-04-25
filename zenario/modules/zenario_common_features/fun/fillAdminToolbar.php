@@ -45,7 +45,7 @@ $isMultilingual = ze\lang::count() > 1;
 if (!$content || !$version) {
 	exit;
 } else {
-	ze\content::setShowableContent($content, $version);
+	ze\content::setShowableContent($content, $chain, $version, false);
 	$templateDetails = ze\content::layoutDetails(ze::$layoutId);
 	$templateDetails['usage'] = ze\layoutAdm::usage(ze::$layoutId);
 	
@@ -1314,7 +1314,7 @@ switch (ze::$status) {
 	case 'published_with_draft':
 		$linkStatus = ze::$status;
 		
-		$perms = ze\content::getShowableContent($content, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminMode = true, $adminsSee400Errors = true);
+		$perms = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminMode = true, $adminsSee400Errors = true);
 	
 		if ($perms === ZENARIO_401_NOT_LOGGED_IN) {
 			$linkStatus .= '_401';

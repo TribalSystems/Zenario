@@ -143,8 +143,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					$panel['columns']['number_of_children']['hidden'] = true;
 					$panel['columns']['image_usage']['hidden'] = true;
 					$panel['columns']['checksum']['hidden'] = true;
-					$panel['columns']['last_updated']['hidden'] = true;
-					$panel['columns']['last_updated_by']['hidden'] = true;
+					$panel['columns']['last_edited']['hidden'] = true;
+					$panel['columns']['last_edited_by']['hidden'] = true;
 					$panel['columns']['last_updated_via_import']['hidden'] = true;
 					$panel['columns']['on_map']['hidden'] = true;
 				}
@@ -186,7 +186,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					}
 				}
 	
-				$panel['columns']['last_updated_by']['values'] = $admins;
+				$panel['columns']['last_edited_by']['values'] = $admins;
 				
 				
 				$panel['columns']['timezone']['values'] = zenario_timezones::getTimezonesLOV();
@@ -425,7 +425,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						
 						$pathArray = self::getSectorPath($id);
 						
-						$item['path'] = implode(" -> ",array_reverse($pathArray));
+						$item['path'] = implode(" › ",array_reverse($pathArray));
 					}
 					
 					unset($panel['collection_buttons']['create_sector']);
@@ -507,17 +507,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	                    $values['content_item/content_item'] = $locationDetails['content_type'] . "_" . $locationDetails['equiv_id'];
 	                }
  
-                    $values['details/last_updated'] = $locationDetails['last_updated'] ?? false;
-                	$fields['details/last_updated']['hidden'] = false;
-
-					$lastUpdatedByAdmin = ze\row::get("admins",["id","username","authtype"],["id" => ($locationDetails['last_updated_admin_id'] ?? false)]);
-
-                	$values['details/last_updated_by'] = ($lastUpdatedByAdmin['username'] ?? false) . ((($lastUpdatedByAdmin['authtype'] ?? false)=="super") ? " (super)":"");
-                	$fields['details/last_updated_by']['hidden'] = false;
+                    $box['last_updated'] = ze\admin::formatLastUpdated($locationDetails);
  
-                } else {
-                	$fields['details/last_updated']['hidden'] = true;
-                	$fields['details/last_updated_by']['hidden'] = true;
                 }
 
 				if (isset($fields['sectors/sectors'])) {
@@ -929,9 +920,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					'timezone' => $values['details/timezone'],
 					'map_center_latitude' => $values['details/map_center_lat'] ? $values['details/map_center_lat'] : null,
 					'map_center_longitude' => $values['details/map_center_lng'] ? $values['details/map_center_lng'] : null,
-					'map_zoom' => $values['details/zoom'] ? $values['details/zoom'] : null,
-					'last_updated' => ze\date::now(),
-					'last_updated_admin_id' => ze\admin::id()
+					'map_zoom' => $values['details/zoom'] ? $values['details/zoom'] : null
 				];
 				
 				// Save content item details
@@ -946,11 +935,14 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					$saveValues['content_type'] = $cType;
 				}
 				
+				ze\admin::setLastUpdated($saveValues, $creating = !$box['key']['id']);
+				
 				// Save location
-				if (!$box['key']['id']) {
+				if ($creating) {
 					$box['key']['id'] = self::createLocation($saveValues);
 				} else {
-					ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, ["id" => $box['key']['id']]);
+					ze\row::update(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, $box['key']['id']);
+					ze\module::sendSignal('eventLocationUpdated', [$box['key']['id']]);
 				}
 				
 				// Add regions to location
@@ -1086,8 +1078,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							}
 						}
 						
-						$fieldsToChangeSQL[] = "last_updated = '" . ze\date::now() . "'";
-						$fieldsToChangeSQL[] = "last_updated_admin_id = " . ($_SESSION['admin_userid'] ?? false);
+						$fieldsToChangeSQL[] = "last_edited = '" . ze\date::now() . "'";
+						$fieldsToChangeSQL[] = "last_edited_admin_id = " . ze\admin::id();
+						$fieldsToChangeSQL[] = "last_edited_user_id = null";
+						$fieldsToChangeSQL[] = "last_edited_username = null";
 					}
 				}
 				
@@ -1221,6 +1215,36 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							$IDs = explode(',',$ids);
 							foreach ($IDs as $ID){
 								self::deleteLocation($ID);
+							}
+							break;
+						case 'convert_to_simple_place':
+							if (ze\module::isRunning('zenario_organization_manager')
+								&& ze::setting('zenario_organization_manager__split_locations')
+								&& ze\priv::check('_PRIV_MANAGE_LOCATIONS')
+							){
+								$organizationFlagId = ze::setting('zenario_organization_manager__organization_flag_id');
+								$organizationFlag = ze\dataset::fieldDetails($organizationFlagId);
+								if ($organizationFlag) {
+									$sql = ' UPDATE ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data
+									SET `' . ze\escape::sql($organizationFlag['db_column']) . '` = 0
+									WHERE location_id IN (' . ze\escape::in($ids) . ')';
+									ze\sql::update($sql);
+								}
+							}
+							break;
+						case 'convert_to_organization':
+							if (ze\module::isRunning('zenario_organization_manager')
+								&& ze::setting('zenario_organization_manager__split_locations')
+								&& ze\priv::check('_PRIV_MANAGE_LOCATIONS')
+							){
+								$organizationFlagId = ze::setting('zenario_organization_manager__organization_flag_id');
+								$organizationFlag = ze\dataset::fieldDetails($organizationFlagId);
+								if ($organizationFlag) {
+									$sql = ' UPDATE ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data
+									SET `' . ze\escape::sql($organizationFlag['db_column']) . '` = 1
+									WHERE location_id IN (' . ze\escape::in($ids) . ')';
+									ze\sql::update($sql);
+								}
 							}
 							break;
 						case 'mark_location_as_pending':
@@ -1419,7 +1443,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							if ($locationCount == 1 && ($report['succeeded'] == $locationCount)) {
 								echo 'Successfully placed the location "' . $description . '" on the map';
 							} else {
-								echo $report['succeeded'] . '/' . $locationCount . ' locations have been placed on the map.';
+								echo $report['succeeded'] . ' out of ' . $locationCount . ' locations have been successfully geocoded.';
 								
 								if (!empty($report['errors']['latLngSet']['count'])) {
 									$count = $report['errors']['latLngSet']['count'];
@@ -1628,7 +1652,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				</html>';
 	}
 
-	public static function getLocationHierarchyPathAndDeepLinks ($locationId,$output=["path" => "","link" => ""],$pathSeparator=" -> ",$linkSeparator="//item//",$recurseCount=0) {
+	public static function getLocationHierarchyPathAndDeepLinks ($locationId,$output=["path" => "","link" => ""],$pathSeparator=" › ",$linkSeparator="//item//",$recurseCount=0) {
 		$locationDetails = self::getLocationDetails($locationId);
 		
 		$output['path'] = ($locationDetails['description'] ?? false) . $pathSeparator . $output['path'];
@@ -1700,34 +1724,56 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 	public static function getLocationDetails($ID){
 		$rv = [];
-		$sql = 'SELECT id,
-					parent_id,
-					external_id,
-					description,
-					address1,
-					address2,
-					locality,
-					city,
-					state,
-					postcode,
-					country_id,
-					latitude,
-					longitude,
-					map_zoom,
-					map_center_latitude,
-					map_center_longitude,
-					hide_pin,
-					timezone,
-					status,
-					equiv_id,
-					content_type,
-					last_updated,
-					last_updated_admin_id,';
-					//Custom data:
+		$sql = 'SELECT loc.id,
+					loc.parent_id,
+					loc.external_id,
+					loc.description,
+					loc.address1,
+					loc.address2,
+					loc.locality,
+					loc.city,
+					loc.state,
+					loc.postcode,
+					loc.country_id,
+					loc.latitude,
+					loc.longitude,
+					loc.map_zoom,
+					loc.map_center_latitude,
+					loc.map_center_longitude,
+					loc.hide_pin,
+					loc.timezone,
+					loc.status,
+					loc.equiv_id,
+					loc.content_type,
+					loc.created,
+					loc.created_admin_id,
+					loc.created_user_id,
+					loc.created_username,
+					loc.last_edited,
+					loc.last_edited_admin_id,
+					loc.last_edited_user_id,
+					loc.last_edited_username,';
+		
+		//Companies
+		if (ze\module::inc('zenario_company_locations_manager')) {
+			$sql .= "
+						c.company_name,";
+		}
+		
+		//Custom data:
 		$sql .= "
 					cd.*";
 		$sql.= '
 				FROM ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations AS loc';
+		
+		//Companies
+		if (ze\module::inc('zenario_company_locations_manager')) {
+			$sql .= "
+				LEFT JOIN ". DB_PREFIX. ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+				   ON cll.location_id = loc.id
+				LEFT JOIN ". DB_PREFIX. ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "companies AS c
+				   ON c.id = cll.company_id";
+		}
 		
 		//Custom data:
 		$sql .= "
@@ -1735,7 +1781,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			   ON cd.location_id = loc.id";
 			   
 		$sql .= '
-			WHERE id = ' . (int) $ID;
+			WHERE loc.id = ' . (int) $ID;
 		
 		if (ze\sql::numRows($result = ze\sql::select($sql))==1){
 			$rv = ze\sql::fetchAssoc($result);
@@ -2077,16 +2123,15 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	
 	public static function handleMediaUpload($filename, $maxSize, $locationId) {
 		$error = [];
-		if ($_FILES[$filename] ?? false) {
-			if (is_uploaded_file($_FILES[$filename]['tmp_name'])) {
+		if (isset($_FILES[$filename])) {
+			
+			ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
+			
+			if (ze\fileAdm::isUploadedFile($_FILES[$filename]['tmp_name'])) {
 				if ($_FILES[$filename]['size'] > $maxSize) {
 					$error['document'] = ze\admin::phrase('_FILE_UPLOAD_ERROR_SIZE', ['size' => $maxSize]);
-				}		
-				
-				$image = getimagesize($_FILES[$filename]['tmp_name']);
-				if (!in_array($image['mime'], ['image/jpeg','image/gif','image/png','image/jpg','image/pjpeg'])) {
-					$error['document'] = ze\admin::phrase('_INVALID_IMAGE_TYPE');
 				}
+			
 			} else {
 				switch ($_FILES[$filename]['error']) {
 					case 1:

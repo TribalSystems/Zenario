@@ -346,6 +346,7 @@ class zenario_incoming_email_manager extends ze\moduleBaseClass {
 					unset($panel['collection_buttons']['get_code']);
 					unset($panel['collection_buttons']['enable_all']);
 					unset($panel['collection_buttons']['suspend_all']);
+					unset($panel['columns']['job_type']);
 
 					$panel['item_buttons']["suspend"]['ord']=2;
 					$panel['item_buttons']['zenario_incoming_email_manager__edit_enabled']['ord']=1;

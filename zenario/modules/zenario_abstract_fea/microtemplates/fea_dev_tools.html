@@ -1,3 +1,26 @@
 <% if (zenarioT.showDevTools()) { %>
-	<div class="zenario_debug" style="z-index: 1;" onclick="{{m.lib.fun('debug')}}();"><div></div></div>
+
+	<% var $wrap = $("#" + m.thus.containerId + "-wrap"); %>
+	<% var cusTUIX = $wrap.hasClass("zenario_slot_with_tuix_snippet"); %>
+	<% var extended = $wrap.hasClass("zenario_slot_with_extending_modules"); %>
+	<% var $wrap = $("#" + m.thus.containerId + "-wrap"); %>
+
+	<div class="zenario_debug" style="z-index: 1;" onclick="{{m.lib.fun('debug')}}();" title="
+
+		<% if (cusTUIX) { %>
+			This plugin uses the TUIX snippet &ldquo;{{$wrap.data('tuix_snippet')|e}}&rdquo; to customise its appearance.
+			A different TUIX snippet can be chosen by an administrator in the settings of this plugin. 
+		<% } %>
+		<% if (extended) { %>
+			This plugin has been extended by {{$wrap.data('extnames')|e}}, which inserts objects.
+			Click this button to check the dev tools for more information.
+		<% } %>
+
+	" data-tooltip-options='{"tooltipClass": "zenario_admin_tooltip", "position": {"my": "right top", "at": "left"}}'><div></div></div>
+
+<% } %>
+
+
+<% if (m.lib.tsLink) { %>
+	<a class="zenario_tslink" target="_blank" href="{{URLBasePath + m.lib.tsLink|e}}" title="View/edit TUIX Snippet"></a>
 <% } %>

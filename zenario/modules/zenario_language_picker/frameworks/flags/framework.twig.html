@@ -8,11 +8,17 @@
 				<div class="lang_{{lang.flag|e}} lang_flag" title="{{lang.name|e}}">
 					<span class="flag">{{lang.flag|e}}</span>
 				</div>
-			{% else %}
+			
+			{% elseif lang.link %}
 				<div class="lang_{{lang.flag|e}} lang_flag" title="{{lang.name|e}}">
 					<a href="{{lang.link|e}}">
 						<span class="flag">{{lang.flag|e}}</span>
 					</a>
+				</div>
+			
+			{% else %}
+				<div class="lang_{{lang.flag|e}} lang_flag lang_disabled" title="{{lang.name|e}}">
+					<span class="flag">{{lang.flag|e}}</span>
 				</div>
 			{% endif %}
 		{% endfor %}

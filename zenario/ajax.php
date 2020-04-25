@@ -54,19 +54,23 @@ if ($methodCall == 'refreshPlugin'
  || $methodCall == 'handlePluginAJAX'
  || $methodCall == 'pluginAJAX'
  || $methodCall == 'showRSS'
- || ($methodCall == 'showFile' && $isForPlugin)
- || ($methodCall == 'fillVisitorTUIX' && $isForPlugin)
- || ($methodCall == 'formatVisitorTUIX' && $isForPlugin)
- || ($methodCall == 'validateVisitorTUIX' && $isForPlugin)
- || ($methodCall == 'saveVisitorTUIX' && $isForPlugin)
- || ($methodCall == 'typeaheadSearchAJAX' && $isForPlugin)) {
+ || $isForPlugin && (
+		$methodCall == 'showFile'
+	 || $methodCall == 'showImage'
+	 || $methodCall == 'showStandalonePage'
+	 || $methodCall == 'fillVisitorTUIX'
+	 || $methodCall == 'formatVisitorTUIX'
+	 || $methodCall == 'validateVisitorTUIX'
+	 || $methodCall == 'saveVisitorTUIX'
+	 || $methodCall == 'typeaheadSearchAJAX')
+) {
 
 	//showRSS and showFloatingBox method calls relate to content items
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
 	ze\cache::start();
 	
 	//Check the content item that this is being linked from, and whether the current user has permissions to access it
-	$cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = $instanceFound = false;
+	$cID = $cType = $content = $chain = $version = $redirectNeeded = $aliasInURL = $instanceFound = false;
 	ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET, $_REQUEST, $_POST);
 	
 	if (!$cVersion = $_REQUEST['cVersion'] ?? false) {
@@ -74,12 +78,12 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	
-	$status = ze\content::getShowableContent($content, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
+	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
 	if (!$status || is_string($status)) {
 		exit;
 	}
 	
-	ze\content::setShowableContent($content, $version);
+	ze\content::setShowableContent($content, $chain, $version, true);
 	
 	
 	//If this is a call to an RSS feed, and the slotname was not specified, try to see if this Content Item has a slot registered
@@ -324,8 +328,16 @@ if ($methodCall == 'showFile') {
 	\ze::$tuixPath = $requestedPath;
 	
 	if ($isForPlugin) {
-		$module = &ze::$slotContents[$slotName]['class'];
+		
+		if (($eggId = $_REQUEST['eggId'] ?? null)
+		 && ($slotNameNestId = $slotName. '-'. $eggId)
+		 && (isset(ze::$slotContents[$slotNameNestId]['class']))) {
+			$module = &ze::$slotContents[$slotNameNestId]['class'];
+		} else {
+			$module = &ze::$slotContents[$slotName]['class'];
+		}
 	}
+	
 	$module = $module->runSubClass(get_class($module)) ?: $module;
 	
 	
@@ -375,6 +387,9 @@ if ($methodCall == 'showFile') {
 //Show an image
 } elseif ($methodCall == 'showImage') {
 	
+	if ($isForPlugin) {
+		$module = &ze::$slotContents[$slotName]['class'];
+	}
 	$module->showImage();
 	
 
@@ -388,6 +403,9 @@ if ($methodCall == 'showFile') {
 //Show a standalone page
 } elseif ($methodCall == 'showStandalonePage') {
 	
+	if ($isForPlugin) {
+		$module = &ze::$slotContents[$slotName]['class'];
+	}
 	$module->showStandalonePage();
 	
 
@@ -545,7 +563,7 @@ if ($methodCall == 'showFile') {
 
 //Refresh a Plugin in a slot
 } elseif ($methodCall == 'refreshPlugin') {
-			
+	
 	$module = &ze::$slotContents[$slotName]['class'];
 	
 	//Display an info section at the top of the result, to help the CMS pick up on a few things

@@ -60,7 +60,7 @@ class contentAdm {
 			//Allow people to just use this function for formatting, if they already have the row from the db
 			$details = $cType;
 		} else {
-			$details = \ze\row::get('content_types', true, $cType);
+			$details = \ze\row::get('content_types', true, \ze\escape::ascii($cType));
 		}
 	
 		if (!$details['content_type_plural_en']) {
@@ -759,6 +759,8 @@ class contentAdm {
 		\ze\contentAdm::removeEquivalence($cID, $cType);
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 		\ze\contentAdm::removeItemFromPluginSettings('content', $cID, $cType);
+		\ze\row::delete('plugin_pages_by_mode', ['equiv_id' => $cID, 'content_type' => $cType]);
+		
 		\ze\row::set('content_items', ['status' => 'deleted', 'admin_version' => 0, 'visitor_version' => 0, 'alias' => ''], $content);
 	}
 
@@ -777,6 +779,7 @@ class contentAdm {
 		\ze\contentAdm::removeEquivalence($cID, $cType);
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 		\ze\contentAdm::removeItemFromPluginSettings('content', $cID, $cType, $mode);
+		\ze\row::delete('plugin_pages_by_mode', ['equiv_id' => $cID, 'content_type' => $cType]);
 	
 		\ze\module::sendSignal("eventContentTrashed",["cID" => $cID,"cType" => $cType]);
 	}
@@ -1505,6 +1508,7 @@ class contentAdm {
 					\ze\row::update('content_items', ['equiv_id' => $newEquivId], ['equiv_id' => $currentEquivId, 'type' => $cType]);
 					\ze\row::update('menu_nodes', ['equiv_id' => $newEquivId], ['equiv_id' => $currentEquivId, 'content_type' => $cType]);
 					\ze\row::update('special_pages', ['equiv_id' => $newEquivId], ['equiv_id' => $currentEquivId, 'content_type' => $cType]);
+					\ze\row::update('plugin_pages_by_mode', ['equiv_id' => $newEquivId], ['equiv_id' => $currentEquivId, 'content_type' => $cType]);
 				
 					if (!\ze\row::exists('translation_chains', ['equiv_id' => $newEquivId, 'type' => $cType])) {
 						\ze\row::update('translation_chains', ['equiv_id' => $newEquivId], ['equiv_id' => $currentEquivId, 'type' => $cType]);
@@ -1593,8 +1597,7 @@ class contentAdm {
 		if (($specialPage = \ze\content::isSpecialPage($cID, $cType))
 		 && ($specialPage = \ze\row::get('special_pages', ['equiv_id', 'logic'], ['page_type' => $specialPage]))) {
 			//Never allow the main special page to be unlinked.
-			//And never allow any special page to be unlinked if the create_and_maintain_in_all_languages logic is used.
-			return $cID != $specialPage['equiv_id'] && $specialPage['logic'] != 'create_and_maintain_in_all_languages';
+			return $cID != $specialPage['equiv_id'];
 		} else {
 			return true;
 		}

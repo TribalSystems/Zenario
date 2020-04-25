@@ -213,12 +213,18 @@ zenario_user_form:
                             label: Below field
             
         data:
-            label: Actions on form submission
+            label: Actions
             edit_mode:
                 enabled: true
                 always_on: true
             ord: 2
             fields:
+                actions_desc: 
+                    class_name: zenario_user_forms
+                    snippet: 
+                        html: "When a form is successfully submitted, various actions can be performed."
+                    ord: 1
+                    id: data_tab_description
                 save_record:
                     label: 'Create form submission log record'
                     type: checkbox
@@ -636,7 +642,7 @@ zenario_user_form:
                         Signal name: eventUserFormSubmitted
         data_deletion:
             label: Data deletion
-            ord: 2.1
+            ord: 100
             edit_mode:
                 enabled: true
                 always_on: true

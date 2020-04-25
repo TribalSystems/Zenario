@@ -263,6 +263,13 @@ class row {
 		$ignoreMissingColumns = false, $cols = false, $multiple = false, $mode = false, $orderBy = [],
 		$distinct = false, $returnArrayIndexedBy = false, $addId = false, $storeResult = true
 	) {
+		
+		//Block the ability to check the site settings table from Twig.
+		//You need to use the settings() function instead
+		if (\ze::$isTwig && $table == 'site_settings') {
+			return false;
+		}
+		
 		$tableName = static::$db->prefix. $table;
 	
 		if (!isset(static::$db->cols[$tableName])) {
@@ -283,7 +290,7 @@ class row {
 		if ($returnArrayIndexedBy !== false) {
 			$out = [];
 		
-			if ($result = static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
+			if ($result = static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $multiple, false, $orderBy, $distinct, false, !$distinct)) {
 				while ($row = $result->fAssoc()) {
 				
 					$id = false;
@@ -347,6 +354,11 @@ class row {
 			
 				case 'min':
 					$pre = 'MIN(';
+					$suf = ')';
+					break;
+			
+				case 'sum':
+					$pre = 'SUM(';
 					$suf = ')';
 					break;
 			
@@ -530,6 +542,10 @@ class row {
 		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, $markNewThingsInSession);
 	}
 	
+	public static function setAndMarkNew($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
+		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, true);
+	}
+	
 	private static function setInternal(
 		$table, $values, $ids = [],
 		$ignore = false, $ignoreMissingColumns = false,
@@ -698,6 +714,10 @@ class row {
 	public static function insert($table, $values, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
 		return static::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
 	}
+	
+	public static function insertAndMarkNew($table, $values, $ignore = false, $ignoreMissingColumns = false) {
+		return static::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, true, true);
+	}
 
 
 	//Formerly "updateRow()"
@@ -776,6 +796,11 @@ class row {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'min');
 	}
 
+	const sumFromTwig = true;
+	public static function sum($table, $cols, $ids = [], $ignoreMissingColumns = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'sum');
+	}
+
 
 	//Look up the name of the primary/foreign key column
 	//Formerly "getIdColumnOfTable()"
@@ -828,9 +853,3 @@ class row {
 	}
 }
 \ze\row::init(\ze::$dbL);
-
-//class rowGlobal extends row {}
-//\ze\rowGlobal::init(\ze::$dbG);
-//
-//class rowDA extends row {}
-//\ze\rowDA::init(\ze::$dbD);

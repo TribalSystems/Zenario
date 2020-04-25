@@ -51,6 +51,13 @@ class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
     public function getSourceContext($name) {
     	if (substr($name, 0, 1) === "\n") {
 	        return new Twig\Source($name, $name);
+    	
+    	} elseif (strpos($name, '..') !== false) {
+	        return new Twig\Source('Invalid include path: '. dirname($name), $name);
+    	
+    	} elseif (substr($name, -10) !== '.twig.html') {
+	        return new Twig\Source('Include file "'. $name. '" does not end with ".twig.html" and was blocked', $name);
+    	
     	} else {
     		$path = CMS_ROOT. $name;
 	        return new Twig\Source(file_get_contents($path), $name, $path);
@@ -60,6 +67,7 @@ class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
     public function isFresh($name, $time) {
     	if (substr($name, 0, 1) === "\n") {
     		return true;
+    	
     	} else {
 	        return filemtime(CMS_ROOT. $name) <= $time;
 	    }
@@ -69,6 +77,7 @@ class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
     public function exists($name) {
     	if (substr($name, 0, 1) === "\n") {
     		return true;
+    	
     	} else {
 	        return file_exists(CMS_ROOT. $name);
 	    }

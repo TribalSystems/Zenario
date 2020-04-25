@@ -498,7 +498,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					//Upload each file and return its name and filepath
 					$fileCount = count($file['tmp_name']);
 					for ($j = 0; $j < $fileCount; $j++) {
-						if (!empty($file['tmp_name'][$j]) && is_uploaded_file($file['tmp_name'][$j]) && ze\cache::cleanDirs()) {
+						if (!empty($file['tmp_name'][$j]) && ze\fileAdm::isUploadedFile($file['tmp_name'][$j]) && ze\cache::cleanDirs()) {
 							$randomDir = ze\cache::createRandomDir(30, 'uploads');
 							$newName = $randomDir. ze\file::safeName($file['name'][$j], true);
 							
@@ -2627,7 +2627,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $values;
 					break;
 				case 'attachment':
-					if (!empty($_FILES[$name]) && ze\cache::cleanDirs()) {
+					if (!empty($_FILES[$name]) && isset($_FILES[$name]['size']) && $_FILES[$name]['size'] > 0 && ze\cache::cleanDirs()) {
+						ze\fileAdm::exitIfUploadError(true, true, true, $fileVar = $name);
 						try {
 							//Undefined | Multiple Files | $_FILES Corruption Attack
 							//If this request falls under any of them, treat it invalid.
@@ -2657,7 +2658,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								exit('Could not create cache directory in private/uploads');
 							}
 							$cacheDir = $randomDir. ze\file::safeName($_FILES[$name]['name'], true);
-							if (is_uploaded_file($_FILES[$name]['tmp_name']) && move_uploaded_file($_FILES[$name]['tmp_name'], CMS_ROOT. $cacheDir)) {
+							if (\ze\fileAdm::moveUploadedFile($_FILES[$name]['tmp_name'], CMS_ROOT. $cacheDir)) {
 								\ze\cache::chmod(CMS_ROOT. $cacheDir, 0666);
 								$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $cacheDir;
 							}
@@ -4280,6 +4281,44 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$formJSON['pages'] = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX . 'pages', true, ['form_id' => $formId]);
 		$formJSON['fields'] = [];
 		$formJSON['values'] = [];
+		
+		//Get CRM settings if applicable
+		$formCRMIntegrationModuleRunning = ze\module::inc('zenario_crm_form_integration');
+		if ($formCRMIntegrationModuleRunning) {
+			$formJSON['crm_fields'] = [];
+			$formJSON['crm_field_values'] = [];
+			$formJSON['salesforce_data'] = [];
+			$formJSON['mailchimp_data'] = [];
+			$formJSON['360lifecycle_data'] = [];
+			$formJSON['static_crm_values'] = [];
+			$crmFieldValues = [];
+			
+			$formJSON['crm_link'] = ze\row::getAssocs(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', true, ['form_id' => $formId]);
+			
+			if (!empty($formJSON['crm_link'])) {
+				foreach ($formJSON['crm_link'] as $crmLink) {
+					if ($crmLink['crm_id'] == 'salesforce' && !empty($crmLink['enable'])) {
+						$formJSON['salesforce_data'] = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_data', true, ['form_id' => $formId]);
+					}
+					
+					if ($crmLink['crm_id'] == 'mailchimp' && !empty($crmLink['enable'])) {
+						$formJSON['mailchimp_data'] = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', true, ['form_id' => $formId]);
+					}
+					
+					if ($crmLink['crm_id'] == '360lifecycle' && !empty($crmLink['enable'])) {
+						$formJSON['360lifecycle_data'] = ze\row::get(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . '360lifecycle_data', true, ['form_id' => $formId]);
+					}
+					
+					$formJSON['static_crm_values'][$crmLink['id']] = ze\row::getAssocs(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', true, ['link_id' => $crmLink['id']]);
+				}
+			}
+			
+			$allCRMFieldsData = ze\row::getAssocs(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields', true, []);
+			if (!empty($allCRMFieldsData)) {
+				$allCRMFieldsDataArrayKeys = array_keys($allCRMFieldsData);
+			}
+		}
+		
 		$fieldsResult = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', true, ['user_form_id' => $formId]);
 		while ($field = ze\sql::fetchAssoc($fieldsResult)) {
 			if ($field['user_field_id']) {
@@ -4290,9 +4329,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			$formJSON['fields'][$field['id']] = $field;
 			
-			$valuesResult = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', true, ['form_field_id' => $field['id']]);
-			while ($value = ze\sql::fetchAssoc($valuesResult)) {
+			$formValuesResult = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', true, ['form_field_id' => $field['id']]);
+			while ($value = ze\sql::fetchAssoc($formValuesResult)) {
 				$formJSON['values'][$value['id']] = $value;
+			}
+			
+			if ($formCRMIntegrationModuleRunning && !empty($allCRMFieldsDataArrayKeys) && in_array($field['id'], $allCRMFieldsDataArrayKeys)) {
+				$formJSON['crm_fields'][$field['id']] = $allCRMFieldsData[$field['id']];
+				$crmFieldValues = ze\row::getAssocs(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values', true, ['form_field_id' => $field['id']]);
+				if (!empty($crmFieldValues) && count($crmFieldValues) >= 1) {
+					$formJSON['crm_field_values'][$field['id']] = $crmFieldValues;
+				}
 			}
 		}
 		return $formJSON;
@@ -4442,6 +4489,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			return false;
 		}
 		
+		//Check if CRM form integration module is running
+		$formCRMIntegrationModuleRunning = ze\module::inc('zenario_crm_form_integration');
+		
 		//Start import
 		$firstNewFormId = false;
 		$pageIdLink = [];
@@ -4479,6 +4529,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$field['page_id'] = $pageIdLink[$field['page_id']];
 				$newFieldId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $field);
 				$fieldIdLink[$oldFieldId] = $newFieldId;
+				
+				if ($formCRMIntegrationModuleRunning) {
+					if (!empty($data['crm_fields'])) {
+						$data['crm_fields'][$oldFieldId]['form_field_id'] = $newFieldId;
+						ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields', $data['crm_fields'][$oldFieldId]);
+					}
+					
+					if (!empty($data['crm_field_values'][$oldFieldId])) {
+						foreach ($data['crm_field_values'][$oldFieldId] as $crmField) {
+							$crmField['form_field_id'] = $newFieldId;
+							unset($crmField['id']);
+							ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_field_values', $crmField);
+						}
+					}
+				}
 			}
 			unset($field);
 			
@@ -4604,6 +4669,42 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				
 				if ($update) {
 					ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $update, $newFieldId);
+				}
+			}
+			
+			if ($formCRMIntegrationModuleRunning) {
+				if (!empty($data['crm_link'])) {
+					foreach ($data['crm_link'] as $crmLink) {
+						$crmLink['form_id'] = $newFormId;
+						$oldCrmLinkId = $crmLink['id'];
+						unset($crmLink['id']);
+						$newCrmLinkId = ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', $crmLink);
+						
+						if (!empty($data['static_crm_values'])) {
+							$staticCrmRows = $data['static_crm_values'][$oldCrmLinkId];
+							if (!empty($staticCrmRows)) {
+								foreach ($staticCrmRows as $staticCrmRow) {
+									$staticCrmRow['link_id'] = $newCrmLinkId;
+									ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', $staticCrmRow);
+								}
+							}
+						}
+					}
+					
+					if (!empty($data['salesforce_data'])) {
+						$data['salesforce_data']['form_id'] = $newFormId;
+						ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_data', $data['salesforce_data']);
+					}
+				
+					if (!empty($data['mailchimp_data'])) {
+						$data['mailchimp_data']['form_id'] = $newFormId;
+						ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'mailchimp_data', $data['mailchimp_data']);
+					}
+				
+					if (!empty($data['360lifecycle_data'])) {
+						$data['360lifecycle_data']['form_id'] = $newFormId;
+						ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . '360lifecycle_data', $data['360lifecycle_data']);
+					}
 				}
 			}
 		}

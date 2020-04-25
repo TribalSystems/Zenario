@@ -23,6 +23,7 @@ plugin_settings:
         framework: ''
         mode: ''
         lastMode: ''
+        lastTuixSnippet: -1
     identifier:
         css_class: plugin_album_instance
         label: ''
@@ -64,24 +65,29 @@ plugin_settings:
             ord: 100001
             fields: {}
         
-        custom_tuix:
-            label: Custom TUIX
+        tuix_snippet:
+            label: TUIX Snippet (advanced)
             ord: 100002
             visible_if: |
                 tuix.key.isFEA
             fields:
-                '~custom_yaml~':
-                    same_row: true
+                desc:
+                    snippet:
+                        html: |
+                            You can use TUIX Snippets to add visual elements (e.g. columns or buttons) or to customise existing ones, in this plugin.
+                            Pick a TUIX Snippet to include.
+                '~tuix_snippet~':
                     plugin_setting:
-                        name: '~custom_yaml~'
+                        name: '~tuix_snippet~'
+                    type: select
+                    empty_value: ' -- None -- '
+                    values: {}
+                    format_onchange: true
+                '~custom_yaml~':
                     type: code_editor
                     language: yaml
                     tall_as_possible: true
-                '~custom_json~':
-                    same_row: true
-                    plugin_setting:
-                        name: '~custom_json~'
-                    type: hidden
+                    readonly: true
         
         last_tab:
             label: Help

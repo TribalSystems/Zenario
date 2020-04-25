@@ -808,9 +808,10 @@ class zenario_project_locations extends ze\moduleBaseClass {
 		
 		case 'zenario__projects/nav/images/panel':
 				
-						
+					
 				//Upload a new image
 				if (($_POST['upload'] ?? false) && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
+					ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
 					$image_id = ze\file::addToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 					return $image_id;
 				

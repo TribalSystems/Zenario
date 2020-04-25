@@ -138,7 +138,7 @@
 #        <p>
 #            Nothing.
 #        </p>
-#childColumnVisible:
+#columnVisibleForItem:
 #    summary: |
 #        A summary.
 #    desc: |
@@ -829,20 +829,6 @@ idVarName:
 #            Nothing.
 #        </p>
 #reloadParent:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#resizeToFit:
 #    summary: |
 #        A summary.
 #    desc: |

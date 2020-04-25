@@ -17,6 +17,35 @@ zenario_image:
                     full_width: true
                     snippet:
                         html: ""
+                
+                privacy_public: &privacy
+                    hidden: true
+                    show_as_a_span: true
+                    label: 'Privacy:'
+                    type: text
+                    value: Public
+                    note_below: ''
+                privacy_private: *privacy
+                    value: Private
+                    note_below: |
+                        This image may only be seen by logged-in extranet users who see it on a password-protected content item.
+                        It will not be indexed by search engines.
+                privacy_auto: *privacy
+                    value: Will auto-detect
+                    note_below: |
+                        When this image is first displayed on a content item, its privacy will be set to either
+                        &rdquo;public&ldquo; or &rdquo;private&ldquo; so as to match that of the content item.
+                        This will happen on the first page-load.
+                        You can set the image's privacy explicitly by using the &rdquo;Actions&ldquo; menu
+                        and clicking &rdquo;Make public&ldquo; or &rdquo;Make private&ldquo;.
+                missing_public_image: 
+                    hidden: true
+                    snippet: 
+                        div_class: zenario_fbWarning
+                        div: |
+                            This image does not exist in the directory public/images.
+                            Please close this box and use "Re-generate cache".
+                            
                 filename:
                     label: 'Filename:'
                     type: text

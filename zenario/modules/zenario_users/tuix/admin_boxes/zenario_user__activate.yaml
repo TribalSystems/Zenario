@@ -4,7 +4,7 @@ zenario_user__activate:
     priv: _PRIV_EDIT_USER
     key:
         id: ""
-    max_height: 200
+    max_height: 280
     tabs:
         email:
             label: Email
@@ -33,7 +33,7 @@ zenario_user__activate:
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
                     validation:
-                        required: Please select an email template
+                        required_if_not_hidden: Please select an email template
                     hidden: Yes
                     side_note: >
                         An email based on the selected email template will be sent

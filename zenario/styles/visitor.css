@@ -255,3 +255,43 @@ input[type="password"].border_red {
 input[type="password"].border_green {
 	border-color:#00AB00 !important;
 }
+
+
+/*
+	TUIX Snippet link icon
+*/
+
+.zenario_tslink {
+	position: relative;
+	z-index:50 !important;
+	float: right;
+	width: 18px;
+	height: 18px;
+	background: url('../admin/images/icon-info-squares.svg') center center no-repeat;
+	right: 24px;
+}
+
+/*
+	Info
+*/
+
+.zenario_front_end_picked_item_info {
+	/*position: absolute;
+    top: 5px;
+    right: 5px;*/
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    background: url('../admin/images/icon-info-squares.svg') no-repeat center center;
+    text-indent: -99px;
+    font-size: 0;
+    line-height: 0;
+}
+
+/*
+	Disabled flags on the language picker
+*/
+
+.lang_flag.lang_disabled {
+	opacity: 0.3;
+}

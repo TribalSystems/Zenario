@@ -72,7 +72,7 @@ zenario_plugin_nest.embed = function(mergefields) {
 
 //Ensure that the JavaScript libraries is there for modules on reloads
 zenario_plugin_nest.addJavaScript = function(moduleClassName, moduleId) {
-	if (!window[moduleClassName] || _.isEmpty(window[moduleClassName].slots)) {
+	if (!(window[moduleClassName] && window[moduleClassName].jsLoaded)) {
 		zenario.addPluginJavaScript(moduleId, true);
 	}
 };
@@ -141,7 +141,7 @@ zenario_conductor.setCommands = function(slot, commands, state, vars) {
 };
 
 
-
+//When loading a slide from an AJAX request, set all of its current variables
 zenario_conductor.setVars = function(slot, vars) {
 	slot = getSlot(slot);
 	
@@ -150,6 +150,60 @@ zenario_conductor.setVars = function(slot, vars) {
 	zenario_conductor.cleanRequests(vars || {});
 	
 	slot.vars[slot.state] = vars;
+};
+
+//Allow an app/plugin/script on the current page to change one of the current variables for this slide
+zenario_conductor.setVar = function(slot, name, value, updateURL) {
+	slot = getSlot(slot);
+	
+	if (!slot.vars[slot.state]) {
+		slot.vars[slot.state] = {};
+	}
+	
+	slot.vars[slot.state][name] = value;
+	
+	//Also offer the option to update the variable as shown in the URL
+	if (updateURL) {
+		var requests = zenario_conductor.request(slot, 'refresh');
+		requests[name] = value;
+		zenario.recordRequestsInURL(slot.slotName, requests);
+	}
+};
+
+//Get the current variables from the current slide
+zenario_conductor.getVars = function(slot) {
+	slot = getSlot(slot);
+	return slot.vars[slot.state] || {};
+};
+
+//Get one of the current variables from the current slide
+zenario_conductor.getVar = function(slot, name) {
+	slot = getSlot(slot);
+	return (slot.vars[slot.state] || {})[name];
+};
+
+//Get the value of the "toggles" variable from the current slide
+zenario_conductor.getToggles = function(slot) {
+	return zenarioT.csvToObject(zenario_conductor.getVar(slot, 'toggles') || '', '.');
+};
+
+//Get whether a specific toggle on the current slide is on or off
+zenario_conductor.getToggle = function(slot, id) {
+	return zenario_conductor.getToggles(slot)[id];
+};
+
+//Change the value of a specific toggle on the current slide
+zenario_conductor.setToggle = function(slot, id, on, updateURL) {
+	slot = getSlot(slot);
+	var toggles = zenario_conductor.getToggles(slot);
+	
+	if (on) {
+		toggles[id] = true;
+	} else {
+		delete toggles[id];
+	}
+	
+	zenario_conductor.setVar(slot, 'toggles', _.keys(toggles).join('.'), updateURL);
 };
 
 

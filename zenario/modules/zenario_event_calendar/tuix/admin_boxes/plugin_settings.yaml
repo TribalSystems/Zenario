@@ -137,7 +137,7 @@ plugin_settings:
                     post_field_html: '&nbsp;pixels'
                     indent: 2
         popout:
-            label: Popout
+            label: Popup
             fields:
                 show_title:
                     label: 'Show title'

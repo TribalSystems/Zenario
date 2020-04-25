@@ -30,6 +30,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario__email_template_manager/panels/email_templates':
 		
+		if (ze::setting('debug_override_enable')) {
+			$panel['notice']['show'] = true;
+			$panel['notice']['message'] =
+				ze\admin::phrase('Email debug mode is enabled, all emails will be sent to [[email]].',
+					['email' => ze::setting('debug_override_email_address')]);
+		}
+		
 		if ($refinerName == 'module') {
 			$moduleDetails = ze\row::get('modules', ['display_name'], $refinerId);
 			$panel['title'] = ze\admin::phrase('Email Templates created by the module "[[display_name]]"', $moduleDetails);

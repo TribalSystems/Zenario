@@ -25,6 +25,7 @@ special_pages:
         default_alias: user-consent-form
         default_title: User consent form
         logic: create_and_maintain_in_default_language
+        allow_hide: true
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

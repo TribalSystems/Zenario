@@ -39,6 +39,8 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			
 			$user = ze\user::details($box['key']['id']);
 			
+			$box['last_updated'] = ze\admin::formatUserLastUpdated($user);
+			
 			$values['details/status'] = $user['status'];
 			$values['details/email'] = $user['email'];
 			$values['details/email_verified'] = $user['email_verified'];
@@ -49,22 +51,25 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$values['details/screen_name_confirmed'] = $user['screen_name_confirmed'];
 			$values['details/terms_and_conditions_accepted'] = $user['terms_and_conditions_accepted'];
 			
+			$suspendedDate = date_format(new DateTime($user['suspended_date']), "d M Y H:i:s");
 			switch($user['status']) {
 				case 'contact':
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is a Contact. Contacts are stored in the database and can be sent emails via Zenario\'s Newsletter system. To convert to an Extranet User, close this box and select an action in the Actions drop-down.');
+						ze\admin::phrase('This person is a contact. Contacts are stored in the database and can be sent emails via Zenario\'s Newsletter system. To convert to an extranet user, close this box and select an action in the "Actions" drop-down.');
 					break;
 				case 'pending':
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is a Pending User, meaning that the person cannot log in to a password-protected area of the site until the account is made Active. To do this, close this box and select an action in the Actions drop-down.');
+						ze\admin::phrase('This person is a pending user, meaning that the person cannot log in to a password-protected area of the site until the account is made "Active". To do this, close this box and select an action in the "Actions" drop-down.');
 					break;
 				case 'active':
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is an Extranet User, with a status of Active, meaning the person can log in to a password-protected area of the site. if you should need to suspend or delete this user\'s account, close this box and select an action in the Actions drop-down.');
+						ze\admin::phrase('This person is an extranet user, with a status of "Active", meaning the person can log in to a password-protected area of the site. if you should need to suspend or delete this user\'s account, close this box and select an action in the "Actions" drop-down.');
 					break;
 				case 'suspended':
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is a Extranet User, with a status of Suspended, meaning that the person cannot log in to a password-protected area of the site until the account is re-activated. To do this, close this box and select an action in the Actions drop-down.');
+						ze\admin::phrase('This person is a extranet user, with a status of "Suspended", meaning that the person cannot log in to a password-protected area of the site until the account is re-activated. To do this, close this box and select an action in the "Actions" drop-down.');
+					
+					$fields['details/status']['values']['suspended']['label'] .= ' (' . ze\admin::phrase('suspended on [[date]]', ['date' => $suspendedDate]) . ')';
 					break;
 			}
 			if (ze\priv::check('_PRIV_EDIT_USER')) {
@@ -77,26 +82,15 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			
 			$fields['details/status']['readonly'] = true;
 			$fields['details/status']['values'] = [$user['status'] => $fields['details/status']['values'][$user['status']]];
-			if($user['last_login']!= NULL){
+			
+			if ($user['last_login'] != NULL) {
 			    $values['dates/last_login'] = date_format(new DateTime($user['last_login']),"d M Y H:i:s");
-            }
-            if($user['created_date']!= NULL){
-                $values['dates/created_date'] = date_format(new DateTime($user['created_date']),"d M Y H:i:s") . " " . ($user['creation_method_note'] ?? '') . ' (' . ($user['creation_method'] ?? '') . ')';
+            } else {
+            	$values['dates/last_login'] = ze\admin::phrase('Never logged in');
             }
             
-			if($user['created_date'] == $user['modified_date'] ){
-			    $fields['dates/modified_date']['hidden'] = true;
-			} else {
-                if($user['modified_date']!= NULL){
-                    $values['dates/modified_date'] =  date_format(new DateTime($user['modified_date']),"d M Y H:i:s");
-                }
-			
-			}
-			if($user['suspended_date']!= NULL){
-			    $values['dates/suspended_date'] =  date_format(new DateTime($user['suspended_date']),"d M Y H:i:s");
-			}else {
-			    $fields['dates/suspended_date']['hidden'] = true;
-			
+			if ($user['suspended_date'] != NULL){
+			    $values['dates/suspended_date'] =  $suspendedDate;
 			}
 			
 			if($user['last_profile_update_in_frontend']!= NULL){
@@ -140,8 +134,6 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 					<table>';
 				$fields['dates/consents_log']['snippet']['html'] = $html;
 			}
-			
-			
 			
 		} else {
 			ze\priv::exitIfNot('_PRIV_EDIT_USER');
@@ -312,10 +304,11 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			if (ze::setting('user_use_screen_name')) {
 				$cols['screen_name'] = $values['details/screen_name'];
 			}
+			
+			ze\admin::setUserLastUpdated($cols, !$box['key']['id']);
 	
 			if (!$box['key']['id']) {
 				$cols['status'] = $values['details/status'];
-				$cols['creation_method'] = 'admin';
 			}
 		
 			if ($values['details/status'] != 'contact') {
@@ -332,6 +325,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			if (empty($values['details/email'])) {
 				$cols['email_verified'] = 0;
 			}
+			
 			$box['key']['id'] = ze\userAdm::save($cols, $box['key']['id']);
 		}
 	}

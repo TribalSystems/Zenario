@@ -63,12 +63,30 @@ class userAdm {
 		 || !($baseIdentifier = $details['screen_name'])) {
 			$firstName = \ze\ring::trimNonWordCharactersUnicode($firstName);
 			$lastName = \ze\ring::trimNonWordCharactersUnicode($lastName);
-			if ($firstName || $lastName) {
-				$baseIdentifier = $firstName. $lastName;
-			} elseif (($emailArray = explode('@', $email)) && ($email = \ze\ring::trimNonWordCharactersUnicode($emailArray[0]))) {
-				$baseIdentifier = $email;
+			
+			if (!$firstName && !$lastName && $email) {
+				$emailArray = explode('@', $email, 2);
+				$emailArray = explode('.', $emailArray[0], 2);
+				$firstName = ucfirst(\ze\ring::trimNonWordCharactersUnicode($emailArray[0]));
+				$lastName = ucfirst(\ze\ring::trimNonWordCharactersUnicode($emailArray[1] ?? ''));
+			}
+			
+			if ($firstName) {
+				if ($lastName) {
+					$baseIdentifier =
+						substr($firstName, 0, (int) \ze::setting('user_chars_from_first_name') ?: 99).
+						substr($lastName, 0, (int) \ze::setting('user_chars_from_last_name') ?: 99);
+				} else {
+					$baseIdentifier =
+						substr($firstName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
+				}
 			} else {
-				$baseIdentifier = 'User';
+				if ($lastName) {
+					$baseIdentifier =
+						substr($lastName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
+				} else {
+					$baseIdentifier = 'User';
+				}
 			}
 			if (strlen($baseIdentifier) > 50) {
 				$baseIdentifier = mb_substr($baseIdentifier, 0, 50, 'UTF-8');
@@ -149,7 +167,7 @@ class userAdm {
 	//It will only save it if it passes a validation check; if it is not valid then this
 	//function will return an error object.
 	//Formerly "saveUser()"
-	public static function save($values, $id = false, $doSave = true, $convertContactToExtranetUser = false) {
+	public static function save($values, $id = false, $doSave = true, $convertContactToExtranetUser = false, $markNewThingsInSession = false) {
 		//First, validate the submission.
 		$e = new \ze\error();
 	
@@ -197,7 +215,6 @@ class userAdm {
 				}
 			}
 		}
-		$values['modified_date'] = \ze\date::now();
 	
 		//Validate the email field if it is not empty.
 		if (!empty($values['email'])) {
@@ -248,7 +265,7 @@ class userAdm {
 			}
 		
 			//Save the details to the database
-			$newId = \ze\row::set('users', $values, $id);
+			$newId = \ze\row::set('users', $values, $id, false, false, $markNewThingsInSession);
 		
 			$identifier = \ze\userAdm::generateIdentifier($newId);
 			\ze\row::update('users', ['identifier' => $identifier], $newId);

@@ -20,27 +20,7 @@ email_templates:
             Thank you for choosing Zenario!
             
              -- Your friendly team at zenar.io
-    reset_password:
-        subject: Your Zenario Admin Password has been reset
-        from: false
-        body: |
-            Dear [[NAME]]
-            
-            It looks like you requested a reminder of your login details for the site at [[URL]][[SUBDIRECTORY]].
-            
-            Here are your administrator login details:
-            
-            Your admin username: [[USERNAME]]
-            Your new password: [[PASSWORD]]
-            
-            Please follow this link to the Admin area of your site: [[URL]][[SUBDIRECTORY]]admin
-            
-            After you have logged into the system, please immediately change this password.
-            
-            This is an automated email, please do not try to reply.
-            
-            Thank you.
-    new_reset_password:
+    reset_password_local_admin:
         subject: Your Zenario Admin Username and Password
         from: false
         body: |
@@ -75,13 +55,35 @@ email_templates:
             This is an automated email, please do not try to reply.
             
             Thank you.
+    reset_password_multisite_admin:
+        subject: Your Zenario Admin Username
+        from: false
+        body: |
+            Dear [[NAME]]
+            
+            It looks like you requested your administrator login details at [[URL]][[SUBDIRECTORY]].
+            
+            Your admin username is: [[USERNAME]]
+            
+            Your account is a multi-site account. You will need to go to the Controller site if you wish to reset the password.
+            
+            Didn't ask for password assistance?
+            
+            This request was made from IP address [[IP]].
+            
+            If you have not requested that Zenario send your administrator details, please ignore this email, and log into your site using your usual password.
+
+            
+            This is an automated email, please do not try to reply.
+            
+            Thank you.
     security_code:
         subject: Your administrator login at [[URL]][[SUBDIRECTORY]]
         from: false
         body: |
             Dear [[NAME]],
             
-            Our server has detected that you are logging in to [[URL]][[SUBDIRECTORY]] from a new computer or browser.
+            The server at [[URL]][[SUBDIRECTORY]] requires additional authentication from you. This may be because you're using a new computer or browser, you've cleared your cookies, your IP address has changed, or because the [[2FA_TIMEOUT]]-day timeout for the security cookie has been reached.
             
             To confirm your login, please click the following button:
             

@@ -69,8 +69,14 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 				foreach ($userIds as $userId) {
 					$mergeFields = ze\user::details($userId);
 					if (isset($values['details/reset_password']) && $values['details/reset_password']) {
-						$mergeFields['password'] = ze\ring::random(8);
-						ze\userAdm::save(['password' => $mergeFields['password']], $userId);
+						$mergeFields['password'] = ze\userAdm::createPassword();
+						$cols = [
+							'last_edited_admin_id' => ze\admin::id(),
+							'last_edited_user_id' => null,
+							'last_edited_username' => null,
+							'password' => $mergeFields['password']
+						];
+						ze\userAdm::save($cols, $userId);
 					} elseif (isset($values['details/include_password']) && $values['details/include_password']) {
 						//show plain text password
 					} else {

@@ -41,7 +41,7 @@ class zenario_multiple_image_container extends zenario_banner {
 		$width = $height = $url = $widthFullSize = $heightFullSize = $urlFullSize = false;
 		foreach (ze\ray::explodeAndTrim($this->setting('image'), true) as $imageId) {
 			if (($imageId = (int) trim($imageId))
-			 && ($image = ze\row::get('files', ['alt_tag', 'title', 'floating_box_title'], $imageId))
+			 && ($image = ze\row::get('files', ['id', 'alt_tag', 'title', 'floating_box_title', 'size', 'created_datetime'], $imageId))
 			 && ((ze\file::imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))))) {
 				
 				if (!isset($this->mergeFields['Images'])) {
@@ -73,6 +73,18 @@ class zenario_multiple_image_container extends zenario_banner {
 					$imageMF['Text'] = $text;
 				}
 				
+				if ($this->setting('show_link_to_download_original')) {
+					$imageMF['File_Link'] = ze\file::link($image['id']);
+				}
+				
+				if ($this->setting('show_file_size')) {
+					$imageMF['File_Size'] = ze\lang::formatFilesizeNicely($image['size']);
+				}
+				
+				if ($this->setting('show_image_uploaded_date')) {
+					$imageMF['Uploaded_Date'] = ze\date::formatDateTime($image['created_datetime'], '_MEDIUM');
+				}
+				
 				$this->mergeFields['Images'][] = $imageMF;
 			}
 		}
@@ -92,6 +104,9 @@ class zenario_multiple_image_container extends zenario_banner {
 		
 		$this->mergeFields['Show_caption_on_image'] = $this->setting('show_caption_on_image');
 		$this->mergeFields['Show_caption_on_enlarged_image'] = $this->setting('show_caption_on_enlarged_image');
+		$this->mergeFields['Show_link_to_download_original'] = $this->setting('show_link_to_download_original');
+		$this->mergeFields['Show_file_size'] = $this->setting('show_file_size');
+		$this->mergeFields['Show_image_uploaded_date'] = $this->setting('show_image_uploaded_date');
 		
 		//Don't show empty Banners
 		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty
@@ -128,7 +143,7 @@ class zenario_multiple_image_container extends zenario_banner {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-		
+				
 				//For every picked image on the Images tab, we need to make a copy of the template fields.
 				$ord = 0;
 				$valuesInDB = false;
@@ -205,6 +220,8 @@ class zenario_multiple_image_container extends zenario_banner {
 						case 'lazy_load':
 						case 'show_caption_on_image':
 						case 'show_caption_on_enlarged_image':
+						case 'show_link_to_download_original':
+						case 'show_image_uploaded_date':
 							$field['hidden'] = false;
 							break;
 						
@@ -216,6 +233,10 @@ class zenario_multiple_image_container extends zenario_banner {
 						case 'enlarge_canvas':
 						case 'enlarge_width':
 						case 'enlarge_height':
+							break;
+						
+						//...follow the visibility settings...
+						case 'show_file_size':
 							break;
 						
 						//...and always hide anything else
@@ -231,6 +252,8 @@ class zenario_multiple_image_container extends zenario_banner {
 						$field['indent'] -= 1;
 					}
 				}
+				
+				$fields['image_and_link/enlarge_canvas']['side_note'] = ze\admin::phrase('This only has effect when you select "Enlarge image in a floating box" for an image.');
 				
 				$fields['first_tab/text']['hidden'] =
 				$fields['first_tab/more_link_text']['hidden'] = true;

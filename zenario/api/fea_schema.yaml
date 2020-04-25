@@ -79,7 +79,7 @@ title: Front-end Administration Schema
 
 type: object
 additionalProperties:
-    title: Front-end Administration
+    title: Front-End Administration
     type: object
     oneOf:
         -
@@ -167,7 +167,7 @@ additionalProperties:
             description: >
                 This would be the code-name of the current tab.
                 
-                However note that different tabs are not supported at the moment!
+                Note: different tabs are not supported at the moment!
             default: (the first tab of the form)
         
         tabs:
@@ -237,7 +237,7 @@ additionalProperties:
                         description: >
                             If you don't want the error messages displaying at the top of the tab,
                             you can set the name of a field here to display them below that field.
-                            Note that the field after must start on a new line.
+                            Note: the field after must start on a new line.
                     #disable_autofocus:
                     #    type: boolean
                     #    description: >
@@ -250,7 +250,8 @@ additionalProperties:
                     edit_mode:
                         type: object
                         description: >
-                            The edit mode property controls whether the fields on a tab can be edited by an administrator.
+                            The edit mode property controls whether the fields on a tab can be edited.
+                            If edit mode isn't enabled, all of the fields will be read-only.
                         properties:
                             enabled:
                                 type: boolean
@@ -261,13 +262,6 @@ additionalProperties:
                                 modified_by_cms: true
                                 description: >
                                     The CMS will automatically set this property when this tab is in edit mode.
-                            always_on:
-                                type: boolean
-                                description: >
-                                    Include this property to lock a tab in edit mode, and not show the cancel
-                                    button.
-                                    Note that if this property is not defined then it will default to true.
-                                default: true
                     
                     # The fields property here will be array_merge_recursive() with the fields property
                     # from admin_box_schema.yaml by the dev tools when this file is loaded.
@@ -359,6 +353,18 @@ additionalProperties:
         # from admin_box_schema.yaml by the dev tools when this file is loaded.
         lovs: {}
         
+        phrases:
+            type: object
+            additionalProperties:
+                type:
+                    - string
+                    - object
+            description: >
+                You can use this to define some phrases to use later in your JavaScript code.
+                Anything you enter here will be translated.
+                
+                You can also nest objects in here (i.e. using arrays of arrays) and anything
+                nested like this will also be translated.
         
         
         search_bar_placeholder:
@@ -383,6 +389,10 @@ additionalProperties:
             type: boolean
             description: >
                 Use this to hide the column titles
+        hide_pagination:
+            type: boolean
+            description: >
+                Use this to hide the pagination at the bottom of the list
         
         
         columns:
@@ -450,7 +460,7 @@ additionalProperties:
                         description: >
                             If this is set, the value of the column will not be html-escaped.
                             
-                            Note that this is always assumed to be true when using a twig_snippet
+                            Note: this is always assumed to be true when using a twig_snippet
                             or microtemplate.
                     
                     twig_snippet:
@@ -465,6 +475,14 @@ additionalProperties:
                             This allows you to enter a microtemplate (this can either be the code for the template,
                             or the name of a pre-defined template), that will be run on the client
                             to display the value of this column.
+                    
+                    convert_to_percentage_of_total:
+                        type: boolean
+                        description: >
+                            If you enable this option, and the values in the column are numeric,
+                            they will be totaled up then converted to a percentage of the total.
+                            
+                            Note this won't work on plugins that use pagination!
                     
                     parent:
                         type: string
@@ -493,14 +511,34 @@ additionalProperties:
                 type: object
                 
                 properties:
-                    label:
-                        type: string
-                        description: >
-                            A label for this group. Groups will be sorted by their label.
                     list_outer_grouping:
                         type: string
                         description: >
                             The code name of the outer-grouping that this belongs to, if using outer-groupings.
+                    image:
+                        type: string
+                        description: >
+                            The HTML of image for this grouping.
+                    label:
+                        type: string
+                        description: >
+                            A label for this group. Groups will be sorted by their label.
+                    html:
+                        type: string
+                        description: >
+                            Custom HTML to show after the label.
+                    show_toggle:
+                        type: boolean
+                        description: >
+                            Show a toggle button that shows/hides the contents of the grouping.
+                            
+                            Note: this is done using a simple hide/show in JavaScript, there's no AJAX
+                            loading, and this feature won't help if the data shown is too numerous.
+                    toggle_starts_open:
+                        type: boolean
+                        description: >
+                            If this is set, the contents will be shown by default and pressing the toggle
+                            will hide them.
         
         list_outer_groupings:
             type: object
@@ -515,10 +553,18 @@ additionalProperties:
                 type: object
                 
                 properties:
+                    image:
+                        type: string
+                        description: >
+                            The HTML of image for this grouping.
                     label:
                         type: string
                         description: >
                             A label for this group. Groups will be sorted by their label.
+                    html:
+                        type: string
+                        description: >
+                            Custom HTML to show after the label.
         
         items:
             type: object
@@ -561,11 +607,40 @@ additionalProperties:
             type: string
             description: >
                 The code name of a column to sort by. Defaults to "name".
+                This requires to define and turn on either of the plugin settings
+                "enable.sort_list" or "enable.sort_col_headers"
         sort_desc:
             type: boolean
             description: >
                 Whether to sort asending or descending
         
+        map:
+            type: object
+            description: >
+                You can use this to add a google map to a list plugin.
+                For this to work, each item should have a latitude and longitude set,
+                and you need a framework with <div>s roughly as follows:
+                
+                    <div id="map_{{containerId|e}}" style="height: 400px;"></div>
+                    <div id="info_{{containerId|e}}" style="display: none;">
+                        <div id="fea_{{containerId|e}}"></div>
+                    </div>
+                
+                This will cause the normal list to be hidden, the items to appear on the map as pins,
+                and the fulld details for each item to appear when you click the pins.
+            
+            additionalProperties:
+                type: object
+                
+                properties:
+                    api_key:
+                        type: string
+                        description: >
+                            You should set the Google Maps API key in this property.
+                    options:
+                        type: object
+                        description: >
+                            You can set any other options in this property.
         
         
         collection_buttons:
@@ -582,6 +657,9 @@ additionalProperties:
                     -
                         required:
                             - go
+                    -
+                        required:
+                            - href
                 properties:
                     ord: *ord
                     copy_of: *copy_of
@@ -630,14 +708,27 @@ additionalProperties:
                     
                     location:
                         enum:
-                            - top
                             - back
+                            - top
                             - search
+                            - above_list
+                            - column_header
                         collection_button_only: true
                         description: >
                             Setting this properly lets you override the default location and put the button in a different position.
+                            
+                            Note: there is some smart logic; if you choose the "column_header"location but the the column headers
+                            are not visible due to the "hide_column_headings" option being enabled, the "above_list" option will be
+                            automatically used as a replacement.
+                            
+                            Defaults to "column_header" if not set.
                     
                     confirm: *confirm
+                    
+                    href:
+                        type: string
+                        description: >
+                            Add this property to set a link on your button.
                     
                     onclick: &onclick
                         type: string
@@ -692,7 +783,7 @@ additionalProperties:
                                 type: string
                                 description: >
                                     A mode to go to when your button is pressed.
-                                    Note that if you specify a command, and the nest conductor is running,
+                                    Note: if you specify a command, and the nest conductor is running,
                                     then this will be ignored.
                             locationId:
                                 type: *variable
@@ -835,6 +926,9 @@ additionalProperties:
                     -
                         required:
                             - go
+                    -
+                        required:
+                            - href
                 properties:
                     ord: *ord
                     copy_of: *copy_of
@@ -878,6 +972,16 @@ additionalProperties:
                         description: >
                             If you set this property, the button will be hidden when it has no
                             visible children.
+                    
+                    show_as_link_on_column:
+                        type: string
+                        item_button_only: true
+                        description: >
+                            You can enter the name of a column to show this button as a link on that column
+                            instead of a button.
+                            
+                            This won't have any effect if the column is hidden, this button has a parent,
+                            or this button has children.
                     
                     confirm:
                         type: object
@@ -932,6 +1036,20 @@ additionalProperties:
                     new_window: *new_window
                     
                     ajax: *ajax
+                    
+                    href:
+                        type:
+                            - string
+                            - object
+                        properties:
+                            replace_with_field_from_item:
+                                type: string
+                        description: >
+                            Add this property to set a link on your button.
+                            
+                            If you need a different link for each item, you can pass the link in one of the
+                            item's properties, then set the code-name of this property in the replace_with_field_from_item
+                            property here.
                     
                     go:
                         type: object
@@ -1025,6 +1143,19 @@ additionalProperties:
                             A tooltip for this button if it is disabled.
                             
                             From version 7.1 you can use merge fields in this tooltip when one item is selected.
+                    
+                    location:
+                        enum:
+                            - top
+                            - bottom
+                        collection_button_only: true
+                        description: >
+                            Setting this properly lets you override the default location and put the button in a different position.
+                            
+                            This only applies to the "block" view; in the list view the buttons are always on the right and the location
+                            property is not used.
+                            
+                            Defaults to "bottom" if not set.
         
         error_on_form_message:
             type: string
@@ -1035,6 +1166,36 @@ additionalProperties:
                 If you don't specify a message, the errors from the fields will be repeated instead.
                     
         confirm_on_close: *confirm
+        
+        pre_microtemplate:
+            type: object
+            additionalProperties:
+                type: string
+            description: >
+                The FEA plugins are drawn on the screen using microtemplates.
+                You have the ability to customise any of the microtemplates by adding more HTML to the beginning them using this object.
+                Enter the name of each microtemplate you wish to customise as property names (e.g. "list", "list_search", and so on),
+                and the additional content to add as property values.
+                
+                You can add snippets of HTML, snippets of microtemplates, or the name of an existing microtemplate that's registered
+                in the system.
+                
+                This works from version 8.6 onwards.
+        
+        post_microtemplate:
+            type: object
+            additionalProperties:
+                type: string
+            description: >
+                The FEA plugins are drawn on the screen using microtemplates.
+                You have the ability to customise any of the microtemplates by adding more HTML to the end them using this object.
+                Enter the name of each microtemplate you wish to customise as property names (e.g. "list", "list_search", and so on),
+                and the additional content to add as property values.
+                
+                You can add snippets of HTML, snippets of microtemplates, or the name of an existing microtemplate that's registered
+                in the system.
+                
+                This works from version 8.6 onwards.
         
         
         

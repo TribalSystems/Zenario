@@ -46,7 +46,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 					exit;
 				}
 		
-				$box['title'] = ze\admin::phrase('Starting the module "[[display_name]]"', $module);
+				$box['title'] = ze\admin::phrase('Starting the module "[[class_name]]" ([[display_name]])', $module);
 				$box['save_button_message'] = ze\admin::phrase('Start module');
 		
 				$box['max_height'] = 60;
@@ -64,7 +64,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 					exit;
 				}
 		
-				$box['title'] = ze\admin::phrase('Starting the module "[[display_name]]"', $module);
+				$box['title'] = ze\admin::phrase('Starting the module "[[class_name]]" ([[display_name]])', $module);
 				$box['save_button_message'] = ze\admin::phrase('Start module');
 		
 				$box['max_height'] = 60;
@@ -72,7 +72,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 		}
 
 		$box['tabs']['confirm']['hidden'] = false;
-		$box['tabs']['confirm']['notices']['are_you_sure']['message'] = ze\admin::phrase('Start the module "[[display_name]]"?', $module);
+		$box['tabs']['confirm']['notices']['are_you_sure']['message'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
 
 		if ($module['status'] == 'module_not_initialized'
 		 && ($perms = ze\moduleAdm::scanPermissionsFromDescription($module['class_name']))) {
@@ -143,14 +143,14 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 			if (!empty($contentItems)) {
 				if (count($contentItems) < 2) {
 					$toastMessage =
-						ze\admin::phrase('&quot;[[tag]]&quot; was created by the [[name]] Module. You should review and publish this content item.',
+						ze\admin::phrase('&quot;[[tag]]&quot; was created by the [[name]] module. You should review and publish this content item.',
 							[
 								'name' => htmlspecialchars($module['display_name']),
 								'tag' => htmlspecialchars(ze\content::formatTag($contentItems[0]['id'], $contentItems[0]['type'], $contentItems[0]['alias'], $contentItems[0]['language_id']))]);
 		
 				} else {
 					$toastMessage =
-						ze\admin::phrase('The following content items were created by the [[name]] Module, you should review and publish them:',
+						ze\admin::phrase('The following content items were created by the [[name]] module, you should review and publish them:',
 							['name' => htmlspecialchars($module['display_name'])]).
 						'<ul>';
 			

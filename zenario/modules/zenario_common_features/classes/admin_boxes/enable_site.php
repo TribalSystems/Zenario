@@ -123,7 +123,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 				$result = ze\row::query(
 					'special_pages',
 					['equiv_id', 'content_type'],
-					['logic' => ['create_and_maintain_in_default_language','create_and_maintain_in_all_languages'], 'allow_hide' => 0],
+					['logic' => ['create_and_maintain_in_default_language'], 'allow_hide' => 0],
 					['page_type']);
 				
 				while ($row = ze\sql::fetchAssoc($result)) {

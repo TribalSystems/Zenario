@@ -156,7 +156,7 @@ methods.showButtons = function($buttons) {
 methods.expandItem = function() {
 	thus.recordOpenItems();
 	
-	if ($('#organizer_hierarchy_view .organizer_hierarchy_view_lazy_loading:visible').size()) {
+	if ($('#organizer_hierarchy_view .organizer_hierarchy_view_lazy_loading:visible').length) {
 		//zenarioO.saveSelection();
 		zenarioO.reload();
 	}

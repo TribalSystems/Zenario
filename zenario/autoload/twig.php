@@ -71,22 +71,90 @@ class twig {
 
 		//Add references to some commonly used functions from Twig frameworks in Zenario 7,
 		//just to cut down the ammount of rewriting we need to do!
-		self::$twig->addFunction(new \Twig\TwigFunction('imageLinkArray', '\ze\\file::imageLinkArray'));
-		self::$twig->addFunction(new \Twig\TwigFunction('trackFileDownload', '\ze\\file::trackDownload'));
-		self::$twig->addFunction(new \Twig\TwigFunction('get', '\ze::get'));
-		self::$twig->addFunction(new \Twig\TwigFunction('post', '\ze::post'));
-		self::$twig->addFunction(new \Twig\TwigFunction('request', '\ze::request'));
-		self::$twig->addFunction(new \Twig\TwigFunction('session', '\ze::session'));
+		self::$twig->addFunction(new \Twig\TwigFunction('imageLinkArray', '\\ze\\file::imageLinkArray'));
+		self::$twig->addFunction(new \Twig\TwigFunction('trackFileDownload', '\\ze\\file::trackDownload'));
+		self::$twig->addFunction(new \Twig\TwigFunction('get', '\\ze::get'));
+		self::$twig->addFunction(new \Twig\TwigFunction('post', '\\ze::post'));
+		self::$twig->addFunction(new \Twig\TwigFunction('request', '\\ze::request'));
+		self::$twig->addFunction(new \Twig\TwigFunction('session', '\\ze::session'));
+		self::$twig->addFunction(new \Twig\TwigFunction('requireJsLib', '\\ze::requireJsLib'));
 
 		self::$twig->addFunction(new \Twig\TwigFunction('print_r', 'print_r'));
 		self::$twig->addFunction(new \Twig\TwigFunction('var_dump', 'var_dump'));
 		self::$twig->addFunction(new \Twig\TwigFunction('json_encode', 'json_encode'));
 
 		self::$twig->addFunction(new \Twig\TwigFunction('ze', 'zenario_callLibFromTwig'));
+		
+		self::$twig->addFunction(new \Twig\TwigFunction('constant', '\\ze\\twig::getConstant'));
+		self::$twig->addFunction(new \Twig\TwigFunction('var', '\\ze\\twig::getVar'));
+		
+		
+		//Make a few plugin functions available in Twig, even if running without the "this" variable
+		self::$twig->addFunction(new \Twig\TwigFunction('conductorEnabled', '\\ze\\twig::conductorEnabled'));
+		self::$twig->addFunction(new \Twig\TwigFunction('conductorCommandEnabled', '\\ze\\twig::conductorCommandEnabled'));
+		self::$twig->addFunction(new \Twig\TwigFunction('conductorLink', '\\ze\\twig::conductorLink'));
+		self::$twig->addFunction(new \Twig\TwigFunction('conductorOnclick', '\\ze\\twig::conductorOnclick'));
+		self::$twig->addFunction(new \Twig\TwigFunction('conductorBackLink', '\\ze\\twig::conductorBackLink'));
+		self::$twig->addFunction(new \Twig\TwigFunction('callScriptBeforeAJAXReload', '\\ze\\twig::callScriptBeforeAJAXReload'));
+		self::$twig->addFunction(new \Twig\TwigFunction('callScriptBeforeFoot', '\\ze\\twig::callScriptBeforeFoot'));
+		self::$twig->addFunction(new \Twig\TwigFunction('callScript', '\\ze\\twig::callScript'));
+		self::$twig->addFunction(new \Twig\TwigFunction('jQueryBeforeAJAXReload', '\\ze\\twig::jQueryBeforeAJAXReload'));
+		self::$twig->addFunction(new \Twig\TwigFunction('jQueryBeforeFoot', '\\ze\\twig::jQueryBeforeFoot'));
+		self::$twig->addFunction(new \Twig\TwigFunction('jQuery', '\\ze\\twig::jQuery'));
 	}
 	
 	public static function render($framework, $vars) {
 		return self::$twig->render($framework, $vars);
+	}
+	
+	public static function getConstant($const) {
+		
+		if (defined($const)
+		 && substr($const, 0, 6) != 'DBPASS') {
+			return constant($const);
+		}
+		return null;
+	}
+	
+	public static function getVar($var) {
+		return \ze::$vars[$var] ?? null;
+	}
+	
+	
+	//Make a few plugin functions available in Twig
+	public static function conductorEnabled() {
+		if (\ze::$plugin) return \ze::$plugin->conductorEnabled();
+	}
+	public static function conductorCommandEnabled($command) {
+		if (\ze::$plugin) return \ze::$plugin->conductorCommandEnabled($command);
+	}
+	public static function conductorLink($command, $requests = []) {
+		if (\ze::$plugin) return \ze::$plugin->conductorLink($command, $requests);
+	}
+	public static function conductorOnclick($command, $requests = []) {
+		if (\ze::$plugin) return \ze::$plugin->conductorOnclick($command, $requests);
+	}
+	public static function conductorBackLink() {
+		if (\ze::$plugin) return \ze::$plugin->conductorBackLink();
+	}
+	
+	public static function callScriptBeforeAJAXReload(...$args) {
+		if (\ze::$plugin) call_user_func_array([\ze::$plugin, 'callScriptBeforeAJAXReload'], $args);
+	}
+	public static function callScriptBeforeFoot(...$args) {
+		if (\ze::$plugin) call_user_func_array([\ze::$plugin, 'callScriptBeforeFoot'], $args);
+	}
+	public static function callScript(...$args) {
+		if (\ze::$plugin) call_user_func_array([\ze::$plugin, 'callScript'], $args);
+	}
+	public static function jQueryBeforeAJAXReload(...$args) {
+		if (\ze::$plugin) call_user_func_array([\ze::$plugin, 'jQueryBeforeAJAXReload'], $args);
+	}
+	public static function jQueryBeforeFoot(...$args) {
+		if (\ze::$plugin) call_user_func_array([\ze::$plugin, 'jQueryBeforeFoot'], $args);
+	}
+	public static function jQuery(...$args) {
+		if (\ze::$plugin) call_user_func_array([\ze::$plugin, 'jQuery'], $args);
 	}
 }
 \ze\twig::init();

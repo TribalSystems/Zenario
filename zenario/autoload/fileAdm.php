@@ -37,7 +37,6 @@ class fileAdm {
 	public static function handleAdminBoxAJAX() {
 	
 		if ($_REQUEST['fileUpload'] ?? false) {
-			\ze\fileAdm::exitIfUploadError();
 		
 			//If this is the plugin settings FAB, and this is an image, try to add the image
 			//to the image library straight away, and return the id.
@@ -45,17 +44,20 @@ class fileAdm {
 			 && $_REQUEST['path'] == 'plugin_settings'
 			 && (\ze\priv::check('_PRIV_MANAGE_MEDIA') || \ze\priv::check('_PRIV_EDIT_DRAFT') || \ze\priv::check('_PRIV_CREATE_REVISION_DRAFT') || \ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN'))
 			 && \ze\file::isImageOrSVG(\ze\file::mimeType($_FILES['Filedata']['name']))) {
+				
+				\ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
 			
 				$imageId = \ze\file::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true);
 				echo json_encode(\ze\file::labelDetails($imageId));
 		
 			//Otherwise upload
 			} else {
+				\ze\fileAdm::exitIfUploadError(true, true, true, 'Filedata');
 				\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], ($_REQUEST['_html5_backwards_compatibility_hack'] ?? false));
 			}
 	
 		} else if ($_REQUEST['fetchFromDropbox'] ?? false) {
-			\ze\fileAdm::putDropboxFileIntoCacheDir($_POST['name'] ?? false, ($_POST['link'] ?? false));
+			\ze\fileAdm::putDropboxFileIntoCacheDir($_POST['name'] ?? false, $_POST['link'] ?? false);
 	
 		} else {
 			exit;
@@ -159,8 +161,10 @@ To correct this, please ask your system administrator to perform a
 					exit;
 				}
 				
+				\ze\fileAdm::exitIfVirusInFile(true, $path, $filename, true);
+				
 			} else {
-				move_uploaded_file($tempnam, $path);
+				\ze\fileAdm::moveUploadedFile($tempnam, $path);
 			}
 		}
 		
@@ -229,17 +233,59 @@ To correct this, please ask your system administrator to perform a
 
 
 	//Formerly "exitIfUploadError()"
-	public static function exitIfUploadError($moduleClass = false) {
-		$error = $_FILES['Filedata']['error'] ?? false;
-		switch ($error) {
+	//Handle some common errors when uploading a file.
+		//$adminFacing should be set to true to use admin phrases or false to use visitor phrases.
+		//If $checkIsAllowed is set then only files in the document_types table with the is_allowed flag set will be allowed
+		//If $alwaysAllowImages is set then only GIF/JPG/PNG/SVG files will be accepted
+		//If both are set then a file will be accepted if it's an image OR allowed in the document_types table.
+		//$fileVar is the name of the file upload field, usually 'Filedata'.
+	public static function exitIfUploadError($adminFacing, $checkIsAllowed = true, $alwaysAllowImages = false, $fileVar = null, $i = null, $doVirusScan = true) {
+		
+		//If a variable name isn't specified, loop through checking all of the variables
+		if ($fileVar === null) {
+			foreach ($_FILES as $fileVar => $file) {
+				\ze\fileAdm::exitIfUploadError($adminFacing, $checkIsAllowed, $alwaysAllowImages, $fileVar);
+			}
+			return;
+		}
+		
+		//Catch the case where index numbers are being used, but an index number isn't specified.
+		//Loop through checking all of the index numbers
+		if ($i === null && is_array($_FILES[$fileVar]['name'])) {
+			foreach ($_FILES[$fileVar]['name'] as $i => $file) {
+				\ze\fileAdm::exitIfUploadError($adminFacing, $checkIsAllowed, $alwaysAllowImages, $fileVar, $i);
+			}
+			return;
+		}
+			
+		//Handle the two possible different formats in $_FILE, one with index numbers and one without
+		if ($i === null) {
+			$error = $_FILES[$fileVar]['error'] ?? false;
+			$name = $_FILES[$fileVar]['name'];
+			$path = $_FILES[$fileVar]['tmp_name'];
+		} else {
+			$error = $_FILES[$fileVar]['error'][$i] ?? false;
+			$name = $_FILES[$fileVar]['name'][$i];
+			$path = $_FILES[$fileVar]['tmp_name'][$i];
+		}
+		
+		if ($adminFacing) {
+			$moduleClass = false;
+		} else {
+			$moduleClass = 'zenario_common_features';
+		}
+		
+		switch ($_FILES[$fileVar]['error'] ?? false) {
 			case UPLOAD_ERR_INI_SIZE:
 			case UPLOAD_ERR_FORM_SIZE:
-				echo \ze\admin::phrase('Your file was too large to be uploaded.', false, $moduleClass);
+				echo \ze\lang::phrase('Your file was too large to be uploaded.', false, $moduleClass);
 				exit;
 			case UPLOAD_ERR_PARTIAL:
 			case UPLOAD_ERR_NO_FILE:
-				echo \ze\admin::phrase('There was a problem whilst uploading your file.', false, $moduleClass);
+				echo \ze\lang::phrase('There was a problem whilst uploading your file.', false, $moduleClass);
 				exit;
+			
+			//I've never seen these happen before, if we ever see these messages we can debug them and add a friendlier message at that point
 			case UPLOAD_ERR_NO_TMP_DIR:
 				echo 'UPLOAD_ERR_NO_TMP_DIR';
 				exit;
@@ -249,6 +295,109 @@ To correct this, please ask your system administrator to perform a
 			case UPLOAD_ERR_EXTENSION:
 				echo 'UPLOAD_ERR_EXTENSION';
 				exit;
+		}
+		
+		
+		if ($checkIsAllowed) {
+			if (!\ze\file::isAllowed($name, $alwaysAllowImages)) {
+				if ($adminFacing) {
+					echo
+						\ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
+						"\n\n",
+						\ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> Uploadable file types" in Organizer.'),
+						"\n\n",
+						\ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : ; * ? " < > |');
+					exit;
+				} else {
+					echo
+						\ze\lang::phrase('The uploaded file is not a supported file format.', false, $moduleClass);
+					exit;
+				}
+			}
+		
+		} elseif ($alwaysAllowImages) {
+			if (!\ze\file::isImageOrSVG(\ze\file::mimeType($name))) {
+				echo
+					\ze\lang::phrase('The uploaded file is not an image.', false, $moduleClass);
+				exit;
+			}
+		}
+		
+		if ($doVirusScan) {
+			\ze\fileAdm::exitIfVirusInFile($adminFacing, $path, $name, true);
+		}
+	}
+	
+	public static function exitIfVirusInFile($adminFacing, $path, $name, $autoDelete = false) {
+		
+		if ($adminFacing) {
+			$moduleClass = false;
+		} else {
+			$moduleClass = 'zenario_common_features';
+		}
+		
+		//If it looks like the file is in the /tmp/ directory, move it into the cache/scans/ directory.
+		//This is to avoid issues with AppArmor, and/or multiple different instances of the /tmp/ directory in AWS.
+		$inTmpDir = substr($path, 0, 4) == '/tmp';
+		if ($inTmpDir) {
+			$scanDir = \ze\cache::createRandomDir(10, 'cache/scans', false);
+			$scanPath = $scanDir. 'scanme';
+			
+			if (!\ze\fileAdm::moveUploadedFile($path, $scanPath)) {
+				echo \ze\lang::phrase('Invalid uploaded file.', false, $moduleClass);
+				exit;
+			}
+			
+			//Try to run an anti-virus scan
+			$avScan = \ze\server::antiVirusScan($scanPath, $autoDelete);
+			
+			//Move the file back to the tmp dir if we moved it earlier.
+			if ($autoDelete && $avScan === false) {
+				//Though don't do this if the autodelete option would have triggered
+			} else {
+				@rename($scanPath, $path);
+			}
+			//Also clear up the directory we made in the cache folder
+			@unlink($scanDir. 'accessed');
+			@rmdir($scanDir);
+		
+		} else {
+			//Try to run an anti-virus scan with the file where it is
+			$avScan = \ze\server::antiVirusScan($path, $autoDelete);
+		}
+		
+		if ($avScan === false) {
+			echo \ze\lang::phrase('A virus was detected in [[name]]. It cannot be accepted.', ['name' => $name], $moduleClass);
+			exit;
+		}
+		
+		if ($avScan === null && \ze::setting('require_av_scan')) {
+			
+			if ($autoDelete) {
+				@unlink($path);
+			}
+			
+			echo \ze\lang::phrase('This site cannot currently accept file uploads as antivirus scanning is currently unavailable.', false, $moduleClass);
+			exit;
+		}
+		
+		//For file-types supported by the ze\file::check function, run a check to see if the extension looks correct
+		//(I.e. try to check that this isn't a different type of file where the extension has been altered.)
+		if (!\ze\file::check($path, $mimeType = \ze\file::mimeType($name))) {
+			$parts = explode('.', $name);
+			$extension = $parts[count($parts) - 1];
+			
+			echo
+				\ze\lang::phrase('This file could not be uploaded.', [], $moduleClass),
+				"\n\n",
+				\ze\lang::phrase('According to its name, "[[name]]" should be an [[extension]] file, but on scanning its contents it failed to match "[[mimeType]]".', [
+					'name' => $name,
+					'mimeType' => $mimeType,
+					'extension' => $extension
+				], $moduleClass),
+				"\n\n",
+				\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass);
+			exit;
 		}
 	}
 
@@ -305,5 +454,34 @@ To correct this, please ask your system administrator to perform a
 		}
 		
 		return $usage;
-	}	
+	}
+	
+	
+	
+	
+	
+	//A wrapper for the move_uploaded_file() function.
+	//The only difference in functionality is that this caches the result,
+	//which allows one script to move the file and then move it back (i.e. to virus scan it),
+	//without distrupting or needing to rewrite another script
+	private static $movedFiles = [];
+	public static function moveUploadedFile($pathFrom, $pathTo) {
+		if (self::$movedFiles !== [] && !empty(self::$movedFiles[$pathFrom])) {
+			return rename($pathFrom, $pathTo);
+		
+		} else {
+			return self::$movedFiles[$pathFrom] = move_uploaded_file($pathFrom, $pathTo);
+		}
+	}
+	
+	//A wrapper for the is_uploaded_file() function that plays nicely when using the function above
+	public static function isUploadedFile($path) {
+		if (self::$movedFiles !== [] && !empty(self::$movedFiles[$path])) {
+			return true;
+		
+		} else {
+			return is_uploaded_file($path);
+		}
+	}
+	
 }

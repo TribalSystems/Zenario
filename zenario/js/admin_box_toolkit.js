@@ -269,7 +269,7 @@ methods.close = function(keepMessageWindowOpen) {
 	if (thus.sizing) {
 		clearTimeout(thus.sizing);
 	}
-	thus.stopPoking();
+	zenario.stopPoking(thus);
 	zenario.clearAllDelays();
 	
 	if (!keepMessageWindowOpen) {
@@ -387,7 +387,7 @@ methods.draw2 = function() {
 	thus.shownTab = tuix.tab;
 	delete thus.lastScrollTop;
 	
-	thus.startPoking();
+	zenario.startPoking(thus);
 	
 	//If this FAB has a "global_area" tab, then draw it at the top
 	if ((global_area = tuix.tabs.global_area)
@@ -695,11 +695,7 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 		}
 	}
 	
-	if (inDropDown) {
-		return thus.microTemplate(pick_items.dropdown_item_microtemplate || thus.mtPrefix + '_dropdown_item', mi);
-	} else {
-		return thus.microTemplate(pick_items.picked_item_microtemplate || thus.mtPrefix + '_picked_item', mi);
-	}
+	return thus.drawPickedItem2(id, pick_items, inDropDown, mi);
 };
 
 
@@ -942,27 +938,6 @@ methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 
 
 
-methods.editModeOn = function(tab) {
-	
-	if (!thus.tuix || !thus.tuix.tabs) {
-		return false;
-	}
-	
-	if (!tab) {
-		tab = thus.tuix.tab;
-	}
-	
-	if (thus.tuix.tabs[tab].edit_mode) {
-		return thus.tuix.tabs[tab].edit_mode.on =
-			engToBoolean(thus.tuix.tabs[tab].edit_mode.enabled)
-		 && (engToBoolean(thus.tuix.tabs[tab].edit_mode.on)
-		  || thus.editModeAlwaysOn(tab));
-	
-	} else {
-		return false;
-	}
-};
-
 methods.editModeAlwaysOn = function(tab) {
 	return !defined(thus.tuix.tabs[tab].edit_mode.always_on)
 		|| engToBoolean(thus.tuix.tabs[tab].edit_mode.always_on)
@@ -1196,27 +1171,6 @@ methods.dragListeners = function() {
 };
 
 
-
-
-
-
-
-methods.stopPoking = function() {
-	if (thus.poking) {
-		clearInterval(thus.poking);
-	}
-	thus.poking = false;
-};
-
-methods.startPoking = function() {
-	if (!thus.poking) {
-		thus.poking = setInterval(thus.poke, 2 * 60 * 1000);
-	}
-};
-
-methods.poke = function() {
-	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
-};
 
 
 

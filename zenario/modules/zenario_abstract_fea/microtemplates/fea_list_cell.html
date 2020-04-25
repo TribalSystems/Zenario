@@ -1,43 +1,65 @@
+<% var b, val = m.item[m.col.id]; %>
+<% if (b = m.item.__columnButtons && m.item.__columnButtons[m.col.id]) { %>
+	<a
+		title="{{b.tooltip|escape}}"
+	
+		<% if (b._isDisabled) { %>
+			class="zfea_link_on_column zfea_link_on_column_disabled {{b.css_class|escape}}"
+	
+		<% } else { %>
+			class="zfea_link_on_column {{b.css_class|escape}}"
+		
+			<% if (b.href) { %>
+				href="{{b.href|escape}}"
+			
+				<% if (b.new_window) { %>
+					target="_blank"
+				<% } %>
+			<% } %>
+		
+			<% if (b.onclick && !(b.href && b.new_window)) { %>
+				onclick="{{b.onclick|escape}}"
+			<% } %>
+		<% } %>
+	>
+<% } %>
+
+
 <% if (m.col.sparkline) { %>
 	{% m.lib.hadSparkline = true; %}
 
 <% } else if (m.col.microtemplate) { %>
 	{{m.lib.microTemplate(m.col.microtemplate, m)}}
 
-<% } else if (m.col.html || m.col.twig_snippet) { %>
-	{{m.item[m.col.id]}}
+<% } else if ((m.col.html || m.col.twig_snippet) && !m.col.convert_to_percentage_of_total) { %>
+	{{val}}
 
 <% } else if (m.col.is_icon) { %>
-	<span class="fea_icon {{m.item[m.col.id]|escape}}"></span>
+	<span class="fea_icon {{val|escape}}"></span>
     
-<% } else if (m.item[m.col.id] && m.col.values && m.col.values[m.item[m.col.id]]) { %>
-	{{m.col.values[m.item[m.col.id]]|escape}}
+<% } else if (val && m.col.values && m.col.values[val]) { %>
+	{{m.col.values[val]|escape}}
+
+<% } else if (m.col.convert_to_percentage_of_total && m.thus.pcOfTotal[m.col.id] && zenario.defined(val) && val !== "") { %>
+	{{zenario.round(100 * val / m.thus.pcOfTotal[m.col.id], 1)}} %
+
 <!--
 	If a column is empty, and the column has an empty value defined,
 	then show the empty value
 -->
-<% } else if (!m.item[m.col.id] && m.col.empty_value) { %>
+<% } else if (!val && m.col.empty_value) { %>
 	<span class="fea_empty_value">{{m.col.empty_value|escape}}</span>
-	
 
-<% } else if (m.item[m.col.id] && m.item[m.col.id]['field_type'] == "real_time") { %>
-    
-    <div class="field_value resize_text">{{m.item[m.col.id]['value']|escape}}</div>
-    
-<% } else if (m.item[m.col.id]  && m.item[m.col.id]['field_type'] == "metric") { %>
-    <div class="period_boxes">
-        <div class="previous_wrapper">
-            <div class="previous_period_label">{{m.item[m.col.id]['previous_period_label']|escape}}</div>
-            <div class="previous_period_value resize_text">{{m.item[m.col.id]['previous_period_value']|escape}}<% if(m.item[m.col.id]['previous_period_units']){ %><span> {{m.item[m.col.id]['previous_period_units']|escape}}</span><% } %></div>
-        </div>
-        <div class="this_wrapper">
-            <div class="this_period_label">{{m.item[m.col.id]['this_period_label']|escape}}</div>
-            <div class="this_period_value resize_text">{{m.item[m.col.id]['this_period_value']|escape}} <% if(m.item[m.col.id]['this_period_units']){ %><span> {{m.item[m.col.id]['this_period_units']|escape}}</span><% } %></div>
-        </div>
-    </div>
 <!--
 	Otherwise, just display the value of the column
 -->
 <% } else { %>
-	{{m.item[m.col.id]|escape}}
+	{{val|escape}}
+<% } %>
+
+
+
+
+<% if (b) { %>
+	</a>
 <% } %>

@@ -41,6 +41,8 @@ $directories = [
 		'files' => -2,
 		'frameworks' => 7 * 60 * 60,
 		'pages' => 2 * 60 * 60,
+		'scans' => 5 * 60,
+		'stop_flags' => 4 * 60 * 60,
 		'stats' => -1,
 		'tuix' => -1
 	], 
@@ -59,6 +61,17 @@ $directories = [
 //If they are older than $lifetime, files and their containing directories should be deleted.
 //A $lifetime of -1 means they should be permenant and never deleted
 //A $lifetime of -2 is for old deprecated/unused directories that should be immediately deleted
+
+
+
+
+
+
+//We only want this script running once per site, so set up a lock
+if (ze::$dbL) {
+	$lock = new \ze\lock(DB_PREFIX. 'lock__clean_dirs');
+	$lock->lock();
+}
 
 
 \ze::ignoreErrors();
@@ -149,6 +162,11 @@ $directories = [
 		}
 	}
 \ze::noteErrors();
+
+
+if (ze::$dbL) {
+	$lock->unlock();
+}
 
 
 return self::$cleanedCacheDir = true;

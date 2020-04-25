@@ -388,6 +388,8 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 
 		} elseif (($_POST['import_phrases'] ?? false) && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			
+			ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
+			
 			if (ze\file::mimeType($_FILES['Filedata']['name']) == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 			 && !extension_loaded('zip')) {
 				echo ze\admin::phrase('Importing or exporting .xlsx files requires the php_zip extension. Please ask your server administrator to enable it.');

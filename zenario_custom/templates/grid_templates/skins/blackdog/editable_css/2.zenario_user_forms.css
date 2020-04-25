@@ -19,6 +19,27 @@
 	border-color:#AF0615;
 }
 
+.zenario_user_forms .form_field.field_date {
+	overflow:hidden;
+}
+
+.zenario_user_forms .form_field input[type='text'].hasDatepicker {
+	max-width:200px;
+	background:url('../images/icon-calendar-grey.png') no-repeat right center;
+}
+
+.zenario_user_forms .form_field.field_date input[type="button"].clear_date {
+	min-width:0;
+	width:20px;
+	height:20px;
+	line-height:12px;
+	padding:0 0 4px;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
+	margin-left:4px;
+}
+
 .zenario_user_forms .form_field.field_radios .values_wrap {
 	padding-left:10px;
 }

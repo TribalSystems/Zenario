@@ -72,9 +72,13 @@ class lang {
 	public static function phrase($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
 	
 		if (false === $code
-		 || is_null($code)
+		 || $code === null
 		 || '' === ($code = trim($code))) {
 			return '';
+		}
+		
+		if ($moduleClass === false) {
+			return \ze\admin::phrase($code, $replace);
 		}
 	
 	
@@ -88,7 +92,6 @@ class lang {
 				//N.b. The \ze\content::visitorLangId() function is inlined here in order to not create a dependancy on zenario/api/system_functions.inc.php
 		}
 	
-		$multiLingal = \ze\lang::count() > 1;
 		$isCode = substr($code, 0, 1) == '_';
 		$needsTranslating = $isCode || !empty(\ze::$langs[$languageId]['translate_phrases']);
 		$needsUpdate = false;
@@ -96,7 +99,7 @@ class lang {
 	
 		//Phrase codes (which start with an underscore) always need to be looked up
 		//Otherwise we only need to look up phrases on multi-lingual sites
-		if ($multiLingal || $needsTranslating) {
+		if (\ze::$trackPhrases || $needsTranslating) {
 		
 			//Attempt to find a record of the phrase in the database
 			$sql = "
@@ -142,7 +145,7 @@ class lang {
 				}
 			
 				//For multilingal sites, any phrases that are not in the database need to be noted down
-				if ($multiLingal
+				if (\ze::$trackPhrases
 				 && (\ze::$defaultLang == $languageId
 				  || !\ze\row::exists(
 						'visitor_phrases',
@@ -157,6 +160,7 @@ class lang {
 		
 			//Make sure that this phrase is registered in the database
 			if ($needsUpdate
+			 && \ze::$trackPhrases
 				//Never register a phrase if this a plugin preview!
 			 && empty($_REQUEST['fakeLayout'])
 			 && empty($_REQUEST['grid_columns'])
@@ -217,7 +221,7 @@ class lang {
 						}
 					}
 			
-					if (!is_null($url)) {
+					if ($url !== null) {
 						$url = substr($url, 0, 0xffff);
 					}
 				}
@@ -324,7 +328,7 @@ class lang {
 
 	const nphraseFromTwig = true;
 	//Formerly "nphrase()"
-	public static function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
+	public static function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false, $zeroText = null) {
 	
 		//Allow the caller to enter the name of a merge field that contains $n
 		if (is_string($n) && !is_numeric($n) && isset($replace[$n])) {
@@ -337,14 +341,20 @@ class lang {
 				$replace['count'] = $n;
 			}
 		}
-	
-		if ($pluralText !== false && $n !== 1 && $n !== '1') {
+		
+		if ($zeroText !== null && empty($n)) {
+			return \ze\lang::phrase($zeroText, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli);
+		} else if ($pluralText !== false && $n !== 1 && $n !== '1') {
 			return \ze\lang::phrase($pluralText, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli);
 		} else {
 			return \ze\lang::phrase($text, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli);
 		}
 	}
-
+	
+	const nzphraseFromTwig = true;
+	public static function nzphrase($zeroText, $text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
+		return \ze\lang::nphrase($text, $pluralText, $n, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli, $zeroText);
+	}
 
 
 	//Formerly "formatFilesizeNicely()"
@@ -425,6 +435,18 @@ class lang {
 				translate_phrases,
 				sync_assist,
 				search_type";
+		
+		//Small hack to work around a back-patched feature
+		//We're patching back the "language_picker_logic" from 8.7 to 8.6, but it requires
+		//a database update. I don't want to flag this update as mandatory, so will work
+		//around the fact that the column might not be there yet
+		if (\ze::$dbL->checkTableDef(DB_PREFIX. 'languages', 'language_picker_logic', true)) {
+			$sql .= ",
+				language_picker_logic";
+		} else {
+			$sql .= ",
+				'visible_or_disabled' AS language_picker_logic";
+		}
 	
 		if ($includeAllLanguages) {
 			$sql .= "

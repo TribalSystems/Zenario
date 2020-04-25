@@ -1,0 +1,27 @@
+<%
+	m.__sortableCols = _.filter(m.thus.sortedColumns, function(col) { return !!(col.sort_asc || col.sort_desc); });
+	m.__showSortControls = m.lib.checkThingEnabled("sort_list") && m.__sortableCols.length;
+	m.__showSearch = !m.tuix.hide_search_bar;
+%>
+
+<% if (m.__showSortControls || m.__showSearch) { %>
+	<div class="zfea_list_search_sort_wrapper">
+		<% if (m.__showSearch) { %>
+			<div class="zfea_list_search_wrapper">
+				{{m.lib.pMicroTemplate('list_search', m)}}
+			</div>
+		<% } %>
+
+		<% if (m.__showSortControls) { %>
+			<div class="zfea_list_sort_wrapper">
+				{{m.lib.pMicroTemplate('list_sort', m)}}
+			</div>
+		<% } %>
+	</div>
+<% } %>
+
+<% if (zenarioT.find(m.thus.sortedCollectionButtons, 'search')) { %>
+	<div class="zfea_buttons zfea_search_buttons">
+		{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'search')}}
+	</div>
+<% } %>

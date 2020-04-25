@@ -305,6 +305,18 @@ class zenario_extranet_registration extends zenario_extranet {
 			    
 			    //Show checkbox rensend verification link
 				$fields['first_tab/show_resend_verification_link']['hidden'] = $values['first_tab/initial_email_address_status']=='verified';
+				
+				if ($values['first_tab/include_an_attachment'] == true && $values['first_tab/selected_attachment']) {
+					$privacy = ze\row::get('documents', 'privacy', ['id' => $values['first_tab/selected_attachment']]);
+					
+					if ($privacy == 'offline') {
+						$fields['first_tab/selected_attachment']['note_below'] = ze\admin::phrase('The selected document is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $privacy]);
+					} else {
+						unset($fields['first_tab/selected_attachment']['note_below']);
+					}
+				} else {
+					unset($fields['first_tab/selected_attachment']['note_below']);
+				}
 
 				
 				
@@ -314,6 +326,21 @@ class zenario_extranet_registration extends zenario_extranet {
 				$showWarningMessage = $values['registration/send_delayed_registration_email'] && !ze\miscAdm::checkScheduledTaskRunning('jobSendDelayedRegistrationEmails');
 				$fields['registration/warning_message']['hidden'] = !$showWarningMessage;
 				break;
+		}
+	}
+	
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+	
+		switch ($path) {
+			case 'plugin_settings':
+				if ($values['first_tab/include_an_attachment'] == true && $values['first_tab/selected_attachment']) {
+					$privacy = ze\row::get('documents', 'privacy', ['id' => $values['first_tab/selected_attachment']]);
+					
+					if ($privacy == 'offline') {
+						$fields['first_tab/selected_attachment']['error'] = true;
+					}
+				}
+			break;
 		}
 	}
 	
@@ -472,6 +499,16 @@ class zenario_extranet_registration extends zenario_extranet {
 				ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK')));
 			}
 			
+			if (!empty($userId)) {
+				$creatorUserIdentifier = ze\user::identifier($userId);
+			}
+		
+			$details = [];
+			$details['created_admin_id'] = null;
+			$details['created_user_id'] = $userId ?? null;
+			$details['created_username'] = $creatorUserIdentifier ?? null;
+			
+			ze\row::update('users', $details, $userId);
 			
 			$details = [];
 			ze::$dbL->checkTableDef($tableName = DB_PREFIX . 'users_custom_data');
@@ -679,7 +716,22 @@ class zenario_extranet_registration extends zenario_extranet {
 				$emailMergeFields['password'] = $password;
 				ze\userAdm::setPassword($userId, $password);
 			}
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('welcome_email_template'),$emailMergeFields,[]);
+			
+			//Add attachments to the welcoming email.
+			//Only accept public and private documents.
+			$attachments = [];
+			if ($this->setting('include_an_attachment') == true && $this->setting('selected_attachment')) {
+				$document = ze\row::get('documents', ['file_id', 'privacy'], ['id' => $this->setting('selected_attachment')]);
+				
+				if ($document['privacy'] != 'offline') {
+					$file = ze\file::link($document['file_id']);
+					
+					//For Docstore symlinks, get the real file path.
+					$attachments[] = realpath(rawurldecode($file));
+				}
+			}
+			
+			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('welcome_email_template'),$emailMergeFields,$attachments);
 		}
 	}
 

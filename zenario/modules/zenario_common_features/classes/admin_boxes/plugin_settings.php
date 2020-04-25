@@ -51,8 +51,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		} else
 		if ($box['key']['cID']
 		 && ($content = ze\row::get('content_items', true, ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]))
+		 && ($chain = ze\row::get('translation_chains', true, ['equiv_id' => $content['equiv_id'], 'type' => $box['key']['cType']]))
 		 && ($version = ze\row::get('content_item_versions', true, ['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']]))) {
-			ze\content::setShowableContent($content, $version);
+			ze\content::setShowableContent($content, $chain, $version, false);
 			$box['key']['skinId'] = ze::$skinId;
 			$this->skinWritableDir = ze\content::skinPath(). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
@@ -389,6 +390,20 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				}
 				$fields['last_tab/module_description']['snippet']['html'] = 
 					'<div class="module_description">' . $moduleDescription . '</div>';
+				
+				
+				//Load a list of TUIX Snippet names defined on the site
+				$ord = 0;
+				foreach (ze\row::getValues('tuix_snippets', 'name', [], 'name', 'id') as $tuixSnippetId => $tuixSnippetName) {
+					$fields['tuix_snippet/~tuix_snippet~']['values'][$tuixSnippetId] = [
+						'ord' => ++$ord,
+						'label' => $tuixSnippetName. ' (ID '. $tuixSnippetId. ')'
+					];
+				}
+				
+				if (empty($fields['tuix_snippet/~tuix_snippet~']['values'])) {
+					$fields['tuix_snippet/~tuix_snippet~']['empty_value'] = ze\admin::phrase(' -- No customisations defined for this site -- ');
+				}
 		
 			
 			//Experimenting with having plugin settings and frameworks visible on the same tab again
@@ -642,6 +657,22 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				}
 				
 				
+				//If the user picks a TUIX Snippet, show the source code for reference.
+				$tuixSnippet = $values['tuix_snippet/~tuix_snippet~'] ?? '';
+			
+				if ($box['key']['lastTuixSnippet'] != $tuixSnippet) {
+					$box['key']['lastTuixSnippet'] = $tuixSnippet;
+					
+					if ($tuixSnippet) {
+						$fields['tuix_snippet/~custom_yaml~']['hidden'] = false;
+						$values['tuix_snippet/~custom_yaml~'] = ze\row::get('tuix_snippets', 'custom_yaml', $tuixSnippet);
+					} else {
+						$fields['tuix_snippet/~custom_yaml~']['hidden'] = true;
+						$values['tuix_snippet/~custom_yaml~'] = '';
+					}
+				}
+				
+				
 			//Experimenting with having plugin settings and frameworks visible on the same tab again
 			//	break;
 			//case 'plugin_css_and_framework':
@@ -742,36 +773,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			case 'plugin_settings':
 				
 				$duplicate_or_rename = $values['first_tab/duplicate_or_rename'];
-				
-				//Compile the YAML that the user entered into JSON
-				//(N.b. JSON is a lot quicker to parse and read than YAML,
-				// so I'm saving a JSON copy for efficiency's sake
-				if (isset($fields['custom_tuix/~custom_yaml~'])) {
-					
-					if (empty(trim($values['custom_tuix/~custom_yaml~']))) {
-						$values['custom_tuix/~custom_json~'] = '';
-					
-					
-					} elseif (ze\tuix::mixesTabsAndSpaces($values['custom_tuix/~custom_yaml~'])) {
-						$box['tabs']['custom_tuix']['errors'][] = ze\admin::phrase('Your YAML code contains a mixture of tabs and spaces for indentation and cannot be read.');
-					
-					} else {
-						//Hack to try and catch any errors/notices in Spyc by grabbing the output
-						ob_start();
-							try {
-								$tags = \Spyc::YAMLLoadString(trim($values['custom_tuix/~custom_yaml~']));
-								$values['custom_tuix/~custom_json~'] = json_encode($tags, JSON_FORCE_OBJECT);
-						
-							} catch (\Exception $e) {
-								$box['tabs']['custom_tuix']['errors'][] = $e->getMessage();
-								$values['custom_tuix/~custom_json~'] = '';
-							}
-						
-						if ($error = ob_get_clean()) {
-							$box['tabs']['custom_tuix']['errors'][] = $error;
-						}
-					}
-				}
 				
 				
 				if ($this->canRenamePlugin($box)) {

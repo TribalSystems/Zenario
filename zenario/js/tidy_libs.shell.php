@@ -44,17 +44,34 @@ require CMS_ROOT. 'zenario/basicheader.inc.php';
 clearstatcache();
 function removeUnwantedCode($path) {
 	$check = CMS_ROOT. 'zenario/libs/yarn/'. $path;
-	if (is_dir($check)) {
+	if (file_exists($check)) {
 		exec('svn del --force '. escapeshellarg($check));
 		
 		clearstatcache();
 		if (is_dir($check)) {
 			exec('rm -r '. escapeshellarg($check));
+		
+		} elseif (is_file($check)) {
+			exec('rm '. escapeshellarg($check));
 		}
 	}
 }
 
+removeUnwantedCode('classlist-polyfill');
+removeUnwantedCode('lodash.debounce');
+removeUnwantedCode('lodash.throttle');
+removeUnwantedCode('heap');
+removeUnwantedCode('cytoscape/.browserslist');
+removeUnwantedCode('cytoscape/.github');
+removeUnwantedCode('cytoscape/.size-snapshot.json');
+removeUnwantedCode('cytoscape/license-update.js');
+removeUnwantedCode('cytoscape/rollup.config.js');
+removeUnwantedCode('cytoscape/src');
 removeUnwantedCode('jquery/src');
+removeUnwantedCode('jquery/dist/core.js');
+removeUnwantedCode('jquery/dist/jquery.slim.js');
+removeUnwantedCode('jquery/dist/jquery.slim.min.js');
+removeUnwantedCode('jquery/dist/jquery.slim.min.map');
 removeUnwantedCode('jquery-lazy/node_modules');
 removeUnwantedCode('respond.js/cross-domain');
 removeUnwantedCode('respond.js/src');
@@ -66,6 +83,13 @@ removeUnwantedCode('spectrum-colorpicker/test');
 removeUnwantedCode('toastr/node_modules');
 removeUnwantedCode('toastr/nuget');
 removeUnwantedCode('toastr/tests');
+removeUnwantedCode('wowjs/css');
+removeUnwantedCode('wowjs/spec');
+
+//Remove some optional dependancies that the yarn packages we've asked for installed, but I don't actuall think we need
+removeUnwantedCode('sprintf-js');
+removeUnwantedCode('util-deprecate');
+
 
 
 $RecursiveDirectoryIterator = new \RecursiveDirectoryIterator(CMS_ROOT. 'zenario/libs/');

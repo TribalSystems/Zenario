@@ -1,0 +1,18 @@
+zenario_admin:
+    tabs:
+        permissions:
+            fields:
+                perm_document_envelopes:
+                    is_admin_permission: true
+                    grouping: specific_actions
+                    type: checkbox
+                    full_width: true
+                    post_field_label: Document envelopes
+                perm_document_envelopes_permissions:
+                    is_admin_permission: true
+                    grouping: specific_actions
+                    type: checkboxes
+                    full_width: true
+                    values:
+                        _PRIV_MANAGE_ENVELOPE:
+                            label: Manage document envelope or language

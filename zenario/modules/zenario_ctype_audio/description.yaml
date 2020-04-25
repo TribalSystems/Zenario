@@ -19,7 +19,7 @@ keywords: audio, mp3, mpeg, mpg, sound, play, player
 vlp_class_name: zenario_ctype_audio
 css_class_name: zenario_ctype_audio
 is_pluggable: true
-can_be_version_controlled: true
+can_be_version_controlled: false
 nestable: false
 default_framework: standard
 content_types:

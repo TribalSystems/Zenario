@@ -1,0 +1,40 @@
+zenario_upload_file_to_document_envelope:
+    css_class: zfea_edit_box
+    key:
+        envelopeId: ''
+    title: 'Uploading files to document envelope "[[envelope_name]]"'
+    error_on_form_message: Please check below for errors.
+    tab: details
+    tabs:
+        details:
+            edit_mode:
+                on: true
+                enabled: true
+            fields:
+                file_id:
+                    label: 'One or more documents (filename must begin with envelope code [[envelope_code]]):'
+                    upload:
+                        class_name: zenario_document_envelopes_fea
+                        multi: true
+                        upload_phrase: 'Upload...'
+                        nothing_selected_phrase: 'Upload one or more documents'
+                        drag_and_drop: true
+                        reorder_items: false
+                    format_onchange: true
+                    validation:
+                        required: 'This field is required.'
+                
+                submit:
+                    ord: 9999
+                    type: button
+                    value: Save
+                    error_on_form_message: Please check above for errors.
+                    save_onchange: true
+    
+    confirm_on_close:
+        visible_if: |
+            lib.changed && lib.changed.details
+        message: 'Are you sure you wish to abandon your changes?'
+        button_message: Abandon
+        cancel_button_message: Cancel
+        message_type: warning

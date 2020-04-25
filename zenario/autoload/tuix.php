@@ -378,7 +378,7 @@ class tuix {
 		//Readjust the start to get rid of the outer tag
 		if (!isset($tags[$type])) {
 			if ($exitIfError) {
-				echo \ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', ['path' => $requestedPath]);
+				echo \ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to Zenario, you will need to reload the page and possibly clear Zenario\'s cache.', ['path' => $requestedPath]);
 				exit;
 			} else {
 				$tags = [];
@@ -663,6 +663,7 @@ class tuix {
 			if ($settingGroup == 'inherited') {
 				switch ($tag) {
 					case 'admin_floating_box_tabs':
+					case 'background_tasks':
 					case 'content_types':
 					case 'jobs':
 					case 'pagination_types':
@@ -728,6 +729,16 @@ class tuix {
 					 || $parent == 'toolbars') {
 						$addClass = true;
 					}
+		
+				} elseif ($type == 'visitor') {
+					if ($parentsParent === false
+					 || $parent == 'columns'
+					 || $parent == 'collection_buttons'
+					 || $parent == 'inline_buttons'
+					 || $parent == 'tabs'
+					 || $parent == 'fields') {
+						$addClass = true;
+					}
 				}
 			
 				if ($addClass) {
@@ -750,6 +761,13 @@ class tuix {
 				$isEmptyArray = true;
 			
 				if ($goFurther) {
+					
+					if (isset($child['only_merge_into_an_existing_object'])
+					 && $child['only_merge_into_an_existing_object']
+					 && !isset($tags[$tag][$key])) {
+						continue;
+					}
+					
 					if (\ze\tuix::parse($tags[$tag], $child, $type, $moduleClassName, $settingGroup, $compatibilityClassNames, $requestedPath, $key, $path, $goodURLs, $level + 1, $children, $tag, $parent, $parentsParent)) {
 						$includeThisSubTree = true;
 					}
@@ -1024,6 +1042,28 @@ class tuix {
 				
 					//If the ordinal is a string, attempt to parse it
 					} elseif (!is_numeric($tag['ord'])) {
+						
+						//We have some logic where you can enter an ordinal such as "fieldName.001" to place a field
+						//immediately after another existing field (which needs to be defined above the field you are
+						//trying to add). Watch out for a dev trying to use this logic
+						$pos = strrpos($tag['ord'], '.');
+						if ($pos) {
+							$referencedCodeName = substr($tag['ord'], 0, $pos);
+							$offset = substr($tag['ord'], $pos + 1);
+							
+							//Check if the field they are referencing is defined
+							if (isset($tuix[$referencedCodeName]['ord'])) {
+								$referencedOrd = $tuix[$referencedCodeName]['ord'];
+								
+								//Attempt to come up with a numeric ordinal that's after the referenced field's ordinal
+								if (false === strpos($referencedOrd, '.')) {
+									$tag['ord'] = $referencedOrd. '.'. $offset;
+								} else {
+									$tag['ord'] = $referencedOrd. $offset;
+								}
+							}
+						}
+						
 						$bits = explode('.', $tag['ord']);
 						$referencedCodeName = array_shift($bits);
 					
@@ -1059,10 +1099,11 @@ class tuix {
 		if (is_array($old) && is_array($new)) {
 			
 			foreach ($new as $key => &$tag) {
-				if (!isset($old[$key])) {
-					$old[$key] = $tag;
-				} else {
+				if (isset($old[$key])) {
 					self::merge($old[$key], $tag);
+				
+				} elseif (!is_array($tag) || !isset($tag['only_merge_into_an_existing_object']) ||! $tag['only_merge_into_an_existing_object']) {
+					$old[$key] = $tag;
 				}
 			}
 		
@@ -1699,7 +1740,8 @@ class tuix {
 	
 	
 		//Don't try and translate numbers, e.g. the hour/minute select list, or true/false values
-		if (is_numeric($phrase) || is_bool($phrase)) {
+		//Also don't try and translate empty strings
+		if (is_numeric($phrase) || is_bool($phrase) || $phrase === '') {
 			return;
 	
 		//Also don't try to translate any properties that contain microtemplates
@@ -1771,21 +1813,8 @@ class tuix {
 			}
 	
 		} else {
-			if (isset($t[$i='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			if (isset($t[$i='label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			if (isset($t[$i='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			if (isset($t[$i='multiple_select_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			if (isset($t[$i='tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			if (isset($t[$i='disabled_tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			if (isset($t[$i='placeholder'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			if (isset($t[$i='no_search_label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-			
 			switch ($objectType) {
-				case 'columns':
-					if (isset($t[$i='sort_asc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					if (isset($t[$i='sort_desc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					break;
-					
+				//lovs and phrases don't have standard properties like titles/labels
 				case 'lovs':
 					if (!empty($t) && is_array($t)) {
 						foreach ($t as $k => &$lov) {
@@ -1794,104 +1823,156 @@ class tuix {
 						}
 					}
 					break;
-		
+				
+				//Phrases can be stings, which should just be translated, or strings nested
+				//inside an array, which should be looped through and translated.
+				case 'phrases':
+					if (!empty($t)) {
+						if (is_array($t)) {
+							foreach ($t as $k => &$phrase) {
+								$q = $p. '.'. $k;
+								\ze\tuix::translatePhrasesInObject($phrase, $o, $q, $c, $l, $s, $objectType);
+							}
+						} else {
+							\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s);
+						}
+					}
+					break;
+				
+				//lov values can be strings, in which case the string should be translated,
+				//or be objects, which do have the standard properties translated.
 				case 'lov':
 				case 'values':
 					if (is_string($t)) {
 						\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s);
+						break;
+					
+					} else {
+						//Continue to use default logic below
 					}
-					break;
-		
-				case 'tabs':
-					\ze\tuix::translatePhrasesInObjects(['notices', 'fields', 'custom_template_fields'], $t, $o, $p, $c, $l, $s);
-					break;
-		
-				case 'notices':
-					break;
-			
-				case 'fields':
-				case 'custom_template_fields':
-					\ze\tuix::translatePhrasesInObjects(['values'], $t, $o, $p, $c, $l, $s);
+				
+				//Assuming a generic object, translate the usual generic properties that the object might have
+				default:
+					if (isset($t[$i='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='multiple_select_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='disabled_tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='placeholder'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='no_search_label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					
-					if (isset($t[$i='legend'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					if (isset($t[$i='side_note'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					if (isset($t[$i='note_below'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					if (isset($t[$i='empty_value'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					if (isset($t[$i='error_on_form_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
-					
-					if (isset($t[$i='validation']) && is_array($t[$i])) {
-						foreach ($t[$i] as $j => $object) {
-							switch ($j) {
-								case 'only_validate_when_saving':
-								case 'only_validate_when_not_hidden':
-									break;
-								case 'non_present':
-									if (isset($t[$i][$j][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-									break;
-								default:
-									\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+					//Translate some specific properties to specific object types
+					switch ($objectType) {
+						case 'columns':
+							\ze\tuix::translatePhrasesInObjects(['values'], $t, $o, $p, $c, $l, $s);
+							
+							if (isset($t[$i='sort_asc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							if (isset($t[$i='sort_desc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							if (isset($t[$i='empty_value'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							break;
+		
+						case 'tabs':
+							\ze\tuix::translatePhrasesInObjects(['notices', 'fields'], $t, $o, $p, $c, $l, $s);
+							
+							//Look for anything that looks like custom template fields and translate those too
+							foreach ($t as $k => &$fields) {
+								if (is_array($fields)
+								 && !empty($fields)
+								 && $k[0] == 'c'
+								 && substr($k, 0, 7) == 'custom_'
+								 && substr($k, -7) == '_fields') {
+									\ze\tuix::translatePhrasesInObjects([$k], $t, $o, $p, $c, $l, $s, 'fields');
+								}
 							}
-						}
-					}
-				
-					if (isset($t[$i='snippet'])) {
-						if (isset($t[$i][$j='h1'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-						if (isset($t[$i][$j='h2'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-						if (isset($t[$i][$j='h3'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-						if (isset($t[$i][$j='h4'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-						if (isset($t[$i][$j='label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-						if (isset($t[$i][$j='p'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-						if (isset($t[$i][$j='span'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-					}
-				
-					if (isset($t[$i='upload'])) {
-						if (isset($t[$i][$j='dropbox_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-						if (isset($t[$i][$j='upload_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-					}
+							break;
 		
-					//Translate button values
-					if (isset($t['value']) && isset($t['type']) && ($t['type'] == 'button' || $t['type'] == 'toggle' || $t['type'] == 'submit')) {
+						case 'notices':
+							break;
 			
-						//Only translate the values if they look like text
-						if ('' !== trim(preg_replace(['/\\{\\{.*?\\}\\}/', '/\\{\\%.*?\\%\\}/', '/\\<\\%.*?\\%\\>/', '/\\W/'], '', $t['value']))) {
-							\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, 'value');
-						}
-					}
+						case 'fields':
+							\ze\tuix::translatePhrasesInObjects(['values'], $t, $o, $p, $c, $l, $s);
+					
+							if (isset($t[$i='legend'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							if (isset($t[$i='side_note'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							if (isset($t[$i='note_below'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							if (isset($t[$i='empty_value'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							if (isset($t[$i='error_on_form_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					
+							if (isset($t[$i='validation']) && is_array($t[$i])) {
+								foreach ($t[$i] as $j => $object) {
+									switch ($j) {
+										case 'only_validate_when_saving':
+										case 'only_validate_when_not_hidden':
+											break;
+										case 'non_present':
+											if (isset($t[$i][$j][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
+											break;
+										default:
+											\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+									}
+								}
+							}
 				
-					//N.b. there's no "break" here,
-					//we continue on to the next statement as some fields can be buttons too!
+							if (isset($t[$i='snippet'])) {
+								if (isset($t[$i][$j='h1'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='h2'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='h3'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='h4'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='p'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='span'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							}
+				
+							if (isset($t[$i='upload'])) {
+								if (isset($t[$i][$j='dropbox_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='upload_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							}
 		
-				case 'collection_buttons':
-				case 'item_buttons':
-				case 'inline_buttons':
-				case 'quick_filter_buttons':
-					if (isset($t[$i='confirm'][$j='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-					if (isset($t[$i='confirm'][$j='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-					if (isset($t[$i='confirm'][$j='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-					if (isset($t[$i='confirm'][$j='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
-					if (isset($t[$i='ajax'][$j='confirm'][$k='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-					if (isset($t[$i='ajax'][$j='confirm'][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-					if (isset($t[$i='ajax'][$j='confirm'][$k='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-					if (isset($t[$i='ajax'][$j='confirm'][$k='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
-					break;
+							//Translate button values
+							if (isset($t['value']) && isset($t['type']) && ($t['type'] == 'button' || $t['type'] == 'toggle' || $t['type'] == 'submit')) {
+			
+								//Only translate the values if they look like text
+								if ('' !== trim(preg_replace(['/\\{\\{.*?\\}\\}/', '/\\{\\%.*?\\%\\}/', '/\\<\\%.*?\\%\\>/', '/\\W/'], '', $t['value']))) {
+									\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, 'value');
+								}
+							}
+				
+							//N.b. there's no "break" here,
+							//we continue on to the next statement as some fields can be buttons too!
+		
+						case 'collection_buttons':
+						case 'item_buttons':
+						case 'inline_buttons':
+						case 'quick_filter_buttons':
+							if (isset($t[$i='confirm'][$j='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							if (isset($t[$i='confirm'][$j='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							if (isset($t[$i='confirm'][$j='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							if (isset($t[$i='confirm'][$j='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							if (isset($t[$i='ajax'][$j='confirm'][$k='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
+							if (isset($t[$i='ajax'][$j='confirm'][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
+							if (isset($t[$i='ajax'][$j='confirm'][$k='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
+							if (isset($t[$i='ajax'][$j='confirm'][$k='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
+							break;
+					}
 			}
 		}
 	}
 
 
 	//Formerly "translatePhrasesInTUIXObjects()"
-	public static function translatePhrasesInObjects($tagNames, &$tags, &$overrides, $path, $moduleClass, $languageId = false, $scan = false) {
+	public static function translatePhrasesInObjects($tagNames, &$tags, &$overrides, $path, $moduleClass, $languageId = false, $scan = false, $overrideObjectType = null) {
 	
 		if (!is_array($tagNames)) {
 			$tagNames = [$tagNames];
 		}
 	
-		foreach ($tagNames as &$tagName) {
-			if (!empty($tags[$tagName]) && is_array($tags[$tagName])) {
-				foreach ($tags[$tagName] as $key => &$object) {
-					$p = $path. '.'. $tagName. '.'. $key;
+		foreach ($tagNames as $objectType) {
+			if (!empty($tags[$objectType]) && is_array($tags[$objectType])) {
+				foreach ($tags[$objectType] as $key => &$object) {
+					$p = $path. '.'. $objectType. '.'. $key;
 					\ze\tuix::translatePhrasesInObject(
-						$object, $overrides, $p, $moduleClass, $languageId, $scan, $tagName);
+						$object, $overrides, $p, $moduleClass, $languageId, $scan, $overrideObjectType ?? $objectType);
 				}
 			}
 		}
@@ -1900,14 +1981,14 @@ class tuix {
 	//Automatically translate any titles/labels in TUIX
 	//Formerly "translatePhrasesInTUIX()"
 	public static function translatePhrases(&$tags, &$overrides, $path, $moduleClass, $languageId = false, $scan = false) {
-	
+		
 		$path = 'phrase.'. $path;
-	
+		
 		\ze\tuix::translatePhrasesInObject(
 			$tags, $overrides, $path, $moduleClass, $languageId, $scan);
 	
 		\ze\tuix::translatePhrasesInObjects(
-			['lovs', 'tabs', 'columns', 'collection_buttons', 'item_buttons', 'inline_buttons', 'quick_filter_buttons'],
+			['phrases', 'lovs', 'tabs', 'columns', 'collection_buttons', 'item_buttons', 'inline_buttons', 'quick_filter_buttons'],
 			$tags, $overrides, $path, $moduleClass, $languageId, $scan);
 	}
 
@@ -2623,7 +2704,7 @@ class tuix {
 
 
 
-	public static function visitorTUIX($module, $requestedPath, &$tags, $filling = true, $validating = false, $saving = false, $debugMode = false) {
+	public static function visitorTUIX($owningModule, $requestedPath, &$tags, $filling = true, $validating = false, $saving = false, $debugMode = false) {
 		
 		////Exit if no path is specified
 		//if (!$requestedPath) {
@@ -2632,15 +2713,19 @@ class tuix {
 		//}
 		//
 		////Check to see if this path is allowed.
-		//} else if (!$module->returnVisitorTUIXEnabled($requestedPath)) {
+		//} else if (!$owningModule->returnVisitorTUIXEnabled($requestedPath)) {
 		//	echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
 		//	exit;
 		//}
-	
+		
+		\ze::$tuixType = $type = 'visitor';
+		\ze::$tuixPath = $requestedPath;
+		
+		$settingGroup = '';
 		$tags = [];
 		$originalTags = [];
 		$moduleFilesLoaded = [];
-		\ze\tuix::load($moduleFilesLoaded, $tags, 'visitor', $requestedPath);
+		\ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath);
 	
 		if (empty($tags[$requestedPath])) {
 			echo 'Path not found!';
@@ -2650,15 +2735,56 @@ class tuix {
 		$clientTags = false;
 		
 		\ze\tuix::checkTUIXForm($tags);
-	
-	
-		if ($debugMode) {
-			$staticTags = $tags;
+		
+		//Work out which modules interact with this path of FEA.
+		//The module that owns the FEA should be in the list, of course
+		$modules = [$owningModuleClassName = $owningModule->returnClassName() => $owningModule];
+		$extendingModules = [];
+		
+		//Check to see if any modules are extending the FEA with their own buttons or columns.
+		//Add them to the list
+		foreach (['collection_buttons', 'item_buttons', 'columns'] as $buttonType) {
+			if (!empty($tags[$buttonType]) && is_array($tags[$buttonType])) {
+				foreach ($tags[$buttonType] as &$button) {
+					if (is_array($button) && !empty($button['class_name']) && $button['class_name'] != $owningModuleClassName) {
+						\ze\tuix::includeModule($modules, $button, $type, $requestedPath, $settingGroup);
+						$extendingModules[$button['class_name']] = true;
+					}
+				}
+				unset($button);
+			}
 		}
-
+		
+		if ($extendingModules !== []) {
+			$owningModule->zAPISetExtendingModules($extendingModules);
+		}
+		
+		//For TUIX forms, check each tab & field as well
+		if (\ze\tuix::looksLikeFAB($tags)) {
+			foreach ($tags['tabs'] as &$tab) {
+				if (!empty($tab['class_name'])) {
+					\ze\tuix::includeModule($modules, $tab, $type, $requestedPath, $settingGroup);
+				}
+		
+				if (!empty($tab['fields']) && is_array($tab['fields'])) {
+					foreach ($tab['fields'] as &$field) {
+						if (!empty($field['class_name'])) {
+							\ze\tuix::includeModule($modules, $field, $type, $requestedPath, $settingGroup);
+						}
+					}
+				}
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
 		//Debug mode - show the TUIX before it's been modified
 		if ($debugMode) {
-			$modules = [$moduleClassName = $module];
+			$staticTags = $tags;
 		
 		
 			if (!\ze\tuix::looksLikeFAB($tags)) {
@@ -2671,7 +2797,9 @@ class tuix {
 					}
 				}
 				\ze\tuix::$feaDebugMode = true;
-				$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
+				foreach ($modules as $className => &$module) {
+					$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
+				}
 			}
 		
 		
@@ -2696,8 +2824,10 @@ class tuix {
 			if (\ze\tuix::looksLikeFAB($tags)) {
 				\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
 			}
-	
-			$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
+			
+			foreach ($modules as $className => &$module) {
+				$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
+			}
 	
 	
 		} else {
@@ -2724,8 +2854,10 @@ class tuix {
 						\ze\tuix::applyValidation($tab, $saving);
 					}
 				}
-			
-				$module->validateVisitorTUIX($requestedPath, $tags, $fields, $values, $changes, $saving);
+				
+				foreach ($modules as $className => &$module) {
+					$module->validateVisitorTUIX($requestedPath, $tags, $fields, $values, $changes, $saving);
+				}
 			
 			
 				if ($saving) {
@@ -2758,8 +2890,10 @@ class tuix {
 						if (\ze\tuix::looksLikeFAB($tags)) {
 							\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
 						}
-					
-						$module->saveVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
+						
+						foreach ($modules as $className => &$module) {
+							$module->saveVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
+						}
 					}
 				}
 			}
@@ -2773,8 +2907,10 @@ class tuix {
 			if (\ze\tuix::looksLikeFAB($tags)) {
 				\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false, $checkLOVs = false, $addOrds = true);
 			}
-
-			$module->formatVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
+			
+			foreach ($modules as $className => &$module) {
+				$module->formatVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
+			}
 		}
 	
 		if (\ze\tuix::looksLikeFAB($tags)) {
@@ -2788,6 +2924,8 @@ class tuix {
 				$tags = $output;
 			}
 		}
+		
+		\ze::$tuixPath = '';
 	}
 	
 	

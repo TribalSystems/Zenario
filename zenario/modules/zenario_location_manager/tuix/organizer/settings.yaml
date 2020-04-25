@@ -5,5 +5,5 @@ zenario__administration:
         site_settings:
             items:
                 zenario_location_manager__site_settings_group:
-                    name: Location Manager
+                    name: Locations
                     desc: Settings for the Location Manager

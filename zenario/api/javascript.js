@@ -106,20 +106,24 @@ zenario.lib(function(
 			return zenario.showFileLink(this.moduleClassName, requests);
 		};
 	
-		this.showFloatingBoxLink = function(slotNameOrContainedElement, requests) {
-			return zenario.showFloatingBoxLink(this.moduleClassName, slotNameOrContainedElement, requests);
-		};
-	
-		this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout, cID, cType) {
-			return zenario.showSingleSlotLink(this.moduleClassName, slotNameOrContainedElement, requests, hideLayout, cID, cType);
+		this.pluginShowFileLink = function(slotNameOrContainedElement, requests) {
+			return zenario.pluginShowFileLink(this.moduleClassName, slotNameOrContainedElement, requests);
 		};
 	
 		this.showImageLink = function(requests) {
 			return zenario.showImageLink(this.moduleClassName, requests);
 		};
 	
+		this.pluginShowImageLink = function(slotNameOrContainedElement, requests) {
+			return zenario.pluginShowImageLink(this.moduleClassName, slotNameOrContainedElement, requests);
+		};
+	
 		this.showStandalonePageLink = function(requests) {
 			return zenario.showStandalonePageLink(this.moduleClassName, requests);
+		};
+	
+		this.pluginShowStandalonePageLink = function(slotNameOrContainedElement, requests) {
+			return zenario.pluginShowStandalonePageLink(this.moduleClassName, slotNameOrContainedElement, requests);
 		};
 	
 		this.visitorTUIXLink = function(path, requests, mode) {
@@ -128,6 +132,14 @@ zenario.lib(function(
 	
 		this.pluginVisitorTUIXLink = function(slotNameOrContainedElement, path, requests, mode, useSync) {
 			return zenario.pluginVisitorTUIXLink(this.moduleClassName, slotNameOrContainedElement, path, requests, mode, useSync);
+		};
+	
+		this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout, cID, cType) {
+			return zenario.showSingleSlotLink(this.moduleClassName, slotNameOrContainedElement, requests, hideLayout, cID, cType);
+		};
+	
+		this.showFloatingBoxLink = function(slotNameOrContainedElement, requests) {
+			return zenario.showFloatingBoxLink(this.moduleClassName, slotNameOrContainedElement, requests);
 		};
 
 	

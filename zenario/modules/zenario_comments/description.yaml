@@ -5,43 +5,42 @@ copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
-display_name: Comments
+display_name: Comments (extranet user)
 description: |
-    <p>This Module allows Extranet Users to write comments on Content Items, thereby adding a useful
-                feedback feature to your web pages.</p>
-            <p>It also enables the basic functionality needed to install a Forum.</p>
+    <p>This module allows extranet users to write comments on content items, thereby adding a useful
+                feedback feature to blogs and other web pages.</p>
+            <p>It also enables the basic functionality needed to install a forum.</p>
             <p>The comments editor is equipped with a rich text editor, the features of which can be enabled
-                or disabled in this Module's settings.</p>
-            <p>You can restrict posting comments and grant moderation privileges to selected Groups.
-                You can allow Users to modify and/or delete their own posts and report an offensive comment.</p>
-            <p>This Module allows you to optionally display information about the person posting each comment,
+                or disabled in this plugin's settings.</p>
+            <p>You can restrict posting comments and grant moderation privileges to selected groups.
+                You can allow users to modify and/or delete their own posts and report an offensive comment.</p>
+            <p>This module allows you to optionally display information about the person posting each comment,
                 including: name, online status, post count, sign-up date, job title and avatar.</p>
             <p>Every time a new comment is created or an existing comment is edited, an email notification can be set to a specified
-                email address (typically the Website administrator). You can create and select your own Email
-                Template and this will be used to send the report. The selected Email Template can contain various
-                Merge Fields that will be replaced by real values when the email is sent. You can use the following
-                fields in the Emails sent by the Comments Module:</p>
+                email address (typically a site administrator).
+                The email template can contain various
+                merge fields:</p>
             <ul>
                 <li>[[cms_url]] - The URL to the website.</li>
                 <li>[[link]] - A link to the page.</li>
                 <li>[[message]] - The message that was just created or edited.</li>
                 <li>[[page_title]] - The title of the page.</li>
-                <li>[[poster_screen_name]] - The Screen Name of the Extranet User who posted the message.
+                <li>[[poster_screen_name]] - The Screen Name of the extranet user who posted the message.
                     (Note that this will only appear if Screen Names are enabled in the Site Settings.)</li>
-                <li>[[poster_username]] - The Username of the Extranet User who posted the message.</li>
+                <li>[[poster_username]] - The username of the extranet user who posted the message.</li>
             </ul>
-            <p>If the subscription feature is enabled, Extranet Users can subscribed to a page to receive notifications
+            <p>If the subscription feature is enabled, extranet users can subscribed to a page to receive notifications
                 of any comments made there. Each subscriber will be sent an email when a comment is posted on that page.
                 These emails also use an Email Template, in which you can use any of the fields above (except for
                 [[poster_username]] as Usernames are private), and in addition the following fields:</p>
             <ul>
-                <li>[[subscriber_email]] - The email of the subscribing Extranet User.</li>
-                <li>[[subscriber_title]] - The title of the subscribing Extranet User.</li>
-                <li>[[subscriber_first_name]] - The first name of the subscribing Extranet User.</li>
-                <li>[[subscriber_middle_name]] - The middle name of the subscribing Extranet User.</li>
-                <li>[[subscriber_last_name]] - The last name of the subscribing Extranet User.</li>
-                <li>[[subscriber_screen_name]] - The Screen Name of the subscribing Extranet User.</li>
-                <li>[[subscriber_username]] - The Username of the subscribing Extranet User.</li>
+                <li>[[subscriber_email]] - The email of the subscribing user.</li>
+                <li>[[subscriber_title]] - The title of the subscribing user.</li>
+                <li>[[subscriber_first_name]] - The first name of the subscribing user.</li>
+                <li>[[subscriber_middle_name]] - The middle name of the subscribing user.</li>
+                <li>[[subscriber_last_name]] - The last name of the subscribing user.</li>
+                <li>[[subscriber_screen_name]] - The Screen Name of the subscribing user.</li>
+                <li>[[subscriber_username]] - The username of the subscribing user.</li>
             </ul>
 category: pluggable
 keywords: comment, forum, post, chat, blog, message

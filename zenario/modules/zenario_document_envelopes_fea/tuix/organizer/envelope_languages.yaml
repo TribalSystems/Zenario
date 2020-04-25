@@ -1,0 +1,65 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__document_envelopes:
+    panels:
+        envelope_languages:
+            title: Envelope languages
+            view_mode: list
+            no_items_message: No envelope languages have been created.
+            select_mode_title: Select a language...
+            panel_type: multi_line_list_or_grid
+            
+            db_items:
+                table: '[[DB_PREFIX]][[ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX]]document_envelope_languages AS del'
+                where_statement: WHERE TRUE
+                id_column: del.language_id
+            
+            default_sort_column: language_id
+            
+            item:
+                css_class: language
+            
+            columns:
+                language_id:
+                    title: Language ID
+                    db_column: del.language_id
+                    searchable: true
+                    always_show: true
+                label:
+                    title: Label
+                    db_column: del.label
+                    searchable: true
+                    always_show: true
+            
+            collection_buttons:
+                create_envelope_language:
+                    label: New envelope language
+                    hide_in_select_mode: true
+                    priv: _PRIV_MANAGE_ENVELOPE
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    admin_box:
+                        path: zenario_envelope_language__details
+                        create_another: true
+            
+            item_buttons:
+                edit_envelope_language:
+                    label: Edit
+                    hide_in_select_mode: true
+                    priv: _PRIV_MANAGE_ENVELOPE
+                    admin_box:
+                        path: zenario_envelope_language__details
+                delete_envelope_language:
+                    label: Delete
+                    hide_in_select_mode: true
+                    priv: _PRIV_MANAGE_ENVELOPE
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you want to delete the language "[[label]] ([[language_id]])"?'
+                            multiple_select_message: 'Are you sure you wish to delete the selected languages?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_envelope_language: true

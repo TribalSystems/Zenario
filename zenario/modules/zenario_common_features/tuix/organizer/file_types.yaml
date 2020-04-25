@@ -5,28 +5,40 @@ zenario__administration:
         file_types:
             title: Uploadable file types
             view_mode: list
-            disable_grid_view: Yes
-            disable_summary_view: Yes
+            disable_grid_view: true
+            disable_summary_view: true
             db_items:
                 table: '[[DB_PREFIX]]document_types AS dt'
                 id_column: dt.type
-                encode_id_column: Yes
+                encode_id_column: true
             columns:
                 type:
                     title: Extension
                     db_column: dt.type
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
+                    width: small
                 mime_type:
                     title: MIME type
                     db_column: dt.mime_type
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
+                    width: xxlarge
+                is_allowed:
+                    title: Allowed for document creation
+                    db_column: dt.is_allowed
+                    format: yes_or_no
+                    yes_phrase: Allowed
+                    no_phrase: Disallowed
+                    show_by_default: true
+                    width: xlarge
                 custom:
-                    title: Custom
+                    title: Definition
                     db_column: dt.custom
                     format: yes_or_no
-                    show_by_default: Yes
+                    yes_phrase: Custom
+                    no_phrase: System-defined
+                    show_by_default: true
             default_sort_column: type
             item:
                 name: File type
@@ -52,14 +64,36 @@ zenario__administration:
                             
                             Click the "Create" button to define new file types; you will need to specify the filename extension and its MIME type.
             item_buttons:
+                allow:
+                    priv: _PRIV_EDIT_CONTENT_TYPE
+                    multiple_select: true
+                    label: Allow
+                    tooltip: Allow this type of file when uploading or creating documents.
+                    multiple_select_tooltip: Allow these types of files when uploading or creating documents.
+                    ajax:
+                        request:
+                            allow: 1
+                    one_without_columns_set:
+                        is_allowed: true
+                disallow:
+                    priv: _PRIV_EDIT_CONTENT_TYPE
+                    multiple_select: true
+                    label: Disallow
+                    tooltip: Disallow this type of file when uploading or creating documents.
+                    multiple_select_tooltip: Disallow these types of files when uploading or creating documents.
+                    ajax:
+                        request:
+                            disallow: 1
+                    one_with_columns_set:
+                        is_allowed: true
                 delete:
                     priv: _PRIV_EDIT_CONTENT_TYPE
-                    multiple_select: Yes
+                    multiple_select: true
                     multiple_select_tooltip: Delete custom file types
                     label: Delete
                     ajax:
                         request:
-                            delete: "1"
+                            delete: 1
                         confirm:
                             message: 'Are you sure you wish to delete the custom type "[[type]]"?'
                             multiple_select_message: Are you sure you wish to delete the selected custom types?
@@ -67,4 +101,4 @@ zenario__administration:
                             cancel_button_message: Cancel
                             message_type: warning
                     with_columns_set:
-                        traits.custom: true
+                        custom: true

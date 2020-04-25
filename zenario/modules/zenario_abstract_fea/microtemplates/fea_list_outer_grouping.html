@@ -1,0 +1,69 @@
+<% var id = m.lib.containerId + "_tgroup_" + m.id; %>
+<% var showToggle = m.show_toggle; %>
+<% var invertToggle = m.toggle_starts_open; %>
+<% var isOn; %>
+
+<% if (showToggle) { %>
+	<% isOn = zenario_conductor.getToggles(m.lib.slotName)[m.id]; %>
+	<% if (invertToggle) { %>
+		<% isOn = !isOn; %>
+	<% } %>
+<% } else { %>
+	<% isOn = true; %>
+<% } %>
+
+
+<h4 class="zfea_list_outer_grouping">
+	<span>
+	<% if (m.image) { %>
+		{{m.image}}
+	<% } %>
+	<% if (m.label) { %>
+		{{m.label|escape}}
+	<% } %>
+	<% if (m.html) { %>
+		{{m.html}}
+	<% } %>
+	<% if (showToggle) { %>
+		<span
+			style="
+				cursor: pointer;
+				display: inline-block;
+				border: 1px black solid;
+				border-radius: 50%;
+			" onclick="
+				var isOn, $g = $('#{{id|escape}}');
+			
+				if (isOn = $g.is(':visible')) {
+					$(this).removeClass('zfea_toggle_on').addClass('zfea_toggle_off');
+				} else {
+					$(this).removeClass('zfea_toggle_off').addClass('zfea_toggle_on');
+				}
+				
+				<% if (!invertToggle) { %>
+					isOn = !isOn;
+				<% } %>
+			
+				zenario_conductor.setToggle(this, {{m.id|escape}}, isOn, true);
+			
+				$g.slideToggle(100);
+			" class="
+				zfea_toggle
+			
+				<% if (isOn) { %>
+					zfea_toggle_on
+				<% } else { %>
+					zfea_toggle_off
+				<% } %>
+			"
+		></span>
+	<% } %>
+	</span>
+</h4>
+<div class="zfea_list_outer_grouping"
+	id="{{id|escape}}"
+	
+	<% if (!isOn) { %>
+		style="display: none;"
+	<% } %>
+>

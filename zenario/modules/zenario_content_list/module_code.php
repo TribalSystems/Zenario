@@ -211,20 +211,26 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 		
 		$first = true;
-		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $this->setting('refine_type') == 'any_categories' && ($categories = $this->setting('category'))) {
-			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
-				if (ze\row::exists('categories', ['id' => (int) $catId])) {
-					if ($first) {
-						$sql .= "
-							AND (";
-					} else {
-						$sql .= "
-							OR";
-					}
+		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit') {
+			$categories = $this->setting('category');
+			if ($this->setting('refine_type') == 'any_categories' && $categories) {
+				foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
+					if (ze\row::exists('categories', ['id' => (int) $catId])) {
+						if ($first) {
+							$sql .= "
+								AND (";
+						} else {
+							$sql .= "
+								OR";
+						}
 					
-					$sql .= " cil_". (int) $catId. ".category_id IS NOT NULL";
-					$first = false;
+						$sql .= " cil_". (int) $catId. ".category_id IS NOT NULL";
+						$first = false;
+					}
 				}
+			} elseif (($this->setting('refine_type') == 'any_categories' || $this->setting('refine_type') == 'all_categories') && !$categories) {
+				$sql .= '
+					AND FALSE';
 			}
 		}
 		
@@ -915,6 +921,12 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$fields['each_item/show_content_items_lowest_category']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
 					$values['each_item/show_content_items_lowest_category'] = false;
 				}
+				
+				//Show a warning if "Choose categories to filter by" is selected but no categories have been picked
+				if ($values['first_tab/category_filters_dropdown'] == 'choose_categories_to_display_or_omit' && !$values['first_tab/category']) {
+					$fields['first_tab/category']['error'] = $this->phrase("Please select at least one category.");
+				}
+				
 				break;
 		}
 	}

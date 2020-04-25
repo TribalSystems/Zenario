@@ -13,14 +13,15 @@
 	"license": "BSD-3-Clause",
 	"dependencies": {
 		"bez": "*",
-		"jquery": "2.x",
+		"cytoscape": "*",
+		"jquery": "*",
 		"jquery-lazy": "*",
 		"jquery-multiselect": "*",
 		"mdn-polyfills": "*",
-		"media-match": "*",
 		"respond.js": "*",
 		"spectrum-colorpicker": "*",
 		"toastr": "*",
+		"underscore.string": "*",
 		"vimeo-upload": "*",
 		"wowjs": "*"
 	}

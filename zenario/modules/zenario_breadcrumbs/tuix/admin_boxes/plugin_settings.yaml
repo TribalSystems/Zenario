@@ -65,7 +65,7 @@ plugin_settings:
                         name: breadcrumb_trail_separator
                     label: 'Breadcrumb trail separator:'
                     type: text
-                    value: '»'
+                    value: ''
                     style: 'width: 5em;'
                         
                 add_conductor_slides:

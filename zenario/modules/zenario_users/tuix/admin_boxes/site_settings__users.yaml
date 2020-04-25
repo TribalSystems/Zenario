@@ -5,7 +5,7 @@ site_settings:
     title: Editing settings for Users/Contacts
     tabs:
         names:
-            label: Sign-in
+            label: Usernames and sign-in
             show_errors_after_field: description
             edit_mode:
                 enabled: true
@@ -32,10 +32,10 @@ site_settings:
                 description:
                     full_width: true
                     snippet:
-                        html: "This tab contains settings related to sign-in behaviour."
-                data_protection_link:
-                    snippet:
-                        html: ''
+                        p: |
+                            For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
+                            If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
+                            Login Module will have the option to allow users to log in using their screen name (rather than an email address).
                 user_use_screen_name:
                     site_setting:
                         name: user_use_screen_name
@@ -43,10 +43,87 @@ site_settings:
                     type: checkbox
                     format_onchange: true
                     value: 1
-                    side_note: |
-                        For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
-                        If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
-                        Login Module will have the option to allow users to log in using their screen name (rather than an email address).
+                    
+                    
+                
+                user_chars_from_first_name:
+                    site_setting:
+                        name: user_chars_from_first_name
+                    pre_field_html: |
+                        For user records that do not have a screen name, or if screen names are not used on a site,
+                        an identifier will be generated to use instead of the screen name.
+                        This identifier will only displayed to administrators in the back-end, and will not be publically visible.
+                        <br/>
+                        <br/>
+                        This identifier should be&nbsp;
+                    type: select
+                    value: 99
+                    values:
+                        1:
+                            label: the first character
+                        2:
+                            label: the first two characters
+                        3:
+                            label: the first three characters
+                        4:
+                            label: the first four characters
+                        5:
+                            label: the first five characters
+                        99:
+                            label: all characters
+                user_chars_from_last_name:
+                    site_setting:
+                        name: user_chars_from_last_name
+                    same_row: true
+                    pre_field_html: |
+                        from the user's first name and&nbsp;
+                    type: select
+                    value: 99
+                    values:
+                        1:
+                            label: the first character
+                        2:
+                            label: the first two characters
+                        3:
+                            label: the first three characters
+                        4:
+                            label: the first four characters
+                        5:
+                            label: the first five characters
+                        99:
+                            label: all characters
+                user_chars_from_name:
+                    site_setting:
+                        name: user_chars_from_name
+                    same_row: true
+                    pre_field_html: |
+                        from the user's last name.
+                        <br/>
+                        <br/>
+                        (If only one name is known then pick&nbsp;
+                    type: select
+                    value: 99
+                    values:
+                        1:
+                            label: the first character
+                        2:
+                            label: the first two characters
+                        3:
+                            label: the first three characters
+                        4:
+                            label: the first four characters
+                        5:
+                            label: the first five characters
+                        99:
+                            label: all characters
+                    post_field_html: |
+                        &nbsp;from that name.)
+
+                data_protection_link:
+                    snippet:
+                        html: ''
+                
+        
         passwords:
             label: Passwords
             edit_mode:
@@ -317,3 +394,4 @@ site_settings:
                     validation:
                         required: Please enter a Maximum User Image File Size.
                         numeric: The Maximum User Image File Size must be numeric.
+

@@ -10,7 +10,7 @@ update:
                 description:
                     full_width: true
                     pre_field_html: |
-                        <h1>This site has had a software update</h1>
+                        <h1>The Zenario software on this server has been updated</h1>
                         <p>
                     snippet:
                         html: "&nbsp;"

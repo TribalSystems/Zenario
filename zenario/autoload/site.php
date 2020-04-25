@@ -33,31 +33,41 @@ class site {
 	
 
 
-
-	//Formerly "setSetting()"
-	public static function setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true) {
-		\ze::$siteConfig[$settingName] = $value;
 	
+	public static function setSecretSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true) {
+		self::setSetting($settingName, $value, $updateDB, $encrypt, $clearCache, true);
+	}
+	//Formerly "setSetting()"
+	public static function setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true, $secret = false) {
+		
+		\ze::$siteConfig[(int) $secret][$settingName] = $value;
+		
 		if ($updateDB && \ze::$dbL) {
-		
+			
+			$secretColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'secret', $useCache = true);
 			$encryptedColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'encrypted', $useCache = true);
-		
+			
 			$encrypted = 0;
 			if ($encryptedColExists && $encrypt && \ze\zewl::init()) {
 				$encrypted = 1;
 				$value = \ze\zewl::encrypt($value, false);
 			}
-		
+			
 			$sql = "
 				INSERT INTO ". DB_PREFIX. "site_settings SET
 					`name` = '". \ze\escape::sql($settingName). "',
 					`value` = '". \ze\escape::sql($value). "'";
-		
+			
 			if ($encryptedColExists) {
 				$sql .= ",
 					encrypted = ". (int) $encrypted;
 			}
-		
+			
+			if ($secretColExists) {
+				$sql .= ",
+					secret = ". (int) $secret;
+			}
+			
 			$sql .= "
 				ON DUPLICATE KEY UPDATE
 					`value` = VALUES(`value`)";
@@ -66,7 +76,12 @@ class site {
 				$sql .= ",
 					encrypted = ". (int) $encrypted;
 			}
-		
+			
+			if ($secretColExists) {
+				$sql .= ",
+					secret = ". (int) $secret;
+			}
+			
 			\ze\sql::update($sql, false, $clearCache);
 		}
 	}

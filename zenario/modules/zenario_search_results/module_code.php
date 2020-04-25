@@ -508,6 +508,12 @@ class zenario_search_results extends ze\moduleBaseClass {
 				if (!$weightingSet) {
 					$box['tabs']['weightings']['errors'][] = ze\admin::phrase('Please choose at least one weighting.');
 				}
+				
+				if ($values['first_tab/page_size'] == 'maximum_of' && $values['first_tab/maximum_results_number'] < 0) {
+					$box['tabs']['first_tab']['fields']['maximum_results_number']['error'] = ze\admin::phrase('The page size cannot be a negative number.');
+				} elseif ($values['first_tab/page_size'] == 'maximum_of' && $values['first_tab/maximum_results_number'] > 999) {
+					$box['tabs']['first_tab']['fields']['maximum_results_number']['error'] = ze\admin::phrase('The page size cannot exceed 999.');
+				}
 
 				break;
 		}

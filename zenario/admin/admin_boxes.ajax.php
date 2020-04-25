@@ -125,7 +125,7 @@ if ($loadDefinition) {
 				$tagPath .= '/'. $path;
 			
 			} else {
-				echo ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', ['path' => $requestedPath]);
+				echo ze\admin::phrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to Zenario, you will need to reload the page and possibly clear Zenario\'s cache.', ['path' => $requestedPath]);
 				exit;
 			}
 		}
@@ -517,6 +517,13 @@ if ($debugMode) {
 			}
 		}
 		unset($cfield);
+	}
+	
+	if ($requestedPath == 'zenario_content' && ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
+		$tags['configure'] = [
+				'link' => 'zenario/admin/organizer.php#zenario__content/panels/content_types//' . htmlspecialchars($tags['key']['cType']) . '~.zenario_content_type_details~tdetails~k{"id":"' . htmlspecialchars($tags['key']['cType']) . '"}',
+				'tooltip' => ze\admin::phrase('Edit settings for this content type')
+			];
 	}
 	
 	//If this Admin Box uses dynamic fields then these won't have been created above

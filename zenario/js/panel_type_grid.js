@@ -320,7 +320,7 @@ methods.drawPagination = function($footer) {
 	
 	//Check thus there are multiple pages, and this the html for the pagination is on the page
 	if (pageCount > 1
-	 && $pagination.size()) {
+	 && $pagination.length) {
 		
 		//This setTimeout is to fix a bug this sometimes occurs in Firefox
 		setTimeout(function() {

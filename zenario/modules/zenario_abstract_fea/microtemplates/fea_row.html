@@ -18,6 +18,7 @@
 		var f,
 			field,
 			ff = m.fields[0],
+			fl = m.fields.length,
 			rowHasError = false;
 	%>
 	
@@ -57,6 +58,16 @@
 		{{ff._hideOnOpen? 'zfea_form_hide_row_on_open' : ''}}
 		{{ff.indent? 'zfea_form_indent_level zfea_form_indent_level_' +  (1*ff.indent) : ''}}
 		zfea_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
+		
+		<% if (fl > 1) { %>
+			zfea_row_with_multiple_fields zfea_row_with_{{fl}}_fields
+		<% } else { %>
+			zfea_row_with_1_field
+		<% } %>
+		
+		<% if (ff.pre_field_html || ff.post_field_html) { %>
+			zfea_row_with_pre_or_post_field_html
+		<% } %>
 	">
 		<div class="
 			zfea_row_fields

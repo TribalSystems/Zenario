@@ -300,6 +300,26 @@ _sql
 	ADD COLUMN `db_update_running` tinyint(1) NOT NULL DEFAULT '0' AFTER `db_column`
 _sql
 
+//Improvements to tracking user management events: create/edit.
+//In addition to storing the created/edited date, Zenario will store the details of the user/admin
+//who created/last edited the user account.
+//Please note that similar changes were also implemented in the following modules:
+//	- Location Manager (admin box and Organizer panel),
+//	- Locations FEA (view/edit mode),
+//	- Company Locations Manager,
+//	- Companies FEA (view/edit mode).
+//Refer the relevant module db_updates folder.
+); ze\dbAdm::revision( 50191
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]users`
+	ADD COLUMN `created_admin_id` int(10) unsigned DEFAULT NULL AFTER `created_date`,
+	ADD COLUMN `created_user_id` int(10) unsigned DEFAULT NULL AFTER `created_admin_id`,
+	ADD COLUMN `created_username` varchar(255) DEFAULT NULL after `created_user_id`,
+	ADD COLUMN `last_edited_admin_id` int(10) unsigned DEFAULT NULL AFTER `modified_date`,
+	ADD COLUMN `last_edited_user_id` int(10) unsigned DEFAULT NULL AFTER `last_edited_admin_id`,
+	ADD COLUMN `last_edited_username` varchar(255) DEFAULT NULL after `last_edited_user_id`
+_sql
+
 );
 
 

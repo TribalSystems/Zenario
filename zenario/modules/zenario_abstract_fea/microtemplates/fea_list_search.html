@@ -1,74 +1,26 @@
-<%
-	var ci,
-		col,
-		sortableCols = _.filter(m.thus.sortedColumns, function(col) { return !!(col.sort_asc || col.sort_desc); }),
-		showSortControls = m.lib.checkThingEnabled('sort_list') && sortableCols.length,
-		sortVal = showSortControls && zenario.engToBoolean(m.thus.key('sortDesc')) + m.thus.key('sortCol'),
-		showSearch = !m.tuix.hide_search_bar;
-%>
+<form
+	id="search_form_{{m.lib.containerId}}"
+	class="search_form"
+	onsubmit="return {{m.lib.fun('doSearch')}}(event);"
+>
+	<input
+		type="search"
+		name="search"
+		id="search_{{m.lib.containerId}}"
+		value="{{zenario.htmlspecialchars(m.lib.request.search)}}"
+		placeholder="{{m.tuix.search_bar_placeholder|e}}"
+		{{zenarioT.onChangeOrSearch()}}="return {{m.lib.fun('doSearch')}}(event);"
+	/>
+	<% if (m.tuix.search_button_message) { %>
+		<input type="submit" value="{{m.tuix.search_button_message|e}}"/>
+	<% } else { %>
+		<input type="submit" value="&#xf002;"/>
+	<% } %>
 
-<% if (showSortControls || showSearch) { %>
-	<div class="zfea_list_search_sort_wrapper">
-		<% if (showSearch) { %>
-			<form
-				id="search_form_{{m.lib.containerId}}"
-				class="search_form"
-				onsubmit="return {{m.lib.fun('doSearch')}}(event);"
-			>
-				<input
-					type="search"
-					name="search"
-					id="search_{{m.lib.containerId}}"
-					value="{{zenario.htmlspecialchars(m.lib.request.search)}}"
-					placeholder="{{m.tuix.search_bar_placeholder|e}}"
-					{{zenarioT.onChangeOrSearch()}}="return {{m.lib.fun('doSearch')}}(event);"
-				/>
-				<% if (m.tuix.search_button_message) { %>
-					<input type="submit" value="{{m.tuix.search_button_message|e}}"/>
-				<% } else { %>
-					<input type="submit" value="&#xf002;"/>
-				<% } %>
-
-				<% if (m.lib.showClearSearchButton()) { %>
-					<input type="button" class="clear_search" value="&#xf057;" onclick="
-							{{m.lib.fun('doSearch')}}(event, '');
-							return false;
-						"/>
-				<% } %>
-			</form>
-		<% } %>
-
-		<% if (showSortControls) { %>
-			<select class="zfea_list_sort" onchange="
-				{{m.lib.fun('changeSortCol')}}(this.value.substr(1), this.value[0]);
-			">
-				<% foreach (sortableCols as ci => col) { %>
-					<% if (col.sort_asc) { %>
-						<option value="0{{col.id|e}}" <% if (0 + col.id == sortVal) { %>selected<% } %> >
-							<% if (_.isBoolean(col.sort_asc)) { %>
-								{{col.title|e}} ▲
-							<% } else { %>
-								{{col.sort_asc|e}}
-							<% } %>
-						</option>
-					<% } %>
-					<% if (col.sort_desc) { %>
-						<option value="1{{col.id|e}}" <% if (1 + col.id == sortVal) { %>selected<% } %> >
-							<% if (_.isBoolean(col.sort_desc)) { %>
-								{{col.title|e}} ▼
-							<% } else { %>
-								{{col.sort_desc|e}}
-							<% } %>
-						</option>
-					<% } %>
-				<% } %>
-			</select>
-		<% } %>
-	</div>
-<% } %>
-
-<% if (zenarioT.find(m.thus.sortedCollectionButtons, 'search')) { %>
-	<div class="zfea_buttons zfea_search_buttons">
-		{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'search')}}
-	</div>
-<% } %>
+	<% if (m.lib.showClearSearchButton()) { %>
+		<input type="button" class="clear_search" value="&#xf057;" onclick="
+				{{m.lib.fun('doSearch')}}(event, '');
+				return false;
+			"/>
+	<% } %>
+</form>

@@ -96,9 +96,9 @@ class dbAdm {
 				FROM ". DB_PREFIX_DA. "data_archive_revision_numbers
 				WHERE patchfile = 'data_archive.inc.php'";
 			
-			$result = \ze\sqlDA::select($sql);
+			$result = \ze\sql\da::select($sql);
 			
-			while ($row = \ze\sqlDA::fetchAssoc($result)) {
+			while ($row = \ze\sql\da::fetchAssoc($result)) {
 			
 				//Copy-paste of the above
 				if (($chop = \ze\ring::chopPrefix('plugins/', $row['path']))
@@ -372,10 +372,11 @@ class dbAdm {
 			//Reset the cached table details, in case any of the definitions are out of date
 			\ze\dbAdm::resetTableDefs();
 			
-			\ze\site::setSetting('last_successful_db_update', time());
-			\ze\site::setSetting('zenario_version', \ze\site::versionNumber());
 			\ze\site::setSetting('css_js_html_files_last_changed', '');
 			\ze\site::setSetting('css_js_version', '');
+			\ze\site::setSetting('yaml_files_last_changed', '');
+			\ze\site::setSetting('yaml_version', '');
+			\ze\site::setSetting('zenario_version', \ze\site::versionNumber());
 		}
 
 		if (!$revisionsNeeded) {
@@ -415,7 +416,7 @@ class dbAdm {
 				  patchfile = '". \ze\escape::sql($updateFile). "',
 				  revision_no = ". (int) $revisionNumber;
 	
-			\ze\sqlDA::update($sql);
+			\ze\sql\da::update($sql);
 		
 		} else {
 			$sql = "
@@ -1065,13 +1066,21 @@ class dbAdm {
 			'primary_domain', 'use_cookie_free_domain', 'cookie_free_domain',
 			'advpng_path', 'jpegoptim_path', 'jpegtran_path', 'optipng_path',
 			'antiword_path', 'ghostscript_path', 'pdftotext_path',
-			'mysqldump_path', 'mysql_path'
+			'mysqldump_path', 'mysql_path',
+			
+			//In version 8.7, we have a proper way of controling which settings
+			//should be in this list, other than hard-coding it, and other modules can even
+			//add their on site settings here.
+			//However I need to patch this feature back in one case, but don't want to patch the
+			//new tech back to the stable branch, so just for this one branch I'm hard-coding
+			//the entries I need:
+			'assetwolf_mqtt_broker_hostname', 'assetwolf_enable_commands'
 		] as $setting) {
-			if (isset(\ze::$siteConfig[$setting])) {
+			if (isset(\ze::$siteConfig[0][$setting])) {
 				$sql = "
 					INSERT INTO ". DB_PREFIX. "site_settings
 					SET name = '". \ze\escape::sql($setting). "',
-						value = '". \ze\escape::sql(\ze::$siteConfig[$setting]). "'";
+						value = '". \ze\escape::sql(\ze::$siteConfig[0][$setting]). "'";
 		
 				if ($encryptedColExists) {
 					$sql .= ",
@@ -1079,7 +1088,7 @@ class dbAdm {
 				}
 				$sql .= "
 					ON DUPLICATE KEY UPDATE
-						value = '". \ze\escape::sql(\ze::$siteConfig[$setting]). "'";
+						value = '". \ze\escape::sql(\ze::$siteConfig[0][$setting]). "'";
 		
 				if ($encryptedColExists) {
 					$sql .= ",

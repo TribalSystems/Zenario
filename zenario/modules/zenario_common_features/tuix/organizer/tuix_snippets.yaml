@@ -1,0 +1,68 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    panels:
+        tuix_snippets:
+            priv: _PRIV_EDIT_SITE_SETTING
+            title: TUIX snippets
+            no_items_message: No TUIX snippets have been created on this site
+            #view_mode: list
+            db_items:
+                table: '[[DB_PREFIX]]tuix_snippets AS ts'
+                id_column: ts.id
+            default_sort_column: name
+            columns:
+                name:
+                    title: Name
+                    db_column: ts.name
+                    width: xlarge
+                    show_by_default: true
+                    searchable: true
+                custom_json:
+                    db_column: ts.custom_json
+                num_columns:
+                    title: Number of columns
+                    show_by_default: true
+                num_collection_buttons:
+                    title: Number of collection buttons
+                    show_by_default: true
+                num_item_buttons:
+                    title: Number of item buttons
+                    show_by_default: true
+                usage:
+                    title: Number of plugins using this Snippet
+                    show_by_default: true
+                    db_column: |
+                        COUNT(DISTINCT ps.instance_id, ps.egg_id)
+                    table_join: |
+                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS ps
+                           ON ps.name = '~tuix_snippet~'
+                          AND ps.value = ts.id
+            #item:
+            #    css_class: page_preview_size
+            collection_buttons:
+                create:
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create a new TUIX Snippet
+                    admin_box:
+                        path: zenario_tuix_snippet
+                        create_another: true
+            item_buttons:
+                edit:
+                    label: Edit
+                    admin_box:
+                        path: zenario_tuix_snippet
+                delete:
+                    label: Delete
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you want to delete the TUIX Snippet "[[name]]"?'
+                            multiple_select_message: 'Are you sure you want to delete these TUIX Snippets?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: 1

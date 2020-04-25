@@ -34,7 +34,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		
 		// Get row headers
 		$headers = [
-			'ID/alias',
+			'ID',
 			'Alias',
 			'Language',
 			'Title',
@@ -48,6 +48,11 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			'Images and animations',
 			'Translations'
 		];
+		
+		$exportAccesses = (ze::setting('period_to_delete_the_user_content_access_log'));
+		if ($exportAccesses) {
+			$headers[] = 'Accesses';
+		}
 		
 		// Get Rows
 		$sql = '
@@ -73,20 +78,39 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 					  AND ii.foreign_key_id = v.id
 					  AND ii.foreign_key_char = v.type
 					  AND ii.foreign_key_version = v.version
-				) AS inline_files
-				
+				) AS inline_files';
+		
+		if ($exportAccesses) {
+			$sql .= ',
+				IF(COUNT(uca.user_id) > 0, COUNT(uca.user_id), 0) AS accesses';
+		}
+		
+		$sql .= '		
 			FROM ' . DB_PREFIX . 'content_items c
 			INNER JOIN ' . DB_PREFIX . 'content_item_versions AS v
 				ON c.id = v.id
 				AND c.type = v.type
-				AND c.admin_version = v.version
+				AND c.admin_version = v.version';
+		
+		if ($exportAccesses) {
+			$sql .= '
+				LEFT JOIN ' . DB_PREFIX . 'user_content_accesslog AS uca
+					ON v.id = uca.content_id
+					AND v.type = uca.content_type
+					AND v.version = uca.content_version';
+		}
+		
+		$sql .= '
 			WHERE TRUE';
+			
 		if (!empty($box['key']['type'])) {
 			$sql .= '
 				AND c.type = "' . ze\escape::sql($box['key']['type']) . '"';
 		}
+		
 		$sql .= '
-			ORDER BY c.tag_id';
+			GROUP BY c.tag_id
+			ORDER BY c.type, c.id';
 		
 		$result = ze\sql::select($sql);
 		$statusEnglishNames = [
@@ -101,23 +125,6 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		$admins = [];
 		$languages = ze\lang::getLanguages();
 		$rows = [];
-		
-		
-		$headers = [
-			'ID',
-			'Alias',
-			'Language',
-			'Title',
-			'Description',
-			'Keywords',
-			'Status',
-			'Date/time first created',
-			'First created by',
-			'Date/time latest version created',
-			'Latest version created by',
-			'Images and animations',
-			'Translations'
-		];
 		
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$contentItem = [];
@@ -134,6 +141,11 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			$contentItem['last_author'] = self::getAdminFullname($row['last_author_id'], $admins);
 			$contentItem['inline_files'] = (string)$row['inline_files'];
 			$contentItem['translations'] = self::getTranslationCount($row['id'], $row['type'], $row['equiv_id'], $row['language_id'], $languages);
+			
+			if ($exportAccesses) {
+				$contentItem['accesses'] = $row['accesses'];
+			}
+			
 			$rows[] = $contentItem;
 		}
 		// Download file
@@ -147,7 +159,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			// Write column headers then data to CSV
 			fputcsv($f, $headers);
 			foreach ($rows as $row) {
-				fwrite($f, implode(',', $row) . PHP_EOL);
+				fputcsv($f, $row);
 			}
 			fclose($f);
 			

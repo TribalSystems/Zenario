@@ -67,14 +67,14 @@ _sql
 //Automatically convert any table that's not using our preferred engine to that engine
 if (ze\dbAdm::needRevision(46500)) {
 	
-	foreach (ze\sqlDA::fetchValues("
+	foreach (ze\sql\da::fetchValues("
 		SELECT `TABLE_NAME`
 		FROM information_schema.tables
 		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME_DA). "'
 		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX_DA). "%'
 		  AND `ENGINE` != '". ze\escape::sql(ZENARIO_TABLE_ENGINE). "'
 	") as $tableName) {
-		ze\sqlDA::update("
+		ze\sql\da::update("
 			ALTER TABLE `". ze\escape::sql($tableName). "`
 			ENGINE=". ze\escape::sql(ZENARIO_TABLE_ENGINE)
 		);

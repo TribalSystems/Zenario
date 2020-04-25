@@ -4,3 +4,10 @@ Added something to show the length of a number:
 	With:
                     $(this).html(n);
                     $(this).attr('data-length', ('' + n).length);
+
+
+Rewrote some deprecated code:
+	Replaced:
+        if (this.size() != 1)
+	With:
+        if (this.length != 1)

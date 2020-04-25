@@ -59,17 +59,8 @@ class zenario_user_documents extends ze\moduleBaseClass {
 						}
 					}
 				} elseif ($_POST['upload'] ?? false) {
-					if (!ze\file::isAllowed($_FILES['Filedata']['name'])) {
-						echo
-							ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
-							"\n\n",
-							ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> Uploadable file types" in Organizer.'),
-							"\n\n",
-							ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : ; * ? " < > |');
-						exit;
-					}
 			
-					ze\fileAdm::exitIfUploadError();
+					ze\fileAdm::exitIfUploadError(true, true, false, 'Filedata');
 					$file_id = ze\file::addToDatabase('user_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9]+)/i', '_',$_FILES['Filedata']['name']), false, false, true);
 					$existingUserFile = ze\row::get(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', ['id'], ['file_id' => $file_id, 'user_id' => $refinerId]);
 					if ($existingUserFile) {

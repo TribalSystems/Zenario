@@ -186,7 +186,7 @@ class adminAdm {
 		];
 		
 		if (\ze\row::exists('local_revision_numbers', $adminTablesUpToDate)
-		 && \ze\rowGlobal::exists('local_revision_numbers', $adminTablesUpToDate)) {
+		 && \ze\row\g::exists('local_revision_numbers', $adminTablesUpToDate)) {
 			$colsToSync[] = 'specific_languages';
 			$colsToSync[] = 'specific_content_types';
 		}
@@ -195,20 +195,20 @@ class adminAdm {
 		//Attempt to connect to the global database
 		if (\ze\db::connectGlobal()) {
 			//Look up the details on the global database
-			$globalAdmins = \ze\rowGlobal::getAssocs('admins', $colsToSync, $adminsToSync, [], false, $ignoreMissingColumns = true);
+			$globalAdmins = \ze\row\g::getAssocs('admins', $colsToSync, $adminsToSync, [], false, $ignoreMissingColumns = true);
 			
 			//For all global admins...
 			foreach ($globalAdmins as $globalId => &$admin) {
 	
 				//...check if they have an image and get the checksum...
 				if ($admin['image_id']) {
-					$admin['image_checksum'] = \ze\rowGlobal::get('files', 'checksum', ['id' => $admin['image_id']]);
+					$admin['image_checksum'] = \ze\row\g::get('files', 'checksum', ['id' => $admin['image_id']]);
 				} else {
 					$admin['image_checksum'] = false;
 				}
 	
 				//...and get an array of their actions
-				$admin['_actions_'] = \ze\rowGlobal::getArray('action_admin_link', 'action_name', ['admin_id' => $globalId], 'action_name');
+				$admin['_actions_'] = \ze\row\g::getArray('action_admin_link', 'action_name', ['admin_id' => $globalId], 'action_name');
 			}
 		} else {
 			//Return an empty string if the link is not working
@@ -241,7 +241,7 @@ class adminAdm {
 				if (!$admin['image_id'] = \ze\row::get('files', 'id', ['checksum' => $admin['image_checksum'], 'usage' => 'admin'])) {
 			
 					//If we can't find it, get the image from the global database
-					$image = \ze\rowGlobal::get('files', ['data', 'filename', 'checksum'], $admin['image_id']);
+					$image = \ze\row\g::get('files', ['data', 'filename', 'checksum'], $admin['image_id']);
 			
 					//Copy it to the local database and then use the copy
 					if ($image !== false) {

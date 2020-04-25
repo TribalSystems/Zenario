@@ -12,7 +12,6 @@ plugin_settings:
                 # Overwrite the single image picker from the Banner Plugin with a multiple image picker
                 image:
                     plugin_setting:
-                        #name: image
                         foreign_key_to: 'multiple_files'
                         use_value_for_plugin_name: false
                         
@@ -24,7 +23,6 @@ plugin_settings:
                         target_path: zenario__content/panels/image_library
                         multiple_select: true
                         select_phrase: Select from Organizer...
-                    #value: ""
                     format_onchange: false
                     upload:
                         multi: true
@@ -39,8 +37,27 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: false
                 
+                show_link_to_download_original:
+                    type: checkbox
+                    plugin_setting:
+                        name: show_link_to_download_original
+                    label: "Show link to download original file"
+                    redraw_onchange: true
+                show_file_size:
+                    indent: 2
+                    type: checkbox
+                    plugin_setting:
+                        name: show_file_size
+                    label: "Show file size"
+                    visible_if: zenarioAB.value('show_link_to_download_original')
+                show_image_uploaded_date:
+                    type: checkbox
+                    plugin_setting:
+                        name: show_image_uploaded_date
+                    label: "Show image uploaded date"
+                    redraw_onchange: true
                 lazy_load:
-                    indent: 0
+                    indent: 1
                     visible_if: true
                     plugin_setting:
                         name: lazy_load
@@ -55,6 +72,7 @@ plugin_settings:
                 show_caption_on_enlarged_image:
                     #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
                     value: true
+                    side_note: 'This only has effect when you select "Enlarge image in a floating box" for an image.'
 
         links:
             ord: 4.5

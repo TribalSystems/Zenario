@@ -233,7 +233,7 @@ class pageCache {
 					//File
 					case 'files':
 						self::$clearCacheBy['file'] = true;
-						continue;
+						break;
 					
 					//Documents
 					case 'documents':
@@ -242,26 +242,26 @@ class pageCache {
 						//If we ever implement code snippets instead of links to documents, we will need
 						//to clear the contents of WYSIWYG Editors as well
 						//self::$clearCacheBy['content'] = true;
-						continue;
+						break;
 					
 					//Menu
 					case 'menu_nodes':
 					case 'menu_sections':
 					case 'menu_text':
 						self::$clearCacheBy['menu'] = true;
-						continue;
+						break;
 					
 					//User
 					case 'custom_dataset_values_link':
 					case 'groups':
 					case 'users':
 						self::$clearCacheBy['user'] = true;
-						continue;
+						break;
 					
 					//These tables relate to Content, and should clear anything that ties into Content
 					case 'categories':
 						self::$clearCacheBy['content'] = true;
-						continue;
+						break;
 					
 					
 					//These tables can relate to specific Content Items
@@ -280,7 +280,7 @@ class pageCache {
 							self::$clearCacheBy['all'] = true;
 							//self::$debug2 .= "\nclear all\n";
 						}
-						continue;
+						break;
 						
 					case 'content_items':
 						if (!empty($ids['id']) && !empty($ids['type'])
@@ -305,7 +305,7 @@ class pageCache {
 							self::$clearCacheBy['all'] = true;
 							//self::$debug2 .= "\nclear all\n";
 						}
-						continue;
+						break;
 					
 					case 'content_item_versions':
 						if (!empty($ids['id']) && !empty($ids['type']) && !empty($ids['version'])
@@ -318,7 +318,7 @@ class pageCache {
 							self::$clearCacheBy['all'] = true;
 							//self::$debug2 .= "\nclear all\n";
 						}
-						continue;
+						break;
 					
 					case 'nested_plugins':
 					case 'plugin_settings':
@@ -345,14 +345,14 @@ class pageCache {
 								} else {
 									//If we couldn't find this setting/nested Plugin, then it may already have been deleted.
 									//In this case there's no need to clear the cache again
-									continue;
+									break;
 								}
 							
 							} else {
 								//Otherwise don't use the logic for another table, and clear the whole cache instead
 								self::$clearCacheBy['all'] = true;
 								//self::$debug2 .= "\nclear all\n";
-								continue;
+								break;
 							}
 						}
 						
@@ -372,7 +372,7 @@ class pageCache {
 							if (!$ids = \ze\sql::fetchAssoc($result)) {
 								//If we couldn't find this setting/nested Plugin, then it may already have been deleted.
 								//In this case there's no need to clear the cache again
-								continue;
+								break;
 							}
 						}
 						
@@ -387,7 +387,7 @@ class pageCache {
 							//self::$debug2 .= "\nclear all\n";
 						}
 						
-						continue;
+						break;
 					
 					
 					//Completely empty the cache if a Visitor Phrase changes

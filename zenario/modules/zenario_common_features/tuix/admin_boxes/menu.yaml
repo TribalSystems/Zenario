@@ -26,13 +26,11 @@ zenario_menu:
             fields:
                 warning:
                     ord: 0
-                    full_width: true
                     snippet:
                         html:
                 
                 description:
                     ord: 0.5
-                    full_width: true
                     snippet:
                         html: "The navigation hierarchy of this site is comprised of menu nodes. Use this screen to set this menu node's text."
                 multilingual_description:
@@ -51,13 +49,13 @@ zenario_menu:
                                 ''
                             :    !get('parent_path_of__' + this.id).value?
                                     this.value + " (1 level)"
-                                :    get('parent_path_of__' + this.id).value + ' -> ' + this.value + " ("+ (get('parent_path_of__' + this.id).value.split("->").length + 1) + " level)";
+                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " ("+ (get('parent_path_of__' + this.id).value.split("->").length + 1) + " level)";
                 path_of__menu_title:
                     ord: 1003
                     label: 'Path preview:'
-                    type: text
+                    type: textarea
                     disabled: disabled
-                    class: zenario_textbox_noborder
+                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
                 parent_path_of__menu_title:
                     ord: 1004
                     same_row: true
@@ -170,9 +168,20 @@ zenario_menu:
             edit_mode:
                 enabled: ""
             fields:
+                
+                content_restriction_desc:
+                    snippet:
+                        html: |
+                            You can help keep [[content_types]] on your site tidy
+                            by limiting their creation to specific places in the menu.
+                            (This can either be enforced or just a suggestion, depending on the options chosen in
+                             the <a href="[[link]]" target="blank">Settings for content types</a> panel.)
+                restrict_child_content_types:
+                    type: select
+                    values: {}
+                    empty_value: ''
+                
                 description:
-                    ord: 0
-                    full_width: true
                     snippet:
                         html: "Your site can have rich menu nodes, with additional text and custom CSS. You may specify these things here. Note that your menu plugin's framework must support these things otherwise they may not appear."
                 css_class:
@@ -264,8 +273,3 @@ zenario_menu:
                             <li><code>true</code> to show the menu node</li>
                             <li>An <code>array()</code> to show the menu node, and set/overwrite its properties.</li>
                         </ul>
-                
-                restrict_child_content_types:
-                    type: select
-                    values: {}
-                    empty_value: 'Allow any type of content to be created under here'

@@ -45,4 +45,5 @@ special_pages:
         default_alias: search
         default_title: Search
         menu_rel_tag: search
-        logic: create_and_maintain_in_all_languages
+        logic: create_and_maintain_in_default_language
+        allow_hide: true

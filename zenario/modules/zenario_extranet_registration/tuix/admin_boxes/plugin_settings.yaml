@@ -276,8 +276,31 @@ plugin_settings:
                         select_phrase: Select a content item...
                         hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a login page
+                        required_if_not_hidden: Please select a login page.
                     indent: 1
+                include_an_attachment:
+                    plugin_setting:
+                        name: include_an_attachment
+                    label: Include an attachment
+                    type: checkbox
+                    value: 0
+                    redraw_onchange: true
+                selected_attachment:
+                    plugin_setting:
+                        name: selected_attachment
+                        foreign_key_to: file
+                    pick_items:
+                        path: zenario__content/panels/documents
+                        min_path: zenario__content/panels/documents
+                        max_path: zenario__content/panels/documents
+                        target_path: zenario__content/panels/documents
+                        select_phrase: Select an attachment...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an attachment.
+                    visible_if: zenarioAB.value('include_an_attachment')
+                    indent: 1
+                    format_onchange: true
             
         user_activation:
             label: User activation

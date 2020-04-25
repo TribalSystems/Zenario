@@ -81,6 +81,37 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 			
 			$item['children'] = ze\categoryAdm::countChildren($id);
 			$item['path'] = ze\categoryAdm::path($id);
+			
+			//In FAB pickers, show the full category path (including the names of any parent categories)
+			if (($mode == 'get_item_name' || $mode == 'typeahead_search' || $mode == 'get_item_links' || $mode == 'select') && $item['id']) {
+				if ($item['parent_id']) {
+					$currentParent = $item['parent_id'];
+					$fullPathLabel = [];
+					$iteration = 1;
+					while ($currentParent) {
+						$result = ze\row::get('categories', ['parent_id', 'name'], ['id' => $currentParent]);
+						if ($result) {
+							$fullPathLabel[$iteration] = $result['name'];
+							$currentParent = $result['parent_id'];
+						} else {
+							$currentParent = false;
+						}
+						$iteration++;
+						//Prevent infinite loops
+						if ($iteration >= 500) {
+							break;
+						}
+					}
+					
+					krsort($fullPathLabel);
+					$fullPathLabel[] = $item['name'];
+					$fullPathLabel = implode(' / ', $fullPathLabel);
+				} else {
+					$fullPathLabel = $item['name'];
+				}
+				
+				$item['full_path_label'] = $fullPathLabel;
+			}
 		}
 		
 		

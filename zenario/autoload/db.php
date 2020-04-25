@@ -666,22 +666,25 @@ class db {
 		if (!\ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', true)) {
 			return;
 		}
-	
+		
 		$sql = "
-			SELECT name, IFNULL(value, default_value), ". (\ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'encrypted', true)? 'encrypted' : '0'). "
+			SELECT
+				name, IFNULL(value, default_value),
+				". (isset(\ze::$dbL->cols[DB_PREFIX. 'site_settings']['encrypted'])? 'encrypted' : '0'). ",
+				". (isset(\ze::$dbL->cols[DB_PREFIX. 'site_settings']['secret'])? '`secret`' : '0'). "
 			FROM ". DB_PREFIX. "site_settings
 			WHERE name NOT IN ('site_disabled_title', 'site_disabled_message', 'sitewide_head', 'sitewide_body', 'sitewide_foot')";
+		
 		$result = \ze\sql::select($sql);
 		while ($row = \ze\sql::fetchRow($result)) {
 			if ($row[2]) {
 				\ze\zewl::init();
-				\ze::$siteConfig[$row[0]] = \ze\zewl::decrypt($row[1]);
-			} else {
-				\ze::$siteConfig[$row[0]] = $row[1];
+				$row[1] = \ze\zewl::decrypt($row[1]);
 			}
+			\ze::$siteConfig[(int) $row[3]][$row[0]] = $row[1];
 		}
 	
-		\ze::$defaultLang = \ze::$siteConfig['default_language'] ?? null;
+		\ze::$defaultLang = \ze::$siteConfig[0]['default_language'] ?? null;
 	
 		//Check whether we should show error messages or not
 		if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
@@ -698,11 +701,11 @@ class db {
 	
 		//When we set the timezone in basicheader.inc.php, we were using whatever the server settings were.
 		//Now we have access to the database, check if it's been set in the site-settings, and set it to that if so.
-		if (!empty(\ze::$siteConfig['zenario_timezones__default_timezone'])) {
-			date_default_timezone_set(\ze::$siteConfig['zenario_timezones__default_timezone']);
+		if (!empty(\ze::$siteConfig[0]['zenario_timezones__default_timezone'])) {
+			date_default_timezone_set(\ze::$siteConfig[0]['zenario_timezones__default_timezone']);
 			
 			//Also try to set the timezone for the local database connection to the same value
-			\ze::$dbL->setTimezone(\ze::$siteConfig['zenario_timezones__default_timezone']);
+			\ze::$dbL->setTimezone(\ze::$siteConfig[0]['zenario_timezones__default_timezone']);
 		} else {
 			\ze::$dbL->setTimezone(date_default_timezone_get());
 		}
@@ -738,19 +741,20 @@ class db {
 		}
 	
 	
-		//Load a list of languages whose phrases need translating
-		if (!\ze::$dbL->checkTableDef(DB_PREFIX. 'languages', 'show_untranslated_content_items')) {
+		//Check if the languages table is up to date. (If major database updates still need to be applied, it might not be.)
+		//Only attempt to load from it if it is up to date.
+		if (!\ze::$dbL->checkTableDef(DB_PREFIX. 'languages', 'dec_point')) {
 			return;
 		}
 	
-		\ze::$langs = \ze\sql::fetchAssocs('SELECT id, translate_phrases, domain, show_untranslated_content_items FROM '. DB_PREFIX. 'languages', 'id');
+		\ze::$langs = \ze\sql::fetchAssocs('SELECT id, translate_phrases, show_untranslated_content_items, thousands_sep, dec_point, domain FROM '. DB_PREFIX. 'languages', 'id');
 	
 		foreach (\ze::$langs as &$lang) {
 			$lang['translate_phrases'] = (bool) $lang['translate_phrases'];
 			$lang['show_untranslated_content_items'] = (bool) $lang['show_untranslated_content_items'];
 		
 			//Don't allow language specific domains if no primary domain has been set
-			if (empty(\ze::$siteConfig['primary_domain'])) {
+			if (empty(\ze::$siteConfig[0]['primary_domain'])) {
 				$lang['domain'] = '';
 			}
 		}
@@ -770,19 +774,19 @@ class db {
 	public static function handleError($con, $sql) {
 		$sqlErrno = mysqli_errno($con);
 		$sqlError = mysqli_error($con);
-	
+		
+		$debugBacktrace = debug_backtrace();
+		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
+		
+		if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
+			\ze\db::reportError("Database query error", $sqlErrno, $sqlError, $sql, $debugBacktrace);
+		}
+		
 		if (defined('RUNNING_FROM_COMMAND_LINE')) {
 			echo "Database query error\n\n". $sqlErrno. "\n\n". $sqlError. "\n\n". $sql. "\n\n";
 			exit;
 		}
-	
-		$debugBacktrace = debug_backtrace();
-		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
-	
-		if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-			\ze\db::reportError("Database query error", $sqlErrno, $sqlError, $sql, $debugBacktrace);
-		}
-	
+		
 		if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
 			echo 'A database error has occured on this section of the site. Please contact a site Administrator.';
 			exit;
@@ -835,11 +839,11 @@ class db {
 		if (!empty($_SERVER['HTTP_HOST'])) {
 			$subject = $subjectPrefix. $_SERVER['HTTP_HOST'];
 	
-		} elseif (!empty(\ze::$siteConfig['primary_domain'])) {
-			$subject = $subjectPrefix. \ze::$siteConfig['primary_domain'];
+		} elseif (!empty(\ze::$siteConfig[0]['primary_domain'])) {
+			$subject = $subjectPrefix. \ze::$siteConfig[0]['primary_domain'];
 	
-		} elseif (!empty(\ze::$siteConfig['last_primary_domain'])) {
-			$subject = $subjectPrefix. \ze::$siteConfig['last_primary_domain'];
+		} elseif (!empty(\ze::$siteConfig[0]['last_primary_domain'])) {
+			$subject = $subjectPrefix. \ze::$siteConfig[0]['last_primary_domain'];
 	
 		} else {
 			$subject = $subjectPrefix. gethostname();
@@ -982,7 +986,7 @@ class db {
 
 	//Formerly "hashDBColumn()"
 	public static function hashDBColumn($val) {
-		return hash('sha256', \ze::$siteConfig['site_id']. strtolower($val), true);
+		return hash('sha256', \ze::$siteConfig[0]['site_id']. strtolower($val), true);
 	}
 
 
@@ -998,5 +1002,45 @@ class db {
 			}
 		}
 		return $return;
+	}
+}
+
+
+
+class lock {
+	
+	private $con;
+	private $tableName;
+	
+	public function __construct($tableName) {
+		$this->tableName = $tableName;
+	}
+	
+	public function lock() {
+	
+		//Get a database connection
+		if (!isset($this->con)) {
+			$this->con = \ze\db::connect(DBHOST, DBNAME, DBUSER, DBPASS, DBPORT);
+		}
+		
+		//Lock the table to indicate that we're about to be using the rules engine
+		//(This uses a dummy table to do this, as I don't actually want to lock any table that
+		// another part of the system might need to enter data into, or do a select from.)
+		$this->con->query('LOCK TABLES `'. $this->tableName. '` WRITE');
+		
+		
+		//This hack is a workaround for a quirk in MySQL - we won't actually get our lock until we make a change to the lock table!
+		$sql = '
+			UPDATE `'. $this->tableName. '`
+			SET dummy = IF (dummy = 1, 0, 1)';
+		$this->con->query($sql);
+	}
+	
+	public function unlock() {
+		if (!empty($this->con)) {
+			$this->con->query('UNLOCK TABLES');
+			$this->con->close();
+			$this->con = null;
+		}
 	}
 }

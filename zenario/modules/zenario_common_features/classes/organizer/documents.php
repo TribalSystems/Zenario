@@ -226,17 +226,9 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			}
 		} elseif ($_POST['upload'] ?? false) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
-			if (!ze\file::isAllowed($_FILES['Filedata']['name'])) {
-				echo
-					ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
-					"\n\n",
-					ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> Uploadable file types" in Organizer.'),
-					"\n\n",
-					ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : ; * ? " < > |');
-				exit;
-			}
 			
-			ze\fileAdm::exitIfUploadError();
+			ze\fileAdm::exitIfUploadError(true, true, false, 'Filedata');
+			
 			$file_id = ze\file::addToDatabase('hierarchial_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9\s_]+)/i', '-',$_FILES['Filedata']['name']), false, false, true);
 			$existingFile = ze\row::get('documents', ['id'], ['file_id' => $file_id]);
 			if ($existingFile) {

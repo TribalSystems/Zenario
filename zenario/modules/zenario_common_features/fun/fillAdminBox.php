@@ -62,15 +62,13 @@ switch ($path) {
 		}
 		
 		
-		ze\categoryAdm::setupFABCheckboxes($fields['categories/categories'], false);
-		//foreach ($fields['categories/categories']['values'] as $checkbox){
+		ze\categoryAdm::setupFABCheckboxes($fields['categories/categories'], true);
 		
 		if (empty($fields['categories/categories']['values'])) {
 			unset($box['tabs']['categories']['edit_mode']);
 			$fields['categories/categories']['hidden'] = true;
 		
-		}	
-		else {
+		} else {
 			
 			$fields['categories/no_categories']['hidden'] = true;
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
@@ -99,20 +97,19 @@ switch ($path) {
 									$row['total'] = $total;
 									if ($row['cnt'] == $total) {
 										$fields['categories/categories']['values'][$row['category_id']]['label'] .=
-										' '. ze\admin::phrase('(all [[total]] in this category)', $row);
+										' '. ze\admin::phrase('(all [[total]] selected are in this category)', $row);
 									} else {
 										$fields['categories/categories']['values'][$row['category_id']]['label'] .=
-										' '. ze\admin::phrase('([[cnt]] of [[total]] in this category)', $row);
+										' '. ze\admin::phrase('([[cnt]] of [[total]] selected are in this category)', $row);
 										}
 								}
 						}		
 				}
 	
 				$values['categories/categories'] = ze\escape::in($inCats, false);
-				//$values['categories_add/categories_add'] = ze\escape::in($inCats, false);
-				//$values['categories_remove/categories_remove'] = ze\escape::in($inCats, false);
 			}
 		}
+		
 		$numLanguages = ze\lang::count();
 		if ($numLanguages > 1) {
 			if ($total > 1) {
@@ -190,17 +187,14 @@ switch ($path) {
 		
 		
 		
-		//setupcategory boxes for adding categories
-		ze\categoryAdm::setupFABCheckboxes($fields['categories_add/categories_add'], false);
-		//setup category boxes for removing categories
-		
+		//Setup category boxes for adding categories
+		ze\categoryAdm::setupFABCheckboxes($fields['categories_add/categories_add'], true);
 		
 		if (empty($fields['categories_add/categories_add']['values'])) {
 			unset($box['tabs']['categories_add']['edit_mode']);
 			$fields['categories_add/categories_add']['hidden'] = true;
 		
-		}	
-		else {
+		} else {
 			$fields['categories_add/no_categories']['hidden'] = true;
 			
 			$box['tabs']['categories_add']['fields']['desc']['snippet']['html'] = 
@@ -219,30 +213,26 @@ switch ($path) {
 				GROUP BY l.category_id";
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {
-							
-					if (isset($fields['categories_add/categories_add']['values'][$row['category_id']])) {
-						$inCats[] = $row['category_id'];
+				if (isset($fields['categories_add/categories_add']['values'][$row['category_id']])) {
+					$inCats[] = $row['category_id'];
 					
-							if($fields['categories_add/categories_add']['values'][$row['category_id']]){
-								$fields['categories_add/categories_add']['values'][$row['category_id']]['disabled'] = false;
-									if ($total > 1) {
-										$row['total'] = $total;
-										if ($row['cnt'] == $total) {
-											$fields['categories_add/categories_add']['values'][$row['category_id']]['label'] .=
-											' '. ze\admin::phrase('(all [[total]] in this category)', $row);
-										} else {
-											$fields['categories_add/categories_add']['values'][$row['category_id']]['label'] .=
-											' '. ze\admin::phrase('([[cnt]] of [[total]] in this category)', $row);
-											}
-									}
-							}		
-					}
-	
-				//$values['categories/categories'] = ze\escape::in($inCats, false);
-				//$values['categories_add/categories_add'] = ze\escape::in($inCats, false);
-				//$values['categories_remove/categories_remove'] = ze\escape::in($inCats, false);
+					if($fields['categories_add/categories_add']['values'][$row['category_id']]) {
+						$fields['categories_add/categories_add']['values'][$row['category_id']]['disabled'] = false;
+						if ($total > 1) {
+							$row['total'] = $total;
+							if ($row['cnt'] == $total) {
+								$fields['categories_add/categories_add']['values'][$row['category_id']]['label'] .=
+								' '. ze\admin::phrase('(all [[total]] selected are in this category)', $row);
+							} else {
+								$fields['categories_add/categories_add']['values'][$row['category_id']]['label'] .=
+								' '. ze\admin::phrase('([[cnt]] of [[total]] selected are in this category)', $row);
+							}
+						}
+					}		
+				}
 			}
 		}
+		
 		$numLanguages = ze\lang::count();
 		if ($numLanguages > 1) {
 			if ($total > 1) {
@@ -320,49 +310,40 @@ switch ($path) {
 		
 		
 		
-		//setup category boxes for removing categories
-		ze\categoryAdm::setupFABCheckboxes($fields['categories_remove/categories_remove'], false);
-		
-		//foreach ($fields['categories/categories']['values'] as $checkbox){
-		
-			$inCats = [];
-			$sql = "
-				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-				FROM ". DB_PREFIX. "content_items AS c
-				INNER JOIN ". DB_PREFIX. "category_item_link AS l
-				   ON c.equiv_id = l.equiv_id
-				  AND c.type = l.content_type
-				WHERE c.tag_id IN (". ze\escape::in($tagIds). ")
-				GROUP BY l.category_id";
-			$result = ze\sql::select($sql);
-			while ($row = ze\sql::fetchAssoc($result)) {
-					
-					if (isset($fields['categories_remove/categories_remove']['values'][$row['category_id']])) {
-						$inCats[] = $row['category_id'];
-								if ($total > 1) {
-									$row['total'] = $total;
-									if ($row['cnt'] == $total) {
-										$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
-										' '. ze\admin::phrase('(all [[total]] in this category)', $row);
-									} else {
-										$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
-										' '. ze\admin::phrase('([[cnt]] of [[total]] in this category)', $row);
-										}
-								}
+		//Setup category boxes for removing categories
+		ze\categoryAdm::setupFABCheckboxes($fields['categories_remove/categories_remove'], true);
+				
+		$inCats = [];
+		$sql = "
+			SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "category_item_link AS l
+			   ON c.equiv_id = l.equiv_id
+			  AND c.type = l.content_type
+			WHERE c.tag_id IN (". ze\escape::in($tagIds). ")
+			GROUP BY l.category_id";
+		$result = ze\sql::select($sql);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			if (isset($fields['categories_remove/categories_remove']['values'][$row['category_id']])) {
+				$inCats[] = $row['category_id'];
+				if ($total > 1) {
+					$row['total'] = $total;
+					if ($row['cnt'] == $total) {
+						$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
+						' '. ze\admin::phrase('(all [[total]] selected are in this category)', $row);
+					} else {
+						$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
+						' '. ze\admin::phrase('([[cnt]] of [[total]] selected are in this category)', $row);
+					}
 				}
 			}
-			
-			foreach ($fields['categories_remove/categories_remove']['values'] as $key => $category) {
-				if(!in_array($key, $inCats)) {
-					$fields['categories_remove/categories_remove']['values'][$key]['hidden'] = true;
-				}
-			}
-			
-						
-			//$values['categories/categories'] = ze\escape::in($inCats, false);
-			//$values['categories_add/categories_add'] = ze\escape::in($inCats, false);
-			//$values['categories_remove/categories_remove'] = ze\escape::in($inCats, false);
+		}
 		
+		foreach ($fields['categories_remove/categories_remove']['values'] as $key => $category) {
+			if (!in_array($key, $inCats)) {
+				$fields['categories_remove/categories_remove']['values'][$key]['hidden'] = true;
+			}
+		}
 		
 		$numLanguages = ze\lang::count();
 		if ($numLanguages > 1) {
@@ -428,12 +409,12 @@ switch ($path) {
 		break;
 	
 	case 'zenario_reorder_documents':
-		if ($box['key']['id']){
+		if ($box['key']['id']) {
 			$folderId = $box['key']['id'];
 			$folderName = ze\row::get('documents', 'folder_name', ['id' => $folderId]);
 			//$box['title'] = ze\admin::phrase('Renaming/adding a title to the image "[[folder_name]]".', $folderName);
 			$box['title'] = "Re-order documents for the folder: '".$folderName."'";
-		}else{
+		} else {
 			$box['title'] = "Re-order documents";
 		}
 	
@@ -445,8 +426,8 @@ switch ($path) {
 				if($details['type'] == 'text' || $details['type'] == 'date') {
 					$datesetFields[]= $details;
 				}
-				
 			}
+			
 			$i = 3;
 			foreach ($datesetFields as $dataset){
 				$box['tabs']['details']['fields']['reorder']['values'][$dataset['id']] = 
@@ -458,21 +439,19 @@ switch ($path) {
 	break;
 	
 	case 'zenario_document_rename':
-			$documentId = $box['key']['id'];
-			
-			$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
-			
-			if ($isfolder){
-				$documentName=ze\row::get('documents', 'folder_name', ['type' => 'folder','id' => $documentId]);
-				$box['title'] = 'Renaming the folder "'.$documentName.'"';
-			}else{
-				$documentName=ze\row::get('documents', 'filename', ['type' => 'file','id' => $documentId]);
-				$box['title'] = 'Renaming the file "'.$documentName.'"';
-			}
-			$values['details/document_name'] = $documentName;
+		$documentId = $box['key']['id'];
+		
+		$isfolder=ze\row::get('documents', 'type', ['type' => 'folder','id' => $documentId]);
+		
+		if ($isfolder){
+			$documentName=ze\row::get('documents', 'folder_name', ['type' => 'folder','id' => $documentId]);
+			$box['title'] = 'Renaming the folder "'.$documentName.'"';
+		}else{
+			$documentName=ze\row::get('documents', 'filename', ['type' => 'file','id' => $documentId]);
+			$box['title'] = 'Renaming the file "'.$documentName.'"';
+		}
+		$values['details/document_name'] = $documentName;
 		break;
-	
-	
 }
 
 return false;

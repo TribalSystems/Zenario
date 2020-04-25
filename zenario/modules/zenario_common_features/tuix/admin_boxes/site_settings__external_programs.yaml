@@ -4,6 +4,111 @@ site_settings:
     setting_group: external_programs
     title: Editing settings for other server programs
     tabs:
+        antivirus:
+            label: Antivirus
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                               Zenario can perform antivirus scanning for file uploads, and makes use of ClamAV. To install on Ubuntu, use the following (but adjust for your OS):
+                            </p><p>
+                                <code>&nbsp; &nbsp; sudo apt install clamav clamav-base clamav-daemon clamav-freshclam clamdscan libclamav7</code>
+                            </p><p>
+                                Then ensure ClamAV is not blocked by Apparmor, so edit <code>/etc/apparmor.d/local/usr.sbin.clamd</code> and add the lines:
+                            </p><p>
+                                <code>
+                                    &nbsp; &nbsp; /var/www/clients/ r,<br />
+                                    &nbsp; &nbsp; /var/www/clients/** r,<br />
+                                    &nbsp; &nbsp; /var/www/zenario-source/ r,<br />
+                                    &nbsp; &nbsp; /var/www/zenario-source/** r,<br />
+                                    &nbsp; &nbsp; /tmp/ r,<br />
+                                    &nbsp; &nbsp; /tmp/** r,<br />
+                                </code>
+                            </p><p>
+                                Edit <code>/etc/apparmor.d/local/usr.sbin.clamd</code> and uncomment the line:
+                            </p><p>
+                                <code>&nbsp; &nbsp; include &lt;local/usr.sbin.clamd&gt;</code>
+                            </p><p>
+                                Then restart Apparmor and ClamAV:
+                            </p><p>
+                                <code>
+                                    &nbsp; &nbsp; sudo service apparmor restart<br />
+                                    &nbsp; &nbsp; sudo service clamav-daemon start<br />
+                                    &nbsp; &nbsp; sudo service clamav-freshclam start<br />
+                                </code>
+                            </p><p>
+                                Finally, wait about 1 minute for ClamAV to boot before re-testing!
+                            </p><p>
+                                When you upload a file, Zenario will attempt to
+                                scan the document for viruses using the ClamAV antivirus scanner,
+                                if it is installed on your server
+                                and the <code>clamd</code> daemon is running.
+                            </p><p>
+                                Zenario can only use ClamAV if it is running on a Unix-based server;
+                                there is not support for this feature on a Windows server.
+                            </p>
+                clamscan_tool_path:
+                    name: clamscan_tool_path
+                    site_setting:
+                        name: clamscan_tool_path
+                    label: 'ClamAV path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use ClamAV -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/clamdscan'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/clamdscan'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: clamscan_tool_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                require_av_scan:
+                    site_setting:
+                        name: require_av_scan
+                    label: 'If the antivirus scanner is unavailable:'
+                    type: select
+                    empty_value: 'Allow file uploads without scanning'
+                    values:
+                        1: 'Block all file uploads while the scanner is unavailable'
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: ClamAV is working successfully.
+                error:
+                    show: ""
+                    type: error
+                    message: ClamAV is not correctly set up.
+                daemon:
+                    show: ""
+                    type: error
+                    message: |
+                        ClamAV is installed and you have the path correctly set, but files cannot be scanned.
+                        Please check that the <code>clamd</code> daemon is running, and that AppArmor is not blocking ClamAV.
+                    html: true
+
         antiword:
             label: Antiword
             edit_mode:
@@ -304,8 +409,6 @@ site_settings:
                             label: '/usr/bin/mysql'
                         '/usr/local/bin/':
                             label: '/usr/local/bin/mysql'
-                        '/Applications/AMPPS/mysql/bin/':
-                            label: '/Applications/AMPPS/mysql/bin/mysql'
                     format_onchange: true
                     style: >
                         margin-right: 0.5em;
@@ -333,8 +436,6 @@ site_settings:
                             label: '/usr/bin/mysqldump'
                         '/usr/local/bin/':
                             label: '/usr/local/bin/mysqldump'
-                        '/Applications/AMPPS/mysql/bin/':
-                            label: '/Applications/AMPPS/mysql/bin/mysqldump'
                     format_onchange: true
                     style: >
                         margin-right: 0.5em;
@@ -559,16 +660,12 @@ site_settings:
                                 <br/>
                                 on Ubuntu.
                             </p>
-                enable_wkhtmltopdf:
-                    label: "Enable wkhtmltopdf"
-                    type: checkbox
-                    value: false
-                    redraw_onchange: true
                 wkhtmltopdf_path:
                     site_setting:
                         name: wkhtmltopdf_path
                     label: 'wkhtmltopdf path:'
                     type: select
+                    empty_value: ' -- Do not use wkhtmltopdf -- '
                     value: PATH
                     values:
                         'PATH':
@@ -578,8 +675,6 @@ site_settings:
                         '/usr/local/bin/':
                             label: '/usr/local/bin/wkhtmltopdf'
                     format_onchange: true
-                    visible_if:
-                        zenarioAB.value: enable_wkhtmltopdf
                     style: >
                         margin-right: 0.5em;
                 test:
@@ -592,7 +687,7 @@ site_settings:
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                     visible_if:
-                        zenarioAB.value: enable_wkhtmltopdf
+                        zenarioAB.value: wkhtmltopdf_path
             notices:
                 success:
                     show: ""

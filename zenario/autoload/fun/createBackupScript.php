@@ -45,6 +45,18 @@ if ($encrypt) {
 
 
 
+//If Assetwolf is running, we'll need to stop the background threads running before we do the backup
+if ($awRunning = ze\module::inc('assetwolf_2')) {
+	\ze\assetwolf::includeLocks();
+	
+	//Grab locks and pause the threads as usual
+	\ze\assetwolf\locks::getLocksOnAllThreads();
+	
+	//We'll need to keep the threads paused, however we need to release the locks otherwise the backup
+	//will not be able to actually run
+	\ze\assetwolf\locks::releaseLocksOnAllThreads($unpause = false);
+}
+
 
 
 //Attempt to call mysqldump directly for speed
@@ -107,6 +119,11 @@ password="'. DBPASS. '"';
 			if ($encrypt) {
 				ze\zewl::encryptFile($backupPath, $encryptedBackupPath);
 				unlink($backupPath);
+			}
+			
+			//Resume Assetwolf's background threads, if we paused them earlier.
+			if ($awRunning) {
+				\ze\assetwolf\locks::releaseLocksOnAllThreads();
 			}
 			return;
 		
@@ -344,6 +361,15 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 }
 
 $close($g);
+
+
+
+
+//Resume Assetwolf's background threads, if we paused them earlier.
+if ($awRunning) {
+	\ze\assetwolf\locks::releaseLocksOnAllThreads();
+}
+
 
 
 //Encrypt the backup file if requested

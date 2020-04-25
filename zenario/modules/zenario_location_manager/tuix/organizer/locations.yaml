@@ -62,6 +62,8 @@ zenario__locations:
                 searchable: true
                 width: xlarge
                 hidden: false
+            parent_customer:
+                hidden: false
             description:
                 title: Name
                 db_column: l.description
@@ -234,15 +236,15 @@ zenario__locations:
             checksum:
                 db_column: f.checksum
                 hidden: false
-            last_updated:
-                title: Date/time last updated
-                db_column: l.last_updated
+            last_edited:
+                title: Date/time last edited
+                db_column: l.last_edited
                 format: datetime
                 show_by_default: false
                 hidden: false
-            last_updated_by:
-                title: Last updated by
-                db_column: l.last_updated_admin_id
+            last_edited_by:
+                title: Last edited by
+                db_column: l.last_edited_admin_id
                 show_by_default: false
                 searchable: true
                 format: enum
@@ -355,6 +357,7 @@ zenario__locations:
             export:
                 priv: _PRIV_EXPORT_LOCATIONS
                 label: Export
+                hide_in_select_mode: true
                 admin_box:
                     path: zenario_export_dataset
                     pass_matched_ids: true
@@ -477,6 +480,74 @@ zenario__locations:
                         message_type: warning
                     request:
                         action: delete_location
+                hide_in_select_mode: true
+            convert_to_simple_place:
+                priv: _PRIV_MANAGE_LOCATIONS
+                parent: action_dropdown
+                label: Convert to simple place
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to convert the selected location to a simple place?
+                        button_message: Convert
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        action: convert_to_simple_place
+                visible_if: zenarioA.running.zenario_organization_manager
+                only_show_on_refiner: zenario_organization_manager__organizations
+                hide_in_select_mode: true
+            convert_multiple_to_simple_place:
+                priv: _PRIV_MANAGE_LOCATIONS
+                parent: action_dropdown
+                label: Convert selected to simple places
+                multiple_select: true
+                multiple_select_only: true
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to convert the selected locations to simple places?
+                        button_message: Convert
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        action: convert_to_simple_place
+                visible_if: zenarioA.running.zenario_organization_manager
+                only_show_on_refiner: zenario_organization_manager__organizations
+                hide_in_select_mode: true
+            convert_to_organization:
+                priv: _PRIV_MANAGE_LOCATIONS
+                parent: action_dropdown
+                label: Convert to organization
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to convert the selected location to an organization?
+                        button_message: Convert
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        action: convert_to_organization
+                visible_if: zenarioA.running.zenario_organization_manager
+                only_show_on_refiner: zenario_organization_manager__simple_locations
+                hide_in_select_mode: true
+            convert_multiple_to_organization:
+                priv: _PRIV_MANAGE_LOCATIONS
+                parent: action_dropdown
+                label: Convert selected to organizations
+                multiple_select: true
+                multiple_select_only: true
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to convert the selected locations to organizations?
+                        button_message: Convert
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        action: convert_to_organization
+                visible_if: zenarioA.running.zenario_organization_manager
+                only_show_on_refiner: zenario_organization_manager__simple_locations
                 hide_in_select_mode: true
             
             upload_image:

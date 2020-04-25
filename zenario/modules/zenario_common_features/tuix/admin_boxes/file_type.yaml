@@ -30,3 +30,7 @@ zenario_file_type:
                     value: application/octet-stream
                     validation:
                         required: Please enter a MIME Type.
+                is_allowed:
+                    label: Allow this type of file when uploading or creating documents
+                    type: checkbox
+                    value: 1

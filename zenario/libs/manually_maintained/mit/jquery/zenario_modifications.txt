@@ -67,37 +67,13 @@ jquery.nestable.js
                     retval = plugin[params](li);
 
 
+jquery.selectboxes.js
+ Rewrite some deprecated code
+  Replace:
+	if($(to).size() == 0) return this;
+  With:
+	if($(to).length == 0) return this;
 
-jquery.placeholder.js
-  Bugfix
-	Replaced:
-			if (!input.attr('id')) input.attr('id') = 'input_' + rnd;
-	With:
-			if (!input.attr('id')) input.attr('id', 'input_' + rnd);
-
-	Replaced:
-			.live('click',itemIn)
-			.live('focusin',itemIn)
-			.live('focusout',itemOut);
-	With:
-			.on('click',itemIn)
-			.on('focusin',itemIn)
-			.on('focusout',itemOut);
-	
-	Replaced:
-		if (boundEvents) return;
-
-		//prepare live bindings if not already done.
-		$('.' + ph)
-			.on('click',itemIn)
-			.on('focusin',itemIn)
-			.on('focusout',itemOut);
-	With:
-		$('.' + ph)
-			.unbind()
-			.on('click',itemIn)
-			.on('focusin',itemIn)
-			.on('focusout',itemOut);
 
 
 
@@ -110,29 +86,38 @@ jquery-ui.visitor.js
 	Some lines have been changed to add the option to disable ARIA voice-over support
 	  Replace:
 		this.liveRegion = $( "<div>" )
+			.attr( {
+				role: "log",
+				"aria-live": "assertive",
+				"aria-relevant": "additions"
+			} )
+			.appendTo( this.document[ 0 ].body );
+		this._addClass( this.liveRegion, null, "ui-helper-hidden-accessible" );
 	  With:
-		if (!this.options.disableAriaLiveRegions)
-		this.liveRegion = $( "<div>" )
+		if (!this.options.disableAriaLiveRegions) {
+			this.liveRegion = $( "<div>" )
+				.attr( {
+					role: "log",
+					"aria-live": "assertive",
+					"aria-relevant": "additions"
+				} )
+				.appendTo( this.document[ 0 ].body );
+			this._addClass( this.liveRegion, null, "ui-helper-hidden-accessible" );
+		}
 	
 	  Replace:
 		this.liveRegion.children().hide();
-		if ( content.clone ) {
-			a11yContent = content.clone();
-			a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
-		} else {
-			a11yContent = content;
-		}
-		$( "<div>" ).html( a11yContent ).appendTo( this.liveRegion );
+		a11yContent = $( "<div>" ).html( tooltip.find( ".ui-tooltip-content" ).html() );
+		a11yContent.removeAttr( "name" ).find( "[name]" ).removeAttr( "name" );
+		a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
+		a11yContent.appendTo( this.liveRegion );
 	  With:
 		if (!this.options.disableAriaLiveRegions) {
 			this.liveRegion.children().hide();
-			if ( content.clone ) {
-				a11yContent = content.clone();
-				a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
-			} else {
-				a11yContent = content;
-			}
-			$( "<div>" ).html( a11yContent ).appendTo( this.liveRegion );
+			a11yContent = $( "<div>" ).html( tooltip.find( ".ui-tooltip-content" ).html() );
+			a11yContent.removeAttr( "name" ).find( "[name]" ).removeAttr( "name" );
+			a11yContent.removeAttr( "id" ).find( "[id]" ).removeAttr( "id" );
+			a11yContent.appendTo( this.liveRegion );
 		}
 	  Replace:
 		this.liveRegion.remove();
@@ -144,9 +129,6 @@ jquery-ui.visitor.js
 	Bootstrap's tooltip function clashed with jQuery's tooltip function:
 		$.widget.bridge('jQueryTooltip', $.ui.tooltip);
 
-jquery-ui.admin.js
-	This contains all of the jQuery UI interactions
-
 jquery-ui.autocomplete.js
 	This is the Autocomplete Widget from jQuery UI
 	The Menu Widget is also included as this is a dependancy
@@ -157,17 +139,33 @@ jquery-ui.datepicker.js
 jquery-ui.iconselectmenu.js
 	This is the icon menu from https://jqueryui.com/selectmenu/#custom_render
 
+jquery-ui.interactions.js
+	This contains all of the jQuery UI interactions, except sortable which is in its own file.
+	Note this has a dependancy on the Mouse Widget, which is not included.
+
+jquery-ui.progressbar.js
+	This is the Progressbar from jQuery UI
+
 jquery-ui.selectmenu.js
-	This is the Slider Widget from jQuery UI
+	This is the Selectmenu from jQuery UI
 
 jquery-ui.slider.js
 	This is the Slider Widget from jQuery UI
+	Note this has a dependancy on the Mouse Widget, which is not included.
+
+jquery-ui.sortable.js
+	This is the Sortable Widget from jQuery UI
+	The Mouse Widget is also included as this is a dependancy
 
 jquery-ui.spinner.js
 	This is the Spinner Widget from jQuery UI
+	The Controlgroup, Checkboxradio and Button Widgets are also included as they are dependancies.
+
+jquery-ui.unused.js
+	Contains all the widgets not mentioned above.
 
 
 css/jqueryui/jquery-ui.css
-	This is the "Start" theme from http://jqueryui.com/themeroller/ and http://jqueryui.com/download/
+	This is the "Base" theme from http://jqueryui.com/themeroller/ and http://jqueryui.com/download/
 
 	

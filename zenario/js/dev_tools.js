@@ -54,6 +54,7 @@ zenario.lib(function(
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
 	class_name: {description: 'This property tracks which module created each element.'},
+	only_merge_into_an_existing_object: {isGlobal: true, description: "This property is helpful when trying to add properties to an existing object defined in another TUIX file, but cannot be sure if the object will be there or not. If this property is set, its sibling properties will be ignored if the object is not there when the TUIX is merged."},
 	priv: {isGlobal: true, description: "If you give an element the <code>priv</code> property and enter the name of an admin permission, the element will be <code>unset()</code> if the current admin does not have the permission you specified.\n\nThis property must be written in your .yaml file. It can't be changed in php."},
 	_filters: {description: 'Data on the filters that the admin selected'},
 	_path_here: {description: 'This is the tag-path to a panel; i.e. the names of all of the elements and properties that lead here.'},

@@ -1026,7 +1026,7 @@ _sql
 	   ON ps.instance_id = ps2.instance_id
 	  AND ps.egg_id = ps2.egg_id
 	  
-	  AND ps2.name = 'scope_for_creation_and_lists'
+	  AND ps2.name = 'scope'
 	  AND ps2.value = 'unassigned'
 	SET ps2.value = 'global'
 
@@ -2425,49 +2425,59 @@ _sql
 _sql
 
 
-//Content Summary List (and Blog News List), and search modules had an update of settings.
-//The max number of elements is now a text field rather than a dropdown of values.
-);
 
-if (ze\dbAdm::needRevision(48641)) {
-	$sql = '
-		SELECT ps.instance_id, ps.egg_id, ps.name, ps.value, ps.is_content, m.class_name
-		FROM ' . DB_PREFIX . 'plugin_settings ps
-		LEFT JOIN ' . DB_PREFIX . 'plugin_instances pi
-			ON ps.instance_id = pi.id
-		LEFT JOIN ' . DB_PREFIX . 'modules m
-			ON pi.module_id = m.id
-		WHERE ps.name = "page_size";';
-			
-	$result = ze\sql::select($sql);
-	
-	$modules = [
-		DB_PREFIX . 'search_entry_box',
-		DB_PREFIX . 'search_entry_box_predictive_probusiness',
-		DB_PREFIX . 'search_results',
-		DB_PREFIX . 'search_results_pro',
-		DB_PREFIX . 'advanced_search',
-		DB_PREFIX . 'content_list',
-		DB_PREFIX . 'blog_news_list'
-	];
-	
-	$values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 50];
-	
-	while ($row = ze\sql::fetchAssoc($result)) {
-		if (in_array($row['class_name'], $modules) && in_array($row['value'], $values)) {
-			ze\row::insert('plugin_settings', ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'maximum_results_number', 'value' => $row['value'], 'is_content' => $row['is_content']], $ignore = true);
-			ze\row::update('plugin_settings', ['value' => 'maximum_of'], ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'page_size']);
-		}
-	}
-	
-	ze\dbAdm::revision(48641);
-}
+//
+//	Zenario 8.6
+//
 
+//Add some features to the scheduled task manager for background tasks
+//(This will replace the old background task manager module, the checkBackground scripts, and a few other things.)
+);	ze\dbAdm::revision(49800
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]jobs`
+	ADD COLUMN `job_type` enum('scheduled', 'background') NOT NULL default 'scheduled'
+	AFTER `id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]jobs`
+	ADD COLUMN `script_path` varchar(255) NOT NULL default ''
+	AFTER `static_method`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]jobs`
+	ADD COLUMN `script_restart_time` bigint(14) unsigned NOT NULL default 0
+	AFTER `script_path`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]jobs`
+	ADD KEY (`job_type`)
+_sql
+
+
+//Add a "secret" column to the site settings table. This makes settings unavailable from Twig.
+);	ze\dbAdm::revision(49860
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]site_settings`
+	ADD COLUMN `secret` tinyint(1) NOT NULL default 0
+	AFTER `encrypted`
+_sql
+
+//Most secret settings should be set using the YAML definitions, but there are a few Assetwolf ones
+//that are manually inserted into the DB and have no YAML definitions. As a quick hack to update those,
+//just do them manually in a query here
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]site_settings`
+	SET `secret` = 1
+	WHERE name LIKE 'assetwolf_%_password'
+_sql
 
 
 //Fix a bug where it was possible to put invalid characters in a filename when renaming it.
 //Adding a DB query to sanitise anywhere it's previously happened.
-	ze\dbAdm::revision(48643
+);	ze\dbAdm::revision(49910
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]files`
 	SET filename =
@@ -2479,9 +2489,167 @@ if (ze\dbAdm::needRevision(48641)) {
 _sql
 
 
-//For anyone using the Black Dog skin, attempt to update the logic for the CSS animations to use the new library.
-//Note: This patch was from 8.6, but it's safe to re-run so there's no harm in back-patching it.
-);	ze\dbAdm::revision(48645
+//Add an "is allowed" column to the document_types table to control what type of files can be uploaded
+);	ze\dbAdm::revision(49980
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]document_types`
+	ADD COLUMN `is_allowed` tinyint(1) NOT NULL default 1
+	AFTER `custom`
+_sql
+
+
+//Add a "paused" column to the jobs table. This allows us to temporarily pause/resume background tasks,
+//without needing to change any of the status columns. (E.g. if we paused a task by setting it's "enabled"
+//column to 0, when we came to resume it if it was running before, we'd not know be sure the value was before.)
+);	ze\dbAdm::revision(50000
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]jobs`
+	ADD COLUMN `paused` tinyint(1) unsigned NOT NULL default 0
+	AFTER `enabled`
+_sql
+
+
+//A few years ago we had a bug where backups taken corrupted multi-lingual characters.
+//Most sites don't use multi-lingual definitions, except in the language definitions,
+//so now we've got the issue where several sites were affected by the bug and have a few bad
+//language definitions, but we've never noticed.
+//This update checks if it looks like we've got some corrupted data in the language definitions, and deletes it if so.
+//Note there's a script in step 3 that auto-repopulates these values if they are deleted, so to fix
+//the issue we only need to delete them here and then wait for them to be auto-repopulated.
+);	ze\dbAdm::revision(50100
+, <<<_sql
+	DELETE c.*, t.*
+	FROM `[[DB_PREFIX]]visitor_phrases` AS c
+	INNER JOIN `[[DB_PREFIX]]visitor_phrases` AS t
+	   ON t.code IN ('__LANGUAGE_ENGLISH_NAME__', '__LANGUAGE_FLAG_FILENAME__', '__LANGUAGE_LOCAL_NAME__')
+	WHERE c.code = '__LANGUAGE_LOCAL_NAME__'
+	  AND c.local_text LIKE 'à%'
+_sql
+
+
+//Add columns to the language table for decimal points/thousands separator.
+);	ze\dbAdm::revision(50150
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]languages`
+	ADD COLUMN `thousands_sep` varchar(1) CHARACTER SET utf8mb4 NOT NULL DEFAULT ','
+	AFTER `search_type`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]languages`
+	ADD COLUMN `dec_point` varchar(1) CHARACTER SET utf8mb4 NOT NULL DEFAULT '.'
+	AFTER `thousands_sep`
+_sql
+
+//Albanian, Bulgarian, Czech, French, Estonian, Finnish, Hungarian, Latvian,
+//Lithuanian, Polish, Russian, Slovak, Swedish, Ukrainian and Vietnamese
+//all use spaces and commas instead of commas and periods
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]languages`
+	SET thousands_sep = ' ',
+		dec_point = ','
+	WHERE id LIKE 'sq%'
+	   OR id LIKE 'bg%'
+	   OR id LIKE 'cs%'
+	   OR id LIKE 'fr%'
+	   OR id LIKE 'et%'
+	   OR id LIKE 'fi%'
+	   OR id LIKE 'hu%'
+	   OR id LIKE 'lv%'
+	   OR id LIKE 'lt%'
+	   OR id LIKE 'pl%'
+	   OR id LIKE 'ru%'
+	   OR id LIKE 'sk%'
+	   OR id LIKE 'sv%'
+	   OR id LIKE 'uk%'
+	   OR id LIKE 'vi%'
+_sql
+
+//...and Italian, Norwegian and Spanish use periods and commas
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]languages`
+	SET thousands_sep = '.',
+		dec_point = ','
+	WHERE id LIKE 'it%'
+	   OR id LIKE 'no%'
+	   OR id LIKE 'es%'
+_sql
+
+
+//Some code tidying - I'm mass-renaming a plugin setting.
+//The "scope_for_creation_and_lists" should just be called "scope" as that's more generic and therefore more useful.
+//(I'm doing this as I want to start making core functions that interact with this, and a more standard name is desirable.)
+);	ze\dbAdm::revision(50190
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_settings`
+	SET name = 'scope'
+	WHERE name = 'scope_for_creation_and_lists'
+_sql
+
+);	ze\dbAdm::revision(50192
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]job_logs` MODIFY COLUMN `note` mediumtext CHARACTER SET utf8mb4 NULL
+_sql
+
+
+//Add a locking table for the cleanDirs function. This is to try and prevent the race conditions we sometimes get, where
+//I think two scripts are running at the same time
+);	ze\dbAdm::revision(50300
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]lock__clean_dirs`
+_sql
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]lock__clean_dirs` (
+		`dummy` tinyint(1) unsigned NOT NULL
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=ascii
+_sql
+
+
+
+
+//Define a new table to store custom tuix
+); ze\dbAdm::revision( 50330
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]tuix_customisations`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]tuix_customisations` (
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`custom_yaml` mediumtext CHARACTER SET utf8mb4 NULL,
+		`custom_json` mediumtext CHARACTER SET utf8mb4 NULL,
+		`created` datetime DEFAULT NULL,
+		`created_admin_id` int(10) unsigned DEFAULT NULL,
+		`created_user_id` int(10) unsigned DEFAULT NULL,
+		`created_username` varchar(255) DEFAULT NULL,
+		`last_edited` datetime DEFAULT NULL,
+		`last_edited_admin_id` int(10) unsigned DEFAULT NULL,
+		`last_edited_user_id` int(10) unsigned DEFAULT NULL,
+		`last_edited_username` varchar(255) DEFAULT NULL,
+		PRIMARY KEY (`id`),
+		UNIQUE KEY (`name`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
+_sql
+
+
+//Changed the name of this table to a better name
+);	ze\dbAdm::revision(50440
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]tuix_customisations`
+	RENAME TO `[[DB_PREFIX]]tuix_snippets`
+_sql
+
+//Also update the name in the plugin settings, if anyone already had it saved
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_settings`
+	SET name = '~tuix_snippet~'
+	WHERE name = '~customisation~'
+_sql
+
+
+//For anyone using the Black Dog skin, attempt to update the logic for the CSS animations to use the new library (as the previous one is now broken).
+);	ze\dbAdm::revision(50530
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]site_settings`
 	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/blackdog/js/animation_load.js'></script>", '')
@@ -2514,4 +2682,72 @@ _sql
 	  AND (foot_html IS NULL OR foot_html NOT LIKE '%wow.min.js%')
 _sql
 
+
+
+//Create a new table to remember which plugin/mode is on which content item.
+//This will work a bit like the special pages system, but with less bureaucracy. 
+); ze\dbAdm::revision(50600
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_pages_by_mode`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]plugin_pages_by_mode` (
+		`equiv_id` int(10) unsigned NOT NULL,
+		`content_type` varchar(20) CHARACTER SET ascii NOT NULL,
+		`module_class_name` varchar(200) NOT NULL,
+		`mode` varchar(200) CHARACTER SET ascii NOT NULL DEFAULT '',
+		PRIMARY KEY (`module_class_name`, `mode`),
+		UNIQUE KEY `content_type` (`content_type`,`equiv_id`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
+_sql
+
+//Add a "state" column to cover plugins in conductors
+); ze\dbAdm::revision(50605
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
+	ADD COLUMN `state` char(2) CHARACTER SET ascii NOT NULL default ''
+_sql
+
+
+//Add a column to control creating menu nodes to the content type settings
+);	ze\dbAdm::revision(50606
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `prompt_to_create_a_menu_node` tinyint(1) NOT NULL default 1
+	AFTER `module_id`
+_sql
+
+
+//Remove the create_and_maintain_in_all_languages option for special pages
+); ze\dbAdm::revision(50607
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]special_pages`
+	SET `logic` = 'create_and_maintain_in_default_language'
+	WHERE `logic` = 'create_and_maintain_in_all_languages'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]special_pages`
+	MODIFY COLUMN `logic` enum('create_and_maintain_in_default_language','create_in_default_language_on_install') NOT NULL DEFAULT 'create_and_maintain_in_default_language'
+_sql
+
+
+//Add a column to the languages table to control how each language behaves in the language picker
+); ze\dbAdm::revision(50608
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]languages`
+	ADD COLUMN `language_picker_logic` enum('visible_or_disabled', 'visible_or_hidden', 'always_hidden') NOT NULL DEFAULT 'visible_or_disabled'
+	AFTER `search_type`
+_sql
+
+
+//Fix a bug where the key is longer than 1000 bytes - the column was previously a varchar(255).
+//Note that this was retroactively changed in the CREATE TABLE statement, however it's safe to
+//re-apply so we're also changing it here so any existing sites are consistent.
+);	ze\dbAdm::revision(50610
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]tuix_snippets`
+	MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+_sql
 );

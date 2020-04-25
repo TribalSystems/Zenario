@@ -219,8 +219,8 @@ foreach ($phrases as &$phrase) {
 
 echo '
    <script src="../libs/yarn/toastr/toastr.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>
-   <script src="../libs/manually_maintained/mit/jquery/jquery-ui.admin.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>
    <script src="../js/tuix.wrapper.js.php?', $v, '" type="text/javascript" charset="utf-8"></script>
+   <script src="../libs/manually_maintained/mit/jquery/jquery-ui.interactions.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>
    <script src="../js/plugin.wrapper.js.php?', $v, '&amp;ids=', ze\module::id('zenario_abstract_fea'), '" type="text/javascript" charset="utf-8"></script>
    <script src="../modules/zenario_abstract_fea/js/form.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>
    <script src="../js/grid.min.js?', $v, '" type="text/javascript" charset="utf-8"></script>

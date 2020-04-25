@@ -1,0 +1,57 @@
+zenario_list_tuix_snippets:
+    key: {}
+    #always_visible_cols: 1
+    title: TUIX snippets
+    search_bar_placeholder: Search TUIX snippets
+    no_items_message: 'No TUIX snippets have been created on this site'
+    columns:
+        id:
+            title: ID
+        name:
+            title: Name
+        num_columns:
+            title: Number of columns
+        num_collection_buttons:
+            title: Number of collection buttons
+        num_item_buttons:
+            title: Number of item buttons
+        usage:
+            title: Usage
+    collection_buttons:
+        create:
+            location: column_header
+            visible_if: lib.navigationEnabled('create_tuix_snippet')
+            css_class: standard_button create
+            icon_left: fa fa-plus
+            label: Create a new TUIX snippet
+            go:
+                command: create_tuix_snippet
+    item_buttons:
+        view:
+            visible_if: lib.navigationEnabled('view_tuix_snippet')
+            css_class: small_button button_arrow_right
+            label: View
+            icon_right: fa fa-caret-right
+            go:
+                command: view_tuix_snippet
+        edit:
+            visible_if: lib.navigationEnabled('edit_tuix_snippet')
+            css_class: small_button edit
+            label: Edit
+            go:
+                command: edit_tuix_snippet
+        delete:
+            visible_if: |
+                tuix.enable.delete_tuix_snippet
+            css_class: small_button delete
+            label: Delete
+            ajax:
+                is_delete: true
+                confirm:
+                    message: 'Are you sure you wish to delete the TUIX snippet "[[name]]"?'
+                    button_message: Delete TUIX snippet
+                    button_css_class: delete_button
+                    cancel_button_message: Cancel
+                    message_type: warning
+                request:
+                    command: delete_tuix_snippet

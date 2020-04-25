@@ -688,7 +688,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			if ($addWidthAndHeight) {
 				if ($addWidthAndHeightInline) {
-					$this->mergeFields['Image_Style'] .= 'style="width: '. $width. 'px; height: '. $height. 'px;"';
+					$this->mergeFields['Image_Style'] .= ' style="width: '. $width. 'px; height: '. $height. 'px;"';
 			
 				} else {
 					array_unshift($this->styles, '#'. $this->containerId. '_img { width: '. $width. 'px; height: '. $height. 'px; }');

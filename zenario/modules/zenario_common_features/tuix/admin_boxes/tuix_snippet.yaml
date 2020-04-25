@@ -1,0 +1,52 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_tuix_snippet:
+    priv: _PRIV_EDIT_SITE_SETTING
+    title: 'Creating a new TUIX snippet'
+    title_for_existing_records: 'Editing the TUIX snippet [[name]]'
+    key: 
+        id: ''
+    hide_tab_bar: true
+    tabs:
+        details:
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        p: >
+                            Use this to create a snippet of customised TUIX code that can be used to
+                            modify the appearance and/or behaviour of a FEA plugin on this site.
+                name:
+                    label: 'Name:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required: Please enter a name
+                
+                insert_object:
+                    same_row: true
+                    visible_if: |
+                        !_.isEmpty(field.values)
+                    type: select
+                    css_class: insert_objects iconselectmenu
+                    empty_value: 'Insert object...'
+                    values: {}
+                    style: |
+                        width: 400px;
+                    onchange: |
+                        lib.appendCodeEditorValue('custom_yaml', $(this).val());
+                        $(this).val('').iconselectmenu('refresh');
+                
+                custom_yaml:
+                    type: code_editor
+                    language: yaml
+                    tall_as_possible: true
+                    code_editor_options:
+                        useSoftTabs: true
+                    style: |
+                        width: 95%;
+                custom_json:
+                    type: hidden
+                        
+    save_and_continue_button_message: Save and continue

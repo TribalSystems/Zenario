@@ -1,0 +1,54 @@
+zenario_list_files_in_document_envelope:
+    key:
+        envelopeId: ''
+        search: ''
+    title: 'Files in document envelope "[[envelope_name]]"'
+    no_items_message: No files to show
+    
+    columns:
+        id:
+            title: 'ID'
+        filename:
+            title: 'File name'
+        filesize:
+            title: 'File size'
+    
+    item_buttons:
+        download_file:
+            visible_if: |
+                tuix.enable.download_file
+            label: Download
+            type: button
+            css_class: small_button
+            onclick: |
+                document.location = zenario_document_envelopes_fea.pluginShowFileLink(lib.containerId, {envelopeId: lib.tuix.key.envelopeId, documentId: item.id});
+        delete_file:
+            visible_if: |
+                tuix.enable.delete_file && tuix.perms.manage[item.id]
+            label: Delete
+            type: button
+            css_class: small_button delete
+            multiple_select: true
+            ajax:
+                is_delete: true
+                confirm:
+                    title: 'Delete file(s) in document envelope'
+                    message: 'Are you sure you wish to delete the selected file from the document envelope?'
+                    multiple_select_message: 'Are you sure you wish to delete the [[item_count]] selected files from the document envelopes?'
+                    button_message: Delete
+                    button_css_class: delete_button
+                    cancel_button_message: Cancel
+                request:
+                    command: delete_file_from_document_envelope
+    
+    collection_buttons:
+        upload_file_to_document_envelope:
+            visible_if: |
+                tuix.enable.upload_file_to_document_envelope && lib.navigationEnabled('upload_file_to_document_envelope') && tuix.perms.create
+            css_class: small_button create
+            icon_left: fa fa-plus
+            location: top
+            label: Upload file to document envelope
+            go:
+                mode: upload_file_to_document_envelope
+                command: upload_file_to_document_envelope

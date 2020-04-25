@@ -2,7 +2,7 @@
 (function($) {
     $.fn.jPaginator = function(o) {
 
-        if (this.size() != 1)
+        if (this.length != 1)
             $.error('You must use this plugin with a unique element');
 
         var s = {

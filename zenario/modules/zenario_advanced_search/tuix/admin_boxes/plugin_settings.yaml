@@ -93,7 +93,7 @@ plugin_settings:
                     type: text
                     same_row: true
                     maxlength: 5
-                    value: 5
+                    value: 20
                     style: "width: 5em;"
                     format_onchange: true
                     visible_if: |

@@ -250,12 +250,12 @@ class moduleAdm {
 		
 				if (count($missingModules) > 1) {
 					return \ze\admin::phrase(
-						'Cannot run the Module "[[display_name]]" as it depends on the following Modules, which are not present or not running: [[missing_modules]]',
+						'Cannot run the module "[[class_name]]" ([[display_name]]) as it depends on the following modules, which are not present or not running: [[missing_modules]]',
 						$module);
 		
 				} else {
 					return \ze\admin::phrase(
-						'Cannot run the Module "[[display_name]]" as it depends on the "[[missing_modules]]" Module, which is not present or not running.',
+						'Cannot run the module "[[class_name]]" ([[display_name]]) as it depends on the "[[missing_modules]]" module, which is not present or not running.',
 						$module);
 				}
 	
@@ -264,7 +264,7 @@ class moduleAdm {
 		
 				if (!class_exists($module['class_name'])) {
 					return \ze\admin::phrase(
-						'Cannot run the Module "[[display_name]]" as its class "[[class_name]]" is not defined in its module_code.php file.',
+						'Cannot run the module "[[class_name]]" ([[display_name]]) as its class "[[class_name]]" is not defined in its module_code.php file.',
 						$module);
 		
 				} elseif ($test) {
@@ -716,10 +716,9 @@ class moduleAdm {
 			foreach($desc['special_pages'] as $page) {
 				if (!empty($page['page_type'])) {
 			
-					//Choose one of the three rules
+					//Choose one of the rules
 					$defaultLogic = 'create_and_maintain_in_default_language';
 					$otherRules = [
-						'create_and_maintain_in_all_languages' => true,
 						'create_in_default_language_on_install' => true];
 			
 					if (!empty($page['logic']) && !empty($otherRules[$page['logic']])) {
@@ -797,11 +796,13 @@ class moduleAdm {
 					$jobs .= ($jobs? ',' : ''). "'". \ze\escape::sql($job['name']). "'";
 					$sql = "
 						INSERT IGNORE INTO ". DB_PREFIX. "jobs SET
+							job_type = 'scheduled',
 							manager_class_name = '". \ze\escape::sql((($job['manager_class_name'] ?? false) ?: 'zenario_scheduled_task_manager')). "',
 							job_name = '". \ze\escape::sql($job['name']). "',
 							module_id = '". (int) $moduleId. "',
 							module_class_name = '". \ze\escape::sql($moduleClassName). "',
 							static_method = ". \ze\ring::engToBoolean($job['static'] ?? false). ",
+							enabled = ". \ze\ring::engToBoolean($job['enabled_by_default'] ?? false). ",
 							months = '". \ze\escape::sql($job['months'] ?? false). "',
 							days = '". \ze\escape::sql($job['days'] ?? false). "',
 							hours = '". \ze\escape::sql($job['hours'] ?? false). "',
@@ -819,8 +820,26 @@ class moduleAdm {
 				}
 			}
 		}
+		
+		//Record any background tasks the module has
+		if (!empty($desc['background_tasks']) && is_array($desc['background_tasks'])) {
+			foreach($desc['background_tasks'] as $job) {
+				if (!empty($job['name'])) {
+					$jobs .= ($jobs? ',' : ''). "'". \ze\escape::sql($job['name']). "'";
+					$sql = "
+						INSERT IGNORE INTO ". DB_PREFIX. "jobs SET
+							job_type = 'background',
+							manager_class_name = 'zenario_scheduled_task_manager',
+							job_name = '". \ze\escape::sql($job['name']). "',
+							module_id = '". (int) $moduleId. "',
+							module_class_name = '". \ze\escape::sql($moduleClassName). "',
+							script_path = '". \ze\escape::sql($job['script_path']). "'";
+					\ze\sql::update($sql);
+				}
+			}
+		}
 
-		//Remove any unused jobs
+		//Remove any unused jobs or background tasks
 		$innerSql = "
 			FROM ". DB_PREFIX. "jobs
 			WHERE module_id = ". (int) $moduleId;
@@ -867,6 +886,8 @@ class moduleAdm {
 		//Remove any existing settings
 		\ze\row::delete('plugin_setting_defs', ['module_id' => $moduleId]);
 		\ze\row::delete('plugin_setting_defs', ['module_class_name' => $moduleClassName]);
+		
+		$secretColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'secret', $useCache = false);
 
 		//Loop through every module Setting that a module has in its Admin Box XML file(s)
 		if ($dir = \ze::moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
@@ -941,9 +962,22 @@ class moduleAdm {
 														INSERT INTO ". DB_PREFIX. "site_settings SET
 															name = '". \ze\escape::sql($name). "',
 															value = NULL,
-															default_value = '". \ze\escape::sql((string) $value). "'
+															default_value = '". \ze\escape::sql((string) $value). "'";
+													
+													if ($secretColExists) {
+														$sql .= ",
+															`secret` = ". (int) \ze\ring::engToBoolean($field[$settingDef]['secret'] ?? 0);
+													}
+													
+													$sql .= "
 														ON DUPLICATE KEY UPDATE
 															default_value = '". \ze\escape::sql((string) $value). "'";
+													
+													if ($secretColExists) {
+														$sql .= ",
+															`secret` = ". (int) \ze\ring::engToBoolean($field[$settingDef]['secret'] ?? 0);
+													}
+													
 													\ze\sql::update($sql);
 												}
 										}

@@ -418,6 +418,10 @@ class zenario_forum extends zenario_comments {
 	
 	
 	protected function manageOneUpload($postId, $location, $file_name){
+	
+	
+		ze\fileAdm::exitIfVirusInFile(false, $location, $file_name, true);
+	
 		if($this->allow_uploads){
 			if(!$location || !strlen($location)) return;
 			if ($fileId = ze\file::addToDatabase(self::$forum_post_upload_dbkey, $location, $file_name, false, false, true)) {
@@ -461,6 +465,7 @@ class zenario_forum extends zenario_comments {
 				}
 			}
 			*/
+			
 			//multiple files upload
 			if(!empty($_FILES['filesToUpload'])){
 				$filesToUpload = &$_FILES['filesToUpload'];

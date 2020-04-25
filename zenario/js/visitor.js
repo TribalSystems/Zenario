@@ -83,6 +83,10 @@ zenario.lib(function(
 		return _.contains(arguments, value, 1);
 	};
 
+	zenario.between = function(a, b, c) {
+		return a <= b && b <= c;
+	};
+
 	//Given a string, this window.makes = function it safe to use in the URL after a hash (i.e. a safe id for Storekeeper)
 	window.encodeItemIdForOrganizer =
 	zenario.encodeItemIdForOrganizer =
@@ -372,15 +376,28 @@ zenario.lib(function(
 	zenario.httpOrhttps = function() {
 		return zenario.ishttps()? 'https://' : 'http://';
 	};
+
+	zenario.round = function(num, precision) {
+		if (!precision) {
+			precision = 0;
+		}
+		
+		precision = Math.pow(10, precision);
 	
-	
-	
-	
-	zenario.AJAXLink = function(moduleClassName, requests) {
-		return URLBasePath + 'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=handleAJAX' + zenario.urlRequest(requests);
+		return Math.round(num * precision) / precision;
 	};
 	
-	zenario.pluginAJAXLink = function(moduleClassName, slotNameOrContainedElement, requests) {
+	
+	
+	
+	zenario.AJAXLink = function(moduleClassName, requests, methodCall) {
+		return URLBasePath +
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) +
+			'&method_call=' + (methodCall || 'handleAJAX') +
+			zenario.urlRequest(requests);
+	};
+	
+	zenario.pluginAJAXLink = function(moduleClassName, slotNameOrContainedElement, requests, methodCall) {
 		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
 			eggId = zenario.getEggIdFromEl(slotNameOrContainedElement),
 			slot = zenario.slots[slotName],
@@ -389,7 +406,8 @@ zenario.lib(function(
 			moduleClassName = moduleClassName || (slot && slot.moduleClassName);
 		
 		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=handlePluginAJAX' +
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) +
+			'&method_call=' + (methodCall || 'handlePluginAJAX') +
 			'&cID=' + zenario.cID +
 			'&cType=' + zenario.cType +
 		  (zenario.adminId?
@@ -404,9 +422,27 @@ zenario.lib(function(
 	};
 	
 	zenario.showFileLink = function(moduleClassName, requests) {
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=showFile' +
-			zenario.urlRequest(requests);
+		return zenario.AJAXLink(moduleClassName, requests, 'showFile');
+	};
+	
+	zenario.pluginShowFileLink = function(moduleClassName, slotNameOrContainedElement, requests) {
+		return zenario.pluginAJAXLink(moduleClassName, slotNameOrContainedElement, requests, 'showFile');
+	};
+	
+	zenario.showImageLink = function(moduleClassName, requests) {
+		return zenario.AJAXLink(moduleClassName, requests, 'showImage');
+	};
+	
+	zenario.pluginShowImageLink = function(moduleClassName, slotNameOrContainedElement, requests) {
+		return zenario.pluginAJAXLink(moduleClassName, slotNameOrContainedElement, requests, 'showImage');
+	};
+	
+	zenario.showStandalonePageLink = function(moduleClassName, requests) {
+		return zenario.AJAXLink(moduleClassName, requests, 'showStandalonePage');
+	};
+	
+	zenario.pluginShowStandalonePageLink = function(moduleClassName, slotNameOrContainedElement, requests) {
+		return zenario.pluginAJAXLink(moduleClassName, slotNameOrContainedElement, requests, 'showStandalonePage');
 	};
 	
 	zenario.showFloatingBoxLink = function(moduleClassName, slotNameOrContainedElement, requests) {
@@ -440,18 +476,6 @@ zenario.lib(function(
 			'&instanceId=' + instanceId +
 			'&slotName=' + slotName +
 			zenario.urlRequest(requests));
-	};
-	
-	zenario.showImageLink = function(moduleClassName, requests) {
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=showImage' +
-			zenario.urlRequest(requests);
-	};
-	
-	zenario.showStandalonePageLink = function(moduleClassName, requests) {
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=showStandalonePage' +
-			zenario.urlRequest(requests);
 	};
 	
 	
@@ -1094,6 +1118,32 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 	doRequest();
 	return cb;
 };
+
+
+
+
+//These functions can be used to send AJAX requests to the server every so often (default every 2 minutes),
+//just to force any sessions to be kept alive.
+//The error handlers are specifically disabled, so if the poke fails it will fail silently without bothering the user
+zenario.stopPoking = function(lib) {
+	if (lib.poking) {
+		clearInterval(lib.poking);
+	}
+	lib.poking = false;
+};
+
+zenario.startPoking = function(lib, interval) {
+	if (!lib.poking) {
+		lib.poking = setInterval(zenario.poke, interval || 2 * 60 * 1000);
+	}
+};
+
+zenario.poke = function() {
+	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError) {
+	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1', undefined, undefined, undefined, undefined, undefined, undefined, undefined, function() {});
+
+};
+
 
 
 
@@ -2039,7 +2089,7 @@ zenario.splitFlagsFromMessage = function(resp) {
 };
 
 //Set up a new encapsulated object for Plugins
-zenario.enc = function(id, className, moduleClassNameForPhrases) {
+zenario.enc = function(id, className, moduleClassNameForPhrases, jsNotLoaded) {
 	
 	//Little shortcut to save space in definitions
 	if (moduleClassNameForPhrases === 1) {
@@ -2057,6 +2107,10 @@ zenario.enc = function(id, className, moduleClassNameForPhrases) {
 		zenario.modules[id] ==> {};
 		zenario.modules[id].moduleClassName = className;
 		zenario.modules[id].moduleClassNameForPhrases = moduleClassNameForPhrases;
+	}
+	
+	if (!jsNotLoaded) {
+		window[className].jsLoaded = true;
 	}
 };
 
@@ -2710,23 +2764,22 @@ zenario.microTemplates = {};
 
 //A wrapper function to the underscore.js function's template library
 window.microTemplate =
-zenario.microTemplate = function(template, data, filter, microTemplates, i) {
+zenario.microTemplate = function(template, data, filter, microTemplates, i, preMicroTemplate, postMicroTemplate) {
 	
-	var j, l, html;
+	var j, l, html = '';
 	
 	//Have the option to use a different pool of micro-templates than usual
 	microTemplates = microTemplates || zenario.microTemplates;
 	
 	
 	if (!defined(template) || !data) {
-		return '';
+		return html;
 	
 	} else if (_.isArray(data)) {
-		l = data.length,
-		html = '';
+		l = data.length;
 		for (j = 0; j < l; ++j) {
 			if (!defined(filter) || filter(data[j])) {
-				html += zenario.microTemplate(template, data[j], undefined, microTemplates, j);
+				html += zenario.microTemplate(template, data[j], undefined, microTemplates, j, preMicroTemplate, postMicroTemplate);
 			}
 		}
 		return html;
@@ -2743,8 +2796,19 @@ zenario.microTemplate = function(template, data, filter, microTemplates, i) {
 			//Parse and compile the microtemplate if this hasn't already happened
 			microTemplates[template] = zenario.generateMicroTemplate(microTemplates[template], template);
 		}
+		
+		
+		if (defined(preMicroTemplate)) {
+			html += zenario.microTemplate(preMicroTemplate, data);
+		}
 	
-		return microTemplates[template](data);
+		html += microTemplates[template](data);
+		
+		if (defined(postMicroTemplate)) {
+			html += zenario.microTemplate(postMicroTemplate, data);
+		}
+		
+		return html;
 
 	} else {
 		//Custom/one-off templates
@@ -3022,12 +3086,14 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 	//Fancybox/Lightbox replacement
 	$(path + "a[rel^='colorbox'], a[rel^='lightbox']").colorbox({
 		title: function() { return $(this).attr('data-box-title'); },
+		className: function() { return $(this).attr('data-box-className'); },
 		maxWidth: '100%',
 		maxHeight: '100%'
 	});
 	
 	$(path + "a[rel^='colorbox_no_arrows']").colorbox({
 		title: function() { return $(this).attr('data-box-title'); },
+		className: function() { return $(this).attr('data-box-className'); },
 		maxWidth: '100%',
 		maxHeight: '100%',
 		rel: false
@@ -3271,6 +3337,8 @@ var tooltipContent = function() {
 //Wrapper function for jQuery tooltips
 zenario.tooltips = function(target, options) {
 	
+	var customContent = false;
+	
 	zenario.closeTooltip();
 	if (!defined(target)) {
 		target = TOOTIPS_SELECTOR;
@@ -3292,13 +3360,22 @@ zenario.tooltips = function(target, options) {
 	if (!defined(options.position)) {
 		options.position = {my: 'center top+2', at: 'center bottom', collision: 'flipfit'};
 	}
-	if (!defined(options.content)) {
+	if (defined(options.content)) {
+		customContent = true;
+	} else {
 		options.content = tooltipContent;
 	}
 	
 	$('.ui-tooltip').remove();
 	
 	$(target).each(function(i, el) {
+		
+		//Don't show bugged boxes for any empty titles
+		if (!customContent && !$.trim(el.title)) {
+			el.title = '';
+			return;
+		}
+		
 		var thisOptions,
 			$el = $(el),
 			tooltipOptions = $el.attr('data-tooltip-options');
@@ -3678,8 +3755,11 @@ zenario.init = function(
 	cID,
 	cType,
 	skinId,
+	isPublic,
 	
 	slashesInURL,
+	thousandsSep,
+	decPoint,
 	visLang
 ) {
 
@@ -3695,19 +3775,15 @@ zenario.init = function(
 	zenario.cID = cID || undefined;
 	zenario.cType = cType || undefined;
 	zenario.skinId = skinId || undefined;
+	zenario.isPublic = isPublic;
 	
 	zenario.slashesInURL = !!slashesInURL;
+	zenario.decPoint = decPoint || '.';
+	zenario.thousandsSep = thousandsSep || ',';
 	zenario.visLang = visLang;
 	
 	
 
-
-	//Include JSON library, if it's not defined natively
-	//Note I am loading this syncronously, which is deprecated on modern browsers,
-	//but it's not deprecated on any browser old enough not to have the JSON library built in as standard!
-	if (!window.JSON) {
-		zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/public_domain/json/json2.min.js', false);
-	}
 
 	//Add the Math.log10() function, if it's not defined natively
 	if (!Math.log10) {

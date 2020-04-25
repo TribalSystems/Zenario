@@ -61,6 +61,40 @@ class zenario_users__organizer__access_log extends zenario_users {
 			$panel['collection_buttons']['export']['admin_box']['key']['tag_id'] = $refinerId;
 		}
 		
+		if ($mode != 'csv' && ($refinerName == 'user' || $refinerName == 'content')) {
+			
+			$accessLogDuration = '';
+			switch (ze::setting('period_to_delete_the_user_content_access_log')) {
+				case 'never_delete':
+					$accessLogDuration = ze\admin::phrase('Access log is stored forever');
+					break;
+				case 0:
+					$accessLogDuration = ze\admin::phrase('Access log is not stored');
+					break;
+				case 1:
+					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 day');
+					break;
+				case 7:
+					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 week');
+					break;
+				case 30:
+					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 month');
+					break;
+				case 90:
+					$accessLogDuration = ze\admin::phrase('Access log is stored for 3 months');
+					break;
+				case 365:
+					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 year');
+					break;
+				case 730:
+					$accessLogDuration = ze\admin::phrase('Access log is stored for 2 years');
+					break;
+			}
+			
+			$panel['notice']['show'] = true;
+			$panel['notice']['message'] = $accessLogStatus;
+		}
+		
 		$panel['collection_buttons']['export']['admin_box']['key']['filename'] = $panel['title'];
 	}
 }

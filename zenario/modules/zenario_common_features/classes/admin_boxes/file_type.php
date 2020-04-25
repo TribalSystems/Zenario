@@ -42,7 +42,7 @@ class zenario_common_features__admin_boxes__file_type extends ze\moduleBaseClass
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
 		if (preg_replace('/[a-zA-Z0-9_\\.-]/', '', $values['details/type'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('The Extension must not contain any special characters.');
+			$box['tabs']['details']['errors'][] = ze\admin::phrase('The extension must not contain any special characters.');
 		
 		} elseif (ze\file::isExecutable($values['details/type'])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('You may not register an executable file type.');
@@ -57,7 +57,11 @@ class zenario_common_features__admin_boxes__file_type extends ze\moduleBaseClass
 		
 		ze\priv::exitIfNot('_PRIV_EDIT_CONTENT_TYPE');
 		
-		ze\row::insert('document_types', ['type' => $values['details/type'], 'mime_type' => $values['details/mime_type']]);
+		ze\row::insert('document_types', [
+			'type' => $values['details/type'],
+			'mime_type' => $values['details/mime_type'],
+			'is_allowed' => $values['details/is_allowed']
+		]);
 		$box['key']['id'] = $values['details/type'];
 	}
 }

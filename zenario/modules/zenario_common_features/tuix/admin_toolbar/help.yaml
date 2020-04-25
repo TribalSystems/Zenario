@@ -11,15 +11,15 @@ sections:
                 appears_in_toolbars:
                     preview: true
                 parent: help_dropdown
-                label: About navigate mode
+                label: About Browse mode
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Navigate Mode</strong>
+                            <strong>Browse Mode</strong>
                         </p>
                         <p>
-                            Use this mode to navigate your site. (In other modes, most navigation is disabled.)
+                            Use this mode to browse your site. (In other modes, most navigation is disabled.)
                         </p>
                         <p>
                             When a content item is published, this mode shows you how this content item appears to site visitors. If a draft exists, this mode shows you how the new version will appear when published.
@@ -31,7 +31,7 @@ sections:
                 appears_in_toolbars:
                     edit: true
                 parent: help_dropdown
-                label: About edit mode
+                label: About Edit mode
                 help:
                     html: true
                     message: |
@@ -57,7 +57,7 @@ sections:
                 appears_in_toolbars:
                     edit_disabled: true
                 parent: help_dropdown
-                label: About edit mode
+                label: About Edit mode
                 help:
                     html: true
                     message: |
@@ -74,7 +74,7 @@ sections:
                 appears_in_toolbars:
                     rollback: true
                 parent: help_dropdown
-                label: About history mode
+                label: About History mode
                 help:
                     html: true
                     message: |
@@ -88,15 +88,15 @@ sections:
                 appears_in_toolbars:
                     layout: true
                 parent: help_dropdown
-                label: About layout mode
+                label: About Layout mode
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Layout mode</strong>
+                            <strong>Layout Mode</strong>
                         </p>
                         <p>
-                            This mode shows you the slots that are occupied by plugins on the layout layer.
+                            This mode shows you the slots that are occupied by plugins on the layout.
                         </p>
                         <p>
                             Where there is a plugin from the library in a slot on this layer, that same plugin will appear on every content item that uses this layout.

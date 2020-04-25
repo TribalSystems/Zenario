@@ -4,7 +4,7 @@ zenario_menu_text:
     priv: _PRIV_EDIT_MENU_TEXT
     title: false
     hide_tab_bar: true
-    max_height: 160
+    max_height: 200
     key:
         id: ""
         languageId: ""
@@ -30,9 +30,9 @@ zenario_menu_text:
                 path_of__text_in_default_language:
                     grouping: left_column
                     label: 'Path preview:'
-                    type: text
+                    type: textarea
                     disabled: disabled
-                    class: zenario_textbox_noborder
+                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
                 parent_path_of__text_in_default_language:
                     grouping: left_column
                     same_row: true
@@ -55,13 +55,13 @@ zenario_menu_text:
                                 ''
                             :    !get('parent_path_of__' + this.id).value?
                                     this.value
-                                :    get('parent_path_of__' + this.id).value + ' -> ' + this.value;
+                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value;
                 path_of__menu_title:
                     grouping: right_column
                     label: 'Path preview:'
-                    type: text
+                    type: textarea
                     disabled: disabled
-                    class: zenario_textbox_noborder
+                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
                 parent_path_of__menu_title:
                     same_row: true
                     type: hidden

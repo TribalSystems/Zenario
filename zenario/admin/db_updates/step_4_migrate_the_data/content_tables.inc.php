@@ -718,3 +718,111 @@ if (ze\dbAdm::needRevision(47601)) {
 //	
 //	ze\dbAdm::revision(48400);
 //}
+
+
+
+
+//Content Summary List (and Blog News List), and search modules had an update of settings.
+//The max number of elements is now a text field rather than a dropdown of values.
+if (ze\dbAdm::needRevision(48641)) {
+	$sql = '
+		SELECT ps.instance_id, ps.egg_id, ps.name, ps.value, ps.is_content, m.class_name
+		FROM ' . DB_PREFIX . 'plugin_settings ps
+		LEFT JOIN ' . DB_PREFIX . 'plugin_instances pi
+			ON ps.instance_id = pi.id
+		LEFT JOIN ' . DB_PREFIX . 'modules m
+			ON pi.module_id = m.id
+		WHERE ps.name = "page_size";';
+			
+	$result = ze\sql::select($sql);
+	
+	$modules = [
+		DB_PREFIX . 'search_entry_box',
+		DB_PREFIX . 'search_entry_box_predictive_probusiness',
+		DB_PREFIX . 'search_results',
+		DB_PREFIX . 'search_results_pro',
+		DB_PREFIX . 'advanced_search',
+		DB_PREFIX . 'content_list',
+		DB_PREFIX . 'blog_news_list'
+	];
+	
+	$values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 50];
+	
+	while ($row = ze\sql::fetchAssoc($result)) {
+		if (in_array($row['class_name'], $modules) && in_array($row['value'], $values)) {
+			ze\row::insert('plugin_settings', ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'maximum_results_number', 'value' => $row['value'], 'is_content' => $row['is_content']], $ignore = true);
+			ze\row::update('plugin_settings', ['value' => 'maximum_of'], ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'page_size']);
+		}
+	}
+	
+	ze\dbAdm::revision(48641);
+}
+
+
+//Migrate any custom TUIX to the new system
+ze\dbAdm::revision( 50330
+
+//Look for any existing custom TUIX defined in the plugin settings, and attempt to copy it into the new table
+, <<<_sql
+	INSERT INTO `[[DB_PREFIX]]tuix_snippets` (name, custom_yaml, custom_json)
+	SELECT CONCAT('Migrated TUIX Snippet ', SUBSTR(SHA1(cj.value), 1, 10)), MIN(cy.value), cj.value
+	FROM [[DB_PREFIX]]plugin_settings AS cj
+	INNER JOIN [[DB_PREFIX]]plugin_settings AS cy
+	   ON cy.instance_id = cj.instance_id
+	  AND cy.egg_id = cj.egg_id
+	  AND cy.name = '~custom_yaml~'
+	WHERE cj.name = '~custom_json~'
+	  AND cj.value IS NOT NULL
+	  AND cj.value != ''
+	  AND TRIM(cj.value) != ''
+	GROUP BY cj.value
+_sql
+
+//Update the plugin settings to point back to the table
+, <<<_sql
+	UPDATE [[DB_PREFIX]]plugin_settings AS cj
+	INNER JOIN [[DB_PREFIX]]tuix_snippets AS tc
+	   ON tc.custom_json =  cj.value
+	SET cj.name = '~tuix_snippet~',
+		cj.value = tc.id
+	WHERE cj.name = '~custom_json~'
+_sql
+
+, <<<_sql
+	DELETE FROM [[DB_PREFIX]]plugin_settings
+	WHERE name IN ('~custom_yaml~', '~custom_json~')
+_sql
+);
+
+
+//Try to give any new TUIX snippets a more helpful name
+if (ze\dbAdm::needRevision(50340)) {
+	foreach (ze\row::getAssocs('tuix_snippets', ['name', 'custom_json']) as $tuixSnippetId => $tuix) {
+		if (($custom = json_decode($tuix['custom_json'], true))
+		 && (is_array($custom))
+		 && (!empty($custom))) {
+			
+			foreach (['columns', 'item_buttons'] as $tag) {
+				if (!empty($custom[$tag]) && is_array($custom[$tag])) {
+					$tuix['name'] .= ' ('. $tag. ': '. implode(', ', array_keys($custom[$tag])). ')';
+				}
+			}
+			ze\row::set('tuix_snippets', $tuix, $tuixSnippetId);
+		}
+	}
+	ze\dbAdm::revision(50340);
+}
+
+//In 8.6 we've added the cache/scans/ and cache/stop_flags/ directories,
+//call the cleanDirs() function to try and ensure that they're created properly
+if (ze\dbAdm::needRevision(50420)) {
+	
+	if (\ze::$dbL
+	 && \ze::$dbL->con
+	 && is_dir(CMS_ROOT. 'cache/tuix')
+	 && !is_dir(CMS_ROOT. 'cache/stop_flags')) {
+		ze\cache::cleanDirs(true);
+	}
+	
+	ze\dbAdm::revision(50420);
+}

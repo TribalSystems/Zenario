@@ -159,7 +159,9 @@ class zenario_location_listing extends ze\moduleBaseClass {
 			$orderBy = [];
 			switch ($this->setting('order_by_1')){
 				case 'sector_score':
-					$orderBy[] = 'lnk.score_id DESC';
+					if ((int) $this->setting('sector')) {
+						$orderBy[] = 'lnk.score_id DESC';
+					}
 					break;
 				case 'country':
 					$orderBy[] = 'country ASC';
@@ -171,7 +173,9 @@ class zenario_location_listing extends ze\moduleBaseClass {
 
 			switch ($this->setting('order_by_2')){
 				case 'sector_score':
-					$orderBy[] = 'lnk.score_id DESC';
+					if ((int) $this->setting('sector')) {
+						$orderBy[] = 'lnk.score_id DESC';
+					}
 					break;
 				case 'country':
 					$orderBy[] = 'country ASC';
@@ -183,7 +187,9 @@ class zenario_location_listing extends ze\moduleBaseClass {
 
 			switch ($this->setting('order_by_3')){
 				case 'sector_score':
-					$orderBy[] = 'lnk.score_id DESC';
+					if ((int) $this->setting('sector')) {
+						$orderBy[] = 'lnk.score_id DESC';
+					}
 					break;
 				case 'country':
 					$orderBy[] = 'country ASC';

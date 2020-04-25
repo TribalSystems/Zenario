@@ -477,7 +477,7 @@ methods.recordOpenItems = function() {	thus.openItemsInHierarchy = {};
 		var id,
 			$el = $(el);
 		
-		if ($el.find('ol.dd-list:visible').size()) {
+		if ($el.find('ol.dd-list:visible').length) {
 			if (id = $el.data('id')) {
 				thus.openItemsInHierarchy[id] = true;
 			}

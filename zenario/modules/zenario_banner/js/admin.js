@@ -135,7 +135,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 		zenario_banner.close(get(editor.id));
 	};
 	
-	zenario_banner.startPoking();
+	zenario.startPoking(zenario_banner);
 	$input.focus();
 }
 
@@ -179,24 +179,6 @@ zenario_banner.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 
 
 
-zenario_banner.stopPoking = function() {
-	if (zenario_banner.poking) {
-		clearInterval(zenario_banner.poking);
-	}
-	zenario_banner.poking = false;
-};
-
-zenario_banner.startPoking = function() {
-	if (!zenario_banner.poking) {
-		zenario_banner.poking = setInterval(zenario_banner.poke, 2 * 60 * 1000);
-	}
-};
-
-zenario_banner.poke = function() {
-	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
-};
-
-
 
 zenario_banner.close = function(el) {
 
@@ -211,7 +193,7 @@ zenario_banner.close = function(el) {
 }
 
 zenario_banner.doClose = function(slotName) {
-	zenario_banner.stopPoking();
+	zenario.stopPoking(zenario_banner);
 	
 	$('#zenario_editor_toolbar').html('').hide();
 	zenario_banner.refreshPluginSlot(slotName, undefined, false);

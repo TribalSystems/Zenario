@@ -125,12 +125,20 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		-1 => 'Last Day of the Month only'];
 	
 	protected static $lastRunStatuses = [
-		'never_run' => 'Never Run',
-		'rerun_scheduled' => 'Rerun Scheduled',
-		'in_progress' => 'In Progress',
 		'action_taken' => 'Action Taken',
+		'crashed' => 'Crashed',
+		'error' => 'Error',
+		'in_progress' => 'In Progress',
+		'never_run' => 'Never Run',
+		'not_running' => 'Not Running',
 		'no_action_taken' => 'No Action Taken',
-		'error' => 'Error'];
+		'rerun_scheduled' => 'Rerun Scheduled',
+		'restarted' => 'Restarted',
+		'restarting' => 'Restarting',
+		'running' => 'Running',
+		'starting' => 'Starting',
+		'stopping' => 'Stopping'
+	];
 	
 	
 	
@@ -142,8 +150,169 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		return trim(exec('date +"%Y-%m-%d %H:%M:%S"'));
 	}
 	
-	public static function step1($managerClassName = 'zenario_scheduled_task_manager', $runSpecificJob = false, $args = '') {
+	//Get a code that should be unique to this site on the server.
+	protected static function getJobCode() {
+		//I would just use the site id, but sometimes people run multiple copies of a site on the same server,
+		//and also we want to keep the site id a little hidden, so add in the CMS root directory as well
+		//when generating the code.
+		return 'zenario_job_code_'. base_convert(md5(CMS_ROOT. ze::setting('site_id')), 16, 36). '_';
+	}
+	
+	//Look for any processes that are still running by checking the process list for their job codes and job ids
+	public static function getRunningJobs() {
 		
+		//Look for any processes that match this site's code
+		$siteCode = static::getJobCode();
+		$runningProcesses = [];
+		if (PHP_OS == 'Darwin') {
+			exec($exec = 'ps -ax | grep '. escapeshellarg($siteCode), $runningProcesses);
+		} else {
+			exec($exec = 'ps aux | grep '. escapeshellarg($siteCode), $runningProcesses);
+		}
+		
+		//Parse the list of processes, and extract the job ids
+		//Note I'm using explode(, , 2) for this rather than preg_match as it's faster
+		$runningJobIds = [];
+		foreach ($runningProcesses as $process) {
+			$process = explode($siteCode, $process, 2);
+			if (!empty($process[1])) {
+				$process = explode('_', $process[1], 3);
+				if (!empty($process[0]) && is_numeric($process[0])) {
+					
+					//Make this an array of arrays, so we can note down multiple processes for
+					//each job, just in case there end up being multiple processes
+					if (!isset($runningJobIds[$process[0]])) {
+						$runningJobIds[$process[0]] = [];
+					}
+					
+					$runningJobIds[$process[0]][] = (int) $process[1];
+					//Note $process[0] is the id of the job from the jobs table,
+					//and $process[1] is when it was started.
+				}
+			}
+		}
+		
+		return $runningJobIds;
+	}
+	
+	//Restart every single background task that's currently running
+	public static function restartAllBackgroundTasks() {
+		static::checkBackgroundTasks(null, true);
+	}
+	
+	//Go through all of the background tasks, starting/stopping/restarting them as needed
+	public static function checkBackgroundTasks($runningJobIds = null, $forceRestart = false) {
+		
+		if (is_null($runningJobIds)) {
+			$runningJobIds = static::getRunningJobs();
+		}
+		$siteCode = static::getJobCode();
+		$timeInSeconds = time();
+		
+		
+		
+		//Check on all of the background tasks
+		$sql = "
+			SELECT
+				id,
+				job_name,
+				module_class_name,
+				script_path,
+				script_restart_time,
+				`enabled`,
+				`paused`
+			FROM ". DB_PREFIX. "jobs
+			WHERE manager_class_name = 'zenario_scheduled_task_manager'
+			  AND job_type = 'background'";
+	
+		$result = ze\sql::select($sql);
+		while ($job = ze\sql::fetchAssoc($result)) {
+			
+			//Work out how many processes are currently running for this script.
+			//(Normally this is just one but I'm writing the code to check for multiple processes
+			// and to tidy them up if needed.)
+			$runningThreads = [];
+			$threadsToStop = [];
+			
+			if (isset($runningJobIds[$job['id']])) {
+				foreach ($runningJobIds[$job['id']] as $startTime) {
+					
+					//For each running script, check if there's a stop flag already set
+					$stopFlag = CMS_ROOT. 'cache/stop_flags/'. $siteCode. $job['id']. '_'. $startTime. '_';
+					if (file_exists($stopFlag)) {
+						//If so, there's nothing to do other than wait for the script to see it's stop flag
+						//and remove itself.
+					
+						//If there's not already a stop flag, check if we should set one.
+					} elseif ($forceRestart) {
+						//If the force restart flag is set, we'll want to stop all threads that are running.
+						$threadsToStop[] = $stopFlag;
+					
+					} elseif (!$job['enabled'] || $job['paused']) {
+						//Stop anything that's not supposed to be enabled
+						$threadsToStop[] = $stopFlag;
+					
+					} elseif ($startTime < $timeInSeconds - 3600) {
+						//Restart anything that's older than one hour
+						$threadsToStop[] = $stopFlag;
+					
+					} else
+					if ($job['script_restart_time']
+					 && $job['script_restart_time'] > $startTime) {
+						//Check if the restart time flag is set after this script started,
+						//which would mean a restart was requested for this script.
+						$threadsToStop[] = $stopFlag;
+					
+					//Otherwise just note down that this process is running.
+					} else {
+						$runningThreads[] = $stopFlag;
+					}
+				}
+			}
+			
+			//Catch the case if multiple processes are running
+			//(I'm not sure if this is technically possible but I'm writing code to handle it just in case!)
+			if (count($runningThreads) > 1) {
+				//Handle this case by assuming all of the running threads are in error, and telling them to stop.
+				$threadsToStop = array_merge($threadsToStop, $runningThreads);
+				$runningThreads = [];
+			}
+			
+			//If a process is supposed to be stopped, set the stop flag to tell them to stop.
+			//Note if they've already got a stop flag then there's nothing to do.
+			foreach ($threadsToStop as $stopFlag) {
+				touch($stopFlag);
+				@chmod($stopFlag, 0666);
+			}
+			
+			//Start a process for this script if needed
+			if ($job['enabled'] && !$job['paused'] && empty($runningThreads)) {
+				//Wait 0.1 seconds between running each task, to space things out a little further
+				$r = 100000;
+				usleep($r);
+				
+				$script = '';
+				foreach (explode(' ', $job['script_path']) as $i => $arg) {
+					if ($i == 0) {
+						$script .= escapeshellarg(CMS_ROOT. $arg);
+					} else {
+						$script .= ' '. escapeshellarg($arg);
+					}
+				}
+				
+				exec('php '.
+							$script.
+						' '.
+							//Add the site code, the job id, and the current time to the command, just so we can track them later
+							escapeshellarg($siteCode. $job['id']. '_'. $timeInSeconds. '_').
+						' > /dev/null &');
+			}
+		}
+	}
+	
+	public static function step1($managerClassName = 'zenario_scheduled_task_manager') {
+		
+		$timeInSeconds = time();
 		$serverTime = zenario_scheduled_task_manager::getServerTime();
 		$times = explode(' ', exec('date +"%Y %m %u %H %M %d "'));
 		
@@ -163,8 +332,20 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 			}
 			$times[4] = (int) ($times[4] / 5);
 		}
-
 		
+		
+		$siteCode = static::getJobCode();
+		$runningJobIds = static::getRunningJobs();
+		
+		
+		
+		//Check on all of the background tasks
+		if ($managerClassName == 'zenario_scheduled_task_manager') {
+			static::checkBackgroundTasks($runningJobIds);
+		}
+		
+		
+		//Go through all of the scheduled tasks that should be run this minute
 		$sql = "
 			SELECT
 				id,
@@ -180,23 +361,17 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 				email_address_on_error,
 				status,
 				last_run_started,
-				last_run_started <= DATE_SUB(NOW(), INTERVAL 4 HOUR) AS stuck
+				last_run_started IS NOT NULL AND last_run_started <= DATE_SUB(NOW(), INTERVAL 4 HOUR) AS stuck
 			FROM ". DB_PREFIX. "jobs
 			WHERE manager_class_name = '". ze\escape::sql($managerClassName). "'
-			  AND `enabled` = 1";
-		
-		if ($runSpecificJob) {
-			$sql .= "
-			  AND job_name = '". ze\escape::sql($runSpecificJob). "'";
-		
-		} else {
-			$sql .= "
+			  AND job_type = 'scheduled'
+			  AND `enabled` = 1
 			  AND (
 				status = 'rerun_scheduled'
 				OR run_every_minute = 1";
 		
-			if (!$offtime) {
-				$sql .= "
+		if (!$offtime) {
+			$sql .= "
 				OR (	0+months & ". pow(2, (int) $times[1] - 1). "
 					AND 0+days & ". pow(2, (int) $times[2] - 1). "
 					AND 0+hours & ". pow(2, (int) $times[3]). "
@@ -208,20 +383,19 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 					  ). ")
 					)
 				)";
-			}
-		
-			$sql .= "
-			  )";
 		}
+		
+		$sql .= "
+			  )";
 		
 		$jobsRun = false;
 		$result = ze\sql::select($sql);
-		while($job = ze\sql::fetchAssoc($result)) {
+		while ($job = ze\sql::fetchAssoc($result)) {
 			$jobsRun = true;
 			
-			//Jobs that are still "in progress" should not have a second copy run.
-			if ($job['status'] == 'in_progress') {
-				//However if we see that they've been in progress for more than four hours then send an email
+			//Check if a job is still running
+			if (isset($runningJobIds[$job['id']])) {
+				//If we see that they've been in progress for more than four hours then send an email
 				if ($warnAboutStuckTasksEvery15Mins && $job['stuck']) {
 					self::sendLogEmails(
 						$managerClassName, $serverTime,
@@ -229,6 +403,8 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 						'This has been "in progress" for over four hours and may be stuck!',
 						$job['email_address_on_error']);
 				}
+				
+				//Jobs that are still running should not have a second copy run.
 				continue;
 			}
 			
@@ -267,8 +443,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 					' '.
 						escapeshellarg($job['email_address_on_error']).
 					' '.
-						escapeshellarg(serialize($args)).
-					' &');
+						//Add the site code, the job id, and the current time to the command, just so we can track them later
+						escapeshellarg($siteCode. $job['id']. '_'. $timeInSeconds. '_').
+					' > /dev/null &');
 		}
 		
 		ze\site::setSetting('jobs_last_run', time(), $updateDB = true, $encrypt = false, $clearCache = false);
@@ -280,8 +457,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		$managerClassName,
 		$serverTime, $jobId, $jobName, $moduleClassName, $staticMethod,
 		$logActions, $logInaction, $emailActions, $emailInaction,
-		$emailAddressAction, $emailAddressInaction, $emailAddressError,
-		$serializedArgs = ''
+		$emailAddressAction, $emailAddressInaction, $emailAddressError
 	) {
 		
 		//Lock the job, set some fields
@@ -304,9 +480,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 				' '.
 					escapeshellarg($moduleClassName).
 				' '.
-					escapeshellarg($staticMethod).
-				' '.
-					escapeshellarg($serializedArgs),
+					escapeshellarg($staticMethod),
 				$output);
 		
 		zenario_scheduled_task_manager::logResult(
@@ -480,8 +654,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	
 	public static function step3(
 		$managerClassName,
-		$serverTime, $jobId, $jobName, $moduleClassName, $staticMethod,
-		$serializedArgs = ''
+		$serverTime, $jobId, $jobName, $moduleClassName, $staticMethod
 	) {
 		if (!ze\module::inc($moduleClassName)) {
 			echo ze\admin::phrase('This Module is not currently running.');
@@ -503,6 +676,94 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		}
 	}
 	
+	//This function can be used to obtain the arrays that the stopStartOrRestartThreads() function needs as an input
+	public static function getThreadsList($inUse, $maxPossible = 16) {
+		//Given how many threads a process is supposed to use, return a list of which of the total maximum threads
+		//would be active and which would be inactive
+		$allThreads = [];
+		$pickedThreads = [];
+		$unpickedThreads = [];
+	
+		for ($i = 1; $i <= $maxPossible; ++$i) {
+			if ($i <= $inUse) {
+				$pickedThreads[] = $i;
+			} else {
+				$unpickedThreads[] = $i;
+			}
+			$allThreads[] = $i;
+		}
+		
+		return [
+			$allThreads,
+			$pickedThreads,
+			$unpickedThreads
+		];
+	}
+	
+	
+	//Stop, start or restart some of the processes/threads used by assetwolf
+	//(Note that this just queues the change; you need to call zenario_scheduled_task_manager::checkBackgroundTasks()
+	// after calling this if you wish the changes to happen immediately.)
+	public static function stopStartOrRestartThreads($moduleClassName, $processName, $threads, $action, $forceUnpause = false) {
+		
+		if (empty($threads)) {
+			return;
+		}
+		
+		//Input should be an array, but accept single values as well
+		if (!is_array($threads)) {
+			$threads = [$threads];
+		}
+		
+		//Accept a list of thread numbers, but convert them to the correct names
+		foreach ($threads as &$thread) {
+			if (is_numeric($thread)) {
+				$thread = $processName. 'T'. str_pad($thread, 2, '0', STR_PAD_LEFT);
+			}
+		}
+		
+		switch ($action) {
+			case 'stop':
+				$sql = "
+					UPDATE ". DB_PREFIX. "jobs
+					SET `enabled` = 0,
+						script_restart_time = 0";
+				break;
+			case 'start':
+				$sql = "
+					UPDATE ". DB_PREFIX. "jobs
+					SET `enabled` = 1";
+				break;
+			case 'restart':
+			case 'restart_if_running':
+				$sql = "
+					UPDATE ". DB_PREFIX. "jobs
+					SET `enabled` = 1,
+						script_restart_time = ". (int) time();
+				break;
+			default:
+				return;
+		}
+		
+		if ($forceUnpause) {
+			$sql .= ",
+				paused = 0";
+		}
+		
+		$sql .= "
+			WHERE manager_class_name = 'zenario_scheduled_task_manager'
+			  AND job_type = 'background'
+			  AND module_class_name = '". ze\escape::sql($moduleClassName). "'
+			  AND job_name IN (". ze\escape::in($threads, 'sql'). ")";
+		
+		switch ($action) {
+			case 'restart_if_running':
+				$sql .= "
+			  AND `enabled` = 1";
+		}
+		
+		ze\sql::update($sql);
+	}
 	
 	
 	public static function checkScheduledTaskRunning($jobName = false, $checkPulse = false, $managerClassName = 'zenario_scheduled_task_manager') {

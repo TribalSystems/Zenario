@@ -90,10 +90,67 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             notices:
-                individual_cookie_consent_not_enabled:
+                not_required:
                     type: warning
-                    message: <a href="[[link]]" target="_blank">Individual cookie consent</a> has not been enabled so the content below will always be added to pages.
+                    show: true
                     html: true
+                    visible_if: |
+                        !zenarioA.siteSettings.cookie_require_consent
+                    message: |
+                        This site has
+                        <a
+                            target="_blank"
+                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
+                        >
+                        cookie consent</a>
+                        set to "don't inform or require", any Javascript here will always be run.
+                
+                implied:
+                    type: warning
+                    show: true
+                    html: true
+                    visible_if: |
+                        zenarioA.siteSettings.cookie_require_consent == 'implied'
+                    message: |
+                        This site has
+                        <a
+                            target="_blank"
+                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
+                        >
+                        cookie consent</a>
+                        set to "implied consent", any Javascript here will always be run.
+                
+                explicit:
+                    type: warning
+                    show: true
+                    html: true
+                    visible_if: |
+                        zenarioA.siteSettings.cookie_require_consent == 'explicit' &&
+                        !zenarioA.siteSettings.individual_cookie_consent
+                    message: |
+                        This site has
+                        <a
+                            target="_blank"
+                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
+                        >
+                        cookie consent</a>
+                        set to "explicit consent", add Javascipt here that will only be run when a visitor clicks Accept for cookies.
+                
+                individual:
+                    type: warning
+                    show: true
+                    html: true
+                    visible_if: |
+                        zenarioA.siteSettings.cookie_require_consent == 'explicit' &&
+                        !!zenarioA.siteSettings.individual_cookie_consent
+                    message: |
+                        This site has
+                        <a
+                            target="_blank"
+                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
+                        >
+                        cookie consent</a>
+                        set to "explicit consent" / "individual cookies", add Javascipt to each box that will only be run when each option is enabled.
             fields:
                 sitewide_analytics_html_location:
                     site_setting:

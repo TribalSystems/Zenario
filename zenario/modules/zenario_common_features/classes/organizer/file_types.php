@@ -34,21 +34,25 @@ class zenario_common_features__organizer__file_types extends ze\moduleBaseClass 
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__administration/panels/file_types') return;
 		
-		foreach ($panel['items'] as &$item) {
-			if ($item['custom']) {
-				$item['traits'] = ['custom' => true];
-			}
-		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__administration/panels/file_types') return;
 		
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
+		if (!empty($_POST['delete']) && ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\row::delete('document_types', ['type' => ze\ring::decodeIdForOrganizer($id), 'custom' => 1]);
+			}
+		}
+		if (!empty($_POST['allow']) && ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
+			foreach (ze\ray::explodeAndTrim($ids) as $id) {
+				ze\row::update('document_types', ['is_allowed' => 1], ['type' => ze\ring::decodeIdForOrganizer($id)]);
+			}
+		}
+		if (!empty($_POST['disallow']) && ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
+			foreach (ze\ray::explodeAndTrim($ids) as $id) {
+				ze\row::update('document_types', ['is_allowed' => 0], ['type' => ze\ring::decodeIdForOrganizer($id)]);
 			}
 		}
 	}

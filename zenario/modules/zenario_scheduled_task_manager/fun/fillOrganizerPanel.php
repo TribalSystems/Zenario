@@ -37,6 +37,17 @@ switch ($path) {
 			unset($panel['collection_buttons']['master_switch_on']);
 		}
 		
+		if (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
+			$panel['notice'] = $panel['notice_master_switch_off'];
+		
+		} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
+			$panel['notice'] = $panel['notice_crontab'];
+		
+		} else {
+			$panel['notice'] = $panel['notice_master_switch_on'];
+		}
+		unset($panel['notice_master_switch_off'], $panel['notice_master_switch_on'], $panel['notice_crontab']);
+		
 		$panel['collection_buttons']['copy_code']['onclick'] =
 			//Attempt to copy the cannonical URL to the clipboard when the visitor presses this button
 			'zenarioA.copy("'. ze\escape::js('* * * * *  php '. CMS_ROOT. ze::moduleDir('zenario_scheduled_task_manager', 'cron/run_every_minute.php'). ' 1'). '");'.
@@ -46,7 +57,9 @@ switch ($path) {
 				//So as a workaround, redraw the admin toolbar with the dropdown closed.
 			'zenarioO.setButtons();';
 		
-		foreach ($panel['items'] as &$item) {
+		$runningJobIds = static::getRunningJobs();
+		
+		foreach ($panel['items'] as $id => &$item) {
 			
 			$item['traits'] = [];
 			
@@ -60,6 +73,55 @@ switch ($path) {
 				} else {
 					$item['traits']['can_enable'] = true;
 				}
+			}
+			
+			//Calculate the status column, the logic differs between background tasks and scheduled tasks
+			switch ($item['job_type']) {
+				case 'scheduled':
+					//If a task is flagged as "in progress", check if it's actually still running or if it's missing
+					if ($item['status'] == 'in_progress') {
+						if (!isset($runningJobIds[$id])) {
+							$item['status'] = 'crashed';
+						}
+					}
+					
+					break;
+				
+				case 'background':
+					//For backgroudn tasks, ignore the status in the database,
+					//and calculate the status from whether the process is running
+					if ($item['enabled']) {
+						$starting = 0;
+						$stopping = 0;
+						if (!empty($runningJobIds[$id])) {
+							foreach ($runningJobIds[$id] as $startTime) {
+								if ($item['script_restart_time'] > $startTime) {
+									++$stopping;
+								} else {
+									++$starting;
+								}
+							}
+						}
+						if ($starting) {
+							if ($stopping) {
+								$item['status'] = 'restarted';
+							} else {
+								$item['status'] = 'running';
+							}
+						} else {
+							if ($stopping) {
+								$item['status'] = 'restarting';
+							} else {
+								$item['status'] = 'starting';
+							}
+						}
+					} else {
+						if (empty($runningJobIds[$id])) {
+							$item['status'] = 'not_running';
+						} else {
+							$item['status'] = 'stopping';
+						}
+					}
 			}
 			
 			$item['module'] = ze\module::getModuleDisplayNameByClassName($item['module']);

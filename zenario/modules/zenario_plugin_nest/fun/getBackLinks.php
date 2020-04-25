@@ -79,9 +79,14 @@ if ($this->usesConductor && $this->state) {
 		//Loop through each of the variables needed by the destination
 		foreach ($back['slide']['request_vars'] as $reqVar) {
 			//Check the settings on the destination to see if it needs that variable.
-			//If so then try to add it from the core variables.
-			if (empty($requests[$reqVar]) && !empty(ze::$vars[$reqVar])) {
-				$requests[$reqVar] = ze::$vars[$reqVar];
+			//If so then try to add it from either the core variables or the GET request.
+			if (empty($requests[$reqVar])) {
+				if (!empty(ze::$vars[$reqVar])) {
+					$requests[$reqVar] = ze::$vars[$reqVar];
+				
+				} elseif (!empty($_GET[$reqVar])) {
+					$requests[$reqVar] = $_GET[$reqVar];
+				}
 			}
 		}
 		

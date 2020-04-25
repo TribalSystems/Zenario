@@ -413,9 +413,79 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				$disableHTMLEscaping,
 				$addressReplyTo,
 				$nameReplyTo,
-				!$template['debug_override'] && $template['send_cc']? $template['cc_email_address'] : '',
-				!$template['debug_override'] && $template['send_bcc']? $template['bcc_email_address'] : '',
-				$template['debug_override']? $template['debug_email_address'] : ''
+				!$template['debug_override'] && $template['send_cc'] ? $template['cc_email_address'] : '',
+				!$template['debug_override'] && $template['send_bcc'] ? $template['bcc_email_address'] : '',
+				$template['debug_override'] ? $template['debug_email_address'] : ''
+			)) {
+				
+				$sql = "
+					UPDATE ". DB_PREFIX. "email_templates SET 
+						last_sent = NOW()
+					WHERE id = ". (int) $template['id'];
+				ze\sql::update($sql);
+
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	//This function allows to completely override an email template body and subject line.
+	public static function sendEmailsUsingTemplateNoMerge(
+		$rcpts, $templateCode, $emailSubject = '', $emailBody = '',
+		$attachments = [], $attachmentFilenameMappings = [],
+		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false
+	) {
+		if ($template = self::getTemplateByCode($templateCode)) {
+			if (!$emailSubject) {
+				$emailSubject = $template['subject'];
+			}
+			
+			if (!$emailBody) {
+				$emailBody = $template['body'];
+			}
+			
+			if ($template['head']) {
+				static::putHeadOnBody($template['head'], $emailBody);
+			}
+		
+			if ($template['use_standard_email_template']) {
+				static::putBodyInTemplate($emailBody);
+			}
+			
+			if ($template['from_details'] == 'site_settings') {
+				$template['email_address_from'] = ze::setting('email_address_from');
+				$template['email_name_from'] = ze::setting('email_name_from');
+			}
+			
+			if ($template['include_a_fixed_attachment'] && $template['selected_attachment']) {
+				$document = ze\row::get('documents', ['file_id', 'privacy'], ['id' => $template['selected_attachment']]);
+				
+				if ($document['privacy'] != 'offline') {
+					$file = ze\file::link($document['file_id']);
+					
+					//For Docstore symlinks, get the real file path.
+					$attachments[] = realpath(rawurldecode($file));
+				}
+			}
+			
+			if (self::sendEmails(
+				$rcpts,
+				$emailSubject,  
+				$template['email_address_from'],
+				$template['email_name_from'],
+				$emailBody, 
+				$mergeFields = [],
+				$attachments,
+				$attachmentFilenameMappings,
+				$template['id'],
+				$disableHTMLEscaping,
+				$addressReplyTo,
+				$nameReplyTo,
+				!$template['debug_override'] && $template['send_cc'] ? $template['cc_email_address'] : '',
+				!$template['debug_override'] && $template['send_bcc'] ? $template['bcc_email_address'] : '',
+				$template['debug_override'] ? $template['debug_email_address'] : ''
 			)) {
 				
 				$sql = "

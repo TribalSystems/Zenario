@@ -284,6 +284,7 @@ site_settings:
                     site_setting:
                         name: smtp_password
                         encrypt: true
+                        secret: true
                     label: 'Password:'
                     type: password
                     visible_if: "1 * zenarioAB.value('smtp_specify_server') && zenarioAB.value('smtp_use_auth')"

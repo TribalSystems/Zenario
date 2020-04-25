@@ -40,8 +40,9 @@ CREATE TABLE [[DB_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_email
 	PRIMARY KEY(`user_id`)
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
 _sql
-);
-ze\dbAdm::revision(4, "
+
+); ze\dbAdm::revision(4,
+"
 	INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
@@ -66,7 +67,9 @@ ze\dbAdm::revision(4, "
 		 0,
 		 1
 		)
-"); ze\dbAdm::revision(30,
+"
+
+); ze\dbAdm::revision(30,
 
 <<<_sql
 	UPDATE [[DB_PREFIX]]email_templates
@@ -93,5 +96,30 @@ _sql
 	WHERE `code` = 'zenario_extranet_change_email__to_user_email_change_en'
 _sql
 
-);
+); ze\dbAdm::revision(33,
+"
+	INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
+		`code`,
+		`template_name`,
+		`subject`,
+		`body`,
+		`date_created`,
+		`created_by_id`,
+		`allow_attachments`,
+		`use_standard_email_template`
+	) VALUES (
+		'zenario_extranet_change_email__to_user_email_change_successful_en',
+		'To User: Email change successful',
+		'Email change successful',
+		'<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Your email address has recently been changed, from \"[[previous_email]]\" to \"[[new_email]]\".</p>
+		<p>If this was done by you, no action is required.</p>
+		<p>However, if this was not you, please contact a site administrator as soon as possible.</p>',
+		NOW(),
+		" .(int) ($_SESSION['admin_userid'] ?? false) . ",
+		0,
+		1
+	)
+"
 
+);

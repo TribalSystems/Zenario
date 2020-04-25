@@ -64,9 +64,12 @@ zenario__content:
                     title: Sub-categories
                     show_by_default: Yes
                     align_right: Yes
+                parent_id:
+                    hidden: true
+                    db_column: cat.parent_id
             default_sort_column: name
             label_format_for_picked_items: |
-                [[name]]
+                [[full_path_label]]
             label_format_for_grid_view: |
                 [[name]]
                 ([[item_count]])

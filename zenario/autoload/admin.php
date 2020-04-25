@@ -555,4 +555,62 @@ class admin {
 		return \ze\site::description('days_before_admin_is_inactive') ?: 90;
 	}
 	
+	
+	public static function formatLastUpdated($row, $relativeDate = false, $relativeDateAddFullTime = false) {
+		return \ze\user::getLastEditedOrCreatedDatetimeForFrontEndOrFAB(
+			true,
+			$row['last_edited'],
+			$row['last_edited_admin_id'],
+			$row['last_edited_user_id'],
+			$row['last_edited_username'],
+			$row['created'],
+			$row['created_admin_id'],
+			$row['created_user_id'],
+			$row['created_username'],
+			$relativeDate, $relativeDateAddFullTime
+		);
+	}
+	
+	public static function formatUserLastUpdated($row, $relativeDate = false, $relativeDateAddFullTime = false) {
+		return \ze\user::getLastEditedOrCreatedDatetimeForFrontEndOrFAB(
+			true,
+			$row['modified_date'],
+			$row['last_edited_admin_id'],
+			$row['last_edited_user_id'],
+			$row['last_edited_username'],
+			$row['created_date'],
+			$row['created_admin_id'],
+			$row['created_user_id'],
+			$row['created_username'],
+			$relativeDate, $relativeDateAddFullTime
+		);
+	}
+	
+	public static function setLastUpdated(&$details, $creating) {
+		if ($creating) {
+			$details['created'] = \ze\date::now();
+			$details['created_admin_id'] = \ze\admin::id();
+			$details['created_user_id'] = null;
+			$details['created_username'] = null;
+		} else {
+			$details['last_edited'] = \ze\date::now();
+			$details['last_edited_admin_id'] = \ze\admin::id();
+			$details['last_edited_user_id'] = null;
+			$details['last_edited_username'] = null;
+		}
+	}
+	
+	public static function setUserLastUpdated(&$details, $creating) {
+		static::setLastUpdated($details, $creating);
+		
+		if ($creating) {
+			$details['creation_method'] = 'visitor';
+			$details['created_date'] = $details['created'];
+			unset($details['created']);
+		} else {
+			$details['modified_date'] = $details['last_edited'];
+			unset($details['last_edited']);
+		}
+	}
+	
 }

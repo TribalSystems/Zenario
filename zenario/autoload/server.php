@@ -176,7 +176,7 @@ class server {
 		
 			if ($mail->SMTPAuth = (bool) \ze::setting('smtp_use_auth')) {
 				$mail->Username = \ze::setting('smtp_username');
-				$mail->Password = \ze::setting('smtp_password');
+				$mail->Password = \ze::secretSetting('smtp_password');
 			}		
 			$mail->SMTPDebug = false;
 		}
@@ -277,19 +277,68 @@ class server {
 						return '/usr/bin/'. $program;
 					case '/usr/local/bin/':
 						return '/usr/local/bin/'. $program;
-					case '/Applications/AMPPS/mysql/bin/':
-						if (PHP_OS == 'Darwin') {
-							return '/Applications/AMPPS/mysql/bin/'. $program;
-						}
-						break;
-					case '/Applications/AMPPS/mongodb/bin/':
-						if (PHP_OS == 'Darwin') {
-							return '/Applications/AMPPS/mongodb/bin/'. $program;
-						}
 				}
 			}
 		}
 	
 		return false;
+	}
+	
+	//Wrapper function for the phpMQTT library.
+	//Note: This library is currently not included in the publically downloadable version of Zenario.
+	//If you're using this version of Zenario then you'll need to install phpMQTT using composer before you can call this function in your code!
+	public static function mqttConnect($host, $port, $username, $password, $clientId = null) {
+		$mqtt = new \Bluerhinos\phpMQTT($host, $port, $clientId ?? $username);
+		if ($mqtt->connect(true, NULL, $username, $password)) {
+			return $mqtt;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	//Call ClamAV to scan a file for a virus, if it is installed
+		//Returns true if a file is safe
+		//Returns false if a virus was found
+		//Returns null if ClamAV wasn't installed or enabled in the site settings, or the ClamAV daemon was not running
+	public static function antiVirusScan($filepath, $autoDelete = false) {
+		
+		if ($programPath = \ze\server::programPathForExec(\ze::setting('clamscan_tool_path'), 'clamdscan')) {
+			
+			//If this file is in the temp directory and has its permissions set to 0600, the virus scanner won't
+			//be able to read it. Temporarily set the permissions to 0644
+			$changePermsForScan =
+				substr($filepath, 0, 5) == '/tmp/'
+			 && (fileperms($filepath) & 0777) === 0600;
+			
+			if ($changePermsForScan) {
+				@chmod($filepath, 0644);
+			}
+			
+				//Run the virus scan
+				$output = [];
+				$returnValue = 2;
+				exec(escapeshellarg($programPath). ' --quiet '. escapeshellarg($filepath), $output, $returnValue);
+			
+			if ($changePermsForScan) {
+				@chmod($filepath, 0600);
+			}
+			
+			//A return value of 0 means no virus
+			if ($returnValue == 0) {
+				return true;
+			
+			//A return value of 1 means a virus was detected!
+			} elseif ($returnValue == 1) {
+				if ($autoDelete) {
+					@unlink($filepath);
+				}
+				return false;
+			
+			//A return value of 2 means clamd was not running, or another error occurred
+			}
+		}
+		
+		return null;
 	}
 }

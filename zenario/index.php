@@ -123,7 +123,7 @@ if ($isAdmin = ze::isAdmin()) {
 
 
 //Attempt to get this page.
-$cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = false;
+$cID = $cType = $content = $chain = $version = $redirectNeeded = $aliasInURL = false;
 ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET, $_REQUEST, $_POST);
 
 if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $isAdmin)) {
@@ -152,7 +152,7 @@ require ze::editionInclude('index.pre_header');
 
 
 //Look up more details on the content item we are going to show
-$status = ze\content::getShowableContent($content, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
+$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
 	//N.b. an empty string ('') is used for a private page, if a visitor is not logged in
 	//A 0 is used if a visitor is logged in and still can't see the page
 
@@ -161,7 +161,7 @@ if ($status === ZENARIO_403_NO_PERMISSION) {
 	//Show the no-access if this page is not accessible
 	header('HTTP/1.0 403 Forbidden');
 	ze\content::langSpecialPage('zenario_no_access', $cID, $cType);
-	$status = ze\content::getShowableContent($content, $version, $cID, $cType);
+	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
 
 } elseif ($status === ZENARIO_401_NOT_LOGGED_IN) {
 	//Set the destination so the Visitor can come back here when logged in
@@ -174,13 +174,13 @@ if ($status === ZENARIO_403_NO_PERMISSION) {
 	//Show the login page
 	header('HTTP/1.0 401 Authentication Required');
 	ze\content::langSpecialPage('zenario_login', $cID, $cType);
-	$status = ze\content::getShowableContent($content, $version, $cID, $cType);
+	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
 
 } elseif (!$status) {
 	//Show the no-access if this page does not exist
 	header('HTTP/1.0 404 Not Found');
 	ze\content::langSpecialPage('zenario_not_found', $cID, $cType);
-	$status = ze\content::getShowableContent($content, $version, $cID, $cType);
+	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
 	
 	//Log error if errors module is running
 	if (ze\module::inc('zenario_error_log')) {
@@ -196,7 +196,7 @@ if ($status === ZENARIO_403_NO_PERMISSION) {
 if (!$content || !$version || $status !== true) {
 	$cID = ze::$homeCID;
 	$cType = ze::$homeCType;
-	$status = ze\content::getShowableContent($content, $version, $cID, $cType);
+	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
 }
 
 //If none of the above gave us a page to show, the site probably isn't set up correctly, so show the installation message
@@ -209,7 +209,7 @@ unset($cType);
 unset($menu);
 
 
-ze\content::setShowableContent($content, $version);
+ze\content::setShowableContent($content, $chain, $version, true);
 
 
 //Run post-display actions

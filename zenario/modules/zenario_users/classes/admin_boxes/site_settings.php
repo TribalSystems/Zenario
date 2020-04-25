@@ -88,7 +88,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				}
 				
 				$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
-				$fields['names/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to user sign-in and content-access logs.', ['link' => htmlspecialchars($link)]);
+				$fields['names/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to keep user sign-in and content-access logs.', ['link' => htmlspecialchars($link)]);
 				break;
 			
 			case 'perms':

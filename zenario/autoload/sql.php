@@ -230,9 +230,3 @@ class sql {
 	}
 }
 \ze\sql::init(\ze::$dbL);
-
-//class sqlGlobal extends sql {}
-//\ze\sqlGlobal::init(\ze::$dbG);
-//
-//class sqlDA extends sql {}
-//\ze\sqlDA::init(\ze::$dbD);

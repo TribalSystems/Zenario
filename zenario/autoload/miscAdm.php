@@ -371,7 +371,7 @@ class miscAdm {
 				
 				$name = $menuDetails['name'];
 				if ($menuLevel) {
-					$name = str_repeat(' -> ', $menuLevel). $name;
+					$name = str_repeat(' › ', $menuLevel). $name;
 				}
 				
 				//Show a link to the menu node in organizer
@@ -709,6 +709,8 @@ class miscAdm {
 			$currentStates = \ze\ray::explodeAndTrim($slide['states']);
 			if (!empty($currentStates[0])) {
 				$box['key']['conductorState'] = $currentStates[0];
+				
+				$incNest = \ze\module::inc('zenario_plugin_nest');
 		
 				//Fill the list of slides
 				$result = \ze\sql::select("
@@ -720,6 +722,10 @@ class miscAdm {
 	
 				$ord = 0;
 				while ($row = \ze\sql::fetchAssoc($result)) {
+					//Format the name so people aren't looking at the merge fields
+					if ($incNest) {
+						$row['name_or_title'] = \zenario_plugin_nest::formatTitleTextAdmin($row['name_or_title']);
+					}
 		
 					$states = \ze\ray::explodeAndTrim($row['states']);
 		
@@ -900,6 +906,14 @@ class miscAdm {
 			
 			$tuixDirs = \ze::moduleDirs('tuix/');
 			$tuixDirs[] = 'zenario/admin/welcome/';
+			
+			//On Assetwolf sites, also include the data handler in this logic,
+			//so any changes there also trigger a cache clear.
+			if (\ze\module::isRunning('assetwolf_2')) {
+				$mDir = \ze::moduleDir('assetwolf_2');
+				$tuixDirs[] = $mDir. 'data_handler';
+				$tuixDirs[] = $mDir. 'includes';
+			}
 			
 			foreach ($tuixDirs as $tuixDir) {
 		
@@ -1131,6 +1145,16 @@ class miscAdm {
 			\ze\site::setSetting('yaml_files_last_changed', $time);
 			\ze\site::setSetting('yaml_version', base_convert($time, 10, 36));
 			\ze\site::setSetting('zenario_version', $zenario_version);
+			
+			
+			//If the scheduled task manager is enabled, restart any background tasks that are running,
+			//as I don't want them to continue to run in the background with out-of-date code.
+			//But include a check to see if the columns have been created for this, to prevent a bug
+			//with database updates.
+			if (\ze::$dbL->checkTableDef(DB_PREFIX. 'jobs', 'paused')
+			 && \ze\module::inc('zenario_scheduled_task_manager')) {
+				\zenario_scheduled_task_manager::restartAllBackgroundTasks();
+			}
 		}
 	}
 	

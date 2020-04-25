@@ -37,7 +37,6 @@ ze\content::pageBody();
 ze\content::pageFoot($prefix, false, false, false);
 
 echo '
-<script type="text/javascript" src="../../libs/manually_maintained/mit/jquery/jquery-ui.button.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../libs/manually_maintained/mit/jquery/jquery-ui.spinner.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/grid.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/admin_grid_maker.min.js?v=', $v, '"></script>

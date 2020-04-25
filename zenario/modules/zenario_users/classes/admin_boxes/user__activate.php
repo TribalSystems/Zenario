@@ -52,16 +52,17 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if (($id = (int)$box['key']['id']) && ze\priv::check('_PRIV_EDIT_USER')) {
-			$sql ="
-					UPDATE "
-					. DB_PREFIX . "users
-					SET
-						status='active'
-					WHERE
-						id=" . $id;
-			ze\sql::update($sql);
-			ze\module::sendSignal("eventUserStatusChange",["userId" => $id, "status" => "active"]);
+		if (($userId = (int)$box['key']['id']) && ze\priv::check('_PRIV_EDIT_USER')) {
+			$cols = [];
+			ze\admin::setLastUpdated($cols, $creating = false);
+			$cols['modified_date'] = $cols['last_edited'];
+			$cols['suspended_date'] = NULL;
+			unset($cols['last_edited']);
+			$cols['status'] = 'active';
+		
+			ze\row::update('users', $cols, $userId);
+			
+			ze\module::sendSignal("eventUserStatusChange", ["userId" => $userId, "status" => "active"]);
 		}
 	}
 	

@@ -1,33 +1,35 @@
-<div class="zfea_i_and_p">
+<% if (!m.tuix.hide_pagination) { %>
+	<div class="zfea_i_and_p">
 	
-	<% if (m.tuix.__items_phrase__ && !m.tuix.hide_item_count_message && !_.isEmpty(m.tuix.columns)) { %>
-		<div class="zfea_item_count">
-			{{m.tuix.__items_phrase__|e}}
-		</div>
-	<% } %>
-	
-	<div
-		class="zfea_pagination"
-		id="pagination_{{m.lib.containerId}}"
-		style="display: none;"
-	>
-
-		<!-- optional left control buttons --> 
-		<nav id="pagination_{{m.lib.containerId}}_m_left"></nav><nav id="pagination_{{m.lib.containerId}}_o_left"></nav> 
-
-		<div class='paginator_p_wrap'> 
-			<div class='paginator_p_bloc'> 
-				<!--<a class='paginator_p'></a> // page number : dynamically added --> 
+		<% if (m.tuix.__items_phrase__ && !m.tuix.hide_item_count_message && !_.isEmpty(m.tuix.columns)) { %>
+			<div class="zfea_item_count">
+				{{m.tuix.__items_phrase__|e}}
 			</div>
-		</div> 
+		<% } %>
+	
+		<div
+			class="zfea_pagination"
+			id="pagination_{{m.lib.containerId}}"
+			style="display: none;"
+		>
 
-		<!-- optional right control buttons --> 
-		<nav id="pagination_{{m.lib.containerId}}_o_right"></nav><nav id="pagination_{{m.lib.containerId}}_m_right"></nav> 
+			<!-- optional left control buttons --> 
+			<nav id="pagination_{{m.lib.containerId}}_m_left"></nav><nav id="pagination_{{m.lib.containerId}}_o_left"></nav> 
+
+			<div class='paginator_p_wrap'> 
+				<div class='paginator_p_bloc'> 
+					<!--<a class='paginator_p'></a> // page number : dynamically added --> 
+				</div>
+			</div> 
+
+			<!-- optional right control buttons --> 
+			<nav id="pagination_{{m.lib.containerId}}_o_right"></nav><nav id="pagination_{{m.lib.containerId}}_m_right"></nav> 
 
 
-		<!-- slider --> 
-		<div class='paginator_slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all'> 
-			<a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a> 
-		</div> 
+			<!-- slider --> 
+			<div class='paginator_slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all'> 
+				<a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a> 
+			</div> 
+		</div>
 	</div>
-</div>
+<% } %>

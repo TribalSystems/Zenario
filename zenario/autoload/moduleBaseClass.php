@@ -239,80 +239,61 @@ class moduleAPI {
 		}
 	}
 	
+	private $twigEnvVars = null;
+	
 	//New Twig version of zenario frameworks
-	protected final function twigFramework($vars = [], $return = false, $fromString = false, $fromFile = false) {
+	protected final function twigFramework($vars = [], $return = false, $fromString = false, $fromFile = false, $addThisVar = null) {
 		
 		$output = null;
 		
-		
-		//Add plugin environment variables
-		if (!isset($vars['containerId'])) {
-			$vars['containerId'] = $this->containerId;
-		}
-		if (!isset($vars['instanceId'])) {
-			$vars['instanceId'] = $this->instanceId;
-		}
-		if (!isset($vars['isVersionControlled'])) {
-			$vars['isVersionControlled'] = $this->isVersionControlled;
-		}
-		if (!isset($vars['moduleId'])) {
-			$vars['moduleId'] = $this->moduleId;
-		}
-		if (!isset($vars['moduleClassName'])) {
-			$vars['moduleClassName'] = $this->moduleClassName;
-		}
-		if (!isset($vars['slotName'])) {
-			$vars['slotName'] = $this->slotName;
-		}
-		if (!isset($vars['slotLevel'])) {
-			$vars['slotLevel'] = $this->slotLevel;
-		}
-		if (!isset($vars['parentNest'])) {
-			$vars['parentNest'] = $this->parentNest;
-		}
-		
-		//Add the CMS' environment variable
-		if (!isset($vars['equivId'])) {
-			$vars['equivId'] = \ze::$equivId;
-		}
-		if (!isset($vars['cID'])) {
-			$vars['cID'] = \ze::$cID;
-		}
-		if (!isset($vars['cType'])) {
-			$vars['cType'] = \ze::$cType;
-		}
-		if (!isset($vars['cVersion'])) {
-			$vars['cVersion'] = \ze::$cVersion;
-		}
-		if (!isset($vars['isDraft'])) {
-			$vars['isDraft'] = \ze::$isDraft;
-		}
-		if (!isset($vars['alias'])) {
-			$vars['alias'] = \ze::$alias;
-		}
-		if (!isset($vars['langId'])) {
-			$vars['langId'] = \ze::$langId;
-		}
-		if (!isset($vars['adminId'])) {
-			$vars['adminId'] = \ze::$adminId;
-		}
-		if (!isset($vars['userId'])) {
-			$vars['userId'] = \ze::$userId;
-		}
-		if (!isset($vars['vars'])) {
-			$vars['vars'] = \ze::$vars;
+		//Get the environment variables
+		if ($this->twigEnvVars === null) {
+			$this->twigEnvVars = [
+				//Add this plugin's environment variables
+				'containerId' => $this->containerId,
+				'instanceId' => $this->instanceId,
+				'isVersionControlled' => $this->isVersionControlled,
+				'moduleId' => $this->moduleId,
+				'moduleClassName' => $this->moduleClassName,
+				'slotName' => $this->slotName,
+				'slotLevel' => $this->slotLevel,
+				'parentNest' => $this->parentNest,
+				
+				//Add the CMS' environment variables
+				'equivId' => \ze::$equivId,
+				'cID' => \ze::$cID,
+				'cType' => \ze::$cType,
+				'cVersion' => \ze::$cVersion,
+				'isDraft' => \ze::$isDraft,
+				'alias' => \ze::$alias,
+				'langId' => \ze::$langId,
+				'adminId' => \ze::$adminId,
+				'userId' => \ze::$userId,
+				'vars' => \ze::$vars
+			];
 		}
 		
-		//Add the current plugin
-		if (!isset($vars['this'])) {
-			$vars['this'] = $this;
+		//Add the environment variables to the input variables
+		if (empty($vars)) {
+			$vars = $this->twigEnvVars;
+		} else {
+			$vars = array_merge($this->twigEnvVars, $vars);
 		}
 		
-		
-		//Add any modules that said they should be available in Twig
-		foreach (\ze::$twigModules as $className => &$class) {
-			if (!isset($vars[$className])) {
-				$vars[$className] = $class;
+		//Should we add the "this" variable?
+		//By default, allow it in frameworks, but not in things like twig snippets
+		if ($addThisVar === null) {
+			$addThisVar = !$fromString && !$fromFile;
+		}
+		if ($addThisVar) {
+			if (!isset($vars['this'])) {
+				$vars['this'] = $this;
+			}
+			//Add any modules that said they should be available in Twig
+			foreach (\ze::$twigModules as $className => &$class) {
+				if (!isset($vars[$className])) {
+					$vars[$className] = $class;
+				}
 			}
 		}
 		
@@ -478,7 +459,10 @@ class moduleAPI {
 	}
 	
 	protected final function translatePhrasesInTUIX(&$tags, $path, $languageId = false, $scan = false) {
-		\ze\tuix::translatePhrases($tags, $this->zAPISettings, $path, $this->moduleClassNameForPhrases, $languageId, $scan);
+		if (empty($tags['__phrases_translated'])) {
+			\ze\tuix::translatePhrases($tags, $this->zAPISettings, $path, $this->moduleClassNameForPhrases, $languageId, $scan);
+			$tags['__phrases_translated'] = true;
+		}
 	}
 	
 	protected final function translatePhrasesInTUIXObjects($tagNames, &$tags, $path, $languageId = false, $scan = false) {
@@ -501,6 +485,15 @@ class moduleAPI {
 		}
 		
 		return \ze\lang::nphrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
+	}
+	
+	public final function nzphrase($zeroText, $text, $pluralText = false, $n = 1, $replace = []) {
+		
+		if (isset($this->zAPISettings['phrase.framework.'. $text])) {
+			$text = $this->zAPISettings['phrase.framework.'. $text];
+		}
+		
+		return \ze\lang::nzphrase($zeroText, $text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
 	
 	public final function refreshPluginSlotAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
@@ -547,6 +540,10 @@ class moduleAPI {
 	
 	public function returnGlobalName() {
 		return $this->moduleClassName. '_'. str_replace('-', '__', $this->containerId);
+	}
+	
+	public final function returnClassName() {
+		return $this->moduleClassName;
 	}
 	
 	
@@ -667,6 +664,25 @@ class moduleAPI {
 		$this->zAPIShowInMenuMode($shownInMenuMode);
 	}
 	
+	protected final function registerPluginPage($mode = null) {
+		if (\ze\priv::check() && \ze::$equivId) {
+			
+			$state = '';
+			if (isset($this->parentNest)) {
+				$state = $this->parentNest->getState();
+			}
+			
+			\ze\row::set('plugin_pages_by_mode',
+				['equiv_id' => \ze::$equivId, 'content_type' => \ze::$cType],
+				[
+					'module_class_name' => $this->moduleClassName,
+					'mode' => $mode ?? ($this->setting('mode') ?: ''),
+					'state' => substr(\ze\escape::ascii($state), 0, 2)
+				]
+			);
+		}
+	}
+	
 	
 	
 	
@@ -712,10 +728,10 @@ class moduleAPI {
 		return $this->AJAXLink($requests);
 	}
 	
-	public final function pluginAJAXLink($requests = '') {
+	public final function pluginAJAXLink($requests = '', $methodCall = 'handlePluginAJAX') {
 		return
 			\ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.
-			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=handlePluginAJAX'.
+			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call='. $methodCall.
 			'&cID='. $this->cID.
 			'&cType='. $this->cType.
 		  (\ze\priv::check()?
@@ -736,6 +752,32 @@ class moduleAPI {
 			\ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showFile'.
 			\ze\ring::urlRequest($requests);
+	}
+	
+	public final function pluginShowFileLink($requests = '') {
+		return $this->pluginAJAXLink($requests, 'showFile');
+	}
+	
+	public final function showImageLink($requests) {
+		return
+			\ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.
+			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showImage'.
+			\ze\ring::urlRequest($requests);
+	}
+	
+	public final function pluginShowImageLink($requests = '') {
+		return $this->pluginAJAXLink($requests, 'showImage');
+	}
+	
+	public final function showStandalonePageLink($requests) {
+		return
+			\ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.
+			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showStandalonePage'.
+			\ze\ring::urlRequest($requests);
+	}
+	
+	public final function pluginShowStandalonePageLink($requests = '') {
+		return $this->pluginAJAXLink($requests, 'showStandalonePage');
 	}
 	
 	public final function showFloatingBoxLink($requests = '') {
@@ -802,20 +844,6 @@ class moduleAPI {
 	//Old deprecated link
 	protected final function showIframeLink($requests = '', $hideLayout = false) {
 		return $this->showSingleSlotLink($requests, $hideLayout);
-	}
-	
-	public final function showImageLink($requests) {
-		return
-			\ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.
-			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showImage'.
-			\ze\ring::urlRequest($requests);
-	}
-	
-	public final function showStandalonePageLink($requests) {
-		return
-			\ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.
-			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showStandalonePage'.
-			\ze\ring::urlRequest($requests);
 	}
 	
 	public final function showRSSLink($allowFriendlyURL = false, $overwriteFriendlyURL = true) {
@@ -1117,9 +1145,13 @@ class moduleAPI {
 			$this->frameworkPath = $frameworkPath;
 		}
 		
-		if ($frameworkPath !== false) {
+		if ($mainClass !== false) {
 			$this->zAPIMainClass = $mainClass;
 		}
+	}
+	
+	public final function isSubClass() {
+		return isset($this->zAPIMainClass);
 	}
 	
 	public final function setInstance($locationAndInstanceDetails = false, $overrideSettings = false, $eggId = 0, $slideId = 0, $beingDisplayed = true) {
@@ -1158,8 +1190,7 @@ class moduleAPI {
 					SELECT `name`, `value`
 					FROM ". DB_PREFIX. "plugin_settings
 					WHERE instance_id = ". (int) $this->instanceId. "
-					  AND egg_id = ". (int) $eggId. "
-					  AND name != '~custom_yaml~'";
+					  AND egg_id = ". (int) $eggId;
 			
 				//Don't load phrase overrides for Reusable Plugins
 				//(Phrase overrides will begin with a %)
@@ -1274,14 +1305,32 @@ class moduleAPI {
 	}
 	
 	//Display the starting wrapper of a slot
-	public final function start() {
+	public final function start($awClass = 'zenario_slotOuter') {
 		if (\ze::$isTwig) return;
 		
 		//Put a section around the slot and the slot controls in admin mode.
 		//This lets us adjust the look of the slot and the slot controls using CSS.
 		if (\ze\priv::check()) {
+			
+			$tuixSnippetId = $this->zAPISettings['~tuix_snippet~'] ?? null;
+			$em = self::$zAPIExtendingModules[$this->containerId] ?? null;
+			
 			echo '
-				<x-zenario-admin-slot-wrapper id="', $this->containerId, '-wrap" class="zenario_slotOuter ', $this->instanceId? 'zenario_slotWithContents' : 'zenario_slotWithNoContents', '">';
+				<x-zenario-admin-slot-wrapper id="', $this->containerId, '-wrap" class="',
+					$awClass,
+					$this->instanceId? ' zenario_slotWithContents' : ' zenario_slotWithNoContents',
+					$tuixSnippetId? ' zenario_slot_with_tuix_snippet' : '',
+					$em? ' zenario_slot_with_extending_modules' : '',
+				'"';
+			
+			if ($tuixSnippetId && ($custom = \ze\sql::fetchValue('SELECT name FROM '. DB_PREFIX. 'tuix_snippets WHERE id = '. (int) $tuixSnippetId))) {
+				echo ' data-tuix_snippet="', htmlspecialchars($custom. ' (ID '. $tuixSnippetId. ')'), '"';
+			}
+			if ($em && ($names = \ze\sql::fetchValues('SELECT CONCAT(class_name, \' (\', display_name, \')\') FROM '. DB_PREFIX. 'modules WHERE class_name IN ('. \ze\escape::in(array_keys($em)). ')'))) {
+				echo ' data-extnames="', htmlspecialchars(implode(', ', $names)), '"';
+			}
+			
+			echo '>';
 		}
 	}
 	
@@ -1552,6 +1601,11 @@ class moduleAPI {
 		$this->twigFramework($mergeFields);
 	}
 	
+	private static $zAPIExtendingModules = [];
+	public final function zAPISetExtendingModules($ems) {
+		self::$zAPIExtendingModules[$this->containerId] = $ems;
+	}
+	
 	
 	
 	
@@ -1744,7 +1798,7 @@ class moduleBaseClass extends moduleAPI {
 	public function returnVisitorTUIXEnabled($path) {
 		if (\ze::$isTwig) return;
 		
-		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class))) {
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->returnVisitorTUIXEnabled($path);
 		}
 		return false;
@@ -1753,7 +1807,7 @@ class moduleBaseClass extends moduleAPI {
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
 		if (\ze::$isTwig) return;
 		
-		if ($this->subClass) {
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->fillVisitorTUIX($path, $tags, $fields, $values);
 		}
 	}
@@ -1761,7 +1815,7 @@ class moduleBaseClass extends moduleAPI {
 	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
 		if (\ze::$isTwig) return;
 		
-		if ($this->subClass) {
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->formatVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
@@ -1769,7 +1823,7 @@ class moduleBaseClass extends moduleAPI {
 	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
 		if (\ze::$isTwig) return;
 		
-		if ($this->subClass) {
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->validateVisitorTUIX($path, $tags, $fields, $values, $changes, $saving);
 		}
 	}
@@ -1777,7 +1831,7 @@ class moduleBaseClass extends moduleAPI {
 	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
 		if (\ze::$isTwig) return;
 		
-		if ($this->subClass) {
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->saveVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
@@ -1785,7 +1839,7 @@ class moduleBaseClass extends moduleAPI {
 	public function typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, &$searchResults) {
 		if (\ze::$isTwig) return;
 		
-		if ($this->subClass) {
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, $searchResults);
 		}
 	}
@@ -1801,7 +1855,7 @@ class moduleBaseClass extends moduleAPI {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (\ze::$isTwig) return;
 		
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
 		}
 	}
@@ -1809,7 +1863,7 @@ class moduleBaseClass extends moduleAPI {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (\ze::$isTwig) return;
 		
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 		}
 	}
@@ -1817,7 +1871,7 @@ class moduleBaseClass extends moduleAPI {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if (\ze::$isTwig) return;
 		
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
 		}
 	}
@@ -1825,7 +1879,7 @@ class moduleBaseClass extends moduleAPI {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (\ze::$isTwig) return;
 		
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 		}
 	}
@@ -1833,7 +1887,7 @@ class moduleBaseClass extends moduleAPI {
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (\ze::$isTwig) return;
 		
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
 		}
 	}
@@ -1841,7 +1895,7 @@ class moduleBaseClass extends moduleAPI {
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (\ze::$isTwig) return;
 		
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
 		}
 	}
@@ -1859,24 +1913,24 @@ class moduleBaseClass extends moduleAPI {
 	}
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
 		}
 	}	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		if ($c = $this->runSubClass(static::class)) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
 		}
 	}

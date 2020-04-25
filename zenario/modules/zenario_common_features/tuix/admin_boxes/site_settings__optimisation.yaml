@@ -136,10 +136,11 @@ site_settings:
                     note_below: |
                         <p>This button will:</p>
                         <ul>
-                            <li>remove cached web pages, cached plugins, skin <code>.css</code> files, plugin <code>.js</code> and <code>.yaml</code> files from the server's <code>cache/</code> directory</li>
-                            <li>clear visitors' browsers' caches, on next load</li>
-                            <li>clear a reverse proxy cache, if used, on next load</li>
-                            <li>clear Organizer's cached data</li>
+                            <li>Remove cached web pages, cached plugins, skin <code>.css</code> files, plugin <code>.js</code> and <code>.yaml</code> files from the server's <code>cache/</code> directory.</li>
+                            <li>Restart any running background scripts managed by the Scheduled Task Manager.</li>
+                            <li>Clear visitors' browsers' caches, on next load.</li>
+                            <li>Clear a reverse proxy cache, if used, on next load.</li>
+                            <li>Clear Organizer's cached data.</li>
                         </ul>
         
         speed:

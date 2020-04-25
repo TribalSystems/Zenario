@@ -52,6 +52,12 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 			$panel['items']['email']['name'] = 'Email';
 			$panel['items']['email']['desc'] = 'Settings for sending emails from this website.';
 		}
+		
+		if (ze\module::isRunning('zenario_location_manager')) {
+			if (ze\module::isRunning('zenario_organization_manager')) {
+				$panel['items']['zenario_location_manager__site_settings_group']['name'] = 'Locations, Organzations and Roles';
+			}
+		}
 
 	}
 	

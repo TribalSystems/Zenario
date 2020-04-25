@@ -396,7 +396,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			if (!$box['key']['id'] || $values['details/username'] != $details['username']) {
 				if (ze\row::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
-						&& ze\rowGlobal::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
+						&& ze\row\g::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
 					$box['tabs']['details']['errors'][] = ze\admin::phrase('An Administrator with this Username already exists. Please choose a different Username.');
 				}
 			}
@@ -404,7 +404,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			if (!$box['key']['id'] || $values['details/email'] != $details['email']) {
 				if (ze\row::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
-						&& ze\rowGlobal::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
+						&& ze\row\g::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
 					$box['tabs']['details']['errors'][] = ze\admin::phrase('An Administrator with this Email Address already exists. Please choose a different Email Address.');
 				}
 			}

@@ -35,11 +35,18 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			foreach ($box['tabs'] as $tabName => &$tab) {
 				if (!empty($tab['fields'])
 				 && is_array($tab['fields'])) {
-					foreach ($tab['fields'] as &$field) {
+					foreach ($tab['fields'] as $fieldId => &$field) {
+						$isSecret = !empty($field['site_setting']['secret']);
+						
 						if ($setting = $field['site_setting']['name'] ?? false) {
+							
 							
 							if ($perm = ze\ring::chopPrefix('perm.', $setting)) {
 								$field['value'] = ze\user::permSetting($perm);
+							
+							} elseif ($isSecret) {
+								$field['value'] = ze::secretSetting($setting);
+							
 							} else {
 								$field['value'] = ze::setting($setting);
 							}
@@ -50,6 +57,17 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							} elseif ($setting == 'admin_domain' || $setting == 'primary_domain') {
 								$field['value'] = ($field['value'] ?: 'none');
 							}
+						}
+						
+						if ($isSecret && ($field['type'] ?? '') == 'password') {
+							$field['onmouseover'] = ($field['onmouseover'] ?? ''). ' this.type = "text";';
+							$field['onmouseout'] = ($field['onmouseout'] ?? ''). ' this.type = "password";';
+							$field['css_class'] = ($field['css_class'] ?? ''). ' zenario_secret_password';
+							$field['pre_field_html'] = ($field['pre_field_html'] ?? ''). '<span
+								class="zenario_secret_password_wrap'. (!empty($field['readonly']) || !empty($field['disabled'])? ' zenario_secret_password_wrap_readonly' : ''). '"
+								onclick="zenarioAB.get(\''. ze\escape::js($fieldId). '\').focus();"
+							>';
+							$field['post_field_html'] = '</span>'. ($field['post_field_html'] ?? '');
 						}
 					}
 				}
@@ -348,14 +366,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$fields['backup/automated_backups']['snippet']['html'] = '<p>' . ze\admin::phrase('None found.') . '</p>';
 			}
 			
-		} elseif ($settingGroup == 'head_and_foot') {
-			//Show a warning and link on the cookies content tab if individual cookie consent is not enabled
-			if (!ze::setting('individual_cookie_consent')) {
-				$box['tabs']['cookie_content']['notices']['individual_cookie_consent_not_enabled']['show'] = true;
-				$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}';
-				ze\lang::applyMergeFields($box['tabs']['cookie_content']['notices']['individual_cookie_consent_not_enabled']['message'], ['link' => htmlspecialchars($link)]);
-			}
-			
 		} elseif ($settingGroup == 'dirs') {
             $warnings = ze\welcome::getBackupWarningsWithoutHtmlLinks();
             if (!empty($warnings) && isset($warnings['show_warning'])) {
@@ -486,6 +496,51 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 		}
+		
+		if (isset($box['tabs']['antivirus'])) {
+			$box['tabs']['antivirus']['notices']['error']['show'] =
+			$box['tabs']['antivirus']['notices']['daemon']['show'] =
+			$box['tabs']['antivirus']['notices']['success']['show'] = false;
+			
+			
+			$output = [];
+			$returnValue = 0;
+			
+			if (!empty($box['tabs']['antivirus']['fields']['test']['pressed'])) {
+				
+				$programPath = ze\server::programPathForExec($values['antivirus/clamscan_tool_path'], 'clamdscan', true);
+				
+				
+				
+				$output = [];
+				$returnValue = 3;
+				
+				if ($programPath) {
+					$version = exec(escapeshellarg($programPath) .' --version', $output, $returnValue);
+					
+					if (strpos($version, 'ClamAV') !== false) {
+						$filepath = CMS_ROOT. ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf');
+						//$filepath = tempnam(sys_get_temp_dir(), 'testscan');
+						//file_put_contents($filepath, 'Hello world!');
+						//@chmod($filepath, 0644);
+						
+						exec(escapeshellarg($programPath) . ' --quiet ' . escapeshellarg($filepath), $output, $returnValue);
+						
+						//@chmod($filepath, 0600);					
+					}
+				}
+				
+				if ($returnValue == 0) {
+					$box['tabs']['antivirus']['notices']['success']['show'] = true;
+				
+				} elseif ($returnValue == 2) {
+					$box['tabs']['antivirus']['notices']['daemon']['show'] = true;
+				
+				} else {
+					$box['tabs']['antivirus']['notices']['error']['show'] = true;
+				}
+			}
+		}
 
 		if (isset($box['tabs']['antiword'])) {
 			$box['tabs']['antiword']['notices']['error']['show'] =
@@ -589,8 +644,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$box['tabs']['wkhtmltopdf']['notices']['error']['show'] =
 			$box['tabs']['wkhtmltopdf']['notices']['success']['show'] = false;
 			
-			$values['wkhtmltopdf/enable_wkhtmltopdf'] = (bool) $values['wkhtmltopdf/wkhtmltopdf_path'];
-			
 			if (!empty($box['tabs']['wkhtmltopdf']['fields']['test']['pressed'])) {
 				if (($programPath = ze\server::programPathForExec($values['wkhtmltopdf/wkhtmltopdf_path'], 'wkhtmltopdf'))
 				 && ($rv = exec(escapeshellarg($programPath) .' --version'))) {
@@ -659,22 +712,30 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					$error = ze\admin::phrase('"[[email]]" is not a valid email address.', ['email' => $email]);
 		
 				} else {
-			
+					//Temporarily switch the site settings to the current values
+					$settingVals = [];
 					$settings = [
 						'email_address_from' => 'email',
 						'base64_encode_emails' => 'smtp',
 						'smtp_host' => 'smtp',
-						'smtp_password' => 'smtp',
 						'smtp_port' => 'smtp',
 						'smtp_security' => 'smtp',
 						'smtp_specify_server' => 'smtp',
 						'smtp_use_auth' => 'smtp',
-						'smtp_username' => 'smtp'];
-			
-					//Temporarily switch the site settings to the current values
+						'smtp_username' => 'smtp'
+					];
 					foreach($settings as $name => $onTab) {
-						$setting[$name] = ze::setting($name);
+						$settingVals[$name] = ze::setting($name);
 						ze\site::setSetting($name, $values[$onTab. '/'. $name], $updateDB = false);
+					}
+					
+					$secretSettingVals = [];
+					$settings = [
+						'smtp_password' => 'smtp'
+					];
+					foreach($settings as $name => $onTab) {
+						$secretSettingVals[$name] = ze::secretSetting($name);
+						ze\site::setSecretSetting($name, $values[$onTab. '/'. $name], $updateDB = false);
 					}
 			
 					try {
@@ -710,8 +771,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					}
 			
 					//Switch the site settings back
-					foreach($settings as $name => $onTab) {
-						ze\site::setSetting($name, $setting[$name], $updateDB = false);
+					foreach($settingVals as $name => $value) {
+						ze\site::setSetting($name, $value, $updateDB = false);
+					}
+					foreach($secretSettingVals as $name => $value) {
+						ze\site::setSecretSetting($name, $value, $updateDB = false);
 					}
 				}
 		
@@ -881,7 +945,9 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 						if (empty($field['readonly'])
 						 && empty($field['read_only'])
 						 && ($setting = $field['site_setting']['name'] ?? false)) {
-					
+							
+							$isSecret = !empty($field['site_setting']['secret']);
+							
 							//Get the value of the setting. Hidden fields should count as being empty
 							if (ze\ring::engToBoolean($field['hidden'] ?? false)
 							 || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)) {
@@ -929,11 +995,16 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 								}
 							
 							} else {
-								$settingChanged = $value != ze::setting($setting);
+								if ($isSecret) {
+									$settingChanged = $value != ze::secretSetting($setting);
+								} else {
+									$settingChanged = $value != ze::setting($setting);
+								}
 					
 								if ($settingChanged) {
-									//ze\site::setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true)
-									ze\site::setSetting($setting, $value, true, ze\ring::engToBoolean($field['site_setting']['encrypt'] ?? false));
+									ze\site::setSetting($setting, $value,
+										true, ze\ring::engToBoolean($field['site_setting']['encrypt'] ?? false),
+										true, ze\ring::engToBoolean($field['site_setting']['secret'] ?? false));
 								
 									//Handle changing the default language of the site
 									if ($setting == 'default_language') {

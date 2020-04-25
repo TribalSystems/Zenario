@@ -438,16 +438,30 @@ zenario__content:
                     width: xsmall
                     show_by_default: true
                     tooltip: "Word count of version controlled plugins on the content item."
+                accesses:
+                    ord: 26
+                    title: Accesses
+                    sortable: true
+                    table_join: |
+                        LEFT JOIN [[DB_PREFIX]]user_content_accesslog AS uca
+                            ON v.id = uca.content_id
+                           AND v.type = uca.content_type
+                           AND v.version = uca.content_version
+                    db_column: >
+                        IF(COUNT(uca.user_id) > 0, COUNT(uca.user_id), 0)
+                    align_right: true
+                    width: xsmall
+                    show_by_default: true
                 lock_owner_id:
                     db_column: c.lock_owner_id
                 lock_owner_name:
                 writer_name:
-                    ord: 26
+                    ord: 27
                     title: Writer name
                     db_column: v.writer_name
                     searchable: true
                 archives_exist:
-                    ord: 26
+                    ord: 28
                     hidden: true
                     width: medium
                     title: 'Archives exist?'
@@ -462,7 +476,7 @@ zenario__content:
                         )
                     format: yes_or_no
                 inline_files:
-                    ord: 28
+                    ord: 29
                     title: Images and animations
                     db_column: |
                         (
@@ -476,7 +490,7 @@ zenario__content:
                     align_right: true
                     width: xsmall
                 zenario_trans__links:
-                    ord: 29
+                    ord: 30
                     title: Translations
                     align_right: true
                     show_by_default: true
@@ -490,14 +504,14 @@ zenario__content:
                               AND ci_sa.language_id IN ([[ZENARIO_SYNC_ASSIST_LANGS]])
                         )
                 layout:
-                    ord: 30
+                    ord: 31
                     title: Layout
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
                     show_by_default: true
                     width: xsmall
                     hidden: true
                 layout_id:
-                    ord: 31
+                    ord: 32
                     db_column: v.layout_id
                     filter_format: enum
                     values:
@@ -505,7 +519,7 @@ zenario__content:
                         - L02
                         #...
                 menu:
-                    ord: 32
+                    ord: 33
                     title: Menu Node
                     db_column: mt.name
                     show_by_default: true

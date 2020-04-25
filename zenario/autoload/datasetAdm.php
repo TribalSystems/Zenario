@@ -294,9 +294,9 @@ class datasetAdm {
 		$key['dataset_id'] = $dataset['id'];
 	
 		if ($flat) {
-			$columns = ['is_system_field', 'label', 'default_label'];
+			$columns = ['id', 'is_system_field', 'label', 'default_label'];
 		} else {
-			$columns = ['tab_name', 'is_system_field', 'fundamental', 'field_name', 'type', 'db_column', 'label', 'default_label', 'ord'];
+			$columns = ['id', 'tab_name', 'is_system_field', 'fundamental', 'field_name', 'type', 'db_column', 'label', 'default_label', 'ord'];
 		}
 	
 		$fields = \ze\row::getAssocs('custom_dataset_fields', $columns, $key, 'ord');

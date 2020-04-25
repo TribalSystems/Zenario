@@ -42,9 +42,9 @@ common_definitions:
             This works from version 8.0 onwards.
     hidden: &hidden
         type: boolean
-        html_description: >
+        description: >
             <p>If you want to hide and show TUIX elements such as toolbar buttons, toolbar tabs or Admin Box fields in different situations, you can set the <span class="code">&lt;hidden&gt;</span> property to hide them in your php methods such as <span class="code">fillAdminToolbar()</span>, <span class="code">formatAdminBox()</span> and <span class="code">preFillOrganizerPanel()</span>.</p>
-            <p>Anything with the hidden property set to true will be hidden from view. But note that data is still sent from the server to the client.</p>
+            <p>Anything with the hidden property set to true will be hidden from view. Be aware that data is still sent from the server to the client.</p>
     visible_if: &visible_if
         type:
             - string

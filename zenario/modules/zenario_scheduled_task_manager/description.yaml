@@ -24,6 +24,13 @@ description: |
             <p>
                 The Scheduled Backups Module is an example of a Module that uses Scheduled Tasks. It allows periodic backups to be taken automatically.
             </p>
+            <p>
+                From Zenario 8.6 and onwards, the Scheduled Task Manager now provides the ability to run background tasks.
+                These are scripts that need to run constantly in the background.
+                Developers can register their scripts, and the Scheduled Task Manager will check once every minute to see
+                if they are there and running.
+                Functionality is also provided to restart and stop scripts.
+            </p>
 category: management
 keywords: >
     batch, cron, job, night, overnight, schedule, scheduler,

@@ -30,6 +30,7 @@
 		var f,
 			field,
 			ff = m.fields[0],
+			fl = m.fields.length,
 			rowHasError = false,
 			hadKeySymbol = false;
 	%>
@@ -65,6 +66,16 @@
 		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
 		{{ff.indent? 'zenario_indent_level zenario_indent_level_' +  (1*ff.indent) : ''}}
 		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
+		
+		<% if (fl > 1) { %>
+			zfab_row_with_multiple_fields zfab_row_with_{{fl}}_fields
+		<% } else { %>
+			zfab_row_with_1_field
+		<% } %>
+		
+		<% if (ff.pre_field_html || ff.post_field_html) { %>
+			zfab_row_with_pre_or_post_field_html
+		<% } %>
 	">
 		
 		<div class="zfab_row_inner">

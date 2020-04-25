@@ -38,6 +38,9 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		}
 		
 		if ($_POST['extranet_add_image'] ?? false) {
+			
+			ze\fileAdm::exitIfUploadError(true, false, true, $fileVar = 'extranet_upload_image');
+			
 			if (ze::setting('max_content_image_filesize') < $_FILES['extranet_upload_image']['size']) {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = ['Error' => $this->phrase('Your image must be smaller than [[bytes]] bytes', ['bytes'=>setting('max_content_image_filesize')])];

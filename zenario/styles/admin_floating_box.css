@@ -168,8 +168,7 @@
 	cursor:auto;
 }
 
-#zenario_fbAdminFloatingBox .zenario_fabHead .zenario_fabId,
-#zenario_fbAdminFloatingBox .zenario_fabHead .zenario_fabSlideToggle {
+#zenario_fbAdminFloatingBox .zenario_fabHead .zenario_fabId {
 	display:none;
 }
 
@@ -509,6 +508,25 @@ body.ie9 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.z
 	border: 1px solid #C5C5C5;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fabTabs > div.zenario_fab_dummy_parent_tab > div > a {
+	padding-right:13px;
+    background: url('../admin/images/icon-arrow-down-grey.svg') no-repeat right center / 8px 8px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fabTabs > div.zenario_fab_dummy_parent_tab:hover > div > a,
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fabTabs > div.zenario_fab_child_tab_is_current.zenario_fab_dummy_parent_tab > div > a {
+    background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat right center / 8px 8px;
+}
+
+#zenario_fbAdminFloatingBox #zenario_fbMain #zenario_fabLastUpdated {
+	position: absolute;
+	right: 45px;
+	font-style: italic;
+	font-family: "open-sans",Arial,Verdana,Helvetica;
+	font-size: 12px;
+	margin-top:-10px;
+}
+
 #zenario_fbAdminFloatingBox #zenario_fbMain #zenario_fbAdminInner {
 	padding:5px 20px 10px 20px;
 	overflow:auto;
@@ -599,10 +617,20 @@ body.ie9 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.z
 }
 
 #zenario_fbAdminInfoBox .zenario_infoBox input.zenario_info_box_value {
+	width:100%;
 	border: none;
 	background: none;
 	padding: 0;
-	width: 100%;
+}
+
+#zenario_fbAdminInfoBox .zenario_infoBox .zenario_infoSection div > div textarea {
+	width: calc(100% - 10px);
+	padding:5px;
+	color:#676767;
+	background:#efefef;
+	border:1px solid #aaa;
+	font-family: Arial,Verdana,Helvetica,sans-serif;
+	font-size: 12px;
 }
 
 
@@ -1182,7 +1210,6 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
    	width: 340px;
    	background-color: #efefef;
    	background-size:auto 100%;
-   	border-right:1px solid #ccc;
 }
 
 .zenario_fab_zenario_newsletter #zenario_fbAdminInner .zfab_row.zenario_ab_row__load_content_source .zfab_row_fields select,
@@ -1192,6 +1219,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
    
    	border: 1px solid #ccc;
    	height: 30px;
+   	/*width: 368px;*/
    	color: #000;
    	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
 	font-size:12px;
@@ -1206,6 +1234,23 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
   	background-position: right 8px center;
   	background-image: url('../admin/images/icon-arrow-down.svg');
   	padding-right: 20px;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__publish_date {
+	overflow:hidden;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__publish_date span.zenario_field_widget_wrap,
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__publish_date select {
+	float:left;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__publish_date span.zenario_field_widget_wrap {
+	margin-right:15px;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__publish_date select {
+	margin:5px 8px 0 0;
 }
 
 #zenario_fbAdminInner td.title input.multiple_edit {
@@ -1245,6 +1290,74 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	color:#424242;
 }
 
+#zenario_fbAdminInner .div_table #row__smtp_password.zfab_row .title {
+	display:block;
+}
+
+#zenario_fbAdminFloatingBox .zenario_secret_password_wrap {
+	width:auto;
+	display:inline-block;
+	position:relative;
+}
+
+#zenario_fbAdminFloatingBox .zenario_secret_password_wrap:after {
+	cursor: text;
+	content:"Hover to view";
+	position:absolute;
+	z-index:1;
+	right:5px;
+	top:5px;
+	bottom:0;
+	font-size:10px;
+	font-style:italic;
+	color:#888;
+	background:#efefef;
+	height:17px;
+	padding:1px 5px 0 5px;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+	-webkit-transition:all 0.3s ease 0s;  
+   	-moz-transition:all 0.3s ease 0s;  
+   	-o-transition:all 0.3s ease 0s;  
+   	transition:all 0.3s ease 0s;
+}
+
+#zenario_fbAdminFloatingBox .zenario_secret_password_wrap:hover:after {
+	color:#999;
+}
+
+#zenario_fbAdminInner .zenario_secret_password_wrap.zenario_secret_password_wrap_readonly input[readonly="readonly"] {
+	background:rgba(246, 246, 246,0.5) !important;
+}
+
+#zenario_fbAdminFloatingBox .zenario_secret_password_wrap_readonly:hover:after,
+#zenario_fbAdminFloatingBox .zenario_secret_password_wrap_readonly:after {
+	color: #333;
+	background: #ccc;
+}
+
+#zenario_fbAdminFloatingBox .zenario_secret_password_wrap input {
+	background:transparent;
+	position:relative;
+	z-index:2;
+}
+
+#zenario_fbAdminFloatingBox .input_password.zenario_secret_password {
+	border: 1px solid #ff3030;
+	/*background: url("../admin/images/placeholder-hover-to-view.png") no-repeat 99% 50% transparent;*/
+	background-size: 95px 20px;
+}
+
+#zenario_fbAdminFloatingBox .input_password.zenario_secret_password:hover {
+	/*background: url("../admin/images/placeholder-hovering-to-view.png") no-repeat 99% 50% transparent;*/
+	background-size: 95px 20px;
+}
+
+#zenario_fbAdminInner input.input_password.zenario_secret_password[readonly] {
+	border-color: #df8f8f !important;
+}
+
 #zenario_fbAdminInner .input_url {
 	width: 350px;
 }
@@ -1266,6 +1379,10 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	width:445px;
 	border:1px solid #C4C4C4;
 	padding:5px;
+}
+
+#zenario_fbAdminFloatingBox form.zenario_ab__zenario_menu .input_textarea.zenario_breadcrumb_preview {
+	width:calc(100% - 20px);
 }
 
 #zenario_fbAdminInner #active_field {
@@ -1300,7 +1417,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 #row__menu_path .input_password,
 #zenario_fbAdminInner input[readonly],
 #zenario_fbAdminInner input[readonly="readonly"] {
-	background: #F6F6F6 !important;
+	background-color: #F6F6F6 !important;
 	border: 1px solid #dadada !important;
 	color: #6F6F6F !important;
 }
@@ -1330,7 +1447,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 #zenario_fbAdminInner input[disabled="disabled"].zenario_datepicker:disabled,
 .webkit #zenario_fbAdminInner input[type=text].zenario_datepicker:disabled,
 .webkit #zenario_fbAdminInner input[disabled="disabled"].zenario_datepicker:disabled {
-	background: #F6F6F6 !important;
+	background-color: #F6F6F6 !important;
 	border: 1px solid #dadada !important;
 	color: #6F6F6F !important;
 }
@@ -1347,9 +1464,12 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 #zenario_fbAdminInner input.zenario_textbox_noborder:disabled,
 #zenario_fbAdminInner textarea.zenario_textbox_noborder,
 #zenario_fbAdminInner textarea.zenario_textbox_noborder:disabled {
-	background: #E7CCAE !important;
 	border: none !important;
-	color: #424242 !important;
+}
+
+textarea.zenario_breadcrumb_preview {
+	background: #f8f8f8;
+	color: #424242;
 	padding:5px 8px;
 	font-family:Arial,Verdana,Helvetica,sans-serif;
 }
@@ -1411,6 +1531,37 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 
 .zenario_fab_plugin #zenario_fbAdminInner .zfab_inline_error {
 	color:red;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_full_width_field.zenario_row_for_text .zfab_row_fields .input_text,
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_full_width_field.zenario_row_for_textarea .zfab_row_fields .input_textarea {
+	width:90%;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_full_width_field.zenario_row_for_upload .zfab_row_fields .Tokenize {
+	width:92.5%;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_full_width_field.zenario_row_for_upload .zfab_row_fields .Tokenize .TokensContainer {
+	width:calc(100% - 6px);
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_pick_items .zfab_row_fields #name_for_category .Tokenize {
+	width:92.5%;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_pick_items .zfab_row_fields #name_for_category .Tokenize .TokensContainer {
+	width:calc(100% - 6px);
+	min-height:30px;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_pick_items .zfab_row_fields #name_for_category .Tokenize .Token .zenario_row_input_button {
+	width:97% !important;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_pick_items .zfab_row_fields #name_for_category .Tokenize .Token .form_picked_item {
+	width: calc(100% - 65px);
+    white-space: normal;
 }
 
 /*  Rows and columns for radio/checkboxes  */
@@ -1528,7 +1679,7 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .messageDisplay {
 	width:auto;
 	min-height: 20px;
-	padding:6px 10px 6px 10px;
+	padding:6px 10px 0 10px;
 	margin: 0;
 	line-height:1.4em;
 	background-color:#F5F5F5;
@@ -1546,6 +1697,7 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .errorDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-error.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
+	padding-bottom:6px;
 }
 
 #content_form .zfab_error,
@@ -1558,6 +1710,7 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .warningDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-warning.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
+	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .warningDisplayRow .messageDisplay {
@@ -1568,6 +1721,7 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .questionDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-question.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
+	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .questionDisplayRow .messageDisplay {
@@ -1578,6 +1732,7 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .successDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
+	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .successDisplayRow .messageDisplay {
@@ -1588,6 +1743,7 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .informationDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-information.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
+	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .informationDisplayRow .messageDisplay {
@@ -2169,6 +2325,25 @@ body.ie9 #zenario_fbAdminInner .div_table .zfab_row:hover .zenario_side_note_wra
 	border-color: rgba(224, 224, 224, 0); 
 	border-right-color: #E0E0E0; 
 	border-width: 6px;  
+}
+
+#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap {
+	width:135px;
+	text-align:center;
+}
+
+#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note {
+	top:-28px;
+	-webkit-border-top-left-radius: 4px;
+	-moz-border-radius-topleft: 4px;
+	border-top-left-radius: 4px;
+}
+
+#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note:after {
+	right:50%;
+	top:100%;
+	border-right-color:rgba(224,224,224,0);
+	border-top-color: #E0E0E0;
 }
 
 #zenario_fbAdminInner .zenario_note_below .zenario_note_content p,
@@ -3253,6 +3428,24 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 	margin-right:4px;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab > div > a,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab:hover > div > a,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab.zenario_fab_child_tab_is_current > div > a {
+	padding-right: 18px;
+    background-repeat:no-repeat;
+    background-position:90% center;
+    background-size:8px 8px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab > div > a {
+    background-image:url('../zenario/admin/images/icon-arrow-down-grey-light.svg');
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab:hover > div > a,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab.zenario_fab_child_tab_is_current > div > a {
+    background-image:url('../zenario/admin/images/icon-arrow-down-white.svg');  
+}
+
 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div > div > a {
 	background:#000000;
 	-webkit-border-top-left-radius: 2px;
@@ -3770,29 +3963,58 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	margin-right:3%;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .div_table .zfab_row#row__location_id {
+	width:40%;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .div_table .zfab_row#row__user_id {
+	width:30%;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .div_table .zfab_row#row__role_id {
+	width:20%;
+}
+
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .div_table .zfab_error_wrap.zfab_row {
 	float:none;
 	width:100%;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize,
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .TokensContainer {
-	width:230px;
+	width:100%;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .TokensContainer {
 	min-height:30px;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .form_picked_item {
-	width:150px;
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .Token .zenario_row_input_button {
+	width:calc(100% - 15px);
+}	
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .Token .form_picked_item {
+	width:calc(100% - 35px - 22px);
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner #name_for_user_id .Tokenize .Token .form_picked_item {
+	width:calc(100% - 35px);
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize .Dropdown .form_picked_item {
-	width:220px !important;
+	width:calc(100% - 35px) !important;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner #name_for_location_id .Tokenize.Disabled .form_picked_item {
+	text-overflow:clip;
+	white-space:normal;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner #name_for_user_id .Tokenize .TokensContainer {
 	padding:2px;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner #name_for_user_id .Tokenize.Disabled .TokenSearch {
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_organization_manager__user_role_location_link #zenario_fbAdminInner .Tokenize.Disabled .TokenSearch {
 	display:none;
 }
 
@@ -4324,7 +4546,6 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	padding:45px 0 15px;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabSlideToggle,
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabClose,
 #zenario_fbAdminFloatingBox .zenario_fabHead .zenario_fabId {
 	position:absolute;
@@ -4377,14 +4598,18 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	position: absolute;
 	z-index: 1;
 	float: right;
-	right: 68px;
-	top: 15px;
+	right: 97px;
+	top: 13px;
 	
 	width:250px;
 }
 
 .zfab_with_identifier #zenario_fabGlobalArea {
-	top: 50px;
+	top: 48px;
+}
+
+#zenario_fabGlobalArea #mode-button.ui-button {
+	padding:4px;
 }
 
 #zenario_fabGlobalArea .zfab_row .title,
@@ -4456,30 +4681,8 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	END: Styles for the global area that's always visible at the top right
 */
 
-#zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabSlideToggle {
-	display:block;
-	width:27px;
-	height:27px;
-	right:28px;
-	border:1px solid #B9B9B9;
-	background:#F6F6F6 url('../admin/images/icon-arrow-up-thin.svg') no-repeat center center / 15px 10px;
-	cursor:pointer;
-	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
-	border-radius: 2px;
-	transition: all 0.2s ease-in-out;
-	-webkit-transition: all 0.2s ease-in-out;
-	-moz-transition: all 0.2s ease-in-out;
-	-o-transition: all 0.2s ease-in-out;
-	transition: all 0.2s ease-in-out;
-}
-
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabSlideToggleDown {
 	background:#F6F6F6 url('../admin/images/icon-arrow-down-thin.svg') no-repeat center center / 15px 10px;
-}
-
-#zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabSlideToggle:hover {
-	background-color:#b1e6fd;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead .zenario_fabClose {
@@ -4515,6 +4718,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload {
+	margin-top:35px;
 	padding:0 8px 5px !important;
 	margin-left:-10px;
 	border:2px dashed #cdcdcd;
@@ -4780,6 +4984,23 @@ body.ie10 #zenario_fabBox_readonlyMarker {
 	display:none;
 }
 
+/* Tokenize for layout */
+
+#zenario_fbAdminFloatingBox #zenario_fbAdminInner .zenario_ab_row__layout_id .Tokenize .TokensContainer {
+	width:90%;
+	min-width:416px;
+}
+
+#zenario_fbAdminFloatingBox #zenario_fbAdminInner .zenario_ab_row__layout_id .Tokenize.OnlyOne .zenario_row_input_button {
+	width:calc(100% - 16px);
+}
+
+#zenario_fbAdminFloatingBox #zenario_fbAdminInner .zenario_ab_row__layout_id .Tokenize.OnlyOne .zenario_row_input_button span.form_field {
+	width:calc(100% - 58px);
+}
+
+/* END - Tokenize for layout */
+
 #zenario_fbAdminInner .Tokenize.OnlyOne .TokenSearch {
 	position:absolute;
 }
@@ -4814,6 +5035,11 @@ body.ie10 #zenario_fabBox_readonlyMarker {
 
 #zenario_fbAdminInner .Tokenize .zenario_picked_image img {
 	cursor:pointer;
+}
+
+#zenario_fbAdminInner .Tokenize ul.Dropdown {
+	max-height: 230px;
+	overflow-y: auto;
 }
 
 div.Tokenize ul.Dropdown li {
@@ -4960,11 +5186,6 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 	width:auto !important;
 }
 
-div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_internal_unique {
-	filter: invert(50%);
-	-webkit-filter: invert(50%);
-}
-
 /*  If only one item can be shown in a picker, don't show a flashing cursor when one is already selected.
     But don't stop the element getting focus, just hide the cursor.  */
 
@@ -5082,12 +5303,25 @@ div.Tokenize ul.TokensContainer li.Token .organizer_item_image.zenario_menunode_
 	background:url("../admin/images/icon-roles-white.svg") no-repeat center center / 16px 16px;
 }
 
-.zenario_fab_plugin .organizer_item_image.zenario_user_forms{
+.zenario_fab_plugin .organizer_item_image.zenario_user_forms,
+.zenario_fab_plugin .organizer_item_image.form_type_registration {
 	background:url("../admin/images/icon-forms-white.svg") no-repeat center center / 16px 16px;
 }
 
 .zenario_fab_plugin .organizer_item_image.user {
 	background:url("../admin/images/icon-users-on.svg") no-repeat center center / 16px 16px;
+}
+
+.zenario_fab_plugin .organizer_item_image.zenario_menunode_internal {
+	background:url('../admin/images/icon-menu-node-1-white.svg') no-repeat center center / 16px 16px;
+}
+
+.zenario_fab_plugin .organizer_item_image.zenario_menunode_internal_unique {
+	background:url('../admin/images/icon-menu-node-white.svg') no-repeat center center / 16px 16px;
+}
+
+.zenario_fab_plugin .organizer_item_image.zenario_menunode_internal_secondary {
+	background:url('../admin/images/icon-menu-node-2-white.svg') no-repeat center center / 16px 16px;
 }
 
 
@@ -5272,6 +5506,14 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-widget-cont
 	#zenario_fbAdminFloatingBox .input_text, 
 	#zenario_fbAdminFloatingBox .input_password {
 		width:calc(100% - 62px);
+	}
+	
+	#zenario_fbAdminFloatingBox .zenario_secret_password_wrap {
+		display:block;
+	}
+	
+	#zenario_fbAdminFloatingBox .zenario_secret_password_wrap:after {
+		right:55px;
 	}
 	
 	#zenario_fbAdminFloatingBox.zenario_fab_default_style .zenario_fabHead #zenario_fabTitleWrap #zenario_fabTitle {

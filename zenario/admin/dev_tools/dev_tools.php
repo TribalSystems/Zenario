@@ -123,6 +123,18 @@ if ($schemaName == 'fea_schema') {
 		array_merge_recursive(
 			$fabSchema['additionalProperties']['properties']['lovs'],
 			$schema['additionalProperties']['properties']['lovs']);
+	
+	//On Assetwolf sites, add some specific Assetwolf definitions
+	if (ze\module::isRunning('assetwolf_2')) {
+		$awSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/api/assetwolf_fea_schema.yaml');
+		
+		$schema['additionalProperties']['properties'] = 
+			array_merge_recursive(
+				$schema['additionalProperties']['properties'],
+				$awSchema['additionalProperties']['properties']);
+		
+	}
+	
 }
 
 unset($schema['common_definitions']);

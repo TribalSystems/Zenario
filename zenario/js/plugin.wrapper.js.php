@@ -45,15 +45,21 @@ foreach ($modules as $moduleId) {
 	}
 }
 
+$mode = 'visitor';
 if (!empty($_GET['admin_frontend'])) {
+	$mode = 'admin_frontend';
 	$ETag .= '--admin_frontend';
 
 } elseif (!empty($_GET['organizer'])) {
+	$mode = 'organizer';
 	$ETag .= '--organizer';
 
 } elseif (!empty($_GET['wizard'])) {
+	$mode = 'wizard';
 	$ETag .= '--wizard';
 }
+
+$flagJsAsNotLoaded = $mode !== 'visitor';
 
 //Cache this combination of running Plugin JavaScript
 ze\cache::useBrowserCache($ETag);
@@ -94,7 +100,7 @@ foreach (array_keys($moduleDetails) as $moduleClassName) {
 	}
 }
 
-//Try to put the modules in dependency order (technically this isn't needed, but it looks clearer to read)
+//Try to put the modules in dependency order
 $moduleDetails = array_reverse($moduleDetails, true);
 
 
@@ -114,6 +120,11 @@ if (!empty($moduleDetails)) {
 		} else {
 			echo json_encode($module['vlp_class']);
 		}
+		
+		if ($flagJsAsNotLoaded) {
+			echo ', 1';
+		}
+		
 		echo ');';
 	}
 	echo "\n", '})(zenario.enc);';

@@ -22,6 +22,7 @@ zenario_categories:
                 name:
                     label: 'Internal name:'
                     type: text
+                    maxlength: 50
                     side_note: >
                         Internal name.
                     validation:

@@ -82,7 +82,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 			$this->sections['Tab'][$slide['slide_num']] = [
 				'TAB_ORDINAL' => $tabOrd,
 				'Class' => 'tab_'. $tabOrd. ' tab',
-				'Slide_Class' => 'slide_'. $tabOrd,
+				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
 				'Tab_Link' => $link,
 				'Tab_Name' => $this->formatTitleText($slide['name_or_title'], true)
 			];

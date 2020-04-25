@@ -64,16 +64,14 @@ if (!$installed) {
 if (($_REQUEST['method_call'] ?? false) == 'handleWelcomeAJAX') {
 	
 	if (!$installed) {
-		ze\fileAdm::exitIfUploadError();
+		ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata', null, $doVirusScan = false);
 		
-		if (ze\file::isImageOrSVG($mimeType = ze\file::mimeType($_FILES['Filedata']['name']))) {
-			ze\fileAdm::putUploadFileIntoCacheDir(
-				$_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'],
-				$_REQUEST['_html5_backwards_compatibility_hack'] ?? false,
-				false, false,
-				$isAllowed = true, $baseLink = 'zenario/admin/welcome.ajax.php'
-			);
-		}
+		ze\fileAdm::putUploadFileIntoCacheDir(
+			$_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'],
+			$_REQUEST['_html5_backwards_compatibility_hack'] ?? false,
+			false, false,
+			$isAllowed = true, $baseLink = 'zenario/admin/welcome.ajax.php'
+		);
 	}
 	exit;
 }
@@ -256,7 +254,8 @@ if ($systemRequirementsMet && $installed) {
 		
 		} else {
 			ze\welcome::prepareAdminWelcomeScreen('login', $source, $tags, $fields, $values, $changes);	
-			//Show the login screen
+			//Clear old CAPTCHAs and show the login screen
+			\ze\welcome::tidyCaptchas();
 			$loggedIn = ze\welcome::loginAJAX($source, $tags, $fields, $values, $changes, $getRequest);
 		}
 	}

@@ -1,0 +1,61 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Document Envelopes FEA
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+license_info: 'Modified BSD License'
+
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+
+class_name: zenario_document_envelope
+description: |
+    <p>A Document Envelope allows you to display multiple versions of a document (e.g. .pdf, .doc and .ppt) on a page in a content-managed way.</p>
+    
+    <p>The document versions can be displayed together with an thumbnail and/or a description.</p>
+keywords: >
+    envelope, file, document, download, pdf, doc, docx, xls, xlsx
+category: pluggable
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_instance_name: Untitled Document Envelope
+
+inheritance:
+    include_javascript_from_module: zenario_abstract_fea
+
+path_commands:
+    create_document_envelope:
+        label: Create document envelope
+        modes:
+            - list_document_envelopes
+    
+    view_document_envelope:
+        label: View document envelope
+        modes:
+            - list_document_envelopes
+        request_vars:
+            - envelopeId
+    
+    edit_document_envelope:
+        label: Edit document envelope
+        modes:
+            - list_document_envelopes
+            - view_document_envelope
+        request_vars:
+            - envelopeId
+    
+    upload_file_to_document_envelope:
+        label: Upload file to document envelope
+        modes:
+            - list_files_in_document_envelope
+        request_vars:
+            - envelopeId
+
+centralised_lists:
+    -
+        method_name: getEnvelopeLanguages
+        label: Envelope languages

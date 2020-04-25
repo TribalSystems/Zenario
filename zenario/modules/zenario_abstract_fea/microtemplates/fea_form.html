@@ -1,4 +1,4 @@
-{{m.lib.pMicroTemplate('dev_tools', m)}}
+{{m.lib.displayDevTools()}}
 
 
 <% if (m.lib.showCloseButtonAtTopRight) { %>
@@ -6,9 +6,7 @@
 <% } %>
 
 <div class="
-	zfea
-	zfea_{{m.lib.path|escape}}
-	{{m.tuix.css_class|escape}}
+	{{m.lib.wrapperClassName()|e}}
 	
 	<% if (m.tuix.show_overlay_layer) { %>
 		modal_window

@@ -190,7 +190,7 @@ plugin_settings:
                     hide_if_previous_outdented_value_isnt: 1
                     label: 'Breadcrumb trail separator:'
                     type: text
-                    value: '»'
+                    value: ''
                     style: 'width: 5em;'
                 
                 

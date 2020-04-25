@@ -71,17 +71,8 @@ if ($resultSp = \ze\sql::select($sql)) {
 			$equivs = \ze\content::equivalences($sp['equiv_id'], $sp['content_type']);
 		}
 		
-		//If the create_and_maintain_in_all_languages logic is used, also ensure that an equiv exists for each extra Language
-		if ($sp['logic'] == 'create_and_maintain_in_all_languages') {
-			$result = \ze\row::query('languages', ['id'], []);
-			while ($row = \ze\sql::fetchAssoc($result)) {
-				if (!isset($langsToCreate[$row['id']]) && !isset($equivs[$row['id']]) && $row['id'] != $thisLang) {
-					$langsToCreate[$row['id']] = true;
-				}
-			}
-		
-		//Otherwise to ensure that the special page exists for the default language we may need to create one
-		} elseif ($thisLang && $thisLang != \ze::$defaultLang && !isset($equivs[\ze::$defaultLang])) {
+		//To ensure that the special page exists for the default language we may need to create one
+		if ($thisLang && $thisLang != \ze::$defaultLang && !isset($equivs[\ze::$defaultLang])) {
 			$langsToCreate[\ze::$defaultLang] = true;
 		}
 		
@@ -103,111 +94,102 @@ if ($resultSp = \ze\sql::select($sql)) {
 								$cID = $cIDFrom = $cVersion = $cVersionFrom = false;
 								$cType = 'html';
 								
-								//T9475, Enabling a second language should duplicate the home page
-								if ($sp['logic'] == 'create_and_maintain_in_all_languages'
-								 && $sp['equiv_id']) {
-									$cIDFrom = $sp['equiv_id'];
-									\ze\contentAdm::createDraft($cID, $cIDFrom, $cType, $cVersion, $cVersionFrom, $langId);
-									$sp['equiv_id'] = \ze\contentAdm::recordEquivalence($sp['equiv_id'], $cID, $cType);
-								
-								} else {
-									\ze\contentAdm::createDraft($cID, $cIDFrom, $cType, $cVersion, $cVersionFrom, $langId);
-								
-									//Try to work out what layout it should have
-									$layoutId = \ze\layoutAdm::defaultId('html');
+								\ze\contentAdm::createDraft($cID, $cIDFrom, $cType, $cVersion, $cVersionFrom, $langId);
 							
-									if (!empty($page['layout'])) {
-										$sql = "
-											SELECT layout_id
-											FROM ". DB_PREFIX. "layouts
-											WHERE name LIKE '%". \ze\escape::like($page['layout']). "%'
-											LIMIT 1";
-										$resultL = \ze\sql::select($sql);
-										if ($layout = \ze\sql::fetchAssoc($resultL)) {
-											$layoutId = $layout['layout_id'];
-										}
+								//Try to work out what layout it should have
+								$layoutId = \ze\layoutAdm::defaultId('html');
+						
+								if (!empty($page['layout'])) {
+									$sql = "
+										SELECT layout_id
+										FROM ". DB_PREFIX. "layouts
+										WHERE name LIKE '%". \ze\escape::like($page['layout']). "%'
+										LIMIT 1";
+									$resultL = \ze\sql::select($sql);
+									if ($layout = \ze\sql::fetchAssoc($resultL)) {
+										$layoutId = $layout['layout_id'];
 									}
-								
-								
-									//Try to add an alias (so long as the alias is not taken)
-									if ($alias = $page['default_alias'] ?? false) {
-										if (!is_array(\ze\contentAdm::validateAlias($alias))) {
-											\ze\row::set('content_items', ['alias' => $alias], ['id' => $cID, 'type' => $cType]);
-										} else {
-											$alias = '';
-										}
+								}
+							
+							
+								//Try to add an alias (so long as the alias is not taken)
+								if ($alias = $page['default_alias'] ?? false) {
+									if (!is_array(\ze\contentAdm::validateAlias($alias))) {
+										\ze\row::set('content_items', ['alias' => $alias], ['id' => $cID, 'type' => $cType]);
 									} else {
 										$alias = '';
 									}
-								
-									\ze\row::set('content_item_versions',
-										['title' => ($page['default_title'] ?? false), 'layout_id' => $layoutId],
-										['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
-								
-									if (!$sp['equiv_id']) {
-										$sp['equiv_id'] = $cID;
-										$sp['content_type'] = $cType;
-									} else {
-										//For multilingal sites, make sure that translations of special pages are marked as translations
-										$sp['equiv_id'] = \ze\contentAdm::recordEquivalence($sp['equiv_id'], $cID, $cType);
-									}
-								
-									//Update the special pages table to record which page is the special page,
-									//unless we are using the create_in_default_language_on_install logic in which case we won't make
-									//the created page a special page
-									if ($sp['logic'] != 'create_in_default_language_on_install') {
-										\ze\row::update(
-											'special_pages',
-											[
-												'equiv_id' => $sp['equiv_id'],
-												'content_type' => $sp['content_type']],
-											[
-												'page_type' => $sp['page_type']]);
-									}
-								
-									//We'll need to put a something on this page
-									//Work out a free main slot to put a Plugin in
-									$template = \ze\row::get('layouts', ['layout_id', 'file_base_name', 'family_name'], $layoutId);
-									$slotName = \ze\layoutAdm::mainSlotByName($template['family_name'], $template['file_base_name']);
+								} else {
+									$alias = '';
+								}
 							
-									//Check if this Plugin is Slotable, and if so attempt to put this Plugin on the page
-									if ($module['is_pluggable']) {
-										//Otherwise set a Reusable Instance there
-										if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $module['id'], 'content_id' => 0])) {
-											//Create a new reusable instance if one does not already exist
-											$errors = [];
-											\ze\pluginAdm::create(
-												$module['id'],
-												$desc['default_instance_name'],
-												$instanceId,
-												$errors, $onlyValidate = false, $forceName = true);
-										}
-								
-										\ze\pluginAdm::updateItemSlot($instanceId, $slotName, $cID, $cType, $cVersion, $module['id']);
+								\ze\row::set('content_item_versions',
+									['title' => ($page['default_title'] ?? false), 'layout_id' => $layoutId],
+									['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 							
-									//Otherwise have the option to place a HTML Snippet in there
-									} elseif (!empty($page['default_content']) && ($snippetId = \ze\row::get('modules', 'id', ['class_name' => 'zenario_wysiwyg_editor']))) {
-								
-										//Try to find an editor
-										if ($editorSlot = \ze\contentAdm::mainSlot($cID, $cType, $cVersion)) {
-											$instanceId = \ze\row::insert(
-												'plugin_instances',
-												[
-													'module_id' => $snippetId,
-													'content_id' => $cID,
-													'content_type' => $cType,
-													'content_version' => $cVersion,
-													'slot_name' => $editorSlot]);
-								
-											\ze\row::insert(
-												'plugin_settings',
-												[
-													'instance_id' => $instanceId,
-													'name' => 'html',
-													'value' => $page['default_content'],
-													'is_content' => 'version_controlled_content',
-													'format' => 'translatable_html']);
-										}
+								if (!$sp['equiv_id']) {
+									$sp['equiv_id'] = $cID;
+									$sp['content_type'] = $cType;
+								} else {
+									//For multilingal sites, make sure that translations of special pages are marked as translations
+									$sp['equiv_id'] = \ze\contentAdm::recordEquivalence($sp['equiv_id'], $cID, $cType);
+								}
+							
+								//Update the special pages table to record which page is the special page,
+								//unless we are using the create_in_default_language_on_install logic in which case we won't make
+								//the created page a special page
+								if ($sp['logic'] != 'create_in_default_language_on_install') {
+									\ze\row::update(
+										'special_pages',
+										[
+											'equiv_id' => $sp['equiv_id'],
+											'content_type' => $sp['content_type']],
+										[
+											'page_type' => $sp['page_type']]);
+								}
+							
+								//We'll need to put a something on this page
+								//Work out a free main slot to put a Plugin in
+								$template = \ze\row::get('layouts', ['layout_id', 'file_base_name', 'family_name'], $layoutId);
+								$slotName = \ze\layoutAdm::mainSlotByName($template['family_name'], $template['file_base_name']);
+						
+								//Check if this Plugin is Slotable, and if so attempt to put this Plugin on the page
+								if ($module['is_pluggable']) {
+									//Otherwise set a Reusable Instance there
+									if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $module['id'], 'content_id' => 0])) {
+										//Create a new reusable instance if one does not already exist
+										$errors = [];
+										\ze\pluginAdm::create(
+											$module['id'],
+											$desc['default_instance_name'],
+											$instanceId,
+											$errors, $onlyValidate = false, $forceName = true);
+									}
+							
+									\ze\pluginAdm::updateItemSlot($instanceId, $slotName, $cID, $cType, $cVersion, $module['id']);
+						
+								//Otherwise have the option to place a HTML Snippet in there
+								} elseif (!empty($page['default_content']) && ($snippetId = \ze\row::get('modules', 'id', ['class_name' => 'zenario_wysiwyg_editor']))) {
+							
+									//Try to find an editor
+									if ($editorSlot = \ze\contentAdm::mainSlot($cID, $cType, $cVersion)) {
+										$instanceId = \ze\row::insert(
+											'plugin_instances',
+											[
+												'module_id' => $snippetId,
+												'content_id' => $cID,
+												'content_type' => $cType,
+												'content_version' => $cVersion,
+												'slot_name' => $editorSlot]);
+							
+										\ze\row::insert(
+											'plugin_settings',
+											[
+												'instance_id' => $instanceId,
+												'name' => 'html',
+												'value' => $page['default_content'],
+												'is_content' => 'version_controlled_content',
+												'format' => 'translatable_html']);
 									}
 								}
 								

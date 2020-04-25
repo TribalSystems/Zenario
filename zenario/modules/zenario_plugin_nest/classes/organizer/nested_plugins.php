@@ -288,12 +288,6 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 					$item['makes_breadcrumbs'] += 10;
 				}
 			}
-			
-			if ($item['ordinal'] == 1) {
-				$item['delete_tooltip'] = ze\admin::phrase('You cannot delete the first tab.');
-			} else {
-				$item['delete_tooltip'] = '';
-			}
 		}
 	}
 	
@@ -356,6 +350,8 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			}
 		
 		} elseif (ze::post('upload_banner')) {
+			ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
+			
 			if ($imageId = ze\file::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true)) {
 				return static::addBanner($imageId, $instanceId, $ids, true);
 			} else {

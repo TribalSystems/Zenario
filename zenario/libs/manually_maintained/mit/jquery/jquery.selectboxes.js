@@ -390,7 +390,7 @@ $.fn.selectOptions = function(value, clear)
 $.fn.copyOptions = function(to, which)
 {
 	var w = which || "selected";
-	if($(to).size() == 0) return this;
+	if($(to).length == 0) return this;
 	this.each(
 		function()
 		{

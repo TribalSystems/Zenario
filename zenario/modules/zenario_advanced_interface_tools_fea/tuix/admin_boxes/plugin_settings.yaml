@@ -1,0 +1,143 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_advanced_interface_tools_fea
+    key:
+        isFEA: true
+    tabs:
+        global_area:
+            fields:
+                mode: 
+                    plugin_setting: 
+                        name: mode
+                        use_value_for_plugin_name: 1
+                    label: Mode
+                    type: select
+                    css_class: iconselectmenu
+                    format_onchange: true
+                    value: list_tuix_snippets
+                    values:
+                        tuix_snippet:
+                            label: TUIX snippet
+                        list_tuix_snippets:
+                            parent: tuix_snippet
+                            label: List TUIX snippets
+                        create_tuix_snippet:
+                            parent: tuix_snippet
+                            label: Create TUIX snippet
+                        edit_tuix_snippet:
+                            parent: tuix_snippet
+                            label: Edit TUIX snippet
+                
+        first_tab:
+            label: Options
+            custom_templates:
+                to_state1: &to_state1
+                    group_with_previous_field: true
+                    hide_with_previous_field: true
+                    hide_if_previous_value_isnt: 1
+                    same_row: true
+                    pre_field_html: ' - goes to&nbsp; '
+                    type: select
+                    empty_value: 'No path defined in conductor'
+                    values: slides_and_states
+                    readonly: true
+                    show_as_a_label_when_readonly: true
+                    css_class: zfab_conductor_button_destination
+                to_state2: &to_state2
+                    group_with_previous_field: true
+                    hide_with_previous_field: true
+                    hidden: true
+                    same_row: true
+                    pre_field_html: ' and&nbsp; '
+                    type: select
+                    values: slides_and_states
+                    readonly: true
+                    show_as_a_label_when_readonly: true
+                    css_class: zfab_conductor_button_destination
+            fields:
+                buttons:
+                    type: grouping
+                    snippet:
+                        label: Buttons
+                        label_class: subheading
+                
+                item_buttons:
+                    type: grouping
+                    snippet:
+                        label: Item-specific buttons
+                        label_class: subheading
+                
+                #microtemplate:
+                #    plugin_setting:
+                #        name: microtemplate
+                #        use_value_for_plugin_name: 1
+                #    visible_if: 
+                #        lib.modeIn:
+                #            - list_tuix_snippets
+                #    label: Microtemplate
+                #    type: select
+                #    value: ''
+                #    empty_value: Table view
+                #    values:
+                #        fea_list_blocks:
+                #            label: Block view
+                #        fea_list_responsive:
+                #            label: Responsive (table view for desktops, block view for mobile)
+                #    redraw_onchange: true
+                #
+                #
+                #scope:
+                #    plugin_setting:
+                #        name: scope
+                #    visible_if:
+                #        lib.modeIn: list_tuix_snippets
+                #    label: Scope
+                #    type: select
+                #    format_onchange: true
+                #    empty_value: ' -- Select -- '
+                #    value: all
+                #    values:
+                #        all:
+                #            label: Show everything
+                #    validation:
+                #        required_if_not_hidden: Please select a scope
+                
+                enable.create_tuix_snippet:
+                    grouping: buttons
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIs: list_tuix_snippets
+                    plugin_setting:
+                        name: enable.create_tuix_snippet
+                    label: Create TUIX snippet
+                    type: checkbox
+                    redraw_onchange: true
+                to_state1.create_tuix_snippet: *to_state1
+                to_state2.create_tuix_snippet: *to_state2
+                
+                enable.edit_tuix_snippet:
+                    grouping: item_buttons
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIn: list_tuix_snippets
+                    plugin_setting:
+                        name: enable.edit_tuix_snippet
+                    label: Edit TUIX snippet
+                    type: checkbox
+                    redraw_onchange: true
+                to_state1.edit_tuix_snippet: *to_state1
+                to_state2.edit_tuix_snippet: *to_state2
+                
+                enable.delete_tuix_snippet:
+                    grouping: item_buttons
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIn: list_tuix_snippets
+                    plugin_setting:
+                        name: enable.delete_tuix_snippet
+                    label: Delete TUIX snippet
+                    type: checkbox
+                    redraw_onchange: true
+                
+                

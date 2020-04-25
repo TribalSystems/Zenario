@@ -122,4 +122,55 @@ if (ze\dbAdm::needRevision(73)) {
 	ze\dbAdm::revision(73);
 }
 
+if (ze\dbAdm::needRevision(74)) {
+	//Get dataset ID
+	$datasetId = ze\datasetAdm::register(
+		'Users/Contacts',
+		'users_custom_data',
+		'users',
+		'zenario_user__details',
+		'zenario__users/panels/users',
+		'_PRIV_VIEW_USER',
+		'_PRIV_EDIT_USER');
 	
+	ze\datasetAdm::registerSystemField($datasetId, 'radios', 'profile_page', 'profile_page_link_type');
+	ze\datasetAdm::registerSystemField($datasetId, 'other_system_field', 'profile_page', 'profile_page_internal_page');
+	ze\datasetAdm::registerSystemField($datasetId, 'url', 'profile_page', 'profile_page_external_url');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'profile_page', 'profile_page_target_blank');
+	
+	ze\dbAdm::revision(74);
+}
+
+if (ze\dbAdm::needRevision(80)) {
+	//Remove the profile page fields introduced in the previous revision
+	//Get dataset ID
+	$datasetId = ze\datasetAdm::register(
+		'Users/Contacts',
+		'users_custom_data',
+		'users',
+		'zenario_user__details',
+		'zenario__users/panels/users',
+		'_PRIV_VIEW_USER',
+		'_PRIV_EDIT_USER');
+	
+	ze\row::delete('custom_dataset_fields', ['dataset_id' => (int)$datasetId, 'tab_name' => 'profile_page'], $multiple = true);
+	
+	ze\dbAdm::revision(80);
+}
+
+if (ze\dbAdm::needRevision(81)) {
+	//Remove the profile page tab, so it doesn't appear in admin boxes
+	//Get dataset ID
+	$datasetId = ze\datasetAdm::register(
+		'Users/Contacts',
+		'users_custom_data',
+		'users',
+		'zenario_user__details',
+		'zenario__users/panels/users',
+		'_PRIV_VIEW_USER',
+		'_PRIV_EDIT_USER');
+	
+	ze\row::delete('custom_dataset_tabs', ['dataset_id' => (int)$datasetId, 'name' => 'profile_page'], $multiple = true);
+	
+	ze\dbAdm::revision(81);
+}

@@ -16,6 +16,10 @@
 				<div class="extranet_error">{{item.Error}}</div>
 			{% endfor %}
             
+            {% if Current_Email_Phrase %}
+            	<div class="extranet_message">{{Current_Email_Phrase}}</div>
+            {% endif %}
+            
             <div>
                 <div class="extranet_field">
                     <div class="label"><label for="extranet_email">{{"_NEW_EMAIL_ADDRESS:"|trans}}</label></div>

@@ -61,7 +61,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		if ($path != 'zenario__menu/panels/menu_nodes') return;
 		
 		$path = false;
-		$separator = ' -> ';
+		$separator = ' › ';
 		$sectionSeparator = ': ';
 		$isFlatView = !isset($_REQUEST['_openToItemInHierarchy']) && !isset($_REQUEST['_openItemsInHierarchy']);
 		$numLanguages = ze\lang::count();

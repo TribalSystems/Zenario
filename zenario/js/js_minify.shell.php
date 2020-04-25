@@ -280,22 +280,17 @@ minify('zenario/libs/manually_maintained/mit/ResponsiveMultiLevelMenu/js/', 'jqu
 minify('zenario/libs/manually_maintained/mit/slimmenu/', 'slimmenu', $level, '.css');
 minify('zenario/libs/manually_maintained/mit/slimmenu/', 'jquery.slimmenu', $level, '.js');
 
-//Minify Spectrum
+//Minify and/or re-minify some of the YARN packages
 minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.css');
 minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.js');
-
-//Minify the split library for IE 8
-minify('zenario/libs/manually_maintained/mit/split/', 'split', $level, '.js');
-
-//Minify Toastr
 minify('zenario/libs/yarn/toastr/build/', 'toastr', $level, '.css');
 minify('zenario/libs/yarn/toastr/', 'toastr', $level, '.js');
+minify('zenario/libs/yarn/underscore.string/dist/', 'underscore.string', $level, '.js');
 
 //Minify Underscore
 minify('zenario/libs/manually_maintained/mit/underscore/', 'underscore', $level, '.js');
 
 //Minify the libraries in the public domain directory
-minify('zenario/libs/manually_maintained/public_domain/json/', 'json2', $level, '.js');
 minify('zenario/libs/manually_maintained/public_domain/mousehold/', 'mousehold', $level, '.js');
 minify('zenario/libs/manually_maintained/public_domain/tv4/', 'tv4', $level, '.js');
 

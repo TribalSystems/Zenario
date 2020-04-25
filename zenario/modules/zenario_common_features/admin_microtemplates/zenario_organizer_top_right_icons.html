@@ -36,14 +36,16 @@
 		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
 	"
 ></div>
-<div
-	class="organizer_diagnostics"
-	onclick="zenario.goToURL('welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"
-	title="View site diagnostics"
-	data-tooltip-options="
-		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
-	"
-></div>
+<% if (zenarioA.adminPrivs._PRIV_VIEW_DIAGNOSTICS) { %>
+	<div
+		class="organizer_diagnostics"
+		onclick="zenario.goToURL('welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"
+		title="View site diagnostics"
+		data-tooltip-options="
+			{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+		"
+	></div>
+<% } %>
 <div
 	class="organizer_help"
 	data-step="17" data-position="bottom-right-aligned"

@@ -126,22 +126,22 @@ plugin_settings:
                     type: radios
                     value: _NEVER
                     values:
-                        _ALWAYS:
-                            ord: "1"
-                            label: Redirect based on rules
-                        _IF_NO_PREVIOUS_PAGE:
-                            ord: "2"
-                            label: >
-                                Redirect based on rules (but if another private content item was
-                                requested, redirect there instead)
                         _NEVER:
-                            ord: "3"
+                            ord: "1"
                             label: >
                                 Redirect to requested private content item, or else to the
                                 previous page viewed
+                        _ALWAYS:
+                            ord: "2"
+                            label: Redirect based on rules below
+                        _IF_NO_PREVIOUS_PAGE:
+                            ord: "3"
+                            label: >
+                                Redirect based on rules below (but if user requested a private content item other than home, this will take precedence)
                     format_onchange: Yes
                 welcome_page:
                     indent: 1
+                    ord: 999999999
                     plugin_setting:
                         name: welcome_page
                         foreign_key_to: content
@@ -157,6 +157,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: >
                             Please select a default redirect page
+                    side_note: "If the above rules are not met, redirect to the page selected here (e.g. user welcome page, or profile)."
                 
                 number_of_redirect_rules:
                     plugin_setting:

@@ -7,8 +7,12 @@
 			{% for lang in Languages %}
 				{% if lang.current_language %}
 					<option value="{{lang.link|e}}" selected="selected">{{lang.name|e}}</option>
-				{% else %}
+				
+				{% elseif lang.link %}
 					<option value="{{lang.link|e}}">{{lang.name|e}}</option>
+				
+				{% else %}
+					<option value="{{lang.link|e}}" disabled="disabled">{{lang.name|e}}</option>
 				{% endif %}
 			{% endfor %}
 		</select>

@@ -75,10 +75,15 @@
 				<% } %>
 			<% } %>
 			
-			<span class="
-				form_field form_picked_item
-				{{(m.readOnly? ' form_picked_item_readonly' : '')}}
-			">{{m.label|e}}</span>
+			<span
+				class="
+					form_field form_picked_item
+					{{(m.readOnly? ' form_picked_item_readonly' : '')}}
+				"
+				<% if ((m.label + '').length > 35) {%>
+					title="{{zenario.htmlspecialchars(zenario.htmlspecialchars(m.label))}}"
+				<% } %>
+			>{{m.label|e}}</span>
 		<% } %>
 		
 		<% if (m.organizerPath) { %>

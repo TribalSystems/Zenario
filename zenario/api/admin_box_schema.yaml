@@ -164,6 +164,13 @@ additionalProperties:
                 
                 This works from version 7.2 onwards.
         
+        last_updated:
+            type: string
+            description: >
+                This adds a bit of text in italics at the top right, just under the tabs.
+                
+                This works from version 8.6 onwards.
+        
         configure:
             type: object
             properties:
@@ -197,7 +204,7 @@ additionalProperties:
                 If the user clicks on a tab, this property will be set to the code-name of the tab
                 they just clicked on.
                 
-                Note that if there were any validation errors on the current tab,
+                Note: if there were any validation errors on the current tab,
                 the switch will be cancelled and the current tab will be remain in view.
                 
                 
@@ -298,7 +305,7 @@ additionalProperties:
                 You can use all of the features from http://zenar.io/customising-popout-messages-in-admin-mode
                 in order to customise the message.
                 
-                Note that this will clash with the <code>popout_message</code> property in Organizer;
+                Note: this will clash with the <code>popout_message</code> property in Organizer;
                 you can use one or the other, but not both at the same time.
         
         toast:
@@ -476,7 +483,7 @@ additionalProperties:
                         description: >
                             If you don't want the error messages displaying at the top of the tab,
                             you can set the name of a field here to display them below that field.
-                            Note that the field after must start on a new line.
+                            Note: the field after must start on a new line.
                     disable_autofocus:
                         type: boolean
                         description: >
@@ -505,7 +512,7 @@ additionalProperties:
                                 description: >
                                     Include this property to lock a tab in edit mode, and not show the cancel
                                     button.
-                                    Note that if this property is not defined then it will default to true.
+                                    Note: if this property is not defined then it will default to true.
                                 default: true
                             #enable_revert:
                             #    type: boolean
@@ -591,6 +598,12 @@ additionalProperties:
                                 hidden: *hidden
                                 visible_if: *visible_if
                                 
+                                hide_if_empty:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if its value is empty. (Best used for read-only fields.)
+                                        
+                                        This works from version 8.6 onwards.
                                 hide_with_previous_field:
                                     type: boolean
                                     description: >
@@ -633,6 +646,18 @@ additionalProperties:
                                         Hide this field if the last field on a lesser indent was hidden.
                                         
                                         This works from version 7.5 onwards.
+                                hide_if_previous_value_is:
+                                    description: >
+                                        Hide this field if value of the last field equals the value you enter.
+                                        You can also provide an array of values, or an object with values as keys.
+                                        
+                                        This works from version 8.6 onwards.
+                                hide_if_previous_outdented_value_is:
+                                    description: >
+                                        Hide this field if value of the last field on a lower indent equals the value you enter.
+                                        You can also provide an array of values, or an object with values as keys.
+                                        
+                                        This works from version 8.6 onwards.
                                 hide_if_previous_value_isnt:
                                     description: >
                                         Hide this field if value of the last field does not equal the value you enter.
@@ -816,6 +841,7 @@ additionalProperties:
                                         - code_editor
                                         - color_picker
                                         - colour_picker
+                                        - currency
                                         - date
                                         - datetime
                                         - editor
@@ -834,6 +860,20 @@ additionalProperties:
                                     description: >
                                         The type of field to draw.
                                     
+                                
+                                hide_clear_button:
+                                    type: boolean
+                                    description: >
+                                        This can be used for <code>type: date</code> fields.
+                                        
+                                        If set, it will hide the "x" button next to the date field that
+                                        lets users clear the date entered.
+                                        
+                                        Note: this is just a visual hint, and isn't a secure way of preventing
+                                        users from submitting an empty string.
+                                        
+                                        
+                                        This works from version 8.6 onwards.
                                 
                                 name:
                                     type: string
@@ -890,7 +930,7 @@ additionalProperties:
                                             description: >
                                                 Whether to allow drag-and-drop uploads for browsers that support HTML 5.
                                         
-                                                Note that only one field on a tab may use a drag-and-drop upload.
+                                                Note: only one field on a tab may use a drag-and-drop upload.
                                         reorder_items:
                                             type: boolean
                                             description: >
@@ -1004,7 +1044,7 @@ additionalProperties:
                                             description: >
                                                 Set this to true to enable the typeahead search.
                                                 
-                                                Note that for backwards compatability reasons, this property
+                                                Note: for backwards compatability reasons, this property
                                                 defaults to true for the admin box toolkit.
                                         
                                         hide_select_button:
@@ -1013,7 +1053,7 @@ additionalProperties:
                                                 This hides the select button from the interface in the
                                                 admin box toolkit.
                                                 
-                                                Note that this property does not disable the type-ahead search.
+                                                Note: this property does not disable the type-ahead search.
                                         
                                         info_button_path:
                                             type: string
@@ -1409,7 +1449,7 @@ additionalProperties:
                                     description: >
                                         If set, the current tab will be redrawn on the client whenever an Admin changes this field.
                                         
-                                        Note that in the case of text fields, this won't trigger until the Admin un-focuses the field.
+                                        Note: in the case of text fields, this won't trigger until the Admin un-focuses the field.
                                 
                                 redraw_immediately_onchange:
                                     type: boolean
@@ -1431,7 +1471,7 @@ additionalProperties:
                                         If set, the contents of the Admin Box will be sent to the server to your
                                         <code>validateAdminBox()</code> method whenever an Admin changes this field.
                                         
-                                        Note that your <code>formatAdminBox()</code> method will also be called.
+                                        Note: your <code>formatAdminBox()</code> method will also be called.
                                 
                                 format_onchange:
                                     type: boolean
@@ -1632,7 +1672,7 @@ additionalProperties:
                                             description: >
                                                 Don't apply any validation if the field was hidden using the <code>hidden</code> or <code>visible_if</code> properties.
                                                 
-                                                Note that <code>visible_if</code> is a client-side check; you should not rely on <code>only_validate_when_not_hidden</code>
+                                                Note: <code>visible_if</code> is a client-side check; you should not rely on <code>only_validate_when_not_hidden</code>
                                                 for security decisions as it can be manipulated by the client.
                                                 
                                                 This works from version 8.0 onwards.
@@ -1884,7 +1924,7 @@ additionalProperties:
                                                         options as well.
                                                         It doesn't work with comma-separated list of Categories, or files.
                                                 
-                                                Note that if an Admin exports a Content Item as HTML and then imports it,
+                                                Note: if an Admin exports a Content Item as HTML and then imports it,
                                                 this will break the reference, and this option will do nothing.
                                                 
                                                 
@@ -1962,6 +2002,16 @@ additionalProperties:
                                                 otherwise it will still be stored as plain-text.
                                                 
                                                 This works from version 7.6 onwards.
+                                        secret:
+                                            type: boolean
+                                            description: >
+                                                Set this to true to request that this setting be secret.
+                                                E.g. if this is a password or something else sensitive.
+                                                
+                                                Secret settings are still available to be accessed from your PHP code
+                                                but are unavilable in "lower" security environments such as Twig code.
+                                                
+                                                This works from version 8.6 onwards.
                                 
                                 admin_setting:
                                     type: object
@@ -2333,7 +2383,7 @@ additionalProperties:
                                         <h2>Submit Buttons</h2>
                                         <p>The 'submit' type buttons act as if they always have the <code>validate_onchange</code> property set; when they are pressed&nbsp;the client will change the value of the <code>pressed</code> property to true, then call the validation function.</p>
                                         <p>When the field is next redrawn after the validation, the client then automatically unsets the <code>pressed</code> property.</p>
-                                        <p>Note that this will only ever submit your admin box for validation,and never for saving.The 'save' button at the bottom of the box should be used to submit for saving.</p>
+                                        <p>Be aware that this will only ever submit your admin box for validation,and never for saving.The 'save' button at the bottom of the box should be used to submit for saving.</p>
                                         <h2>Toggle Buttons</h2>
                                         <p>For 'toggle' type buttons, the client will toggle the value of <code>pressed</code> between false and true each time the Admin presses this button.</p>
                                         <p>Before Zenario&nbsp;version 6.0.4,&nbsp;'toggle' type buttons acted as if they always had the&nbsp;<code>format_onchange</code> property set; when they were pressed the client changed the value of the <code>pressed</code> property, then called the format function.</p>
@@ -2363,6 +2413,13 @@ additionalProperties:
                                     description: >
                                         Enable text wrapping for a code_editor type field.
                                 
+                                code_editor_options:
+                                    type: object
+                                    description: >
+                                        If you're using a code editor field, you can use this to pass extra options to the editor.
+                                        
+                                        This works from version 8.6 onwards.
+                                
                                 tall_as_possible:
                                     type: boolean
                                     description: >
@@ -2371,7 +2428,7 @@ additionalProperties:
                                         other fields on the current tab.
                                         
                                         You may only use this on one field per tab.
-        
+                                        
                                         This works from version 8.0 onwards.
                                 
                                 color_picker_options:
@@ -2386,6 +2443,25 @@ additionalProperties:
                                     type: object
                                     description: >
                                         Alias of color_picker_options. (But note you can't use both.)
+                                
+                                allow_negative_numbers:
+                                    type: boolean
+                                    description: >
+                                        Whether to allow negative numbers in numeric field.
+                                        (Fields count as "numeric" if you set the "numeric" validation option, or the field type
+                                         is set to "currency".)
+                                
+                                decimal_places:
+                                    type: boolean
+                                    description: >
+                                        Set this to limit the number of decimal places in a numeric field.
+                                        (Fields count as "numeric" if you set the "numeric" validation option, or the field type
+                                         is set to "currency".)
+                                        
+                                        The only accepted values are 0, 1, 2, 3 and 4.
+                                        
+                                        The default is no limit.
+                                        Note: this is different than entering a "0".
                                 
                                 insert_image_button:
                                     type:

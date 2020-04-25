@@ -241,6 +241,9 @@
 					{% if item.Quote_Post %}
 						<div class="quote_button control_btn"><div class="r"><a class="i" {{item.Quote_Post_Link}}>{{"_QUOTE_POST"|trans}}</a></div></div>
 					{% endif %}
+					{% if item.Report_Post %}
+						<div class="report_button control_btn"><div class="r"><a class="i" {{item.Report_Post_Link}}>{{"_REPORT_POST"|trans}}</a></div></div>
+					{% endif %}
 					{% if item.Edit_Post %}
 						<div class="edit_button control_btn"><div class="r"><a class="i" {{item.Edit_Post_Link}}>{{"_EDIT_POST"|trans}}</a></div></div>
 					{% endif %}
@@ -249,9 +252,6 @@
 					{% endif %}
 					{% if item.Approve_Post %}
 						<div class="aprove_button control_btn"><div class="r"><a class="i" {{item.Approve_Post_Link}}>{{"_APPROVE_POST"|trans}}</a></div></div>
-					{% endif %}
-					{% if item.Report_Post %}
-						<div class="report_button control_btn"><div class="r"><a class="i" {{item.Report_Post_Link}}>{{"_REPORT_POST"|trans}}</a></div></div>
 					{% endif %}
 					</div>
 				{% endif %}

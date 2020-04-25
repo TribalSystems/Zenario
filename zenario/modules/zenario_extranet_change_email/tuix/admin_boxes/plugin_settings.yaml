@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_extranet_change_email
     tabs:
         first_tab:
             label: Confirmation
@@ -19,10 +20,26 @@ plugin_settings:
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
                     validation:
-                        required: Please select an email template
+                        required: "Please select an email template."
                     value: zenario_extranet_change_email__to_user_email_change_en
                     note_below: >
                         Please see the Module description to get a full list of
                         Merge Fields which can be used in the selected Email
                         Template.
-    module_class_name: zenario_extranet_change_email
+                
+                email_change_successful_email_template:
+                    plugin_setting:
+                        name: email_change_successful_email_template
+                        foreign_key_to: email_template
+                        dangling_cross_references: remove
+                    label: '"Email change successful" email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: Yes
+                    validation:
+                        required: "Please select an email template."
+                    value: zenario_extranet_change_email__to_user_email_change_successful_en

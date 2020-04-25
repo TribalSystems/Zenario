@@ -358,7 +358,7 @@ class phiParser {
 				case 'template_from_string':
 					if ($nextNonEmptyToken == '(') {
 						self::$lines[$i] = &$this;
-						throw new \Twig_Error('Reserved function "'. $token. '" was used.', $lineNumber = null, $source = null);
+						throw new \Twig_Error('Reserved function "'. $token. '" was used.', $lineNumber = 0, $source = null);
 							//N.b. the $lineNumber of the error doesn't seem to be working properly here, it's often wrong or missing,
 							//so I've removed it to not show something with the wrong value
 					}

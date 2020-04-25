@@ -108,10 +108,13 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 			$cols['password'] = $values['details/password'];
 			$cols['password_needs_changing'] = $values['details/password_needs_changing'];
 			$cols['reset_password_time'] = ze\date::now();
+			$cols['last_edited_admin_id'] = ze\admin::id();
+			$cols['last_edited_user_id'] = null;
+			$cols['last_edited_username'] = null;
 			
 			ze\userAdm::save($cols, $box['key']['id']);
 			
-			ze\module::sendSignal("eventUserStatusChange",["userId" => $id, "status" => "active"]);
+			ze\module::sendSignal("eventUserStatusChange", ["userId" => $id, "status" => "active"]);
 		}
 	}
 	

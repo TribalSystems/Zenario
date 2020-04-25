@@ -114,6 +114,7 @@ class ze {
 	public static $locked = false;
 	public static $alias = '';
 	public static $status = '';
+	public static $isPublic;
 	public static $adminId = false;
 	public static $userId = false;
 	public static $langId = null;
@@ -172,6 +173,7 @@ class ze {
 	public static $pageOGType = 'website';
 	public static $plugin;
 	public static $langs = [];
+	public static $trackPhrases = false;
 	public static $timezone = null;
 	public static $date = false;
 	public static $rss = [];
@@ -345,31 +347,44 @@ class ze {
 	//Get the value of a site setting
 	const settingFromTwig = true;
 	//Formerly "setting()", "getSiteConfig()"
-	public static function setting($settingName, $useCache = true, $default = false) {
+	public static function setting($settingName, $useCache = true, $default = false, $secret = false) {
+		$secret = (int) $secret;
 		
-		if ($useCache && isset(ze::$siteConfig[$settingName])) {
-			return ze::$siteConfig[$settingName];
+		if ($useCache && isset(ze::$siteConfig[$secret][$settingName])) {
+			return ze::$siteConfig[$secret][$settingName];
 		}
 	
 		if (ze::$dbL) {
 			
+			$secretColExists = isset(ze::$dbL->cols[DB_PREFIX. 'site_settings']['secret']);
+			$encryptedColExists = isset(ze::$dbL->cols[DB_PREFIX. 'site_settings']['encrypted']);
+			
 			$sql = "
-				SELECT IFNULL(value, default_value), ". (isset(ze::$dbL->cols[DB_PREFIX. 'site_settings']['encrypted'])? 'encrypted' : '0'). "
+				SELECT IFNULL(value, default_value), ". ($encryptedColExists? 'encrypted' : '0'). "
 				FROM ". DB_PREFIX. "site_settings
 				WHERE name = '". ze\escape::sql($settingName). "'";
+			
+			if ($secretColExists) {
+				$sql .= "
+				  AND `secret` = ". (int) $secret;
+			}
+			
 			if ($row = ze\sql::fetchRow($sql)) {
 				if ($row[1]) {
 					ze\zewl::init();
-					return ze::$siteConfig[$settingName] = ze\zewl::decrypt($row[0]);
+					return ze::$siteConfig[$secret][$settingName] = ze\zewl::decrypt($row[0]);
 				} else {
-					return ze::$siteConfig[$settingName] = $row[0];
+					return ze::$siteConfig[$secret][$settingName] = $row[0];
 				}
 			} else {
-				ze::$siteConfig[$settingName] = $default;
+				ze::$siteConfig[$secret][$settingName] = $default;
 			}
 		}
 	
 		return $default;
+	}
+	public static function secretSetting($settingName, $useCache = true) {
+		return ze::setting($settingName, $useCache, false, true);
 	}
 
 	//Formerly "requireJsLib()"
@@ -429,6 +444,10 @@ class ze {
 	//Formerly "ifNull()"
 	public static function ifNull($a, $b, $c = null) {
 		return $a ?: ($b ?: $c);
+	}
+	
+	public static function isVal($a) {
+		return $a !== null && $a !== false && $a !== '';
 	}
 	
 	public static function define($a, $b) {

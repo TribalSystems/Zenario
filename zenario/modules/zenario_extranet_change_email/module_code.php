@@ -90,7 +90,23 @@ class zenario_extranet_change_email extends zenario_extranet {
 					ze\userAdm::generateIdentifier($row['user_id']);
 				}
 				
-				ze\module::sendSignal("eventUserEmailChanged",["user_id" => $row['user_id'], "old_email" => $userDetails['email'], "new_email" => $row['new_email']]);
+				ze\module::sendSignal("eventUserEmailChanged", ["user_id" => $row['user_id'], "old_email" => $userDetails['email'], "new_email" => $row['new_email']]);
+				
+				//Send a message to both the old and the new email, so the user can see there was a change.
+				if ($emailTemplate = $this->setting('email_change_successful_email_template')) {
+					$mergeFields = [
+						'cms_url' => ze\link::absolute(),
+						'first_name' => $userDetails['first_name'],
+						'last_name' => $userDetails['last_name'],
+						'previous_email' => $userDetails['email'],
+						'new_email' => $row['new_email']
+					];
+				
+					//Old
+					zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'], $emailTemplate, $mergeFields);
+					//New
+					zenario_email_template_manager::sendEmailsUsingTemplate($row['new_email'], $emailTemplate, $mergeFields);
+				}
 				
 				$sql = "DELETE FROM " 
 						. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
@@ -114,14 +130,19 @@ class zenario_extranet_change_email extends zenario_extranet {
 	public function modeChangeEmailForm(){
 		$this->addLoggedInLinks();
 		
+		$loggedInUserData = ze\user::details(ze\user::id());
+		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Change_Email_Form'] = true;
+			$this->objects['Current_Email_Phrase'] = $this->phrase('Your current email address is "[[current_email]]".', ['current_email' => $loggedInUserData['email']]);
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 	}
 
 	private function prepareEmailChange(){
 
+		$loggedInUserData = ze\user::details(ze\user::id());
+		
 		$this->validateFormFields('Change_Email_Form');
 		if (!$this->errors){
 			
@@ -131,7 +152,11 @@ class zenario_extranet_change_email extends zenario_extranet {
 
 
 			if (ze\row::exists('users', ['email' => ($_POST['extranet_email'] ?? false)])) {
-				$this->errors[] = ['Error'=>$this->phrase('_EMAIL_ALREADY_IN_USE')];
+				if ($loggedInUserData['email'] == $_POST['extranet_email']) {
+					$this->errors[] = ['Error'=>$this->phrase('Error. The new email address is the same as the current one.')];
+				} else {
+					$this->errors[] = ['Error'=>$this->phrase('_EMAIL_ALREADY_IN_USE')];
+				}
 			}
 
 			if(!$this->errors){

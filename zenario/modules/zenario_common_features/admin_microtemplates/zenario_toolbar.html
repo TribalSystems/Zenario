@@ -22,7 +22,7 @@
 			id="zenario_logout_button"
 			{{zenarioATLinks.logout}}
 			title="{{zenarioA.phrase.logout}}"
-			data-tooltip-options="{tooltipClass:\'zenario_admin_tooltip\'}"
+			data-tooltip-options='{"tooltipClass": "zenario_admin_tooltip"}'
 		></a>
 	</div>
 	<div id="zenario_at">
@@ -53,11 +53,14 @@
 						><div></div></div>
 					<% } %>
 					
-					<div
-						class="zenario_at_dev_icon organizer_diagnostics"
-						onclick="zenario.goToURL(URLBasePath + '{{zenario.jsEscape(zenarioATLinks.diagnostics)}}');"
-						title="View site diagnostics"
-					></div>
+					<% if (zenarioA.adminPrivs._PRIV_VIEW_DIAGNOSTICS) { %>
+						<div
+							class="zenario_at_dev_icon organizer_diagnostics"
+							onclick="zenario.goToURL(URLBasePath + '{{zenario.jsEscape(zenarioATLinks.diagnostics)}}');"
+							title="View site diagnostics"
+						></div>
+					<% } %>
+					
 					<div
 						class="zenario_at_dev_icon organizer_info_box"
 						onclick="zenarioA.infoBox();"

@@ -158,7 +158,7 @@ foreach ($rules as $rule) {
 							case 'radios':
 							case 'select':
 								if ($rule['value'] == '') {
-									continue 2;
+									break 2;
 								}
 								$check = $col. " = ". (int) $rule['value'];
 								break;
@@ -166,7 +166,7 @@ foreach ($rules as $rule) {
 							//Centralised lists work via a text value
 							default:
 								if ($rule['value'] == '') {
-									continue 2;
+									break 2;
 								}
 								$check = $col. " = '". \ze\escape::sql($rule['value']). "'";
 						}

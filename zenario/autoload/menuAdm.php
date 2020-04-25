@@ -86,14 +86,14 @@ class menuAdm {
 	}
 
 	//Formerly "getMenuPathWithMenuSection()"
-	public static function pathWithSection($menuId, $langId = false, $separator = ' -> ', $useOrdinal = false) {
+	public static function pathWithSection($menuId, $langId = false, $separator = ' › ', $useOrdinal = false) {
 		return \ze\menu::sectionName(\ze\row::get('menu_nodes', 'section_id', $menuId)). $separator. \ze\menuAdm::path($menuId, $langId, $separator, $useOrdinal);
 	}
 	
 	private static $maxOrdinal = null;
 
 	//Formerly "getMenuPath()"
-	public static function path($menuId, $langId = false, $separator = ' -> ', $useOrdinal = false) {
+	public static function path($menuId, $langId = false, $separator = ' › ', $useOrdinal = false) {
 		if ($langId === false) {
 			$langId = \ze\content::visitorLangId();
 	
@@ -425,18 +425,41 @@ class menuAdm {
 				$newNeighbourId = $menuTarget;
 	
 			} else {
-				//Check for a menu position, in the format CONCAT(section_id, '_', menu_id, '_', is_dummy_child)
+				//Check for a menu position
+				
+				//Menu positions are in the format CONCAT(section_id, '_', menu_id, '_', child_options)
+				//Possible options for "child_options" are:
+				$beforeNode = 0;
+				$underNode = 1;
+				$underNodeAtStart = 2;	//N.b. this option is not supported by position pickers using Organizer Select, but supported by ze\menuAdm::addContentItems() when saving
+				$defaultPos = '';
+				
 				$menu_position = explode('_', $menuTarget);
 				if (count($menu_position) == 3) {
+					$newSectionId = $menu_position[0];
 			
 					if ($menu_position[2]) {
-						//Move the menu node to where a dummy placeholder is
-						$newSectionId = $menu_position[0];
+						//Place the menu node under another menu node
 						$newParentId = $menu_position[1];
+						
+						//If the $underNodeAtStart option is chosen, try to place the menu node at the start,
+						//otherwise just place it at the end.
+						if ($menu_position[2] == $underNodeAtStart) {
+							$sql = '
+								SELECT id 
+								FROM '. DB_PREFIX. 'menu_nodes
+								WHERE section_id = '. (int) $newSectionId. '
+								  AND parent_id = '. (int) $newParentId. '
+								ORDER BY ordinal
+								LIMIT 1';
+							
+							if (!$newNeighbourId = \ze\sql::fetchValue($sql)) {
+								$newNeighbourId = 0;
+							}
+						}
 			
 					} elseif ($menu_position[1]) {
 						//Move the menu node to where another menu node is
-						$newSectionId = $menu_position[0];
 						$newParentId = \ze\menu::parentId($menu_position[1]);
 						$newNeighbourId = $menu_position[1];
 					}

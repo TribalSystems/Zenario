@@ -17,7 +17,7 @@ zenario_setup_language:
                 english_name:
                     label: 'Language English Name:'
                     type: text
-                    maxlength: "100"
+                    maxlength: 100
                     validation:
                         required: Please enter an English name.
                     side_note: >
@@ -26,7 +26,7 @@ zenario_setup_language:
                 language_local_name:
                     label: 'Language Local Name:'
                     type: text
-                    maxlength: "100"
+                    maxlength: 100
                     validation:
                         required: Please enter a local name.
                     side_note: >
@@ -44,6 +44,19 @@ zenario_setup_language:
                         Any Language Pickers on your site will use this CSS class name when they wish to show a flag.
                     validation:
                         required: Please enter a class name
+                
+                language_picker_logic:
+                    label: Visibility in language pickers
+                    type: select
+                    value: visible_or_disabled
+                    values:
+                        visible_or_disabled:
+                            label: Always show. If no link is possible then show as a disabled link.
+                        visible_or_hidden:
+                            label: Only show if a link is possible, hide if one is not.
+                        always_hidden:
+                            label: Never show, even if a link is possible.
+                
                 detect:
                     type: checkbox
                     label: 'Use browser language detection'
@@ -53,7 +66,7 @@ zenario_setup_language:
                         language requested by their browser.
                 detect_lang_codes:
                     type: text
-                    maxlength: "100"
+                    maxlength: 100
                     label: 'Detected language codes:'
                     side_note: |
                         When a visitor accesses the site without a specific page set in their URL,
@@ -84,6 +97,18 @@ zenario_setup_language:
                         simple:
                             label: Use "LIKE" in searches
                             side_note: Search for anything containing the search term, e.g. a search for "van" would match "caravan". We suggest this for languages that use symbols such as Japanese and Chinese.
+                thousands_sep:
+                    label: 'Thousands separator:'
+                    type: text
+                    maxlength: 5
+                    style: |
+                        width: 2em;
+                dec_point:
+                    label: 'Decimal point:'
+                    type: text
+                    maxlength: 5
+                    style: |
+                        width: 2em;
                 use_domain:
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()

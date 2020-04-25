@@ -8,9 +8,11 @@ site_settings:
         roles: {}
     tabs:
         users: {}
+            ord: 1
         organisations:
             label: Organisations
             hide_when_children_are_not_visible: true
+            ord: 2
         companies:
             parent: organisations
             visible_if: zenarioA.running.zenario_company_locations_manager
@@ -20,3 +22,6 @@ site_settings:
         roles:
             parent: organisations
             visible_if: zenarioA.running.zenario_organization_manager
+        document_envelopes:
+            visible_if: zenarioA.running.zenario_document_envelopes_fea
+            ord: 3

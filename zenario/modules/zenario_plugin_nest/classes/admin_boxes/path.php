@@ -147,7 +147,7 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 			}
 		}
 		
-		asort($commands);
+		ksort($commands);
 		foreach ($commands as $command => $details) {
 			$fields['path/command']['values'][$command] = [
 				'ord' => ++$ord,

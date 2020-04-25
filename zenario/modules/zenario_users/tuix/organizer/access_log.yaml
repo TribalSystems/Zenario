@@ -23,6 +23,12 @@ zenario__users:
 
         access_log:
             title: Access log
+            
+            notice:
+                show: false
+                type: information
+                message: ''
+                
             db_items:
                 table: '[[DB_PREFIX]]user_content_accesslog AS uca'
                 id_column: uca.id

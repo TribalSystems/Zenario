@@ -100,17 +100,25 @@ zenarioAB.updateHash = function() {
 
 zenarioAB.setTitle = function(isReadOnly) {
 	
-	var title, values, c, v, string2, identifier, id,
+	var title, lastUpdated, values, c, v, string2, identifier, id,
 		$zenario_fabBox = $('#zenario_fabBox'),
-		$zenario_fabId = $('#zenario_fabId');
+		$zenario_fabId = $('#zenario_fabId'),
+		$zenario_fabTitleWrap = $('#zenario_fabTitleWrap'),
+		$zenario_fabLastUpdated = $('#zenario_fabLastUpdated');
 	
 	if (!(title = zenarioAB.getTitle())) {
-		$('#zenario_fabTitleWrap').css('display', 'none');
+		$zenario_fabTitleWrap.css('display', 'none');
 	} else {
-		$('#zenario_fabTitleWrap').css('display', 'block');
-		$('#zenario_fabTitleWrap').addClass(' zenario_no_drag');
+		$zenario_fabTitleWrap.css('display', 'block');
+		$zenario_fabTitleWrap.addClass(' zenario_no_drag');
 		
 		get('zenario_fabTitle').innerHTML = htmlspecialchars(title);
+	}
+	
+	if (lastUpdated = zenarioAB.tuix.last_updated) {
+		$zenario_fabLastUpdated.show().html(htmlspecialchars(lastUpdated));
+	} else {
+		$zenario_fabLastUpdated.hide();
 	}
 	
 	if (isReadOnly) {
@@ -340,58 +348,62 @@ zenarioAB.makeFieldAsTallAsPossible = function() {
 
 
 
-zenarioAB.slideToggle = function() {
-	if (zenarioAB.isSlidUp) {
-		zenarioAB.slideDown();
-	} else {
-		zenarioAB.slideUp();
-	}
-};
-	
-zenarioAB.slideUp = function() {
-	
-	if (zenarioAB.isSlidUp) {
-		return;
-	}
-	
-	var height = $('#zenario_fabBox_Header').height(),
-		//height = FAB_PADDING_HEIGHT + FAB_TAB_BAR_HEIGHT,
-		$zenario_fabBox = $('#zenario_fabBox');
-	
-	zenarioAB.heightBeforeSlideUp = $zenario_fabBox.height();
-	
-	$('#zenario_fabBox_Body').stop(true).slideUp();
-	
-	$zenario_fabBox.stop(true).animate({height: height});
-	
-	$('#zenario_fabSlideToggle')
-		.addClass('zenario_fabSlideToggleUp')
-		.removeClass('zenario_fabSlideToggleDown');
-	
-	zenarioAB.isSlidUp = true;
-};
+//Old slide up/slide down tech for the FABs, that let you peep at the page they were covering up.
+//Currently not used anywhere.
 
-zenarioAB.slideDown = function() {
-	
-	if (!zenarioAB.isSlidUp) {
-		return;
-	}
-	
-	$('#zenario_fabBox_Body').stop(true).slideDown();
-	$('#zenario_fabBox').stop(true).animate({height: zenarioAB.heightBeforeSlideUp}, function() {
-		zenarioAB.size(true);
-	});
-	
-	$('#zenario_fabSlideToggle')
-		.addClass('zenario_fabSlideToggleDown')
-		.removeClass('zenario_fabSlideToggleUp');
-	
-	zenarioAB.isSlidUp = false;
-};
+//zenarioAB.slideToggle = function() {
+//	if (zenarioAB.isSlidUp) {
+//		zenarioAB.slideDown();
+//	} else {
+//		zenarioAB.slideUp();
+//	}
+//};
+//	
+//zenarioAB.slideUp = function() {
+//	
+//	if (zenarioAB.isSlidUp) {
+//		return;
+//	}
+//	
+//	var height = $('#zenario_fabBox_Header').height(),
+//		//height = FAB_PADDING_HEIGHT + FAB_TAB_BAR_HEIGHT,
+//		$zenario_fabBox = $('#zenario_fabBox');
+//	
+//	zenarioAB.heightBeforeSlideUp = $zenario_fabBox.height();
+//	
+//	$('#zenario_fabBox_Body').stop(true).slideUp();
+//	
+//	$zenario_fabBox.stop(true).animate({height: height});
+//	
+//	$('#zenario_fabSlideToggle')
+//		.addClass('zenario_fabSlideToggleUp')
+//		.removeClass('zenario_fabSlideToggleDown');
+//	
+//	zenarioAB.isSlidUp = true;
+//};
+//
+//zenarioAB.slideDown = function() {
+//	
+//	if (!zenarioAB.isSlidUp) {
+//		return;
+//	}
+//	
+//	$('#zenario_fabBox_Body').stop(true).slideDown();
+//	$('#zenario_fabBox').stop(true).animate({height: zenarioAB.heightBeforeSlideUp}, function() {
+//		zenarioAB.size(true);
+//	});
+//	
+//	$('#zenario_fabSlideToggle')
+//		.addClass('zenario_fabSlideToggleDown')
+//		.removeClass('zenario_fabSlideToggleUp');
+//	
+//	zenarioAB.isSlidUp = false;
+//};
+
+
 
 //If someone clicks on a tab, make sure that the form isn't hidden first!
 zenarioAB.clickTab = function(tab) {
-	zenarioAB.slideDown();
 	methodsOf(zenarioABToolkit).clickTab.call(zenarioAB, tab);
 };
 
@@ -552,7 +564,7 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 	//Count how many checkboxes are on the page, and how many of these are checked
 	if (!defined(n)) {
 		c = 0;
-		n = $('input[name=' + childrenName + ']').each(function(i, e) {if (e.checked) ++c;}).size();
+		n = $('input[name=' + childrenName + ']').each(function(i, e) {if (e.checked) ++c;}).length;
 	}
 	
 	//Check or uncheck the parent, depending on if at least one child is checked.
@@ -588,7 +600,7 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 		current_value = '',
 		checked = get(parentName).checked,
 		$children = $('input[name=' + childrenName + ']'),
-		visibleChildren = !!$children.size();
+		visibleChildren = !!$children.length;
 	
 	//Loop through each value for the child checkboxes.
 	//Count them, and either turn them all on or all off, depending on whether the parent was checked

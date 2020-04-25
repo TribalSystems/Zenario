@@ -97,7 +97,7 @@ zenarioGM.init = function(data, layoutId, layoutName, familyName) {
 				if (zenarioGM.savedAtPos == zenarioGM.pos
 				 || confirm(phrase.gridConfirmClose)) {
 					
-					zenarioGM.stopPoking();
+					zenario.stopPoking(zenarioGM);
 					
 					if (windowParent.zenario
 					 && windowParent.zenario.cID) {
@@ -113,7 +113,7 @@ zenarioGM.init = function(data, layoutId, layoutName, familyName) {
 		}
 	}
 	
-	zenarioGM.startPoking();
+	zenario.startPoking(zenarioGM);
 };
 
 zenarioGM.draw = function(doNotRedrawForm) {
@@ -925,25 +925,6 @@ zenarioGM.recalc = function(el, redraw, forceChange) {
 	return !warning;
 };
 
-
-
-
-zenarioGM.stopPoking = function() {
-	if (zenarioGM.poking) {
-		clearInterval(zenarioGM.poking);
-	}
-	zenarioGM.poking = false;
-};
-
-zenarioGM.startPoking = function() {
-	if (!zenarioGM.poking) {
-		zenarioGM.poking = setInterval(zenarioGM.poke, 2 * 60 * 1000);
-	}
-};
-
-zenarioGM.poke = function() {
-	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
-};
 
 
 

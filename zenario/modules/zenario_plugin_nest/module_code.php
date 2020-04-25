@@ -331,6 +331,8 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 						}
 					}
 					
+					$tabMergeFields['Slide_Class'] = 'slide_'. $slide['slide_num']. ' '. $slide['css_class'];
+					
 					$this->sections['Tab'][$slide['slide_num']] = $tabMergeFields;
 				}
 				
@@ -453,30 +455,37 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			foreach (ze\sql::fetchAssocs($sql) as $path) {
 				$state = $path['to_state'];
 				
-				foreach (ze\ray::explodeAndTrim($path['command']) as $command) {
 					
-					//Handle links to other content items
-					if ($path['equiv_id']) {
-						
-						$cID = $path['equiv_id'];
-						$cType = $path['content_type'];
-						ze\content::langEquivalentItem($cID, $cType);
-						
+				//Handle links to other content items
+				if ($path['equiv_id']) {
+					
+					$cID = $path['equiv_id'];
+					$cType = $path['content_type'];
+					ze\content::langEquivalentItem($cID, $cType);
+					
+					if (!ze\content::checkPerm($cID, $cType)) {
+						continue;
+					}
+					
+					foreach (ze\ray::explodeAndTrim($path['command']) as $command) {
 						$this->commands[$command] = new zenario_conductor__link($command, $state);
 						$this->commands[$command]->cID = $cID;
 						$this->commands[$command]->cType = $cType;
+					}
+				
+				//Handle links to other slides
+				} elseif (isset($this->statesToSlides[$state])) {
 					
-					//Handle links to other slides
-					} elseif (isset($this->statesToSlides[$state])) {
-						
-						$slideNum = $this->statesToSlides[$state];
+					$slideNum = $this->statesToSlides[$state];
+					
+					foreach (ze\ray::explodeAndTrim($path['command']) as $command) {
 						
 						//If this is a custom path or a back button, use the pathing info from the slide,
 						//as this is more likely to be accurate.
 						if ($path['is_custom'] || $command == 'back') {
 							$path['hierarchical_var'] = $this->slides[$slideNum]['hierarchical_var'];
 						}
-						
+					
 						$this->commands[$command] = new zenario_conductor__link(
 							$command,
 							$state,
@@ -484,13 +493,13 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 							$path['descendants'],
 							$path['hierarchical_var']
 						);
-						
+					
 						if ($path['is_forwards']) {
 							$this->forwardCommand = $command;
 						}
 					}
-					$this->usesConductor = true;
 				}
+				$this->usesConductor = true;
 			}
 			
 			if ($this->usesConductor && !$specificEgg) {
@@ -713,7 +722,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$sql = "
 			SELECT
 				id, id AS slide_id,
-				slide_num, name_or_title, use_slide_layout,
+				slide_num, css_class, name_or_title, use_slide_layout,
 				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
 				request_vars, hierarchical_var, global_command,
 				invisible_in_nav,
@@ -1315,17 +1324,10 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$noPermsMsg = !$status && (!empty(ze::$slotContents[$slotNameNestId]['error']) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && $p;
 		
 		if ($p) {
-			echo '
-				<x-zenario-admin-slot-wrapper class="';
-			
 			if ($noPermsMsg) {
-				echo 'zenario_nestSlot zenario_slotWithContents zenario_slotWithNoPermission">';
-			
-			} elseif ($status) {
-				echo 'zenario_nestSlot zenario_slotWithContents">';
-			
+				ze::$slotContents[$slotNameNestId]['class']->start('zenario_nestSlot zenario_slotWithNoPermission');
 			} else {
-				echo 'zenario_nestSlot zenario_slotWithNoContents">';
+				ze::$slotContents[$slotNameNestId]['class']->start('zenario_nestSlot');
 			}
 		}
 		
@@ -1386,6 +1388,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		if (isset($_REQUEST['method_call'])) {
 			switch ($_REQUEST['method_call']) {
 				case 'handlePluginAJAX':
+				case 'showFile':
+				case 'showImage':
+				case 'showStandalonePage':
 				case 'showFloatingBox':
 				case 'showRSS':
 				case 'fillVisitorTUIX':
@@ -1410,6 +1415,21 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	}
 	
 	
+	public function showFile() {
+		if ($class = $this->getSpecificEgg()) {
+			return $class->showFile();
+		}
+	}
+	public function showImage() {
+		if ($class = $this->getSpecificEgg()) {
+			return $class->showImage();
+		}
+	}
+	public function showStandalonePage() {
+		if ($class = $this->getSpecificEgg()) {
+			return $class->showStandalonePage();
+		}
+	}
 	public function showFloatingBox() {
 		if ($class = $this->getSpecificEgg()) {
 			return $class->showFloatingBox();
@@ -1427,37 +1447,37 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	}
 	
 	public function returnVisitorTUIXEnabled($path) {
-		if ($class = $this->getSpecificEgg(true)) {
+		if ($class = $this->getSpecificEgg(true, $path)) {
 			return $class->returnVisitorTUIXEnabled($path);
 		}
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
-		if ($class = $this->getSpecificEgg(true)) {
+		if ($class = $this->getSpecificEgg(true, $path)) {
 			return $class->fillVisitorTUIX($path, $tags, $fields, $values);
 		}
 	}
 	
 	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg(true)) {
+		if ($class = $this->getSpecificEgg(true, $path)) {
 			return $class->formatVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
 	
 	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
-		if ($class = $this->getSpecificEgg(true)) {
+		if ($class = $this->getSpecificEgg(true, $path)) {
 			return $class->validateVisitorTUIX($path, $tags, $fields, $values, $changes, $saving);
 		}
 	}
 	
 	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg(true)) {
+		if ($class = $this->getSpecificEgg(true, $path)) {
 			return $class->saveVisitorTUIX($path, $tags, $fields, $values, $changes);
 		}
 	}
 	
 	public function typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, &$searchResults) {
-		if ($class = $this->getSpecificEgg(true)) {
+		if ($class = $this->getSpecificEgg(true, $path)) {
 			return $class->typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, $searchResults);
 		}
 	}
@@ -1468,7 +1488,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		}
 	}
 	
-	protected function getSpecificEgg($checkSubClass = false) {
+	protected function getSpecificEgg($checkSubClass = false, $path = false) {
 		if ($this->show
 		 && ($specificEgg = $this->specificEgg())
 		 && ($slotNameNestId = ze\ray::value($this->modules[$this->slideNum], $specificEgg))
@@ -1476,7 +1496,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			$class = ze::$slotContents[$slotNameNestId]['class'];
 			
 			if ($checkSubClass) {
-				$class = $class->runSubClass(get_class($class)) ?: $class;
+				$class = $class->runSubClass(get_class($class), false, $path) ?: $class;
 			}
 			
 			return $class;

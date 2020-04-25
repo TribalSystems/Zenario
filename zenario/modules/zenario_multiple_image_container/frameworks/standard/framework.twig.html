@@ -20,8 +20,23 @@
 						rel="colorbox"
 						href="{{Image.Floating_Box.Src|escape}}"
 						{% if Show_caption_on_enlarged_image %}
-							data-box-title="{% if Image.Text %}{{Image.Text}}{% endif %}"
+							data-box-title='
+								{% if Image.Text %}
+									{{Image.Text|e}}
+								{% endif %}
+								{% if Show_image_uploaded_date and Image.Uploaded_Date %}
+									<span class="uploaded_date">{{Image.Uploaded_Date|e}}</span>
+								{% endif %}
+								{% if Show_link_to_download_original %}
+									<span class="download_link">
+										<a href="{{Image.File_Link}}" download>{{"Download original"|trans}}
+											{% if Show_file_size and Image.File_Size %} ({{Image.File_Size}}){% endif %}
+										</a>
+									</span>
+								{% endif %}
+							'
 						{% endif %}
+						data-box-className="multiple_image_container{% if not Image.Text %} caption_hidden{% endif %}"
 					>
 				{% elseif Image.Image_Link_Href %} 
 					<a {{Image.Image_Link_Href}}{{Image.Target_Blank}}>
@@ -38,6 +53,20 @@
 					</a>
 				{% elseif Image.Image_Link_Href %} 
 					</a>
+				{% endif %}
+				
+				{% if Show_link_to_download_original %}
+					{% if Show_image_uploaded_date and Image.Uploaded_Date %}
+						<span class="uploaded_date">{{Image.Uploaded_Date}}</span>
+					{% endif %}
+					<span class="download_link">
+						<a href="{{Image.File_Link}}" download>
+							{{"Download original"|trans}}
+							{% if Show_file_size and Image.File_Size %}
+								({{Image.File_Size}})
+							{% endif %}
+						</a>
+					</span>
 				{% endif %}
 			</div>
 		{% endfor %}

@@ -234,6 +234,15 @@ diagnostics:
                         html: Other server programs
                     visible_if: zenarioAW.togglePressed(field, 2)
                 show_os: *show_subsection
+                os_av:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Antivirus
+                            <br/><small>ClamAV is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
                 os_1:
                     grouping: sub_table
                     full_width: true
@@ -549,6 +558,7 @@ diagnostics:
                     visible_if: zenarioAW.togglePressed(field)
                
                 public_documents: *blank_child
+                public_images: *blank_child
                 site_automated_backups: *blank_child
                 scheduled_task_manager: *blank_child
                 spare_domains_without_primary_domain:
@@ -658,8 +668,8 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            This site contains personal data for [[numberOfRecordsUnencrypted]] [[textForNumber]], but it is not being protected using personal data encryption.
-                            We recommend you ask your system administrator to encrypt the personal data stored on the site.
+                            This site contains personal data for [[numberOfRecordsUnencrypted]] [[textForNumber]], but it is not being protected using Personal Data Encryption (PDE).
+                            We recommend you ask your system administrator to enable PDE to improve the protection of data at rest.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 column_not_found:

@@ -8,12 +8,13 @@ zenario_slide:
         instanceId: ''
         idInOrganizer: ''
         usesConductor: false
+        breadcrumbsOverridden: false
         cID: ""
         cType: ""
         cVersion: ""
         slotName: ""
     title: Slide
-    max_height: 550
+    max_height: 600
     hide_tab_bar: true
     identifier:
         css_class: zenario_nest_tab
@@ -37,7 +38,9 @@ zenario_slide:
                 title_merge_fields:
                     same_row: true
                     visible_if: |
-                        tuix.key.usesConductor && !_.isEmpty(field.values)
+                        tuix.key.usesConductor &&
+                        !tuix.key.breadcrumbsOverridden &&
+                        !_.isEmpty(field.values)
                     type: select
                     css_class: slide_title_merge_fields iconselectmenu
                     empty_value: 'Add merge field...'
@@ -226,5 +229,11 @@ zenario_slide:
                 show_embed:
                     label: Show an Embed button
                     type: checkbox
+                
+                
+                css_class:
+                    label: 'CSS class names:'
+                    type: text
+                    maxlength: 100
     lovs:
         title_merge_fields: {}

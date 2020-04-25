@@ -80,7 +80,7 @@ properties:
             If you set this property, your module will be loaded every time a Twig framework is generated,
             and designers will be able to call your public methods from their twig frameworks.
             
-            Note that this will make all of your public methods available.
+            Note: this will make all of your public methods available.
             If you want to make an exception, e.g. your saveAdminBox() or handleOrganizerPanelAJAX() methods,
             then you may add
                 if (cms_core::$isTwig) return;
@@ -137,7 +137,7 @@ properties:
         default: "(Your module's class name)"
         description: >
             If your module is pluggable, you should provide a class name to use for
-            phrases.
+            styles.
             This should usually be the same as your module's class name, however you can
             set it to the class name of another module to use that module's styles.
     default_framework:
@@ -174,7 +174,7 @@ properties:
             type: boolean
         description: >
             An array of modules that your module depends on.
-            Note that the names of the modules must be stored in the keys, not the values.
+            Note: the names of the modules must be stored in the keys, not the values.
 
     inheritance:
         type: object
@@ -222,7 +222,7 @@ properties:
                     defined for plugins in that module will also be available for your plugins
                     to call on.
         
-                    But note that their encapsulated name does not change; i.e. if you write
+                    Be aware that their encapsulated name does not change; i.e. if you write
                     my_module_b which extends my_module_a, then include JavaScript from
                     my_module_a in my_module_b, the syntax for these functions will still be:
                         <code>my_module_a.functionNameFromModuleA();</code>
@@ -238,7 +238,7 @@ properties:
                     However you still have the power to add additional Settings of your own,
                     or to hide or otherwise alter the predefined Settings.
         
-                    Note that the <code>fillAdminBox()</code>, <code>formatAdminBox()</code>, <code>validateAdminBox()</code> and
+                    Note: the <code>fillAdminBox()</code>, <code>formatAdminBox()</code>, <code>validateAdminBox()</code> and
                     <code>saveAdminBox()</code> methods of the module you specify here are still called. If you
                     wish to hide any predefined fields or tabs you should do so by setting the
                     <code>hidden</code> property, rather than trying to use <code>unset()</code> which may cause PHP notices and
@@ -269,6 +269,25 @@ properties:
                     type: string
                     description: >
                         This property allows you to handle a signal in place of a different module.
+    
+    background_tasks:
+        type: object
+        additionalProperties:
+            type: object
+            required:
+                - name
+            properties:
+                name:
+                    type: string
+                    description: >
+                        A code-name for this task. Will also be visible to admins in Organizer.
+                script_path:
+                    type: string
+                    description: >
+                        The path to the background script you wish to run.
+                        
+                        The CMS root directory will automatically be added to the start, and anything you
+                        type will be automatically shell-escaped.
     
     jobs:
         type: object
@@ -357,6 +376,15 @@ properties:
                     type: boolean
                     description: >
                         Whether to send an email if this job does nothing.
+                
+                enabled_by_default:
+                    type: boolean
+                    description: >
+                        If set to true, this job will be running by default without an admin needing to press the "Enable Task" button.
+                        
+                        (Note: the crontab still needs to be set and the Master Switch still needs to be enabled.)
+                        
+                        This works from version 8.6 onwards.
     
     content_types:
         type: object
@@ -529,7 +557,6 @@ properties:
                 logic:
                     enum:
                         - create_and_maintain_in_default_language
-                        - create_and_maintain_in_all_languages
                         - create_in_default_language_on_install
                     default: create_and_maintain_in_default_language
                     description: >
@@ -537,9 +564,6 @@ properties:
                         
                         create_and_maintain_in_default_language:
                             A special page will only be created in the first or the default Language of a site.
-                        
-                        create_and_maintain_in_all_languages:
-                            A special page will be created in every language.
                         
                         create_in_default_language_on_install:
                             A normal page will be created if this module is running on the first install of the site.

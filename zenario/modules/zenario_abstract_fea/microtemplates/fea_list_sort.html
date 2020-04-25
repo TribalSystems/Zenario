@@ -1,0 +1,29 @@
+<%
+	var ci, col,
+		sortVal = m.__showSortControls && zenario.engToBoolean(m.thus.key("sortDesc")) + m.thus.key("sortCol");
+%>
+
+<select class="zfea_list_sort" onchange="
+	{{m.lib.fun('changeSortCol')}}(this.value.substr(1), this.value[0]);
+">
+	<% foreach (m.__sortableCols as ci => col) { %>
+		<% if (col.sort_asc) { %>
+			<option value="0{{col.id|e}}" <% if (0 + col.id == sortVal) { %>selected<% } %> >
+				<% if (_.isBoolean(col.sort_asc)) { %>
+					{{col.title|e}} ▲
+				<% } else { %>
+					{{col.sort_asc|e}}
+				<% } %>
+			</option>
+		<% } %>
+		<% if (col.sort_desc) { %>
+			<option value="1{{col.id|e}}" <% if (1 + col.id == sortVal) { %>selected<% } %> >
+				<% if (_.isBoolean(col.sort_desc)) { %>
+					{{col.title|e}} ▼
+				<% } else { %>
+					{{col.sort_desc|e}}
+				<% } %>
+			</option>
+		<% } %>
+	<% } %>
+</select>

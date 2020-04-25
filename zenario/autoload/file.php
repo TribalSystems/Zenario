@@ -53,12 +53,82 @@ class file {
 	}
 	
 	
+	//Return the basic filetype from the mime-type.  E.g. "text/plain" would be just "text".
+	//I've had to add a few hard-coded exception for JSON, as it's registered as "application"
+	//but is classified as text when scanned.
+	public static function basicType($mimeType) {
+		switch ($mimeType) {
+			case 'application/json':
+				return 'text';
+			default:
+				return explode('/', $mimeType, 2)[0];
+		}
+	}
+	
+	
 	//Attempt to check if the contents of a file match the file
 	public static function check($filepath, $mimeType = null) {
 		
 		if ($mimeType === null) {
 			$mimeType = \ze\file::mimeType($filepath);
 		}
+		
+		//Check to see if we have access to the file utility in UN*X
+		if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
+			
+			//Attempt to call the file program to check what mime-type it thinks this file should be.
+			//Note that our check using ze\file::mimeType() just checks the file extension and nothing else.
+			//The file program is a little more sophisticated and does some basic checks on the file's contents as well.
+			if (!$scannedMimeType = exec('file --mime-type --brief '. escapeshellarg($filepath))) {
+				return false;
+			}
+			
+			//Ignore the "x-" prefix as this is inconsistently applied in different versions of file.
+			$mimeType = str_replace('/x-', '/', $mimeType);
+			$scannedMimeType = str_replace('/x-', '/', $scannedMimeType);
+			
+			//Sometimes the fine details might differ between the registered mime-type and the scanned mime-type.
+			//Try to work out the basic type and compare off of that to prevent lots of false positives
+			//from slightly different classifications
+			$basicType = \ze\file::basicType($mimeType);
+			$scannedBasicType = \ze\file::basicType($scannedMimeType);
+			
+			//Check the basic types match, and reject the file if not.
+			if ($basicType !== $scannedBasicType) {
+				return false;
+			}
+			
+			//If this is an Office document, check both checks agree that it's an Office document
+			if (substr($mimeType, 0, 15) == 'application/vnd'
+			 && $scannedMimeType != 'application/octet-stream'
+			 && substr($scannedMimeType, 0, 15) != 'application/vnd') {
+				return false;
+			}
+			
+			switch ($mimeType) {
+				//For a short list of files, check we have an exact match of mime-types
+				//(Everywhere else I'm being a little more flexiable as there is often disagreement about exactly what
+				// the mime-type for a file should be.)
+				case 'application/msword':
+				case 'application/zip':
+				case 'application/gzip':
+				case 'application/7z-compressed':
+					if ($mimeType !== $scannedMimeType) {
+						return false;
+					}
+					break;
+				
+				//Always block executable files
+				case 'application/dosexec':
+				case 'application/executable':
+				case 'application/mach-binary':
+					return false;
+			}
+		}
+		
+		//Note none of the code below is affected by the "x-" prefix, so I don't need to 
+		//worry about whether I've changed that or not above.
+		
 		
 		$check = true;
 		\ze::ignoreErrors();
@@ -104,9 +174,11 @@ class file {
 		 || !($file['checksum'] = \ze::base16To64($file['checksum']))) {
 			return false;
 		}
-		$basename =  basename($location);
+		
 		if ($filename === false) {
-			$filename = preg_replace('/([^.a-z0-9\s]+)/i', '-', $basename);
+			$filename = \ze\file::safeName(basename($location), true);
+		} else {
+			$filename = \ze\file::safeName($filename);
 		}
 
 		$file['filename'] = $filename;
@@ -221,12 +293,6 @@ class file {
 			$filenameArray = explode('.', $filename);
 			$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
 			$file['alt_tag'] = $altTag;
-		
-		//For non images, just run ze\file::check() without any specific tweaks.
-		} else {
-			if (!\ze\file::check($location, $file['mime_type'])) {
-				return false;
-			}
 		}
 
 
@@ -364,6 +430,45 @@ class file {
 		}
 	}
 
+	//If an image is set as public, add it to the public/images/ directory
+	public static function addPublicImage($imageId) {
+		//Note: this actually just works by calling the imageLink() function!
+		$width = $height = $url = null;
+		return \ze\file::imageLink($width, $height, $url, $imageId);
+	}
+
+	//Look through all images in the database that are flagged as public, check if they're all there, and add them if not
+	public static function checkAllImagePublicLinks($check) {
+		
+		if ($check) {
+			$report = ['numMissing' => 0];
+		}
+		
+		$sql = "
+			SELECT id, short_checksum, filename
+			FROM ". DB_PREFIX. "files
+			WHERE `usage` = 'image'
+			  AND mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+			  AND `privacy` = 'public'";
+		
+		foreach (\ze\sql::select($sql) as $image) {
+			$filepath = CMS_ROOT. 'public/images/'. $image['short_checksum']. '/'. \ze\file::safeName($image['filename']);
+			
+			if (!is_file($filepath)) {
+				if ($check) {
+					++$report['numMissing'];
+					$report['exampleFile'] = $image['filename'];
+				} else {
+					\ze\file::addPublicImage($image['id']);
+				}
+			}
+		}
+		
+		if ($check) {
+			return $report;
+		}
+	}
+
 	//Formerly "addImageDataURIsToDatabase()"
 	public static function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'image') {
 	
@@ -414,12 +519,24 @@ class file {
 	}
 
 	//Formerly "checkDocumentTypeIsAllowed()"
-	public static function isAllowed($file) {
+	public static function isAllowed($file, $alwaysAllowImages = true) {
 		$type = explode('.', $file);
 		$type = $type[count($type) - 1];
-	
-		return !self::isExecutable($type)
-			&& \ze\row::exists('document_types', ['type' => $type]);
+		
+		if (self::isExecutable($type)) {
+			return false;
+		}
+		
+		$sql = '
+			SELECT mime_type, is_allowed
+			FROM '. DB_PREFIX. 'document_types
+			WHERE `type` = \''. \ze\escape::sql($type). '\'';
+		
+		if (!$dt = \ze\sql::fetchRow($sql)) {
+			return false;
+		}
+		
+		return (bool) ($dt[1] || ($alwaysAllowImages && \ze\file::isImageOrSVG($dt[0])));
 	}
 
 	//Formerly "checkDocumentTypeIsExecutable()"

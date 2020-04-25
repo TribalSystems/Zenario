@@ -76,7 +76,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 			$panel['item_buttons']['restore']['ajax']['confirm']['message'] = 
 				$restoreMsg.
 				$panel['item_buttons']['restore']['ajax']['confirm']['message'];
-        }    
+        }
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
@@ -96,13 +96,15 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		
 		} elseif (($_POST['upload'] ?? false) && ze\priv::check('_PRIV_BACKUP_SITE')) {
 			
+			ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
+			
 			$filename = $_FILES['Filedata']['name'];
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if (!in_array($ext, ['sql', 'gz'])) {
 				echo '<!--Message_Type:Error-->Only .sql or .gz files can be uploaded as database backups';
 			} elseif (file_exists(ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
 				echo '<!--Message_Type:Error-->A database backup with the same name already exists';
-			} elseif (move_uploaded_file($_FILES['Filedata']['tmp_name'], ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
+			} elseif (\ze\fileAdm::moveUploadedFile($_FILES['Filedata']['tmp_name'], ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
 				echo '<!--Message_Type:Success-->Successfully uploaded the database backup';
 				return ze\ring::encodeIdForOrganizer($filename);
 			} else {

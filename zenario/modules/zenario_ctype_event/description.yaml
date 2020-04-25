@@ -36,7 +36,7 @@ keywords: event, calendar, conference, diary, meeting
 vlp_class_name: zenario_ctype_event
 css_class_name: zenario_ctype_event
 is_pluggable: true
-can_be_version_controlled: true
+can_be_version_controlled: false
 default_framework: standard
 content_types:
     content_type:

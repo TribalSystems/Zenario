@@ -15,7 +15,6 @@
 					<a class="zenario_fabClose" onclick="return zenarioAB.closeButton();" href="#">
 						<div><p>{{zenarioA.phrase.close}}</p></div>
 					</a>
-					<a id="zenario_fabSlideToggle" class="zenario_fabSlideToggle zenario_fabSlideToggleDown" onclick="zenarioAB.slideToggle();"></a>
 					<div id="zenario_fabTitleWrap" class="zenario_fabTitleWrap">
 						<div>
 							<div id="zenario_fabTitle"></div>
@@ -32,6 +31,9 @@
 			<div class="zenario_fabMainBor">
 				<div class="zenario_fabMainBor">
 					<div id="zenario_fbMain" class="zenario_fbMain">
+						
+						<div id="zenario_fabLastUpdated" style="display: none;"></div>
+						
 						<% if (zenarioT.showDevTools()) { %>
 							<div class="zenario_debug" onclick="zenarioA.debug('zenarioAB');"><div></div></div>
 						<% } %>

@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features__organizer__menu_position extends ze\moduleBaseClass {
 	
-	protected $seperator = ' -> ';
+	protected $seperator = ' › ';
 	protected $pathsByParents = [];
 	
 	protected function getParentPath($parentId, $item) {

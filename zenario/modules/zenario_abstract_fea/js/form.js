@@ -49,16 +49,6 @@ methods.idVarName = function() {
 	return thus.specifiedIdVarName || 'id';
 };
 
-methods.resizeToFit = function(containerId){
-    var elements =  $('#'+containerId +' .resize_text');
-    elements.each(function(i, el) {
-        do {
-            elNewFontSize = (parseInt($(el).css('font-size').slice(0, -2)) - 1) + 'px';
-            $(el).css('font-size', elNewFontSize);
-        } while (el.scrollHeight >  el.offsetHeight);
-    });
-};
-
 //Extend the parent function validateFormatOrRedrawForField() and add the
 //option to have a save button
 methods.validateFormatOrRedrawForField = function(field) {
@@ -277,7 +267,6 @@ methods.putHTMLOnPage = function(html) {
 	
 	thus.cb.done();
 	thus.addJQueryElements('#' + sel);
-	thus.resizeToFit(containerId);
 	
 	if (zenario.adminId) {
 		var nestContainerId = zenario.getContainerIdFromSlotName(zenario.getSlotnameFromEl(sel));
@@ -336,48 +325,45 @@ methods.fun = function(functionName) {
 	return thus.globalName + '.' + functionName;
 };
 
-methods.pMicroTemplate = function(template, data, filter) {
-	return thus.microTemplate(thus.mtPrefix + '_' + template, data, filter);
-};
-
-methods.microTemplate = function(template, data, filter) {
+//Allow the plugin to change which microtemplate is used to for the main display using a TUIX property
+methods.microTemplate = function(template, data, filter, preMicroTemplate, postMicroTemplate) {
 	
-	var d,
-		html,
-		needsTidying,
-		cusTemplate,
-		cusTemplateApplied;
+	var html, cusTemplate, cusTemplateApplied = false;
 	
-	//Use a customised microtemplate for listing classes and methods
-	if (cusTemplateApplied = (
-			!thus.__cusTemplateApplied
-		 && (template == 'fea_list' || template == 'fea_form')
-		 && (cusTemplate = thus.tuix && thus.tuix.microtemplate)
-		 && (zenario.microTemplates[cusTemplate])
-	)) {
-		template = thus.tuix.microtemplate;
-		
-		//Added a catch top stop infinite loops
-		thus.__cusTemplateApplied = true;
+	if (!thus.__cusTemplateApplied
+	 && (template == 'fea_list' || template == 'fea_form')
+	 && (cusTemplate = thus.tuix && thus.tuix.microtemplate)) {
+		template = cusTemplate;
+		thus.__cusTemplateApplied = cusTemplateApplied = true;
 	}
 	
-	filter = zenarioT.filter(filter);
+	html = methodsOf(zenarioF).microTemplate.call(thus, template, data, filter, preMicroTemplate, postMicroTemplate);
 	
-	
-	needsTidying = zenario.addLibPointers(data, thus);
-	
-		html = zenario.microTemplate(template, data, filter);
-	
-	if (needsTidying) {
-		zenario.tidyLibPointers(data);
-	}
-	
-	//Remove the catch for infinite loops
 	if (cusTemplateApplied) {
 		delete thus.__cusTemplateApplied;
 	}
 	
 	return html;
+};
+
+
+methods.displayDevTools = function() {
+	
+	if (!thus.tsLink && !zenarioT.showDevTools()) {
+		return '';
+	}
+	
+	var sel = '#fea_dev_tools_' + thus.containerId,
+		$devToolsContainer = $(sel),
+		html = thus.pMicroTemplate('dev_tools', {});
+	
+	if ($devToolsContainer.length) {
+		$devToolsContainer.html(html).show();
+		thus.addJQueryElements(sel);
+		return '';
+	} else {
+		return html;
+	}
 };
 
 methods.on = function(eventName, handler) {
@@ -416,7 +402,7 @@ methods.showLoader = function(hide, wasRedraw) {
 		return;
 		
 	} else {
-		$loader = $(thus.microTemplate(thus.mtPrefix + '_loading', {loadingId: loadingId}));
+		$loader = $(thus.pMicroTemplate('loading', {loadingId: loadingId}));
 		$container.prepend($loader);
 	}
 	
@@ -445,6 +431,10 @@ methods.commandEnabled = function(commandName) {
 
 methods.navigationEnabled = function(commandName, mode) {
 	return thus.tuix.enable && thus.tuix.enable[mode || commandName] && zenario_conductor.commandEnabled(thus.containerId, commandName);
+};
+
+methods.enabled = function(option) {
+	return thus.tuix.enable && thus.tuix.enable[option];
 };
 
 methods.runLogic = function(request, callWhenLoaded) {
@@ -492,13 +482,17 @@ methods.logic = function(request, callWhenLoaded) {
 	}
 };
 
-methods.loadData = function(request, json) {
+methods.loadData = function(request, json, TUIXSnippetLink) {
 	
 	thus.request = request;
 	thus.tuix = zenarioT.parse(json);
 	
 	thus.last = {request: request};
 	thus.prevPath = thus.path;
+	
+	if (TUIXSnippetLink) {
+		thus.tsLink = TUIXSnippetLink;
+	}
 	
 	//setTimeout() is used as a hack to ensure the conductor is fully loaded first
 	
@@ -555,7 +549,7 @@ methods.drawList = function() {
 	thus.sortOutTUIX();
 	
 	thus.cb = new zenario.callback;
-	thus.putHTMLOnPage(thus.microTemplate(thus.mtPrefix + '_list', {}));
+	thus.putHTMLOnPage(thus.pMicroTemplate('list', {}));
 	
 	var page = 1 * thus.tuix.__page__,
 		pageSize = 1 * thus.tuix.__page_size__,
@@ -585,7 +579,7 @@ methods.drawList = function() {
 			//coeffAcceleration: 2,
 			
 			onPageClicked: function(a,num) { 
-				thus.doSearch(undefined, undefined, num);
+				thus.doSearch(undefined, undefined, undefined, num);
 			}
 		});
 	}
@@ -596,8 +590,128 @@ methods.drawList = function() {
 	if (thus.hadSparkline) {
 		thus.initSparklineChart();
 	}
+	
+	
+	if (thus.tuix.map) {
+		thus.initMap();
+	}
 
 };
+
+
+
+
+methods.initMap = function() {
+	
+	var gMap,
+		tuix = thus.tuix,
+		locations = _.toArray(tuix.items),
+		mapOptions = tuix.map.options,
+		containerId = thus.containerId,
+		googleMapsApiKey = tuix.map.api_key;
+	
+	//$('#refresh_button').click(function(){
+	//	var mapZoom = gMap.getZoom();
+	//	var mapCenter = gMap.getCenter();
+	//	var mapLat = mapCenter.lat();
+	//	var mapLng = mapCenter.lng();
+	//	var request = 'mode=map_of_locations'+'&map_zoom='+mapZoom+'&map_lat='+mapLat+'&map_lng='+mapLng;
+	//	
+	//	zenario.refreshPluginSlot(containerId, 'lookup', false,false,false,false,false,request);
+	//});
+	
+	
+	var runWhenMapsLoaded = function() {
+		var i, coordsExist = false;
+		if(locations.length > 0) {
+			for (i = 0; i < locations.length; ++i) {
+				if (locations[i].latitude && locations[i].longitude) {
+					coordsExist = true;
+					break;
+				}
+			}
+		}
+	
+		if(coordsExist){
+			mapOptions = {
+				scrollwheel: false,
+				draggable: true
+			}
+		
+			if(mapOptions.map_zoom && mapOptions.map_lat && mapOptions.map_lng ){
+				mapOptions.zoom = mapOptions.map_zoom;
+				mapOptions.center = new google.maps.LatLng(mapOptions.map_lat, mapOptions.map_lng);
+			}
+
+			var latitude, longitude;
+			var bounds = new google.maps.LatLngBounds();
+			gMap = new google.maps.Map(document.getElementById('map_' + containerId), mapOptions);
+			var infowindow = new google.maps.InfoWindow();
+			var contentString;
+		
+			for(i = 0; i < locations.length; ++i){
+				latitude = locations[i]['latitude'];
+				longitude = locations[i]['longitude'];
+			
+				if (latitude && longitude) {
+					latlng = new google.maps.LatLng(latitude,longitude);
+					marker = new google.maps.Marker({
+						position: latlng,
+						map: gMap,
+						clickable: true
+					});
+				
+					bounds.extend(latlng);
+				
+					//HTML for InfoWindow
+					contentString = $('#' + containerId + ' .item_' + locations[i].id).html();
+				
+					google.maps.event.addListener(marker,'click', (function(marker,contentString,infowindow){ 
+						return function() {
+							infowindow.setContent(contentString);
+							infowindow.open(gMap,marker);
+						};
+					})(marker,contentString,infowindow)); 	
+				}
+			}
+			if(!mapOptions.map_zoom){
+				// Keep zoom at appropriate level of detail when fitting bounds
+				google.maps.event.addListenerOnce(gMap, 'bounds_changed', function() { 
+					this.setZoom(Math.min(15, this.getZoom())); 
+				});
+				gMap.fitBounds(bounds);
+			}
+		}else{
+			var map = new google.maps.Map(document.getElementById('map_' + containerId), {
+				center: {lat: 52.482780, lng: -1.362305},
+				zoom: 2,
+				scrollwheel: false,
+				draggable: false,
+				disableDefaultUI: true
+			});
+			$('#no_locations_' + containerId).show();
+		}
+	};
+	
+	
+	
+	
+	if (typeof google === 'object' && typeof google.maps === 'object') {
+		runWhenMapsLoaded();
+	
+	} else {
+		var callback = thus.globalName + '__runWhenMapsLoaded';
+		window[callback] = runWhenMapsLoaded;
+		
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + googleMapsApiKey + '&callback=' + callback;
+		document.body.appendChild(script);
+	}
+};
+
+
+
 
 
 
@@ -740,14 +854,6 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, contai
 	};
 };
 
-methods.editModeOn = function(tab) {
-	return true;
-};
-
-methods.editModeAlwaysOn = function(tab) {
-	return true;
-};
-
 
 
 methods.typeaheadSearchEnabled = function(field, id, tab) {
@@ -799,13 +905,36 @@ methods.debug = function() {
 	}
 };
 
+methods.wrapperClassName = function() {
+	return 'zfea zfea_' + thus.path +
+		' ' + (thus.tuix.css_class || '') +
+		' ' + (thus.tsLink? ' zfea_with_tslink' : '') +
+		' ' + (zenarioT.showDevTools()? ' zfea_with_dev_tools' : '');
+};
+
+
+methods.newSimpleForm = function() {
+	if (!thus.form) {
+		thus.form = zenarioT.newSimpleForm(thus.containerId);
+		thus.form.parentLib = thus;
+	}
+	
+	return thus.form;
+};
+
+methods.drawSimpleForm = function(tuix, cb) {
+	thus.newSimpleForm();
+	return thus.form.drawTUIX(tuix, 'fea_simple_form', cb || thus.cb);
+};
+
+
 methods.getSearchFieldValue = function() {
 	var domSearch = thus.get('search_' + thus.containerId);
 	
 	return (domSearch ? domSearch.value: false);
 };
 
-methods.doSearch = function(e, searchValue, page) {
+methods.doSearch = function(e, searchValue, requests, page) {
 	
 	zenario.stop(e);
 	
@@ -813,8 +942,9 @@ methods.doSearch = function(e, searchValue, page) {
 		searchValue = thus.getSearchFieldValue();
 	}
 	
-	var requests = thus.request,
-		page = page ? page : '',
+	requests = _.extend({}, thus.request, requests);
+	
+	var page = page ? page : '',
 		search = {
 			page: page,
 			search: searchValue
@@ -919,15 +1049,21 @@ methods.go = function(request, itemId, wasInitialLoad, runAfter) {
 
 methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 	
-	var i, item,
+	var i, item, itemId,
 		met = false,
 		maxItems = 1, 
 		minItems = 0,
 		numItems = isCheckboxSelect? itemIds.length : 0;
 	
 	//Check all of the itemIds in the request actually exist
-	foreach (itemIds as i) {
-		if (!(item = thus.tuix.items[itemIds[i]])) {
+	foreach (itemIds as i => itemId) {
+		if (!(item = thus.tuix.items[itemId])) {
+			return false;
+		}
+		
+		//Check if the button is not flagged as hidden on this item
+		if (thus.tuix._hiddenItemButtons[button.id]
+		 && thus.tuix._hiddenItemButtons[button.id][itemId]) {
 			return false;
 		}
 	}
@@ -1055,13 +1191,22 @@ methods.buttonIsntDisabled = function(button, itemIds) {
 };
 
 
-methods.childColumnVisible = function(columnId, itemId) {
+methods.columnVisibleForItem = function(columnId, itemId) {
 	
 	var column = thus.tuix.columns[columnId] || {},
 		item = thus.tuix.items[itemId] || {};
 	
+	if (thus.tuix._hiddenColumns[columnId]
+	 && thus.tuix._hiddenColumns[columnId][itemId]) {
+		return false;
+	}
+	
 	//zenarioT.eval(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix);
-	return !defined(column.visible_if_for_each_item) || zenarioT.eval(column.visible_if_for_each_item, thus, undefined, item, itemId, undefined, column);
+	if (defined(column.visible_if_for_each_item) && zenarioT.eval(column.visible_if_for_each_item, thus, undefined, item, itemId, undefined, column)) {
+		return false;
+	}
+	
+	return true;
 };
 
 
@@ -1109,15 +1254,21 @@ methods.sortOutTUIX = function() {
 	tuix.items = tuix.items || {};
 	
 	var i, id, j, itemButton, childItemButton, col, item, button, sortedItemIds,
+		sortedButtonsAndColumnButtons,
 		sortBy = tuix.sort_by || 'name';
 		sortDesc = engToBoolean(tuix.sort_desc);
 	
 	thus.sortedCollectionButtonIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.collection_buttons);
 	thus.sortedCollectionButtons = [];
+	thus.visibleCollectionButtons = {};
 	thus.sortedItemButtonIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.item_buttons);
 	thus.sortedItemButtons = [];
 	thus.sortedColumnIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.columns);
 	thus.sortedColumns = [];
+	thus.visibleColumns = {};
+	
+	tuix._hiddenColumns = tuix._hiddenColumns || {};
+	tuix._hiddenItemButtons = tuix._hiddenItemButtons || {};
 	
 	foreach (thus.sortedCollectionButtonIds as i => id) {
 		button = _.clone(tuix.collection_buttons[id]);
@@ -1129,6 +1280,7 @@ methods.sortOutTUIX = function() {
 			}
 			
 			thus.sortedCollectionButtons.push(button);
+			thus.visibleCollectionButtons[id] = button;
 		}
 	}
 	
@@ -1139,12 +1291,24 @@ methods.sortOutTUIX = function() {
 		thus.sortedItemButtons.push(button);
 	}
 	
+	thus.pcOfTotal = {};
 	foreach (thus.sortedColumnIds as i => id) {
 		col = tuix.columns[id];
 		col.id = id;
 		
 		if (!thus.hidden(undefined, undefined, id, undefined, col)) {
 			thus.sortedColumns.push(col);
+			thus.visibleColumns[id] = col;
+			
+			if (col.convert_to_percentage_of_total) {
+				thus.pcOfTotal[id] = 0;
+				
+				foreach (tuix.items as j => item) {
+					if (item[id] == 1*item[id]) {
+						thus.pcOfTotal[id] += 1*item[id];
+					}
+				}
+			}
 		}
 	}
 	
@@ -1170,7 +1334,10 @@ methods.sortOutTUIX = function() {
 		
 		thus.sortedItems.push(item);
 		
-		item.__sortedItemButtons = thus.getSortedItemButtons([id], false);
+		sortedButtonsAndColumnButtons = thus.getSortedItemButtons([id], false);
+		
+		item.__sortedItemButtons = sortedButtonsAndColumnButtons[0];
+		item.__columnButtons = sortedButtonsAndColumnButtons[1];
 	}
 	
 	if (_.isEmpty(tuix.list_groupings)) {
@@ -1193,8 +1360,10 @@ methods.getSortedItemButtons = function(itemIds, isCheckboxSelect) {
 		
 	var j, itemButton,
 		k, childItemButton,
-		button, children, childButton,
+		colId,
+		button, children, childButton, hasChildren,
 		sortedButtons = [],
+		columnButtons = {},
 		itemId, itemIdsCSV;
 	
 	if (isCheckboxSelect) {
@@ -1233,15 +1402,27 @@ methods.getSortedItemButtons = function(itemIds, isCheckboxSelect) {
 					}
 				}
 			}
+			
+			hasChildren = button.children && button.children.length > 0;
 		
-			if (!button.hide_when_children_are_not_visible || (button.children && button.children.length > 0)) {
-				thus.tuix.__itemHasItemButton = true;
-				sortedButtons.push(button);
+			if (!button.hide_when_children_are_not_visible || hasChildren) {
+				
+				
+				if (!isCheckboxSelect
+				 && !hasChildren
+				 && !button.parent
+				 && (colId = button.show_as_link_on_column)
+				 && (thus.visibleColumns[colId])) {
+					columnButtons[colId] = button;
+				} else {
+					thus.tuix.__itemHasItemButton = true;
+					sortedButtons.push(button);
+				}
 			}
 		}
 	}
 	
-	return sortedButtons;
+	return [sortedButtons, columnButtons];
 };
 
 methods.setupButtonLinks = function(button, itemId) {
@@ -1250,7 +1431,8 @@ methods.setupButtonLinks = function(button, itemId) {
 		request,
 		onclick,
 		onPrefix,
-		command;
+		command,
+		item, childId;
 	
 	if (button.go
 	 || button.ajax
@@ -1269,11 +1451,20 @@ methods.setupButtonLinks = function(button, itemId) {
                     count = itemIds.length;
 				
 				if (count < 2) {
+					
+					item = thus.tuix.items
+						&& thus.tuix.items[itemId];
+					
                     onclick += "var button = (lib.tuix.item_buttons||{})['" + jsEscape(button.id) + "'],"
                             + "itemId = '" + jsEscape(itemId) + "',"
                             + "itemIds = [itemId],"
                             + "item = (lib.tuix.items||{})[itemId],"
                             + "items = {}; items[itemId] = item;";
+                    
+                    if (childId = item['_child_matched_for_' + 'item_button' + '__' + button.id]) {
+						onclick += "var childId = '" + jsEscape(childId) + "';";
+                    }
+                    
                 } else {
                     onclick += "var button = (lib.tuix.item_buttons||{})['" + jsEscape(button.id) + "'],"
                             + "itemId = '" + jsEscape(itemId) + "',"
@@ -1330,12 +1521,9 @@ methods.setupButtonLinks = function(button, itemId) {
 			}
 		}
 	} else if (button.href.replace_with_field_from_item) {
-		button.href = (
-			 itemId
-			 && thus.tuix.items
-			 && thus.tuix.items[itemId]
-		)?
-			thus.tuix.items[itemId][button.href.replace_with_field_from_item] : '';
+		item = thus.tuix.items
+			&& thus.tuix.items[itemId];
+		button.href = item? item[button.href.replace_with_field_from_item] : '';
 	}
 };
 
@@ -1530,9 +1718,9 @@ methods.updateItemButtons = function() {
 		});
 		
 		
-		buttons = thus.getSortedItemButtons(itemIds, true);
+		buttons = thus.getSortedItemButtons(itemIds, true)[0];
 		if (buttons.length > 0) {
-			$div.html(thus.microTemplate(thus.mtPrefix + '_button', thus.getSortedItemButtons(itemIds, true)));
+			$div.html(thus.pMicroTemplate('button', thus.getSortedItemButtons(itemIds, true)[0]));
 		} else {
 			$div.html('No actions available');
 		}
@@ -1805,7 +1993,7 @@ methods.confirm = function(confirm, after) {
 	$.colorbox({
 		transition: 'none',
 		closeButton: false,
-		html: thus.microTemplate(thus.mtPrefix + '_confirm', confirm),
+		html: thus.pMicroTemplate('confirm', confirm),
 		className: cssClassName,
 		onOpen: addClassName
 	});
@@ -1955,7 +2143,7 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 			className: 'zfea_error_box',
 			transition: 'none',
 			closeButton: false,
-			html: thus.microTemplate(thus.mtPrefix + '_error', m)
+			html: thus.pMicroTemplate('error', m)
 		});
 		
 		if (m.retry) {

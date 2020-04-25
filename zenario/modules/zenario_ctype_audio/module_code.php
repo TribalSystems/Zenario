@@ -165,7 +165,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 							}
 							
 							
-							ze\fileAdm::exitIfUploadError();
+							ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
 							if (!$this->isFileTypeAllowed($_FILES['Filedata']['name'])) {
 								echo
 									ze\admin::phrase(

@@ -5,7 +5,12 @@ Options -Indexes
 #ErrorDocument 404 /SUBDIRCTORY/index.php?cID=~
 
 <ifModule mod_headers.c>
+	Header setifempty Content-Security-Policy "default-src *; img-src * data:; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'"
+	Header setifempty Feature-Policy "sync-xhr *; camera 'none'; fullscreen 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none'; speaker 'none';"
+	Header setifempty Referrer-Policy strict-origin-when-cross-origin
+	Header setifempty X-Content-Type-Options nosniff
 	Header setifempty X-Frame-Options SAMEORIGIN
+	Header setifempty X-XSS-Protection "1; mode=block"
 </ifModule>
 
 <IfModule pagespeed_module>

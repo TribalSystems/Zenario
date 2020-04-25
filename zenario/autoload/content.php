@@ -416,7 +416,7 @@ class content {
 		//Try to get the Special Page in the language that we've requested
 		if (isset(\ze::$specialPages[$pageType. $preferredLanguageId])) {
 			if (\ze\content::getCIDAndCTypeFromTagId($cID, $cType, \ze::$specialPages[$pageType. $preferredLanguageId])) {
-				if ($skipPermsCheck || \ze\content::checkPerm($cID, $cType)) {
+				if ($skipPermsCheck || \ze\content::checkPerm($cID, $cType, false, null, false, $adminsSeeHiddenPages = false)) {
 					return true;
 				}
 			}
@@ -425,7 +425,7 @@ class content {
 		//Otherwise try to fall back to the page for the default language
 		if ($preferredLanguageId && !$languageMustMatch && isset(\ze::$specialPages[$pageType])) {
 			if (\ze\content::getCIDAndCTypeFromTagId($cID, $cType, \ze::$specialPages[$pageType])) {
-				if ($skipPermsCheck || \ze\content::checkPerm($cID, $cType)) {
+				if ($skipPermsCheck || \ze\content::checkPerm($cID, $cType, false, null, false, $adminsSeeHiddenPages = false)) {
 					return true;
 				}
 			}
@@ -840,24 +840,24 @@ class content {
 	//Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 	//(Admins can see all Content Items that exist)
 	//Formerly "checkPerm()"
-	public static function checkPerm($cID, $cType = 'html', $requestVersion = false, $adminMode = null, $adminsSee400Errors = false) {
-		$content = false;
-		return (bool) \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors);
+	public static function checkPerm($cID, $cType = 'html', $requestVersion = false, $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
+		$content = $chain = false;
+		return (bool) \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
 	}
 
 	//Gets the correct version of a Content Item to show someone, or false if the do not have any access.
 	//(Works exactly like \ze\content::checkPerm() above, except it will return a version number.)
 	//Formerly "getShowableVersion()"
-	public static function showableVersion($cID, $cType = 'html', $adminMode = null, $adminsSee400Errors = false) {
-		$content = false;
-		return \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion = false, $adminMode, $adminsSee400Errors);
+	public static function showableVersion($cID, $cType = 'html', $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
+		$content = $chain = false;
+		return \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion = false, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
 	}
 
 	//Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 	//Works like \ze\content::checkPerm() above, except that it will return a permissions error code
 	//It also looks up some details on the Content Item
 	//Formerly "getShowableContent()"
-	public static function getShowableContent(&$content, &$version, $cID, $cType = 'html', $requestVersion = false, $checkRequestVars = false, $adminMode = null, $adminsSee400Errors = false) {
+	public static function getShowableContent(&$content, &$chain, &$version, $cID, $cType = 'html', $requestVersion = false, $checkRequestVars = false, $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
 
 		if ($checkRequestVars) {
 			//Look variables such as userId, locationId, etc., in the request
@@ -874,8 +874,8 @@ class content {
 				}
 			}
 		}
-	
-		$versionNumber = \ze\content::checkPermAndGetShowableContent($content, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors);
+		
+		$versionNumber = \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
 	
 		if ($versionNumber && is_numeric($versionNumber)) {
 			$versionColumns = [
@@ -894,7 +894,7 @@ class content {
 
 
 	//Formerly "checkPermAndGetShowableContent()"
-	public static function checkPermAndGetShowableContent(&$content, $cID, $cType, $requestVersion, $adminMode = null, $adminsSee400Errors = false) {
+	public static function checkPermAndGetShowableContent(&$content, &$chain, $cID, $cType, $requestVersion, $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
 		// Returns the version of this content item which should normally be returned
 		if ($cID
 		 && $cType
@@ -920,6 +920,13 @@ class content {
 			
 			//If we are in admin mode, allow anything that exists to be shown
 			if ($adminMode) {
+				
+				if (!$adminsSeeHiddenPages) {
+					if (!\ze\content::isPublished($content['status'])
+					 && !\ze\content::isDraft($content['status'])) {
+						return false;
+					}
+				}
 			
 				//If no specific version was requested, use the admin version
 				if (!(int) $requestVersion) {
@@ -1116,12 +1123,13 @@ class content {
 	}
 
 	//Formerly "setShowableContent()"
-	public static function setShowableContent(&$content, &$version) {
+	public static function setShowableContent(&$content, &$chain, &$version, $checkTranslations) {
 		\ze::$equivId = $content['equiv_id'];
 		\ze::$cID = $content['id'];
 		\ze::$cType = $content['type'];
 		\ze::$alias = $content['alias'];
 		\ze::$status = $content['status'];
+		\ze::$isPublic = $chain['privacy'] == 'public' || $chain['privacy'] == 'logged_out';
 		\ze::$langId = $content['language_id'];
 	
 		//Set the visitor's language differently, depending on whether we're showing this
@@ -1196,6 +1204,45 @@ class content {
 		 && ($skin = \ze\content::skinDetails(\ze::$skinId))) {
 			\ze::$skinName = $skin['name'];
 			\ze::$skinCSS = $skin['css_class'];
+		}
+		
+		//Check if this page needs to track the phrases used.
+		//(Note some scripts such as previews should not attempt to do this.)
+		if ($checkTranslations) {
+			
+			//Check if any translated languages actually exist - no need to do any tracking if not!
+			$thisPageTranslatesPages = false;
+			$somePagesOnThisSiteTranslatePages = false;
+			$translatedLangs = [];
+			foreach (\ze::$langs as $langId => $lang) {
+				if ($lang['translate_phrases']) {
+					if ($langId == \ze::$langId) {
+						$thisPageTranslatesPages = \ze::$status !== 'trashed' && \ze::$status !== 'deleted';
+						$somePagesOnThisSiteTranslatePages = false;
+						break;
+					} else {
+						$translatedLangs[] = $langId;
+						$somePagesOnThisSiteTranslatePages = true;
+					}
+				}
+			}
+			
+			//Catch the case where a translated language exists, but this content item isn't using one of them.
+			//Check if this content item has a translation in a language that is translated - if so, we still need to track
+			//phrases, but if not, we can skip doing this.
+			if ($somePagesOnThisSiteTranslatePages) {
+				$thisPageTranslatesPages = \ze\row::exists('content_items', [
+					'equiv_id' => \ze::$equivId,
+					'type' => \ze::$cType,
+					'status' => ['!' => ['trashed', 'deleted']],
+					'language_id' => $translatedLangs
+				]);
+			}
+			
+			//Note this down for later
+			if ($thisPageTranslatesPages) {
+				\ze::$trackPhrases = true;
+			}
 		}
 	}
 	

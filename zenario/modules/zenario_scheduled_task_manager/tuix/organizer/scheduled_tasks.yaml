@@ -13,6 +13,21 @@ zenario__administration:
         zenario_scheduled_task_manager__scheduled_tasks:
             title: Scheduled Tasks
             panel_type: list_with_master_switch
+            
+                        
+            notice_master_switch_off:
+                show: true
+                type: warning
+                message: The Master Switch is off.
+            notice_master_switch_on:
+                show: true
+                type: information
+                message: The Master Switch is on.
+            notice_crontab:
+                show: true
+                type: error
+                message: The Scheduled Tasks Manager is not correctly configured in your crontab.
+            
             db_items:
                 table: '[[DB_PREFIX]]jobs AS j'
                 id_column: j.id
@@ -21,27 +36,38 @@ zenario__administration:
                 job_name:
                     title: Method name
                     db_column: j.job_name
-                    searchable: Yes
-                    show_by_default: Yes
+                    searchable: true
+                    show_by_default: true
                     width: large
                 module:
                     title: Module name
                     db_column: j.module_class_name
-                    show_by_default: Yes
+                    show_by_default: true
                     width: medium
+                job_type:
+                    title: Type
+                    db_column: j.job_type
+                    searchable: true
+                    show_by_default: true
+                    format: enum
+                    values:
+                        scheduled: Scheduled task
+                        background: Background task
                 enabled:
                     title: Enabled
                     db_column: j.enabled
                     format: true_or_false
                     true_phrase: Enabled
                     false_phrase: Disabled
-                    show_by_default: Yes
+                    show_by_default: true
                     width: xsmall
                     disallow_sorting: true
+                script_restart_time:
+                    db_column: j.script_restart_time
                 status:
                     title: Status
                     db_column: j.status
-                    show_by_default: Yes
+                    show_by_default: true
                     width: xsmall
                     disallow_sorting: true
                 months:
@@ -84,7 +110,7 @@ zenario__administration:
                     title: Last run finished
                     db_column: j.last_run_finished
                     format: datetime
-                    show_by_default: Yes
+                    show_by_default: true
                     width: medium
                     disallow_sorting: true
                 last_successful_run:
@@ -97,7 +123,7 @@ zenario__administration:
                     title: Last action
                     db_column: j.last_action
                     format: datetime
-                    show_by_default: Yes
+                    show_by_default: true
                     width: medium
                     disallow_sorting: true
             default_sort_column: job_name
@@ -158,9 +184,9 @@ zenario__administration:
                 enable:
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
                     css_class: run
-                    label: Enable Scheduled Task
-                    multiple_select: Yes
-                    multiple_select_tooltip: Enable Scheduled Tasks
+                    label: Enable Task
+                    multiple_select: true
+                    multiple_select_label: Enable Tasks
                     ajax:
                         request:
                             enable: 1
@@ -169,12 +195,15 @@ zenario__administration:
                 suspend:
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
                     css_class: suspend
-                    label: Suspend
-                    multiple_select: Yes
+                    label: Suspend Task
+                    multiple_select: true
+                    multiple_select_label: Suspend Tasks
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to suspend the scheduled task with the name "[[job_name]]"?
+                                Are you sure you wish to suspend the task with the name "[[job_name]]"?
+                            multiple_select_message: |
+                                Are you sure you wish to suspend these [[item_count]] tasks?
                             button_message: "Suspend"
                             message_type: warning
                             cancel_button_message: Cancel
@@ -184,21 +213,27 @@ zenario__administration:
                     with_columns_set:
                         traits.can_suspend: true
                 edit:
+                    visible_if: |
+                        item.job_type == 'scheduled'
                     css_class: settings
                     label: Run times and reporting
                     admin_box:
                         path: zenario_job
                 view_log:
                     ord: 50
+                    visible_if: |
+                        item.job_type == 'scheduled'
                     css_class: log scheduled_task_log
                     label: View log
                     link:
                         path: >
                             zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/hidden_nav/log/panel
-                        branch: Yes
+                        branch: true
                         refiner: job
                 rerun:
                     ord: 51
+                    visible_if: |
+                        item.job_type == 'scheduled'
                     css_class: run_now
                     label: Rerun within the next minute
                     ajax:
@@ -212,10 +247,10 @@ zenario__administration:
                     panel:
                         title: Log
                         view_mode: list
-                        disable_grid_view: Yes
+                        disable_grid_view: true
                         slidedown_view_microtemplate: summary
                         default_sort_desc: 
-                            exists: Yes
+                            exists: true
                         db_items:
                             table: '[[DB_PREFIX]]job_logs AS jl'
                             id_column: jl.id
@@ -238,12 +273,12 @@ zenario__administration:
                                 title: Status
                                 db_column: jl.status
                                 always_show: true
-                                searchable: Yes
+                                searchable: true
                                 disallow_sorting: true
                             summary:
                                 title: Message
                                 always_show: true
-                                searchable: Yes
+                                searchable: true
                                 db_column: jl.note
                                 width: xxlarge
                                 disallow_sorting: true
@@ -268,7 +303,7 @@ zenario__administration:
                             delete:
                                 css_class: delete
                                 label: Delete this Log Entry
-                                multiple_select: Yes
+                                multiple_select: true
                                 multiple_select_tooltip: Delete these Log Entries
                                 ajax:
                                     request:

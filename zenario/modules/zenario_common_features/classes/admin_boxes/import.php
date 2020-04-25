@@ -1035,6 +1035,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						$recordId = ze\row::get($dataset['system_table'], $systemIdCol, ['email' => $data['email']]);
 					}
 					if ($values['headers/insert_options'] == 'overwrite' && $recordId) {
+						$data['last_edited_admin_id'] = ze\admin::id();
 						ze\userAdm::save($data, $recordId);
 						ze\row::set($dataset['table'], $customData, $recordId);
 						continue;
@@ -1047,6 +1048,8 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 									unset($data[$col]);
 								}
 							}
+							
+							$data['last_edited_admin_id'] = ze\admin::id();
 							ze\userAdm::save($data, $recordId);
 						}
 						
@@ -1092,7 +1095,9 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						unset($data['screen_name']);
 					}
 					
+					$data['created_admin_id'] = ze\admin::id();
 					$recordId = ze\userAdm::save($data);
+					
 					if (!ze::isError($recordId)) {
 						if ($sendWelcomeEmail && !empty($data['email'])) {
 							$mergeFields = $data;
@@ -1147,6 +1152,8 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					
 					if ($dataset['system_table'] && $data) {
 						if ($dataset['system_table'] == 'users') {
+							
+							$data['last_edited_admin_id'] = ze\admin::id();
 							ze\userAdm::save($data, $recordId);
 						} else {
 							ze\row::update($dataset['system_table'], $data, $recordId);

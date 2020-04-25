@@ -1,7 +1,7 @@
 zenario_document_upload: 
     title: Upload documents
     key: 
-        id: id
+        id: ''
     hide_tab_bar: true
     tabs:
         upload_document:

@@ -45,7 +45,7 @@ class escape {
 
 	//Formerly "jsEscape()"
 	public static function js($text) {
-		return strtr(addcslashes($text, "\\\n\r\"'"), ['&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e']);
+		return strtr(addcslashes($text, "\\\n\r\"'"), ['&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e', '{' => '\\x7b', '}' => '\\x7d']);
 	}
 
 	//Formerly "jsOnClickEscape()", "jsOnclickEscape()"
@@ -77,6 +77,10 @@ class escape {
 		} else {
 			return str_replace('*', '%', str_replace('%', '\\%', str_replace('_', '\\_', \ze\escape::sql($text))));
 		}
+	}
+	
+	public static function microtemplate($text) {
+		return strtr(htmlspecialchars($text), ['{' => '&#123;', '}' => '&#125;']);
 	}
 	
 	

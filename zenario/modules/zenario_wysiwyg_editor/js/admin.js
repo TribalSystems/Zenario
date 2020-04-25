@@ -174,7 +174,7 @@ directionality	ltr rtl
 		zenario_wysiwyg_editor.close(get(editor.id));
 	};
 	
-	zenario_wysiwyg_editor.startPoking();
+	zenario.startPoking(zenario_wysiwyg_editor);
 };
 
 zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice) {
@@ -271,7 +271,7 @@ zenario_wysiwyg_editor.close = function(el) {
 };
 
 zenario_wysiwyg_editor.doClose = function(slotName) {
-	zenario_wysiwyg_editor.stopPoking();
+	zenario.stopPoking(zenario_wysiwyg_editor);
 	
 	$('#zenario_editor_toolbar').html('').hide();
 	zenario_wysiwyg_editor.refreshPluginSlot(slotName, undefined, false);
@@ -281,24 +281,6 @@ zenario_wysiwyg_editor.doClose = function(slotName) {
 };
 
 
-zenario_wysiwyg_editor.stopPoking = function() {
-	if (zenario_wysiwyg_editor.poking) {
-		clearInterval(zenario_wysiwyg_editor.poking);
-	}
-	zenario_wysiwyg_editor.poking = false;
-};
-
-zenario_wysiwyg_editor.startPoking = function() {
-	if (!zenario_wysiwyg_editor.poking) {
-		zenario_wysiwyg_editor.poking = setInterval(zenario_wysiwyg_editor.poke, 2 * 60 * 1000);
-	}
-};
-
-zenario_wysiwyg_editor.poke = function() {
-	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
-};
-
-	
 
 
 zenario_wysiwyg_editor.listenForDoubleClick = function(slotName, containerId, buttonSelector) {

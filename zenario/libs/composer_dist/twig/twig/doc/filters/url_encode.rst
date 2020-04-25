@@ -4,7 +4,7 @@
 The ``url_encode`` filter percent encodes a given string as URL segment
 or an array as query string:
 
-.. code-block:: jinja
+.. code-block:: twig
 
     {{ "path-seg*ment"|url_encode }}
     {# outputs "path-seg%2Ament" #}
@@ -19,4 +19,4 @@ or an array as query string:
 
     Internally, Twig uses the PHP ``rawurlencode``.
 
-.. _`rawurlencode`:     http://php.net/rawurlencode
+.. _`rawurlencode`: https://secure.php.net/rawurlencode

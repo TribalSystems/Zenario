@@ -411,6 +411,12 @@ body .zenario_admin_tooltip_over_tinymce {
     font-weight: bold !important;
 }
 
+.zenario_admin_tooltip.ui-widget-shadow,
+.ui-tooltip.ui-widget-shadow {
+	filter: Alpha(Opacity=100); /* support: IE8 */
+	opacity:1 !important;
+}
+
 .zenario_admin_tooltip .tooltip_arrow {
 	display: none;
 	position: absolute;
@@ -508,7 +514,7 @@ input, textarea, button {
 
 .zenario_debug {
 	position: relative;
-	z-index:3 !important;
+	z-index:50 !important;
 	float: right;
 	width: 18px;
 }
@@ -516,7 +522,12 @@ input, textarea, button {
 .zenario_debug div,
 #zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled,
 #zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_enabled {
-	background: #D2D0D1 url('../admin/images/icon-bug.png') no-repeat center / 12px 12px;
+	background: #D2D0D1 url('../admin/images/icon-TUIX-blue.png') no-repeat center / 16px 16px;
+}
+
+.zenario_slot_with_tuix_snippet .zenario_debug div,
+.zenario_slot_with_extending_modules .zenario_debug div {
+	background-image: url('../admin/images/icon-TUIX-modified.png');
 }
 
 .zenario_debug div {

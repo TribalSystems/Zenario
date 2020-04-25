@@ -49,7 +49,7 @@ ze\content::pageBody();
 
                         	
 $homePageCID = $homePageCType = false;
-ze\content::langSpecialPage('zenario_home', $homePageCID, $homePageCType, ze::$defaultLang, true);
+ze\content::langSpecialPage('zenario_home', $homePageCID, $homePageCType, ze::$defaultLang);
 
 if (!empty($_GET['openedInIframe'])) {
 	$topLeftHTML =

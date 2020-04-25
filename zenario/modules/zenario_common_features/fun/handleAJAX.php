@@ -137,10 +137,10 @@ if (ze\priv::check()) {
 				$section['fields'][] = ['label' => ze\admin::phrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']];
 				
 				if ($realDir == $logicalDir) {
-					$section['fields'][] = ['label' => ze\admin::phrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory'];
+					$section['fields'][] = ['label' => ze\admin::phrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory', 'type' => 'textarea'];
 				} else {
-					$section['fields'][] = ['label' => ze\admin::phrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory'];
-					$section['fields'][] = ['label' => ze\admin::phrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory'];
+					$section['fields'][] = ['label' => ze\admin::phrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory', 'type' => 'textarea'];
+					$section['fields'][] = ['label' => ze\admin::phrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory', 'type' => 'textarea'];
 				}
 				
 				if (($row = ze\sql::fetchRow('SHOW VARIABLES LIKE "version"'))
@@ -162,15 +162,15 @@ if (ze\priv::check()) {
 					
 					if (ze\db::hasGlobal()) {
 						$section['fields'][] = ['label' => ze\admin::phrase('Global [[dbms]] database:', $mrg), 'value' => 
-							ze\admin::phrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_PREFIX_GLOBAL]]', get_defined_constants())];
+							ze\admin::phrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_PREFIX_GLOBAL]]', get_defined_constants()), 'type' => 'textarea'];
 					}
 					
 					$section['fields'][] = ['label' => ze\admin::phrase('Local [[dbms]] database:', $mrg), 'value' => 
-						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_PREFIX]]', get_defined_constants())];
+						ze\admin::phrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_PREFIX]]', get_defined_constants()), 'type' => 'textarea'];
 					
 					if (ze\db::hasDataArchive()) {
 						$section['fields'][] = ['label' => ze\admin::phrase('Data archive [[dbms]] database:', $mrg), 'value' => 
-							ze\admin::phrase('[[DBNAME_DA]] on [[DBHOST_DA]], prefix [[DB_PREFIX_DA]]', get_defined_constants())];
+							ze\admin::phrase('[[DBNAME_DA]] on [[DBHOST_DA]], prefix [[DB_PREFIX_DA]]', get_defined_constants()), 'type' => 'textarea'];
 					}
 				
 					if ($size) {
@@ -178,7 +178,7 @@ if (ze\priv::check()) {
 					}
 					
 					if (ze\db::hasDataArchive()) {
-						if ($daSize = ze\sqlDA::fetchValue('
+						if ($daSize = ze\sql\da::fetchValue('
 							SELECT SUM(data_length + index_length)
 							FROM information_schema.tables
 							WHERE table_schema = "'. ze\escape::sql(DBNAME_DA). '"'
