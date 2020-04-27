@@ -3,6 +3,7 @@
 	"description": "Zenario is a web-based content management system for sites with one or many languages.",
 	"type": "project",
 	"author": "Tribal Systems",
+	"version": "8.6",
 	"keywords": [
 		"cms",
 		"content management",
