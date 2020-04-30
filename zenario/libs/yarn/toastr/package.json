@@ -51,7 +51,7 @@
     "gulp-task-listing": "^0.3.0",
     "gulp-uglify": "^1.0.1",
     "gulp-util": "^3.0.1",
-    "jquery": "^2.1.1",
+    "jquery": "^3.5.0",
     "jshint-stylish": "^1.0.0",
     "karma": "^0.12.25",
     "karma-coverage": "^0.2.6",
