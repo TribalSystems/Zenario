@@ -3,14 +3,13 @@
 	"description": "Zenario is a web-based content management system for sites with one or many languages.",
 	"type": "project",
 	"author": "Tribal Systems",
-	"version": "8.6.51340",
 	"keywords": [
 		"cms",
 		"content management",
 		"wysiwyg",
 		"zenario"
 	],
-	"homepage": "https://github.com/TribalSystems/Zenario",
+	"homepage": "https:\/\/github.com\/TribalSystems\/Zenario",
 	"license": "BSD-3-Clause",
 	"dependencies": {
 		"bez": "*",
@@ -25,5 +24,6 @@
 		"underscore.string": "*",
 		"vimeo-upload": "*",
 		"wowjs": "*"
-	}
+	},
+	"version": "8.6.52008"
 }

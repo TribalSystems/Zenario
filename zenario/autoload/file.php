@@ -95,7 +95,12 @@ class file {
 			
 			//Check the basic types match, and reject the file if not.
 			if ($basicType !== $scannedBasicType) {
-				return false;
+				//Special case for EPS files
+				if (substr($mimeType, 0, 22) == 'application/postscript' && $scannedMimeType == 'image/eps') {
+					//Do nothing, allow these files
+				} else {
+					return false;
+				}
 			}
 			
 			//If this is an Office document, check both checks agree that it's an Office document

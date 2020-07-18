@@ -3358,7 +3358,7 @@ zenarioO.refreshPage = function(hash, dontAutoDetectMode, task, force) {
 	} else {
 		href += '&og=' + encodeURIComponent(hash);
 		
-		if (zenario.cID) {
+		if (zenarioA.fromCID) {
 			href += '&fromCID=' + zenarioA.fromCID + '&fromCType=' + zenarioA.fromCType;
 		}
 	}

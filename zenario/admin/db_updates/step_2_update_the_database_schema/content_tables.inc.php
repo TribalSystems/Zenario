@@ -2750,4 +2750,31 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]tuix_snippets`
 	MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
+
+//Custom dataset labels no longer need to be unique
+//The content item index on plugin_pages_by_mode also shouldn't be unique
+//Note that these fixes are being added in a post-branch patch in 8.6 revision 50611,
+//and in a post-branch patch in 8.7 revision 51301, and in 8.8 in revision 51700.
+//However they're safe to re-apply more than once so we don't need the check to see if
+//they've already been applied.
+);	ze\dbAdm::revision(50611
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_datasets`
+	DROP KEY `label`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_datasets`
+	ADD KEY `label` (`label`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
+	DROP KEY `content_type`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
+	ADD KEY `content_type` (`content_type`,`equiv_id`)
+_sql
 );

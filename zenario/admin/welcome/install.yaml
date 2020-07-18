@@ -43,7 +43,7 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 1: License</h1>
+                            <h1>Step 1: Open Source License</h1>
                             <p>Please read the following carefully:</p>
                 license:
                     pre_field_html: |
@@ -110,7 +110,7 @@ install:
                     snippet:
                         html: |
                             <h1>Step 2: Database</h1>
-                            <p>Please enter information about your database.</p>
+                            <p>You will need access to a MySQL database. Please enter information about your database here.</p>
                 host:
                     label: "Host, and optional port number:"
                     type: text
@@ -432,11 +432,13 @@ install:
                         html: |
                             <h1>Step 5: Site Configuration File</h1>
                             <p>
-                                The following file is necessary for Zenario to run,
-                                and this installer can either write the file for you
-                                (subject to necessary permissions),
-                                or you may populate the file yourself
-                                (by copying the text shown in the box below):
+                                Zenario requires the following file to contain its configuration settings:
+                            </p>
+                            <p>
+                                This installer can populate the file for you,
+                                but to be able to do this you must first make the file writeable by the web server.
+                                If you can't do this, you can copy from the box below
+                                and paste it into the file manually.
                             </p>
                 zenario_siteconfig:
                     type: textarea
@@ -449,15 +451,15 @@ install:
                     full_width: true
                     style: |
                         float: left;
-                do_it_for_me:
-                    value: Do it for me
+                ive_done_it:
+                    value: "I've done it myself"
                     type: submit
                     same_row: true
                     style: |
                         float: right;
                     onclick: "zenarioA.nowDoingSomething('installing');"
-                ive_done_it:
-                    value: "I've done it myself"
+                do_it_for_me:
+                    value: Do it for me
                     type: submit
                     same_row: true
                     style: |

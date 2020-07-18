@@ -476,7 +476,7 @@ class welcome {
 				$fields['0/mysql_2']['post_field_html'] =
 						\ze\admin::phrase('&nbsp;(<em>your server is version [[version]]</em>)', ['version' => htmlspecialchars($mysqlServerVersion)]);
 				if (!$mysqlServerVersion
-				 || !\ze\welcome::compareVersionNumber($mysqlServerVersion, '5.5.3')) {
+				 || !\ze\welcome::compareVersionNumber($mysqlServerVersion, '5.7')) {
 					$fields['0/mysql_2']['row_class'] = $invalid;
 				} else {
 					$fields['0/mysql_2']['row_class'] = $valid;
@@ -515,7 +515,7 @@ class welcome {
 				}
 		
 				if (!$mysqlVersion
-				 || !\ze\welcome::compareVersionNumber($mysqlVersion, '5.5.3')) {
+				 || !\ze\welcome::compareVersionNumber($mysqlVersion, '5.7')) {
 					$fields['0/mysql_2']['row_class'] = $invalid;
 				} else {
 					$fields['0/mysql_2']['row_class'] = $valid;
@@ -860,7 +860,7 @@ class welcome {
 			if (defined('DB_PREFIX') && DB_PREFIX && strpos(DB_PREFIX, '[') === false) {
 				$values['3/prefix'] = DB_PREFIX;
 			} else {
-				$values['3/prefix'] = 'zenario_';
+				$values['3/prefix'] = 'z_';
 			}
 		}
 	
@@ -925,10 +925,10 @@ class welcome {
 						$tags['tabs'][3]['errors'][] = 
 							\ze\admin::phrase('You do not have access rights to the database [[DBNAME]].', $merge);
 			
-					} elseif (!\ze\welcome::compareVersionNumber($version[0], '5.5.3')) {
+					} elseif (!\ze\welcome::compareVersionNumber($version[0], '5.7')) {
 					    
 						$tags['tabs'][3]['errors'][] = 
-							\ze\admin::phrase('Sorry, your MySQL server is "[[version]]". Version 5.5.3 or later is required.', ['version' => $version[0]]);
+							\ze\admin::phrase('Sorry, your MySQL server is "[[version]]". Version 5.7 or later is required.', ['version' => $version[0]]);
 			
 					} elseif (!(@\ze\sql::update("CREATE TABLE IF NOT EXISTS `zenario_priv_test` (`id` TINYINT(1) NOT NULL )", false, false))
 						   || !(@\ze\sql::update("DROP TABLE `zenario_priv_test`", false, false))) {
@@ -2303,33 +2303,6 @@ class welcome {
 	
 	
 		$mrg = [
-			'dir' => $dir = $values['0/backup_dir'],
-			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
-	
-		if (!$dir) {
-			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
-			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('Please enter a directory.');
-	
-		} elseif (!@is_dir($dir)) {
-			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
-			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> does not exist.', $mrg);
-	
-		} elseif (false !== \ze\ring::chopPrefix(realpath(CMS_ROOT), realpath($dir))) {
-			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
-			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
-	
-		} elseif (!\ze\welcome::directoryIsWritable($dir)) {
-			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
-			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> is not writable.', $mrg);
-	
-		} else {
-			$fields['0/dir_1']['row_class'] = 'sub_section_valid';
-			$fields['0/backup_dir_status']['row_class'] = 'sub_valid';
-			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
-		}
-	
-	
-		$mrg = [
 			'dir' => $dir = $values['0/docstore_dir'],
 			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
 	
@@ -2350,9 +2323,36 @@ class welcome {
 			$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> is not writable.', $mrg);
 	
 		} else {
-			$fields['0/dir_2']['row_class'] = 'sub_section_valid';
+			$fields['0/dir_1']['row_class'] = 'sub_section_valid';
 			$fields['0/docstore_dir_status']['row_class'] = 'sub_valid';
 			$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
+		}
+
+
+		$mrg = [
+			'dir' => $dir = $values['0/backup_dir'],
+			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
+	
+		if (!$dir) {
+			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
+			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('Please enter a directory.');
+	
+		} elseif (!@is_dir($dir)) {
+			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
+			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> does not exist.', $mrg);
+	
+		} elseif (false !== \ze\ring::chopPrefix(realpath(CMS_ROOT), realpath($dir))) {
+			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
+			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
+	
+		} elseif (!\ze\welcome::directoryIsWritable($dir)) {
+			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
+			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> is not writable.', $mrg);
+	
+		} else {
+			$fields['0/dir_2']['row_class'] = 'sub_section_valid';
+			$fields['0/backup_dir_status']['row_class'] = 'sub_valid';
+			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
 		}
 	
 	
@@ -2572,16 +2572,16 @@ class welcome {
             $fields['0/custom_dir_status']['snippet']['html'] =
                 \ze\admin::phrase('The &quot;zenario_custom&quot; directory exists and all the files are committed in svn.');
         }
-	   
-		if ($fields['0/backup_dir_status']['row_class'] == 'sub_invalid') {
+
+		if ($fields['0/docstore_dir_status']['row_class'] == 'sub_invalid') {
 			$showCheckAgainButtonIfDirsAreEditable =
 			$fields['0/show_dirs']['pressed'] =
 			$fields['0/show_dir_1']['pressed'] = true;
 			$fields['0/dirs']['row_class'] = 'section_invalid';
 			$fields['0/dir_1']['row_class'] = 'sub_section_invalid';
 		}
-	
-		if ($fields['0/docstore_dir_status']['row_class'] == 'sub_invalid') {
+
+		if ($fields['0/backup_dir_status']['row_class'] == 'sub_invalid') {
 			$showCheckAgainButtonIfDirsAreEditable =
 			$fields['0/show_dirs']['pressed'] =
 			$fields['0/show_dir_2']['pressed'] = true;
@@ -3343,7 +3343,7 @@ class welcome {
 						
 						if (++$inactiveAdminCount <= 5) {
 							$row['link'] = 'zenario/admin/organizer.php#zenario__users/panels/administrators//' . $row['id'];
-						
+							
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
 							

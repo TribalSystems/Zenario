@@ -155,6 +155,7 @@ zenario__email_template_manager:
                     hide_when_children_are_not_visible: true
                 view_log:
                     parent: view_dropdown
+                    priv: _PRIV_VIEW_USER
                     label: Log of sent emails
                     link:
                         path: zenario__email_template_manager/panels/email_log

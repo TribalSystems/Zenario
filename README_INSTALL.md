@@ -8,8 +8,8 @@ To run Zenario you will need a web server/hosted account with the following:
 
 *   Apache Server version 2.4.7 or later
 *   PHP version 7.0 or later
-*   MySQL version 5.5.3 or later (or an equivalent MariaDB version)
-*   An empty MySQL (or MariaDB) database to install to
+*   MySQL version 5.7 or later (the equivalent version of Aurora is also supported)
+*   An empty MySQL database to install to
 *   The GD, libCurl, libJPEG and libPNG libraries, and multibyte support in PHP
 *   Apache mod_rewrite support for .htaccess files (optional but highly recommended)
 
@@ -19,11 +19,10 @@ with yet older browsers is required, this should be possible with careful design
 
 In administration mode, Zenario will run on:
 
-*   Windows with Chrome (stable channel)
+*   Windows with Chrome (stable channel) or equivalent
 *   Windows with Firefox (release channel)
 *   Windows with Microsoft Edge (latest version)
-*   Windows with Microsoft Internet Explorer 11
-*   Mac OSX with Chrome (stable channel)
+*   Mac OSX with Chrome (stable channel) or equivalent
 *   Mac OSX with Firefox (release update channel)
 *   Mac OSX with Safari (latest version)
 

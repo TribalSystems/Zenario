@@ -101,7 +101,7 @@ diagnostics:
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: MySQL server version 5.5.3 or later
+                        html: MySQL server version 5.7 or later
                     visible_if: zenarioAW.togglePressed(field)
                 mb:
                     grouping: sub_table
@@ -327,7 +327,7 @@ diagnostics:
                     full_width: true
                     row_class: sub_level
                     snippet:
-                        html: Backup Storage Area
+                        html: Document Secure Store (Docstore)
                     visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_1: *show_subsection
                 dir_1_blurb:
@@ -336,19 +336,23 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: |
-                            If you wish to store site backups on your server, you should create a directory
-                            on your server in which to keep them.
+                            You should create a directory on your server where Zenario can store documents for download.
+                            Please enter the absolute path to the directory.
                             It should start with a slash, but do not add a trailing slash.
+
+                            If your directory doesn't exist, we suggest making it with the path shown below.
+                            Alternatively please change the path to match your directory if it exists already.
                     visible_if: zenarioAW.togglePressed(field)
-                backup_dir: &changeable_dir
+                docstore_dir: &changeable_dir
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     visible_if: zenarioAW.togglePressed(field)
-                backup_dir_status:
+                docstore_dir_status: &dir_status
                     grouping: sub_table
                     full_width: true
+                    row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed(field)
@@ -358,7 +362,7 @@ diagnostics:
                     full_width: true
                     row_class: sub_level
                     snippet:
-                        html: Document Secure Store (Docstore)
+                        html: Backup Storage Area
                     visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_2: *show_subsection
                 dir_2_blurb:
@@ -367,15 +371,14 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: |
-                            You should create a directory on your server where Documents can be stored by the CMS.
-                            Please enter the absolute path to the directory.
+                            If you wish to store site backups on your server, you should create a directory
+                            on your server in which to keep them.
                             It should start with a slash, but do not add a trailing slash.
                     visible_if: zenarioAW.togglePressed(field)
-                docstore_dir: *changeable_dir
-                docstore_dir_status: &dir_status
+                backup_dir: *changeable_dir
+                backup_dir_status:
                     grouping: sub_table
                     full_width: true
-                    row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed(field)

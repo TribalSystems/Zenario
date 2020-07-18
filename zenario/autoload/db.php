@@ -600,8 +600,6 @@ class db {
 
 	//Formerly "connectToDatabase()"
 	public static function connect($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $dbport = '', $reportErrors = true) {
-		$errorText = 'Database connection failure';
-	
 		try {
 		
 			if ($dbport) {
@@ -633,7 +631,9 @@ class db {
 		}
 	
 		if ($reportErrors) {
-			\ze\db::reportError($errorText, @mysqli_errno($con), @mysqli_error($con));
+			$subjectPrefix = 'Database error at ';
+			$errorText = 'Database connection failure, could not connect to '. $dbname. ' at '. $dbhost;
+			\ze\db::reportError($errorText, @mysqli_errno($con), @mysqli_error($con), $sql = '', $backtrace = '', $subjectPrefix);
 		}
 	
 		return false;

@@ -172,6 +172,7 @@ zenario__modules:
                 path: zenario__modules/panels/plugins
         tuix_snippets:
             ord: 99
+            priv: _PRIV_EDIT_SITE_SETTING
             css_class: zenario_separator_before_this
             label: TUIX Snippets
             tooltip: >

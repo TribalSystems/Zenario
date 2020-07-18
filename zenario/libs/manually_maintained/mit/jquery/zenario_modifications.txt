@@ -80,6 +80,7 @@ jquery.selectboxes.js
 jquery-ui.visitor.js
 	This is a custom build of jQuery UI, with:
 		All of the Core components
+		The plugin, safeActiveElement and safeBlur modules/functions
 		The Tooltips Widget
 		All of the jQuery UI effects
 	
