@@ -94,7 +94,14 @@ if ($moduleDetails === []) {
 //Add Plugin inheritances as well
 foreach (array_keys($moduleDetails) as $moduleClassName) {
 	foreach (ze\module::inheritances($moduleDetails[$moduleClassName]['class_name'], 'include_javascript', false) as $inheritanceClassName) {
-		if (empty($moduleDetails[$inheritanceClassName])) {
+		
+		//Bugfix - if we see one of the modules that we were already going to load is a dependant, move it up in the order.
+		if (isset($moduleDetails[$inheritanceClassName])) {
+			$mDetails = $moduleDetails[$inheritanceClassName];
+			unset($moduleDetails[$inheritanceClassName]);
+			$moduleDetails[$inheritanceClassName] = $mDetails;
+		
+		} else {
 			$moduleDetails[$inheritanceClassName] = ze\module::details($inheritanceClassName, $fetchBy = 'class');
 		}
 	}
@@ -102,6 +109,27 @@ foreach (array_keys($moduleDetails) as $moduleClassName) {
 
 //Try to put the modules in dependency order
 $moduleDetails = array_reverse($moduleDetails, true);
+
+
+//For FEA plugins, we need to load a list of their paths & which type of FEA logic is used for each path.
+//(This used to be hand-written in each plugin's JS file, but now this list is calculated automatically.)
+$sql = '
+	SELECT module_class_name, path, panel_type
+	FROM '. DB_PREFIX. 'tuix_file_contents
+	WHERE `type` = \'visitor\'
+	  AND module_class_name IN ('. ze\escape::in(array_keys($moduleDetails)). ')';
+
+$result = ze\sql::select($sql);
+while ($fea = ze\sql::fetchRow($result)) {
+	$className = $fea[0];
+	$path = $fea[1];
+	$feaType = $fea[2];
+	
+	if (!isset($moduleDetails[$className]['feaPaths'])) {
+		$moduleDetails[$className]['feaPaths'] = [];
+	}
+	$moduleDetails[$className]['feaPaths'][$path] = $feaType;
+}
 
 
 //Add JavaScript support elements for each Plugin on the page
@@ -121,7 +149,14 @@ if (!empty($moduleDetails)) {
 			echo json_encode($module['vlp_class']);
 		}
 		
+		if (isset($module['feaPaths'])) {
+			echo ', ', json_encode($module['feaPaths']);
+		}
+		
 		if ($flagJsAsNotLoaded) {
+			if (!isset($module['feaPaths'])) {
+				echo ', undefined';
+			}
 			echo ', 1';
 		}
 		

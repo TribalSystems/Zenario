@@ -21,14 +21,17 @@ zenario__modules:
                 custom_json:
                     db_column: ts.custom_json
                 num_columns:
-                    title: Number of columns
+                    title: № of TUIX columns defined
                     show_by_default: true
+                    width: large
                 num_collection_buttons:
-                    title: Number of collection buttons
+                    title: № of TUIX collection buttons defined
                     show_by_default: true
+                    width: large
                 num_item_buttons:
-                    title: Number of item buttons
+                    title: № of TUIX item buttons defined
                     show_by_default: true
+                    width: large
                 usage:
                     title: Number of plugins using this Snippet
                     show_by_default: true
@@ -66,3 +69,12 @@ zenario__modules:
                             message_type: warning
                         request:
                             delete: 1
+            
+            notice:
+                show: false
+                type: information
+                message: |
+                    This panel is empty.
+                    This is because the site has no FEA-type (Front End Administration) plugins,
+                    i.e. modules containing a <code>tuix/visitor/</code> directory.
+                html: true

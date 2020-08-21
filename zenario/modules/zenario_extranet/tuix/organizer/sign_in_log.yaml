@@ -9,6 +9,10 @@ zenario__users:
 			panel:
 				php: Yes
 				title: Sign-in Log
+				notice:
+					show: false
+					type: information
+					message: ''
 				view_mode: list
 				db_items:
 					table: '[[DB_PREFIX]]user_signin_log AS usl LEFT JOIN [[DB_PREFIX]]users AS u ON usl.user_id = u.id'

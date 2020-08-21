@@ -300,24 +300,18 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$this->objects['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
 		}
 		
-		if (ze\content::langSpecialPage('zenario_password_reminder', $cID, $cType)) {
-			$this->subSections['Forget_Password_Link_Section'] = true;
-			$this->objects['Forget_Password_Link'] = $this->linkToItemAnchor($cID, $cType);
-		}
-		
-		if (ze\content::langSpecialPage('zenario_password_reset', $cID, $cType)) {
+		if ($link = ze\link::toPluginPage('zenario_extranet_password_reset')) {
 			$this->subSections['Reset_Password_Link_Section'] = true;
-			$this->objects['Reset_Password_Link'] = $this->linkToItemAnchor($cID, $cType);
+			$this->objects['Reset_Password_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
 		
-		if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
+		if ($link = ze\link::toPluginPage('zenario_extranet_registration')) {
 			$this->subSections['Registration_Link_Section'] = true;
-			$this->objects['Registration_Link'] = $this->linkToItemAnchor($cID, $cType);
-		}
-		
-		if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
+			$this->objects['Registration_Link'] = 'href="'. htmlspecialchars($link). '"';
+			
+			$link = ze\link::toPluginPage('zenario_extranet_registration', '', false, false, '&extranet_resend=1');
 			$this->subSections['Resend_Link_Section'] = true;
-			$this->objects['Resend_Link'] = $this->linkToItemAnchor($cID, $cType, false, '&extranet_resend=1');
+			$this->objects['Resend_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
 		
 		
@@ -359,14 +353,14 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$this->subSections['Welcome_Message_Section'] = true;
 		$this->objects['Welcome_Message'] = $this->phrase('_WELCOME', ['user' => htmlspecialchars($_SESSION['extranetUser_firstname'] ?? false)]);
 		
-		if (ze\content::langSpecialPage('zenario_change_password', $cID, $cType)) {
+		if ($link = ze\link::toPluginPage('zenario_extranet_change_password')) {
 			$this->subSections['Change_Password_Link_Section'] = true;
-			$this->objects['Change_Password_Link'] = $this->linkToItemAnchor($cID, $cType);
+			$this->objects['Change_Password_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
 		
-		if (ze\content::langSpecialPage('zenario_logout', $cID, $cType)) {
+		if ($link = ze\link::toPluginPage('zenario_extranet_logout')) {
 			$this->subSections['Logout_Link_Section'] = true;
-			$this->objects['Logout_Link'] = $this->linkToItemAnchor($cID, $cType);
+			$this->objects['Logout_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
 		
 		if (($_SESSION['destURL'] ?? false) && ($this->cID != ($_SESSION['destCID'] ?? false) || $this->cType != $_SESSION['destCType'] ?? false)) {
@@ -428,10 +422,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	protected function checkPermsOnDestURL() {
 		return !empty($_SESSION['destCID']) && !empty($_SESSION['destCType']) && ze\content::checkPerm($_SESSION['destCID'], $_SESSION['destCType']);
-	}
-	
-	protected function redirectToPage($showWelcomePage = true, $redirectBackIfPossible = true, $redirectRegardlessOfPerms = true) {
-		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	protected final function checkRequiredField(&$field) {
@@ -562,9 +552,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 								} else {
 									//email address still needs to be verified
 									$errorMessage = $this->setting('account_not_verified_message');
-									$cType = $cId = false;
-									ze\content::langSpecialPage('zenario_registration', $cID, $cType);
-									$this->errors[] = ['Error' => $this->phrase($errorMessage, ['resend_verification_email' => $this->linkToItemAnchor($cID, $cType, true, 'extranet_resend=1' )])];
+									
+									$link = ze\link::toPluginPage('zenario_extranet_registration', '', false, $fullPath = true, '&extranet_resend=1');
+									$this->errors[] = ['Error' => $this->phrase($errorMessage, ['resend_verification_email' => 'href="'. htmlspecialchars($link). '"'])];
 								}
 							}
 						}
@@ -741,9 +731,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 				//Set the default value of the registration page selector to the special page.
 				if (empty($values['first_tab/registration_page'])) {
-					$cID = $cType = false;
-					if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
-						$tagId = $cType . '_' . $cID;
+					$cID = $cType = $state = false;
+					if (ze\content::pluginPage($cID, $cType, $state, 'zenario_extranet_registration', '', true)) {
+						$tagId = $cType. '_' . $cID;
 						$values['first_tab/registration_page'] = $tagId;
 					}
 				}
@@ -776,6 +766,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 						}
 					}
 				}
+				
+				//Select the home page as the default redirect page.
+				$fields['action_after_login/welcome_page']['value'] = ze::$specialPages['zenario_home'] ?? '';
 				
 				break;
 		}
@@ -836,10 +829,49 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		switch ($path) {
-			case 'zenario__users/nav/sign_in_log/panel':
-				ze\tuix::flagEncryptedColumns($panel, 'u', 'users');
-				ze\tuix::flagEncryptedColumns($panel, 'usl', 'user_signin_log');
+        
+		//Information to view Data Protection settings
+		if ($path == 'zenario__users/nav/sign_in_log/panel') {
+			$accessLogDuration = '';
+			switch (ze::setting('period_to_delete_sign_in_log')) {
+				case 'never_delete':
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log is stored forever.');
+					break;
+				case 0:
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log is not stored.');
+					break;
+				case 1:
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log are deleted after 1 day.');
+					break;
+				case 7:
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log are deleted after 1 week.');
+					break;
+				case 30:
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log are deleted after 1 month.');
+					break;
+				case 90:
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log are deleted after 3 months.');
+					break;
+				case 365:
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log are deleted after 1 year.');
+					break;
+				case 730:
+					$accessLogDuration = ze\admin::phrase('Entries in the user sign-in log are deleted after 2 years.');
+					break;
+				
+			}
+			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+			$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View Data Protection settings</a>";
+			$panel['notice']['show'] = true;
+			$panel['notice']['message'] = $accessLogDuration.".";
+			$panel['notice']['html'] = true;
+
 		}
+			switch ($path) {
+				case 'zenario__users/nav/sign_in_log/panel':
+					ze\tuix::flagEncryptedColumns($panel, 'u', 'users');
+					ze\tuix::flagEncryptedColumns($panel, 'usl', 'user_signin_log');
+			}
+		
 	}
 }

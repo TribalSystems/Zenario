@@ -198,8 +198,10 @@ class zenario_users extends ze\moduleBaseClass {
 				$key['link_to'] = 'role';
 				if ($chain['privacy'] == 'with_role') {
 					ze\miscAdm::updateLinkingTable('group_link', $key, 'link_to_id', $values['privacy/role_ids']);
+					$chain['at_location'] = $values['privacy/at_location'];
 				} else {
 					ze\row::delete('group_link', $key);
+					$chain['at_location'] = 'any';
 				}
 				
 				$key = ['equiv_id' => $equivId, 'content_type' => $cType];

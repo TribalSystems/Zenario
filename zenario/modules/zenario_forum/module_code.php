@@ -108,7 +108,7 @@ class zenario_forum extends zenario_comments {
 				$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = true, $clearByModuleData = true);
 		}
 		
-		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found', 'zenario_logout')) {
+		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found')) {
 			return $this->show = false;
 		}
 		
@@ -1134,11 +1134,14 @@ class zenario_forum extends zenario_comments {
 			$this->sections['Add_New_Thread'] = true;
 			$this->mergeFields['Add_New_Thread_Link'] = $this->linkToItemAnchor($this->forum['new_thread_content_id'], $this->forum['new_thread_content_type'], false, '&comm_request=add_thread');
 		} elseif (ze::setting('user_use_screen_name') && !parent::getUserScreenNameConfirmed(ze\user::id())) {
-			$cID = $cType = false;
-			ze\content::langSpecialPage('zenario_profile', $cID, $cType);
-			$profileAnchor = $this->linkToItemAnchor($cID, $cType);
 			$this->sections['Forum_Profile_Link'] = true;
-			$profileLink =  '<a '.$profileAnchor.'>'.$this->phrase('your profile').'</a>';
+			
+			$profileLink = '<a';
+			if ($link = ze\link::toPluginPage('zenario_extranet_profile_edit')) {
+				$profileLink .= ' href="'. htmlspecialchars($link). '"';
+			}
+			$profileLink .= '>'. $this->phrase('your profile'). '</a>';
+			
 			$this->mergeFields['Forum_Profile_Link'] = $this->phrase('You must confirm your screen name on [[profile_link]] in order to create a thread.', ['profile_link' => $profileLink]);
 		} elseif ($this->lockedForum()) {
 			$this->sections['Forum_Locked'] = true;

@@ -3,7 +3,10 @@
 zenario__users:
     priv: _PRIV_VIEW_USER
     css_class: zenario_cms_core_users
-    tooltip: 'Manage users and administrators - people who can edit this site'
+    tooltip: |
+        Manage users (people who may log in to private areas of your site),
+        contacts (people whom you may email)
+        and administrators (people who may edit your site).
     panels:
         users:
             title: 'All users & contacts'

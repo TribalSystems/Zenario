@@ -22,7 +22,8 @@ plugin_settings:
                     validation:
                         required: "Please select an email template."
                     value: zenario_extranet_change_email__to_user_email_change_en
-                    note_below: >
+                    note_below: 'By default this plugin uses the email template with code "zenario_extranet_change_email__to_user_email_change_en".'
+                    side_note: >
                         Please see the Module description to get a full list of
                         Merge Fields which can be used in the selected Email
                         Template.
@@ -43,3 +44,4 @@ plugin_settings:
                     validation:
                         required: "Please select an email template."
                     value: zenario_extranet_change_email__to_user_email_change_successful_en
+                    note_below: 'By default this plugin uses the email template with code "zenario_extranet_change_email__to_user_email_change_successful_en".'

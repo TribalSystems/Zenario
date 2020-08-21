@@ -2710,8 +2710,24 @@ _sql
 _sql
 
 
+
+
+//
+//	Zenario 8.7
+//
+
+
+//Add a "protect_from_database_restore" column to the site settings table
+); ze\dbAdm::revision(50700
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]site_settings`
+	ADD COLUMN `protect_from_database_restore` tinyint(1) NOT NULL default 0
+_sql
+
+
 //Add a column to control creating menu nodes to the content type settings
-);	ze\dbAdm::revision(50606
+//(N.b. this was added in an after-branch patch in 8.3 revision 50606, so we need to check if it's not already there.)
+);	if (ze\dbAdm::needRevision(50760) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_types LIKE "prompt_to_create_a_menu_node"')) ze\dbAdm::revision(50760
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]content_types`
 	ADD COLUMN `prompt_to_create_a_menu_node` tinyint(1) NOT NULL default 1
@@ -2720,7 +2736,8 @@ _sql
 
 
 //Remove the create_and_maintain_in_all_languages option for special pages
-); ze\dbAdm::revision(50607
+//(N.b. this was added in an after-branch patch in 8.3 revision 50607, but is safe to repeat.)
+); ze\dbAdm::revision(50780
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]special_pages`
 	SET `logic` = 'create_and_maintain_in_default_language'
@@ -2734,7 +2751,8 @@ _sql
 
 
 //Add a column to the languages table to control how each language behaves in the language picker
-); ze\dbAdm::revision(50608
+//(N.b. this was added in an after-branch patch in 8.3 revision 50608, so we need to check if it's not already there.)
+);	if (ze\dbAdm::needRevision(50785) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'languages LIKE "language_picker_logic"')) ze\dbAdm::revision(50785
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]languages`
 	ADD COLUMN `language_picker_logic` enum('visible_or_disabled', 'visible_or_hidden', 'always_hidden') NOT NULL DEFAULT 'visible_or_disabled'
@@ -2742,10 +2760,40 @@ _sql
 _sql
 
 
+//Add a new index to the tuix_file_contents table to help speed up a new query I need from that table
+); ze\dbAdm::revision(50800
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]tuix_file_contents`
+	ADD KEY `module_panel_types` (`type`, `module_class_name`, `panel_type`, `path`)
+_sql
+
+
+//Add a new privacy sub-option that controls where a user needs to have a role set
+); ze\dbAdm::revision(51000
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD COLUMN `at_location` enum('any', 'in_url', 'detect') NOT NULL DEFAULT 'any'
+	AFTER `privacy`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]slide_layouts`
+	ADD COLUMN `at_location` enum('any', 'in_url', 'detect') NOT NULL DEFAULT 'in_url'
+	AFTER `privacy`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chains`
+	ADD COLUMN `at_location` enum('any', 'in_url', 'detect') NOT NULL DEFAULT 'any'
+	AFTER `privacy`
+_sql
+
+
 //Fix a bug where the key is longer than 1000 bytes - the column was previously a varchar(255).
-//Note that this was retroactively changed in the CREATE TABLE statement, however it's safe to
-//re-apply so we're also changing it here so any existing sites are consistent.
-);	ze\dbAdm::revision(50610
+//Note that this was added in a post-branch patch in 8.6 revision 50610, and also retroactively 
+//changed in the CREATE TABLE statement, however it's safe to re-apply so we're also changing
+//it here so any existing sites are consistent.
+);	ze\dbAdm::revision(51300
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]tuix_snippets`
 	MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
@@ -2757,7 +2805,7 @@ _sql
 //and in a post-branch patch in 8.7 revision 51301, and in 8.8 in revision 51700.
 //However they're safe to re-apply more than once so we don't need the check to see if
 //they've already been applied.
-);	ze\dbAdm::revision(50611
+);	ze\dbAdm::revision(51301
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]custom_datasets`
 	DROP KEY `label`

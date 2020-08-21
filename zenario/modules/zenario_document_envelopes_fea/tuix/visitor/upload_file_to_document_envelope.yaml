@@ -1,5 +1,6 @@
 zenario_upload_file_to_document_envelope:
     css_class: zfea_edit_box
+    fea_type: form
     key:
         envelopeId: ''
     title: 'Uploading files to document envelope "[[envelope_name]]"'
@@ -12,7 +13,7 @@ zenario_upload_file_to_document_envelope:
                 enabled: true
             fields:
                 file_id:
-                    label: 'One or more documents (filename must begin with envelope code [[envelope_code]]):'
+                    #The label is set in PHP.
                     upload:
                         class_name: zenario_document_envelopes_fea
                         multi: true

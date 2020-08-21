@@ -33,7 +33,11 @@ $backs = [];
 if ($this->usesConductor && $this->state) {
 
 	if ($addCurrent) {
-		$backs[$this->state] = ['state' => $this->state, 'slide' => $this->slides[$this->slideNum]];
+		$backs[$this->state] = [
+			'state' => $this->state,
+			'slide' => $this->slides[$this->slideNum],
+			'is_next' => true
+		];
 	}
 
 
@@ -47,7 +51,11 @@ if ($this->usesConductor && $this->state) {
 	 && !isset($backs[$backToState])
 	 && isset($this->statesToSlides[$backToState])
 	) {
-		$backs[$backToState] = ['state' => $backToState, 'slide' => $this->slides[$this->statesToSlides[$backToState]]];
+		$backs[$backToState] = [
+			'state' => $backToState,
+			'slide' => $this->slides[$this->statesToSlides[$backToState]],
+			'is_next' => false
+		];
 	
 		$backToState = ze\sql::fetchValue("
 			SELECT to_state
@@ -137,7 +145,7 @@ if ($this->usesConductor && $this->state) {
 		}
 		
 		if ($lastBack && !empty($lastBack['smart'])) {
-		
+			
 			foreach ($lastBack['smart'] as &$vbc) {
 				
 				if (!empty($vbc['request']) && is_array($vbc['request'])) {
@@ -195,6 +203,27 @@ if ($this->usesConductor && $this->state) {
 		}
 	}
 	
+	
+	//Fix a bug where smart breadcrumbs for the wrong path could get displayed for links we've just navigated.
+	//For each list of breadcrumbs, check they include the current link.
+	//If not, assume they are the wrong path and don't show them.
+	foreach ($backs as &$back) {
+		if (!$back['is_next'] && !empty($back['smart'])) {
+			
+			$includesCurrent = false;
+			foreach ($back['smart'] as &$vbc) {
+				
+				if ($vbc['current']) {
+					$includesCurrent = true;
+					break;
+				}
+			}
+			
+			if (!$includesCurrent) {
+				unset($back['smart']);
+			}
+		}
+	}
 }
 
 

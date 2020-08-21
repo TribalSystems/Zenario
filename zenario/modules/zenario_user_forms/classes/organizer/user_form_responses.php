@@ -32,6 +32,43 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'profanity_filter_text'], $refinerId);
 		$panel['title'] = ze\admin::phrase('Responses for form "[[name]]"', $form);
+
+        //Information to view Data Protection settings
+		$accessLogDuration = '';
+			switch (ze::setting('period_to_delete_the_form_response_log_headers')) {
+				case 'never_delete':
+					$accessLogDuration = ze\admin::phrase('Form responses are stored forever.');
+					break;
+				case 0:
+					$accessLogDuration = ze\admin::phrase('Form responses are not stored.');
+					break;
+				case 1:
+					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 day.');
+					break;
+				case 7:
+					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 week.');
+					break;
+				case 30:
+					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 month.');
+					break;
+				case 90:
+					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 3 months.');
+					break;
+				case 365:
+					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 year.');
+					break;
+				case 730:
+					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 2 years.');
+					break;
+				
+			}
+			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+			$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View Data Protection settings</a>";
+			$panel['notice']['show'] = true;
+			$panel['notice']['message'] = $accessLogDuration.".";
+			$panel['notice']['html'] = true;
+
+		//
 		
 		if (!ze::setting('zenario_user_forms_set_profanity_filter') || !$form['profanity_filter_text']) {
 			unset($panel['columns']['blocked_by_profanity_filter']);
@@ -48,6 +85,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 				$item['profanity_tolerance_limit'] = $profanityValues['profanity_tolerance_limit'];
 			}
 		}
+		
 		
 		if (!zenario_user_forms::isFormCRMEnabled($refinerId, false)) {
 			unset($panel['columns']['crm_response']);

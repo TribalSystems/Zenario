@@ -65,9 +65,11 @@ class zenario_multiple_image_container extends zenario_banner {
 						'Height' => $heightFullSize,
 						'Title' => $this->phrase($image['floating_box_title'])];
 				} else {
+					
 					$cID = $cType = false;
-					$this->setupLink($imageMF, $cID, $cType, $useTranslation = true, 'link_type_'. $imageId, 'hyperlink_target_'. $imageId, 'target_blank_'. $imageId, 'url_'. $imageId);
+					$this->setupLink($imageMF, $cID, $cType, $useTranslation = true, 'link_type_'. $imageId, 'hyperlink_target_'. $imageId, 'target_blank_'. $imageId, 'url_'. $imageId,$imageId);
 				}
+				
 				
 				if ($text = $this->setting('image_title_'. $imageId)) {
 					$imageMF['Text'] = $text;
@@ -181,6 +183,7 @@ class zenario_multiple_image_container extends zenario_banner {
 					foreach ($box['tabs']['links']['custom_template_fields'] as $fieldName => &$field) {
 						$settingName = str_replace('znz', $imageId, $fieldName);
 						$box['tabs']['links']['fields'][$settingName]['ord'] = ++$ord;
+						
 					}
 					
 					//Remember if anything was set to "Enlarge image in floating box"

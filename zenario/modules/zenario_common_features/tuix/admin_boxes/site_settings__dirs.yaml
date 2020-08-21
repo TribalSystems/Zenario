@@ -47,6 +47,7 @@ site_settings:
                     visible_if: zenarioAB.value('check_automated_backups')
                     site_setting:
                         name: automated_backup_log_path
+                        protect_from_database_restore: true
                     label: 'Path to log file including file name:'
                     type: text
                     placeholder: 'E.g. /var/www/log/dbbackup.log'
@@ -106,6 +107,7 @@ site_settings:
                 backup_dir:
                     site_setting:
                         name: backup_dir
+                        protect_from_database_restore: true
                     label: 'Backup directory:'
                     type: text
                     #onkeyup: zenarioAB.quickValidateWelcomePage(500);
@@ -132,6 +134,7 @@ site_settings:
                 docstore_dir:
                     site_setting:
                         name: docstore_dir
+                        protect_from_database_restore: true
                     label: 'Source document directory (Docstore):'
                     type: text
                     #onkeyup: zenarioAB.quickValidateWelcomePage(500);

@@ -961,10 +961,31 @@ class dbAdm {
 
 
 
+	//Check if restoring a database backup is allowed
+	public static function restoreEnabled() {
+		return defined('RESTORE_POLICY')
+			&& (RESTORE_POLICY === 'always' || RESTORE_POLICY == date('Y-m-d'));
+	}
+	
+	public static function restoreEnabledMsg() {
+		$date = date('Y-m-d');
+		return \ze\admin::phrase("Before you can restore site backups using Organizer,
+you must first edit your <code>zenario_siteconfig.php file</code> and add either the following definition:
+<br/>
+<br/><code>&nbsp; define('RESTORE_POLICY', 'always');</code>
+<br/>
+<br/>or the following definition:
+<br/>
+<br/><code>&nbsp; define('RESTORE_POLICY', '$date');</code>
+<br/>
+<br/>(Where <code>'$date'</code> must be the current date.)");
+	}
+
+
 
 	//Given a backup, restore the database from it
 	//Formerly "restoreDatabaseFromBackup()"
-	public static function restoreFromBackup($backupPath, &$failures) {
+	public static function restoreFromBackup($backupPath, &$failures, $checkEnabled) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
@@ -973,7 +994,9 @@ class dbAdm {
 	//Formerly "resetSite()"
 	public static function resetSite() {
 		\ze\dbAdm::getTableEngine();
-	
+		
+		\ze\dbAdm::rememberLocationalSiteSettings();
+		
 		//Make sure to load the values of site_disabled_title and site_disabled_message,
 		//which aren't usually loaded into memory, so we can restore them later.
 		//Also save the values of email_address_admin, email_address_from and email_name_from
@@ -1021,8 +1044,12 @@ class dbAdm {
 		//Populate the Modules table with all of the Modules in the system,
 		//and install and run any Modules that should running by default.
 		\ze\moduleAdm::addNew($skipIfFilesystemHasNotChanged = false, $runModulesOnInstall = true, $dbUpdateSafeMode = true);
-	
+		
+		//Try to restore the settings we saved earlier in the site settings table.
+		//Note: this might fail to restore all of the data if some columns in the site settings table
+		//haven't been created yet.
 		\ze\dbAdm::restoreLocationalSiteSettings();
+		
 		\ze\site::setSetting('site_disabled_title', $site_disabled_title);
 		\ze\site::setSetting('site_disabled_message', $site_disabled_message);
 		\ze\site::setSetting('email_address_admin', $email_address_admin);
@@ -1042,6 +1069,9 @@ class dbAdm {
 			//Apply database updates
 			$moduleErrors = '';
 			\ze\dbAdm::checkIfUpdatesAreNeeded($moduleErrors, $andDoUpdates = true);
+			
+			//Try to restore the settings again. This should work fully this time.
+			\ze\dbAdm::restoreLocationalSiteSettings();
 		
 			//Populate the menu_hierarchy and the menu_positions tables
 			\ze\menuAdm::recalcAllHierarchy();
@@ -1052,53 +1082,39 @@ class dbAdm {
 			return true;
 		}
 	}
-
+	
+	
+	//These two functions are used before restoring a backup or site reset.
+	//They preserve any site setting with the "protect_from_database_restore" flag set.
+	private static $lss;
+	public static function rememberLocationalSiteSettings() {
+		$protectColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'protect_from_database_restore');
+		
+		if ($protectColExists) {
+			self::$lss = \ze\row::getAssocs('site_settings',
+				['value', 'default_value', 'encrypted', 'secret'],
+				['protect_from_database_restore' => 1]
+			);
+		} else {
+			self::$lss = [];
+		}
+	}
+	
+	
 	//Formerly "restoreLocationalSiteSettings()"
 	public static function restoreLocationalSiteSettings() {
-		//Attempt to keep the directory, primary domain and ssl site settings from the existing installation or the installer,
-		//as the chances are that their values in the backup will be wrong
-	
-		$encryptedColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'encrypted');
-	
-		foreach ([
-			'backup_dir', 'docstore_dir', 'automated_backup_log_path',
-			'admin_domain', 'admin_use_ssl',
-			'primary_domain', 'use_cookie_free_domain', 'cookie_free_domain',
-			'advpng_path', 'jpegoptim_path', 'jpegtran_path', 'optipng_path',
-			'antiword_path', 'ghostscript_path', 'pdftotext_path',
-			'mysqldump_path', 'mysql_path',
-			
-			//In version 8.7, we have a proper way of controling which settings
-			//should be in this list, other than hard-coding it, and other modules can even
-			//add their on site settings here.
-			//However I need to patch this feature back in one case, but don't want to patch the
-			//new tech back to the stable branch, so just for this one branch I'm hard-coding
-			//the entries I need:
-			'assetwolf_mqtt_broker_hostname', 'assetwolf_enable_commands'
-		] as $setting) {
-			if (isset(\ze::$siteConfig[0][$setting])) {
-				$sql = "
-					INSERT INTO ". DB_PREFIX. "site_settings
-					SET name = '". \ze\escape::sql($setting). "',
-						value = '". \ze\escape::sql(\ze::$siteConfig[0][$setting]). "'";
 		
-				if ($encryptedColExists) {
-					$sql .= ",
-						encrypted = 0";
-				}
-				$sql .= "
-					ON DUPLICATE KEY UPDATE
-						value = '". \ze\escape::sql(\ze::$siteConfig[0][$setting]). "'";
-		
-				if ($encryptedColExists) {
-					$sql .= ",
-						encrypted = 0";
-				}
-		
-				\ze\sql::cacheFriendlyUpdate($sql);
+		foreach (self::$lss as $name => $row) {
+			if (\ze\row::exists('site_settings', $name)) {
+				unset($row['default_value']);
+				unset($row['secret']);
+				\ze\row::update('site_settings', $row, $name, false, $ignoreMissingColumns = true);
+			} else {
+				\ze\row::set('site_settings', $row, $name, false, $ignoreMissingColumns = true);
 			}
 		}
-	
+		
+		//Delete the settings to do with checking the version/checksums of the code-base
 		$sql = "
 			DELETE FROM ". DB_PREFIX. "site_settings
 			WHERE name IN (

@@ -66,7 +66,6 @@ zenario.lib(function(
 	
 	di = docClassesSplit = undefined;
 	scrollBody = docClasses.edge
-			  || docClasses.safari
 			  || userAgent.match(/Chrom(e|ium)\/(60|5\d)\./)?
 				'body'
 			  : 'html, body';
@@ -479,24 +478,23 @@ zenario.lib(function(
 	};
 	
 	
-	zenario.visitorTUIXLink = function(moduleClassName, path, requests, mode, useSync) {
+	zenario.visitorTUIXLink = function(moduleClassName, path, requests, mode) {
 		
 		return URLBasePath +
 			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) +
 			'&path=' + encodeURIComponent(path) +
 			'&method_call=' + (mode == 'tas'? 'typeaheadSearchAJAX' : (mode == 'format' || mode == 'validate' || mode == 'save'? mode : 'fill') + 'VisitorTUIX') +
-			'&_useSync=' + zenario.engToBoolean(useSync) +
 			zenario.urlRequest(requests);
 	};
 	
-	zenario.pluginVisitorTUIXLink = function(moduleClassName, slotNameOrContainedElement, path, requests, mode, useSync) {
+	zenario.pluginVisitorTUIXLink = function(moduleClassName, slotNameOrContainedElement, path, requests, mode) {
 		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
 			eggId = zenario.getEggIdFromEl(slotNameOrContainedElement),
 			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId,
 			slot = zenario_conductor.getSlot(slotName),
 			state = slot && slot.state;
 		
-		return zenario.visitorTUIXLink(moduleClassName, path, undefined, mode, useSync) +
+		return zenario.visitorTUIXLink(moduleClassName, path, undefined, mode) +
 			'&cID=' + zenario.cID +
 			'&cType=' + zenario.cType +
 		  (zenario.adminId?
@@ -511,14 +509,15 @@ zenario.lib(function(
 	};
 	
 	zenario.checkPasswordStrength = function(password, settings) {
-	
+		var min_pass_length;
+		
 		if (!_.isString(password)) {
 			password = '';
 		}
 		
-		settings = settings || zenarioA.siteSettings;
+		settings = settings || zenario.passVars;
 		
-		if (settings) {
+		if (settings && settings.min_extranet_user_password_length > 0) {
 			min_pass_length = settings.min_extranet_user_password_length;
 		} else {
 			settings = {};
@@ -649,6 +648,7 @@ zenario.callback = function() {
 	this.completes = [false];
 	this.finished = false;
 	this.funs = [];
+	this.multiargs = false;
 };
 var methods = methodsOf(zenario.callback);
 
@@ -675,7 +675,16 @@ methods.call =
 methods.done = function(result) {
 	this.isOwnCallback = true;
 	this.completes[0] = true;
-	this.results[0] = result;
+	
+	//Try to support multiple return arguements where possible.
+	//(This won't work if chaining multiple calls together, as in this case
+	//each result is defined to be one arguement.)
+	if (arguments.length > 1) {
+		this.multiargs = true;
+		this.results[0] = arguments;
+	} else {
+		this.results[0] = result;
+	}
 	this.checkComplete();
 	
 	return this;
@@ -744,7 +753,15 @@ methods.checkComplete = function() {
 		foreach (this.funs as i => fun) {
 			if (!fun[2]) {
 				fun[2] = true;
-				fun[0].apply(fun[1], this.results);
+				
+				//Check which format of return value is expected
+				if (this.multiargs) {
+					//If we're not chaining calls together, we can support multiple return values for one call
+					fun[0].apply(fun[1], this.results[i]);
+				} else {
+					//If we're chaining calls together, each request can only have one return value, however they all get passed on to the calling function
+					fun[0].apply(fun[1], this.results);
+				}
 			}
 		}
 		
@@ -965,9 +982,9 @@ zenario.ajax = function(url, post, json, useCache, retry, continueAnyway, settin
 					return;
 				}
 		
-				cb.done(parsedResult);
+				cb.done(parsedResult, resp);
 			} else {
-				cb.done(result);
+				cb.done(result, resp);
 			}
 			
 			//If we were supposed to be using the cache, remember this result for next time
@@ -1566,8 +1583,8 @@ zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, r
 	
 	var cb = new zenario.callback;
 	
-	zenario.ajax(url, post, false, useCache).after(function(html) {
-		zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
+	zenario.ajax(url, post, false, useCache).after(function(html, resp) {
+		zenario.replacePluginSlotContents(slotName, instanceId, resp || html, additionalRequests, recordInURL, scrollToTopOfSlot);
 		cb.done();
 	});
 	
@@ -1989,16 +2006,21 @@ zenario.formSubmit = function(el, scrollToTopOfSlot, fadeOutAndIn, slotName) {
 		}
 		
 		if ($el.attr('method') == 'post') {
+			var result;
 			$.ajax({
 				type: 'POST',
 				dataType: 'text',
 				url: url,
 				data: post,
-				complete: function(XMLHttpRequest, textStatus) {
-					delete zenario.slotFormSubmissions[slotName];
-				},
 				success: function(html) {
-					zenario.replacePluginSlotContents(slotName, instanceId, html, undefined, undefined, scrollToTopOfSlot, true);
+					result = html;
+				},
+				complete: function(resp, statusType, statusText) {
+					delete zenario.slotFormSubmissions[slotName];
+					
+					if (defined(result)) {
+						zenario.replacePluginSlotContents(slotName, instanceId, resp || result, undefined, undefined, scrollToTopOfSlot, true);
+					}
 				}
 			});
 		} else {
@@ -2049,19 +2071,22 @@ zenario.unpackAndMerge = function(target, string) {
 
 
 zenario.hypEscape = function(string) {
-	return string.replace(/`/g, "`t").replace(/\:/g, "`c").replace(/\-/g, "`h").replace(/\n/g, "`n").replace(/\r/g, "`r");
+	return string.replace(/`/g, "`t").replace(/\-/g, "`h").replace(/\:/g, "`c").replace(/\n/g, "`n").replace(/\r/g, "`r").replace(/\&/g, "`a").replace(/\"/g, "`q").replace(/\</g, "`l").replace(/\>/g, "`g");
 };
 
 zenario.uneschyp = function(string) {
-	return string.replace(/`r/g, "\r").replace(/`n/g, "\n").replace(/`h/g, "-").replace(/`c/g, ":").replace(/`t/g, "`");
+	
+	if (string == '`1') {
+		return true;
+	} else {
+		return string.replace(/`h/g, "-").replace(/`c/g, ":").replace(/`n/g, "\n").replace(/`r/g, "\r").replace(/`a/g, '&').replace(/`q/g, '"').replace(/`l/g, '<').replace(/`g/g, '>').replace(/`t/g, "`");
+	}
 };
 
 //Given a message that might have flags in it, parse the flags then strip them from the message.
-//Flags can look like this: <!--Flag-->
-//...or like this: <!--Flag:Value-->
 zenario.splitFlagsFromMessage = function(resp) {
 	
-	var flag;
+	var flag, headers, i, flagName, flagValue;
 	
 	if (typeof resp != 'object') {
 		resp = {responseText: resp? '' + resp : ''};
@@ -2071,16 +2096,45 @@ zenario.splitFlagsFromMessage = function(resp) {
 		resp.flags = {};
 	}
 	
+	//If we've got the header information in this request, look out for flags.
+	//Flags will be in the format "Zenario-Flag-flag_name: flag_value"
+		//Note: headers may be converted to lowercase, but our flag names are in upper case by convention.
+		//As a workaround, I use a call to toUpperCase() to convert them back to uppercase.
+	if (resp.getAllResponseHeaders && (headers = resp.getAllResponseHeaders())) {
+		headers = headers.split(/[\n\r]+?Zenario-Flag-(\w+)\:(.+?)[\n\r]/i);
+		
+		if (headers.length) {
+			for (i = 1; i < headers.length; i += 3) {
+				flagName = headers[i].toUpperCase();
+				flagValue = zenario.uneschyp($.trim(headers[i + 1]));
+				
+				resp.flags[flagName] = flagValue;
+			}
+		}
+	}
+	
+	//Some flags can contain data that's way too big for putting in the HTTP Headers.
+	//Alternately you might need to set a flag's value after starting the output,
+	//when its too late to set a header.
+	//In this case, we support using custom HTML flag elements.
+	//These flags must either be at the very start or the very end of the response-string.
+	
+	//The custom elements can look like this: <x-zenario-flag value="Flag"/>
+	//...or like this: <x-zenario-flag value="Flag:Value"/>
+	
+	//We also support  for the old style of flags using HTML comments. (Note: this isn't deprecated.)
+	//These flags can look like this: <!--Flag-->
+	//...or like this: <!--Flag:Value-->
 	if (resp.responseText = resp.responseText || '') {
 		//Strip the flags off of from start
-		while ((flag = resp.responseText.split(/^\<\!--([^\:-]*?)(|\:([^\:-]*?))--\>/)) && (flag.length > 1)) {
-			resp.flags[flag[1]] = !defined(flag[3])? true : zenario.uneschyp(flag[3]);
-			resp.responseText = flag[4];
+		while ((flag = resp.responseText.split(/^(\<\!--|\<x-zenario-flag value\=\")([^\:-]*?)(|\:([^\:-]*?))(\"\/\>|--\>)/)) && (flag.length > 1)) {
+			resp.flags[flag[2]] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
+			resp.responseText = flag[6];
 		}
 	
 		//Strip the flags off from the end
-		while ((flag = resp.responseText.split(/\<\!--([^\:-]*?)(|\:([^\:-]*?))--\>$/)) && (flag.length > 1)) {
-			resp.flags[flag[1]] = !defined(flag[3])? true : zenario.uneschyp(flag[3]);
+		while ((flag = resp.responseText.split(/(\<\!--|\<x-zenario-flag value\=\")([^\:-]*?)(|\:([^\:-]*?))(\"\/\>|--\>)$/)) && (flag.length > 1)) {
+			resp.flags[flag[2]] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
 			resp.responseText = flag[0];
 		}
 	}
@@ -2089,7 +2143,7 @@ zenario.splitFlagsFromMessage = function(resp) {
 };
 
 //Set up a new encapsulated object for Plugins
-zenario.enc = function(id, className, moduleClassNameForPhrases, jsNotLoaded) {
+zenario.enc = function(id, className, moduleClassNameForPhrases, feaPaths, jsNotLoaded) {
 	
 	//Little shortcut to save space in definitions
 	if (moduleClassNameForPhrases === 1) {
@@ -2102,9 +2156,11 @@ zenario.enc = function(id, className, moduleClassNameForPhrases, jsNotLoaded) {
 			zenario);
 		
 		window[className].globalName = className;
+		window[className].feaPaths = feaPaths || {};
 		window[className].slots = {};
 		
 		zenario.modules[id] ==> {};
+		zenario.modules[id].feaPaths = feaPaths || {};
 		zenario.modules[id].moduleClassName = className;
 		zenario.modules[id].moduleClassNameForPhrases = moduleClassNameForPhrases;
 	}
@@ -3535,7 +3591,7 @@ zenario.canCopy = function(text) {
 	}
 	return !!$copy[0].select;
 };
-zenario.copy = function(text) {
+zenario.copy = function(text, keepSelected) {
 	
 	var textarea,
 		rv = false;
@@ -3546,8 +3602,11 @@ zenario.copy = function(text) {
 			text.focus();
 			text.select();
 			rv = document.execCommand('copy');
-			text.setSelectionRange(0, 0);
-			text.blur();
+			
+			if (!keepSelected) {
+				text.setSelectionRange(0, 0);
+				text.blur();
+			}
 		
 		} else {
 	
@@ -3747,7 +3806,14 @@ zenario.init = function(
 	zenarioCSSJSVersionNumberIn,
 	userId,
 	langId,
+	
 	datePickerFormat,
+	minPasswordLength,
+	lowercaseCharsInPassword,
+	uppercaseCharsInPassword,
+	numbersInPassword,
+	symbolsInPassword,
+	
 	indexDotPHP,
 	canSetCookie,
 	
@@ -3768,6 +3834,15 @@ zenario.init = function(
 	zenario.userId = userId;
 	zenario.langId = langId;
 	zenario.dpf = datePickerFormat;
+	
+	zenario.passVars = {
+		min_extranet_user_password_length: minPasswordLength,
+		a_z_lowercase_characters: lowercaseCharsInPassword,
+		a_z_uppercase_characters: uppercaseCharsInPassword,
+		"0_9_numbers_in_user_password": numbersInPassword,
+		symbols_in_user_password: symbolsInPassword
+	}
+	
 	zenario.indexDotPHP = indexDotPHP;
 	zenario.canSetCookie = canSetCookie;
 

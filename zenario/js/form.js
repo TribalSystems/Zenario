@@ -98,6 +98,14 @@ methods.tooltips = function(target, options) {
 	}
 };
 
+methods.vaPhrase = function(phrase) {
+	if (thus.isAdminFacing()) {
+		return zenarioA.phrase[phrase];
+	} else {
+		return zenario.vphrase[phrase];
+	}
+};
+
 //zenario.microTemplate = function(template, data, filter, microTemplates, i, preMicroTemplate, postMicroTemplate) {
 methods.microTemplate = function(template, data, filter, preMicroTemplate, postMicroTemplate) {
 	
@@ -168,18 +176,9 @@ methods.getTitle = function() {
 	if (thus.tuix.key
 	 && thus.tuix.key.id
 	 && (title = thus.tuix.title_for_existing_records)) {
-		values = thus.getValues1D(false, undefined, true);
-	
-		foreach (values as c => v) {
-			if (title.indexOf('[[' + c + ']]') != -1) {
-			
-				while (title != (string2 = title.replace('[[' + c + ']]', v))) {
-					title = string2;
-				}
-			}
-		}
+		values = _.extend(thus.getValues1D(false, undefined, true), thus.tuix.key);
 		
-		return title;
+		return zenario.applyMergeFields(title, values);
 		
 	} else {
 		return thus.tuix.title;
@@ -188,6 +187,7 @@ methods.getTitle = function() {
 
 
 methods.field = function(id, tab) {
+	var tabs;
 	if (_.isObject(id)) {
 		return id;
 	} else {
@@ -230,7 +230,7 @@ methods.initFields = function() {
 						if (field.pick_items
 						 && field.plugin_setting
 						 && field.plugin_setting.use_value_for_plugin_name) {
-							thus.pickedItemsArray(id, thus.value(id, tab, false));
+							thus.pickedItemsArray(field, thus.value(id, tab, false));
 						
 						} else
 						if (field.values
@@ -600,7 +600,7 @@ methods.drawTabs = function(microTemplate) {
 		data = [],
 		
 		last, lastWasCurrent, hadCurrent,
-		prevTab, nextTab,
+		i, tab, prevTab, nextTab,
 		
 		setPrevNextTabs = function(data, i, tab) {
 			
@@ -960,8 +960,24 @@ methods.addJQueryElements = function(sel) {
 		
 		$el.iconselectmenu({
 			width: 'auto',
-			open: function() {
-				$('body > .ui-selectmenu-menu')
+			open: function(event) {
+				
+				//Attempt to fix a problem where the selected element can be out of view
+				var $menu = $('body > .ui-selectmenu-menu.ui-selectmenu-open'),
+					halfMenuHeight = $menu.height() / 2,
+					$selectedChild = $menu.find('.ui-state-active'),
+					childPos = $selectedChild.length && ($selectedChild.position().top || $selectedChild.parent().position().top);
+														//N.b. two permutations here to try and get this working in both the
+														//front-end and in Organizer
+				
+				if (childPos && childPos > halfMenuHeight) {
+					$menu.scrollTop(childPos - halfMenuHeight);
+				} else {
+					$menu.scrollTop(0);
+				}
+				
+				//Add some CSS classes to try and help style menus specifically
+				$menu
 					.addClass('iconselectmenu__' + $el.attr('id'))
 					.addClass('iconselectmenu__in__' + thus.path);
 			},
@@ -2571,6 +2587,17 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			html = zenario.unfun(field.pre_field_html) + html;
 		}
 		
+		if (field.show_copy_text_button && zenario.canCopy()) {
+			
+			var copyButtonOnclick = thus.defineLibVarBeforeCode() + "lib.copyField(this, '" + zenario.jsEscape(id) + "');",
+				tooltip = thus.vaPhrase('copy');
+			
+			html += _$span("id", "test", "class", "zenario_copy", "onclick", copyButtonOnclick, "title", tooltip, '📋');
+			//N.b. '⎘' might also be a good copy paste symbol...
+			
+			addWidgetWrap = true;
+		}
+		
 		if (addWidgetWrap) {
 			html = _$span('class', 'zenario_field_widget_wrap', html);
 		}
@@ -2598,6 +2625,22 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 };
 
 methods.addExtraAttsForTextFields = function(field, extraAtt) {
+};
+
+methods.copyField = function(copyButtonEl, fieldId) {
+	var fieldValue = thus.readField(fieldId);
+	
+	if (defined(fieldValue)
+	 && zenario.copy(fieldValue)) {
+		
+		thus.tooltips(copyButtonEl, {content: thus.vaPhrase('copied')});
+		
+		//Hack to show the tooltip straight away
+		$(copyButtonEl).hide();
+		setTimeout(function() {
+			$(copyButtonEl).show();
+		}, 0);
+	}	
 };
 
 
@@ -3175,7 +3218,7 @@ methods.formatLabelFromFile = function(file) {
 
 methods.upload = function(id, setUpDragDrop) {
 	
-	var field, object;
+	var field, object, uploadCallback;
 	
 	if (!(field = thus.field(id))
 	 || !(field.upload)) {
@@ -3187,7 +3230,7 @@ methods.upload = function(id, setUpDragDrop) {
 		upload: field.upload
 	};
 	
-	thus.uploadCallback = function(responses) {
+	uploadCallback = function(responses) {
 		
 		if (responses) {
 			var i,
@@ -3215,6 +3258,7 @@ methods.upload = function(id, setUpDragDrop) {
 			}
 		}
 	};
+	thus.uploadCallback = uploadCallback;
 	
 	if (setUpDragDrop) {
 		thus.enableDragDropUpload();
@@ -4204,20 +4248,28 @@ methods.key = function(k) {
 	return thus.tuix.key[k];
 };
 
+methods.getMode = function() {
+	if (_.isFunction(thus.mode)) {
+		return thus.mode();
+	} else {
+		return thus.mode;
+	}
+};
+
 methods.modeIn = function() {
-	return _.contains(arguments, thus.mode());
+	return _.contains(arguments, thus.getMode());
 };
 
 methods.modeNotIn = function() {
-	return !_.contains(arguments, thus.mode());
+	return !_.contains(arguments, thus.getMode());
 };
 
 methods.modeIs = function(m) {
-	return thus.mode() == m;
+	return thus.getMode() == m;
 };
 
 methods.modeIsNot = function(m) {
-	return thus.mode() != m;
+	return thus.getMode() != m;
 };
 
 methods.scopeIn = function() {
@@ -4705,6 +4757,12 @@ methods.sendStateToServerDiff = function() {
 	var $serverTags = {};
 	thus.syncAdminBoxFromClientToServerR($serverTags, thus.tuix);
 	
+	if (defined(thus.tuix.from_client)
+	 && _.isObject(thus.tuix.from_client)) {
+		$serverTags.from_client = {};
+		thus.syncAllTagsToServerR($serverTags.from_client, thus.tuix.from_client);
+	}
+	
 	return JSON.stringify($serverTags);
 };
 
@@ -4759,6 +4817,31 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 		}
 	}
 };
+
+//This function is similar to the above, except it is specifically coded to handle the "from_client" object,
+//where everything is allowed through
+methods.syncAllTagsToServerR = function($serverTags, $clientTags) {
+	
+	var $type, $key0, to, val;
+	
+	for ($key0 in $clientTags) {
+		val = $clientTags[$key0];
+		switch (typeof val) {
+			case 'function':
+				break;
+			case 'object':
+				$serverTags[$key0] = {};
+				thus.syncAllTagsToServerR($serverTags[$key0], $clientTags[$key0]);
+				break;
+			case 'string':
+				val = zenario.encodeItemIdForOrganizer(val);
+				//N.b. Cloudflare sometimes blocks the values of strings in JSON objects, e.g. if it sees HTML code in them.
+				//We're attempting to work around this by calling encodeItemIdForOrganizer() to mask any HTML.
+			default:
+				$serverTags[$key0] = val;
+		}
+	}
+}
 
 
 

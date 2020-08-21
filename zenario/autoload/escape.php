@@ -36,11 +36,41 @@ class escape {
 	public static function ascii($text) {
 		return preg_replace('@[^(\x20-\x7E)]*@', '', $text);
 	}
+	
+	
+
+	//This function is used in AJAX requests to send additional metadata and flags to the JavaScript running on the client.
+	//It uses HTML Headers if possible, but if this is not possible due to a large payload or it being too late to send a header,
+	//it will write the flag using a custom HTML element instead.
+	public static function flag($name, $val = null, $useHeader = true) {
+		$flag = $name;
+		
+		if ($val !== null) {
+			$flag .= ':'. \ze\escape::hyp($val);
+		
+		} elseif ($useHeader) {
+			$flag .= ':`1';
+		}
+		
+		if ($useHeader) {
+			header('Zenario-Flag-'. $flag);
+		} else {
+			//Old HTML comment format
+			//echo '<!--', $flag, '-->';
+			
+			//New custom element format
+			echo '<x-zenario-flag value="', $flag, '"/>';
+		}
+	}
 
 
 	//Formerly "eschyp()"
 	public static function hyp($text) {
-		return str_replace(['`', '-', ':', "\n", "\r"], ['`t', '`h', '`c', '`n', '`r'], $text);
+		return str_replace(
+			['`',	'-',	':',	"\n",	"\r",	'&',	'"',	'<',	'>'],
+			['`t',	'`h',	'`c',	'`n',	'`r',	'`a',	'`q',	'`l',	'`g'],
+			$text
+		);
 	}
 
 	//Formerly "jsEscape()"

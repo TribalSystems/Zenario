@@ -112,7 +112,7 @@ class miscAdm {
 	
 	//Make a sentence from the output of getPluginInstanceUsage
 	//optionally, if an instanceId is parsed in $usage, it will display the plugin at the start.
-	public static function getUsageText($usage, $usageLinks = [], $fullPath = null) {
+	public static function getUsageText($usage, $usageLinks = [], $fullPath = null, $overrideNotUsedMessage = "") {
 		$usageText = [];
 		
 		//If this isn't full mode, make sure all Organizer links use the full path. Otherwise we can just use a #.
@@ -420,40 +420,43 @@ class miscAdm {
 			} else {
 				$et = \ze\row::get('email_templates', ['code', 'template_name'], ['id' => $etId]);
 			}
-			$name = $et['template_name'];
 			
-			//Show a link to the email template in organizer
-			if ($includeLinks) {
-				$link = 'zenario__email_template_manager/panels/email_templates//'. $et['code'];
-				$name =
-					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
-						<span
-							class="listicon organizer_item_image zenario_email_template_panel"
-						></span>'. htmlspecialchars($name). '</a>';
-			}
+			if ($et) {
+				$name = $et['template_name'];
 			
-			//Add other item text
-			$count = $usage['email_templates'];
-			if ($count > 1) {
-				if (isset($usageLinks['email_templates'])) {
-					$text = \ze\admin::nphrase(
-						'[[name]] and <a target="_blank" href="[[email_templates]]">1 other email template</a>', 
-						'[[name]] and <a target="_blank" href="[[email_templates]]">[[count]] other email templates</a>', 
-						$count - 1, 
-						['name' => $name, 'email_templates' => $prefix. $usageLinks['email_templates']]
-					);
-				} else {
-					$text = \ze\admin::nphrase(
-						'[[name]] and 1 other email template', 
-						'[[name]] and [[count]] other email templates', 
-						$count - 1, 
-						['name' => $name]
-					);
+				//Show a link to the email template in organizer
+				if ($includeLinks) {
+					$link = 'zenario__email_template_manager/panels/email_templates//'. $et['code'];
+					$name =
+						'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+							<span
+								class="listicon organizer_item_image zenario_email_template_panel"
+							></span>'. htmlspecialchars($name). '</a>';
 				}
-			} else {
-				$text = $name;
+			
+				//Add other item text
+				$count = $usage['email_templates'];
+				if ($count > 1) {
+					if (isset($usageLinks['email_templates'])) {
+						$text = \ze\admin::nphrase(
+							'[[name]] and <a target="_blank" href="[[email_templates]]">1 other email template</a>', 
+							'[[name]] and <a target="_blank" href="[[email_templates]]">[[count]] other email templates</a>', 
+							$count - 1, 
+							['name' => $name, 'email_templates' => $prefix. $usageLinks['email_templates']]
+						);
+					} else {
+						$text = \ze\admin::nphrase(
+							'[[name]] and 1 other email template', 
+							'[[name]] and [[count]] other email templates', 
+							$count - 1, 
+							['name' => $name]
+						);
+					}
+				} else {
+					$text = $name;
+				}
+				$usageText[] = $text;
 			}
-			$usageText[] = $text;
 		}
 		
 		
@@ -554,7 +557,12 @@ class miscAdm {
 		
 		
 		if (empty($usageText)) {
-			return [\ze\admin::phrase('Not used')];
+			if ($overrideNotUsedMessage) {
+				$string = $overrideNotUsedMessage;
+			} else {
+				$string = "Not used";
+			}
+			return [\ze\admin::phrase($string)];
 		} else {
 			return $usageText;
 		}
@@ -634,7 +642,7 @@ class miscAdm {
 
 
 	//Formerly "exportPanelItems()"
-	public static function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export', $excelFileExtension = 'xls', $excelWorksheetTitle = '') {
+	public static function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export', $excelFileExtension = 'xls', $excelWorksheetTitle = '', $heading = '') {
 		$filename = str_replace('"', '\'', str_replace('/', ' ', $filename));
 		// Export as CSV file
 		if ($format == 'csv') {
@@ -643,6 +651,10 @@ class miscAdm {
 			$f = fopen($filepath, 'wb');
 		
 			// Write column headers and data
+			if ($heading) {
+				fputcsv($f, $heading);
+			}
+			
 			fputcsv($f, $headers);
 			foreach ($rows as $row) {
 				fputcsv($f, $row);
@@ -675,8 +687,20 @@ class miscAdm {
 				$objPHPExcel->getActiveSheet()->setTitle($excelWorksheetTitle);
 			}
 			
-			$objPHPExcel->getActiveSheet()->fromArray($headers, NULL, 'A1');
-			$objPHPExcel->getActiveSheet()->fromArray($rows, NULL, 'A2');
+			if ($heading) {
+				if (!is_array($heading)) {
+					$heading = [$heading];
+				}
+				$objPHPExcel->getActiveSheet()->fromArray($heading, NULL, 'A1');
+				$objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setBold(true);
+				$headersStartingCell = 'A2';
+				$rowsStartingCell = 'A3';
+			} else {
+				$headersStartingCell = 'A1';
+				$rowsStartingCell = 'A2';
+			}
+			$objPHPExcel->getActiveSheet()->fromArray($headers, NULL, $headersStartingCell);
+			$objPHPExcel->getActiveSheet()->fromArray($rows, NULL, $rowsStartingCell);
 			
 			if ($excelFileExtension == 'xlsx') {
 				$excelFileFormat = 'Excel2007';
@@ -1057,6 +1081,7 @@ class miscAdm {
 									//as \ze\tuix::logFileContentsR() will miss files that have navigation definitions but no panel definitions
 									foreach ($tags as $path => &$tag) {
 								
+										$panelType = '';
 										$settingGroup = '';
 										if ($type == 'admin_boxes') {
 											if ($path == 'plugin_settings' && !empty($tag['module_class_name'])) {
@@ -1075,13 +1100,21 @@ class miscAdm {
 											if (!empty($tag['module_class_name'])) {
 												$settingGroup = $tag['module_class_name'];
 											}
+										
+										} elseif ($type == 'visitor') {
+											//For visitor TUIX, use the "panel_type" column to store the type of logic being used
+											//(the two are similar in function and are never both used at once,
+											// so reusing the column for this is fine).
+											if (!empty($tag['fea_type'])) {
+												$panelType = $tag['fea_type'];
+											}
 										}
 								
 										$key2 = $path. '//'. $settingGroup;
 										$tuixFiles[$key][$key2] = [
 											'type' => $type,
 											'path' => $path,
-											'panel_type' => '',
+											'panel_type' => $panelType,
 											'setting_group' => $settingGroup,
 											'module_class_name' => $moduleClassName,
 											'filename' => $file,

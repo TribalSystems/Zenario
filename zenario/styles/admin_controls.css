@@ -499,6 +499,7 @@ div.zenario_fbAdminSlotControls {
 	z-index: 3000;
 }
 
+.zenario_plugin_info_tooltip,
 div.zenario_slotControlsWrap {
 	width: auto;
 	line-height: 12px;
@@ -511,6 +512,7 @@ div.zenario_slotControlsWrap {
 	border: solid 1px #333;
 }
 
+.zenario_plugin_info_tooltip,
 div.zenario_slotControlsWrap,
 div.zenario_slotControlsWrap a {
 	color:#FFF;
@@ -530,6 +532,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
 	padding-top: 3px;
 }
 
+.zenario_plugin_info_tooltip > div,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_sc {
 	cursor: default;
@@ -542,6 +545,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc:first-ch
 	margin-top:0;
 }
 
+.zenario_plugin_info_tooltip > div span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_slotName span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_cssClass span,

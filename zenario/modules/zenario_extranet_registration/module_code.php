@@ -33,6 +33,8 @@ class zenario_extranet_registration extends zenario_extranet {
 	protected $customFormExtraErrors = [];
 	
 	public function init() {
+		$this->registerPluginPage();
+		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
 		$this->clearCacheBy(
@@ -121,14 +123,25 @@ class zenario_extranet_registration extends zenario_extranet {
 		        $this->subSections['Show_Resend_Form'] = true;
 			
 		    }
-		    
-			if ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')) {
+			
+			if ($this->setting('requires_terms_and_conditions'))	{
+			    $userContentItem = $this->setting('terms_and_conditions_page');
+				$useExternalLink = $this->setting('url');
+				if($userContentItem || $useExternalLink) {
+					if ($userContentItem){
+						$cID = $cType = false;
+						$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+						ze\content::langEquivalentItem($cID, $cType);
+						$TCLink = $this->linkToItem($cID, $cType, true);
+					} elseif ($useExternalLink) {
+						$TCLink = $this->setting('url');
+					}
 				$this->subSections['Ts_And_Cs_Section'] = true;
-				$cID = $cType = false;
-				$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
-				ze\content::langEquivalentItem($cID, $cType);
-				$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
-				$this->objects['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
+				$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+				$linkEnd = '</a>';
+
+					$this->objects['Ts_And_Cs_Link'] =  $this->phrase ("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+				}
 			}
 			
 			if (!empty($_SESSION['extranetUserID'])) {
@@ -279,6 +292,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					|| !$values['first_tab/select_characteristics_for_new_users'];
 				$fields['first_tab/timer_for_new_users']['hidden'] = !$values['first_tab/set_timer_on_new_users'];
 				$fields['first_tab/terms_and_conditions_page']['hidden'] = !$values['first_tab/requires_terms_and_conditions'];
+				$fields['first_tab/url']['hidden'] = !$values['first_tab/requires_terms_and_conditions'];
 				if ($values['first_tab/select_characteristics_for_new_users']) {
 					$fieldType = ze\row::get('custom_dataset_fields', 'type', $values['first_tab/select_characteristics_for_new_users']);
 					if ($fieldType == 'checkboxes') {
@@ -462,7 +476,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$fields['password'] = ze\userAdm::createPassword();
 		}
 		
-		if(($_REQUEST['extranet_terms_and_conditions'] ?? false) && $this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')){
+		if(($_REQUEST['extranet_terms_and_conditions'] ?? false) && $this->setting('requires_terms_and_conditions') && ($this->setting('terms_and_conditions_page')) || $this->setting('url')) {
 			$fields['terms_and_conditions_accepted'] = 1;
 		}
 		
@@ -496,7 +510,13 @@ class zenario_extranet_registration extends zenario_extranet {
 		} else {
 			//Record user consent if terms and conditions were accepted
 			if (!empty($fields2['terms_and_conditions_accepted'])) {
-				ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK')));
+				ze\user::recordConsent(
+				'extranet_registration',
+				$this->instanceId, 
+				$userId, 
+				$fields2['email'] ?? false, $fields2['first_name'] ?? false, 
+				$fields2['last_name'] ?? false, 
+				$this->phrase("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]));
 			}
 			
 			if (!empty($userId)) {
@@ -526,13 +546,12 @@ class zenario_extranet_registration extends zenario_extranet {
 							if($_POST[$column['db_column']] == 'on'){
 								$details[$column['db_column']] = 1;
 								//check if dataset feild is consent field
-								ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($column['label']));
+								ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, $column['label']);
 							} 
 						}
 					}
 				}
 			}
-			
 			// Save custom fields from frameworks (using framework field).
 			foreach (ze::$dbL->cols[$tableName] as $col => $colDef) {
 				if ($col != 'user_id' && (isset($fields[$col]) || isset($customFields[$col]))) {
@@ -541,11 +560,11 @@ class zenario_extranet_registration extends zenario_extranet {
 					$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
 					if ($colType && $colType == "consent") {
 						//check if dataset feild is consent field
-						ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
+						//ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
 					}
 				}
 			}
-
+			
 			if (!empty($details)) {
 				ze\row::set('users_custom_data', $details, $userId);
 			}

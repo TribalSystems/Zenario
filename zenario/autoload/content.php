@@ -265,7 +265,7 @@ class content {
 			WHERE IF (tc.privacy = 'group_members',
 				". $groupsList. ",
 				IF (tc.privacy = 'with_role',
-					". $rolesList. ",
+					tc.at_location IN ('any', 'detect') AND ". $rolesList. ",
 					tc.privacy IN ('public', 'logged_in')
 				)
 			)";
@@ -433,6 +433,24 @@ class content {
 	
 		$cID = $cType = false;
 		return false;
+	}
+	
+	public static function pluginPage(&$cID, &$cType, &$state, $moduleClassName, $mode = '', $languageId = false) {
+		
+		if ($pluginPage = \ze\row::get('plugin_pages_by_mode',
+			['equiv_id', 'content_type', 'state'],
+			['module_class_name' => $moduleClassName, 'mode' => $mode]
+		)) {
+			$cID = $pluginPage['equiv_id'];
+			$cType = $pluginPage['content_type'];
+			$state = $pluginPage['state'];
+			
+			if (\ze\content::langEquivalentItem($cID, $cType, $languageId)) {
+				return true;
+			}
+		}
+		
+		return $cID = $cType = $state = false;
 	}
 
 
@@ -908,7 +926,7 @@ class content {
 				  AND type = '". \ze\escape::sql($cType). "'")
 			)
 		 && ($chain = \ze\sql::fetchAssoc("
-				SELECT equiv_id, type, privacy, smart_group_id
+				SELECT equiv_id, type, privacy, at_location, smart_group_id
 				FROM ". DB_PREFIX. "translation_chains
 				WHERE equiv_id = ". (int) $content['equiv_id']. "
 				  AND type = '". \ze\escape::sql($cType). "'")
@@ -983,7 +1001,7 @@ class content {
 	}
 
 	//Formerly "checkItemPrivacy()"
-	public static function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion, $roleLocationMustMatch = false) {
+	public static function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion) {
 	
 		//Check if a user is logged in.
 		$userId = false;
@@ -1024,6 +1042,19 @@ class content {
 						SELECT DISTINCT role_id
 						FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link
 						WHERE user_id = ". (int) $userId;
+					
+					switch ($privacy['at_location']) {
+						case 'detect':
+							$roleLocationMustMatch = !empty(\ze::$vars['locationId']);
+							break;
+						
+						case 'in_url':
+							$roleLocationMustMatch = true;
+							break;
+						
+						default:
+							$roleLocationMustMatch = false;
+					}
 					
 					if ($roleLocationMustMatch) {
 						$sql .= "

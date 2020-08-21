@@ -5,6 +5,10 @@ zenario__email_template_manager:
         email_log:
             priv: _PRIV_VIEW_USER
             title: Sent email log
+            notice:
+                show: false
+                type: information
+                message: ''
             view_mode: list
             disable_grid_view: true
             no_items_message: Email log is empty

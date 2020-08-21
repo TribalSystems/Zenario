@@ -114,7 +114,10 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 					'content_items' => 'zenario__user_forms/panels/user_forms/hidden_nav/content_items_using_form//'. (int) $id. '//', 
 					'layouts' => 'zenario__user_forms/panels/user_forms/hidden_nav/layouts_using_form//'. (int) $id. '//'
 				];
-				$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+				
+				//If a form is not used anywhere, the "not used" string below will be passed to the phrase function.
+				$overrideNotUsedMessage = "Not used. To use this form, create a Form Container plugin in a slot on a content item.";
+				$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks, null, $overrideNotUsedMessage));
 			}
 			
 			//Show a seperate icon for different types of forms

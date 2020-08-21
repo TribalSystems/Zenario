@@ -43,6 +43,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 		 && ($chain = ze\row::get('translation_chains', true, ['equiv_id' => $equivId, 'type' => $cType]))) {
 			
 			$values['privacy/privacy'] = $chain['privacy'];
+			$values['privacy/at_location'] = $chain['at_location'];
 		}
 		
 		if (empty($box['tabs']['privacy']['hidden'])) {

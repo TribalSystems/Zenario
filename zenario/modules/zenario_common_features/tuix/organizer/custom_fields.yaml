@@ -34,6 +34,10 @@ zenario__administration:
                         )
                         AND cdf.is_system_field = 0 
                         AND cdf.type in ('text', 'date', 'radios', 'checkbox', 'textarea', 'consent', 'group', 'centralised_radios', 'url', 'select', 'consent', 'dataset_select', 'centralised_select')
+                exclude_image_pickers:
+                    sql: |
+                        cdf.dataset_id = [[REFINER_ID]]
+                        AND cdf.type NOT IN ('file_picker','repeat_start')
             columns:
                 label:
                     title: Label

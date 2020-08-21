@@ -4,7 +4,10 @@
 		zenario/modules/zenario_common_features/fun/modules.fillOrganizerPanel.php.
 		I really should reformat this at some point, but currently I'm just using it as it is.
 	-->
-	{{zenarioO.tuix.items[m.id].close_up_view}}
+	
+	{% var item = zenarioO.tuix.items[m.id]; %}
+	
+	{{item.close_up_view}}
 	
 	<tr><th>Directory Name:</th><td>{{zenarioO.columnValue(m.id, 'name')}}</td></tr>
 	<tr><th>Path:</th><td>{{zenarioO.columnValue(m.id, 'path')}}</td></tr>
@@ -34,7 +37,7 @@
 	<% } %>
 	
 	<tr><th>Has plugins:</th><td>
-		<% var l = zenarioO.pi.tuix.items[m.id].is_pluggable == true, v = zenarioO.pi.tuix.items[m.id].can_be_version_controlled == true; %>
+		<% var l = item.is_pluggable == true, v = item.can_be_version_controlled == true; %>
 		<% if (l || v) { %>
 			Yes
 			<% if (l && v) { %>
@@ -52,6 +55,13 @@
 		<tr><th>Nestable:</th><td>{{zenarioO.columnValue(m.id, 'nestable')}}</td></tr>
 	<% } %>
 	
+	<% if (item.isFEA) { %>
+		<tr><th></th><td>
+			This module makes FEA-type plugins
+			(i.e. module contains a <code>tuix/visitor/</code> directory).
+		</td></tr>
+	<% } %>
+	
 	<% if (cv = zenarioO.columnValue(m.id, 'listens_for')) { %>
 		<tr><th>Signal listeners:</th><td>{{cv}}</td></tr>
 	<% } %>
@@ -64,5 +74,5 @@
 		zenario/modules/zenario_common_features/fun/modules.fillOrganizerPanel.php.
 		I really should reformat this at some point, but currently I'm just using it as it is.
 	-->
-	{{zenarioO.tuix.items[m.id].close_up_view_bottom}}
+	{{item.close_up_view_bottom}}
 </table>

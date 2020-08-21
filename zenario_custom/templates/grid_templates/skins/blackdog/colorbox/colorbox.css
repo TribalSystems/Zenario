@@ -54,7 +54,9 @@ body #cboxOverlay{
 }
 
 #cboxTitle {
-	font-size:0.875em;
+	width:calc(100% - 20px);
+	padding:3px 10px;
+	background:rgba(0,0,0,0.6);
 }
 
 /*  Colorbox 

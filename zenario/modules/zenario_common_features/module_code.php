@@ -158,32 +158,24 @@ class zenario_common_features extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
-		} else {
-			return require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		} else {
-			return require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
-		} else {
-			return require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		} else {
-			return require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	
@@ -250,24 +242,18 @@ class zenario_common_features extends ze\moduleBaseClass {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		} else {
-			return require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($c = $this->runSubClass(static::class, 'organizer', $path)) {
 			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
-		} else {
-			return require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		if ($c = $this->runSubClass(static::class, 'organizer', $path)) {
 			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
-		} else {
-			return require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	

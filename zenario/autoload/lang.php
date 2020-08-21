@@ -89,7 +89,7 @@ class lang {
 	
 		} elseif (!$languageId) {
 			$languageId = \ze::$visLang ?? $_SESSION['user_lang'] ?? \ze::$defaultLang;
-				//N.b. The \ze\content::visitorLangId() function is inlined here in order to not create a dependancy on zenario/api/system_functions.inc.php
+				//N.b. The \ze\content::visitorLangId() function is inlined here in order to not create a dependancy on another library
 		}
 	
 		$isCode = substr($code, 0, 1) == '_';
@@ -434,19 +434,8 @@ class lang {
 				detect,
 				translate_phrases,
 				sync_assist,
-				search_type";
-		
-		//Small hack to work around a back-patched feature
-		//We're patching back the "language_picker_logic" from 8.7 to 8.6, but it requires
-		//a database update. I don't want to flag this update as mandatory, so will work
-		//around the fact that the column might not be there yet
-		if (\ze::$dbL->checkTableDef(DB_PREFIX. 'languages', 'language_picker_logic', true)) {
-			$sql .= ",
+				search_type,
 				language_picker_logic";
-		} else {
-			$sql .= ",
-				'visible_or_disabled' AS language_picker_logic";
-		}
 	
 		if ($includeAllLanguages) {
 			$sql .= "

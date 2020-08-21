@@ -39,11 +39,3 @@ is_pluggable: true
 can_be_version_controlled: false
 default_framework: standard
 default_instance_name: Search Results
-special_pages:
-    special_page:
-        page_type: zenario_search
-        default_alias: search
-        default_title: Search
-        menu_rel_tag: search
-        logic: create_and_maintain_in_default_language
-        allow_hide: true

@@ -193,3 +193,11 @@ if (ze\dbAdm::needRevision(132)) {
 	}
 	ze\dbAdm::revision(132);
 }
+
+ze\dbAdm::revision(135
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log
+	ADD COLUMN email_ccs varchar(255) DEFAULT NULL
+_sql
+
+);

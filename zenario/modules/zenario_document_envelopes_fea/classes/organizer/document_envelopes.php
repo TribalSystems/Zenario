@@ -36,9 +36,9 @@ class zenario_document_envelopes_fea__organizer__document_envelopes extends zena
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		foreach ($panel['items'] as $envelopeId => &$item) {
 			if (!empty($item['thumbnail_id'])) {
-				$item['traits']['has_image'] = true;
+				$item['has_image'] = true;
 				
-				$img = '&usage=image&c='. $item['thumbnail_checksum'];
+				$img = '&usage=document_in_envelope_thumbnail&c='. $item['thumbnail_checksum'];
 	
 				$item['image'] = 'zenario/file.php?og=1'. $img;
 			}

@@ -37,7 +37,6 @@ $output = '';
 
 
 //Get a few phrases used in admin mode
-$phrases = [];
 foreach([
 
 	'_BYTES' => ' B',
@@ -178,6 +177,7 @@ foreach([
 	'show' => 'Show',
 	'showCol' => 'Click here to show or hide this column',
 	'showExport' => 'Show CSV export options...',
+	'siteSettingProtected' => 'This setting is protected during a site reset',
 	'skin' => 'Skin',
 	'sort' => 'Sort',
 	'sortByCol' => 'Click here to sort by this column',

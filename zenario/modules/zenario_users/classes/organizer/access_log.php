@@ -61,40 +61,48 @@ class zenario_users__organizer__access_log extends zenario_users {
 			$panel['collection_buttons']['export']['admin_box']['key']['tag_id'] = $refinerId;
 		}
 		
-		if ($mode != 'csv' && ($refinerName == 'user' || $refinerName == 'content')) {
-			
+		if ($mode != 'csv' && ($refinerName == 'user' || $refinerName == 'content' || $path == 'zenario__users/panels/access_log')) {
+			//Information to view Data Protection settings
 			$accessLogDuration = '';
 			switch (ze::setting('period_to_delete_the_user_content_access_log')) {
 				case 'never_delete':
-					$accessLogDuration = ze\admin::phrase('Access log is stored forever');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log is stored forever.');
 					break;
 				case 0:
-					$accessLogDuration = ze\admin::phrase('Access log is not stored');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log is not stored.');
 					break;
 				case 1:
-					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 day');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 day.');
 					break;
 				case 7:
-					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 week');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 week.');
 					break;
 				case 30:
-					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 month');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 month.');
 					break;
 				case 90:
-					$accessLogDuration = ze\admin::phrase('Access log is stored for 3 months');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 3 months.');
 					break;
 				case 365:
-					$accessLogDuration = ze\admin::phrase('Access log is stored for 1 year');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 year.');
 					break;
 				case 730:
-					$accessLogDuration = ze\admin::phrase('Access log is stored for 2 years');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 2 years.');
 					break;
+				
 			}
-			
+			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+			$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View Data Protection settings</a>";
 			$panel['notice']['show'] = true;
-			$panel['notice']['message'] = $accessLogStatus;
+			$panel['notice']['message'] = $accessLogDuration.".";
+			$panel['notice']['html'] = true;
 		}
-		
+		/*if($path == 'zenario__users/panels/access_log')
+			{
+				$panel['notice']['show'] = true;
+				$panel['notice']['message'] = $accessLogDuration;
+			}
+		*/
 		$panel['collection_buttons']['export']['admin_box']['key']['filename'] = $panel['title'];
 	}
 }

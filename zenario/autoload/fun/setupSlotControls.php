@@ -237,17 +237,8 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		}
 		
 		if ($ajaxReload) {
-			echo
-				'<!--SLOT_CONTROLS:',
-					ze\escape::hyp($html),
-				'-->';
-
-			echo
-				'<!--SLOT_CONTROLS_CSS_CLASS:',
-					ze\escape::hyp($slotWrapperClass),
-				'-->';
-			
-			$html = '';
+			ze\escape::flag('SLOT_CONTROLS_CSS_CLASS', $slotWrapperClass);
+			return $html;
 		
 		} else {
 			$slotWrapperClasses[$slotName] = $slotWrapperClass;

@@ -206,6 +206,7 @@
 	*/
 	
 	
+	zenario.vphrase = {};
 	zenarioA.phrase = {};
 	
 	//Create a wrapper function with variables for all of these objects

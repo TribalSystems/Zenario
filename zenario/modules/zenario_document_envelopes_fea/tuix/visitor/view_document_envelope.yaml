@@ -1,4 +1,5 @@
 zenario_view_document_envelope:
+    fea_type: form
     key:
         envelopeId: ''
     title: "[[envelope_name]] ([[envelopeId]]) details"

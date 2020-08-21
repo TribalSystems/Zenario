@@ -187,7 +187,7 @@
 		}
 	}
 	
-	zenario_location_map_and_listing_2.initMap = function(pageLoadNum, containerId) {
+	zenario_location_map_and_listing_2.initMap = function(pageLoadNum, containerId, zoomControl, zoomLevel) {
 		
 		var parent = (window.parent || window.opener);
 		
@@ -361,9 +361,16 @@
 			}
 		} else {
 			//If there are no locations to display, show a part of a city.
+			if (zoomControl == 'auto_include_all_locations') {
+				//Make sure the zoom level isn't something silly.
+				zoom = 15;
+			} else if (zoomControl == 'set_manually' && typeof zoomLevel == 'number') {
+				zoom = zoomLevel;
+			}
+			
 			mapOptions = {
 				center: new google.maps.LatLng(51.4542645, -0.9781302999999753),
-				zoom: 15,
+				zoom: zoom,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				scrollwheel: allowScrolling
 			};
@@ -417,11 +424,15 @@
 			google.maps.event.addListenerOnce(map, 'bounds_changed', function() { 
 				minZoom = map.getZoom();
 				
-				//Make sure the zoom level isn't something silly.
-				if (minZoom < 10) {
-					minZoom = 10;
-				} else if (minZoom > 13) {
-					minZoom = 13;
+				if (zoomControl == 'auto_include_all_locations') {
+					//Make sure the zoom level isn't something silly.
+					if (minZoom < 10) {
+						minZoom = 10;
+					} else if (minZoom > 13) {
+						minZoom = 13;
+					}
+				} else if (zoomControl == 'set_manually' && typeof zoomLevel == 'number') {
+					minZoom = zoomLevel;
 				}
 				
 				this.setZoom(minZoom);

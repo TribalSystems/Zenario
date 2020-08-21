@@ -108,20 +108,6 @@ zenario_admin:
                     type: password
                     style: 'width: 20em;'
                     visible_if: zenarioAB.tuix.key.id
-                suggest_button:
-                    same_row: true
-                    snippet:
-                        html: >
-                            <input type="button" onclick="
-                                var suggestedPassword = zenarioA.generateRandomString(8),
-                                    passwordField = zenario.get('password'),
-                                    passwordConfirmField = zenario.get('password_confirm');
-                                passwordField.value = suggestedPassword;
-                                passwordField.type = 'password';
-                                passwordConfirmField.value = suggestedPassword;
-                                passwordConfirmField.type = 'password';
-                            " value="Suggest"/>
-                    visible_if: zenarioAB.editModeOn() && zenarioAB.tuix.key.id
                 password_confirm:
                     label: 'Re-confirm Password:'
                     type: password

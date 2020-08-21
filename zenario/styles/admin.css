@@ -737,6 +737,11 @@ label.zenario_tag_grey::before {
 	margin-top: 10px;
 }
 
+#zenario_skin .mce-content-body {
+	margin-top: 0;
+	line-height:auto !important; /* overwrite inline style */
+}
+
 .empty_contenteditable_with_placeholder:before {
 	display: block;
 	content: 'Please enter some text...';
@@ -883,4 +888,13 @@ del.zenario_link_status__spare_alias > del {
 
 del.zenario_link_status__menu_warning > del {
 	background:url('../admin/images/icon-warning.svg') no-repeat center / 16px 16px;
-}}
+}
+
+
+/*
+	Readonly code editors, try to make the background look like its readonly.
+*/
+
+div.ace_editor[readonly] .ace_content {
+	background-color: #e0e0e0;
+}

@@ -145,7 +145,7 @@ zenario_slide:
                             label: 'Private, only show to extranet users NOT in the smart group:'
                             split_values_if_selected: true
                         with_role:
-                            label: 'Private, only show to extranet users with a given role (at ANY location):'
+                            label: 'Private, only show to extranet users with a given role:'
                             split_values_if_selected: true
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
@@ -181,6 +181,18 @@ zenario_slide:
                     no_values_message: No roles defined
                     validation:
                         required_if_not_hidden: Please select a role
+                at_location:
+                    indent: 2
+                    hide_with_previous_field: true
+                    type: radios
+                    value: any
+                    values:
+                        any:
+                            label: at ANY location
+                        in_url:
+                            label: at the location in the URL
+                        detect:
+                            label: at the location in the URL, or at ANY location when there is no location in the URL
                 module_class_name:
                     indent: 2
                     hide_with_previous_outdented_field: true

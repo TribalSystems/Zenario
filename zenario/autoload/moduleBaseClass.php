@@ -664,7 +664,7 @@ class moduleAPI {
 		$this->zAPIShowInMenuMode($shownInMenuMode);
 	}
 	
-	protected final function registerPluginPage($mode = null) {
+	protected final function registerPluginPage($mode = null, $moduleClassName = null) {
 		if (\ze\priv::check() && \ze::$equivId) {
 			
 			$state = '';
@@ -675,7 +675,7 @@ class moduleAPI {
 			\ze\row::set('plugin_pages_by_mode',
 				['equiv_id' => \ze::$equivId, 'content_type' => \ze::$cType],
 				[
-					'module_class_name' => $this->moduleClassName,
+					'module_class_name' => $moduleClassName ?? $this->moduleClassName,
 					'mode' => $mode ?? ($this->setting('mode') ?: ''),
 					'state' => substr(\ze\escape::ascii($state), 0, 2)
 				]
@@ -1150,6 +1150,10 @@ class moduleAPI {
 		}
 	}
 	
+	public final function mainClass() {
+		return $this->zAPIMainClass;
+	}
+	
 	public final function isSubClass() {
 		return isset($this->zAPIMainClass);
 	}
@@ -1471,6 +1475,35 @@ class moduleAPI {
 		} else {
 			return $this->zAPISubClasses[$codeName] = false;
 		}
+	}
+	
+	
+	public final function getClassInfo() {
+		if ($this->subClass) {
+			return $this->subClass->getClassInfo();
+		}
+		
+		$subClassName = get_class($this);
+		$rc = new \ReflectionClass($subClassName);
+		$path = $rc->getFileName();
+		
+		if ($fileLocation = \ze\ring::chopPrefix(CMS_ROOT, $path)) {
+		} elseif ($fileLocation = \ze\ring::chopPrefix(dirname(realpath(CMS_ROOT. 'zenario')). '/', $path)) {
+		} else {
+			$fileLocation = $path;
+		}
+		
+		return [
+			'mode' => $this->getMode(),
+			'fileLocation' => $fileLocation,
+			'containerId' => $this->containerId,
+			'moduleClassName' => $this->moduleClassName,
+			'subClassName' => $subClassName
+		];
+	}
+
+	protected function redirectToPage($showWelcomePage = true, $redirectBackIfPossible = true, $redirectRegardlessOfPerms = true) {
+		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	

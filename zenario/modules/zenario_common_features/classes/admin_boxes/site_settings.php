@@ -238,7 +238,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			} else {
 				$fields['image_sizes/custom_thumbnail_2']['value'] = '';
 				$fields['image_sizes/custom_thumbnail_2_width']['value'] =
-				$fields['image_sizes/custom_thumbnail_2_height']['value'] = 1000;
+				$fields['image_sizes/custom_thumbnail_2_height']['value'] = 200;
 			}
 		}
 		if (isset($fields['image_resizing/thumbnail_threshold'])) {
@@ -619,22 +619,24 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 			
-			foreach ([
-				'advpng' => 'png',
-				'jpegoptim' => 'jpeg',
-				'jpegtran' => 'jpeg',
-				'optipng' => 'png',
-				'pngcrush' => 'png',
-				'pngquant' => 'png'
-			] as $program => $tab) {
-				$box['tabs'][$tab]['notices']['error_'. $program]['show'] =
-				$box['tabs'][$tab]['notices']['success_'. $program]['show'] = false;
-				if (!empty($fields[$tab. '/test_'. $program]['pressed'])) {
+			if ($settingGroup == 'external_programs') {
+				foreach ([
+					'advpng' => 'png',
+					'jpegoptim' => 'jpeg',
+					'jpegtran' => 'jpeg',
+					'optipng' => 'png',
+					'pngcrush' => 'png',
+					'pngquant' => 'png'
+				] as $program => $tab) {
+					$box['tabs'][$tab]['notices']['error_'. $program]['show'] =
+					$box['tabs'][$tab]['notices']['success_'. $program]['show'] = false;
+					if (!empty($fields[$tab. '/test_'. $program]['pressed'])) {
 				
-					if (ze\server::programPathForExec($values[$tab. '/'. $program. '_path'], $program, true)) {
-						$box['tabs'][$tab]['notices']['success_'. $program]['show'] = true;
-					} else {
-						$box['tabs'][$tab]['notices']['error_'. $program]['show'] = true;
+						if (ze\server::programPathForExec($values[$tab. '/'. $program. '_path'], $program, true)) {
+							$box['tabs'][$tab]['notices']['success_'. $program]['show'] = true;
+						} else {
+							$box['tabs'][$tab]['notices']['error_'. $program]['show'] = true;
+						}
 					}
 				}
 			}

@@ -95,7 +95,16 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				$conditionFieldType = $panel['items'][$field['visible_condition_field_id']]['type'];
 				
 				$values = explode(',', $field['visible_condition_field_value']);
-				if (count($values) > 1 || $conditionFieldType == 'checkboxes') {
+				if (
+					count($values) > 1
+					|| (
+						$conditionFieldType == 'checkboxes'
+						|| $conditionFieldType == 'select'
+						|| $conditionFieldType == 'centralised_select'
+						|| $conditionFieldType == 'radios'
+						|| $conditionFieldType == 'centralised_radios'
+					)
+				) {
 					$field['visible_condition_checkboxes_field_value'] = $values;
 			        if (count($values)>1 && $conditionFieldType != 'checkboxes') {
 						$field['visible_condition_field_type'] = 'visible_if_one_of';

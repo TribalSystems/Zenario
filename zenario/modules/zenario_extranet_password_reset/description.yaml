@@ -32,14 +32,6 @@ is_pluggable: true
 plugin_must_be_on_public_page: true
 nestable: true
 default_framework: standard
-special_pages:
-    special_page:
-        page_type: zenario_password_reset
-        default_alias: password-reset
-        default_title: Password Reset
-        only_show_to_visitors_who_are_logged_out: true
-        logic: create_and_maintain_in_default_language
-        allow_hide: true
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

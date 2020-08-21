@@ -30,6 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_extranet_profile_edit extends zenario_user_forms {
 	
 	public function init() {
+		$this->registerPluginPage();
+		
 		$userId = ze\user::id();
 		if (!$userId) {
 			$this->data['extranet_no_user'] = true;

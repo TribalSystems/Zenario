@@ -103,4 +103,7 @@ ze\dbAdm::revision(6, "
 		'zenario_extranet'
 	)"
 
+); ze\dbAdm::revision(119, 
+	'DELETE FROM [[DB_PREFIX]]email_templates
+	WHERE code IN ("zenario_users__inactive_user_long_time", "zenario_users__inactive_user_short_time")'
 );

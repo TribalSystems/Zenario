@@ -37,6 +37,8 @@ class zenario_search_results extends ze\moduleBaseClass {
 	protected $results;
 	
 	public function init() {
+		$this->registerPluginPage(null, 'zenario_search_results');
+		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
 		$this->clearCacheBy(

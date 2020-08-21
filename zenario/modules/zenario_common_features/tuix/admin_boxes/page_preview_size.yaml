@@ -5,6 +5,10 @@ zenario_page_preview_size:
     title: Create a new page preview size
     key: 
         id: ''
+    identifier:
+        css_class: ''
+        #css class is set in php.
+        label: Page preview size ID
     max_height: 430
     hide_tab_bar: true
     tabs:

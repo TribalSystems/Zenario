@@ -139,7 +139,7 @@ if ($specific) {
 }
 
 //Minify JavaScript files in the API directory
-if ((is_dir($dir = 'zenario/api/')) && ($scan = scandir($dir))) {
+if ((is_dir($dir = 'zenario/reference/')) && ($scan = scandir($dir))) {
 	foreach ($scan as $file) {
 		if (substr($file, -3) == '.js'
 		 && substr($file, -7) != '.min.js'

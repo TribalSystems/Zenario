@@ -726,7 +726,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
 				request_vars, hierarchical_var, global_command,
 				invisible_in_nav,
-				privacy, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
+				privacy, at_location, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 			FROM ". DB_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $this->instanceId. "
 			  AND is_slide = 1
@@ -920,7 +920,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					
 					//Look for slide layouts for this slide
 					$sql = "
-						SELECT id AS slide_layout_id, ord, privacy
+						SELECT id AS slide_layout_id, ord, privacy, at_location
 						FROM ". DB_PREFIX. "slide_layouts
 						WHERE layout_for = '". ze\escape::sql($sLayoutFor). "'
 						  AND layout_for_id = ". (int) $sLayoutForId. "
@@ -938,7 +938,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					
 					//...that the current user has permissions to see.
 					foreach (ze\sql::select($sql) as $sl) {
-						if (ze\content::checkItemPrivacy($sl, $sl, ze::$cID, ze::$cType, ze::$cVersion, $roleLocationMustMatch = true)) {
+						if (ze\content::checkItemPrivacy($sl, $sl, ze::$cID, ze::$cType, ze::$cVersion)) {
 							$slData = ze\sql::fetchValue("
 								SELECT data
 								FROM ". DB_PREFIX. "slide_layouts

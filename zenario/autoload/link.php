@@ -207,11 +207,7 @@ class link {
 	) {
 
 		if (\ze\content::langEquivalentItem($cID, $cType, $languageId)) {
-			return \ze\link::toItem(
-				$cID, $cType, $fullPath, $request, false,
-				false, $forceAliasInAdminMode,
-				false, $languageId
-			);
+			return \ze\link::toItem($cID, $cType, $fullPath, $request, false, false, $forceAliasInAdminMode, false, $languageId);
 		}
 		return false;
 	}
@@ -220,18 +216,15 @@ class link {
 	public static function toPluginPage(
 		$moduleClassName, $mode = '', $languageId = false, $fullPath = false, $request = '', $forceAliasInAdminMode = false
 	) {
-		
-		if ($pluginPage = \ze\row::get('plugin_pages_by_mode',
-			['equiv_id', 'content_type', 'state'],
-			['module_class_name' => $moduleClassName, 'mode' => $mode]
-		)) {
-			if ($pluginPage['state']) {
+		$cID = $cType = $state = false;
+		if (\ze\content::pluginPage($cID, $cType, $state, $moduleClassName, $mode, $languageId)) {
+			if ($state) {
 				if (is_array($request)) {
 					$request = http_build_query($request);
 				}
-				$request .= '&state='. $pluginPage['state'];
+				$request .= '&state='. $state;
 			}
-			return \ze\link::toEquivalentItem($pluginPage['equiv_id'], $pluginPage['content_type'], $languageId, $fullPath, $request, $forceAliasInAdminMode);
+			return \ze\link::toItem($cID, $cType, $fullPath, $request, false, false, $forceAliasInAdminMode, false, $languageId);
 		}
 		return false;
 	}

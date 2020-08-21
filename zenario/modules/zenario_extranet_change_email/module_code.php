@@ -32,6 +32,8 @@ class zenario_extranet_change_email extends zenario_extranet {
 	
 	
 	public function init() {
+		$this->registerPluginPage();
+		
 		if (($_POST['action'] ?? false)=='prepare_email_change'){
 			if (ze\user::id()) {
 				if ($this->prepareEmailChange()){

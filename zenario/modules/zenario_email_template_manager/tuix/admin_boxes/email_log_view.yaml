@@ -16,22 +16,33 @@ zenario_email_log_view:
                 sent_form_text:
                     snippet:
                         html: ''
-                email_subject:
-                    label: |
-                        Subject:
-                    type: text
-                email_address_to:
-                    label: |
-                        Address to:
-                    type: text
-                email_address_replyto:
-                    label: |
-                        Reply to:
-                    type: text
                 email_address_from:
-                    label: |
-                        From:
+                    pre_field_html: |
+                        <strong>From: </strong>
                     type: text
+                    show_as_a_span: true
+                email_subject:
+                    pre_field_html: |
+                        <strong>Subject: </strong>
+                    type: text
+                    show_as_a_span: true
+                email_address_to:
+                    pre_field_html: |
+                        <strong>To: </strong>
+                    type: text
+                    show_as_a_span: true
+                email_ccs:
+                    pre_field_html: |
+                        <strong>Cc: </strong>
+                    type: text
+                    show_as_a_span: true
+                    hide_if_empty: true
+                email_address_replyto:
+                    pre_field_html: |
+                        <strong>Reply to: </strong>
+                    type: text
+                    show_as_a_span: true
+                    hide_if_empty: true
                 email_body_non_escaped:
                     label: |
                         Body:

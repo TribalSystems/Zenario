@@ -368,11 +368,13 @@ zenario__content:
                         logged_in_not_in_smart_group:
                             label: 'Permissions: Private, only show to extranet users NOT in a given smart group...'
                         with_role:
-                            label: 'Permissions: Private, only show to extranet users with a given role (at ANY location)...'
+                            label: 'Permissions: Private, only show to extranet users with a given role...'
                         call_static_method:
                             label: "Permissions: Call a module's static method to decide"
                         send_signal:
                             label: 'Permissions: Send a signal to decide'
+                at_location:
+                    db_column: tc.at_location
                 layout_status:
                     db_column: lay.status
                     table_join: |
@@ -664,7 +666,7 @@ zenario__content:
                     tooltip: "[[privacy]]"
                 no_categories:
                     css_class: no_categories
-                    tooltip: "No categories"
+                    tooltip: "No categories test"
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >

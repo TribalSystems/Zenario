@@ -68,7 +68,18 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		$this->data['mapIframeSrc'] = $this->showSingleSlotLink($iframeVars, true);
 		
 		$dataset = ZENARIO_LOCATION_MANAGER_PREFIX. 'locations';
+		//These custom fields must be on the "Filters" tab.
 		$this->datasetCustomFields = ze\datasetAdm::listCustomFields($dataset, false, false, true, false, false, false, $specificTab = 'filters');
+		
+		if ($displayCustomDatasetFieldsOnTheFrontend = $this->setting('display_custom_dataset_fields_on_the_frontend')) {
+			//Look for any field on the dataset, not just the ones on the "Filters" tab.
+			$allDatasetCustomFields = ze\datasetAdm::listCustomFields($dataset, false, false, true);
+			$frontEndDbColumns = [];
+			foreach (explode(',', $displayCustomDatasetFieldsOnTheFrontend) as $frontEndFieldId) {
+				$frontEndDbColumns[] = $allDatasetCustomFields[$frontEndFieldId]['db_column'];
+			}
+			$this->data['display_custom_dataset_fields_on_the_frontend'] = $frontEndDbColumns;
+		}
 		
 		$this->locationFilters = [];
 		$this->data['list_title'] = "Locations";
@@ -83,7 +94,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 				}
 				$fieldDataArray = [
 					'label' => $fieldDetails['label'],
-					'type' => $fieldDetails['type']
+					'type' => $fieldDetails['type'],
+					'note_below' => $fieldDetails['note_below']
 				];
 				
 				if (empty($fieldDetails['parent_id'])) {
@@ -106,6 +118,10 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 						if ($adminHasAppliedLocationFilter) {
 							if ($this->setting('location_dataset_filter_level_1') == $fieldDetails['id']) {
 								$this->data['list_title'] = $customField['label'];
+								
+								if ($fieldDetails['note_below']) {
+									$this->data['note_below'] = $fieldDetails['note_below'];
+								}
 							}
 						} else {
 							$this->data['Selected_filters'][] = [
@@ -308,7 +324,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 					'zenario_location_map_and_listing_2',
 					'initMap',
 					$_GET['pageLoadNum'] ?? 0,
-					$this->containerId
+					$this->containerId,
+					$this->setting('zoom_control'),
+					(int) ($this->setting('zoom_level') ?? 0)
 				);
 			}
 		}
@@ -364,6 +382,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			case 'plugin_settings':
 				$dataset = ze\dataset::details(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 				$datasetFields = ze\dataset::fieldsDetails($dataset['id']);
+
+				$fields['first_tab/display_custom_dataset_fields_on_the_frontend']['pick_items']['path'] .= (int)$dataset['id'] . "//";
+				$fields['first_tab/display_custom_dataset_fields_on_the_frontend']['pick_items']['info_button_path'] .= (int)$dataset['id'] . "//";
 				
 				if (!empty($datasetFields)) {
 					foreach ($datasetFields as $datasetField) {
@@ -415,8 +436,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path){
 			case 'plugin_settings':
-				$hidden = !$values['image/show_images'];
-				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'list_view_thumbnail_');
+				$hidden = !$values['display/show_images'];
+				$this->showHideImageOptions($fields, $values, 'display', $hidden, 'list_view_thumbnail_');
 				
 				$fields['first_tab/location_dataset_filter_level_2']['values'] = [];
 				if (!empty($values['first_tab/location_display']) && $values['first_tab/location_display'] == 'apply_a_filter' && !empty($values['first_tab/location_dataset_filter_level_1'])) {
@@ -508,6 +529,14 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 					$fields['first_tab/exclude_dataset_filters_picker']['error'] = true;
 					$fields['first_tab/location_dataset_filter_level_2']['error'] = ze\admin::phrase('Selected location filter cannot be excluded.');
 				}
+
+				if ($values['display/zoom_control'] == 'set_manually'){
+					if ($values['display/zoom_level'] > 25) {
+						$fields['display/zoom_level']['error'] = ze\admin::phrase('Zoom level must not be higher than 25.');
+					} elseif ($values['display/zoom_level'] <1) {
+						$fields['display/zoom_level']['error'] = ze\admin::phrase('Zoom level must not be lower than 1.');
+					}
+				}
 				break;
 		}
 	}
@@ -582,7 +611,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		if (!empty($this->datasetCustomFields)) {
 			$customFields = [];
 			foreach ($this->datasetCustomFields as $datasetCustomFieldKey => $datasetCustomField) {
-				$customFields[$datasetCustomFieldKey] = ['db_column' => $datasetCustomField['db_column'], 'label' => $datasetCustomField['label']];
+				$customFields[$datasetCustomFieldKey] = ['db_column' => $datasetCustomField['db_column'], 'label' => $datasetCustomField['label'], 'type' => $datasetCustomField['type']];
 			}
 		}
 		
@@ -715,11 +744,11 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			if (!empty($customFields)) {
 				$locationFiltersListLevel1 = $locationFiltersListLevel2 = [];
 				foreach ($customFields as $customFieldKey => $customField) {
-					if (!empty($row[$customField['db_column']])) {
+					if (!empty($row[$customField['db_column']]) && ($customField['type'] == 'checkbox' || $customField['type'] == 'checkboxes')) {
 						if (in_array($customFieldKey, array_keys($this->data['Level_1_filters']))) {
-							$locationFiltersListLevel1[$customField['db_column']] = $customField['label'];
+							$locationFiltersListLevel1[$customField['db_column']] = ['label' => $customField['label'], 'type' => $customField['type']];
 						} else {
-							$locationFiltersListLevel2[$customField['db_column']] = $customField['label'];
+							$locationFiltersListLevel2[$customField['db_column']] = ['label' => $customField['label'], 'type' => $customField['type']];
 						}
 					}
 				}

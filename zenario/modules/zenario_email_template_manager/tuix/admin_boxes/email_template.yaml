@@ -345,3 +345,16 @@ zenario_email_template:
                     style: >
                         width: 98%;
                     rows: 30
+        protection:
+            label: Protection
+            fields:
+                created_by:
+                    pre_field_html: '<div class="zenario_fbInfo">'
+                    snippet:
+                        html: ""
+                    post_field_html: '</div>'
+                template_protection_note:
+                    pre_field_html: '<div class="zenario_fbInfo">'
+                    snippet:
+                        html: ""
+                    post_field_html: '</div>'

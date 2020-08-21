@@ -267,9 +267,9 @@ class parseCSV {
 		
 		// walk specific depth finding posssible delimiter characters
 		for ( $i=0; $i < $strlen; $i++ ) {
-			$ch = $data{$i};
-			$nch = ( isset($data{$i+1}) ) ? $data{$i+1} : false ;
-			$pch = ( isset($data{$i-1}) ) ? $data{$i-1} : false ;
+			$ch = $data[$i];
+			$nch = ( isset($data[$i+1]) ) ? $data[$i+1] : false ;
+			$pch = ( isset($data[$i-1]) ) ? $data[$i-1] : false ;
 			
 			// open and closing quotes
 			if ( $ch == $enclosure && (!$enclosed || $nch != $enclosure) ) {
@@ -361,9 +361,9 @@ class parseCSV {
 		
 		// walk through each character
 		for ( $i=0; $i < $strlen; $i++ ) {
-			$ch = $data{$i};
-			$nch = ( isset($data{$i+1}) ) ? $data{$i+1} : false ;
-			$pch = ( isset($data{$i-1}) ) ? $data{$i-1} : false ;
+			$ch = $data[$i];
+			$nch = ( isset($data[$i+1]) ) ? $data[$i+1] : false ;
+			$pch = ( isset($data[$i-1]) ) ? $data[$i-1] : false ;
 			
 			// open and closing quotes
 			if ( $ch == $this->enclosure && (!$enclosed || $nch != $this->enclosure) ) {
@@ -604,7 +604,7 @@ class parseCSV {
 		if ( $value !== null && $value != '' ) {
 			$delimiter = preg_quote($this->delimiter, '/');
 			$enclosure = preg_quote($this->enclosure, '/');
-			if ( preg_match("/".$delimiter."|".$enclosure."|\n|\r/i", $value) || ($value{0} == ' ' || substr($value, -1) == ' ') ) {
+			if ( preg_match("/".$delimiter."|".$enclosure."|\n|\r/i", $value) || ($value[0] == ' ' || substr($value, -1) == ' ') ) {
 				$value = str_replace($this->enclosure, $this->enclosure.$this->enclosure, $value);
 				$value = $this->enclosure.$value.$this->enclosure;
 			}

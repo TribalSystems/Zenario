@@ -30,6 +30,7 @@ description: |
                 or can opt to be removed entirely from the database. Also included are merge fields for the recipient's salutation, first and last name,
                 so that each email can be personalized to your taste.</p>
 category: management
+keywords: email, inbox, mail
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:

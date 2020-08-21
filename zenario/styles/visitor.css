@@ -295,3 +295,11 @@ input[type="password"].border_green {
 .lang_flag.lang_disabled {
 	opacity: 0.3;
 }
+
+/*
+	Copy-text button on forms
+*/
+
+span.zenario_copy {
+	cursor: pointer;
+}

@@ -1,4 +1,5 @@
 zenario_list_files_in_document_envelope:
+    fea_type: list
     key:
         envelopeId: ''
         search: ''

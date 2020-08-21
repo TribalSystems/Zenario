@@ -124,18 +124,3 @@ $nav['top_right_buttons']['admin_name']['label'] = ze\admin::formatName();
 if ($_SESSION['admin_global_id'] ?? false) {
 	$nav['top_right_buttons']['change_password']['disabled'] = true;
 }
-
-
-//Don't show the TUIX Snippets panel if there are no FEA plugins running on the site
-if (isset($nav['zenario__modules']['nav']['tuix_snippets'])) {
-	
-	if (!ze\sql::numRows("
-		SELECT 1
-		FROM ". DB_PREFIX. "modules
-		WHERE status = 'module_running'
-		  AND class_name LIKE '%_fea'
-		LIMIT 1
-	")) {
-		$nav['zenario__modules']['nav']['tuix_snippets']['hidden'] = true;
-	}
-}

@@ -120,7 +120,6 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$currentMonthLength = date('t',$currentMonth);
 		$langIDs = $this->getAllowedLanguages();
 		
-		
 		$this->data['Event_calendar_month_view'] = true;
 		$this->data['Calendar_month_view_title'] = true;
 		$this->data['Calendar_month_view_header'] = true;
@@ -144,25 +143,41 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		}
 		$j=1;
 		for ($i; ($i<=7*6) && ($j<=$currentMonthLength); $i++){
-		
+			
 			$numberOfEvents = $this->getEventDay($year,$month,$j,$langIDs);
-		
+			//To display event title in Event calender.
+			$currentMonthEventsTitle = $this->getMonthEventDesc($year,$month,$langIDs);
+			$currentMonthEventsOneLess = $numberOfEvents-1;
+			
+			if ($numberOfEvents>1){
+				$currentMonthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$currentMonthEventsTitle[0]['title']."</span><span class = 'event_count has_events  more_event'>+".$currentMonthEventsOneLess." ".$this->phrase('more')."</span>";
+			}else
+			{
+				$currentMonthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$currentMonthEventsTitle[0]['title']."</span>";
+			}
+			
 			if ($this->isEventDay($year,$month,$j,$langIDs)){
 				if (($j==date('j',time())) && ($month==date('n',time())) && ($year==date('Y',time()))){ 
 					$day_class_name_var = 'today';
 				} else {
 					$day_class_name_var = 'day';
 				}
+				$firstEventsHtml='';
+				$countEventsHtml='';
 				
-				if ($this->setting('event_count') == "event_count_on"){
+				if ($this->setting('first_event') == "1" || $this->setting('event_count') == "event_count_on"){
+					if ($this->setting('first_event') == "1")
+						$firstEventsHtml = $currentMonthEventsCounter;
+					if ($this->setting('event_count') == "event_count_on")
+						$countEventsHtml = "<span class='event_count has_events has_eventscount'>".$numberOfEvents."</span>";
 					$mergeFields[] = [
 						'Anchor'=> ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 						'Day_class_name'=>$day_class_name_var,
 						'Td_day_class_name'=>'event',
 						'Day_label'=> (string)(int)($j++),
-						'Day_event_span' => "<span class='event_count has_events'>".$numberOfEvents."</span>"
+						'Day_event_span' => $countEventsHtml.' '.$firstEventsHtml
 					];
-				} elseif ($this->setting('event_count') == "event_count_off"){
+				} elseif ($this->setting('first_event') == "0" || $this->setting('event_count') == "event_count_off"){
 					$mergeFields[] = [
 						'Anchor'=> ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 						'Day_class_name'=>$day_class_name_var,
@@ -223,6 +238,15 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 				$month=$i*4+$j + 1;
 				$lang = $this->getAllowedLanguages();
 				$monthEvents=$this->getMonthEvent($year,$month,$lang);
+				//To display event title in Event calender.
+				$monthEventsTitle = $this->getMonthEventDesc($year,$month,$lang);
+				$monthEventsOneLess = $monthEvents-1;
+				
+				if ($monthEvents>1){
+					$monthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$monthEventsTitle[0]['title']."</span><span class = 'event_count has_events  more_event'>+".$monthEventsOneLess." ".$this->phrase('more')."</span>";
+				}else{
+					$monthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$monthEventsTitle[0]['title']."</span>";
+				}
 				
 				if ($this->isEventMonth($year,$month,$langIDs)){
 					if (($month==date('n',time())) && ($year==date('Y',time()))){ 
@@ -241,17 +265,23 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 						$monthLabel = $monthLong;
 					}
 					
-					
-					if ($this->setting('event_count') == "event_count_on"){
-					
+							
+					$firstEventsHtml='';
+					$countEventsHtml='';
+				
+				if ($this->setting('first_event') == "1" || $this->setting('event_count') == "event_count_on"){
+					if ($this->setting('first_event') == "1")
+						$firstEventsHtml = $monthEventsCounter;
+					if ($this->setting('event_count') == "event_count_on")
+						$countEventsHtml = "<span class='event_count has_events has_eventscount'>".$monthEvents."</span>";
 						$mergeFields[] = [	
 							'Anchor' =>' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
-							'Month_event_span' => "<span class='event_count has_events'>".$monthEvents."</span>"
+							'Month_event_span' => $countEventsHtml.' '.$firstEventsHtml
 						];		
-					} elseif ($this->setting('event_count') == "event_count_off"){
+					} elseif ($this->setting('first_event') == "0" || $this->setting('event_count') == "event_count_off"){
 						$mergeFields[]= [	
 							'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 							'Current_month'=>$currentMonthClass,
@@ -386,6 +416,56 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			return $numerOfEvents;
 		}else{
 			return 0;
+		}
+	}
+	
+	//num of events for the month
+	function getMonthEventDesc($year,$month,$langs){
+		$year = (int)$year;
+		$month = (int)$month;
+		$sql = "SELECT DISTINCT 
+					c.id,
+					v.title
+				";
+		$sqlJoin = "
+				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+					ON v.id = ce.id
+					AND v.version = ce.version
+					AND v.type = 'event'
+				LEFT JOIN "
+					. DB_PREFIX . "category_item_link as cil 
+				ON 
+						c.equiv_id = cil.equiv_id
+					AND c.type = cil.content_type";
+				
+		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'),false,$sqlJoin);
+
+		if ($this->setting('category')){
+			$sql .= " AND  cil.category_id=" .(int) $this->setting('category') ;
+		}
+		
+		$sql .=  ' AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")';
+		$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
+	
+		if (count($langs)>0){
+			$sql .=" AND (FALSE ";
+			foreach ($langs as $lang){
+				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
+			}
+			$sql .=") ";
+		}
+		$sql .= " LIMIT 1";
+ 
+ 		$result = ze\sql::select($sql);
+		$events = [];
+		while($row = ze\sql::fetchAssoc($result)) {
+			$events[] = $row;
+		}
+		
+		if ($events){
+			return $events;
+		}else{
+			return null;
 		}
 	}
 
@@ -524,7 +604,6 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		while($row = ze\sql::fetchAssoc($result)) {
 			$events[] = $row;
 		}
-		
 		if ($events){
 			$numerOfEvents=count($events);
 			return $numerOfEvents;

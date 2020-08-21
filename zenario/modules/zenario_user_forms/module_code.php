@@ -153,6 +153,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html  .= $this->getExtranetLinksHTML(['change_password' => true, 'logout' => true]);
 				$this->data['form_HTML'] = $html;
 				return true;
+				
 			}
 		}
 		
@@ -216,6 +217,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= $this->getCloseButtonHTML();
 				$this->cssClass .= ' no_title';
 				$this->data['form_HTML'] = $html;
+				
 				return true;
 			}
 		}
@@ -287,6 +289,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				'hide_in_page_switcher' => true,
 				'fields' => []
 			];
+			
 		}
 		if (!$this->pages) {
 			return false;
@@ -457,8 +460,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '<div class="extranet_link_desc">' . htmlspecialchars(static::fPhrase('Use this if you have previously registered but not received your verification email.', [], $t)) . '</div>';
 			}
 			if (!empty($links['register'])) {
-				if (ze\content::langSpecialPage('zenario_registration', $cID, $cType)) {
-					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . htmlspecialchars(static::fPhrase('Register', [], $t)) . '</a></div>';
+				if ($link = ze\link::toPluginPage('zenario_extranet_registration')) {
+					$html .= '<div><a href="'. htmlspecialchars($link). '">' . htmlspecialchars(static::fPhrase('Register', [], $t)) . '</a></div>';
 				}
 			}
 			if (!empty($links['login'])) {
@@ -467,13 +470,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 			if (!empty($links['change_password'])) {
-				if (ze\content::langSpecialPage('zenario_change_password', $cID, $cType)) {
-					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . htmlspecialchars(static::fPhrase('Change your password', [], $t)) . '</a></div>';
+				if ($link = ze\link::toPluginPage('zenario_extranet_change_password')) {
+					$html .= '<div><a href="'. htmlspecialchars($link). '">' . htmlspecialchars(static::fPhrase('Change your password', [], $t)) . '</a></div>';
 				}
 			}
 			if (!empty($links['logout'])) {
-				if (ze\content::langSpecialPage('zenario_logout', $cID, $cType)) {
-					$html .= '<div><a ' . $this->linkToItemAnchor($cID, $cType) . '>' . htmlspecialchars(static::fPhrase('Logout', [], $t)) . '</a></div>';
+				if ($link = ze\link::toPluginPage('zenario_extranet_logout')) {
+					$html .= '<div><a href="'. htmlspecialchars($link). '">' . htmlspecialchars(static::fPhrase('Logout', [], $t)) . '</a></div>';
 				}
 			}
 			$html .= '</div>';
@@ -774,6 +777,28 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', []);
 		}
 	}
+	//Get visible form field data in email
+	private function sendVisibleFieldsFormEmail($startLine, $email, $mergeFields = [],$responseId, $attachments = [], 		$replyToEmail = false, $replyToName = false, $adminDownloadLinks = false) {
+		$formName = $this->form['name'] ? trim($this->form['name']) : '[blank name]';
+		$formId = $this->form['id'];
+		//var_dump($this->form['id']);
+		$subject = 'New form submission for: ' . $formName;
+		$addressFrom = ze::setting('email_address_from');
+		$nameFrom = ze::setting('email_name_from');
+		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
+		if (!$url) {
+			$url = ze\link::absolute();
+		}
+		
+		
+			$body = $startLine;
+		
+			$body .=$this->getFormSummaryHTML($responseId);
+		
+		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
+		zenario_email_template_manager::putBodyInTemplate($body);
+		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
+	}
 	
 	public static function getFormSummaryHTML($responseId, $formId = false, $data = false, $repeatRows = []) {
 		$html = '<table>';
@@ -827,13 +852,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				} else {
 					$displayHTML = '';
 					if (isset($field['value'])) {
-						$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks = 'visitor');
+						$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks = 'admin');
 					}
 					if (isset($field['row']) && !empty($field['firstRepeatBlockField'])) {
 						$rows = count($fields[$field['repeat_start_id']]['rows']);
-						$html .= '<tr><td colspan="2" class="subheader">(' . (int)$field['row'] . ' / ' . (int)$rows . ')</td></tr>';
+						$html .= '<tr><th colspan="2" class="subheader">Repeating section ' . (int)$field['row'] . ' of ' . (int)$rows . '</th></tr>';
 					}
-					$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . $displayHTML . '</td></tr>';
+					if($displayHTML)
+						$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . $displayHTML . '</td></tr>';
+					else
+						$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>[Empty]</td></tr>';
+						
 				}
 			}
 		}
@@ -1463,7 +1492,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				
 				} elseif ($field['type'] == 'repeat_end') {
 					$repeatStartField = $this->fields[$field['repeat_start_id']];
-					if (count($repeatStartField['rows']) < $repeatStartField['max_rows']) {
+					if (is_array($repeatStartField['rows']) && count($repeatStartField['rows']) < $repeatStartField['max_rows']) {
 						$addRowLabel = $repeatStartField['add_row_label'] ? $repeatStartField['add_row_label'] : 'Add +';
 						$html .= '<div class="repeat_block_buttons"><div class="add">' . htmlspecialchars(static::fPhrase($addRowLabel, [], $t)) . '</div></div>';
 					}
@@ -3106,6 +3135,27 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($this->form['add_logged_in_user_to_group']) {
 				ze\user::addToGroup($userId, $this->form['add_logged_in_user_to_group']);
 			}
+			if (($templateId = $this->form['active_timers']) && ze\module::inc('zenario_user_timers')) {
+				if ($template = ze\row::get(ZENARIO_USER_TIMERS_PREFIX . 'user_timer_templates', ['type', 'start_date'], $templateId)) {
+					$startDate = '';
+					if ($template['type'] == 'fixed_dates') {
+						
+						$startDate = $template['start_date'];
+					}
+					$dates = zenario_user_timers::extractDatesFromTimerTemplate($templateId, $startDate);
+					$result = zenario_user_timers::canCreateTimer($templateId, $userId, $startDate);
+					if (ze::isError($result)) {
+						
+						//$box['tabs']['timer_link']['errors'][] = ze\admin::phrase((string)$result);
+					} else {
+					
+						$timerId = zenario_user_timers::createTimer($templateId, $userId, $startDate);
+					
+					}
+					
+				}
+				
+			}
 		//Creating users
 		} elseif ($this->form['save_data']) {
 		
@@ -3205,7 +3255,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->form['save_record']) {
 			$responseId = $this->createFormResponse($userId, $rating, $tolerence, !$canSendEmails);
 		}
-		
+		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
+					if (!$url) {
+						$url = ze\link::absolute();
+					}
 		//Emails
 		if ($canSendEmails) {
 			$sendEmailToUser = ($this->form['send_email_to_logged_in_user'] || $this->form['send_email_to_email_from_field']);
@@ -3215,29 +3268,40 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			//Send an email to the user
 			if ($sendEmailToUser) {
-				$startLine = 'Dear user,';
+				$startLine = '<p>Dear user,</p>';
+				$startLine .= '<p>The form was submitted from '.$url.' with the following data:</p>';
 				$userEmailMergeFields = $this->getTemplateEmailMergeFields($userId);
 				$emails = [];
 				if ($this->form['send_email_to_logged_in_user'] && $userId) {
 					$email = ze\row::get('users', 'email', $userId);
 					if ($email) {
-						if ($this->form['user_email_use_template_for_logged_in_user']) {
+						if ($this->form['user_email_use_template_for_logged_in_user']==1) {
 							if ($this->form['user_email_template_logged_in_user']) {
 								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_logged_in_user'], $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true);
 							}
-						} else {
+						}
+						elseif($this->form['user_email_use_template_for_logged_in_user']==2) {
+							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId);
+						}
+						else {
 							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields);
 						}
 					}
 				}
 				if ($this->form['send_email_to_email_from_field'] && $this->form['user_email_field'] && isset($this->fields[$this->form['user_email_field']])) {
 					$email = $this->fields[$this->form['user_email_field']]['value'];
+					
 					if ($email) {
-						if ($this->form['user_email_use_template_for_email_from_field']) {
+						if ($this->form['user_email_use_template_for_email_from_field']==1) {
 							if ($this->form['user_email_template_from_field']) {
 								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_from_field'], $userEmailMergeFields);
+								
 							}
-						} else {
+						}
+						elseif($this->form['user_email_use_template_for_email_from_field']==2) {
+							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId);
+						}
+						else {
 							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true);
 						}
 						
@@ -3250,6 +3314,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//checkbox is selected.
 			if ($sendEmailToAdmin) {
 				$conditionFieldId = $this->form['send_email_to_admin_condition_field'];
+				print($conditionFieldId);
 				if ($this->form['send_email_to_admin_condition'] == 'always_send'
 					|| ($this->form['send_email_to_admin_condition'] == 'send_on_condition'
 						&& $conditionFieldId
@@ -3315,11 +3380,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							}
 						}
 					}
-				
-					if ($this->form['admin_email_use_template'] && $this->form['admin_email_template']) {
+					
+		
+			
+					if ($this->form['admin_email_use_template']==1 && $this->form['admin_email_template']) {
 						zenario_email_template_manager::sendEmailsUsingTemplate($this->form['admin_email_addresses'], $this->form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName);
-					} else {
+					}
+					elseif($this->form['admin_email_use_template']==2) {
+						$startLine = '<p>Dear admin,<p>';
+						$startLine .= '<p>The form "' . htmlspecialchars($this->form['name']) . '" (form ID '.htmlspecialchars($this->form['id']).') was submitted from '. $url .' with the following data:</p>';
+						
+						$this->sendVisibleFieldsFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields,$responseId, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true);
+					}
+					else {
 						$startLine = 'Dear admin,';
+						$startLine .= '<p>The form "' . htmlspecialchars($this->form['name']) . '" (form ID '.htmlspecialchars($this->form['id']).') was submitted from '. $url .' with the following data:</p>';
 						$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true);
 					}
 				}
@@ -3482,6 +3557,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		zenario_email_template_manager::putBodyInTemplate($body);
 		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
 	}
+	
+	
 	
 	public static function drawMenu($nodeId, $cID, $cType) {
 		$nodes = [];
@@ -4607,21 +4684,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$update[$fieldName] = $fieldIdLink[$field[$fieldName]];
 					}
 				}
-				
+				// To fix bug when importing the form, the checkboxes that were selected are no longer selected.
 				if ($field['visible_condition_field_id'] && $field['visible_condition_field_value']) {
-					switch ($data['fields'][$field['visible_condition_field_id']]['field_type']) {
-						case 'select':
-						case 'radios':
-							$update['visible_condition_field_value'] = $valueIdLink[$field['visible_condition_field_value']];
-							break;
-						case 'checkboxes':
-							$newValueIds = [];
+					if (strpos($field['visible_condition_field_value'], ',') !== false) {
+						$newValueIds = [];
 							$oldValueIds = explode(',', $field['visible_condition_field_value']);
 							foreach ($oldValueIds as $oldValueId) {
 								$newValueIds[] = $valueIdLink[$oldValueId];
 							}
+							
 							$update['visible_condition_field_value'] = implode(',', $newValueIds);
-							break;
+					}
+					else
+					{
+						$update['visible_condition_field_value'] = $valueIdLink[$field['visible_condition_field_value']];
 					}
 				}
 				if ($field['mandatory_condition_field_id'] && $field['mandatory_condition_field_value']) {
@@ -4638,6 +4714,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							}
 							$update['mandatory_condition_field_value'] = implode(',', $newValueIds);
 							break;
+							
 					}
 				}
 				if ($field['default_value']) {

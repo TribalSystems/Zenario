@@ -88,7 +88,7 @@ class fileAdm {
 			echo
 				\ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
 				"\n\n",
-				\ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> Uploadable file types" in Organizer.'),
+				\ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> File/MIME Types" in Organizer.'),
 				"\n\n",
 				\ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : ; * ? " < > |');
 			exit;
@@ -304,7 +304,7 @@ To correct this, please ask your system administrator to perform a
 					echo
 						\ze\admin::phrase('You must select a known file format, for example .doc, .docx, .jpg, .pdf, .png or .xls.'), 
 						"\n\n",
-						\ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> Uploadable file types" in Organizer.'),
+						\ze\admin::phrase('To add a file format to the known file format list, go to "Configuration -> File/MIME Types" in Organizer.'),
 						"\n\n",
 						\ze\admin::phrase('Please also check that your filename does not contain any of the following characters: ' . "\n" . '\\ / : ; * ? " < > |');
 					exit;
@@ -396,7 +396,9 @@ To correct this, please ask your system administrator to perform a
 					'extension' => $extension
 				], $moduleClass),
 				"\n\n",
-				\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass);
+				\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass),
+				"\n\n",
+				\ze\lang::phrase('Developers: if this message is constantly occurs, even on valid files, then this is probably a misclassification in the UNIX file utility. You can fix this by adding an exception/correction in the function check() in zenario/autoload/file.php.', [], $moduleClass);
 			exit;
 		}
 	}

@@ -207,6 +207,43 @@ zenario_conductor.setToggle = function(slot, id, on, updateURL) {
 };
 
 
+
+//Onclick logic for the toggles on the page
+zenario_conductor.toggleClick = function(toggleEl, toggleCodeName, revealId, revealSpeed, invertToggle, shouldBeOn) {
+	var $toggleEl = $(toggleEl),
+		$reveal = $('#' + revealId),
+		isOn = $reveal.is(':visible');
+	
+	if (defined(shouldBeOn)) {
+		if (isOn == shouldBeOn) {
+			return;
+		}
+	}
+	
+	if (isOn) {
+		$toggleEl.removeClass('zfea_toggle_on').addClass('zfea_toggle_off');
+	} else {
+		$toggleEl.removeClass('zfea_toggle_off').addClass('zfea_toggle_on');
+	}
+	
+	if (!invertToggle) {
+		isOn = !isOn;
+	}
+	
+	zenario_conductor.setToggle($toggleEl[0], toggleCodeName, isOn, true);
+	
+	$reveal.slideToggle(revealSpeed || 100);
+};
+
+zenario_conductor.openToggle = function(toggleEl, toggleCodeName, revealId, revealSpeed, invertToggle) {
+	zenario_conductor.toggleClick(toggleEl, toggleCodeName, revealId, revealSpeed, invertToggle, true);
+};
+
+zenario_conductor.closeToggle = function(toggleEl, toggleCodeName, revealId, revealSpeed, invertToggle) {
+	zenario_conductor.toggleClick(toggleEl, toggleCodeName, revealId, revealSpeed, invertToggle, false);
+};
+
+
 //When a user presses a "back" button on the conductor, wipe clear all variables from states below this one in the conductor hierarchy
 zenario_conductor.resetVarsOnBackNav = function(slot, backCommandDetails) {
 	

@@ -83,6 +83,8 @@ class zenario_document_envelopes_fea__visitor__edit_document_envelope extends ze
 			$this->loadDetails($path, $tags, $fields, $values);
 			ze\lang::applyMergeFields($tags['title'], ['envelopeId' => $this->envelopeId]);
 		}
+
+		$fields['details/code']['hidden'] = !$this->setting('show_code');
 		
 		//Load envelope languages
 		$fields['details/language_id']['values'] = ze\dataset::centralisedListValues('zenario_document_envelopes_fea::getEnvelopeLanguages');
@@ -135,9 +137,27 @@ class zenario_document_envelopes_fea__visitor__edit_document_envelope extends ze
 	}
 
 	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
-		if ($values['details/code']) {
+		if ($this->setting('show_code') && $values['details/code']) {
 			if (preg_match('/\s/', $values['details/code'])) {
 				$fields['details/code']['error'] = $this->phrase('Envelope code must not contain spaces.');
+			} else {
+				//Check that the envelope code is unique.
+				$sql = '
+					SELECT COUNT(*)
+					FROM ' . DB_PREFIX . ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes
+					WHERE code = "' . ze\escape::sql($values['details/code']) . '"';
+				
+				if ($this->envelopeId) {
+					$sql .= '
+						AND id != ' . (int)$this->envelopeId;
+				}
+
+				$result = ze\sql::select($sql);
+				$count = ze\sql::fetchValue($result);
+				
+				if ($count > 0) {
+					$fields['details/code']['error'] = $this->phrase('Envelope code must be unique.');
+				}
 			}
 		}
 	}
@@ -153,8 +173,14 @@ class zenario_document_envelopes_fea__visitor__edit_document_envelope extends ze
 			$thumbnailFileId = ze\file::addToDatabase('image', $thumbnailFilePath, $thumbnailFileFilename);
 		}
 		
+		if ($this->setting('show_code')) {
+			$code = $values['details/code'];
+		} else {
+			$code = NULL;
+		}
+		
 		$cols = [
-			'code' => $values['details/code'],
+			'code' => $code,
 			'name' => $values['details/name'],
 			'description' => $values['details/description'],
 			'keywords' => $values['details/keywords'],

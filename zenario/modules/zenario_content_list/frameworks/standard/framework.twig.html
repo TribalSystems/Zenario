@@ -23,7 +23,22 @@
 		</channel>
 	</rss>
 {% else %}
-
+	{% if All_Currently_Selected_Categories %}
+		<div class="currently_selected_categories">
+		<h5>Category filters</h5>
+		 
+			{% if More_Than_One and  All_Or_Any %}
+				<p class="label">{{All_Or_Any|trans}}</p>
+			{% endif %}	
+		    
+		    <ul>
+				{% for category in All_Currently_Selected_Categories %}
+					<li>{{category}}</li>
+				{% endfor %}
+	 		</ul>
+	 	</div>
+	{% endif %}
+		
 	{% if Rows %}
 		{% if Show_RSS_Link %}
 			<div class="content_list_rss_link"><a href="{{RSS_Link}}"><span>{{'_RSS'|trans}}</span></a></div>

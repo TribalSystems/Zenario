@@ -90,7 +90,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 						//Look up the values for this content item
 						$sql = "
 							SELECT
-								tc.privacy, tc.smart_group_id,
+								tc.privacy, tc.at_location, tc.smart_group_id,
 								tcp.module_class_name, tcp.method_name, tcp.param_1, tcp.param_2
 							FROM ". DB_PREFIX. "translation_chains AS tc
 							LEFT JOIN ". DB_PREFIX. "translation_chain_privacy AS tcp
@@ -142,6 +142,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		//If all the values match, display them!
 		if (!empty($combinedValues) && is_array($combinedValues)) {
 			$values['privacy/privacy'] = $combinedValues['privacy'];
+			$values['privacy/at_location'] = $combinedValues['at_location'];
 			$values['privacy/group_ids'] = $combinedValues['group_ids'];
 			$values['privacy/role_ids'] = $combinedValues['role_ids'];
 			$values['privacy/smart_group_id'] = $combinedValues['smart_group_id'];
@@ -204,8 +205,6 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 					if ($values['privacy/privacy'] != 'public' && ($specialPage = ze\content::isSpecialPage($cID, $cType))) {
 						$cID = $cType = false;
 						if ($specialPage == 'zenario_login'
-						 || $specialPage == 'zenario_registration'
-						 || $specialPage == 'zenario_password_reminder'
 						 || $specialPage == 'zenario_not_found'
 						 || $specialPage == 'zenario_no_access') {
 							$box['tabs']['privacy']['errors']['special'] = ze\admin::phrase('Your selection includes a special page that must be publicly visible.');

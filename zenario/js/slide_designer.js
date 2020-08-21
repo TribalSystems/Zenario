@@ -65,7 +65,7 @@ zenarioSD.load = function() {
 	
 	zenarioSD.init(data, 'grid', data.layout_id, data.file_base_name);
 	
-	zenarioSD.drawForm();
+	zenarioSD.drawOptions();
 };
 
 
@@ -272,7 +272,7 @@ zenarioSD.ajaxSrc = function() {
 
 
 
-zenarioSD.drawForm = function() {
+zenarioSD.drawOptions = function() {
 	
 	
 

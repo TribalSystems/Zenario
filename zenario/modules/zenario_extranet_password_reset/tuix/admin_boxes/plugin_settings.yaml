@@ -23,6 +23,7 @@ plugin_settings:
                         required: Please select an email template
                     value: >
                         zenario_extranet_password_reset__to_user_password_reset_en
+                    note_below: 'By default this plugin uses the email template with code "zenario_extranet_password_reset__to_user_password_reset_en".'
                     side_note: >
                         Please see the Module description to get a full list of
                         Merge Fields which can be used in the selected Email

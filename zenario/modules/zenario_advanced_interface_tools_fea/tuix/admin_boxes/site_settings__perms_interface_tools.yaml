@@ -12,7 +12,7 @@ site_settings:
             fields:
                 perm.edit.pluginSetting: 
                     snippet: 
-                        label: "Extranet users can edit plugin settings if..."
+                        label: "Extranet users can use advanced interface tools (TUIX snippets, plugin settings (not yet implemented)), if..."
                 perm.edit.pluginSetting.by.group: 
                     site_setting: 
                         name: perm.edit.pluginSetting.by.group

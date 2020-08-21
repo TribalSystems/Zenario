@@ -18,7 +18,15 @@ diagnostics:
                 sub_table:
                     type: grouping
                     name: sub_table
-                
+
+                show_administrators_logins:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: Administrator Login 
+                    
+                    
                 system_requirements:
                     grouping: sub_table
                     full_width: true
@@ -548,7 +556,7 @@ diagnostics:
                             This site's description file is missing.
                             Please create the <code>zenario_custom/site_description.yaml</code> file,
                             e.g. by copying or symlinking one of the files from the
-                            <code>zenario/api/sample_site_descriptions/</code> directory.
+                            <code>zenario/reference/sample_site_descriptions/</code> directory.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 site_disabled: &blank_child
@@ -563,6 +571,7 @@ diagnostics:
                 public_documents: *blank_child
                 public_images: *blank_child
                 site_automated_backups: *blank_child
+                restore_policy_not_set: *blank_child
                 scheduled_task_manager: *blank_child
                 spare_domains_without_primary_domain:
                     grouping: sub_table
@@ -675,6 +684,18 @@ diagnostics:
                             We recommend you ask your system administrator to enable PDE to improve the protection of data at rest.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
+                bad_encryption_key:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site uses Personal Data Encryption to protect user data.
+                            However, the encryption key in the <code>zenario_custom/site_description.yaml</code>
+                            file does not correspond with the encryption key on this server,
+                            so no encrypted personal data will be displayed.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
                 column_not_found:
                     grouping: sub_table
                     full_width: true
@@ -770,7 +791,7 @@ diagnostics:
                     same_row: true
                     hide_on_install: true
                     visible_if: "zenarioAW.togglePressed(field, 1)"
-                
+                                   
                 administrators_active: *blank_child
                     snippet:
                         html: No administrator has been inactive for over 90 days.

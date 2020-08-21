@@ -425,13 +425,22 @@ class row {
 				 || $col == 'Asc') {
 					$sql .= ' '. $col;
 			
-				} elseif ($first) {
-					$sql .= '
-					ORDER BY `'. \ze\escape::sql($col). '`';
-			
 				} else {
-					$sql .= ',
-						`'. \ze\escape::sql($col). '`';
+					if ($first) {
+						$sql .= '
+						ORDER BY ';
+			
+					} else {
+						$sql .= ',
+							';
+					}
+					
+					if (strpbrk($col, '.[') === false) {
+						$sql .= '`'. \ze\escape::sql($col). '`';
+					
+					} else {
+						static::selCol($colDefs, $addId, $sql, '', '', $tableName, $pkCol, $col, $dbCols, false, true);
+					}
 				}
 				$first = false;
 			}
@@ -479,7 +488,13 @@ class row {
 
 
 
-	protected static function selCol(&$colDefs, &$addId, &$sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols, $ignoreMissingColumns) {
+	protected static function selCol(&$colDefs, &$addId, &$sql, $pre, $suf, $tableName, $pkCol, $col, $dbCols, $ignoreMissingColumns, $inOrderBy = false) {
+		
+		if ($inOrderBy) {
+			$as = '';
+		} else {
+			$as = ' AS `'. \ze\escape::sql($col). '`';
+		}
 		
 		//Check that the column we're looking for exists
 		if (!isset($dbCols[$col])) {
@@ -504,34 +519,43 @@ class row {
 			 && (isset($dbCols[$doc]))
 			 && ($dbCols[$doc]->isJSON)) {
 				
-				$sql .= $pre. '`'. \ze\escape::sql($doc). '`->"$'. \ze\escape::sql($path). '"'. $suf. ' AS `'. \ze\escape::sql($col). '`';
-				$colDefs[] = $dbCols[$doc];
+				$sql .= $pre. '`'. \ze\escape::sql($doc). '`->"$'. \ze\escape::sql($path). '"'. $suf. $as;
+				
+				if (!$inOrderBy) {
+					$colDefs[] = $dbCols[$doc];
+				}
 			
 			} elseif ($ignoreMissingColumns && $pre === '' && $suf === '') {
-				$sql .= ' NULL AS `'. \ze\escape::sql($col). '`';
+				$sql .= ' NULL'. $as;
 			
 			} else {
 				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` does not exist in the table `[[table]]`.', ['col' => $col, 'table' => $tableName]));
 			}
 
 		} elseif ($dbCols[$col]->encrypted) {
+			if ($inOrderBy) {
+				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use ORDER BY on it.', ['col' => $col, 'table' => $tableName]));
+			}
 			if ($pre !== '') {
 				\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted. You cannot use MIN(), MAX() or other group-statements on it.', ['col' => $col, 'table' => $tableName]));
 			}
 
-			$sql .= '`%'. \ze\escape::sql($col). '` AS `'. \ze\escape::sql($col). '`';
+			$sql .= '`%'. \ze\escape::sql($col). '`'. $as;
 			$colDefs[] = $dbCols[$col];
 
 		} else {
 			$sql .= $pre. '`'. \ze\escape::sql($col). '`'. $suf;
 
 			if ($pre !== '' || $suf !== '') {
-				$sql .= ' AS `'. \ze\escape::sql($col). '`';
+				$sql .= $as;
 
 			} elseif ($addId && $col == $pkCol) {
 				$addId = false;
 			}
-			$colDefs[] = $dbCols[$col];
+			
+			if (!$inOrderBy) {
+				$colDefs[] = $dbCols[$col];
+			}
 		}
 	}
 	

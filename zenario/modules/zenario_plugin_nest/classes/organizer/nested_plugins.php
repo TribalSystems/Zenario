@@ -198,13 +198,13 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			if ($instance['content_id']) {
 				$panel['title'] = ze\admin::phrase('Editing the slideshow on [[slot_name]]', $instance);
 			} else {
-				$panel['title'] = ze\admin::phrase('Editing the slideshow "[[instance_name]]"', $instance);
+				$panel['title'] = ze\admin::phrase('Editing the slideshow [[instance_name]] ([[name]])', $instance);
 			}
 		} else {
 			if ($instance['content_id']) {
 				$panel['title'] = ze\admin::phrase('Editing the nest on [[slot_name]]', $instance);
 			} else {
-				$panel['title'] = ze\admin::phrase('Editing the nest "[[instance_name]]"', $instance);
+				$panel['title'] = ze\admin::phrase('Editing the nest [[instance_name]] ([[name]])', $instance);
 			}
 		}
 	}

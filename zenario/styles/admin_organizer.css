@@ -2008,7 +2008,7 @@ div.organizer_pageSize {
 }
 
 .organizer_toolbar .toolbar #organizer_collectionToolbarButtons > ul {
-	margin-top:5px;
+	margin-top:7px;
 }
 
 .organizer_toolbar .toolbar #organizer_collectionToolbarButtons > ul > li {
@@ -2086,7 +2086,7 @@ div.organizer_pageSize {
 
 .organizer_toolbar .toolbar .toolbarButtons ul li ul {
 	left:0px;
-	top:36px;
+	top:37px;
 	z-index:90 !important;
 	position: absolute;
 	margin: 0px auto;
@@ -2180,7 +2180,8 @@ div.organizer_pageSize {
 }*/
 
 .organizer_toolbar .toolbar .toolbarButtons ul li.organizer_button_with_children a {
-	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat right 15px / 8px 8px;
+	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat 95% 15px / 8px 8px;
+		padding-right:22px;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li {
@@ -2223,6 +2224,7 @@ div.organizer_pageSize {
 	background:url('../admin/images/icon-info.gif') no-repeat right 10px;
 }*/
 
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons > ul > li > a,
 .organizer_toolbar .toolbar .toolbarButtons ul li li a {
 	-webkit-transition : background-color 200ms ease-in-out;
   	-moz-transition : background-color 200ms ease-in-out;
@@ -2234,8 +2236,9 @@ div.organizer_pageSize {
 	color:#007FA3;
 }
 
+.organizer_toolbar #organizer_collectionToolbarWrap .toolbar .toolbarButtons > ul > li:hover > a,
 .organizer_toolbar .toolbar .toolbarButtons ul li:hover li a:hover {
-	background:#fbf290;
+	background-color:#fbf290;
 }
 
 .organizer_toolbar .toolbar .toolbarButtons ul li:hover li a {
@@ -3213,6 +3216,10 @@ div.organizer_pageSize {
 #organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon .organizer_list_view_icon {
 	width: 24px;
 	height: 25px;
+}
+
+#organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon .organizer_list_view_icon.scheduled_tasks_on_icon {
+	background:url('../modules/zenario_pro_features/adminstyles/images/icon-footer-scheduled-tasks-orange.svg') no-repeat center center / 18px auto;
 }
 
 #organizer_rightColumn div.organizer_item_image.organizer_list_view_image {

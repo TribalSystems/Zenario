@@ -13,6 +13,7 @@ plugin_settings:
                     snippet:
                         label: Category filters
                         label_class: subheading
+                
                 content_type:
                     plugin_setting:
                         name: content_type
@@ -217,7 +218,18 @@ plugin_settings:
                         Whether to only use content items' "true" positions in the menu, or to also use
                         secondary menu nodes.
                     indent: 1
-                
+                show_category_name:
+                    plugin_setting:
+                        name: show_category_name
+                    label: 'Show category names'
+                    type: checkbox
+                    value: ""
+                    redraw_onchange: true
+                    side_note: "Only the names categories marked as "public" will be shown."
+                category_html_text:
+                    grouping: category_filters
+                    snippet:
+                        html: "You can include content items (and/or omit them) by filtering on category."
                 category_filters_dropdown:
                     plugin_setting:
                         name: category_filters_dropdown
@@ -234,21 +246,6 @@ plugin_settings:
                             label: Show content with categories matching the current content item
                     value: ""
                     
-                refine_type_content_with_matching_categories:
-                    plugin_setting:
-                        name: refine_type_content_with_matching_categories
-                    grouping: category_filters
-                    type: select
-                    indent: 1
-                    value: any_categories
-                    values:
-                        any_categories:
-                            label: Show content items that match ANY of the current content item categories
-                        all_categories:
-                            label: Only show content items that match ALL of the current content item categories
-                    visible_if: |
-                        zenarioAB.value('category_filters_dropdown') == 'show_content_with_matching_categories'
-                        
                 category:
                     plugin_setting:
                         name: category
@@ -283,30 +280,23 @@ plugin_settings:
                             label: Only show content items that are in ANY of the selected categories
                         all_categories:
                             label: Only show content items that are in ALL of the selected categories
-                    visible_if: |
-                        zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
+                    visible_if:
+                        zenarioAB.valueIn: category_filters_dropdown, choose_categories_to_display_or_omit, show_content_with_matching_categories
                 
                 
                 enable_omit_category:
                     plugin_setting:
                         name: enable_omit_category
-                    grouping: category_filters
                     label: 'Omit categories'
-                    indent: 1
                     type: checkbox
                     value: ""
                     redraw_onchange: true
-                    visible_if: |
-                        zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
-                
                 omit_category:
-                    indent: 2
-                    grouping: category_filters
+                    indent: 1
                     visible_if: |
                         zenarioAB.value('enable_omit_category')
                     plugin_setting:
                         name: omit_category
-                        foreign_key_to: categories
                     pick_items:
                         path: zenario__content/panels/categories
                         min_path: zenario__content/panels/categories
@@ -316,20 +306,8 @@ plugin_settings:
                         multiple_select: true
                     value: ""
                     visible_if: |
-                        zenarioAB.value('enable_omit_category') && zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
-                
-                refine_type_dummy:
-                    indent: 2
-                    grouping: category_filters
-                    visible_if: |
-                        zenarioAB.value('enable_omit_category') && zenarioAB.value('category_filters_dropdown') == 'choose_categories_to_display_or_omit'
-                    type: select
-                    readonly: true
-                    values:
-                        any_categories:
-                            label: Never show content items that are in ANY of the selected categories
-        
-        
+                        zenarioAB.value('enable_omit_category')
+                    note_below: "Content items in ANY of the "omit" categories will not be shown."
         
         overall_list:
             label: Overall list
@@ -846,7 +824,7 @@ plugin_settings:
                 offset:
                     plugin_setting:
                         name: offset
-                    label: 'Offset results:'
+                    label: 'Skip results:'
                     type: select
                     values:
                         0: 
@@ -868,7 +846,6 @@ plugin_settings:
                         20: "20"
                         50: "50"
                     value: "0"
-                    indent: 1
                     side_note: >
                         e.g. if you select 1, your results will start from the 2nd resulting content item        
                 page_size:
@@ -884,7 +861,7 @@ plugin_settings:
                     value: maximum_of
                     format_onchange: true
                     side_note: >
-                        If pagination is enabled, list this number of items, if available.
+                        Show up to this many results. If pagination is enabled, show this many results per page.
                 maximum_results_number:
                     plugin_setting:
                         name: maximum_results_number

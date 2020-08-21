@@ -44,7 +44,7 @@ ze\cache::incJS('zenario/js/admin_organizer');
 
 //Include every panel-type
 //N.b. these need to be included in dependency order
-ze\cache::incJS('zenario/api/panel_type_base_class');
+ze\cache::incJS('zenario/reference/panel_type_base_class');
 ze\cache::incJS('zenario/js/panel_type_grid');
 ze\cache::incJS('zenario/js/panel_type_list');
 ze\cache::incJS('zenario/js/panel_type_list_or_grid');

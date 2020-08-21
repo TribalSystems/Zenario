@@ -296,7 +296,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$fields['meta_data/alias']['hidden'] = true;
 				$box['tabs']['categories']['hidden'] = true;
 				$box['tabs']['privacy']['hidden'] = true;
+				// Change code for Special page FAB
+				$specialpagesresult = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $content['equiv_id']]);
+				$pagetype =  explode("zenario_", $specialpagesresult['page_type']);
+				if($_GET['refinerName'] == 'special_pages'){
 				
+					$box['identifier']['label'] = 'This is a special page:';
+					$box['identifier']['value'] = str_replace("_"," ",$pagetype['1']).' page.';
+					
+					if($specialpagesresult['page_type']=='zenario_not_found' || $specialpagesresult['page_type']=='zenario_no_access'){
+						$fields['meta_data/no_menu_warning']['hidden'] = true;
+					}
+				}
+				//
 				$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
 			}
 	
@@ -348,7 +360,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$status = ze\admin::phrase('published');
 		
 				} elseif ($box['key']['source_cVersion'] == $content['admin_version']) {
-					if ($content['admin_version'] > $content['visitor_version']) {
+					if ($content['admin_version'] > $content['visitor_version'] && $content['status'] != 'hidden') {
 						$status = ze\admin::phrase('draft');
 					} elseif ($content['status'] == 'hidden' || $content['status'] == 'hidden_with_draft') {
 						$status = ze\admin::phrase('hidden');
@@ -1202,19 +1214,29 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 
 		//Don't show the option to add a menu node when editing an existing content item...
-		if ($box['key']['cID']
-		 
-		//...or if an Admin does not have the permissions to create a menu node...
-			//(Though allow this through for restricted admins if they are forced to create a content item in one of the suggested places.)
-		 || ($box['key']['translate'] && !ze\priv::check('_PRIV_EDIT_MENU_TEXT'))
-		 || (!$box['key']['translate'] && !$suggestionsForced && !ze\priv::check('_PRIV_ADD_MENU_ITEM'))
-		
-		//...or when translating a content item without a menu node.
-		 || ($box['key']['translate'] && !$menu)) {
+		if ($box['key']['cID']) {
 			
-			$fields['meta_data/menu']['hidden'] = true;
 			$fields['meta_data/create_menu_node']['readonly'] = true;
 			$values['meta_data/create_menu_node'] = '';
+			
+			if (
+			//...or if an Admin does not have the permissions to create a menu node...
+				//(Though allow this through for restricted admins if they are forced to create a content item in one of the suggested places.)
+			 ($box['key']['translate'] && !ze\priv::check('_PRIV_EDIT_MENU_TEXT'))
+			 || (!$box['key']['translate'] && !$suggestionsForced && !ze\priv::check('_PRIV_ADD_MENU_ITEM'))
+		
+			//...or when translating a content item without a menu node.
+			 || ($box['key']['translate'] && !$menu)
+			 ) {
+			
+				$fields['meta_data/menu']['hidden'] = true;
+			}
+			
+			if ($menu) {
+				$values['meta_data/menu_id_when_editing'] = $menu['mID'];
+				$values['meta_data/menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load'] = $menu['name'];
+				$fields['meta_data/no_menu_warning']['hidden'] = true;
+			}
 		
 		//If we're translating, add the ability to add the text but hide all of the options about setting a position
 		} elseif ($box['key']['translate']) {
@@ -1355,5 +1377,16 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
+		//If editing an existing content item, check if the admin has changed the menu node text. Update accordingly.
+		if ($box['key']['id']) {
+			if (
+				$values['meta_data/menu_id_when_editing']
+				&& $values['meta_data/menu_text_when_editing']
+				&& $values['meta_data/menu_text_when_editing_on_load']
+				&& $values['meta_data/menu_text_when_editing'] != $values['meta_data/menu_text_when_editing_on_load']
+			) {
+				ze\row::update('menu_text', ['name' => $values['meta_data/menu_text_when_editing']], ['menu_id' => $values['meta_data/menu_id_when_editing'], 'language_id' => $values['meta_data/language_id']]);
+			}
+		}
 	}
 }

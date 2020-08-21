@@ -112,7 +112,7 @@ plugin_settings:
                         name: image_title_znz
                     label: 'Caption:'
                     type: text
-                    
+                
                 link_type_znz:
                     grouping: 'image_link image_link_znz'
                     plugin_setting:
@@ -129,6 +129,23 @@ plugin_settings:
                         _ENLARGE_IMAGE:
                             label: Enlarge image in floating box
                     redraw_onchange: true
+              
+                target_blank_znz:
+                    indent: 1
+                    visible_if: |
+                        zenario.IN(zenarioAB.value('link_type_znz'), '_CONTENT_ITEM', '_EXTERNAL_URL')
+                    grouping: 'image_link image_link_znz'
+                    plugin_setting:
+                        name: target_blank_znz
+                    type: select
+                    empty_value: 'Open in the same window'
+                    values:
+                        1:
+                            label: Open in a new window
+                        2:
+                            label: Open in a floating box
+                    value: "" 
+                    same_row: true
                 hyperlink_target_znz:
                     indent: 1
                     visible_if: |
@@ -154,22 +171,36 @@ plugin_settings:
                     type: url
                     maxlength: "255"
                     value: ""
-                target_blank_znz:
+                
+                link_to_anchor_znz:
                     indent: 1
-                    visible_if: |
-                        zenario.IN(zenarioAB.value('link_type_znz'), '_CONTENT_ITEM', '_EXTERNAL_URL')
                     grouping: 'image_link image_link_znz'
                     plugin_setting:
-                        name: target_blank_znz
-                    type: select
-                    empty_value: 'Open in the same window'
-                    values:
-                        1:
-                            label: Open in a new window
-                        2:
-                            label: Open in a floating box
-                    value: "" 
-            
+                        name: link_to_anchor_znz
+                    label: Link to anchor
+                    type: checkbox
+                    visible_if: |
+                        zenarioAB.value('link_type_znz') == '_CONTENT_ITEM'
+                    redraw_onchange: true
+                  
+                hyperlink_anchor_znz:
+                    indent: 2
+                    validation:
+                        required_if_not_hidden: Please enter an anchor name.
+                    grouping: 'image_link image_link_znz'
+                    plugin_setting:
+                        name: hyperlink_anchor_znz
+                    label: 'Anchor name:'
+                    type: text
+                    maxlength: 255
+                    visible_if: |
+                        zenarioAB.value('link_type_znz') == '_CONTENT_ITEM' && zenarioAB.value('link_to_anchor_znz')
+                    validation:
+                        required_if_not_hidden: Please enter an anchor name.
+                    side_note: >
+                        If you have an anchor on the page, you can specify it here and you'll be
+                        taken to its location on navigation.
+                    same_row: true
             fields:
                 # Annoying bug: you need to add an actual new field to be able to run
                 # your placeholder methods!

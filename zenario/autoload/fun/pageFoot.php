@@ -74,6 +74,11 @@ echo '
 	(int) ($_SESSION['extranetUserID'] ?? 0), ',"',
 	\ze\escape::js(\ze\content::currentLangId()), '","',
 	\ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","',
+	\ze\escape::js(\ze::setting('min_extranet_user_password_length')), '","',
+	\ze\escape::js(\ze::setting('a_z_lowercase_characters')), '","',
+	\ze\escape::js(\ze::setting('a_z_uppercase_characters')), '","',
+	\ze\escape::js(\ze::setting('0_9_numbers_in_user_password')), '","',
+	\ze\escape::js(\ze::setting('symbols_in_user_password')), '","',
 	\ze\escape::js(DIRECTORY_INDEX_FILENAME), '",',
 	(int) \ze\cookie::canSet(), ',',
 	(int) \ze::$equivId, ',',
@@ -108,6 +113,11 @@ if ($isAdmin) {
 	//Note down that we need various extra libraries in admin mode...
 	\ze::requireJsLib('zenario/js/ace.wrapper.js.php');
 }
+
+if (\ze::$cID && \ze::$visLang && !$isWelcomeOrWizard) {
+	\ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. \ze::$visLang);
+}
+
 
 if ($isAdmin || $isWelcomeOrWizard) {
 	//...or on the admin-login screen

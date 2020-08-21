@@ -105,10 +105,9 @@ switch ($path) {
 		}
 		
 		if (!empty($columns)) {
-			$columns['date_modified'] = ze\date::now();
-			$columns['modified_by_id'] = ze\admin::id();
-			
 			if ($box['key']['id'] && !$box['key']['duplicate']) {
+				$columns['date_modified'] = ze\date::now();
+				$columns['modified_by_id'] = ze\admin::id();
 				ze\row::update('email_templates', $columns, ['code' => $box['key']['id']]);
 			} else {
 				$columns['date_created'] = ze\date::now();

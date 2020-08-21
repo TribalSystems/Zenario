@@ -1,9 +1,10 @@
 zenario_edit_tuix_snippet: &definition
     css_class: zfea_edit_box
+    fea_type: form
     key:
         id: ''
     title: 'Creating a new TUIX snippet'
-    title_for_existing_records: 'Editing the TUIX snippet [[name]]'
+    title_for_existing_records: 'Editing TUIX snippet [[id]] ([[name]])'
     error_on_form_message: Please check below for errors.
     tab: details
     tabs:

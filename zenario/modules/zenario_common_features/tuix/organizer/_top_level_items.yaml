@@ -124,7 +124,7 @@ zenario__users:
                 path: zenario__users/panels/administrators
 
 zenario__layouts:
-    ord: 999996
+    ord: 9100
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_templates
@@ -153,7 +153,7 @@ zenario__layouts:
             link:
                 path: zenario__layouts/panels/template_families
 zenario__modules:
-    ord: 999997
+    ord: 9200
     css_class: zenario_cms_core_plugins
     label: Modules
     tooltip: Manage modules and their plugins
@@ -188,7 +188,7 @@ zenario__modules:
 zenario__languages:
     youtube_video_id: e-kjG0sgeTs
     youtube_thumbnail_title: 'Zenario CMS: Adding languages to a Zenario site'
-    ord: 999998
+    ord: 9300
     priv: _PRIV_VIEW_LANGUAGE
     css_class: zenario_cms_core_languages
     label: International
@@ -212,7 +212,7 @@ zenario__languages:
             link:
                 path: zenario__languages/panels/salutations
 zenario__administration:
-    ord: 999999
+    ord: 9400
     css_class: zenario_cms_core_administration
     label: Configuration
     tooltip: >
@@ -221,7 +221,7 @@ zenario__administration:
         site_settings:
             priv: _PRIV_VIEW_SITE_SETTING
             label: Site settings
-            tooltip: Configure how the CMS works
+            tooltip: Configure how Zenario works
             link:
                 path: zenario__administration/panels/site_settings
         backups:
@@ -251,9 +251,10 @@ zenario__administration:
         file_types:
             ord: 10001
             css_class: zenario_separator_before_this dropbox_file
-            label: File types
+            label: File/MIME Types
             tooltip: >
-                Create and manage file extensions and MIME types for uploadable files
+                Manage which types of files/file extensions are allowed in a document upload,
+                and set the MIME type for each extension.
             link:
                 path: zenario__administration/panels/file_types
         page_preview_sizes:

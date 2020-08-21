@@ -27,7 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
 class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
 	protected $numSyncAssistLangs = 0;
@@ -524,11 +523,11 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			}
 			
 			if (!empty($item['created_datetime'])) {
-				$item['created_datetime'] = ze\date::relative($item['created_datetime'], "day", true, 'vis_date_format_med', $languageId = \ze::$defaultLang, true, false, false, $showAdminPhrase = true);
+				$item['created_datetime'] = ze\date::relative($item['created_datetime'], "day", true, 'vis_date_format_med', $languageId = false, true, false, false, $showAdminPhrase = true);
 			}
 			
 			if (!empty($item['last_modified_datetime'])) {
-				$item['last_modified_datetime'] = ze\date::relative($item['last_modified_datetime'], "day", true, 'vis_date_format_med', $languageId = \ze::$defaultLang, true, false, false, $showAdminPhrase = true);
+				$item['last_modified_datetime'] = ze\date::relative($item['last_modified_datetime'], "day", true, 'vis_date_format_med', $languageId = false, true, false, false, $showAdminPhrase = true);
 				$item['unpublished_content_info'] =
 					 ze\admin::phrase('Last edit [[time]] by [[admin]].', [
 						'time' => $item['last_modified_datetime'],
@@ -557,10 +556,33 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$panel['key']['equivId'] = $item['equiv_id'];
 					$panel['key']['cType'] = $item['type'];
 				}
-		
-		
-				$item['css_class'] = ze\contentAdm::getItemIconClass($item['id'], $item['type'], true, $item['status']);
 				
+				$item['css_class'] = ze\contentAdm::getItemIconClass($item['id'], $item['type'], true, $item['status']);
+			//Below code is to show clock icon for scheduled publish content.
+				$checkIfPublishsql = "SELECT id,scheduled_publish_datetime from ". DB_PREFIX. "content_item_versions 
+					WHERE id IN (". $item['id']. ")
+			  AND scheduled_publish_datetime IS NOT NULL
+			  AND published_datetime IS NULL AND publisher_id=0" ;
+			 
+				$checkIfPublish = ze\sql::select($checkIfPublishsql);
+				$getresult = ze\sql::fetchAssoc($checkIfPublish);
+	
+				if($getresult && $checkIfPublish)
+				{
+					if(sizeof($getresult)>1 )
+					{
+						$item['css_class'] ='scheduled_tasks_on_icon';
+					}
+				}
+			//
+				
+				// Change code for Special pages tooltip
+				if ($refinerName == 'special_pages'){
+						$specialPage = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $item['equiv_id'], 'content_type' => $item['type']]);
+						$specialPageName = str_replace('_', ' ', ze\ring::chopPrefix('zenario_', $specialPage['page_type'], true));
+						$item['tooltip'] = ze\admin::phrase('Special page: [[name]] page', ['name' => $specialPageName]);
+				}
+				//		
 				if ($showInOrganiser && ($privacy = $item['privacy'] ?? false)) {
 					$item['row_class'] = ' privacy_'. $privacy;
 					
@@ -575,10 +597,16 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				if (isset($item['row_class']) && !empty($item['layout_status'])) {
 					$item['row_class'] .= ' layout_status_' . $item['layout_status'];
 				}
+				//Change code for Special page ID/alias
+				if ($refinerName == 'special_pages'){
+					$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']).
+					' '.
+					ze\admin::phrase('([[name]] page)', ['name' => $specialPageName]);
 
-		
-				$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
-		
+				} else {
+					$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
+				}
+				//
 				$item['traits'] = [];
 				switch ($item['status']) {
 					case 'first_draft':

@@ -8,6 +8,7 @@ site_settings:
                 admin_use_ssl:
                     site_setting:
                         name: admin_use_ssl
+                        protect_from_database_restore: true
                     label: 'Force Admin SSL:'
                     type: checkbox
                     format_onchange: Yes

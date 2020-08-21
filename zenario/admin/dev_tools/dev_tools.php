@@ -105,12 +105,12 @@ switch ($_GET['mode'] ?? false) {
 }
 
 
-$schema = ze\tuix::readFile(CMS_ROOT. 'zenario/api/'. $schemaName. '.yaml');
+$schema = ze\tuix::readFile(CMS_ROOT. 'zenario/reference/'. $schemaName. '.yaml');
 
 //Copy the some definitions from the FAB toolkit to the FEA toolkit
 //(This is a hack to save me from writing all of that out twice!)
 if ($schemaName == 'fea_schema') {
-	$fabSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/api/admin_box_schema.yaml');
+	$fabSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/reference/admin_box_schema.yaml');
 	
 	unset($fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields']['additionalProperties']['properties']['pick_items']);
 	
@@ -126,7 +126,7 @@ if ($schemaName == 'fea_schema') {
 	
 	//On Assetwolf sites, add some specific Assetwolf definitions
 	if (ze\module::isRunning('assetwolf_2')) {
-		$awSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/api/assetwolf_fea_schema.yaml');
+		$awSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/reference/assetwolf_fea_schema.yaml');
 		
 		$schema['additionalProperties']['properties'] = 
 			array_merge_recursive(

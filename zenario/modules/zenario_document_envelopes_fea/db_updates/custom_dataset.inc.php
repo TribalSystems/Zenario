@@ -118,3 +118,19 @@ _sql
 _sql
  
 );
+
+if (ze\dbAdm::needRevision(12)) {
+	
+	$datasetId = ze\datasetAdm::register(
+		'Document envelopes',
+		ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes_custom_data',
+		ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes',
+		'zenario_document_envelope__details',
+		'zenario__document_envelopes/panels/document_envelopes',
+		'',
+		'_PRIV_MANAGE_ENVELOPE');
+	
+	ze\row::update('custom_dataset_fields', ['type' => 'textarea'], ['dataset_id' => (int) $datasetId, 'field_name' => 'description']);
+	
+	ze\dbAdm::revision(12);
+}

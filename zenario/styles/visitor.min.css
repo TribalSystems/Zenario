@@ -17,4 +17,4 @@ div.zenario_cookie_consent .zenario_cc_buttons{padding-left:0;padding-top:5px;te
 .zenario_visitor_tooltip_wrap{position:relative}.zenario_visitor_tooltip_wrap .zenario_password_requirements_tooltip{position:absolute;right:0;top:0}input[type="password"].border_red{border-color:#e30000 !important}
 input[type="password"].border_green{border-color:#00ab00 !important}.zenario_tslink{position:relative;z-index:50 !important;float:right;width:18px;height:18px;background:url('../admin/images/icon-info-squares.svg') center center no-repeat;right:24px}
 .zenario_front_end_picked_item_info{width:18px;height:18px;display:inline-block;background:url('../admin/images/icon-info-squares.svg') no-repeat center center;text-indent:-99px;font-size:0;line-height:0}
-.lang_flag.lang_disabled{opacity:.3}
+.lang_flag.lang_disabled{opacity:.3}span.zenario_copy{cursor:pointer}

@@ -1,4 +1,5 @@
 slot_plugin_and_mode:
+    fea_type: form
     key: {}
     error_on_form_message: Please check below for errors.
     tab: details

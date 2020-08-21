@@ -46,10 +46,7 @@ login:
                     type: checkbox
                     row_class: row_form
                     return_key_presses_button: login
-                    post_field_html: |
-                        <label for="remember_me">
-                            Remember me
-                        </label>
+                    label: Remember me
                     note_below: |
                         If checked, you will see a "Login" button on the top-right of the website front-end the next time you come to the site.
                 login:

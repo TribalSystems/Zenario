@@ -75,6 +75,7 @@ zenario__administration:
                 set_default:
                     priv: _PRIV_EDIT_SITE_SETTING
                     label: Set default
+                    visible_if_for_all_selected_items: !item.default
                     ajax:
                         request:
                             set_default: '1'

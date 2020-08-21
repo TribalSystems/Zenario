@@ -105,6 +105,22 @@ plugin_settings:
                     value: 0
                     plugin_setting:
                         name: locations__field__special_offers
+                
+                display_custom_dataset_fields_on_the_frontend:
+                    plugin_setting:
+                        name: display_custom_dataset_fields_on_the_frontend
+                    grouping: show_fields
+                    label: 'Display custom fields on the front end:'
+                    pick_items:
+                        reorder_items: true
+                        multiple_select: true
+                        enable_type_ahead_search: true
+                        path: zenario__administration/panels/custom_fields/refiners/dataset_id//
+                        info_button_path: zenario__administration/panels/custom_datasets/item_buttons/edit_gui//
+                    note_below: |
+                        Custom field data will appear on the location list and the map.
+                        However, only checkbox-type fields will appear on the location list of filters.
+                
                 location_display:
                     grouping: filter_locations
                     plugin_setting:
@@ -167,8 +183,8 @@ plugin_settings:
                     value: false
                     plugin_setting:
                         name: hide_filters_list
-        image:
-            label: "Images"
+        display:
+            label: "Display"
             fields:
                 show_images:
                     plugin_setting:
@@ -243,3 +259,31 @@ plugin_settings:
                     note_below: |
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
+                zoom_control:
+                    plugin_setting:
+                        name: zoom_control
+                    label: 'Zoom settings:'
+                    type: radios
+                    values:
+                        auto_include_all_locations:
+                            ord: 1
+                            label: 'Auto-zoom to include all location pins'
+                        set_manually:
+                            ord: 2
+                            label: 'Manually set a zoom level'
+                    value: 'auto_include_all_locations'
+                    redraw_onchange: true
+                    note_below: 'Use 1 for a world-level view, or any integer up to 25 for a close-up view. (Higher zoom levels may not be available, depending on the region or country)'
+                zoom_level:
+                    plugin_setting:
+                        name: zoom_level
+                    indent: 1
+                    label: 'Zoom level:'
+                    visible_if: lib.value('zoom_control') == 'set_manually'
+                    type: text
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    validation:
+                        required_if_not_hidden: "This field is required."
+                        numeric: "Please enter a number."
+                    side_note: 'Note: the plugin preview may not accurately reflect a change in zoom left. Please save and reload if changing zoom level.'

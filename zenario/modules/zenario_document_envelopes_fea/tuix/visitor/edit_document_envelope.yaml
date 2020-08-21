@@ -1,5 +1,6 @@
 zenario_edit_document_envelope: &definition
     css_class: zfea_edit_box
+    fea_type: form
     key:
         envelopeId: ''
     title: "Editing document envelope [[envelopeId]]"
@@ -22,7 +23,7 @@ zenario_edit_document_envelope: &definition
                     type: text
                     maxlength: 255
                     validation:
-                        required: 'This field is required.'
+                        required_if_not_hidden: 'This field is required.'
                 name:
                     label: 'Name:'
                     type: text

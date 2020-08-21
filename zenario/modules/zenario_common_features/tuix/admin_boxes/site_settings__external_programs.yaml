@@ -146,9 +146,9 @@ site_settings:
                                 there is not support for this feature on a Windows server.
                             </p>
                 antiword_path:
-                    name: antiword_path
                     site_setting:
                         name: antiword_path
+                        protect_from_database_restore: true
                     label: 'Antiword path:'
                     type: select
                     value: PATH
@@ -228,9 +228,9 @@ site_settings:
                         This setting define the image definition that will be produced (higher definition also creates big images).
                         Recomended values can be any of 72, 150, 300, 600 (default 72).
                 ghostscript_path:
-                    name: ghostscript_path
                     site_setting:
                         name: ghostscript_path
+                        protect_from_database_restore: true
                     label: 'ghostscript path:'
                     type: select
                     value: PATH
@@ -306,9 +306,9 @@ site_settings:
                                 Zenario will call whichever is running.
                             </p>
                 jpegtran_path:
-                    name: jpegtran_path
                     site_setting:
                         name: jpegtran_path
+                        protect_from_database_restore: true
                     label: 'jpegtran path:'
                     type: select
                     value: '/usr/bin/'
@@ -331,9 +331,9 @@ site_settings:
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 jpegoptim_path:
-                    name: jpegoptim_path
                     site_setting:
                         name: jpegoptim_path
+                        protect_from_database_restore: true
                     label: 'jpegoptim path:'
                     type: select
                     value: '/usr/bin/'
@@ -395,9 +395,9 @@ site_settings:
                                 there is no support for this feature on a Windows server.
                             </p>
                 mysql_path:
-                    name: mysql_path
                     site_setting:
                         name: mysql_path
+                        protect_from_database_restore: true
                     label: 'mysql path:'
                     type: select
                     value: PATH
@@ -422,9 +422,9 @@ site_settings:
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 mysqldump_path:
-                    name: mysqldump_path
                     site_setting:
                         name: mysqldump_path
+                        protect_from_database_restore: true
                     label: 'mysqldump path:'
                     type: select
                     value: PATH
@@ -502,9 +502,9 @@ site_settings:
                                 there is not support for this feature on a Windows server.
                             </p>
                 pdftotext_path:
-                    name: pdftotext_path
                     site_setting:
                         name: pdftotext_path
+                        protect_from_database_restore: true
                     label: 'pdftotext path:'
                     type: select
                     value: PATH
@@ -572,9 +572,9 @@ site_settings:
                                 so please install both of them for best results.
                             </p>
                 optipng_path:
-                    name: optipng_path
                     site_setting:
                         name: optipng_path
+                        protect_from_database_restore: true
                     label: 'optipng path:'
                     type: select
                     value: '/usr/bin/'
@@ -597,9 +597,9 @@ site_settings:
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 advpng_path:
-                    name: advpng_path
                     site_setting:
                         name: advpng_path
+                        protect_from_database_restore: true
                     label: 'advpng path:'
                     type: select
                     value: '/usr/bin/'

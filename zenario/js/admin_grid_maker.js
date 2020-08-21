@@ -118,7 +118,7 @@ zenarioGM.init = function(data, layoutId, layoutName, familyName) {
 
 zenarioGM.draw = function(doNotRedrawForm) {
 	if (!doNotRedrawForm) {
-		zenarioGM.drawForm();
+		zenarioGM.drawOptions();
 	}
 
 	if (zenarioGM.editing) {
@@ -128,7 +128,7 @@ zenarioGM.draw = function(doNotRedrawForm) {
 	}
 };
 
-zenarioGM.drawForm = function() {
+zenarioGM.drawOptions = function() {
 	var m = {formId: formId},
 		html = zenarioGM.microTemplate(zenarioGM.mtPrefix + 'top', m);
 		

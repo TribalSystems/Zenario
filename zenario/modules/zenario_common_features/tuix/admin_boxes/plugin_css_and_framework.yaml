@@ -2,11 +2,8 @@
 ---
 plugin_settings:
     tabs:
-        css_tabs:
-            ord: 100003
-            label: CSS
         this_css_tab:
-            parent: css_tabs
+            parent: advanced_dropdown
             label: CSS (this ~plugin~)
             fields:
                 css_class:
@@ -42,6 +39,10 @@ plugin_settings:
                     pre_field_html: 'File:&nbsp;'
                     snippet:
                         label: ''
+                css_inheritance_note:
+                    hidden: true
+                    snippet: {}
+                    note_below: ''
             
             show_errors_after_field: css_path
             notices:
@@ -51,13 +52,14 @@ plugin_settings:
                         Any changes you make to the CSS file will go live immediately upon saving.
         
         all_css_tab:
-            parent: css_tabs
+            parent: advanced_dropdown
             label: CSS (all ~plugin~s of this type)
             fields:
                 css_class:
                     label: 'CSS class for all ~plugin~s of this type:'
                     snippet:
-                        label: ''
+                        span_class: zenario_css_class_label
+                        span: ''
                 
                 use_css_file:
                     type: checkbox
@@ -86,11 +88,18 @@ plugin_settings:
                     pre_field_html: 'File:&nbsp;'
                     snippet:
                         label: ''
+                css_inheritance_note:
+                    hidden: true
+                    snippet: {}
+                    note_below: ''
         
         framework_tab:
-            ord: 100004
+            parent: advanced_dropdown
             label: Framework
             fields:
+                desc:
+                    snippet:
+                        label: Frameworks are based on HTML and Twig and determine the output that is displayed to visitors.
                 framework:
                     label: 'Framework:'
                     type: select
@@ -109,6 +118,17 @@ plugin_settings:
                     readonly: true
                     style: >
                         height: 30em;
+                no_frameworks_message:
+                    hidden: true
+                    snippet:
+                        html: |
+                            <label>
+                                No frameworks are available.
+                                This is because this plugin's module has no <code>frameworks/</code> directory,
+                                or the <code>frameworks/</code> directory has no framework files inside it.
+                                Developers: if this plugin/mode uses frameworks, you can create a directory and file
+                                inside it called <code>frameworks/[framework-name]/framework.twig.html</code>.
+                            </label>
                 
     save_and_continue_button_message: 'Save & Continue'
     

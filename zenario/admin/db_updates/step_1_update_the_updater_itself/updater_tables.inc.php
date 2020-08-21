@@ -39,7 +39,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Automatically convert any table that's not using our preferred engine to that engine
-if (ze\dbAdm::needRevision(50609)) {
+if (ze\dbAdm::needRevision(50950)) {
 	
 	foreach (ze\sql::fetchValues("
 		SELECT `TABLE_NAME`
@@ -54,6 +54,6 @@ if (ze\dbAdm::needRevision(50609)) {
 		);
 	}
 	
-	ze\dbAdm::revision(50609);
+	ze\dbAdm::revision(50950);
 }
 

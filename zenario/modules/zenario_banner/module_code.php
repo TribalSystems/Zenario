@@ -58,7 +58,7 @@ class zenario_banner extends ze\moduleBaseClass {
 	}
 	
 
-	protected function setupLink(&$mergeFields, &$cID, &$cType, $useTranslation = true, $link_type = 'link_type', $hyperlink_target = 'hyperlink_target', $target_blank = 'target_blank', $url = false) {
+	protected function setupLink(&$mergeFields, &$cID, &$cType, $useTranslation = true, $link_type = 'link_type', $hyperlink_target = 'hyperlink_target', $target_blank = 'target_blank', $url = false, $imageId='') {
 		
 		$mergeFields['Target_Blank'] = '';
 		$link = $downloadFile = $cID = $cType = false;
@@ -80,11 +80,13 @@ class zenario_banner extends ze\moduleBaseClass {
 			} else {
 				$link = ze\link::toItem($cID, $cType, $fullPath = false, $this->request);
 			}
-			
+
 			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
 			    $link .= '#' . $anchor;
 			}
-			
+			if ($this->setting('link_to_anchor_'. $imageId) && ($anchor = $this->setting('hyperlink_anchor_'. $imageId))) {
+			    $link .= '#' . $anchor;
+			}
 			//Use the Theme Section for a Masthead with a link and set the link
 			$mergeFields['Link_Href'] =
 			$mergeFields['Image_Link_Href'] =
@@ -744,18 +746,6 @@ class zenario_banner extends ze\moduleBaseClass {
 			//Display the Plugin
 			$this->framework('Outer', $this->mergeFields, $this->subSections);
 		}
-	}	
-
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		require ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		require ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	

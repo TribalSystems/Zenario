@@ -42,7 +42,25 @@ class zenario_common_features__admin_boxes__page_preview_size extends ze\moduleB
 			$values['details/height'] = $pagePreviewSize['height'];
 			$values['details/description'] = $pagePreviewSize['description'];
 			$values['details/type'] = $pagePreviewSize['type'];
+
+			switch ($pagePreviewSize['type']) {
+				case 'desktop':
+				case 'laptop':
+				case 'tablet':
+				case 'tablet_landscape':
+				case 'smartphone':
+					$box['identifier']['css_class'] = "zenario_preview_icon_" . $pagePreviewSize['type'];
+			}
 		}
+	}
+
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//...
+	}
+
+
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		//...
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -77,5 +95,9 @@ class zenario_common_features__admin_boxes__page_preview_size extends ze\moduleB
 					'type' => $values['details/type']]
 				, $id);
 		}
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//...
 	}
 }

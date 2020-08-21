@@ -573,80 +573,61 @@ if ($methodCall == 'showFile') {
 		if (!ze\priv::check()) {
 			$showInfo = false;
 		}
-		echo '<!--FORCE_PAGE_RELOAD:', ze\escape::hyp($url), '-->';
+		ze\escape::flag('FORCE_PAGE_RELOAD', $url);
 	
 	} elseif ($module->checkForcePageReloadVar()) {
 		if (!ze\priv::check()) {
 			$showInfo = false;
 		}
-		echo '<!--FORCE_PAGE_RELOAD:', ze\escape::hyp(ze\link::toItem(ze::$cID, ze::$cType, true, '', ze::$alias, true)), '-->';
+		ze\escape::flag('FORCE_PAGE_RELOAD', ze\link::toItem(ze::$cID, ze::$cType, true, '', ze::$alias, true));
 	
 	}
 	
 	if ($showInfo) {
-		echo
-			'<!--PAGE_TITLE:',
-				ze\escape::hyp(ze::$pageTitle),
-			'-->';
-		
-		echo
-			'<!--INSTANCE_ID:',
-				(int) ze\ray::value(ze::$slotContents[$slotName], 'instance_id'),
-			'-->';
+		ze\escape::flag('INSTANCE_ID', (int) ze\ray::value(ze::$slotContents[$slotName], 'instance_id'));
 		
 		if ($module->checkScrollToTopVar() === true) {
-			echo
-				'<!--SCROLL_TO_TOP-->';
+			ze\escape::flag('SCROLL_TO_TOP');
 		}
 		
 		//Lets a Plugin will be placed in a floating box when it reloads
 		if (($showInFloatingBox = $module->checkShowInFloatingBoxVar()) === true) {
-			echo
-				'<!--SHOW_IN_FLOATING_BOX-->';
+			ze\escape::flag('SHOW_IN_FLOATING_BOX');
 			if (($params = $module->getFloatingBoxParams()) && is_array($params)) {
-				echo
-					'<!--FLOATING_BOX_PARAMS:' . ze\escape::hyp(json_encode($params)) . '-->';
+				ze\escape::flag('FLOATING_BOX_PARAMS', json_encode($params));
 			}
 		}
 		
 		//Display the level this Module is at
 		$slotLevel = ze\ray::value(ze::$slotContents[$slotName], 'level');
-		echo
-			'<!--LEVEL:',
-				ze\escape::hyp($slotLevel),
-			'-->';
+		ze\escape::flag('LEVEL', $slotLevel);
 		
 		if ($slideId = (int) $module->zAPIGetTabId()) {
-			echo
-				'<!--TAB_ID:', $slideId, '-->';
+			ze\escape::flag('TAB_ID', $slideId);
 		}
 		
 		$cssClass = $module->zAPIGetCSSClass();
+		
+		$layoutPreview = null;
+		$slotControlHTML = null;
 			
 		if (ze\priv::check()) {
 			$slotContents = [$slotName => &ze::$slotContents[$slotName]];
-			ze\pluginAdm::setupSlotControls($slotContents, true);
+			$slotControlHTML = ze\pluginAdm::setupSlotControls($slotContents, true);
 			
 			$moduleId = ze\ray::value(ze::$slotContents[$slotName], 'module_id');
-			echo
-				'<!--MODULE_ID:',
-					ze\escape::hyp($moduleId),
-				'-->';
+			ze\escape::flag('MODULE_ID', $moduleId);
 			
-			echo
-				'<!--NAMESPACE:',
-					ze\escape::hyp(ze\ray::value(ze::$slotContents[$slotName], 'class_name')),
-				'-->';
+			ze\escape::flag('NAMESPACE', ze\ray::value(ze::$slotContents[$slotName], 'class_name'));
 			
 			if (!empty(ze::$slotContents[$slotName]['instance_id'])) {
 				if (!empty(ze::$slotContents[$slotName]['content_id'])) {
-					echo
-						'<!--WIREFRAME-->';
+					ze\escape::flag('WIREFRAME');
 				}
 			}
 		
 			if ($module->beingEdited()) {
-				echo '<!--IN_EDIT_MODE-->';
+				ze\escape::flag('IN_EDIT_MODE');
 			}
 		
 			if ($slotLevel == 2
@@ -658,52 +639,49 @@ if ($methodCall == 'showFile') {
 					$module->showLayoutPreview();
 				$layoutPreview = ob_get_clean();
 				$cssClass .= ' zenario_slot_with_layout_preview';
-				
-				echo
-					'<!--LAYOUT_PREVIEW:',
-						ze\escape::hyp($layoutPreview),
-					'-->';
 			}
 		}
 		
-		echo
-			'<!--CSS_CLASS:',
-				ze\escape::hyp($cssClass),
-			'-->';
+		ze\escape::flag('CSS_CLASS', $cssClass);
 		
 		if (empty(ze::$slotContents[$slotName]['instance_id'])) {
 			ze\plugin::showError($slotName);
+		
 		} else {
 			$module->showSlot();
-		}
+			
+			//Check if the Plugin wants any JavaScript run
+			$scriptTypes = [];
+			$module->zAPICheckRequestedScripts($scriptTypes);
 		
-		
-		//Check if the Plugin wants any JavaScript run
-		$scriptTypes = [];
-		$module->zAPICheckRequestedScripts($scriptTypes);
-		
-		$i = 0;
-		$j = 0;
-		foreach ($scriptTypes as $scriptType => &$scripts) {
-			foreach ($scripts as &$script) {
-				if ($scriptType === 0) {
-					echo '<!--SCRIPT_BEFORE'. ++$j. ':';
-				} else {
-					echo '<!--SCRIPT'. ++$i. ':';
-				}
-				echo ze\escape::hyp(json_encode($script)), '-->';
-			}
-		}
-		
-		if (!empty(ze::$jsLibs)) {
 			$i = 0;
-			foreach (ze::$jsLibs as $lib => $stylesheet) {
-				echo
-					'<!--JS_LIB'. ++$i. ':',
-						ze\escape::hyp(json_encode([$lib, $stylesheet])),
-					'-->';
+			$j = 0;
+			foreach ($scriptTypes as $scriptType => &$scripts) {
+				foreach ($scripts as &$script) {
+					if ($scriptType === 0) {
+						ze\escape::flag('SCRIPT_BEFORE'. ++$j, json_encode($script), false);
+					} else {
+						ze\escape::flag('SCRIPT'. ++$i, json_encode($script), false);
+					}
+				}
+			}
+		
+			if (!empty(ze::$jsLibs)) {
+				$i = 0;
+				foreach (ze::$jsLibs as $lib => $stylesheet) {
+					ze\escape::flag('JS_LIB'. ++$i, json_encode([$lib, $stylesheet]), false);
+				}
 			}
 		}
+		
+		if ($layoutPreview !== null) {
+			ze\escape::flag('LAYOUT_PREVIEW', $layoutPreview, false);
+		}
+		if ($slotControlHTML !== null) {
+			ze\escape::flag('SLOT_CONTROLS', $slotControlHTML, false);
+		}
+		
+		ze\escape::flag('PAGE_TITLE', ze::$pageTitle, false);
 	}
 }
 

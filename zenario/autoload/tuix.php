@@ -1132,6 +1132,25 @@ class tuix {
 	public static function looksLikeFAB(&$tags) {
 		return !empty($tags['tabs']) && is_array($tags['tabs']);
 	}
+	
+	//Try to work out whether this type of TUIX app uses the sync logic.
+	//FEA forms and FEA dashes do, FEA lists don't.
+	//If it's not an FEA plugin and/or the fea_type property is not set,
+	//then call the looksLikeFAB() function to decide as a fallback.
+	public static function usesSync(&$tags) {
+		if (isset($tags['fea_type'])) {
+			switch ($tags['fea_type']) {
+				case 'form':
+				case 'dash':
+					return true;
+				default:
+					return false;
+			}
+		
+		} else {
+			return \ze\tuix::looksLikeFAB($tags);
+		}
+	}
 
 	//Formerly "TUIXIsFormField()"
 	public static function isFormField(&$field) {
@@ -2439,7 +2458,15 @@ class tuix {
 	//Sync updates from the client to the array stored on the server
 	//Formerly "syncAdminBoxFromClientToServer()"
 	public static function syncFromClientToServer(&$serverTags, &$clientTags, $key1 = false, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false) {
-	
+		
+		if ($key1 === false) {
+			if (isset($clientTags['from_client'])) {
+				$serverTags['from_client'] = [];
+				\ze\tuix::syncAllTagsToServer($serverTags['from_client'], $clientTags['from_client']);
+			}
+		}
+		
+		
 		$keys = array_merge(\ze\ray::valuesToKeys(array_keys($serverTags)), \ze\ray::valuesToKeys(array_keys($clientTags)));
 	
 		foreach ($keys as $key0 => $dummy) {
@@ -2479,6 +2506,20 @@ class tuix {
 						\ze\tuix::syncFromClientToServer($serverTags[$key0], $clientTags[$key0], $key0, $key1, $key2, $key3, $key4, $key5);
 					}
 				}
+			}
+		}
+	}
+
+	//This function is similar to the above, except it is specifically coded to handle the "from_client" object,
+	//where everything is allowed through
+	public static function syncAllTagsToServer(&$serverTags, &$clientTags) {
+		
+		foreach ($clientTags as $key0 => &$val) {
+			if (is_array($clientTags[$key0])) {
+				$serverTags[$key0] = [];
+				\ze\tuix::syncAllTagsToServer($serverTags[$key0], $clientTags[$key0]);
+			} else {
+				$serverTags[$key0] = \ze\tuix::deTilde($clientTags[$key0]);
 			}
 		}
 	}
@@ -2726,13 +2767,23 @@ class tuix {
 		$originalTags = [];
 		$moduleFilesLoaded = [];
 		\ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath);
-	
+		
 		if (empty($tags[$requestedPath])) {
-			echo 'Path not found!';
+			
+			$paths = [];
+			foreach ($moduleFilesLoaded as $mfl) {
+				if (!empty($mfl['paths'])) {
+					$paths = array_merge($paths, $mfl['paths']);
+				}
+			}
+			
+			echo 'Could not find the tag-path "', $requestedPath, '". The following file(s) were searched: ', implode(', ', $paths);
 			exit;
 		}
 		$tags = $tags[$requestedPath];
 		$clientTags = false;
+		
+		$useSync = \ze\tuix::usesSync($tags);
 		
 		\ze\tuix::checkTUIXForm($tags);
 		
@@ -2837,7 +2888,7 @@ class tuix {
 		
 			\ze\tuix::syncFromClientToServer($tags, $clientTags);
 		
-			if (!empty($_REQUEST['_useSync'])) {
+			if ($useSync) {
 				$originalTags = $tags;
 			}
 		
@@ -2913,7 +2964,7 @@ class tuix {
 			}
 		}
 	
-		if (\ze\tuix::looksLikeFAB($tags)) {
+		if ($useSync) {
 			//Try to save a copy of the admin box in the cache directory
 			\ze\tuix::saveCopyOnServer($tags);
 		

@@ -171,7 +171,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 						}
 						
 						//Attempt to find the slide that matches the variables we found above
-						if ($privacy = ze\row::get('nested_plugins', ['privacy', 'smart_group_id', 'module_class_name', 'method_name', 'param_1', 'param_2'], $key)) {
+						if ($privacy = ze\row::get('nested_plugins', ['privacy', 'at_location', 'smart_group_id', 'module_class_name', 'method_name', 'param_1', 'param_2'], $key)) {
 							//Check the privacy rules for that slide!
 							$perms = ze\content::checkItemPrivacy($privacy, $privacy, $cID, $cType, $data[$tagId]['version']['version']);
 						}

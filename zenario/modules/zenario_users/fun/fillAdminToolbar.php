@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
-$chain = ze\row::get('translation_chains', ['equiv_id', 'type', 'privacy'], ['equiv_id' => ze::$equivId, 'type' => ze::$cType]);
+$chain = ze\row::get('translation_chains', ['equiv_id', 'type', 'privacy', 'at_location'], ['equiv_id' => ze::$equivId, 'type' => ze::$cType]);
 
 
 if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions'])) {

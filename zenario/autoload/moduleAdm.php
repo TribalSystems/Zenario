@@ -114,7 +114,7 @@ class moduleAdm {
 		unset($contents);
 	
 	
-		$tagsToParse = \ze\tuix::readFile(CMS_ROOT. 'zenario/api/module_base_class/description.yaml');
+		$tagsToParse = \ze\tuix::readFile(CMS_ROOT. 'zenario/reference/module_default_values.yaml');
 		\ze\tuix::parse($tags, $tagsToParse, 'module_description', '', 'inherited');
 		unset($tagsToParse);
 	
@@ -888,6 +888,7 @@ class moduleAdm {
 		\ze\row::delete('plugin_setting_defs', ['module_class_name' => $moduleClassName]);
 		
 		$secretColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'secret', $useCache = false);
+		$protectColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'protect_from_database_restore');
 
 		//Loop through every module Setting that a module has in its Admin Box XML file(s)
 		if ($dir = \ze::moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
@@ -969,6 +970,11 @@ class moduleAdm {
 															`secret` = ". (int) \ze\ring::engToBoolean($field[$settingDef]['secret'] ?? 0);
 													}
 													
+													if ($protectColExists) {
+														$sql .= ",
+															protect_from_database_restore = ". (int) \ze\ring::engToBoolean($field[$settingDef]['protect_from_database_restore'] ?? 0);
+													}
+													
 													$sql .= "
 														ON DUPLICATE KEY UPDATE
 															default_value = '". \ze\escape::sql((string) $value). "'";
@@ -976,6 +982,11 @@ class moduleAdm {
 													if ($secretColExists) {
 														$sql .= ",
 															`secret` = ". (int) \ze\ring::engToBoolean($field[$settingDef]['secret'] ?? 0);
+													}
+													
+													if ($protectColExists) {
+														$sql .= ",
+															protect_from_database_restore = ". (int) \ze\ring::engToBoolean($field[$settingDef]['protect_from_database_restore'] ?? 0);
 													}
 													
 													\ze\sql::update($sql);

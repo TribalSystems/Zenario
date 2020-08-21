@@ -1,4 +1,5 @@
 slot_settings_zenario_banner:
+    fea_type: form
     key:
         slideLayoutId: ''
         slideLayoutFor: ''

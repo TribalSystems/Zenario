@@ -140,6 +140,19 @@
 	background-color:#fbf290;
 }
 
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_button_disabled a {
+	cursor:default;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_button_disabled a:hover {
+	background:transparent;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_button_disabled a,
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_button_disabled a:hover {
+	color:#888;
+}
+
 #zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_draft a {
 	color:#E55107;
 	background:url('../admin/images/icon-warning.svg') no-repeat left 1px / 15px 15px;
@@ -554,22 +567,18 @@
 }
 
 #zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary {
-	background-image:url('../admin/images/toolbar-border-pale-grey.png');
-	background-repeat:no-repeat;
-	background-position:0 0;
 	overflow:hidden;
 	padding-left:1px;
 }
 
-#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary:hover {
-	background-image:url('../admin/images/toolbar-border-grey.png');
+/*#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary {
+	background-image:url('../admin/images/toolbar-border-pale-grey.png');
 	background-repeat:no-repeat;
 	background-position:0 0;
 }
 
-/*#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary.zenario_toolbar_on,
-#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary.zenario_toolbar_on:hover {
-	background-image:url('../admin/images/toolbar-border-black.png');
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_at_menu_tab_primary .zenario_at_menu_tab_secondary:hover {
+	background-image:url('../admin/images/toolbar-border-grey.png');
 	background-repeat:no-repeat;
 	background-position:0 0;
 }*/
@@ -596,6 +605,15 @@
 
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_middle_child .zenario_middle_inner {
 	display:inline-block;
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary {
+	background:transparent;
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary .zenario_middle_child .zenario_middle_inner {
+	height:24px;
+	margin-top:3px;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__preview .zenario_middle .zenario_middle_inner,
@@ -699,6 +717,24 @@
 	background-image:url('../admin/images/icon-menu-on-state-v2.svg');
 }
 
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_at_tab_with_children .zenario_middle > .zenario_middle_inner {
+	background-image:url('../admin/images/icon-menu-node-1-light-grey.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_at_tab_with_children .zenario_middle > .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-node-1-grey.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on.zenario_at_tab_with_children .zenario_middle > .zenario_middle_inner, 
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on.zenario_at_tab_with_children .zenario_middle > .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-node-1-blue.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_at_tab_with_children .zenario_middle > .zenario_middle_inner {
+	background-size:16px 16px;
+	background-position:11px 11px;
+}
+
 #zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary .zenario_middle_child .zenario_middle_inner  {
 	background-image:url('../admin/images/icon-menu-node-2-light-grey.svg');
 }
@@ -718,6 +754,8 @@
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
 	background-image:url('../admin/images/icon-layout-on-state-v2.svg');
 }
+
+
 
 /*#zenario_at .zenario_at_tabs .zenario_at_menu_tab_secondary .zenario_middle {
 	padding:5px 10px 0;
@@ -786,8 +824,13 @@
 
 #zenario_at .zenario_at_toolbar ul li.zenario_create_a_new:hover,
 #zenario_at .zenario_at_toolbar ul li.zenario_create_a_new li:hover,
-#zenario_at .zenario_at_toolbar ul li:hover li.zenario_create_a_new:hover a {
+#zenario_at .zenario_at_toolbar ul li:hover li.zenario_create_a_new:hover a,
+#zenario_at .zenario_at_toolbar ul li:hover li.zenario_at_button_disabled:hover a {
 	background-color:transparent;
+}
+
+#zenario_at .zenario_at_toolbar ul li:hover li.zenario_at_button_disabled a {
+	cursor:default;
 }
 
 #zenario_at .zenario_at_toolbar ul li:hover a,
@@ -952,7 +995,8 @@
 
 /* Disabled buttons on the admin toolbar */
 #zenario_at .zenario_at_toolbar > div > ul > li.zenario_at_button_disabled > a,
-#zenario_at .zenario_at_toolbar > div > ul > li ul li.zenario_at_button_disabled > a {
+#zenario_at .zenario_at_toolbar > div > ul > li ul li.zenario_at_button_disabled > a,
+#zenario_at .zenario_at_toolbar > div > ul > li ul li.zenario_at_button_disabled:hover > a {
 	color: #888;
 	text-decoration:none;
 }
@@ -1175,6 +1219,10 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	white-space: nowrap;
 	word-wrap: normal;
 	overflow:hidden;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar.zenario_at_infobar_menu_path {
+	width:calc(80% - 12px);
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar {

@@ -53,7 +53,16 @@ class zenario_document_envelopes_fea__visitor__upload_file_to_document_envelope 
 		$this->translatePhrasesInTUIX($tags, $path);
 		
 		ze\lang::applyMergeFields($tags['title'], ['envelope_name' => $this->envelope['name']]);
-		ze\lang::applyMergeFields($fields['details/file_id']['label'], ['envelope_code' => $this->envelope['code']]);
+		
+		if ($this->setting('filenames_must_begin_with_envelope_code')) {
+			$fields['details/file_id']['label'] =
+				$this->phrase(
+					"One or more documents (filename must begin with envelope code [[envelope_code]]):",
+					['envelope_code' => $this->envelope['code']]
+				);
+		} else {
+			$fields['details/file_id']['label'] = $this->phrase("One or more documents:");
+		}
 	}
 	
 	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {

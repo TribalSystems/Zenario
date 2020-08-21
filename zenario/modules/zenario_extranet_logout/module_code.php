@@ -33,6 +33,8 @@ class zenario_extranet_logout extends zenario_extranet {
 	protected $hasLoginForm = false;
 	
 	public function init() {
+		$this->registerPluginPage();
+		
 		$this->mode = 'modeLogin';
 		
 		if (!empty($_SESSION['extranetUserID'])) {

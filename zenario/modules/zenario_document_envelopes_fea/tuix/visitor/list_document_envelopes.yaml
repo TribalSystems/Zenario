@@ -1,4 +1,5 @@
 zenario_list_document_envelopes:
+    fea_type: list
     key:
         search: ''
         file_format: ''
@@ -64,6 +65,8 @@ zenario_list_document_envelopes:
             title: 'Code'
         name:
             title: 'Name'
+            sort_desc: "Name (Z-A)"
+            sort_asc: "Name (A-Z)"
         description:
             title: 'Description'
         keywords:

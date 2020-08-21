@@ -103,7 +103,34 @@ switch ($path) {
 				$values['data_deletion/delete_log_content_sooner'] = true;
 				$values['data_deletion/period_to_delete_log_content'] = $details['period_to_delete_log_content'];
 			}
-					
+			
+			$extraDetails = self::checkTemplateIsProtectedAndGetCreatedDetails($box['key']['id']);
+			if ($extraDetails['created_by_class_name']) {
+				$fields['protection/created_by']['snippet']['html'] = $this->phrase('Created by [[created_by_class_name]] ([[created_by_display_name]]) on [[date_created]].', $extraDetails);
+			} elseif ($extraDetails['created_by_admin']) {
+				$fields['protection/created_by']['snippet']['html'] = $this->phrase('Created manually by [[created_by_admin]] on [[date_created]].', $extraDetails);
+			} 
+			
+			if ($extraDetails['protected']) {
+				$fields['protection/template_protection_note']['snippet']['html'] = $this->phrase(
+					'This template is protected, code name is [[code]].<br />Plugins of the [[created_by_display_name]] module rely on this email template for their functionality.',
+					['code' => $details['code'], 'created_by_display_name' => $extraDetails['created_by_display_name']]
+				);
+			} else {
+				$fields['protection/template_protection_note']['snippet']['html'] = $this->phrase('This template is not protected.');
+			}
+			
+			$createdAndEditedInfo = [
+				'last_edited' => $details['date_modified'],
+				'last_edited_admin_id' => $details['modified_by_id'],
+				'last_edited_user_id' => false,
+				'last_edited_username' => false,
+				'created' => $details['date_created'],
+				'created_admin_id' => $details['created_by_id'],
+				'created_user_id' => false,
+				'created_username' => false
+			];
+			$box['last_updated'] = ze\admin::formatLastUpdated($createdAndEditedInfo);
 		} else {
 			$values['meta_data/use_standard_email_template'] = 'yes';
 			
@@ -154,6 +181,7 @@ switch ($path) {
 				$values['email_address_replyto'] = $logRecord['email_address_replyto'];
 				$values['email_address_from'] = $logRecord['email_address_from'];
 				$values['email_name_from'] = $logRecord['email_name_from'];
+				$values['email_ccs'] = $logRecord['email_ccs'];
 				
 				$box['tabs']['email']['fields']['email_body_non_escaped']['snippet']['html'] = $logRecord['email_body'];
 				

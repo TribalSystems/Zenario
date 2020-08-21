@@ -524,7 +524,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				$fields['first_tab/location_filter']['values'] =
 					ze\datasetAdm::listCustomFields(
 						ZENARIO_LOCATION_MANAGER_PREFIX. 'locations',
-						$flat = false, $filter = 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+						$flat = false, $filter = 'text_group_boolean_and_list_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 				break;
 
 		}

@@ -1,4 +1,4 @@
-<div class="interface_header" {% if this.setting('hide_filters_list') %} style="display: none;" {% endif %}>
+<div class="interface_header">
 	<div class="interface_header_top">
 		<div class="interface_back_link">
 			<a onclick="history.back(-1)">{{"Back"|trans}}</a>
@@ -7,7 +7,7 @@
 		</div>
 	</div>
 	<div class="interface_header_bottom">
-		<div id="interface_filters" class="interface_filters">
+		<div id="interface_filters" class="interface_filters" {% if this.setting('hide_filters_list') %} style="display: none;" {% endif %}>
 			<div id="filter_button_and_dropdown">
 				<h5 id="filter_button" class="filter_button" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.filterOnclick();">Filters</h5>
 				{% if Level_1_filters %}
@@ -157,11 +157,27 @@
 			<div id="{{mapId|escape}}" class="zenario_lmal_map zenario_lmal_map_wrap"></div>
 		
 			<div class="interface_location_listing">
-				<h2>{{list_title|trans}}</h2>
+				<div class="title_div">
+					<h2>{{list_title|e}}</h2>
+					
+					{% if note_below %}
+						<p class="note_below">{{note_below|e}}</p>
+					{% endif %}
+				</div>
+
 				{% for location in locations %}
 					<div class="zenario_lmal_location {{location.htmlId|escape}}" id="{{location.htmlId|escape}}"
 						{% if this.setting('show_location_list') and this.setting('show_map') %}
-							onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingClick(this, {{location.location_id|e}})};"
+							onclick="
+								if (typeof zenario_location_map_and_listing_2 !== 'undefined') {
+									zenario_location_map_and_listing_2.listingClick(this, {{location.location_id|e}})
+								};
+
+								if ($(this).find('.zenario_lmal_description').height() != '18')
+									$(this).find('.zenario_lmal_description').animate({ height: '18' }, 100 );
+								else
+									$(this).find('.zenario_lmal_description').animate({ height: '100%' }, 100 );
+							"
 							onmouseover="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseover(this, {{location.location_id|e}})};"
 							onmouseout="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseout(this, {{location.location_id|e}})};"
 						{% endif %}
@@ -184,9 +200,10 @@
 										{# Show a list of filters assigned to the location. #}
 										{# Make sure the filter set as the icon is in bold. #}
 										{# Separate the filters with commas. #}
+										{# Only show checkbox-type fields. #}
 									
 										{% for location_key, location_filter in location.filters_list %}
-											{% if location_key == location.icon_name %}<b>{% endif %}<i>{{location_filter|e}}</i>{% if location_key == location.icon_name %}</b>{% endif %}{% if not loop.last %},{% endif %}
+											{% if location_key == location.icon_name %}<b>{% endif %}<i>{{location_filter.label|e}}</i>{% if location_key == location.icon_name %}</b>{% endif %}{% if not loop.last %},{% endif %}
 										{% endfor %}
 									</span>
 								{% endif %}
@@ -255,6 +272,14 @@
 									<div class="zenario_lmal_special_offers">
 										{{location.special_offers|e}}
 									</div>
+								{% endif %}
+
+								{% if display_custom_dataset_fields_on_the_frontend %}
+									{% for front_end_field in display_custom_dataset_fields_on_the_frontend %}
+										<div class="zenario_lmal_{{front_end_field|e}}">
+											{{location[front_end_field]|e}}
+										</div>
+									{% endfor %}
 								{% endif %}
 							</div>
 						</div>

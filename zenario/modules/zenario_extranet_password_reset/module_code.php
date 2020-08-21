@@ -31,6 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_extranet_password_reset extends zenario_extranet {
 	
 	public function init() {
+		$this->registerPluginPage();
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
@@ -141,11 +142,15 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	}
 	
 	public static function getExtranetPasswordResetLink($userId, $cID = false, $cType = false) {
-		if (!$cID || !$cType) {
-			ze\content::langSpecialPage('zenario_password_reset', $cID, $cType);
-		}
+		
 		$hash = ze\row::get('users', 'hash', $userId);
-		return ze\link::toItem($cID, $cType, $fullPath = true, $request = '&extranet_reset_password=1&hash='. urlencode($hash));
+		$request = '&extranet_reset_password=1&hash='. urlencode($hash);
+		
+		if ($cID && $cType) {
+			return ze\link::toItem($cID, $cType, $fullPath = true, $request);
+		} else {
+			return ze\link::toPluginPage('zenario_extranet_password_reset', '', false, $fullPath = true, $request);
+		}
 	}
 	
 	private function getUserIdFromHashCode($hash){

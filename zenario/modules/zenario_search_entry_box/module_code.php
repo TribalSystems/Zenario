@@ -29,15 +29,25 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_search_entry_box extends zenario_search_results {
 	
+	public function init() {
+		
+		$this->allowCaching(
+			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+		$this->clearCacheBy(
+			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+		
+		return true;
+	}
+	
 	function showSlot() {
 		$this->sections = [];
 		$this->mergeFields = [];
 		
-		$cID = $cType = false;
+		$cID = $cType = $state = false;
 		if ($this->setting('use_specific_search_results_page') && $this->getCIDAndCTypeFromSetting($cID, $cType, 'specific_search_results_page')) {
 		
 		} else {
-			ze\content::langSpecialPage('zenario_search', $cID, $cType);
+			ze\content::pluginPage($cID, $cType, $state, 'zenario_search_results');
 		}
 		
 		if (!$cID) {
@@ -91,9 +101,6 @@ class zenario_search_entry_box extends zenario_search_results {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['first_tab']['fields']['specific_search_results_page']['hidden'] = 
-					!$values['first_tab/use_specific_search_results_page'];
-					
 				if ($box['tabs']['first_tab']['fields']['search_placeholder'] == true
 					&& empty($box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'])) {
 					$box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'] = 'Search the site';

@@ -8,6 +8,21 @@ ze\skinAdm::checkForChangesInFiles();
 $homeLink = $backLink = '';
 
 
+//Check if Organizer was opened from a page
+//(And actually check if the page exists, just in case the values in the URL are bogus)
+if (!empty($_GET['fromCID'])
+ && !empty($_GET['fromCType'])
+ && ($fromCID = (int) $_GET['fromCID'])
+ && ($fromCType = $_GET['fromCType'])
+ && (ze\row::exists('content_items', ['id' => $fromCID, 'type' => $fromCType, 'status' => ['!' => 'deleted']]))) {
+} else {
+	$fromCID = false;
+	$fromCType = false;
+}
+
+
+
+
 
 echo
 '<!DOCTYPE HTML>
@@ -63,12 +78,12 @@ if (!empty($_GET['openedInIframe'])) {
 				title="'. ze\admin::phrase('Back to&lt;br/&gt;Home Page'). '"></a>
 		</div>';
 	
-	if (($_GET['fromCID'] ?? false) && ($_GET['fromCType'] ?? false) && (($_GET['fromCID'] ?? false) != $homePageCID || ($_GET['fromCType'] ?? false) != $homePageCType)) {
+	if ($fromCID && ($fromCID != $homePageCID || $fromCType != $homePageCType)) {
 		$topLeftHTML .= '
 			<div class="last_page_button top_left_button">
 				<a id="last_page_button_link"
-					href="'. htmlspecialchars($backLink = ze\link::toItem($_GET['fromCID'] ?? false, ($_GET['fromCType'] ?? false), true, 'zenario_sk_return=navigation_path')). '"
-					title="'. ze\admin::phrase('Back to&lt;br/&gt;[[citem]]', ['citem' => htmlspecialchars(ze\content::formatTag($_GET['fromCID'] ?? false, ($_GET['fromCType'] ?? false)))]). '"></a>
+					href="'. htmlspecialchars($backLink = ze\link::toItem($fromCID, $fromCType, true)). '"
+					title="'. ze\admin::phrase('Back to&lt;br/&gt;[[citem]]', ['citem' => htmlspecialchars(ze\content::formatTag($fromCID, $fromCType))]). '"></a>
 			</div>';
 	}
 	
@@ -113,9 +128,17 @@ if (($_GET['openingInstance'] ?? false) && ($_GET['openingPath'] ?? false)) {
 $adminAuthType = ze\row::get('admins', 'authtype', ze\admin::id());
 $show_help_tour_next_time = (($adminAuthType == 'local') && ze\admin::setting('show_help_tour_next_time'));
 
+if ($fromCID) {
+	echo '
+		zenarioA.fromCID = ', (int) $fromCID, ';
+		zenarioA.fromCType = "', ze\escape::js($fromCType), '";';
+} else {
+	echo '
+		zenarioA.fromCID = false;
+		zenarioA.fromCType = false;';
+}
+
 echo '
-		zenarioA.fromCID = ', (int) ($_GET['fromCID'] ?? false), ';
-		zenarioA.fromCType = "', preg_replace('/\W/', '', ($_GET['fromCType'] ?? false)), '";
 		zenarioA.openedInIframe = ', ($_GET['openedInIframe'] ?? false)? 'true' : 'false', ';
 		zenarioA.homeLink = "', ze\escape::js($homeLink), '";
 		zenarioA.backLink = "', ze\escape::js($backLink), '";

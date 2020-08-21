@@ -28,7 +28,13 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-//\ze\dbAdm::restoreFromBackup($backupPath, &$failures)
+//\ze\dbAdm::restoreFromBackup($backupPath, &$failures, $checkEnabled)
+
+if ($checkEnabled && !\ze\dbAdm::restoreEnabled()) {
+	$failures[] = \ze\dbAdm::restoreEnabledMsg();
+	return false;
+}
+
 
 //Attempt to check whether gzip compression has been used, based on the filename
 $gzipped =
@@ -364,6 +370,8 @@ if (!empty($failures)) {
 
 } else {
 	//Finally, we'll need to remove the existing tables and copy over 
+	
+	\ze\dbAdm::rememberLocationalSiteSettings();
 	
 	//Drop the modules/plugin table from the existing installation
 	$error = false;

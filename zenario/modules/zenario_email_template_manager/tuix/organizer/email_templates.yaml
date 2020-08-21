@@ -3,16 +3,16 @@
 zenario__email_template_manager:
     panels:
         email_templates: 
-            title: Email Templates
+            title: Email Templates 
             view_mode: list
-            
             notice:
                 show: false
                 type: warning
                 message: ''
-            
+        
             item:
                 css_class: zenario_email_template_panel
+        
             db_items:
                 table: |
                     [[DB_PREFIX]]email_templates as T
@@ -39,92 +39,54 @@ zenario__email_template_manager:
                     format: id
                     db_column: T.id
                     searchable: true
-                    show_by_default: true
+                    always_show: true
                     width: xxsmall
+                
+                template_name:
+                    title: Email template name
+                    db_column: T.template_name
+                    searchable: true
+                    always_show: true
+                    width: large
                 code:
                     title: Template code
                     db_column: T.code
                     searchable: true
                     show_by_default: false
                     width: large
-                template_name:
-                    title: Email template name
-                    db_column: T.template_name
-                    searchable: true
-                    show_by_default: true
-                    width: large
                 subject:
                     title: Subject
                     db_column: T.subject
                     searchable: true
-                    show_by_default: true
+                    always_show: true
                     width: large
-                from_details:
-                    db_column: T.from_details
-                email_name_from:
-                    title: Email name from
-                    db_column: T.email_name_from
-                    searchable: true
-                    show_by_default: true
-                    width: medium
-                email_address_from:
-                    title: Email address from
-                    db_column: T.email_address_from
-                    searchable: true
-                    show_by_default: true
-                    width: medium
-                images:
-                    title: Images
-                    db_column: |
-                        (
-                            SELECT COUNT(DISTINCT ii.image_id)
-                            FROM [[DB_PREFIX]]inline_images AS ii
-                            WHERE ii.foreign_key_id = T.id
-                              AND ii.foreign_key_to = 'email_template'
-                        )
-                    align_right: true
-                    width: xsmall
-                debug_override:
-                    db_column: T.debug_override
-                    format: yes_or_no
+                last_sent:
+                    title: Last sent
+                    db_column: T.last_sent
+                    always_show: true
+                    format: datetime
+                    empty_value: Never used
+                    width: small
                 date_created:
-                    title: Created at
+                    title: Created
                     db_column: T.date_created
                     show_by_default: false
                     format: datetime
                     width: small
-                created_by:
-                    title: Created by
-                    searchable: true
-                    show_by_default: false
-                    width: medium
                 date_modified:
-                    title: Last modified at
+                    title: Last edited
                     db_column: "IFNULL(date_modified,'---')"
                     show_by_default: false
                     format: datetime
-                    width: small
-                modified_by:
-                    title: Last modified by
-                    searchable: true
-                    show_by_default: false
-                    width: small
-                last_sent:
-                    title: Last sent
-                    db_column: T.last_sent
-                    show_by_default: true
-                    format: datetime
-                    empty_value: Never used
                     width: small
                 body_extract:
                     title: Body extract
                     db_column: T.body
                     width: xxlarge
                     show_by_default: true
-                module_name:
-                    title: Module created by
-                    db_column: M.display_name
-                    show_by_default: true
+                debug_override:
+                    db_column: T.debug_override
+                    format: yes_or_no
                     
             collection_buttons:
                 create_template:
@@ -134,7 +96,12 @@ zenario__email_template_manager:
                     hide_on_filter: true
                     admin_box:
                         path: zenario_email_template
+                settings_dropdown:
+                    css_class: organizer_settings_dropdown
+                    hide_when_children_are_not_visible: true
+                    label: ⚙
                 test:
+                    parent: settings_dropdown
                     priv: _PRIV_EDIT_SITE_SETTING
                     hide_in_select_mode: true
                     label: Email settings

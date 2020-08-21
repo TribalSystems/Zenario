@@ -2,8 +2,8 @@ User-agent: *
 Disallow: /cache/
 Disallow: /private/
 Disallow: /zenario/admin/
-Disallow: /zenario/api/
 Disallow: /zenario/frameworks/
 Disallow: /zenario/includes/
+Disallow: /zenario/reference/
 Disallow: /zenario_custom/frameworks/
 Disallow: /zenario/cookie_message.php

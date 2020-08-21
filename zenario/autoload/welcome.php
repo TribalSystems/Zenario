@@ -991,6 +991,8 @@ class welcome {
 				if (!$merge['PASSWORD'] = $values['5/password']) {
 					$tags['tabs'][5]['errors'][] = \ze\admin::phrase('Please choose a password.');
 			
+				} elseif (!\ze\user::checkPasswordStrength($values['5/password'])['password_matches_requirements']) {
+					$tags['tabs'][5]['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
 				} elseif ($merge['PASSWORD'] != $values['5/re_password']) {
 					$tags['tabs'][5]['errors'][] = \ze\admin::phrase('The password fields do not match.');
 				}
@@ -1383,7 +1385,7 @@ class welcome {
 				
 				
 					$failures = [];
-					if (!\ze\dbAdm::restoreFromBackup($backupPath, $failures)) {
+					if (!\ze\dbAdm::restoreFromBackup($backupPath, $failures, false)) {
 						foreach ($failures as $text) {
 							$tags['tabs'][8]['errors'][] = $text;
 						}
@@ -2282,8 +2284,55 @@ class welcome {
 		if (!\ze::setting('docstore_dir')) {
 			\ze\site::setSetting('docstore_dir', \ze\dbAdm::suggestDir('docstore'));
 		}
-	
-	
+		// Display last admin login time
+		$admiId=\ze\admin::id();
+		
+			if($admiId){
+				$sql = '
+					SELECT id, username, last_login, last_login_ip, created_date
+					FROM ' . DB_PREFIX . 'admins
+					WHERE id = '.$admiId.'
+					  AND `status` = \'active\'
+					ORDER BY last_login';
+				$result = \ze\sql::select($sql);		
+				while ($row = \ze\sql::fetchAssoc($result)) {
+						$adminhtml='';
+
+					if(\ze::request('task')=='diagnostics' && $row['last_login']) {
+							$adminhtml .= '<h2>This login</h2>';
+							$adminLastLogin=$row['last_login'];
+							$adminhtml .= '<p>You logged in: ' .\ze\admin::formatDateTime($adminLastLogin, '_MEDIUM'). '</p>';
+					} elseif ($_SESSION['admin_last_login']) {	
+						
+							$adminhtml .= '<h2>Your last login</h2>';
+							$adminLastLogin = $_SESSION['admin_last_login'];
+							$adminhtml .= '<p>You last logged in: ' .\ze\admin::formatDateTime($adminLastLogin, '_MEDIUM'). '</p>';
+					}		
+					if ($row['last_login_ip']) {	
+						$adminhtml .= '<p>IP address: ' .$row['last_login_ip'];
+						if (\ze\module::inc("zenario_geoip_lookup")) {
+							$userCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($row['last_login_ip']);
+							if ($userCountry) {
+								if (\ze\module::inc("zenario_country_manager")) {
+									$userCountryName = \zenario_country_manager::getCountryName($userCountry) ;
+									if ($userCountryName) {
+										$adminhtml .= '  ('.$userCountryName.')' ;
+									}
+								}
+								else
+								{
+									$adminhtml .= '  ( '.$userCountry.' )' ;
+								}
+							}
+						}
+						$adminhtml .='</p>';
+					}
+				}
+			$fields['0/show_administrators_logins']['snippet']['html'] = $adminhtml;
+			$fields['0/show_administrators_logins']['row_class'] = 'section_valid';
+			}
+		$fields['0/show_administrators_logins']['hidden'] = empty($fields['0/show_administrators_logins']['snippet']['html']);
+		
 		$fields['0/template_dir']['value']	= $tdir = CMS_ROOT. 'zenario_custom/templates/grid_templates';
 		$fields['0/cache_dir']['value']	= CMS_ROOT. 'cache';
 		$fields['0/private_dir']['value']	= CMS_ROOT. 'private';
@@ -2580,7 +2629,7 @@ class welcome {
 			$fields['0/dirs']['row_class'] = 'section_invalid';
 			$fields['0/dir_1']['row_class'] = 'sub_section_invalid';
 		}
-
+		
 		if ($fields['0/backup_dir_status']['row_class'] == 'sub_invalid') {
 			$showCheckAgainButtonIfDirsAreEditable =
 			$fields['0/show_dirs']['pressed'] =
@@ -2737,6 +2786,29 @@ class welcome {
 				$fields['0/site_automated_backups']['snippet']['html'] = $warnings['snippet']['html'];
 			}
 			$show_warning = !empty($warnings['show_warning']);
+			
+			if (!defined('RESTORE_POLICY')) {
+				$show_warning = true;
+				
+				$fields['0/restore_policy_not_set']['row_class'] = 'warning';
+				$fields['0/restore_policy_not_set']['snippet']['html'] =
+					\ze\admin::phrase('The <code>RESTORE_POLICY</code> constant is not set in the <code>zenario_siteconfig.php</code> file.');
+			
+			} else
+			if (RESTORE_POLICY !== 'always'
+			 && RESTORE_POLICY !== 'never'
+			 && !preg_match('@\d\d\d\d-\d\d-\d\d@', RESTORE_POLICY)) {
+				$show_warning = true;
+				
+				$mrg['date'] = date('Y-m-d');
+				$fields['0/restore_policy_not_set']['row_class'] = 'warning';
+				$fields['0/restore_policy_not_set']['snippet']['html'] =
+					\ze\admin::phrase("The <code>RESTORE_POLICY</code> constant in the <code>zenario_siteconfig.php</code> file is set to an invalid value. It should be set to <code>'always'</code>, <code>'never'</code> or a date in the format <code>'[[date]]'</code>.", $mrg);
+			
+			} else {
+				$fields['0/restore_policy_not_set']['row_class'] = 'valid';
+				$fields['0/restore_policy_not_set']['hidden'] = true;
+			}
 			
 			$mrg = [
 				'manageJobsLink' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks')];
@@ -3042,6 +3114,31 @@ class welcome {
 					//If a site contains no user records, don't show the warning.
 					$fields['0/unencrypted_data']['hidden'] = true;
 				}
+			} 
+			
+			
+			//Check if a site is using encryption and has any encrypted columns on the users table
+			$pdeUsed = false;
+			$checkTableName = null;
+			$checkColName = null;
+			foreach (['users', 'users_custom_data'] as $tableName) {
+				\ze::$dbL->checkTableDef(DB_PREFIX. $tableName);
+				foreach (\ze::$dbL->cols[DB_PREFIX. $tableName] as $uColumn) {
+					if ($uColumn->encrypted) {
+						$checkTableName = $tableName;
+						$checkColName = $uColumn->col;
+						$pdeUsed = true;
+						break 2;
+					}
+				}
+			}
+			
+			//If it is, show a warning if the encryption keys are not correctly set
+			if ($pdeUsed && !\ze\zewl::init()) {
+				$show_warning = true;
+				$fields['0/bad_encryption_key']['row_class'] = 'warning';
+			} else {
+				$fields['0/bad_encryption_key']['hidden'] = true;
 			}
 			
 			//Check if site contains user/contact data encrypted and corresponding plain text column does not exist
@@ -3268,14 +3365,14 @@ class welcome {
 						if ($row['last_modified_datetime']) {
 							$item['unpublished_content_info'] =
 								\ze\admin::phrase('Last edit [[time]] by [[admin]].', [
-									'time' => \ze\date::relative($row['last_modified_datetime']),
+									'time' => \ze\admin::relativeDate($row['last_modified_datetime']),
 									'admin' => \ze\admin::formatName($row['last_author'])
 								]);
 						} else {
 							//... otherwise, show created date and admin who created it.
 							$item['unpublished_content_info'] =
 								\ze\admin::phrase('Created [[time]] by [[admin]].', [
-									'time' => \ze\date::relative($row['created_datetime']),
+									'time' => \ze\admin::relativeDate($row['created_datetime']),
 									'admin' => \ze\admin::formatName($row['creator'])
 								]);
 						}
@@ -3325,7 +3422,7 @@ class welcome {
 				
 				$days = \ze\admin::getDaysBeforeAdminsAreInactive();
 				$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
-				
+
 				$sql = '
 					SELECT id, username, last_login, created_date
 					FROM ' . DB_PREFIX . 'admins
@@ -3343,7 +3440,7 @@ class welcome {
 						
 						if (++$inactiveAdminCount <= 5) {
 							$row['link'] = 'zenario/admin/organizer.php#zenario__users/panels/administrators//' . $row['id'];
-							
+
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
 							
@@ -3449,6 +3546,7 @@ class welcome {
 		if (!$everythingIsOkay) {
 			$showCheckAgainButton = true;
 		}
+		
 	
 		//In some cases, if something is so bad, hide the continue button.
 		$fields['0/continue']['hidden'] =

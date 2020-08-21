@@ -47,5 +47,16 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['show_invisible_menu_nodes']['hidden'] = true;
 		}
 		
+		if (isset($box['tabs']['first_tab']['fields']['show_group_name_when_user_is_in_groups']) && isset($box['tabs']['first_tab']['fields']['user_groups'])) {
+			$userGroups = ze\row::getAssocs('custom_dataset_fields', ['id', 'label'], ['type' => 'group', 'is_system_field' => 0], 'db_column', 'db_column');
+			if ($userGroups) {
+				$ord = 1;
+				foreach ($userGroups as $groupId => $group) {
+					$fields['first_tab/user_groups']['values'][$groupId] = ['ord' => $ord, 'label' => $group['label']];
+					$ord++;
+				}
+			}
+		}
+		
 		break;
 }

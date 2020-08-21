@@ -360,6 +360,7 @@ site_settings:
                     label: 'Debug mode'
                     site_setting:
                         name: debug_override_enable
+                        protect_from_database_restore: true
                     type: checkbox
                     value: ""
                     format_onchange: true
@@ -368,6 +369,7 @@ site_settings:
                     label: 'Debug email address:'
                     site_setting:
                         name: debug_override_email_address
+                        protect_from_database_restore: true
                     type: text
                     value: ""
                     validation:

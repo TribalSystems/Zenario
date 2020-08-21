@@ -19,7 +19,11 @@
 
 {% set userDetails = this.getUserMergeFields() %}
 {% if userDetails %}
-	<div class="extranet_user_greeting">{{userDetails.welcome_message|escape}}</div>
+	<div class="extranet_user_greeting">{{userDetails.welcome_message|escape}}
+		{% if userDetails.groups %}
+			<span class="group">{{userDetails.groups}}</span>
+		{% endif %}
+	</div>
 {% endif %}
 
 <div class="wrap_menu">

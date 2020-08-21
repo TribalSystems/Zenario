@@ -89,12 +89,20 @@ methods.sendStateToServer = function() {
 	return thus.sendStateToServerDiff();
 };
 
-methods.visitorTUIXLink = function(requests, mode, useSync) {
+methods.visitorTUIXLink = function(requests, mode) {
 	if (thus.noPlugin) {
-		return zenario.visitorTUIXLink(thus.moduleClassName, thus.path, requests, mode, useSync);
+		return zenario.visitorTUIXLink(thus.moduleClassName, thus.path, requests, mode);
 	} else {
-		return zenario.pluginVisitorTUIXLink(thus.moduleClassName, thus.containerId, thus.path, requests, mode, useSync);
+		return zenario.pluginVisitorTUIXLink(thus.moduleClassName, thus.containerId, thus.path, requests, mode);
 	}
+};
+
+methods.setURLForSingleRequests = function() {
+	return thus.url = thus.visitorTUIXLink(thus.request);
+};
+
+methods.setURLForSyncedRequests = function(action) {
+	return thus.url = thus.visitorTUIXLink(thus.request, action, true);
 };
 
 
@@ -106,7 +114,7 @@ methods.modifyPostOnLoad = function() {
 methods.ffov = function(action) {
 	
 	var cb = new zenario.callback,
-		url = thus.url = thus.visitorTUIXLink(thus.request, action, true),
+		url = thus.setURLForSyncedRequests(action),
 		post,
 		goneToURL = false;
 	
@@ -152,7 +160,7 @@ methods.ffov = function(action) {
 				};
 			}
 			
-			//If this is a popout, and the close_popout flag was set, slode it
+			//If this is a popout, and the close_popout flag was set, close it
 			if (thus.tuix.close_popout && thus.inPopout) {
 				thus.closePopout();
 			}
@@ -177,8 +185,7 @@ methods.ffov = function(action) {
 				}, 350);
 			
 			} else {
-				thus.sortOutTUIX();
-				thus.draw();
+				thus.drawForm();
 				cb.done();
 				
 				if (action == 'save' && thus.tuix.scroll_after_save) {
@@ -232,6 +239,7 @@ methods.draw2 = function() {
 	
 	if (thus.path == thus.prevPath
 	 && thus.lastFocus
+	 && thus.lastFocus.id != ''
 	 && (DOMlastFieldInFocus = thus.get(thus.lastFocus.id))) {
 		DOMlastFieldInFocus.focus();
 	}
@@ -441,45 +449,29 @@ methods.runLogic = function(request, callWhenLoaded) {
 	
 	thus.request = request;
 	
-	thus.logic(request, callWhenLoaded);
+	thus.doAjaxLoadThenShowPlugin(request, callWhenLoaded);
 };
 
 methods.typeOfLogic = function() {
-	return thus.guessTypeOfLogic();
-};
-
-methods.guessTypeOfLogic = function() {
-	if (thus.tuix
-	 && thus.tuix.fea_paths
-	 && !thus.tuix.fea_paths[thus.request.path]) {
-		return 'normal_plugin';
+	var path = thus.request.path || thus.path,
+		moduleClassName = thus.moduleClassName,
+		module = window[moduleClassName],
+		feaType;
 	
-	} else if (thus.mode.match(/list/)) {
-		return 'list';
+	if (!module) {
+		throw ('Error in FEA init function, the module class "' + moduleClassName + '" does not exist.');
+	}
+	if (!path) {
+		throw ('Error in FEA init function, path is not set in the request.');
+	}
 	
-	} else {
-		return 'form';
+	feaType = module.feaPaths[path];
+	
+	if (!defined(feaType)) {
+		throw ('Error in FEA init function, the path "' + path + '" does not exist. You may need to put your site into developer mode and/or clear the site cache.');
 	}
-};
-
-methods.logic = function(request, callWhenLoaded) {
-	switch (thus.typeOfLogic()) {
-		case 'list':
-			thus.showList(callWhenLoaded);
-			break;
-		
-		case 'form':
-			thus.showForm(callWhenLoaded);
-			break;
-		
-		case 'normal_plugin':
-			zenario.refreshPluginSlot(thus.containerId, 'lookup', request);
-			break;
-		
-		case 'normal_plugin_using_post':
-			zenario.refreshPluginSlot(thus.containerId, 'lookup', false,false,false,false,false, request);
-			break;
-	}
+	
+	return feaType;
 };
 
 methods.loadData = function(request, json, TUIXSnippetLink) {
@@ -497,36 +489,58 @@ methods.loadData = function(request, json, TUIXSnippetLink) {
 	//setTimeout() is used as a hack to ensure the conductor is fully loaded first
 	
 	$(document).ready(function() {
-	
-		switch (thus.typeOfLogic()) {
-			case 'list':
-				thus.url = thus.visitorTUIXLink(thus.request);
-				thus.drawList();
-				thus.hideLoader();
-				break;
-		
-			case 'form':
-				thus.url = thus.visitorTUIXLink(thus.request, 'fill', true)
-				thus.sortOutTUIX();
-				thus.draw();
-		}
+		thus.loadingDoneInAdvanceSoDrawPlugin();
 	});
 };
 
+methods.doAjaxLoadThenShowPlugin = function(request, callWhenLoaded) {
+	switch (thus.typeOfLogic()) {
+		case 'list':
+			thus.doAjaxLoadThenShowList(callWhenLoaded);
+			break;
+		
+		case 'form':
+			thus.doAjaxLoadThenShowForm(callWhenLoaded);
+			break;
+		
+		//Assume just a normal plugin if nothing matches
+		default:
+			zenario.refreshPluginSlot(thus.containerId, 'lookup', request);
+	}
+};
 
-methods.showForm = function(callWhenLoaded) {
+methods.loadingDoneInAdvanceSoDrawPlugin = function() {
+	var typeOfLogic = thus.typeOfLogic();
+	
+	switch (typeOfLogic) {
+		case 'list':
+			thus.setURLForSingleRequests();
+			thus.drawList();
+			break;
+	
+		case 'form':
+			thus.setURLForSyncedRequests('fill');
+			thus.drawForm();
+			break;
+		
+		default:
+			console.error('"' + typeOfLogic + '" is not a valid value for the fea_type property. (If this value is out of date, you may need to clear the site cache.');
+	}
+};
+
+
+methods.doAjaxLoadThenShowForm = function(callWhenLoaded) {
 	thus.changed = {};
 	thus.fill().after(callWhenLoaded);
 };
 
 
-methods.showList = function(callWhenLoaded) {
+methods.doAjaxLoadThenShowList = function(callWhenLoaded) {
 	if (thus.loading) {
 		return;
 	}
 	
-	var redrawn = false,
-		url = thus.url = thus.visitorTUIXLink(thus.request);
+	var url = thus.setURLForSingleRequests();
 	
 	thus.showLoader();
 	thus.ajax(url, false, true).after(function(tuix) {
@@ -534,10 +548,17 @@ methods.showList = function(callWhenLoaded) {
 		thus.tuix = tuix;
 		
 		thus.drawList();
-		thus.hideLoader(redrawn);
 		callWhenLoaded();
 		
 	});
+};
+
+
+
+
+methods.drawForm = function() {
+	thus.sortOutTUIX();
+	thus.draw();
 };
 
 
@@ -596,6 +617,7 @@ methods.drawList = function() {
 		thus.initMap();
 	}
 
+	thus.hideLoader();
 };
 
 
@@ -736,7 +758,7 @@ methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter
 	request = zenario.clone(request, merge);
 	
 	
-	idVarName = thus.idVarName(thus.mode) || 'id';
+	idVarName = request.id_var_name || thus.idVarName(thus.mode) || 'id';
 	
 	//Automatically add everything this's defined in the key
 	if (thus.tuix
@@ -1062,7 +1084,8 @@ methods.itemButtonIsntHidden = function(button, itemIds, isCheckboxSelect) {
 		}
 		
 		//Check if the button is not flagged as hidden on this item
-		if (thus.tuix._hiddenItemButtons[button.id]
+		if (thus.tuix._hiddenItemButtons
+		 && thus.tuix._hiddenItemButtons[button.id]
 		 && thus.tuix._hiddenItemButtons[button.id][itemId]) {
 			return false;
 		}
@@ -1196,7 +1219,8 @@ methods.columnVisibleForItem = function(columnId, itemId) {
 	var column = thus.tuix.columns[columnId] || {},
 		item = thus.tuix.items[itemId] || {};
 	
-	if (thus.tuix._hiddenColumns[columnId]
+	if (thus.tuix._hiddenColumns
+	 && thus.tuix._hiddenColumns[columnId]
 	 && thus.tuix._hiddenColumns[columnId][itemId]) {
 		return false;
 	}
@@ -1248,10 +1272,14 @@ methods.sortOutTUIX = function() {
 	thus.newlyNavigated = thus.path != thus.prevPath;
 	thus.multiSelectButtonsExist = false;
 	
-	tuix.collection_buttons = tuix.collection_buttons || {};
-	tuix.item_buttons = tuix.item_buttons || {};
-	tuix.columns = tuix.columns || {};
+	//Make sure some objects are defined here.
+	//This is a small hack to save a lot of extra code & effort checking if these are defined everytime we want to check them.
 	tuix.items = tuix.items || {};
+	tuix.columns = tuix.columns || {};
+	tuix.item_buttons = tuix.item_buttons || {};
+	tuix.collection_buttons = tuix.collection_buttons || {};
+	//Note there is a small issue with this; these then appear in the dev tools even when they're not actually in the code!
+	
 	
 	var i, id, j, itemButton, childItemButton, col, item, button, sortedItemIds,
 		sortedButtonsAndColumnButtons,
@@ -1267,8 +1295,6 @@ methods.sortOutTUIX = function() {
 	thus.sortedColumns = [];
 	thus.visibleColumns = {};
 	
-	tuix._hiddenColumns = tuix._hiddenColumns || {};
-	tuix._hiddenItemButtons = tuix._hiddenItemButtons || {};
 	
 	foreach (thus.sortedCollectionButtonIds as i => id) {
 		button = _.clone(tuix.collection_buttons[id]);
@@ -2214,7 +2240,7 @@ zenario_abstract_fea.setupAndInit = function(moduleClassName, library, container
 	window[globalName].init(globalName, 'fea', moduleClassName, containerId, path, request, mode, pages, idVarName, noPlugin, parent, inPopout, popoutClass);
 	
 	return window[globalName];
-}
+};
 
 
 

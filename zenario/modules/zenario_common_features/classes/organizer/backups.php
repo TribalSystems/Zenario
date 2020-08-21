@@ -59,23 +59,30 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		
 		
 		if (isset($panel['item_buttons']['restore'])) {
-			if (\ze\db::hasGlobal() || \ze\db::hasDataArchive()) {
-				$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's local database."). '</p>';
-			} else {
-				$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's database."). '</p>';
-			}
-			if (\ze\db::hasGlobal()) {
-				$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current local administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
-			} else {
-				$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
-			}
-			if (\ze\db::hasDataArchive()) {
-				$restoreMsg .= '<p>'. ze\admin::phrase("This will not affect the contents of data archive database. You should back up and restore this separately."). '</p>';
-			}
+			
+			if (\ze\dbAdm::restoreEnabled()) {
+				if (\ze\db::hasGlobal() || \ze\db::hasDataArchive()) {
+					$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's local database."). '</p>';
+				} else {
+					$restoreMsg = '<p>'. ze\admin::phrase("This tool allows you to restore a backup of your site's database."). '</p>';
+				}
+				if (\ze\db::hasGlobal()) {
+					$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current local administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
+				} else {
+					$restoreMsg .= '<p>'. ze\admin::phrase("All content on the site will be replaced with the content from the database backup; all of the current administrators, content and users on your site will be overwritten. This may take several minutes to complete."). '</p>';
+				}
+				if (\ze\db::hasDataArchive()) {
+					$restoreMsg .= '<p>'. ze\admin::phrase("This will not affect the contents of data archive database. You should back up and restore this separately."). '</p>';
+				}
 		
-			$panel['item_buttons']['restore']['ajax']['confirm']['message'] = 
-				$restoreMsg.
-				$panel['item_buttons']['restore']['ajax']['confirm']['message'];
+				$panel['item_buttons']['restore']['ajax']['confirm']['message'] = 
+					$restoreMsg.
+					$panel['item_buttons']['restore']['ajax']['confirm']['message'];
+			
+			} else {
+				$panel['item_buttons']['restore']['disabled'] = true;
+				$panel['item_buttons']['restore']['disabled_tooltip'] = ze\dbAdm::restoreEnabledMsg();
+			}
         }
 	}
 	
@@ -114,7 +121,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		} elseif (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_RESTORE_SITE')) {
 			//Restore a database backup from the file system
 			$failures = [];
-			if (ze\dbAdm::restoreFromBackup($filename, $failures)) {
+			if (ze\dbAdm::restoreFromBackup($filename, $failures, true)) {
 				echo '<!--Reload_Organizer-->';
 			} else {
 				foreach ($failures as $text) {

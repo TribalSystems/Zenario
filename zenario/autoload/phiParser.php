@@ -192,7 +192,7 @@ class phiParser {
 			self::$parsedLines[$i] = $line->parsed;
 		}
 		
-		return implode(self::$parsedLines, $preserveLineBreaks? "\n" : '');
+		return implode($preserveLineBreaks? "\n" : '', self::$parsedLines);
 	}
 	
 	

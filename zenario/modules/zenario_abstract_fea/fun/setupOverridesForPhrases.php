@@ -27,10 +27,22 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+if (isset($fields['global_area/mode'])) {
+	$modeField = 'global_area/mode';
+} else {
+	$modeField = 'first_tab/mode';
+}
 
-$mode = isset($values['global_area/mode']) ? $values['global_area/mode'] : $values['first_tab/mode'];
-
+$mode = $values[$modeField];
 $modePath = $this->getPathFromMode($mode);
+
+
+if ($this->getModeFromPath($modePath)) {
+	$box['tabs']['first_tab']['label'] = ze\admin::phrase('Options (mode)');
+} else {
+	$box['tabs']['first_tab']['label'] = ze\admin::phrase('Options');
+}
+
 
 $ord = 1000;
 
@@ -42,14 +54,16 @@ foreach (ze\row::getDistinctAssocs(
 		$box['tabs']['phrases.'. $feaPath]['hidden'] = true;
 	}
 	if ($modePath == $feaPath) {
+		
 		if (isset($box['tabs']['phrases.'. $feaPath])) {
 			$box['tabs']['phrases.'. $feaPath]['hidden'] = false;
 		} else {
+			
 			$box['tabs']['phrases.'. $feaPath] = [
 				'ord' => $ord,
 				'edit_mode' => $box['tabs']['first_tab']['edit_mode'],
 				'fields' => [],
-				'label' => ze\admin::phrase('Phrases ([[mode]])', ['mode' => str_replace('_', ' ', $this->getModeFromPath($feaPath))])
+				'label' => ze\admin::phrase('Phrases (mode)')
 			];
 			$box['key']['feaPath'] = $feaPath;
 			ze\tuix::setupOverridesForPhrases($box, $box['tabs']['phrases.'. $feaPath]['fields'], $feaPath);

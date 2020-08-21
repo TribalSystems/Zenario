@@ -1,0 +1,19 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slide:
+    lovs:
+        title_merge_fields:
+            envelope:
+                label: 'Envelope'
+            '[[envelopeId]]':
+                parent: envelope
+                data-class: envelope_icon
+                label: 'Envelope ID: [[envelopeId]]'
+            '[[zenario_document_envelopes_fea:name]]':
+                parent: envelope
+                data-class: envelope_icon
+                label: 'Envelope name: [[zenario_document_envelopes_fea:name]]'
+            '[[zenario_document_envelopes_fea:code]]':
+                parent: envelope
+                data-class: envelope_icon
+                label: 'Envelope code: [[zenario_document_envelopes_fea:code]]'

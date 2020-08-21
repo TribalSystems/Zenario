@@ -26,7 +26,7 @@ zenario__administration:
             notice_crontab:
                 show: true
                 type: error
-                message: The Scheduled Tasks Manager is not correctly configured in your crontab.
+                message: The Scheduled Task Manager is not correctly configured in your crontab. Please ask your systems administrator to add the job to your crontab, wait a minute and try again.
             
             db_items:
                 table: '[[DB_PREFIX]]jobs AS j'

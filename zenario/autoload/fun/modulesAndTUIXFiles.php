@@ -67,6 +67,7 @@ if (($type == 'admin_boxes' || $type == 'slot_controls') && !empty($compatibilit
 
 //Visitor TUIX has the option to be customised.
 //(However this is optional; you can also show the base logic without any customisation.)
+	//Note by Chris on 2020-01-06: I don't actually think we use this feature, it could be removed!
 } elseif ($type == 'visitor' && $settingGroup) {
 	$settingGroups[] = $settingGroup;
 }

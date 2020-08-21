@@ -32,7 +32,8 @@
 			ff = m.fields[0],
 			fl = m.fields.length,
 			rowHasError = false,
-			hadKeySymbol = false;
+			hadKeySymbol = false,
+			hadProtectedSymbol = false;
 	%>
 	
 	<% foreach (m.fields as f => field) { %>
@@ -96,10 +97,15 @@
 						<label class="{{ff.label_class|escape}}" for="{{ff._id|escape}}">
 							{{ff.label}}
 						</label>
-					
+						
 						<% if (ff.encrypted && zenario.IN(ff.type, 'checkboxes', 'radios')) { %>
 							<span class="zfab_encrypted_field">🔑 </span>
 							<% hadKeySymbol = true; %>
+						<% } %>
+						
+						<% if (ff.site_setting && ff.site_setting.protect_from_database_restore && zenario.IN(ff.type, 'checkboxes', 'radios')) { %>
+							<span class="zfab_protected_from_database_restore" title="{{zenarioA.phrase.siteSettingProtected|e}}"> </span>
+							<% hadProtectedSymbol = true; %>
 						<% } %>
 					</div>
 				<% } %>
@@ -116,6 +122,10 @@
 					
 					<% if (!hadKeySymbol && field.encrypted) { %>
 						<span class="zfab_encrypted_field">🔑 </span>
+					<% } %>
+					
+					<% if (!hadProtectedSymbol && field.site_setting && field.site_setting.protect_from_database_restore) { %>
+						<span class="zfab_protected_from_database_restore" title="{{zenarioA.phrase.siteSettingProtected|e}}"> </span>
 					<% } %>
 					
 					<% if (field.show_phrase_icon) { %>

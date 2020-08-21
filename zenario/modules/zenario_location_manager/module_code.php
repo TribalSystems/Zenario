@@ -148,7 +148,11 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					$panel['columns']['last_updated_via_import']['hidden'] = true;
 					$panel['columns']['on_map']['hidden'] = true;
 				}
-				
+				// Hide import button from sector location
+				if($refinerName == "sector_locations"){
+					$panel['collection_buttons']['import']['hidden'] = true;
+					$panel['collection_buttons']['donwload_sample_file']['hidden'] = true;
+				}
 				// Hide pending button if pending state not enabled
 				if (!ze::setting('zenario_location_manager__enable_pending_status')) {
 					unset($panel['item_buttons']['mark_as_pending']);
@@ -517,8 +521,19 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						$box['key']['id']);
 				}
 
+				$fields['details/external_id']['hidden'] = !ze::setting('zenario_location_manager__enable_external_id');
+				
 				if (ze::setting("zenario_location_manager__sector_management")!="0") {
 					$box['tabs']['sectors']['hidden'] = true;
+					$box['tabs']['zenario_location_manager__sector']['hidden'] = true;
+				}
+				
+				if (!ze\module::isRunning('zenario_location_ratings')) {
+					$box['tabs']['zenario_location_ratings__accreditation']['hidden'] = true;
+				}
+				
+				if (!ze\module::isRunning('zenario_location_map_and_listing_2')) {
+					$box['tabs']['filters']['hidden'] = true;
 				}
 
 				$map_lookup = "<select id=\"pin_placement_method\">\n";
@@ -628,8 +643,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						$values['content_item/content_item'] = $row['tag'];
 					}
 
+					if (!ze\module::isRunning('zenario_location_ratings')) {
+						$box['tabs']['zenario_location_ratings__accreditation']['hidden'] = true;
+					}
+					
 					if (ze::setting("zenario_location_manager__sector_management")!="0") {
 						$box['tabs']['sectors']['hidden'] = true;
+						$box['tabs']['zenario_location_manager__sector']['hidden'] = true;
 					} else {
 						$field = &$fields['sectors/sectors'];
 	

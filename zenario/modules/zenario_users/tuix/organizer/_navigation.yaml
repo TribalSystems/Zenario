@@ -1,7 +1,10 @@
 zenario__users:
     label: Users
     css_class: zenario_users__top_level
-    tooltip: "Manage users and administrators - people who can edit this site"
+    tooltip: |
+        Manage users (people who may log in to private areas of your site),
+        contacts (people whom you may email)
+        and administrators (people who may edit your site).
     nav:
         users:
             ord: "1"

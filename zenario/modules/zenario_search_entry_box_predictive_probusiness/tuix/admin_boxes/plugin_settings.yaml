@@ -48,11 +48,27 @@ plugin_settings:
                 use_specific_search_results_page:
                     plugin_setting:
                         name: use_specific_search_results_page
-                    label: 'Use a specific Search Results Page:'
-                    type: checkbox
-                    value: ""
-                    format_onchange: Yes
+                    type: radios
+                    values:
+                        0:
+                            ord: 1
+                            label: 'Use the sitewide search results page'
+                        1:
+                            ord: 2
+                            label: 'Use a specific search results page:'
+                    redraw_onchange: true
+                plugin_page_note:
+                    indent: 1
+                    visible_if: |
+                        !zenarioAB.value('use_specific_search_results_page')
+                    snippet:
+                        html: |
+                            When a content item is created containing the <em style="font-style: italic;">Search Results</em> plugin,
+                            this plugin will automatically link to it.
                 specific_search_results_page:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('use_specific_search_results_page')
                     plugin_setting:
                         name: specific_search_results_page
                         foreign_key_to: content
@@ -74,7 +90,7 @@ plugin_settings:
                     label: 'Show "Search" label'
                     type: checkbox
                     value: 0
-                    ord: 13
+                    ord: 1001
                     format_onchange: Yes
                 search_placeholder:
                     plugin_setting:
@@ -82,7 +98,7 @@ plugin_settings:
                     label: 'Show "Search the site" placeholder'
                     type: checkbox
                     value: 0
-                    ord: 14
+                    ord: 1002
                     format_onchange: Yes
                 search_placeholder_phrase:
                     indent: 1
@@ -90,7 +106,7 @@ plugin_settings:
                         name: search_placeholder_phrase
                     label: 'Search placeholder phrase:'
                     type: text
-                    ord: 15
+                    ord: 1003
                     format_onchange: Yes
                     visible_if:
                         lib.value: search_placeholder

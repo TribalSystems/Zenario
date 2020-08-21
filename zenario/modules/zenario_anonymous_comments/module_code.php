@@ -119,7 +119,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = true, $clearByModuleData = true);
 		}
 		
-		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found', 'zenario_logout')) {
+		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found')) {
 			return $this->show = false;
 		}
 		

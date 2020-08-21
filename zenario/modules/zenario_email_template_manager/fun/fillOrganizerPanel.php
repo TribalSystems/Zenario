@@ -72,48 +72,53 @@ switch ($path) {
 				$body_extract_snippet .= '...';
 			}
 			$panel['items'][$K]['body_extract'] = $body_extract_snippet;
-			$template = self::getTemplateByCode($K);
-			if ($K!=$template['id']) {
-				if (count($arr=explode("__",$K))==2){
-					$panel['items'][$K]['created_by'] = 'Module ' . $arr[0];
-				} else {
-					$panel['items'][$K]['created_by'] = 'n/a';
-				}
-			} elseif ($template['created_by_id'] ?? false) {
-				$admin = ze\admin::details($template['created_by_id'] ?? false);
-				$panel['items'][$K]['created_by'] = $admin['admin_username'];
-			} else {
-				$panel['items'][$K]['created_by'] = 'n/a';
-			}
 			
-			if (!empty($template['modified_by_id'])) {
-				$admin = ze\admin::details($template['modified_by_id'] ?? false);
-				$panel['items'][$K]['modified_by'] = $admin['admin_username'];
-			} else {
-				$panel['items'][$K]['modified_by'] = 'n/a';
+			$details = self::checkTemplateIsProtectedAndGetCreatedDetails($K);
+			if ($details['protected']) {
+				$panel['items'][$K]['protected'] = true;
 			}
-			
-			if ($K==$template['id']){
-				$panel['items'][$K]['non_protected']=true;
-			} else {
-				if (!(count($arr = explode("__",$K)) == 2) || !($mID = ze\module::id($arr[0])) || (ze\module::status($mID) == 'module_not_initialized')) {
-					$panel['items'][$K]['non_protected']=true;
-				} else {
-					$panel['items'][$K]['protected']=true;
-				}
-			}
-			
-			if ($item['from_details'] == 'site_settings') {
-				$panel['items'][$K]['email_name_from'] = ze::setting('email_name_from');
-				$panel['items'][$K]['email_address_from'] = ze::setting('email_address_from');
-			}
-			
 		}
 		
 		break;
 	
 	
 	case 'zenario__email_template_manager/panels/email_log':
+
+		//Information to view Data Protection settings
+		$accessLogDuration = '';
+			switch (ze::setting('period_to_delete_the_email_template_sending_log_headers')) {
+				case 'never_delete':
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log is stored forever.');
+					break;
+				case 0:
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log is not stored.');
+					break;
+				case 1:
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are deleted after 1 day.');
+					break;
+				case 7:
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are deleted after 1 week.');
+					break;
+				case 30:
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are deleted after 1 month.');
+					break;
+				case 90:
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are deleted after 3 months.');
+					break;
+				case 365:
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are deleted after 1 year.');
+					break;
+				case 730:
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are deleted after 2 years.');
+					break;
+				
+			}
+			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+			$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View Data Protection settings</a>";
+			$panel['notice']['show'] = true;
+			$panel['notice']['message'] = $accessLogDuration.".";
+			$panel['notice']['html'] = true;
+	
 		if ($refinerName == 'email_template') {
 			$template = self::getTemplateByCode($refinerId);
 			$panel['title'] = ze\admin::phrase('Emails sent using the template "[[template_name]]"', $template);

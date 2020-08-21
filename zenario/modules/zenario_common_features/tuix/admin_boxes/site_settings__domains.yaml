@@ -25,6 +25,7 @@ site_settings:
                 primary_domain:
                     site_setting:
                         name: primary_domain
+                        protect_from_database_restore: true
                     label: 'Primary domain:'
                     type: radios
                     value: ""
@@ -80,6 +81,7 @@ site_settings:
                 admin_domain:
                     site_setting:
                         name: admin_domain
+                        protect_from_database_restore: true
                     label: 'Admin domain:'
                     type: radios
                     value: ""
@@ -162,6 +164,7 @@ site_settings:
                 use_cookie_free_domain:
                     site_setting:
                         name: use_cookie_free_domain
+                        protect_from_database_restore: true
                     label: 'Use a cookie-free domain for hosting static files:'
                     type: checkbox
                     value: ""
@@ -169,6 +172,7 @@ site_settings:
                 cookie_free_domain:
                     site_setting:
                         name: cookie_free_domain
+                        protect_from_database_restore: true
                     visible_if: |
                         zenarioAB.value('use_cookie_free_domain')
                     indent: 1

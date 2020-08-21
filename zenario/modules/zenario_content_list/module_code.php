@@ -104,7 +104,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 		}
 		
-		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
+		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
 				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					$sql .= "
@@ -122,7 +122,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			if ($contentItemCategories) {
 				foreach ($contentItemCategories as $contentItemCategory) {
 					if (ze\row::exists('categories', ['id' => (int) $contentItemCategory['id']])) {
-						if ($this->setting('refine_type_content_with_matching_categories') != 'any_categories') {
+						if ($this->setting('refine_type') != 'any_categories') {
 							$sql .= "
 						INNER";
 						} else {
@@ -234,7 +234,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 		}
 		
-		if ($this->setting('category_filters_dropdown') == 'show_content_with_matching_categories' && $this->setting('refine_type_content_with_matching_categories') == 'any_categories') {
+		if ($this->setting('category_filters_dropdown') == 'show_content_with_matching_categories' && $this->setting('refine_type') == 'any_categories') {
 			$contentItemInfo = ze\row::get('content_items', ['id', 'type'], ['equiv_id' => ze::$equivId]);
 			$contentItemCategories = ze\category::contentItemCategories($contentItemInfo['id'], $contentItemInfo['type'], $publicOnly = true);
 			if ($contentItemCategories) {
@@ -259,7 +259,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$sql .= ")";
 		}
 		
-		if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
+		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
 			foreach (ze\ray::explodeAndTrim($categories, true) as $catId) {
 				if (ze\row::exists('categories', ['id' => (int) $catId])) {
 					$sql .= "
@@ -724,7 +724,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$this->rows = ze\sql::fetchValue('SELECT COUNT(*) '. $sql);
 		
 		$page_size = $this->setting('maximum_results_number') ?: 999999;
-		$offset = $this->setting('show_pagination') ? $this->setting('offset') : 0;
+		$offset = $this->setting('offset') ?: 0;
 		
 		$this->totalPages = (int) ceil($this->rows / $page_size);
 		
@@ -836,42 +836,129 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 		}
 		
+		$outer = [
+			'More_Link' => $moreLink,
+			'More_Link_Title' => $moreLinkText,
+			'Pagination' => $pagination,
+			'Pagination_Data' => $paginationLinks,
+			'Results' => $this->rows,
+			'RSS_Link' => $this->setting('enable_rss')? $this->escapeIfRSS($this->showRSSLink(true)) : null,
+			'Title_With_Content' => $titleWithContent,
+			'Title_With_No_Content' => ((bool)$this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
+			'Title_Tags' => $this->setting('heading_tags') ? $this->setting('heading_tags') : 'h1'
+		];
 		
-		$this->framework(
-			'Outer', 
-			[
-				'More_Link' => $moreLink,
-				'More_Link_Title' => $moreLinkText,
-				'Pagination' => $pagination,
-				'Pagination_Data' => $paginationLinks,
-				'Results' => $this->rows,
-				'RSS_Link' => $this->setting('enable_rss')? $this->escapeIfRSS($this->showRSSLink(true)) : null,
-				'Title_With_Content' => $titleWithContent,
-				'Title_With_No_Content' => ((bool)$this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
-				'Title_Tags' => $this->setting('heading_tags') ? $this->setting('heading_tags') : 'h1'
-			],
-			[
-				'Slot' => true,
-				'More' => (bool) $moreLink,
-				'No_Rows' => empty($this->items),
-				'Rows' => !empty($this->items),
-				'Row' => $this->items,
-				'Show_Date' => $this->setting('show_dates'),
-				'Show_Author' => $this->setting('show_author'),
-				'Show_Author_Image' => $this->setting('show_author_image'),
-				'Show_Excerpt' => (bool) $this->dataField,
-				'Show_Item_Title' => (bool)$this->setting('show_titles'),
-				'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',
-				'Show_Text_Preview' => (bool)$this->setting('show_text_preview'),
-				'Show_Sticky_Image' => (bool) $this->setting('show_sticky_images'),
-				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
-				'Show_Title' => (bool)$this->setting('show_headings'),
-				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
-				'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists'),
-				'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height')
-			]
-		);
+		$inner = [
+			'Slot' => true,
+			'More' => (bool) $moreLink,
+			'No_Rows' => empty($this->items),
+			'Rows' => !empty($this->items),
+			'Row' => $this->items,
+			'Show_Date' => $this->setting('show_dates'),
+			'Show_Author' => $this->setting('show_author'),
+			'Show_Author_Image' => $this->setting('show_author_image'),
+			'Show_Excerpt' => (bool) $this->dataField,
+			'Show_Item_Title' => (bool)$this->setting('show_titles'),
+			'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',
+			'Show_Text_Preview' => (bool)$this->setting('show_text_preview'),
+			'Show_Sticky_Image' => (bool) $this->setting('show_sticky_images'),
+			'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
+			'Show_Title' => (bool)$this->setting('show_headings'),
+			'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
+			'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists'),
+			'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height'),
+			'Show_Category_Public' => (bool)$this->setting('show_category_name') && (bool)ze::setting('enable_display_categories_on_content_lists')
+		];
 		
+		//If the plugin is set to only show content in specific categories,
+		//get a list of them.
+		
+		if (
+			ze\admin::id()
+			&& (
+				($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit' && $this->setting('category'))
+				|| $this->setting('category_filters_dropdown') == 'show_content_with_matching_categories'
+			)
+		) {
+			//print("<pre>".print_r($this->setting('category'),true)."</pre>");
+			if ($this->setting('category_filters_dropdown') == 'choose_categories_to_display_or_omit') {
+				$categoryIds = $this->setting('category');
+				$notEmpty = true;
+			} elseif ($this->setting('category_filters_dropdown') == 'show_content_with_matching_categories') {
+				$contentItemCategories = ze\category::contentItemCategories(ze::$cID, ze::$cType);
+				
+				if (is_array($contentItemCategories) && count($contentItemCategories) > 0) {
+					$categoryIds = [];
+					foreach ($contentItemCategories as $contentItemCategory) {
+						$categoryIds[] = $contentItemCategory['id'];
+					}
+					$categoryIds = implode(" , ", $categoryIds);
+					$notEmpty = true;
+				}else {
+					$notEmpty = false;
+				}
+			}
+				
+			if ($notEmpty) {
+			    //Count the number of selected categories
+			    if (count(explode(",", $categoryIds)) > 1) {
+			    	$inner['More_Than_One'] = true;
+			    	
+			    	if ($this->setting('refine_type') == 'all_categories') {
+			    		$inner['All_Or_Any'] = 'ALL of';
+			    	} elseif ($this->setting('refine_type') == 'any_categories') {
+			    		$inner['All_Or_Any'] = 'ANY of';
+			    	}
+			    }
+				$allCurrentlySelectedCategories = [];
+				If($this->setting('show_category_name')){
+					$sql = '
+						SELECT id,name,parent_id
+						FROM ' . DB_PREFIX . 'categories
+						WHERE public = 1 And id IN (' . ze\escape::in($categoryIds) . ')';
+				}
+				else{
+								
+					$sql = '
+						SELECT id,name,parent_id
+						FROM ' . DB_PREFIX . 'categories
+						WHERE id IN (' . ze\escape::in($categoryIds) . ')';
+				}
+				$result = ze\sql::select($sql);
+			
+				while ($row = ze\sql::fetchAssoc($result)) {
+					$currentParentId = false;
+					$categoryName = [];
+					$categoryName[] = $row['name'];
+				
+					if ($row['parent_id']) {
+						$currentParentId = $row['parent_id'];
+						while ($currentParentId) {
+							$parent = ze\row::get('categories',['id','name','parent_id'],['id' => $currentParentId]);
+							if ($parent) {
+								$categoryName[] = $parent['name'];
+								$currentParentId = $parent['parent_id'];
+							} else {
+								$currentParentId = false;
+							}
+						}
+					}
+				
+					krsort($categoryName);
+					$categoryName = implode (" / ", $categoryName);
+					$allCurrentlySelectedCategories[] = $categoryName;
+				}
+			    If($this->setting('show_category_name') && ze::setting('enable_display_categories_on_content_lists')){
+				 		$inner['All_Currently_Selected_Categories'] = $allCurrentlySelectedCategories;	
+				}
+				else{
+						$inner['All_Currently_Selected_Categories'] = "";
+
+				}
+			}
+		}
+		
+		$this->framework('Outer', $outer, $inner);
 	}
 	
 	
@@ -920,10 +1007,17 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$fields['each_item/show_content_items_lowest_category']['disabled'] = true;
 					$fields['each_item/show_content_items_lowest_category']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
 					$values['each_item/show_content_items_lowest_category'] = false;
+					$fields['first_tab/show_category_name']['disabled'] = true;
+					$fields['first_tab/show_category_name']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
+					$values['first_tab/show_category_name'] = false;
 				}
 				
 				//Show a warning if "Choose categories to filter by" is selected but no categories have been picked
-				if ($values['first_tab/category_filters_dropdown'] == 'choose_categories_to_display_or_omit' && !$values['first_tab/category']) {
+				if (
+					!empty($values['first_tab/category_filters_dropdown'])
+					&& $values['first_tab/category_filters_dropdown'] == 'choose_categories_to_display_or_omit'
+					&& !$values['first_tab/category']
+				) {
 					$fields['first_tab/category']['error'] = $this->phrase("Please select at least one category.");
 				}
 				

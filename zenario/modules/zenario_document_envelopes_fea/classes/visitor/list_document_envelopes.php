@@ -45,7 +45,7 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 			
 			//Make sure the field exists in the dataset (e.g. hasn't been deleted) before using it.
 			for ($i = 1; $i <= 3; $i++) {
-				if ($this->setting('custom_field_' . $i) && isset($this->datasetAllCustomFields[$this->setting('custom_field_' . $i)])) {
+				if ($this->setting('custom_field_' . $i) && $this->setting('make_custom_field_' . $i . '_searchable') && isset($this->datasetAllCustomFields[$this->setting('custom_field_' . $i)])) {
 					$this->customDatasetFieldIds['custom_field_' . $i] = $this->setting('custom_field_' . $i);
 				}
 			}
@@ -180,13 +180,19 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 				$or = 'OR ';
 			}
 			
-			if (count($this->customDatasetFieldIds) > 0 && ($tags['key']['custom_field_1'] || $tags['key']['custom_field_2'] || $tags['key']['custom_field_3'])) {
+			if (count($this->customDatasetFieldIds) > 0
+			 && (
+				 ($tags['key']['custom_field_1'] && $this->setting('make_custom_field_1_searchable'))
+				 || ($tags['key']['custom_field_2'] && $this->setting('make_custom_field_2_searchable'))
+				 || ($tags['key']['custom_field_3'] && $this->setting('make_custom_field_3_searchable'))
+			 )
+			) {
 				$customFiltersSubquery .= "
 					" . $and;
 				$and = '';
 				$or = '';
 				foreach ($this->customDatasetFieldIds as $customDatasetFieldIdKey => $customDatasetFieldId) {
-					if (!empty($tags['key'][$customDatasetFieldIdKey])) {
+					if (!empty($tags['key'][$customDatasetFieldIdKey]) && $this->setting('make_' . $customDatasetFieldIdKey . '_searchable')) {
 						$customFiltersSubquery .= $or;
 						$datasetField = $this->datasetAllCustomFields[$customDatasetFieldId];
 						if ($datasetField && $datasetField['db_column']) {
@@ -195,7 +201,7 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 							} elseif ($datasetField['type'] == "checkboxes") {
 								$customFiltersSubquery .= 'decdvl.value_id IN (' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . ')';
 							} else {
-								$customFiltersSubquery .= 'decd.' . ze\escape::sql($datasetField['db_column']) . ' = ' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]);
+								$customFiltersSubquery .= 'decd.' . ze\escape::sql($datasetField['db_column']) . ' = "' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . '"';
 							}
 						}
 						$customFiltersSubquery .= ' ';
@@ -227,6 +233,9 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 		switch ($this->sortCol($tags)) {
 			case 'created':
 				$sql .= 'de.created';
+				break;
+			case 'name':
+				$sql .= 'de.name';
 				break;
 			default:
 				$sql .= 'de.name';
@@ -272,9 +281,15 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 			foreach ($this->customDatasetFieldIds as $columnName => $fieldId) {
 				$fieldDetails = $this->datasetAllCustomFields[$fieldId];
 				$type = $fieldDetails['type'];
-				if ($fieldDetails['type'] == 'radios' || $fieldDetails['type'] == 'select' || $fieldDetails['type'] == 'checkboxes') {
+				if ($type == 'radios' || $type == 'centralised_radios' || $type == 'select' || $type == 'centralised_select' || $type == 'checkboxes') {
+					if ($type == 'centralised_radios') {
+						$type = 'radios';
+					} elseif ($type == 'centralised_select') {
+						$type = 'select';
+					}
+
 					if ($item[$columnName]) {
-						if ($fieldDetails['type'] == 'checkboxes') {
+						if ($type == 'checkboxes') {
 							$valuesFormattedNicely = [];
 							foreach (explode(',', $item[$columnName]) as $value) {
 								$valuesFormattedNicely[] = $this->customDataFieldValuesAndLabels[$value];
@@ -293,11 +308,17 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
-		
+		$tags['columns']['created']['hidden'] = !$this->setting('show_created_date');
+
 		//On the first load, if sort options are not yet set, default to sorting by date submitted descending
 		if (!$tags['key']['sortCol']) {
-			$tags['key']['sortCol'] = 'created';
-			$tags['key']['sortDesc'] = true;
+			if ($tags['columns']['created']['hidden']) {
+				$tags['key']['sortCol'] = 'name';
+				unset($tags['columns']['created']['sort_desc']);
+			} else {
+				$tags['key']['sortCol'] = 'created';
+				$tags['key']['sortDesc'] = true;
+			}
 		}
 		
 		//For select lists/checkboxes/radiogroups, load the labels of the possible options
@@ -338,27 +359,35 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 		}
 		
 		//Populate the file format values. Scan any existing documents in any envelopes to get the file types
-		$result = ze\row::distinctQuery(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'documents_in_envelope', 'file_format', []);
-		$fileFormatsFromDB = ze\sql::fetchValues($result);
-		if (count($fileFormatsFromDB) > 0) {
-			foreach ($fileFormatsFromDB as $format) {
-				$formatEscaped = htmlspecialchars($format);
-				$tags['custom_search_fields']['file_format']['values'][$formatEscaped] = ['label' => $formatEscaped];
+		if ($this->setting('show_file_formats_search')) {
+			$result = ze\row::distinctQuery(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'documents_in_envelope', 'file_format', []);
+			$fileFormatsFromDB = ze\sql::fetchValues($result);
+			if (count($fileFormatsFromDB) > 0) {
+				foreach ($fileFormatsFromDB as $format) {
+					$formatEscaped = htmlspecialchars($format);
+					$tags['custom_search_fields']['file_format']['values'][$formatEscaped] = ['label' => $formatEscaped];
+				}
 			}
+		} else {
+			$tags['custom_search_fields']['file_format']['hidden'] = true;
 		}
 		
 		//Populate the language values. Hide the language marked as multi
-		$tags['custom_search_fields']['language_id']['values'] = ze\dataset::centralisedListValues('zenario_document_envelopes_fea::getEnvelopeLanguages');
-		$languageFlaggedAsMultipleLanguages = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelope_languages', 'language_id', ['multiple_languages_flag' => true]);
-		if ($languageFlaggedAsMultipleLanguages) {
-			unset($tags['custom_search_fields']['language_id']['values'][$languageFlaggedAsMultipleLanguages]);
+		if ($this->setting('show_languages_search')) {
+			$tags['custom_search_fields']['language_id']['values'] = ze\dataset::centralisedListValues('zenario_document_envelopes_fea::getEnvelopeLanguages');
+			$languageFlaggedAsMultipleLanguages = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelope_languages', 'language_id', ['multiple_languages_flag' => true]);
+			if ($languageFlaggedAsMultipleLanguages) {
+				unset($tags['custom_search_fields']['language_id']['values'][$languageFlaggedAsMultipleLanguages]);
+			}
+		} else {
+			$tags['custom_search_fields']['language_id']['hidden'] = true;
 		}
 		
 		//If custom dataset fields have been selected in the plugin settings,
 		//draw the columns and the search filters.
 		if (count($this->customDatasetFieldIds) > 0) {
 			foreach ($this->customDatasetFieldIds as $columnName => $fieldId) {
-				$type = $label = $emptyValue = '';
+				$type = $label = $emptyValue = $placeholder = '';
 				$tags['custom_search_fields'][$columnName]['hidden'] = false;
 				
 				$fieldDetails = $this->datasetAllCustomFields[$fieldId];
@@ -369,7 +398,13 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 				
 				//Search filters
 				$type = $fieldDetails['type'];
-				if ($fieldDetails['type'] == 'radios' || $fieldDetails['type'] == 'select' || $fieldDetails['type'] == 'checkboxes') {
+				if ($type == 'radios' || $type == 'centralised_radios' || $type == 'select' || $type == 'centralised_select' || $type == 'checkboxes') {
+					if ($type == 'centralised_radios') {
+						$type = 'radios';
+					} elseif ($type == 'centralised_select') {
+						$type = 'select';
+					}
+					
 					//The field label is used in the empty value, e.g. "By Language".
 					//Catch the case where the label has a colon at the end and remove it.
 					$emptyValue = $fieldDetails['label'];
@@ -380,8 +415,17 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 					$emptyValue = '-- By ' . $emptyValue . ' --';
 					
 					$tags['custom_search_fields'][$columnName]['values'] = ze\dataset::fieldLOV($fieldDetails, $flat = false);
-				} elseif ($fieldDetails['type'] == 'checkbox') {
+				} elseif ($type == 'checkbox') {
 					$label = $fieldDetails['label'];
+				} elseif ($type == 'text' || $type == 'url') {
+					if ($type == 'url') {
+						$type = 'text';
+					}
+					
+					$placeholder = $fieldDetails['label'];
+					if (substr($placeholder, -1) == ":") {
+						$placeholder = substr($placeholder, 0, -1);
+					}
 				}
 				
 				$tags['custom_search_fields'][$columnName]['type'] = $type;
@@ -390,6 +434,10 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 				
 				if (!empty($emptyValue)) {
 					$tags['custom_search_fields'][$columnName]['empty_value'] = $emptyValue;
+				}
+				
+				if (!empty($placeholder)) {
+					$tags['custom_search_fields'][$columnName]['placeholder'] = $placeholder;
 				}
 				
 				if (!empty($label)) {

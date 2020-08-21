@@ -139,23 +139,45 @@ class date {
 		$row = \ze\sql::fetchRow($sql);
 		return $row[0];
 	}
-
-	const formattedTimeZoneFromTwig = true;
-	public static function formattedTimeZone($date = null) {
+	
+	//Attempt to get the name of the timezone that a date is in.
+	const formatTimeZoneFromTwig = true;
+	public static function formatTimeZone($date = null) {
 		
 		if (is_null($date)) {
 			$date = \ze\user::convertToUsersTimeZone(new \DateTime());
 		}
 		
-		return $date->format('T');
+		$text = $date->format('T');
+		
+		//If we couldn't a named timezone, call formatTimeZoneOffset() instead as a fallback.
+		if ('' == str_replace(['+', '-', ':', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], '', $text)) {
+			return \ze\date::formatTimeZoneOffset($date);
+		} else {
+			return $text;
+		}
+	}
+	
+	//A deprecated aliases
+	const formattedTimeZoneFromTwig = true;
+	public static function formattedTimeZone($date = null) {
+		return \ze\date::formatTimeZone($date);
+	}
+
+	//Get the timezone offset from UTC that a date is in.
+	const formatTimeZoneOffsetFromTwig = true;
+	public static function formatTimeZoneOffset($date = null) {
+		
+		if (is_null($date)) {
+			$date = \ze\user::convertToUsersTimeZone(new \DateTime());
+		}
+		
+		return 'UTC '. $date->format('P');
 	}
 
 	const formattedServerTimeZoneFromTwig = true;
 	public static function formattedServerTimeZone() {
-		
-		$date = new \DateTime();
-		
-		return $date->format('T');
+		return \ze\date::formatTimeZone(new \DateTime());
 	}
 	
 	
@@ -266,9 +288,9 @@ class date {
 			
 					if ($addFullTime) {
 						if (is_string($addFullTime)) {
-							return $relativeDate. ' ('. \ze\date::format($time, $addFullTime, $languageId, $time_format, false, $cli). ')';
+							return $relativeDate. ' ('. \ze\date::format($time, $addFullTime, $languageId, $time_format, false, $cli, $displayAdminPhrase). ')';
 						} else {
-							return $relativeDate. ' ('. \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli). ')';
+							return $relativeDate. ' ('. \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $displayAdminPhrase). ')';
 						}
 					
 					} else {
@@ -282,7 +304,7 @@ class date {
 			$time_format = '';
 		}
 	
-		return \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli);
+		return \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $displayAdminPhrase);
 
 	}
 }

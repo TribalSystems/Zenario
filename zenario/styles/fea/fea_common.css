@@ -1085,6 +1085,43 @@ table.table_list tr th.zfea_col_sorted {
 	width:205px;
 }
 
+/* Videos
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a {
+	position:relative;
+}
+
+.zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a img {
+	position:relative;
+	z-index:1;
+}
+
+.zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a:after {
+	font-family:"FontAwesome";
+	content: "\f01d";
+	position:absolute;
+	z-index:90;
+	left:0;
+	right:0;
+	top:0;
+	bottom:0;
+	margin:auto;
+	text-align:center;
+	width:100px;
+	height:100px;
+	font-size:100px;
+	line-height:100px;
+	opacity:0.6;
+   	-webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+}
+
+.zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a:hover:after {
+	opacity:0.8;
+}
+
 /* Search buttons, filters buttons
 --------------------------------------------------------------------------------------------------*/
 
@@ -1405,6 +1442,18 @@ body.mobile .zfea_search_buttons {
     text-align:left !important;
 }
 
+.zfea .message_in_form {
+    text-align: center;
+}
+
+.zfea .message_in_form .error,
+.zfea .message_in_form .success,
+.zfea .message_in_form .warning {
+	display: inline-block;
+    width: auto;
+}
+
+
 /* Buttons, nest top buttons
 --------------------------------------------------------------------------------------------------*/
 
@@ -1473,6 +1522,12 @@ body.mobile .zfea_search_buttons {
 	background-position:center;
 }
 
+.icon_button.schedule_icon {
+	background-image:url('images/icon-white-schedule-placeholder.svg');
+	background-repeat:no-repeat;
+	background-position:center;
+}
+
 .zenario_skin .icon_button {
 	width:30px;
 	padding:0;
@@ -1481,6 +1536,20 @@ body.mobile .zfea_search_buttons {
 	background-repeat:no-repeat;
 	background-size:18px;
 	background-position:center;
+}
+
+.icon_button.weekly_report_icon {
+	background-image: url('images/aw/icon-white-weekly-report-placeholder.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 22px 13px;
+}
+
+.icon_button.yearly_report_icon {
+	background-image: url('images/aw/icon-white-yearly-report-placeholder.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 25px 10px;
 }
 
 .zfea_button.delete,
@@ -3340,6 +3409,13 @@ body.mobile .zfea_zenario_list_orders .zfea_block_list_wrap .zfea_block p.column
 body.mobile .zfea div.sorted_buttons {
 	float:none;
 	text-align:right;
+}
+	
+body.mobile .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a:after {
+	width: 60px;
+    height: 60px;
+    font-size: 60px;
+    line-height: 60px;
 }
 
 /* Layout max-width: 630px

@@ -21,6 +21,20 @@ define('DB_PREFIX', '[[DB_PREFIX]]');
 define('DEBUG_USE_STRICT_MODE', true);
 
 
+  /////////////////////////////////////////
+ // Restore policy for database backups //
+/////////////////////////////////////////
+
+define('RESTORE_POLICY', 'always');
+// Always allow database backups to be restored using Organizer.
+
+//define('RESTORE_POLICY', 'never');
+// Disable the ability to restore database backups using Organizer.
+
+//define('RESTORE_POLICY', '2012-12-21');
+// Allow database backups to be restored for one day. (Set this to the current date to use this option.)
+
+
   //////////////////////////////////////////////////////////
  // MySQL database settings for multi-site adminstrators //
 //////////////////////////////////////////////////////////

@@ -311,14 +311,46 @@ if (ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 }
 
 //Check if deletion is allowed
-if (!ze\contentAdm::allowDelete($cID, $cType, ze::$status)) {
-	unset($adminToolbar['sections']['status_button']['buttons']['delete_draft']);
+$allowDelete = null;
+if (isset($adminToolbar['sections']['status_button']['buttons']['delete_draft'])) {
+	$allowDelete = ze\contentAdm::allowDelete($cID, $cType, ze::$status);
+	
+	if (!$allowDelete) {
+		if ($allowDelete === ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE) {
+			$adminToolbar['sections']['status_button']['buttons']['delete_draft']['disabled'] = true;
+			$adminToolbar['sections']['status_button']['buttons']['delete_draft']['disabled_tooltip'] = ze\admin::phrase("You can't delete a special page.");
+		} else {
+			unset($adminToolbar['sections']['status_button']['buttons']['delete_draft']);
+		}
+	}
 }
-if (!ze\contentAdm::allowHide($cID, $cType, ze::$status)) {
-	unset($adminToolbar['sections']['status_button']['buttons']['hide_content']);
+
+$allowHide = null;
+if (isset($adminToolbar['sections']['status_button']['buttons']['hide_content'])) {
+	$allowHide = ze\contentAdm::allowHide($cID, $cType, ze::$status);
+	
+	if (!$allowHide) {
+		if ($allowHide === ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE) {
+			$adminToolbar['sections']['status_button']['buttons']['hide_content']['disabled'] = true;
+			$adminToolbar['sections']['status_button']['buttons']['hide_content']['disabled_tooltip'] = ze\admin::phrase("You can't hide this special page.");
+		} else {
+			unset($adminToolbar['sections']['status_button']['buttons']['hide_content']);
+		}
+	}
 }
-if (!ze\contentAdm::allowTrash($cID, $cType, ze::$status)) {
-	unset($adminToolbar['sections']['status_button']['buttons']['trash_content']);
+
+$allowTrash = null;
+if (isset($adminToolbar['sections']['status_button']['buttons']['trash_content'])) {
+	$allowTrash = ze\contentAdm::allowTrash($cID, $cType, ze::$status);
+	
+	if (!$allowTrash) {
+		if ($allowTrash === ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE) {
+			$adminToolbar['sections']['status_button']['buttons']['trash_content']['disabled'] = true;
+			$adminToolbar['sections']['status_button']['buttons']['trash_content']['disabled_tooltip'] = ze\admin::phrase("You can't trash a special page.");
+		} else {
+			unset($adminToolbar['sections']['status_button']['buttons']['trash_content']);
+		}
+	}
 }
 
 
@@ -960,10 +992,22 @@ if (ze::$cVersion < ze::$adminVersion
 
 $adminToolbar['sections']['icons']['buttons']['tag_id']['label'] = $tagId;
 $adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] =
-	ze\admin::phrase('Content Id: [[cID]]<br/>Content Type: [[cType_name]]<br/>Tag Id: [[cType]]_[[cID]]', $mrg);
+	ze\admin::phrase('Content Type: [[cType_name]]<br/>Tag Id: [[cType]]_[[cID]]', $mrg);
 
 if (ze\content::isSpecialPage(ze::$cID, ze::$cType)) {
-	$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] .= ze\admin::phrase('<br/>Special Page');
+	if (isset($allowHide) && !$allowHide) {
+		if (isset($allowTrash) && !$allowTrash) {
+			$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] .= ze\admin::phrase('<br/>Special Page - cannot be trashed or hidden');
+		} else {
+			$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] .= ze\admin::phrase('<br/>Special Page - cannot be hidden');
+		}
+	} else {
+		if (isset($allowTrash) && !$allowTrash) {
+			$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] .= ze\admin::phrase('<br/>Special Page - cannot be trashed');
+		} else {
+			$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] .= ze\admin::phrase('<br/>Special Page');
+		}
+	}
 	
 	if (empty($adminToolbar['sections']['icons']['buttons']['tag_id']['css_class'])) {
 		$adminToolbar['sections']['icons']['buttons']['tag_id']['css_class'] = '';

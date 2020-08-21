@@ -425,7 +425,9 @@ class user {
 		
 		//If "site_settings" table doesn't exist (e.g. installing Zenario), use fallback values.
 		//Check if there is a database connection.
-		if (\ze::$dbL) {
+		if (defined('DB_PREFIX')
+		 && \ze::$dbL
+		 && \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', true)) {
 			$minPassLength = \ze::setting('min_extranet_user_password_length');
 			$passwordMustContainLowerCaseCharacters = \ze::setting('a_z_lowercase_characters');
 			$passwordMustContainUpperCaseCharacters = \ze::setting('a_z_uppercase_characters');
@@ -497,6 +499,7 @@ class user {
 			case 'view.invoice':
 			case 'edit.order':
 			case 'manage.envelope':
+			case 'manage.video':
 				//Superusers only
 				return true;
 			case 'view.company':

@@ -43,6 +43,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template
                     value: zenario_extranet_registration__to_user_email_verification_en
+                    note_below: 'By default this plugin uses the email template with code "zenario_extranet_registration__to_user_email_verification_en".'
                     side_note: >
                         Please see the module description to get a full list of merge fields which can be used in the selected email template.
                     indent: 1
@@ -89,8 +90,8 @@ plugin_settings:
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select an email template
-                    value: >
-                        zenario_extranet_registration__to_admin_user_signup_notification_en
+                    value: zenario_extranet_registration__to_admin_user_signup_notification_en
+                    note_below: 'By default this plugin uses the email template with code "zenario_extranet_registration__to_admin_user_signup_notification_en".'
                     indent: 1
                 user_password:
                     label: "User's password:"
@@ -154,7 +155,23 @@ plugin_settings:
                     format_onchange: true
                     side_note: >
                         If the terms and condictions checkbox is not checked the user will not be able to register. This will record an entry in the consents log.
+                link_type:
+                    plugin_setting:
+                        name: link_type
+                    label: 'Destination:'
+                    type: select
+                    value: _CONTENT_ITEM
+                    visible_if: "zenarioAB.value('requires_terms_and_conditions') == true"
+                    values:
+                        _CONTENT_ITEM:
+                            label: Link to a content item
+                        _EXTERNAL_URL:
+                            label: Link to an external URL
+                    format_onchange: true
+                    indent: 1
+                    
                 terms_and_conditions_page:
+                    indent: 2
                     plugin_setting:
                         name: terms_and_conditions_page
                         foreign_key_to: content
@@ -167,11 +184,25 @@ plugin_settings:
                         disallow_refiners_looping_on_min_path: true
                         select_phrase: Select a content item...
                         hide_remove_button: true
+                    visible_if: "zenarioAB.value('link_type') != '_EXTERNAL_URL'"
                     validation:
                         required_if_not_hidden: Please select a terms and conditions page
                     side_note: >
                         A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
-                    indent: 1
+                    note_below: "Always opens in a new window."        
+                url:
+                    indent: 2
+                    plugin_setting:
+                        name: url
+                        foreign_key_to: content
+                    label: 'External URL:'
+                    type: url
+                    maxlength: "255"
+                    value: ""
+                    visible_if: "zenarioAB.value('link_type') == '_EXTERNAL_URL'"
+                    validation:
+                        required_if_not_hidden: "Please enter a URL."
+                    note_below: "Always opens in a new window."  
                 use_captcha:
                     plugin_setting:
                         name: use_captcha
@@ -355,6 +386,7 @@ plugin_settings:
                         select_phrase: Select an email template...
                     side_note: "Pick the email template to send the welcome emails to newly activated users. This setting applies only when the User's initial status is Active. Please see the module description to get a full list of merge fields which can be used."
                     value: zenario_users__to_user_account_activated
+                    note_below: 'By default this plugin uses the email template with code "zenario_users__to_user_account_activated".'
                     indent: 1
                 
                 trusted_email_domains:
@@ -438,6 +470,7 @@ plugin_settings:
                         Please see the module description to get a full list of
                         merge fields.
                     value: zenario_extranet_registration__to_admin_user_activation_notification_en
+                    note_below: 'By default this plugin uses the email template with code "zenario_extranet_registration__to_admin_user_activation_notification_en".'
                     indent: 1
                 user_activation_notification_email_address:
                     label: "Send to:"

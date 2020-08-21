@@ -166,7 +166,8 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 						$attachments, $attachmentFilenameMappings,
 						$templateNo, $thisResult,
 						$_POST, 
-						$addressReplyTo, $nameReplyTo
+						$addressReplyTo, $nameReplyTo,
+						$ccs
 					);
 					
 				}
@@ -187,7 +188,8 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 					$attachments, $attachmentFilenameMappings,
 					$templateNo, $thisResult,
 					$_POST, 
-					$addressReplyTo, $nameReplyTo
+					$addressReplyTo, $nameReplyTo,
+					$ccs
 				);
 			}
 			
@@ -202,7 +204,8 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$attachments, $attachmentFilenameMappings,
 		$templateNo, $status,
 		$senderCmsObjectArray = [],
-		$addressReplyTo = false, $nameReplyTo = false
+		$addressReplyTo = false, $nameReplyTo = false,
+		$ccs = false
 	) {
 		self::clearOldData();
 		
@@ -239,6 +242,10 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		if ($nameReplyTo) {
 			$sql .= ",
 				email_name_replyto = '". ze\escape::sql($nameReplyTo). "'";
+		}
+		if ($ccs) {
+			$sql .= ",
+				email_ccs = '". ze\escape::sql($ccs). "'";
 		}
 		
 		//Check if this email's content should be logged
@@ -575,5 +582,37 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		while($row=ze\sql::fetchAssoc($result))
 			$rv[$row['template_name']]=$row;
 		return $rv;
+	}
+	
+	public static function checkTemplateIsProtectedAndGetCreatedDetails($templateCode) {
+		$template = self::getTemplateByCode($templateCode);
+		$templateIsProtected = false;
+		$createdByModuleClassName = '';
+		$createdByModuleDisplayName = '';
+		$createdByAdmin = '';
+			
+		if (!$template['module_class_name']){
+			//If a template doesn't have a module class name, then it was created by an admin and is not protected.
+			$createdByAdmin = ze\admin::formatName($template['created_by_id']);
+		} else {
+			//If a template's code is a string, check if the module exists and is running.
+			if ($moduleDetails = ze\module::details($template['module_class_name'], $fetchBy = 'class')) {
+				if ($moduleDetails['status'] != 'module_not_initialized') {
+					$templateIsProtected = true;
+				}
+				
+				$createdByModuleClassName = $moduleDetails['class_name'];
+				$createdByModuleDisplayName = $moduleDetails['display_name'];
+			}
+		}
+		
+		$result = [
+			'protected' => $templateIsProtected,
+			'created_by_class_name' => $createdByModuleClassName,
+			'created_by_display_name' => $createdByModuleDisplayName,
+			'created_by_admin' => $createdByAdmin,
+			'date_created' => ze\admin::formatDateTime($template['date_created'], '_MEDIUM')
+		];
+		return $result;
 	}
 }

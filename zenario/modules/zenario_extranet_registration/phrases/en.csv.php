@@ -47,7 +47,7 @@ _RESIDENTIAL_ADDRESS,"Residential Address",
 _SALUTATION:,"Salutation:"
 _SCREEN_NAME:,"Screen Name:"
 _SELECT,"-- Please select --"
-_T_C_LINK, "I have read and accept the <a href='[[TCLink]]' target='_blank'>Terms and Conditions</a>."
+_T_C_LINK, "I have read and accept the [[link_start]]Terms and Conditions[[link_end]]."
 _THANK_YOU_VERIFY_EMAIL_RESENT,"Your verification email has been resent. Please be sure to check your spam/bulk mail folder."
 _THANK_YOU_VERIFY_EMAIL,"Thank you for registering. You have been sent an email with a verification link. You should check your spam/bulk mail if you do not see it soon. Please click the link in the email to verify your account."
 _THANK_YOU_WAIT_FOR_ACTIVATION,"Thank you for registering. Your account will need to be manually activated by one of our Administrators before you may log in."

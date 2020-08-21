@@ -34,6 +34,8 @@ define('CLOSURE_COMPILER_PATH', 'zenario/libs/not_to_redistribute/closure-compil
 //(otherwise we must use YUI Compressor which gives slightly larger filesizes).
 define('USE_CLOSURE_COMPILER', file_exists(CLOSURE_COMPILER_PATH));
 
+define('DEBUG_DONT_MINIFY', false);
+
 
 function displayUsage() {
 	echo
@@ -760,7 +762,14 @@ class zenario_minify {
 }
 
 //Macros and replacements
-function applyCompilationMacros($code) {
+function applyCompilationMacros($code, $dir, $file) {
+	
+	//Check to see if this is a module file
+	$module = false;
+	$matches = [];
+	if (preg_match('@modules/(\w+)/@', $dir, $matches)) {
+		$module = $matches[1];
+	}
 	
 	//Check if this JavaScript file uses the zenario.lib function.
 	$isZenarioLib =
@@ -785,9 +794,14 @@ function applyCompilationMacros($code) {
 		$code = preg_replace('@.([mrs])(atch|eplace|plit)\(@', '.$1(', $code);
 	}
 	
-	//Automatically add "var thus = this;" to the start of any method declarations
+	//Automatically add "var thus = this;" to the start of any method declarations.
+	//Also add it to any static function declared on a module.
 	if ($usesThus) {
 		$code = preg_replace('@(\bmethods\w*\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
+		
+		if ($module !== false) {
+			$code = preg_replace('@(\b'. $module. '\w*\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
+		}
 	}
 	
 	//Some special custom logic for zenario core libraries
@@ -892,7 +906,7 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 					if ($string !== false) {
 						$minFile = tempnam(sys_get_temp_dir(), 'min');
 						$tmpFile = tempnam(sys_get_temp_dir(), 'js');
-						file_put_contents($tmpFile, applyCompilationMacros($string));
+						file_put_contents($tmpFile, applyCompilationMacros($string, $dir, $file));
 						$srcFile = $tmpFile;
 					}
 					//For our JavaScript files, automatically add
@@ -904,7 +918,7 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 					 && !$yamlToJSON
 					 && substr($dir, 0, 13) != 'zenario/libs/') {
 						$tmpFile = tempnam(sys_get_temp_dir(), 'js');
-						file_put_contents($tmpFile, applyCompilationMacros(file_get_contents($srcFile)));
+						file_put_contents($tmpFile, applyCompilationMacros(file_get_contents($srcFile), $dir, $file));
 						$srcFile = $tmpFile;
 					}
 					
@@ -914,15 +928,21 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 						file_put_contents($minFile, json_encode($tags, JSON_FORCE_OBJECT));
 					
 					} elseif (!$isCSS && USE_CLOSURE_COMPILER) {
-						//copy($srcFile, $minFile);
-						exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v. ' --language_in ECMASCRIPT5 --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
-									escapeshellarg($minFile).
-							//Code to generate a source-map if needed
-								//' --source_map_format=V3 --create_source_map '.
-								//	escapeshellarg($mapFile).
-								' --js '. 
-									escapeshellarg($srcFile)
-							, $output);
+						if (DEBUG_DONT_MINIFY) {
+							//Use this line ot skip the minification, useful for debugging the compilation macros
+							copy($srcFile, $minFile);
+						
+						} else {
+							//Use this line to actually run minification
+							exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v. ' --language_in ECMASCRIPT5 --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
+										escapeshellarg($minFile).
+								//Code to generate a source-map if needed
+									//' --source_map_format=V3 --create_source_map '.
+									//	escapeshellarg($mapFile).
+									' --js '. 
+										escapeshellarg($srcFile)
+								, $output);
+						}
 					} else {
 						exec('java -jar '. escapeshellarg(YUI_COMPRESSOR_PATH). ' --type '. ($isCSS? 'css' : 'js'). ' '. $v. '--line-break 150 -o '.
 									escapeshellarg($minFile).

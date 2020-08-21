@@ -164,8 +164,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				
 						$fields[$panelName . '/translations_warning']['snippet']['html'] = 
 							ze\admin::nPhrase(
-								'There is 1 content item translation available. Please select what you wish to do with it.',
-								'There are [[count]] content item translations available. Please select what you wish to do with them.',
+								'This content item has 1 translation. Please select what to do with the content item in the other language.',
+								'This content item has [[count]] translations. Please select what to do with the content items in other languages.',
 								$totalRowNum,
 								['count' => $totalRowNum]
 							);

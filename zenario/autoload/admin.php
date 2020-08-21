@@ -303,6 +303,11 @@ class admin {
 	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false) {
 		return \ze\date::formatDateTime($date, $format_type, $languageId, $rss, $cli, $admin = true);
 	}
+	
+	public static function relativeDate($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false, $showDateTime = false) {
+		return \ze\date::relative($timestamp, $maxPeriod, $addFullTime, $format_type, $languageId, $time_format, $cli, $showDateTime, $admin = true);
+	}
+
 
 
 	//Check to see if an admin exists and if the supplied password matches their password
@@ -445,7 +450,8 @@ class admin {
 			$_SESSION['admin_specific_languages'],
 			$_SESSION['admin_specific_content_items'],
 			$_SESSION['admin_specific_content_types'],
-			$_SESSION['privs']
+			$_SESSION['privs'],
+			$_SESSION['admin_last_login']
 		);
 	
 		if ($destorySession) {
@@ -488,7 +494,7 @@ class admin {
 	}
 	
 	public static function logIn($adminId, $rememberMe = false) {
-		$admin = \ze\row::get('admins', ['username', 'authtype', 'global_id'], $adminId);
+		$admin = \ze\row::get('admins', ['username', 'authtype', 'global_id','last_login'], $adminId);
 		
 		if ($rememberMe) {
 			\ze\cookie::set('COOKIE_LAST_ADMIN_USER', $admin['username']);
@@ -497,7 +503,9 @@ class admin {
 			\ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
 			\ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
 		}
-
+		//Set admin last login in session variable to access in diagnostic screen
+		$_SESSION['admin_last_login'] = $admin['last_login'];
+		
 		if ($admin['authtype'] == 'super') {
 			\ze\admin::setSession($adminId, $admin['global_id']);
 		} else {

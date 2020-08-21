@@ -223,6 +223,8 @@ zenario_location_manager__location:
                             - .png
                         drag_and_drop: true
                         reorder_items: true
+        location_preview:
+            hidden: true
 zenario_location_manager__sector:
     title: Creating a Sector
     key:

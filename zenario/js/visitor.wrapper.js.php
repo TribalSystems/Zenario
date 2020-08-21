@@ -50,7 +50,7 @@ ze\cache::incJS('zenario/libs/manually_maintained/mit/underscore/underscore');
 
 //Include all of the standard JavaScript libraries for the CMS
 ze\cache::incJS('zenario/js/visitor');
-ze\cache::incJS('zenario/api/javascript');
+ze\cache::incJS('zenario/reference/plugin_base_class');
 
 //Include jQuery modules and some other third-party libraries
 ze\cache::incJS('zenario/js/easing');

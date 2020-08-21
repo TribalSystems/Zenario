@@ -243,6 +243,10 @@ class datasetAdm {
 				case 'group_boolean_and_list_only':
 					$key['type'] = ['group', 'checkbox', 'checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select'];
 					break;
+				
+				case 'text_group_boolean_and_list_only':
+					$key['type'] = ['text', 'group', 'checkbox', 'checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select'];
+					break;
 		
 				case 'text_only':
 					$key['type'] = ['text', 'textarea', 'url'];
@@ -251,7 +255,11 @@ class datasetAdm {
 				case 'boolean_and_groups_only':
 					$key['type'] = ['checkbox', 'group'];
 					break;
-		
+				
+				case 'checkbox_only':
+					$key['type'] = ['checkbox', 'checkboxes'];
+					break;
+				
 				case 'groups_only':
 					$key['type'] = 'group';
 					break;

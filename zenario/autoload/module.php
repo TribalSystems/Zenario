@@ -178,7 +178,7 @@ class module {
 	}
 
 	//Formerly "includeModuleSubclass()"
-	public static function incSubclass($filePathOrModuleClassName, $type = false, $path = false, $raiseFileMissingErrors = false) {
+	public static function incSubclass($filePathOrModuleClassName, $type = false, $path = false) {
 	
 		if ($type === false) {
 			$type = \ze::$tuixType;
@@ -200,6 +200,14 @@ class module {
 			$basePath = dirname($filePathOrModuleClassName);
 			$moduleClassName = basename($basePath);
 		}
+		
+		
+		//Check if this module actually uses the classes directory
+		if (!is_dir($basePath. '/classes/')) {
+			//Don't try to use subclasses if not.
+			return false;
+		}
+		
 	
 		//Modules use the owner/author name at the start of their name. Get this prefix.
 		$prefix = explode('_', $moduleClassName, 2);
@@ -241,16 +249,14 @@ class module {
 			if (class_exists($className)) {
 				return $className;
 			} else {
-				exit('The class '. $className. ' was not defined in '. $phpPath);
+				$msg = 'The module [[moduleClassName]] is trying to load the [[className]] PHP class, which it expects to find in [[phpPath]]. The file exists but the class was not defined!';
 			}
 	
 		} else {
-			if ($raiseFileMissingErrors) {
-				exit('The class '. $className. ' could not be loaded because the file at '. $phpPath. ' was not found.');
-			} else {
-				return false;
-			}
+			$msg = 'The module [[moduleClassName]] is trying to load the [[className]] PHP class, which it expects to find in [[phpPath]]. This file is missing!';
 		}
+		
+		exit(\ze\admin::phrase($msg, ['moduleClassName' => $moduleClassName, 'className' => $className, 'phpPath' => str_replace('//', '/', $phpPath)]));
 	}
 
 	//Formerly "getModuleDependencies()"

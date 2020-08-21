@@ -33,7 +33,7 @@ class zenario_plugin_nest__visitor__slide_info extends zenario_abstract_fea {
 	
 	public function returnVisitorTUIXEnabled($path) {
 		
-		if ($sl = \ze\row::get('slide_layouts', ['id', 'privacy', 'layout_for', 'layout_for_id'], ze::request('slideLayoutId'))) {
+		if ($sl = \ze\row::get('slide_layouts', ['id', 'privacy', 'at_location', 'layout_for', 'layout_for_id'], ze::request('slideLayoutId'))) {
 			switch ($sl['layout_for']) {
 				case 'schema':
 					return ze\user::can('design', 'schema', $sl['layout_for_id']);
@@ -53,7 +53,7 @@ class zenario_plugin_nest__visitor__slide_info extends zenario_abstract_fea {
 			$tags['key']['cVersion'] = ze\content::publishedVersion($tags['key']['cID'], $tags['key']['cType']);
 		}
 		
-		$sl = \ze\row::get('slide_layouts', ['id', 'layout_for', 'layout_for_id', 'ord', 'name', 'privacy'], ze::request('slideLayoutId'));
+		$sl = \ze\row::get('slide_layouts', ['id', 'layout_for', 'layout_for_id', 'ord', 'name', 'privacy', 'at_location'], ze::request('slideLayoutId'));
 		$slide = \ze\row::get('nested_plugins', ['id', 'slide_num'], ze::request('slideId'));
 		
 		$values['details/state'] = ze::request('state');
@@ -75,7 +75,7 @@ class zenario_plugin_nest__visitor__slide_info extends zenario_abstract_fea {
 		//Check what other slide layouts can be seen by the current user.
 		//(Usually all of them as this screen needs you to be a super-user to see.)
 		$sql = "
-			SELECT id AS slide_layout_id, CONCAT(ord, '. ', name) AS label, ord, privacy
+			SELECT id AS slide_layout_id, CONCAT(ord, '. ', name) AS label, ord, privacy, at_location
 			FROM ". DB_PREFIX. "slide_layouts
 			WHERE layout_for = '". ze\escape::sql($sl['layout_for']). "'
 			  AND layout_for_id = ". (int) $sl['layout_for_id']. "
@@ -84,7 +84,7 @@ class zenario_plugin_nest__visitor__slide_info extends zenario_abstract_fea {
 		$tags['key']['naturalSlideLayoutId'] = 0;
 		
 		foreach (ze\sql::select($sql) as $otherSL) {
-			$priv = ze\content::checkItemPrivacy($otherSL, $otherSL, $tags['key']['cID'], $tags['key']['cType'], $tags['key']['cVersion'], $roleLocationMustMatch = true);
+			$priv = ze\content::checkItemPrivacy($otherSL, $otherSL, $tags['key']['cID'], $tags['key']['cType'], $tags['key']['cVersion']);
 			
 			if ($priv) {
 				//Note down which slide layout the super user would normally see

@@ -60,9 +60,10 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, sum
 		});
 		return;
 	}
-
 	
-	var images = '';
+	//Remember the current scroll position
+	var currentScrollPosition = zenario.scrollTop(),
+		images = '';
 	
 	if (!zenario_wysiwyg_editor.animationsHiddenInEditors && !zenario_wysiwyg_editor.imagesHiddenInEditors) {
 		images = 'media,image,|,';
@@ -153,6 +154,16 @@ directionality	ltr rtl
 		init_instance_callback: function(instance) {
 			zenario.removeLinkStatus($editor);
 			zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
+			
+			//Attempt to restore the scroll position, if something in this process overwrote it.
+			if (defined(currentScrollPosition)) {
+				zenario.scrollTop(currentScrollPosition);
+				
+				window.setTimeout(function() {
+					zenario.scrollTop(currentScrollPosition);
+				}, 0);
+				
+			}
 			
 			//Attempt to put the cursor immediately in the field when it loads with the editor
 			instance.focus();

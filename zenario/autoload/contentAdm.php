@@ -955,6 +955,8 @@ class contentAdm {
 			}
 		}
 	}
+	
+	const CANT_BECAUSE_SPECIAL_PAGE = 0;
 
 	//Check if a Content Item is in a state where it could be deleted/trashed/hidden. Note that these functions don't check for locks.
 	//Formerly "allowDelete()"
@@ -969,7 +971,12 @@ class contentAdm {
 		}
 	
 		if ($status == 'first_draft') {
-			return !\ze\content::isSpecialPage($cID, $cType) || \ze\contentAdm::allowRemoveEquivalence($cID, $cType);
+			if (\ze\content::isSpecialPage($cID, $cType) && !\ze\contentAdm::allowRemoveEquivalence($cID, $cType)) {
+				//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
+				return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
+			} else {
+				return true;
+			}
 	
 		} else {
 			return $status == 'published_with_draft' || $status == 'hidden_with_draft' || $status == 'trashed_with_draft';
@@ -980,11 +987,13 @@ class contentAdm {
 	//Formerly "allowTrash()"
 	public static function allowTrash($cID, $cType, $status = false, $lastModified = false, $contentItemLanguageId = false) {
 		if (\ze\content::isSpecialPage($cID, $cType) && !\ze\contentAdm::allowRemoveEquivalence($cID, $cType)) {
-			return false;
+			//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
+			return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
 			
 		//Check specific language permissions
 		} elseif (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_HIDE_CONTENT_ITEM', $contentItemLanguageId)) {
 			return false;
+		
 		} else {
 			if ($status === false) {
 				$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
@@ -1008,9 +1017,9 @@ class contentAdm {
 		//Check for special pages without the allow_hide option set.
 		//(Though even without the allow_hide option, still allow this page to be hidden if it's a translation.)
 		if (($sp = \ze\content::isSpecialPage($cID, $cType))
-		 && !(\ze\row::get('special_pages', 'allow_hide', $sp)
-		  || \ze\contentAdm::allowRemoveEquivalence($cID, $cType))) {
-			return false;
+		 && !(\ze\row::get('special_pages', 'allow_hide', $sp) || \ze\contentAdm::allowRemoveEquivalence($cID, $cType))) {
+			//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
+			return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
 		
 		} else {
 			if ($status === false) {
@@ -1388,14 +1397,29 @@ class contentAdm {
 							  AND gcl.link_from = 'chain'
 							  AND gcl.link_from_id = ". (int) $chain['equiv_id']. "
 							  AND gcl.link_from_char = '". \ze\escape::sql($chain['type']). "'");
-			
+						
+						$mrg = [];
+						switch ($chain['at_location']) {
+							case 'detect':
+								$mrg['at'] = \ze\admin::phrase('at the location in the URL, or at ANY location when there is no location in the URL');
+								break;
+						
+							case 'in_url':
+								$mrg['at'] = \ze\admin::phrase('at the location in the URL');
+								break;
+						
+							default:
+								$mrg['at'] = \ze\admin::phrase('at ANY location');
+						}
+						
 						if (count($roleNames) > 1) {
-							$roleNames = [implode(', ', $roleNames)];
-							return \ze\admin::phrase('Private, only show to extranet users with the following roles at ANY location: [[0]]', $roleNames);
+							$mrg['roles'] = implode(', ', $roleNames);
+							return \ze\admin::phrase('Private, only show to extranet users with the following roles [[at]]: [[roles]]', $mrg);
 						} elseif (count($roleNames) == 1) {
-							return \ze\admin::phrase('Private, only show to extranet users with the following role at ANY location: [[0]]', $roleNames);
+							$mrg['role'] = $roleNames[0];
+							return \ze\admin::phrase('Private, only show to extranet users with the following role [[at]]: [[role]]', $mrg);
 						} else {
-							return \ze\admin::phrase('Private, only show to extranet users with the following role at ANY location: [[0]]', [0 => '(error: selected role not found)']);
+							return \ze\admin::phrase('Private, only show to extranet users with the following role [[at]]: (error: selected role not found)', $mrg);
 						}
 					}
 					break;

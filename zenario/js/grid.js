@@ -423,7 +423,7 @@ methods.checkData = function(layoutName, familyName) {
 
 methods.draw = function(doNotRedrawForm) {
 	//if (!doNotRedrawForm) {
-	//	thus.drawForm();
+	//	thus.drawOptions();
 	//}
 	//
 	//if (thus.editing) {

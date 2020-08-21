@@ -43,9 +43,11 @@
 			<div >
 		<% } else { %>
 			<div class="title" {{zenario.browserIsIE(8)? ' style="width: 25%"' : ''}}>
-				<div class="{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}}">
-					<label for="{{ff._id|escape}}">{{ff.label}}</label>
-				</div>
+				<% if (ff.label && !zenario.IN(ff.type, 'checkbox', 'radio')) { %>
+					<div class="{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}}">
+						<label for="{{ff._id|escape}}">{{ff.label}}</label>
+					</div>
+				<% } %>
 			</div><div>
 		<% } %>
 				<div class="

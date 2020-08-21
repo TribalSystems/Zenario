@@ -131,17 +131,25 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 		switch ($box['key']['moduleClassName']) {
 			case 'zenario_plugin_nest':
-				$pluginAdminName = \ze\admin::phrase('nest');
-				$ucPluginAdminName = \ze\admin::phrase('Nest');
+				$module['pluginAdminName'] = $pluginAdminName = \ze\admin::phrase('nest');
+				$module['ucPluginAdminName'] = $ucPluginAdminName = \ze\admin::phrase('Nest');
+				$module['pPluginAdminName'] =
+				$module['pluginsOfThisType'] = \ze\admin::phrase('nests');
 				break;
 			case 'zenario_slideshow':
-				$pluginAdminName = \ze\admin::phrase('slideshow');
-				$ucPluginAdminName = \ze\admin::phrase('Slideshow');
+			case 'zenario_slideshow_simple':
+				$module['pluginAdminName'] = $pluginAdminName = \ze\admin::phrase('slideshow');
+				$module['ucPluginAdminName'] = $ucPluginAdminName = \ze\admin::phrase('Slideshow');
+				$module['pPluginAdminName'] =
+				$module['pluginsOfThisType'] = \ze\admin::phrase('slideshows');
 				break;
 			default:
-				$pluginAdminName = \ze\admin::phrase('plugin');
-				$ucPluginAdminName = \ze\admin::phrase('Plugin');
+				$module['pluginAdminName'] = $pluginAdminName = \ze\admin::phrase('plugin');
+				$module['ucPluginAdminName'] = $ucPluginAdminName = \ze\admin::phrase('Plugin');
+				$module['pPluginAdminName'] = \ze\admin::phrase('plugins');
+				$module['pluginsOfThisType'] = \ze\admin::phrase('plugins of this type');
 		}
+		
 		
 		foreach ($box['tabs'] as $tabName => &$tab) {
 			if (is_array($tab)) {
@@ -402,8 +410,15 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				}
 				
 				if (empty($fields['tuix_snippet/~tuix_snippet~']['values'])) {
-					$fields['tuix_snippet/~tuix_snippet~']['empty_value'] = ze\admin::phrase(' -- No customisations defined for this site -- ');
+					$fields['tuix_snippet/~tuix_snippet~']['empty_value'] = ze\admin::phrase(' -- No TUIX snippets defined for this site -- ');
 				}
+				
+				//Add a link to the TUIX Snippets panel
+				$fields['tuix_snippet/desc2']['snippet']['html'] =
+					'<a
+						target="_blank"
+						href="'. ze\link::absolute(). 'zenario/admin/organizer.php#zenario__modules/panels/tuix_snippets"
+					>'. ze\admin::phrase('Create/edit TUIX Snippets'). '</a>';
 		
 			
 			//Experimenting with having plugin settings and frameworks visible on the same tab again
@@ -465,6 +480,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					$fields['framework_tab/framework']['hidden'] =
 					$fields['framework_tab/framework_path']['hidden'] =
 					$fields['framework_tab/framework_source']['hidden'] = true;
+					$fields['framework_tab/no_frameworks_message']['hidden'] = false;
 				}
 				
 				
@@ -481,7 +497,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					$fields['this_css_tab/css_path']['snippet']['label'] = $thisCSSPath;
 					$values['this_css_tab/css_filename'] = basename($thisCSSPath);
 					
-					$fields['all_css_tab/css_class']['snippet']['label'] = $module['css_class_name'];
+					$fields['all_css_tab/css_class']['snippet']['span'] = $module['css_class_name'];
 					$fields['all_css_tab/css_path']['snippet']['label'] = $allCSSPath;
 					$values['all_css_tab/css_filename'] = basename($allCSSPath);
 					
@@ -520,7 +536,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						} else {
 							$values['this_css_tab/css_source'] =
 '.'. $thisCSSName. ' {
-	/* This class will be applied to just this '. $module['display_name']. '. */
+	/* This class will be applied to just this '. $module['pluginAdminName']. '. */
 }';
 						}
 					} else {
@@ -564,12 +580,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					} else {
 						$values['all_css_tab/css_source'] =
 '.'. $module['css_class_name']. ' {
-	/* This class will be applied to all '. $module['display_name_plural']. '. */
+	/* This class will be applied to all '. $module['pluginsOfThisType']. '. */
 }
 
 .'. $module['css_class_name']. '__default_style {
-	/* This class will be applied to all '. $module['display_name_plural']. ',
-	   unless overridden or removed for a specific '. $module['display_name']. '. */
+	/* This class will be applied to all '. $module['pluginsOfThisType']. ',
+	   unless overridden or removed for a specific '. $module['pluginAdminName']. '. */
 }';
 					}
 					
@@ -584,50 +600,27 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							$module['css_class_name']. ' '. ($thisCSSName? $thisCSSName. ' ' : '')
 						). '</span>';
 					
-					$box['tabs']['this_css_tab']['label'] = ze\admin::phrase('CSS (this [[display_name]])', $module);
-					$fields['this_css_tab/css_class']['label'] = ze\admin::phrase('CSS classes for this [[display_name]]', $module);
-					$fields['this_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS for this [[display_name]]:', $module);
+					$fields['this_css_tab/css_class']['label'] = ze\admin::phrase('CSS classes for this [[pluginAdminName]] of the module [[class_name]]:', $module);
+					$fields['this_css_tab/css_class']['side_note'] = ze\admin::phrase("A module-wide class is always applied, and a numbered class for this particular [[pluginAdminName]]. You can use this text box to add any additional classes you need. The text box reverts to the module's default style if not specified otherwise.", $module);
+					$fields['this_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS for this [[pluginAdminName]]:', $module);
 				
-					$box['tabs']['all_css_tab']['label'] = ze\admin::phrase('CSS (all [[display_name_plural]])', $module);
-					$fields['all_css_tab/css_class']['label'] = ze\admin::phrase('CSS class for all [[display_name_plural]]', $module);
-					$fields['all_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS for all [[display_name_plural]]:', $module);
+					$fields['all_css_tab/css_class']['label'] = ze\admin::phrase('CSS class for all [[pPluginAdminName]] of the module [[class_name]]:', $module);
+					$fields['all_css_tab/css_class']['side_note'] = ze\admin::phrase('A module-wide class is always applied.');
+					$fields['all_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS for all plugins of the module [[class_name]]:', $module);
+					
+					if ($module['css_class_name']
+					 && $module['css_class_name'] != $module['class_name']) {
+					 	$fields['this_css_tab/css_inheritance_note']['hidden'] =
+					 	$fields['all_css_tab/css_inheritance_note']['hidden'] = false;
+						$fields['this_css_tab/css_inheritance_note']['note_below'] =
+						$fields['all_css_tab/css_inheritance_note']['note_below'] = ze\admin::phrase('Note: [[pPluginAdminName]] of the module [[class_name]] use CSS from the module [[css_class_name]].', $module);
+					}
+					
+					$box['tabs']['all_css_tab']['label'] = ze\admin::phrase('CSS (all [[pluginsOfThisType]])', $module);
 				} else {
 					$box['tabs']['this_css_tab']['hidden'] = true;
 					$box['tabs']['all_css_tab']['hidden'] = true;
 				}
-				
-				
-				//Old code to set the title for the framework and CSS tab
-				
-				//if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
-				//	if ($box['key']['isSlideshow']) {
-				//		$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled slideshow [[instanceName]]', $titleMrg);
-				//	} else {
-				//		$title = ze\admin::phrase('CSS & framework for [[module]], in version controlled nest [[instanceName]]', $titleMrg);
-				//	}
-				//
-				//} elseif ($box['key']['eggId']) {
-				//	if ($box['key']['isSlideshow']) {
-				//		$title =  ze\admin::phrase('CSS & framework for [[module]], in slideshow "[[instanceName]]"', $titleMrg);
-				//	} else {
-				//		$title =  ze\admin::phrase('CSS & framework for [[module]], in nest "[[instanceName]]"', $titleMrg);
-				//	}
-				//
-				//} elseif ($box['key']['isVersionControlled']) {
-				//	$title = ze\admin::phrase('CSS & framework for version controlled [[module]]', $titleMrg);
-				//
-				//} else {
-				//	switch ($module['class_name']) {
-				//		case 'zenario_plugin_nest':
-				//			$title = ze\admin::phrase('CSS & framework for Nest');
-				//			break;
-				//		case 'zenario_slideshow':
-				//			$title = ze\admin::phrase('CSS & framework for Slideshow');
-				//			break;
-				//		default:
-				//			$title = ze\admin::phrase('CSS & framework for [[module]]', $titleMrg);
-				//	}
-				//}
 		
 				break;
 		}

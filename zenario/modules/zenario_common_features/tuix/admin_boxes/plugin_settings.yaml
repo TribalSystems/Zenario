@@ -65,9 +65,15 @@ plugin_settings:
             ord: 100001
             fields: {}
         
-        tuix_snippet:
-            label: TUIX Snippet (advanced)
+        advanced_dropdown:
             ord: 100002
+            label: Advanced
+            hide_when_children_are_not_visible: true
+        
+        tuix_snippet:
+            parent: advanced_dropdown
+            label: TUIX Snippet
+            ord: 10
             visible_if: |
                 tuix.key.isFEA
             fields:
@@ -83,11 +89,20 @@ plugin_settings:
                     empty_value: ' -- None -- '
                     values: {}
                     format_onchange: true
+                desc2:
+                    indent: 1
+                    snippet:
+                        html: ''
                 '~custom_yaml~':
                     type: code_editor
                     language: yaml
                     tall_as_possible: true
                     readonly: true
+                desc3:
+                    snippet:
+                        html: |
+                            This tab appears because is an FEA-type plugin or plugin mode
+                            (i.e. its module contains a <code>tuix/visitor/</code> directory).
         
         last_tab:
             label: Help

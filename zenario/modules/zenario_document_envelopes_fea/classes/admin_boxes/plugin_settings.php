@@ -72,6 +72,34 @@ class zenario_document_envelopes_fea__admin_boxes__plugin_settings extends zenar
 				$fields['first_tab/retina']['grouping'] =
 				$fields['first_tab/use_fallback_image']['grouping'] =
 				$fields['first_tab/fallback_image']['grouping'] = 'show_columns';
+			
+			for ($i = 1; $i <= 3; $i++) {
+				if (!$values['first_tab/enable.search_box'] || !$values['first_tab/custom_field_' . $i]) {
+					$fields['first_tab/make_custom_field_' . $i . '_searchable']['disabled'] = true;
+					$fields['first_tab/make_custom_field_' . $i . '_searchable']['side_note'] =
+						$this->phrase('Please enable search panel and select a custom field.');
+				} else {
+					$fields['first_tab/make_custom_field_' . $i . '_searchable']['disabled'] = false;
+					unset($fields['first_tab/make_custom_field_' . $i . '_searchable']['side_note']);
+				}
+			}
+		}
+
+		if ($values['global_area/mode'] == 'view_document_envelope' || $values['global_area/mode'] == 'edit_document_envelope' || $values['global_area/mode'] == 'create_document_envelope') {
+			$fields['first_tab/show_name']['read_only'] =
+			$fields['first_tab/show_description']['read_only'] = true;
+
+			$values['first_tab/show_name'] =
+			$values['first_tab/show_description'] = true;
+		} else {
+			$fields['first_tab/show_name']['read_only'] =
+			$fields['first_tab/show_description']['read_only'] = false;
+		}
+
+		if ($values['global_area/mode'] == 'edit_document_envelope' || $values['global_area/mode'] == 'create_document_envelope') {
+			$fields['first_tab/show_code']['label'] = 'Code (if checked, mandatory and unique)';
+		} else {
+			$fields['first_tab/show_code']['label'] = 'Code';
 		}
 		
 		$hideImageSettings = (($values['global_area/mode'] != 'list_document_envelopes' && $values['global_area/mode'] != 'view_document_envelope') || !$values['first_tab/show_thumbnail_image']);

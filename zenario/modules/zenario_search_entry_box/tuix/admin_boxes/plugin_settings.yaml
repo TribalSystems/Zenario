@@ -8,11 +8,27 @@ plugin_settings:
                 use_specific_search_results_page:
                     plugin_setting:
                         name: use_specific_search_results_page
-                    label: 'Use a specific Search Results Page:'
-                    type: checkbox
-                    value: ""
-                    format_onchange: Yes
+                    type: radios
+                    values:
+                        0:
+                            ord: 1
+                            label: 'Use the sitewide search results page'
+                        1:
+                            ord: 2
+                            label: 'Use a specific search results page:'
+                    redraw_onchange: true
+                plugin_page_note:
+                    indent: 1
+                    visible_if: |
+                        !zenarioAB.value('use_specific_search_results_page')
+                    snippet:
+                        html: |
+                            When a content item is created containing the <em style="font-style: italic;">Search Results</em> plugin,
+                            this plugin will automatically link to it.
                 specific_search_results_page:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('use_specific_search_results_page')
                     plugin_setting:
                         name: specific_search_results_page
                         foreign_key_to: content

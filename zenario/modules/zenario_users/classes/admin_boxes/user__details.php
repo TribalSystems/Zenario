@@ -190,6 +190,26 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		$fields['details/reveal_password']['value'] = empty($fields['details/reveal_password']['pressed'])? 'Reveal' : 'Hide';
 		
 		$fields['details/password']['side_note'] = ze\admin::displayPasswordRequirementsNoteAdmin($values['details/password']);
+		if (empty($fields['details/password']['hidden'])) {
+			//Validate password: show whether it matches the requirements or not,
+			//but don't show an admin box error if it doesn't.
+			//Errors will be shown when validating.
+			$passwordValidation = ze\user::checkPasswordStrength($values['details/password']);
+			if (!$passwordValidation['password_matches_requirements']) {
+				//Set the post-html field to display "FAIL" highlighted in red.
+				$passwordMessageSnippet = 
+					'<div>
+						<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+					</div>';
+			} else {
+				//Set the post-html field to display "PASS" highlighted in green.
+				$passwordMessageSnippet = 
+					'<div>
+						<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
+					</div>';
+			}
+			$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -264,15 +284,14 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 								'<div>
 									<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
 								</div>';
-							$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
 						} else {
 							//Set the post-html field to display "PASS" highlighted in green.
 							$passwordMessageSnippet = 
 								'<div>
 									<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
 								</div>';
-							$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
 						}
+						$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
 					}
 				}
 				

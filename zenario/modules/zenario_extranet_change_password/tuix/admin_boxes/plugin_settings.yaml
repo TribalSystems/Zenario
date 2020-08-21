@@ -1,4 +1,7 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
 plugin_settings:
+    module_class_name: zenario_extranet_change_password
     tabs:
         first_tab:
             label: Send email confirmation
@@ -6,7 +9,7 @@ plugin_settings:
                 zenario_extranet_change_password__send_notification_email:
                     plugin_setting:
                         name: zenario_extranet_change_password__send_notification_email
-                    label: 'Send email confirmation:'
+                    label: 'Send email confirmation'
                     type: checkbox
                     redraw_onchange: Yes
                     
@@ -15,9 +18,6 @@ plugin_settings:
                     plugin_setting:
                         name: zenario_extranet_change_password__notification_email_template
                     label: 'Select email template:'
-                    
-                    #    You can create a picker for pretty much anything in the CMS that
-                    #    has a Storekeeper Panel just by entering details of that Panel
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
@@ -27,18 +27,8 @@ plugin_settings:
                         nothing_selected_phrase: No Email Template Selected
                         select_phrase: Select an email template...
                         hide_remove_button: Yes
-                        
                     value: zenario_extranet_change_password_notification_en
-                    
-                    #    Only show this field if the checkbox above is checked, but make it
-                    #    mandatory if shown
+                    note_below: 'By default this plugin uses the email template with code "zenario_extranet_change_password_notification_en".'
                     visible_if: "zenarioAB.value('zenario_extranet_change_password__send_notification_email')"
                     validation:
                         required_if_not_hidden: Please select an email template.
-                     
-    module_class_name: zenario_extranet_change_password
-    
-
-
-
-

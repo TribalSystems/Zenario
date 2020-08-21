@@ -8,12 +8,6 @@ site_settings:
             edit_mode:
                 enabled: Yes
             fields:
-                timezone_dataset_field:
-                    site_setting:
-                        name: zenario_timezones__timezone_dataset_field
-                    label: 'Timezone dataset field:'
-                    type: select
-                    empty_value: -- Select --
                 default_timezone:
                     site_setting:
                         name: zenario_timezones__default_timezone
@@ -22,3 +16,12 @@ site_settings:
                     empty_value: -- Select --
                     side_note: |
                         The timezone to use when a user has not set a specific timezone.
+                timezone_dataset_field:
+                    site_setting:
+                        name: zenario_timezones__timezone_dataset_field
+                    label: 'Users/Contacts dataset field:'
+                    type: select
+                    empty_value: -- Select --
+                    note_below: >
+                        If you have modules that rely on users' timezones,
+                        use this to select the timezone field on the Users/Contacts dataset.

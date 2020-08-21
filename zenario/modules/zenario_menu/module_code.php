@@ -91,6 +91,22 @@ class zenario_menu extends ze\moduleBaseClass {
 		 && ($userDetails = ze\user::details($id))) {
 			
 			$userDetails['welcome_message'] = $this->phrase($this->setting('welcome_message'), $userDetails);
+			
+			if ($this->setting('show_group_name_when_user_is_in_groups') && $this->setting('user_groups')) {
+				$groupsToShow = [];
+				
+				$groupsUserIsIn = ze\user::groups($id, $flat = true, $getLabelWhenFlat = true);
+				foreach (explode(",", $this->setting('user_groups')) as $groupId) {
+					if (array_key_exists($groupId, $groupsUserIsIn)) {
+						$groupsToShow[$groupId] = $groupsUserIsIn[$groupId];
+					}
+				}
+				
+				if ($groupsToShow) {
+					$userDetails['groups'] = implode(", ", $groupsToShow);
+				}
+			}
+			
 			return $userDetails;
 		}
 		return false;

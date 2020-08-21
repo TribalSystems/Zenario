@@ -33,18 +33,38 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	
 	
 	
-	//From the search entry box
 	
+	public function init() {
+		
+		$this->allowCaching(
+			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+		$this->clearCacheBy(
+			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+		
+		
+		if ($this->methodCallIs('showRSS')) {
+			//Adding this line would allow predictive searches to be cached.
+			//$this->registerGetRequest('searchString');
+		} else {
+			$this->callScript('zenario_search_entry_box_predictive_probusiness', 'autocomplete', $this->containerId, $this->showRSSLink(), $this->setting('dropdown_position'));
+		}
+		
+		
+		return zenario_search_results::init();
+	}
+	
+	
+	//From the search entry box
 	
 	function showSlot() {
 		$this->sections = [];
 		$this->mergeFields = [];
 		
-		$cID = $cType = false;
+		$cID = $cType = $state = false;
 		if ($this->setting('use_specific_search_results_page') && $this->getCIDAndCTypeFromSetting($cID, $cType, 'specific_search_results_page')) {
 		
 		} else {
-			ze\content::langSpecialPage('zenario_search', $cID, $cType);
+			ze\content::pluginPage($cID, $cType, $state, 'zenario_search_results');
 		}
 		
 		if (!$cID) {
@@ -124,9 +144,6 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['first_tab']['fields']['specific_search_results_page']['hidden'] = 
-					!$values['first_tab/use_specific_search_results_page'];
-				
 				if ($box['tabs']['first_tab']['fields']['search_placeholder'] == true
 					&& empty($box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'])) {
 					$box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'] = 'Search the site';
@@ -148,21 +165,6 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	
 	
 	
-	
-	//From the Search Results ProBusiness
-	
-	
-	public function init() {
-		if ($this->methodCallIs('showRSS')) {
-			//Adding this line would allow predictive searches to be cached.
-			//$this->registerGetRequest('searchString');
-		} else {
-			$this->callScript('zenario_search_entry_box_predictive_probusiness', 'autocomplete', $this->containerId, $this->showRSSLink(), $this->setting('dropdown_position'));
-		}
-		
-		
-		return zenario_search_results::init();
-	}
 	
 	protected function setSearchFields() {
 		zenario_search_results::setSearchFields();

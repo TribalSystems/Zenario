@@ -121,7 +121,7 @@ class site {
 			//If we didn't find one, try to load one of the templates
 			//(Check to see which modules are in the system to try and work out which!)
 			if (empty(\ze::$siteDesc)) {
-				$path = CMS_ROOT. 'zenario/api/sample_site_descriptions/';
+				$path = CMS_ROOT. 'zenario/reference/sample_site_descriptions/';
 			
 				if (!\ze::moduleDir('zenario_pro_features', '', true)) {
 					\ze::$siteDesc = \ze\tuix::readFile($path. 'community/site_description.yaml');

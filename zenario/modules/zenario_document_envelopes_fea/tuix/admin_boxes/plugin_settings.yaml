@@ -56,6 +56,10 @@ plugin_settings:
                     show_as_a_label_when_readonly: true
                     css_class: zfab_conductor_button_destination
             fields:
+                desc_snippet:
+                    snippet:
+                        html: "This tab shows the settings available for the currently selected mode."
+                
                 microtemplate:
                     plugin_setting:
                         name: microtemplate
@@ -73,6 +77,11 @@ plugin_settings:
                             label: Responsive (table view for desktops, block view for mobile)
                 
                 #Groupings
+                search:
+                    type: grouping
+                    snippet:
+                        label: Search
+                        label_class: subheading
                 filters:
                     type: grouping
                     snippet:
@@ -102,11 +111,6 @@ plugin_settings:
                     type: grouping
                     snippet:
                         label: Options
-                        label_class: subheading
-                search:
-                    type: grouping
-                    snippet:
-                        label: Search
                         label_class: subheading
                 
                 #Columns
@@ -284,8 +288,7 @@ plugin_settings:
                     value: true
                 show_code:
                     grouping: show_columns
-                    visible_if:
-                        lib.modeIs: list_document_envelopes
+                    visible_if: lib.modeIn('list_document_envelopes', 'view_document_envelope', 'create_document_envelope', 'edit_document_envelope')
                     label: Code
                     type: checkbox
                     plugin_setting:
@@ -294,7 +297,7 @@ plugin_settings:
                 show_name:
                     grouping: show_columns
                     visible_if:
-                        lib.modeIs: list_document_envelopes
+                        lib.modeIn('list_document_envelopes', 'create_document_envelope', 'edit_document_envelope', 'view_document_envelope')
                     label: Name
                     type: checkbox
                     plugin_setting:
@@ -303,7 +306,7 @@ plugin_settings:
                 show_description:
                     grouping: show_columns
                     visible_if:
-                        lib.modeIs: list_document_envelopes
+                        lib.modeIn('list_document_envelopes', 'create_document_envelope', 'edit_document_envelope')
                     label: Description
                     type: checkbox
                     plugin_setting:
@@ -311,13 +314,12 @@ plugin_settings:
                     value: true
                 show_keywords:
                     grouping: show_columns
-                    visible_if:
-                        lib.modeIs: list_document_envelopes
+                    visible_if: lib.modeIn('list_document_envelopes', 'view_document_envelope', 'create_document_envelope', 'edit_document_envelope')
                     label: Keywords
                     type: checkbox
                     plugin_setting:
                         name: show_keywords
-                    value: true
+                    value: false
                 show_file_formats:
                     grouping: show_columns
                     visible_if:
@@ -352,10 +354,11 @@ plugin_settings:
                         lib.modeIn: list_document_envelopes
                     plugin_setting:
                         name: enable.search_box
-                    label: Enable search box
+                    label: Enable search panel
                     type: checkbox
                     value: true
-                    redraw_onchange: true
+                    format_onchange: true
+                    note_below: "Text will be searched in the fields 'id', 'code', 'name', 'description', 'keywords'."
                 search_box_items_required:
                     grouping: search
                     hide_with_previous_field: true
@@ -369,6 +372,28 @@ plugin_settings:
                     type: text
                     side_note: Leave empty, 0 or 1 to follow default behaviour and only show when there is more than 1 item.
                     style: 'width:5em;'
+                show_languages_search:
+                    grouping: search
+                    indent: 1
+                    visible_if:
+                        lib.value: enable.search_box
+                        lib.modeIn: list_document_envelopes
+                    plugin_setting:
+                        name: show_languages_search
+                    label: Show Languages search drop-down
+                    type: checkbox
+                    value: true
+                show_file_formats_search:
+                    grouping: search
+                    indent: 1
+                    visible_if:
+                        lib.value: enable.search_box
+                        lib.modeIn: list_document_envelopes
+                    plugin_setting:
+                        name: show_file_formats_search
+                    label: Show File Formats search drop-down
+                    type: checkbox
+                    value: true
                 
                 #Other options
                 enable_mass_actions:
@@ -426,35 +451,65 @@ plugin_settings:
                     type: checkbox
                 
                 custom_dataset_fields:
-                    grouping: options
+                    grouping: show_columns
                     label: "Custom dataset fields:"
                     visible_if:
                         lib.modeIn('list_document_envelopes', 'create_document_envelope', 'view_document_envelope', 'edit_document_envelope')
                 custom_field_1:
-                    grouping: options
+                    grouping: show_columns
                     visible_if:
                         lib.modeIn('list_document_envelopes', 'create_document_envelope', 'view_document_envelope', 'edit_document_envelope')
                     label: "Field 1:"
                     plugin_setting:
                         name: custom_field_1
+                    format_onchange: true
                     pick_items:
                         path: zenario__administration/panels/custom_fields/refiners/dataset_id//
+                make_custom_field_1_searchable:
+                    indent: 1
+                    grouping: show_columns
+                    visible_if:
+                        lib.modeIn: list_document_envelopes
+                    plugin_setting:
+                        name: make_custom_field_1_searchable
+                    label: Make searchable
+                    type: checkbox
                 custom_field_2:
-                    grouping: options
+                    grouping: show_columns
                     visible_if:
                         lib.modeIn('list_document_envelopes', 'create_document_envelope', 'view_document_envelope', 'edit_document_envelope')
                     label: "Field 2:"
                     plugin_setting:
                         name: custom_field_2
+                    format_onchange: true
                     #pick_items settings are copied over in php from field 1.
+                make_custom_field_2_searchable:
+                    indent: 1
+                    grouping: show_columns
+                    visible_if:
+                        lib.modeIn: list_document_envelopes
+                    plugin_setting:
+                        name: make_custom_field_2_searchable
+                    label: Make searchable
+                    type: checkbox
                 custom_field_3:
-                    grouping: options
+                    grouping: show_columns
                     visible_if:
                         lib.modeIn('list_document_envelopes', 'create_document_envelope', 'view_document_envelope', 'edit_document_envelope')
                     label: "Field 3:"
                     plugin_setting:
                         name: custom_field_3
+                    format_onchange: true
                     #pick_items settings are copied over in php from field 1.
+                make_custom_field_3_searchable:
+                    indent: 1
+                    grouping: show_columns
+                    visible_if:
+                        lib.modeIn: list_document_envelopes
+                    plugin_setting:
+                        name: make_custom_field_3_searchable
+                    label: Make searchable
+                    type: checkbox
                 
                 #Collection buttons
                 enable.create_document_envelope:

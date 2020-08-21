@@ -80,12 +80,34 @@ if ($this->eggId && isset($this->parentNest)) {
 			//To do: add something useful here
 		
 		} else {
+			
+			$classInfo = $this->getClassInfo();
+			
+			$tooltip = '<div>'. \ze\admin::phrase('Container ID:'). ' <span>'. htmlspecialchars($this->containerId). '</span></div>';
+			$tooltip .= '<div>'. \ze\admin::phrase('Module class name:'). ' <span>'. htmlspecialchars($this->moduleClassName). '</span></div>';
+			
+			if ($classInfo['subClassName']
+			 && $classInfo['subClassName'] != $this->moduleClassName) {
+				$tooltip .= '<div>'. \ze\admin::phrase('Sub-class name:'). ' <span>'. htmlspecialchars($classInfo['subClassName']). '</span></div>';
+			}
+			
+			if ($classInfo['mode']) {
+				$tooltip .= '<div>'. \ze\admin::phrase('Mode:'). ' <span>'. htmlspecialchars($classInfo['mode']). '</span></div>';
+			}
+			
+			if ($classInfo['fileLocation']) {
+				$tooltip .= '<div>'. \ze\admin::phrase('File location:'). ' <span>'. htmlspecialchars($classInfo['fileLocation']). '</span></div>';
+			}
+			
+			
 			echo '
 			<a
 				href="', $organizerLink, $nestPath, $this->eggId, '~.plugin_settings~k', htmlspecialchars(json_encode(['eggId' => $this->eggId])), '"
 				class="zenario_slotButton zenario_editNestedPlugin"
 				id="', $this->containerId, '-egg"
 				onclick="return zenarioA.pluginSlotEditSettings(this, \'', $this->slotName, '\', false, {eggId: ', (int) $this->eggId, '});"
+				title="'. htmlspecialchars($tooltip). '"
+				data-tooltip-options=\'{"tooltipClass": "zenario_admin_tooltip zenario_plugin_info_tooltip"}\'
 			><span></span></a>
 			<a
 				href="', $organizerLink, $nestPath, $this->eggId, '"

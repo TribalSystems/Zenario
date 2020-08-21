@@ -41,8 +41,9 @@ ze::$vars['roomId'] =
 ze::$vars['streamId'] = 
 ze::$vars['abstractId'] = 0;
 
-//Add a generic ID that any non-hierarchical plugin can just use
+//Add some vars that any non-hierarchical plugin can just use
 ze::$vars['id'] = (int) ($_REQUEST['id'] ?? 0);
+ze::$vars['date'] = $_REQUEST['date'] ?? '';
 
 $status = require ze::editionInclude('checkRequestVars', $continueFrom = 'zenario_pro_features');
 if (!$status) {

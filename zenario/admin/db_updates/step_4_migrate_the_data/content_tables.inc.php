@@ -826,3 +826,153 @@ if (ze\dbAdm::needRevision(50420)) {
 	
 	ze\dbAdm::revision(50420);
 }
+
+//Plugin settings cleanup for Content Summary List and Blog/News List
+if (ze\dbAdm::needRevision(51052)) {
+	foreach (['zenario_content_list', 'zenario_blog_news_list'] as $module) {
+		if (ze\module::isRunning($module)) {
+			$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+			foreach ($instances as $instance) {
+				//Plugin settings cleanup #1: there are 2 identical settings for showing content items in any/all selected categories.
+				//Remove one and set its value to the remaining setting.
+				
+				//Check if the old setting is in use.
+				if (isset($instance['settings']['refine_type_content_with_matching_categories'])) {
+			
+					//Setting is in use, and the filtering option is "Show content with categories matching the current content item"
+					if (isset($instance['settings']['category_filters_dropdown']) && ($instance['settings']['category_filters_dropdown'] == 'show_content_with_matching_categories')) {
+						//Check if the target value already exists in the DB: set the value if so...
+						if (isset($instance['settings']['refine_type'])) {
+							ze\row::update(
+								'plugin_settings',
+								['value' => ze\escape::sql($instance['settings']['refine_type_content_with_matching_categories'])],
+								['name' => 'refine_type', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+							);
+						} else {
+							//... otherwise create it.
+							ze\row::insert(
+								'plugin_settings',
+								['name' => 'refine_type', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id'], 'value' => ze\escape::sql($instance['settings']['refine_type_content_with_matching_categories'])]
+							);
+						}
+					}
+			
+					//Delete the old setting entry.
+					ze\row::delete(
+						'plugin_settings',
+						['name' => 'refine_type_content_with_matching_categories', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+					);
+				}
+		
+				//Plugin settings cleanup #2: fix a bug where there are categories selected, but the Categories filter dropdown has no value.
+				if (!empty($instance['settings']['category'])) {
+					if (empty($instance['settings']['category_filters_dropdown'])) {
+						ze\row::set(
+							'plugin_settings',
+							['value' => 'choose_categories_to_display_or_omit'],
+							['name' => 'category_filters_dropdown', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+						);
+					}
+				}
+			}
+		}
+	}
+	ze\dbAdm::revision(51052);
+}
+
+//Plugin settings update for User Redirector:
+//replaced the old redirection rules with the ones from Extranet Login
+if (ze\dbAdm::needRevision(51053)) {
+	if (ze\module::isRunning('zenario_user_redirector')) {
+		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_user_redirector');
+		foreach ($instances as $instance) {
+			//Previously the plugin supported up to 4 redirection rules. Migrate these rules.
+			$counter = 0;
+			foreach (range(1, 4) as $i) {
+				$condition = false;
+				if ($i == 1) {
+					$condition = (!empty($instance['settings']['group_' . $i]) && !empty($instance['settings']['redirect_' . $i]));
+				} elseif ($i >= 2 && $i <= 4) {
+					$condition = (!empty($instance['settings']['show_' . $i]) && !empty($instance['settings']['group_' . $i]) && !empty($instance['settings']['redirect_' . $i]));
+				}
+
+				if ($condition) {
+					//The old logic only allowed redirection rules based on group membership.
+					//The new logic requires to specify the rule type.
+					ze\row::insert(
+						'plugin_settings',
+						['name' => 'redirect_rule_type__' . (int)$i, 'value' => 'group', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+					);
+					
+					//Rename the old settings
+					ze\row::update(
+						'plugin_settings',
+						['name' => 'redirect_rule_group__' . (int)$i],
+						['name' => 'group_' . (int)$i, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+					);
+
+					ze\row::update(
+						'plugin_settings',
+						['name' => 'redirect_rule_content_item__' . (int)$i],
+						['name' => 'redirect_' . (int)$i, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+					);
+			
+					//Delete the old settings entries if necessary
+					if ($i >= 2 && $i <= 4) {
+						ze\row::delete(
+							'plugin_settings',
+							['name' => 'show_' . (int)$i, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+						);
+					}
+
+					$counter++;
+				}
+			}
+
+			//Insert new value for the new radios
+			ze\row::insert(
+				'plugin_settings',
+				['name' => 'show_welcome_page', 'value' => '_ALWAYS', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+			);
+
+			//Save the total count of redirection rules
+			ze\row::insert(
+				'plugin_settings',
+				['name' => 'number_of_redirect_rules', 'value' => (int)$counter, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+			);
+			
+			//Handle the default redirect
+			if (!empty($instance['settings']['show_default']) && !empty($instance['settings']['redirect_default'])) {
+				//Rename the old setting
+				ze\row::update(
+					'plugin_settings',
+					['name' => 'welcome_page'],
+					['name' => 'redirect_default', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+				);
+
+				//Delete the old setting entry
+				ze\row::delete(
+					'plugin_settings',
+					['name' => 'show_default', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+				);
+			}
+		}
+	}
+	ze\dbAdm::revision(51053);
+}
+
+
+//Work around a bug where the fea_type property in TUIX files is only read when the files change,
+//however in some weird cases it was possible for the checksum of the file to be recorded before
+//the code that read the value was implemented.
+//(Note: this was back-patched to 8.7, but is safe to re-run.)
+if (ze\dbAdm::needRevision(51303)) {
+	
+	if (is_dir(CMS_ROOT. 'cache/tuix')) {
+		ze\row::update('tuix_file_contents', ['last_modified' => 0, 'checksum' => ''], []);
+		ze\cache::deleteDir(CMS_ROOT. 'cache/tuix', 1);
+		ze\cache::cleanDirs(true);
+	}
+	
+	ze\dbAdm::revision(51303);
+}

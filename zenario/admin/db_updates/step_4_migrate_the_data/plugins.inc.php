@@ -194,6 +194,21 @@ function runNewModuleDependency($moduleName, $dependencyName) {
 }
 
 
+function convertSpecialPageToPluginPage($specialPage, $pluginPageModule = '', $pluginPageMode = '') {
+	if ($spDetails = ze\row::get('special_pages', true, $specialPage)) {
+		
+		ze\row::insert('plugin_pages_by_mode', [
+			'equiv_id' => $spDetails['equiv_id'],
+			'content_type' => $spDetails['content_type'],
+			'module_class_name' => $pluginPageModule ?: $spDetails['module_class_name'],
+			'mode' => $pluginPageMode ?: '',
+		], $ignore = true);
+		
+		ze\row::delete('special_pages', $specialPage);
+	}
+}
+
+
 
 
 
@@ -462,3 +477,27 @@ if (ze\dbAdm::needRevision(50535)) {
 	ze\row::delete('special_pages', ['module_class_name' => 'zenario_extranet_password_reminder']);
 	ze\dbAdm::revision(50535);
 }
+
+
+//Migrate most of the extranet's special pages to plugin pages
+if (ze\dbAdm::needRevision(50790)) {
+	convertSpecialPageToPluginPage('zenario_change_email', 'zenario_extranet_change_email');
+	convertSpecialPageToPluginPage('zenario_change_password', 'zenario_extranet_change_password');
+	convertSpecialPageToPluginPage('zenario_logout', 'zenario_extranet_logout');
+	convertSpecialPageToPluginPage('zenario_password_reset', 'zenario_extranet_password_reset');
+	convertSpecialPageToPluginPage('zenario_profile', 'zenario_extranet_profile_edit');
+	convertSpecialPageToPluginPage('zenario_registration', 'zenario_extranet_registration');
+	
+	ze\dbAdm::revision(50790);
+}
+
+
+//Migrate the search results special page to a plugin page
+if (ze\dbAdm::needRevision(50795)) {
+	convertSpecialPageToPluginPage('zenario_search', 'zenario_search_results');
+	
+	ze\dbAdm::revision(50795);
+}
+
+
+

@@ -11,6 +11,11 @@ site_settings:
                 on: No
             label: Details
             fields:
+                zenario_location_manager__enable_external_id:
+                    label: 'Enable external number'
+                    site_setting:
+                        name: zenario_location_manager__enable_external_id
+                    type: checkbox
                 zenario_location_manager__enable_pending_status:
                     label: 'Enable pending status'
                     site_setting:

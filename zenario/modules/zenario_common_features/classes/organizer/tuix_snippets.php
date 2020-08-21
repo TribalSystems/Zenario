@@ -30,13 +30,38 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features__organizer__tuix_snippets extends ze\moduleBaseClass {
 	
+	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+
+
+		//Don't show anything in this panel if there are no visitor/FEA plugins running on the site
+		if (!ze\sql::numRows("
+			SELECT 1
+			FROM ". DB_PREFIX. "modules AS m
+			INNER JOIN ". DB_PREFIX. "tuix_file_contents AS tfc
+			   ON tfc.type = 'visitor'
+			  AND tfc.path NOT LIKE 'slot_settings_%'
+			  AND tfc.path NOT IN ('slot_plugin_and_mode', 'zenario_slide_info')
+			  AND tfc.module_class_name = m.class_name
+			WHERE m.status = 'module_running'
+			LIMIT 1
+		")) {
+			unset($panel['db_items']);
+			unset($panel['collection_buttons']);
+			unset($panel['item_buttons']);
+			$panel['no_items_message'] = ' ';
+			$panel['notice']['show'] = true;
+		}
+	}
+	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		foreach ($panel['items'] as &$item) {
-			if ($tuix = json_decode($item['custom_json'], true)) {
-				foreach (['columns', 'collection_buttons', 'item_buttons'] as $tag) {
-					if (isset($tuix[$tag]) && is_array($tuix[$tag])) {
-						$item['num_'. $tag] = count($tuix[$tag]);
+		if (!empty($panel['items'])) {
+			foreach ($panel['items'] as &$item) {
+				if ($tuix = json_decode($item['custom_json'], true)) {
+					foreach (['columns', 'collection_buttons', 'item_buttons'] as $tag) {
+						if (isset($tuix[$tag]) && is_array($tuix[$tag])) {
+							$item['num_'. $tag] = count($tuix[$tag]);
+						}
 					}
 				}
 			}

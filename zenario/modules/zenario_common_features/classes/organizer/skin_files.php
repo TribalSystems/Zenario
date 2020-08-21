@@ -44,7 +44,7 @@ class zenario_common_features__organizer__skin_files extends ze\moduleBaseClass 
 		
 		//Copy the contents of the readme to the help button
 		require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/parsedown/Parsedown.php';
-		$markdown = file_get_contents(CMS_ROOT. 'zenario/api/sample_skin_readme/README.txt');
+		$markdown = file_get_contents(CMS_ROOT. 'zenario/reference/sample_skin_readme/README.txt');
 		$markdownToHTML = new Parsedown();
 		$panel['collection_buttons']['help']['help']['message'] = $markdownToHTML->text($markdown);
 		

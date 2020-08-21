@@ -36,7 +36,7 @@ zenario_content:
         
     identifier:
         css_class: content_draft
-        label: Content item ID
+        label: Content item ID 
     title: Creating a content item
     tabs:
         meta_data:
@@ -202,6 +202,22 @@ zenario_content:
                     onchange: zenarioAB.tuix.___menu_text_changed = true;
                     validation:
                         required_if_not_hidden: Please enter some text for the menu node.
+                menu_id_when_editing:
+                    type: hidden
+                    hidden: true
+                menu_text_when_editing:
+                    #This field is the same as the "Menu node text" one, but only visible when editing an item.
+                    grouping: menu
+                    hide_if_empty: true
+                    label: 'Menu node text:'
+                    type: text
+                    maxlength: 255
+                    onchange: zenarioAB.tuix.___menu_text_changed = true;
+                    validation:
+                        required_if_not_hidden: Please enter some text for the menu node.
+                menu_text_when_editing_on_load:
+                    type: hidden
+                    hidden: true
                 
                 
                 

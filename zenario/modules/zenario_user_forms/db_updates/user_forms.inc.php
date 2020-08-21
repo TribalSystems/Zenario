@@ -1572,4 +1572,10 @@ _sql
 	ADD COLUMN `allow_converting_multiple_images_to_pdf` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
+); ze\dbAdm::revision(259
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+    ADD COLUMN `active_timers` int(10) unsigned DEFAULT NULL AFTER `add_user_to_group`
+_sql
+
 );

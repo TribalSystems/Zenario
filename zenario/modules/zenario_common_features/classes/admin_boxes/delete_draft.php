@@ -64,7 +64,7 @@ class zenario_common_features__admin_boxes__delete_draft extends ze\moduleBaseCl
 			$cID = $cType = false;
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
 			if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_DELETE_DRAFT', $cID, $cType)) {
-				ze\contentAdm::deleteDraft($cID, $cType, false, $values['delete_draft/delete_options']);
+				ze\contentAdm::deleteDraft($cID, $cType, true, $values['delete_draft/delete_options']);
 			}
 		}
 		

@@ -1,4 +1,5 @@
 zenario_list_tuix_snippets:
+    fea_type: list
     key: {}
     #always_visible_cols: 1
     title: TUIX snippets
@@ -10,11 +11,14 @@ zenario_list_tuix_snippets:
         name:
             title: Name
         num_columns:
-            title: Number of columns
+            title: Number of TUIX columns defined
+            show_by_default: true
         num_collection_buttons:
-            title: Number of collection buttons
+            title: Number of TUIX collection buttons defined
+            show_by_default: true
         num_item_buttons:
-            title: Number of item buttons
+            title: Number of TUIX item buttons defined
+            show_by_default: true
         usage:
             title: Usage
     collection_buttons:

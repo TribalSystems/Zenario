@@ -122,6 +122,9 @@ class zenario_document_envelopes_fea__visitor__view_document_envelope extends ze
 							}
 							
 							if ($fieldValue) {
+								if ($datasetAllCustomFields[$customDatasetFieldId]['type'] == 'url') {
+									$fieldValue = '<a href="' . htmlspecialchars($fieldValue) . '" target="_blank">' . $fieldValue . '</a>';
+								}
 								$fields['details/' . $customDatasetFieldIdKey]['snippet']['html'] = $fieldValue;
 							} else {
 								$fields['details/' . $customDatasetFieldIdKey]['snippet']['html'] = $this->phrase("Not set");
@@ -135,6 +138,9 @@ class zenario_document_envelopes_fea__visitor__view_document_envelope extends ze
 		$tags['perms'] = [
 			'manage' => ze\user::can('manage', $this->idVarName, $this->envelopeId)
 		];
+
+		$fields['details/code']['hidden'] = !$this->setting('show_code');
+		$fields['details/keywords']['hidden'] = !$this->setting('show_keywords');
 		
 		if (!$this->setting('show_edit_button_as_icon')) {
 			$tags['collection_buttons']['edit_document_envelope']['css_class'] = 'edit';

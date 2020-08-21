@@ -70,6 +70,26 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				$editionLevel = 1;
 		}
 		$panel['columns']['in_edition']['db_column'] = "1*m.edition <= ". (int) $editionLevel;
+		
+		
+		//Abstract and missing modules. Include slightly different logic depending on the mode.
+		switch ($mode) {
+			case 'typeahead_search':
+				//Only show modules that are neither missing or abstract in type-ahead searches
+				$panel['db_items']['where_statement'] = "
+					WHERE m.missing = 0
+					  AND m.status != 'module_is_abstract'";
+				break;
+			
+			case 'full':
+			case 'quick':
+			case 'select':
+				//Don't show abstract modules unless they are missing.
+				//Show modules that aren't running, unless they are missing.
+				$panel['db_items']['where_statement'] = "
+					WHERE (m.missing, m.status) NOT IN ((0, 'module_is_abstract'), (1, 'module_not_initialized'))";
+				break;
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -148,6 +168,21 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 			$module['cell_css_classes'] = [];
 	
 			if ($path = ze::moduleDir($module['class_name'], 'module_code.php', true)) {
+				//Check whether this is a core/extra/custom module
+				$pathParts = explode('/', $path);
+				if ($pathParts[0] == 'zenario' && $pathParts[1] == 'modules') {
+					$coreExtraOrCustom = 'Core';
+				} elseif ($pathParts[0] == 'zenario_extra_modules') {
+					$coreExtraOrCustom = 'Extra';
+				} elseif ($pathParts[0] == 'zenario_custom') {
+					$coreExtraOrCustom = 'Custom';
+				} else {
+					$coreExtraOrCustom = "Unknown";
+				}
+				$coreExtraOrCustom .= ' module';
+				$module['core_extra_or_custom'] = ze\admin::phrase($coreExtraOrCustom);
+				
+				//Module full path
 				$module['path'] = substr(CMS_ROOT. $path, 0, -15);
 				$module['code_present'] = true;
 		
@@ -231,7 +266,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 					$module['keywords'] = $desc['keywords'];
 					
 					if (!empty($desc['editions'])) {
-						$module['editions'] = $desc['editions'];
+						$module['editions'] = $module['editions_column'] = $desc['editions'];
 					}
 					
 					$signals = [];
@@ -297,7 +332,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 										$module['dependencies'] .= ', ';
 								
 									}
-									$module['dependencies'] .= htmlspecialchars(ze\module::getModuleDisplayNameByClassName($dependency));
+									$module['dependencies'] .= htmlspecialchars($dependency. ' ('. ze\module::getModuleDisplayNameByClassName($dependency). ')');
 								}
 							}
 					
@@ -307,7 +342,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 									if ($i++) {
 										$module['dependents'] .= ', ';
 									}
-									$module['dependents'] .= htmlspecialchars(ze\module::getModuleDisplayNameByClassName($dependent));
+									$module['dependents'] .= htmlspecialchars($dependent. ' ('. ze\module::getModuleDisplayNameByClassName($dependent). ')');
 								}
 							}
 						}
@@ -330,6 +365,11 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 							$module['close_up_view_bottom'] .= '</td></tr>';
 						}
 					}
+				}
+				
+				if ($module['is_pluggable']
+				 && is_dir(CMS_ROOT. ze::moduleDir($module['class_name'], 'tuix/visitor'))) {
+					$module['isFEA'] = true;
 				}
 		
 				$module['status'] = ze\admin::phrase($module['status']);

@@ -83,7 +83,6 @@ switch ($path) {
 		
 		$fields['pagination/page_limit']['hidden'] = 
 		$fields['pagination/pagination_style']['hidden'] = 
-		$fields['pagination/offset']['hidden'] = 
 			!$values['pagination/show_pagination'];
 		
 		

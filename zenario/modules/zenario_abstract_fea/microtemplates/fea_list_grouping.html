@@ -1,4 +1,4 @@
-<% var id = m.lib.containerId + "_tgroup_" + m.id; %>
+<% var revealId = m.lib.containerId + "_tgroup_" + m.id; %>
 <% var showToggle = m.show_toggle; %>
 <% var invertToggle = m.toggle_starts_open; %>
 <% var isOn; %>
@@ -34,21 +34,7 @@
 						border: 1px black solid;
 						border-radius: 50%;
 					" onclick="
-						var isOn, $g = $('#{{id|escape}}');
-						
-						if (isOn = $g.is(':visible')) {
-							$(this).removeClass('zfea_toggle_on').addClass('zfea_toggle_off');
-						} else {
-							$(this).removeClass('zfea_toggle_off').addClass('zfea_toggle_on');
-						}
-						
-						<% if (!invertToggle) { %>
-							isOn = !isOn;
-						<% } %>
-						
-						zenario_conductor.setToggle(this, {{m.id|escape}}, isOn, true);
-						
-						$g.slideToggle(100);
+						zenario_conductor.toggleClick(this, {{m.id|e}}, '{{revealId|e}}', 100, {{!!invertToggle}});
 					" class="
 						zfea_toggle
 						
@@ -65,7 +51,7 @@
 	</td>
 </tr>
 <tbody
-	id="{{id|escape}}"
+	id="{{revealId|escape}}"
 	
 	<% if (!isOn) { %>
 		style="display: none;"

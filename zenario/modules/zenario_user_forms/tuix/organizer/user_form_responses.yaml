@@ -9,6 +9,10 @@ zenario__user_forms:
             hidden: true
             default_sort_column: response_datetime
             default_sort_desc: true
+            notice:
+                show: false
+                type: information
+                message: ''
             db_items:
                 table: |
                     [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur

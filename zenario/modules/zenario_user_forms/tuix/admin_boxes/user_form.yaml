@@ -371,7 +371,15 @@ zenario_user_form:
                     label: 'Add user to group:'
                     type: select
                     empty_value: ' -- Select -- '
-        
+                active_timers:
+                    label: 'Grant user a timer:'
+                    type: select
+                    values: {}
+                    hidden: true
+                    format_onchange: true
+                    empty_value: ' -- Select -- '
+                    side_note: |
+                        Specify the user timer template that will be used to grant a user timer.
                 line_br_2:
                     snippet:
                         html: | 
@@ -391,17 +399,21 @@ zenario_user_form:
                 user_email_options_logged_in_user:
                     type: radios
                     values:
-                        send_data:
+                        visible_fields:
                             ord: 1
+                            label: 'Send all visible fields'
+                        send_data:
+                            ord: 2
                             label: 'Send all form data (unformatted)'
                             side_note: |
                                 Attachments will not be sent in this format.
                         use_template:
-                            ord: 2
+                            ord: 3
                             label: 'Send email using template'
                     value: use_template
                     format_onchange: true
-                    indent: 2
+                    indent: 2             
+                    
                 user_email_template_logged_in_user:
                     label: 'Email template:'
                     pick_items:
@@ -429,17 +441,22 @@ zenario_user_form:
                 user_email_options_from_field:
                     type: radios
                     values:
-                        send_data:
+                        visible_fields:
                             ord: 1
+                            label: 'Send all visible fields'
+                        send_data:
+                            ord: 2
                             label: 'Send all form data (unformatted)'
                             side_note: |
                                 Attachments will not be sent in this format.
                         use_template:
-                            ord: 2
+                            ord: 3
                             label: 'Send email using template'
                     value: use_template
                     format_onchange: true
                     indent: 2
+                    
+                    
                 user_email_template_from_field:
                     label: 'Email template:'
                     pick_items:
@@ -488,15 +505,20 @@ zenario_user_form:
                 admin_email_options:
                     type: radios
                     values:
-                        send_data:
+                        visible_fields:
                             ord: 1
+                            label: 'Send all visible fields'
+                        send_data:
+                            ord: 2
                             label: 'Send all form data (unformatted)'
                         use_template:
-                            ord: 2
+                            ord: 3
                             label: 'Send email using template'
+                    
                     value: send_data
                     format_onchange: true
                     indent: 1
+                    
                 admin_email_template:
                     label: 'Email template:'
                     pick_items:

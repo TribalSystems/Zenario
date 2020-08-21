@@ -28,7 +28,7 @@ zenario_document_envelope__details:
                         required: "Please enter the code."
                 description: 
                     label: "Description:"
-                    type: text
+                    type: textarea
                     maxlength: 255
                 keywords: 
                     label: "Keywords:"

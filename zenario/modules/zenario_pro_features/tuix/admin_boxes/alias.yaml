@@ -11,8 +11,8 @@ zenario_alias:
                     ord: alias.01
                     same_row: true
                     visible_if: |
-                        tabs.meta_data.fields.alias.current_value &&
-                        tabs.meta_data.fields.alias.current_value != tabs.meta_data.fields.alias.value
+                        tuix.tabs.meta_data.fields.alias.current_value &&
+                        tuix.tabs.meta_data.fields.alias.current_value != tuix.tabs.meta_data.fields.alias.value
                     type: button
                     css_class: zfab_text_link_button
                     format_onchange: true

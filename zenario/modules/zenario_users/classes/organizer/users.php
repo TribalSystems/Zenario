@@ -186,7 +186,7 @@ class zenario_users__organizer__users extends zenario_users {
 				
 			$panel['title'] = ze\admin::phrase('Members of the Group "[[label]]"', $groupDetails);
 			$panel['no_items_message'] = ze\admin::phrase('This Group has no members.');
-			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['message'] = ze\admin::phrase('Are you sure you wish to remove the user/contact "[[identifier]]" from the group "[[label]]"?', ['identifier' => ze\user::identifier($id), 'label' => $groupDetails['label']]);
+			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['message'] = str_replace(['<<', '>>'], ['[[', ']]'], ze\admin::phrase('Are you sure you wish to remove the user/contact "<<identifier>>" from the group "[[label]]"?', ['label' => $groupDetails['label']]));
 			ze\lang::applyMergeFields($panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['multiple_select_message'], ['label' => $groupDetails['label'], 'item_count' => '[[item_count]]']);
 		}
 	

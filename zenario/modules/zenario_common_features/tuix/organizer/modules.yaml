@@ -14,16 +14,6 @@ zenario__modules:
                     [[DB_PREFIX]]modules as m
                 id_column: m.id
                 client_side: true
-                
-                # Don't show missing modules if they were never run
-                # Also hide abstract modules from full/quick/select mode
-                where_statement: >
-                    WHERE (missing = 0 OR status != 'module_not_initialized')
-                      AND
-                        IF ('[[ORGANIZER_MODE]]' IN ('full', 'quick', 'select'),
-                            status != 'module_is_abstract',
-                            TRUE
-                        )
             
             default_sort_column: display_name
             
@@ -142,6 +132,13 @@ zenario__modules:
                 editions: {}
                 edition:
                     db_column: m.edition
+                core_extra_or_custom:
+                    title: Core/extra/custom
+                    show_by_default: true
+                editions_column:
+                    title: Included in editions
+                    width: xxlarge
+                    show_by_default: true
                 in_edition:
                     db_column: '1'
             label_format_for_grid_view: |
@@ -225,8 +222,8 @@ zenario__modules:
                 usage_layouts:
                     parent: view_dropdown
                     label: "Layouts with module's plugins"
-                    with_columns_set:
-                        is_pluggable: true
+                    visible_if: |
+                        item.is_pluggable && item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
                         path: zenario__layouts/panels/layouts
@@ -234,8 +231,8 @@ zenario__modules:
                 usage_item:
                     parent: view_dropdown
                     label: "Content items using this module's plugins"
-                    with_columns_set:
-                        is_pluggable: true
+                    visible_if: |
+                        item.is_pluggable && item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
@@ -262,8 +259,8 @@ zenario__modules:
                 view_content_items:
                     parent: view_dropdown
                     label: "Effective usage"
-                    with_columns_set:
-                        is_pluggable: true
+                    visible_if: |
+                        item.is_pluggable && item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content

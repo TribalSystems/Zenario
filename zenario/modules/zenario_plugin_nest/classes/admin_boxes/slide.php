@@ -58,6 +58,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			} else {
 				$values['details/apply_slide_specific_permissions'] = 1;
 				$values['details/privacy'] = $details['privacy'];
+				$values['details/at_location'] = $details['at_location'];
 				$values['details/smart_group_id'] = $details['smart_group_id'];
 				$values['details/module_class_name'] = $details['module_class_name'];
 				$values['details/method_name'] = $details['method_name'];
@@ -265,6 +266,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			'name_or_title' => $values['details/name_or_title'],
 			'invisible_in_nav' => $values['details/invisible_in_nav'],
 			'privacy' => 'public',
+			'at_location' => 'any',
 			'smart_group_id' => 0,
 			'module_class_name' => '',
 			'method_name' => '',
@@ -324,6 +326,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		$key['link_to'] = 'role';
 		if ($details['privacy'] == 'with_role') {
+			$details['at_location'] = $values['details/at_location'];
 			ze\miscAdm::updateLinkingTable('group_link', $key, 'link_to_id', $values['details/role_ids']);
 		} else {
 			ze\row::delete('group_link', $key);

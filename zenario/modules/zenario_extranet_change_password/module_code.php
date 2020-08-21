@@ -31,6 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_extranet_change_password extends zenario_extranet {
 	
 	public function init() {
+		$this->registerPluginPage();
 		
 		$this->mode = 'modeChangePassword';
 		if (!ze\user::id()) {

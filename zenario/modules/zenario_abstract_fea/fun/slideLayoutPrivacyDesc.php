@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 if (is_numeric($sl)) {
-	$sl = \ze\row::get('slide_layouts', ['id', 'privacy'], $sl);
+	$sl = \ze\row::get('slide_layouts', ['id', 'privacy', 'at_location'], $sl);
 }
 
 $slId = $sl['id'] ?? $sl['slide_layout_id'];

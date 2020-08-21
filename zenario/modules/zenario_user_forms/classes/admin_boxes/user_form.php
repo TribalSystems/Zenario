@@ -63,6 +63,16 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$fields['data/add_user_to_group']['values'] = 
 		$fields['data/add_logged_in_user_to_group']['values'] = 
 			ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+			
+			if (ze\module::inc('zenario_user_timers')) {
+				$fields['data/active_timers']['hidden'] = false;
+				$timerTemplates = [];
+					$result = ze\row::query(ZENARIO_USER_TIMERS_PREFIX . 'user_timer_templates', ['id', 'name', 'type'], []);
+					while ($row = ze\sql::fetchAssoc($result)) {
+						$timerTemplates[$row['id']] = ['label' => $row['name']];
+					}
+					$fields['data/active_timers']['values'] = $timerTemplates;
+			}
 		
 		if (($_GET['refinerName'] ?? false) == 'archived') {
 			foreach($box['tabs'] as &$tab) {
@@ -111,8 +121,20 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			if ($record['title'] !== null && $record['title'] !== '') {
 				$values['details/show_title'] = true;
 			}
+		
+			//	Added new radio button for visible fields 
+			if ($record['admin_email_use_template'] == 1){
+				$values['data/admin_email_options'] = 'use_template';
+				
+			}elseif ($record['admin_email_use_template'] == 2){
+			 	$values['data/admin_email_options'] = 'visible_fields';
+			 	
+			}else {
+			 	$values['data/admin_email_options'] = 'send_data';
+			 	
+			}
 			
-			$values['data/admin_email_options'] = ($record['admin_email_use_template'] ? 'use_template' : 'send_data');
+			
 			$values['details/partial_completion_mode__auto'] = ($record['partial_completion_mode'] == 'auto' || $record['partial_completion_mode'] == 'auto_and_button');
 			$values['details/partial_completion_mode__button'] = ($record['partial_completion_mode'] == 'button' || $record['partial_completion_mode'] == 'auto_and_button');
 			
@@ -143,16 +165,30 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 					];
 				}
 			}
-			
+			//	Added new radio button for visible fields 
 			if ($record['send_email_to_logged_in_user'] || $record['send_email_to_email_from_field']) {
 				$values['data/send_email_to_user'] = true;
-				if ($record['send_email_to_logged_in_user'] && !$record['user_email_use_template_for_logged_in_user']) {
+				if ($record['send_email_to_logged_in_user'] && $record['user_email_use_template_for_logged_in_user']==1) {
+					$values['data/user_email_options_logged_in_user'] = 'use_template';
+				}
+				elseif ($record['send_email_to_logged_in_user'] && $record['user_email_use_template_for_logged_in_user']==2) {
+					$values['data/user_email_options_logged_in_user'] = 'visible_fields';
+				}
+				elseif($record['send_email_to_logged_in_user'] && $record['user_email_use_template_for_logged_in_user']==0) {
 					$values['data/user_email_options_logged_in_user'] = 'send_data';
 				}
-				if ($record['send_email_to_email_from_field'] && !$record['user_email_use_template_for_email_from_field']) {
+				
+				if ($record['send_email_to_email_from_field'] && $record['user_email_use_template_for_email_from_field']==1) {
+					$values['data/user_email_options_from_field'] = 'use_template';
+				}
+				elseif($record['send_email_to_email_from_field'] && $record['user_email_use_template_for_email_from_field']==2) {
+					$values['data/user_email_options_from_field'] = 'visible_fields';
+				}
+				elseif ($record['send_email_to_email_from_field'] && $record['user_email_use_template_for_email_from_field']==0) {
 					$values['data/user_email_options_from_field'] = 'send_data';
 				}
 			}
+			
 			
 			$fields['data/user_email_field']['values'] = 
 			$fields['data/reply_to_email_field']['values'] =
@@ -253,6 +289,56 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				if ($record['welcome_redirect_location']) {
 					$values['action_after_verification'] = 'redirect_after_submission';
 				}
+			}
+			
+			//Get form usage and text
+			$instanceIds = zenario_user_forms::getFormPlugins($id);
+			$usage = [];
+			
+			if (!empty($instanceIds)) {
+				$pluginIds = zenario_user_forms::getFormPlugins($id, 'plugins');
+				$nestIds = zenario_user_forms::getFormPlugins($id, 'nests');
+				$slideshowIds = zenario_user_forms::getFormPlugins($id, 'slideshows');
+				
+				$instanceId = $instanceIds[0];
+				
+				$usage = ze\pluginAdm::getUsage($instanceIds);
+				
+				if (!empty($pluginIds)) {
+					$usage['plugins'] = count($pluginIds);
+					$usage['plugin'] = $pluginIds[0];
+				}
+				if (!empty($nestIds)) {
+					$usage['nests'] = count($nestIds);
+					$usage['nest'] = $nestIds[0];
+				}
+				if (!empty($slideshowIds)) {
+					$usage['slideshows'] = count($slideshowIds);
+					$usage['slideshow'] = $slideshowIds[0];
+				}
+				
+				if (!empty($usage['content_items']) || !empty($usage['layouts'])) {
+					$item['plugin_is_used'] = true;
+				}
+			}
+			
+			$usageLinks = [
+				'plugins' => 'zenario__user_forms/panels/user_forms/hidden_nav/plugins_using_form//'. (int) $id. '//', 
+				'nests' => 'zenario__user_forms/panels/user_forms/hidden_nav/nests_using_form//'. (int) $id. '//', 
+				'slideshows' => 'zenario__user_forms/panels/user_forms/hidden_nav/slideshows_using_form//'. (int) $id. '//', 
+				'content_items' => 'zenario__user_forms/panels/user_forms/hidden_nav/content_items_using_form//'. (int) $id. '//', 
+				'layouts' => 'zenario__user_forms/panels/user_forms/hidden_nav/layouts_using_form//'. (int) $id. '//'
+			];
+			
+			//If a form is not used anywhere, the "not used" string below will be passed to the phrase function.
+			$overrideNotUsedMessage = "Not used. To use this form, create a Form Container plugin in a slot on a content item.";
+			$usageText = $this->phrase("Usage:") . '<br />' . implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks, null, $overrideNotUsedMessage));
+			
+			$box['tabs']['details']['notices']['usage'] = ['message' => $usageText, 'show' => true, 'html' => true];
+			if ($usage) {
+				$box['tabs']['details']['notices']['usage']['type'] = 'information';
+			} else {
+				$box['tabs']['details']['notices']['usage']['type'] = 'warning';
 			}
 			
 		} else {
@@ -575,8 +661,8 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+	
 		ze\priv::exitIfNot('_PRIV_MANAGE_FORMS');
-		
 		$record = [];
 		$record['name'] = $values['name'];
 		
@@ -600,7 +686,14 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$record['use_captcha'] = $values['use_captcha'];
 		$record['captcha_type'] = ($values['use_captcha'] ? $values['captcha_type'] : null);
 		$record['extranet_users_use_captcha'] = $values['extranet_users_use_captcha'];
-		$record['admin_email_use_template'] = ($values['admin_email_options'] == 'use_template');
+		
+		if($values['admin_email_options'] == 'use_template')
+			$record['admin_email_use_template'] = 1 ;
+		elseif($values['admin_email_options'] == 'visible_fields')
+			$record['admin_email_use_template'] = 2;
+		else
+			$record['admin_email_use_template'] = 0;
+		
 		
 		
 		$record['send_email_to_logged_in_user'] = 0;
@@ -611,15 +704,31 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$record['user_email_field'] = 0;
 		$record['user_email_template_from_field'] = null;
 		if ($values['data/send_email_to_user']) {
+			
 			if ($record['send_email_to_logged_in_user'] = $values['data/send_email_to_logged_in_user']) {
-				if ($record['user_email_use_template_for_logged_in_user'] = ($values['data/user_email_options_logged_in_user'] == 'use_template')) {
+				if($values['data/user_email_options_logged_in_user'] == 'use_template')
+				{
+					$record['user_email_use_template_for_logged_in_user']=1;
 					$record['user_email_template_logged_in_user'] = $values['data/user_email_template_logged_in_user'];
 				}
+				elseif($values['data/user_email_options_logged_in_user'] == 'visible_fields')
+				{
+					$record['user_email_use_template_for_logged_in_user']=2;
+					$record['user_email_template_logged_in_user']=null;
+				}
+				
 			}
 			if ($record['send_email_to_email_from_field'] = $values['data/send_email_to_email_from_field']) {
 				$record['user_email_field'] = $values['data/user_email_field'];
-				if ($record['user_email_use_template_for_email_from_field'] = ($values['data/user_email_options_from_field'] == 'use_template')) {
+				if($values['data/user_email_options_from_field'] == 'use_template')
+				{
+					$record['user_email_use_template_for_email_from_field']=1;
 					$record['user_email_template_from_field'] = $values['data/user_email_template_from_field'];
+				}
+				elseif($values['data/user_email_options_from_field'] == 'visible_fields')
+				{
+					$record['user_email_use_template_for_email_from_field']=2;
+					$record['user_email_template_from_field'] = null;
 				}
 			}
 		}
@@ -636,6 +745,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$record['save_data'] = $values['save_data'];
 		$record['save_record'] = $values['save_record'];
 		$record['add_user_to_group'] = (empty($values['save_data']) ? null : $values['add_user_to_group']);
+		$record['active_timers'] = $values['active_timers'];
 		$record['set_simple_access_cookie'] = (empty($values['set_simple_access_cookie']) ? 0 : 1);
 		$record['simple_access_cookie_override_redirect'] = (empty($values['simple_access_cookie_override_redirect']) ? 0 : 1);
 		$record['send_signal'] = (empty($values['send_signal']) ? 0 : 1);

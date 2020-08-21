@@ -77,6 +77,12 @@ plugin_settings:
                             ord: "2"
                             label: "No"
                     value: event_count_off
+                first_event:
+                    label: 'Show first event name in each month/day of calendar:'
+                    plugin_setting:
+                        name: first_event
+                    type: checkbox
+                    value: ""
                 show_sticky_images:
                     plugin_setting:
                         name: show_sticky_images

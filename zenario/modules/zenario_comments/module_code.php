@@ -393,11 +393,14 @@ class zenario_comments extends zenario_anonymous_comments {
 	
 	public function showThreadActions() {
 		if (ze::setting('user_use_screen_name') && !self::getUserScreenNameConfirmed(ze\user::id())) {
-			$cID = $cType = false;
-			ze\content::langSpecialPage('zenario_profile', $cID, $cType);
-			$profileAnchor = $this->linkToItemAnchor($cID, $cType);
 			$this->sections['Comments_Profile_Link'] = true;
-			$profileLink =  '<a '.$profileAnchor.'>'. $this->phrase('your profile').'</a>';
+			
+			$profileLink = '<a';
+			if ($link = ze\link::toPluginPage('zenario_extranet_profile_edit')) {
+				$profileLink .= ' href="'. htmlspecialchars($link). '"';
+			}
+			$profileLink .= '>'. $this->phrase('your profile'). '</a>';
+			
 			$this->mergeFields['Comments_Profile_Link'] = $this->phrase('You must confirm your screen name on [[profile_link]] in order to comment.', ['profile_link' => $profileLink]);
 		}
 		parent::showThreadActions();
