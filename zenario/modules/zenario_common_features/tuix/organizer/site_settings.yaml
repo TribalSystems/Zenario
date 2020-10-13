@@ -93,13 +93,13 @@ zenario__administration:
                     priv: _PRIV_VIEW_SITE_SETTING
                     name: Site logos and Branding
                     desc: >
-                        Upload or remove the favicon, and the logo used on the site disabled and
+                        Upload or remove the favicon, and the logo used on the site-disabled and
                         admin login screen.
                     keywords: >
                         favicon mobile icon home screen icon
                 files_and_images:
                     name: Documents, Images and File Handling
-                    desc: Settings for how documents, files and images are managed in the CMS.
+                    desc: Settings for how documents, files and images are managed.
                     keywords: >
                         image thumbnail working copy jpeg file upload sizes
                         file download restrict by IP document
@@ -114,7 +114,10 @@ zenario__administration:
                 users:
                     name: Users
                     desc: Settings that affect extranet users & contacts.
-                    keywords: screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
+                    keywords: >
+                        screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
+                        linked countries
+                        linked country
                 optimisation:
                     name: Optimisation
                     desc: Settings that affect or speed up web pages.

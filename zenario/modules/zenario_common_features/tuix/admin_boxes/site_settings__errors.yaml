@@ -39,8 +39,8 @@ site_settings:
                     type: checkbox
                     readonly: true
                     note_below: |
-                        If run-time notices are enabled, the CMS and any Modules enabled on your site will show messages whenever they
-                        encounter anything that may indicate an error. However these messages may also appear in the normal course of running of your site.
+                        If run-time notices are enabled, Zenario and any enabled modules will show messages whenever they hit an error.
+                        These messages may also appear in the normal course of running of your site.
                         <br/>
                         These messages can be useful for websites in development, but should never be enabled for a live site.
 
@@ -50,7 +50,7 @@ site_settings:
                     type: checkbox
                     readonly: true
                     note_below: |
-                        If strict errors are enabled, the CMS and any Modules enabled on your site will show messages whenever they
+                        If strict errors are enabled, Zenario and any enabled modules enabled will show messages whenever they
                         encounter any PHP code that is no longer compatible with the latest version of PHP.
                         <br/>
                         These messages can be useful for websites in development, but should never be enabled for a live site.

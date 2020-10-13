@@ -31,7 +31,7 @@ login:
                     class: username
                     return_key_presses_button: login
                 password:
-                    label: "Password:"
+                    label: "Administrator password:"
                     type: password
                     row_class: row_form
                     class: password
@@ -56,7 +56,7 @@ login:
                     style: |
                         float: right;
                 forgot:
-                    value: "Forgotten? New user?"
+                    value: "I've lost my admin username or password"
                     type: submit
                     same_row: false
                 previous:

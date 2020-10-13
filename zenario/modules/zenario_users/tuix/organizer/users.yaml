@@ -4,9 +4,7 @@ zenario__users:
     priv: _PRIV_VIEW_USER
     css_class: zenario_cms_core_users
     tooltip: |
-        Manage users (people who may log in to private areas of your site),
-        contacts (people whom you may email)
-        and administrators (people who may edit your site).
+        Manage users, contacts and administrators
     panels:
         users:
             title: 'All users & contacts'
@@ -93,12 +91,6 @@ zenario__users:
                     microtemplate: |
                         {{(m.item.salutation || '')|e}} {{m.item.first_name|e}} {{m.item.name|e}}
                     
-                    
-                    
-
-                
-                
-                
                 email:
                     title: Email
                     db_column: u.email
@@ -109,6 +101,7 @@ zenario__users:
                     title: Email Verified
                     db_column: u.email_verified
                     always_show: true
+                    searchable: 1
                     format: yes_or_no
                     yes_phrase: Verified
                     no_phrase: Not verified
@@ -307,10 +300,8 @@ zenario__users:
                 add_users_to_groups:
                     priv: _PRIV_EDIT_USER
                     parent: action_dropdown
-                    label: Add to group...
-                    tooltip: Add this user to one or more groups.
+                    label: Add to groups...
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Add selected users to one or more groups.
                     multiple_select: true
                     admin_box:
                         path: zenario_mass_group_membership
@@ -320,10 +311,8 @@ zenario__users:
                 remove_users_from_groups:
                     priv: _PRIV_EDIT_USER
                     parent: action_dropdown
-                    label: Remove from group...
-                    tooltip: Remove this user from one or more groups.
+                    label: Remove from groups...
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Add selected users to one or more groups.
                     multiple_select: true
                     admin_box:
                         path: zenario_mass_group_membership
@@ -333,10 +322,8 @@ zenario__users:
                 flag_user:
                     priv: _PRIV_EDIT_USER
                     parent: action_dropdown
-                    label: Add a flag...
-                    tooltip: Add one or more flags to this user.
+                    label: Add flags...
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Add one or more flags to the selected users.
                     multiple_select: true
                     admin_box:
                         path: zenario_flag
@@ -346,10 +333,8 @@ zenario__users:
                 remove_flags:
                     priv: _PRIV_EDIT_USER
                     parent: action_dropdown
-                    label: Remove a flag...
-                    tooltip: Remove one or more flags from this user
+                    label: Remove flags...
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Remove one or more flags from this users.
                     multiple_select: true
                     admin_box:
                         path: zenario_flag

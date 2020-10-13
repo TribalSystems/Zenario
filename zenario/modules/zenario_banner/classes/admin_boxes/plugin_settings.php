@@ -321,9 +321,10 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $box['key']['cID']]);
 
 		//...and display or hide a privacy warning note if necessary.
-		if ($document['privacy'] == 'private' && ($contentItemPrivacy == 'public' || $contentItemPrivacy == 'logged_out')) {
+		
+		if ($document && $document['privacy'] == 'private' && ($contentItemPrivacy == 'public' || $contentItemPrivacy == 'logged_out')) {
 			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: content item is Public, the selected document is Private, so the document will not appear to visitors.</p>';
-		} elseif ($document['privacy'] == 'offline') {
+		} elseif ($document && $document['privacy'] == 'offline') {
 			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: the selected document is Offline, so it will not appear to visitors. Offline documents can be published at any time.</p>';
 		} else {
 			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '';

@@ -70,6 +70,18 @@ common_definitions:
         type: boolean
         description: >
             The hidden property hides elements from view when <code>true</code>.
+    hide_in_backend: &hide_in_backend
+        type: boolean
+        description: >
+            Set this property to true to hide this element in the admin backend.
+            
+            This works from version 8.8. onwards.
+    hide_in_frontend: &hide_in_frontend
+        type: boolean
+        description: >
+            Set this property to true to hide this element in the frontend.
+            
+            This works from version 8.8. onwards.
     visible_if: &visible_if
         type:
             - string
@@ -210,6 +222,8 @@ additionalProperties:
         ord: *ord
         copy_of: *copy_of
         hidden: *hidden
+        hide_in_backend: *hide_in_backend
+        hide_in_frontend: *hide_in_frontend
         visible_if: *visible_if
         
         nav:
@@ -228,10 +242,19 @@ additionalProperties:
                         type: string
                         description: |
                             A tooltip for this element.
+                    keywords:
+                        type: string
+                        description: |
+                            Any extra words (that are not in the title/tooltip) that
+                            should be used in the search for the "where was that thing" box.
+                            
+                            This works from version 8.8 onwards.
                     css_class: *css_class
                     ord: *ord
                     copy_of: *copy_of
                     hidden: *hidden
+                    hide_in_backend: *hide_in_backend
+                    hide_in_frontend: *hide_in_frontend
                     visible_if: *visible_if
                     link:
                         type: object
@@ -1406,6 +1429,9 @@ additionalProperties:
                                         - admin_box
                                 -
                                     required:
+                                        - alert
+                                -
+                                    required:
                                         - navigation_path
                                 -
                                     required:
@@ -1653,7 +1679,8 @@ additionalProperties:
                                 help: &help
                                     type: object
                                     description: >
-                                        This property provides you with a simple way of displaying a short pop-up message.
+                                        This property provides you with a simple way of displaying
+                                        a short pop-up message with some help text in.
                                     required:
                                         - message
                                     properties:
@@ -1672,6 +1699,37 @@ additionalProperties:
                                             default: question
                                             description: >
                                                 The type of message. A different styling will be applied for each different type.
+                                
+                                alert: &alert
+                                    type: object
+                                    description: >
+                                        This property provides you with a simple way of displaying
+                                        a short pop-up alert message.
+                                        
+                                        This works from version 8.8 onwards.
+                                    required:
+                                        - message
+                                    properties:
+                                        message:
+                                            type: string
+                                            description: >
+                                                A message to display when clicking on this button.
+                                        html: *message_html
+                                        message_type:
+                                            enum:
+                                                - none
+                                                - error
+                                                - warning
+                                                - question
+                                                - success
+                                            default: warning
+                                            description: >
+                                                The type of message. A different styling will be applied for each different type.
+                                        button_message:
+                                            type: string
+                                            description: >
+                                                A message for the button that dismisses the message.
+                                                Defaults to "OK".
                                 
                                 link:
                                     type: object
@@ -1929,6 +1987,9 @@ additionalProperties:
                                         - admin_box
                                 -
                                     required:
+                                        - alert
+                                -
+                                    required:
                                         - navigation_path
                                 -
                                     required:
@@ -2153,6 +2214,7 @@ additionalProperties:
                                 new_window: *new_window
                                 
                                 help: *help
+                                alert: *alert
                                 
                                 link:
                                     type: object
@@ -2194,6 +2256,9 @@ additionalProperties:
                                 -
                                     required:
                                         - admin_box
+                                -
+                                    required:
+                                        - alert
                                 -
                                     required:
                                         - navigation_path
@@ -2313,6 +2378,7 @@ additionalProperties:
                                 new_window: *new_window
                                 
                                 help: *help
+                                alert: *alert
                                 
                                 link:
                                     type: object
@@ -2874,6 +2940,9 @@ properties:
                         - admin_box
                 -
                     required:
+                        - alert
+                -
+                    required:
                         - navigation_path
                 -
                     required:
@@ -2955,6 +3024,7 @@ properties:
                         or an internal link relative to the CMS root directory.
                 
                 help: *help
+                alert: *alert
                 
                 link:
                     type: object

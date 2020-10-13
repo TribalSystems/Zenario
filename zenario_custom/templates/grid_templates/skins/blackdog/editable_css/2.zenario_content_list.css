@@ -19,6 +19,19 @@
 	font-family:'cardoregular',Arial, Helvetica, sans-serif;
 }
 
+.zenario_content_list__default_style .content_list_listing .content_list_data_row .content_list_more {
+	font-size:0.857em;
+}
+
+.zenario_content_list__default_style .content_list_listing .content_list_data_row .content_list_more a {
+	color:#2a98ce;
+}
+
+.slot:not(.slot_news) .zenario_content_list__default_style .content_list_listing .content_list_data_row {
+	margin:10px 0;
+	border-bottom:1px dotted #333;
+}
+
 /* Home page news
 --------------------------------------------------------------------------------------------------*/
 
@@ -71,4 +84,23 @@
 .zenario_content_list.listing .content_list_data_row .content_list_more:after {
 	font-family: 'FontAwesome';
 	content: "\f138"; /* fa-angle-right */
+}
+
+/* CSL Info icon
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_content_list .content_list_listing .content_list_data_row {
+	position:relative;
+	min-height:30px;
+}
+
+.zenario_content_list .content_list_listing .content_list_data_row .content_list_infoIcon {
+	position:absolute;
+	z-index:9;
+	top:5px;
+	right:5px;
+}
+
+.zenario_content_list .content_list_listing .content_list_data_row .content_list_infoIcon a {
+	float:right;
 }

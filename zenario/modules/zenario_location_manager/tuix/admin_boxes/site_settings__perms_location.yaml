@@ -48,6 +48,24 @@ site_settings:
                         multiple_select: true
                     validation:
                         required_if_not_hidden: Please select a group who can view a location's details.
+                perm.view.location.atCountry:
+                    site_setting:
+                        name: perm.view.location.atCountry
+                    indent: 1
+                    row_class: zfab_or
+                    hide_if_previous_outdented_value_isnt: specific
+                    type: checkbox
+                    label: "They are a member of the group(s) AND are linked to the location's country:"
+                    redraw_onchange: true
+                perm.view.location.atCountry.groups:
+                    site_setting:
+                        name: perm.view.location.atCountry.groups
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can view a location's details.
                 perm.view.location.atLocation:
                     site_setting:
                         name: perm.view.location.atLocation
@@ -165,6 +183,22 @@ site_settings:
                     pick_items: *pick_group
                     validation:
                         required_if_not_hidden: Please select a group who can edit a location.
+                perm.edit.location.atCountry:
+                    site_setting:
+                        name: perm.edit.location.atCountry
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: "They are a member of the group(s) AND are linked to the location's country:"
+                    redraw_onchange: true
+                perm.edit.location.atCountry.groups:
+                    site_setting:
+                        name: perm.edit.location.atCountry.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can edit a location.
                 perm.edit.location.atLocation:
                     site_setting:
                         name: perm.edit.location.atLocation
@@ -196,6 +230,22 @@ site_settings:
                 perm.delete.location.groups:
                     site_setting:
                         name: perm.delete.location.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can delete a location.
+                perm.delete.location.atCountry:
+                    site_setting:
+                        name: perm.delete.location.atCountry
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: "They are a member of the group(s) AND are linked to the location's country:"
+                    redraw_onchange: true
+                perm.delete.location.atCountry.groups:
+                    site_setting:
+                        name: perm.delete.location.atCountry.groups
                     hide_if_previous_outdented_value_isnt: 1
                     indent: 2
                     pick_items: *pick_group

@@ -15,7 +15,9 @@ congratulations:
                             <p>You have installed Zenario!</p>
                             <p>
                                 An email has been sent to the email address you entered during the installation,
-                                confirming your Username and Password.
+                                confirming your administrator username and how to log in.
+                            </p>
+                            <p>
                                 If you have not received this then please check your &quot;spam&quot; folder in
                                 case the email has been mis-filed.
                             </p>
@@ -23,6 +25,10 @@ congratulations:
                                 If you still cannot see the email then you - or your server administrator - should
                                 check that the PHP Mail Extension is installed, enabled, and correctly configured
                                 on your server.
+                            </p>
+                            <p>
+                                It is important that you can receive email from this site. You can configure email
+                                sending in Organizer->Configuration->Site settings->Email.
                             </p>
                             <p>Please use this link to access your new site:</p>
                 link:

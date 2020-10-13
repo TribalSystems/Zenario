@@ -122,8 +122,8 @@ class zenario_document_envelopes_fea__visitor__list_files_in_document_envelope e
 		$envelopeName = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', 'name', ['id' => $this->envelopeId]);
 		ze\lang::applyMergeFields($tags['title'], ['envelope_name' => $envelopeName]);
 		
-		if ($this->setting('show_envelope_name')) {
-			$tags['title_tags'] = $this->setting('title_tags') ?: 'h1';
+		if ($this->setting('show_title')) {
+			$tags['title_tags'] = $this->setting('title_tags') ?: 'h2';
 		} else {
 			unset($tags['title']);
 		}

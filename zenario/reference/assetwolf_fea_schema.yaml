@@ -19,7 +19,7 @@ additionalProperties:
                     hide_on_lists:
                         type: boolean
                         description: >
-                            When showing assets or data pools,
+                            When showing assets, data pools or locations,
                             this option lets you have a column or item button that's hidden on lists.
                     only_show_on_lists:
                         type: boolean
@@ -35,7 +35,7 @@ additionalProperties:
                     only_show_on_schematics:
                         type: boolean
                         description: >
-                            When showing assets or data pools,
+                            When showing assets, data pools or locations,
                             this option lets you have a column or item button that's only visible
                             on schematics, and not on lists or details view.
                     hide_on_view_details:
@@ -46,7 +46,7 @@ additionalProperties:
                     only_show_on_view_details:
                         type: boolean
                         description: >
-                            When showing assets or data pools,
+                            When showing assets, data pools or locations,
                             this option lets you have a column or item button that's only visible
                             on the details view, and not in lists or schematics.
                     visible_if_schema_is:
@@ -72,19 +72,19 @@ additionalProperties:
                             
                             Note you need to enter the code names of the schema,
                             not their names or ids.
-                    visible_if_metadata_set:
+                    visible_if_inherited_metadata_set:
                         type: string
                         description: >
-                            When showing assets or data pools,
-                            this option lets you have a column or item button that's only visible
-                            for nodes with a specific option set in their metadata.
-                    visible_if_hierarchical_metadata_set:
-                        type: string
-                        description: >
-                            When showing assets or data pools,
+                            When showing assets, data pools or locations,
                             this option lets you have a column or item button that's only visible
                             for nodes with a specific option set in their metadata,
                             or in the metadata on one of their parent nodes.
+                    visible_if_location_metadata_set:
+                        type: string
+                        description: >
+                            When showing assets, data pools or locations,
+                            this option lets you have a column or item button that's only visible
+                            for nodes with a specific option set in their location's metadata.
                     visible_if_child_exists:
                         type:
                             - object

@@ -73,8 +73,8 @@ if (!empty($_GET['openedInIframe'])) {
 } else {
 	$topLeftHTML = '
 		<div class="home_page_button top_left_button">
-			<a id="home_page_button_link" data-step="1" data-position="right" data-highlightClass="step_1" data-intro="<p><strong>Back to homepage</strong></p><p>This button takes you back to the ‘front-end’ view of your website’s homepage.</p>"
-				href="'. htmlspecialchars(($homeLink = ze\link::toItem($homePageCID, $homePageCType, true, 'zenario_sk_return=navigation_path')) ?: '../../'). '"
+			<a id="home_page_button_link" data-step="1" data-position="right" data-highlightClass="step_1" data-intro="<p><strong>Home page link</strong></p><p>Go to the front-end at your website’s homepage.</p>"
+				href="'. htmlspecialchars(($homeLink = ze\link::toItem($homePageCID, $homePageCType, true)) ?: '../../'). '"
 				title="'. ze\admin::phrase('Back to&lt;br/&gt;Home Page'). '"></a>
 		</div>';
 	
@@ -86,23 +86,26 @@ if (!empty($_GET['openedInIframe'])) {
 					title="'. ze\admin::phrase('Back to&lt;br/&gt;[[citem]]', ['citem' => htmlspecialchars(ze\content::formatTag($fromCID, $fromCType))]). '"></a>
 			</div>';
 	}
-	
+	$wipCount = ze\row::count('content_items', ['status' => ['first_draft','published_with_draft','hidden_with_draft','trashed_with_draft']]);
 	$topLeftHTML .= '
 		<div
-			class="zenario_ywip top_left_button" data-step="2" data-position="right" data-intro="<p><strong>Your work in progress</strong></p><p>This button displays pages/content items which are still being worked or edited, and thus not published.</p>"
+			class="zenario_ywip top_left_button" data-step="2" data-position="right" data-intro="<p><strong>Work in progress</strong></p><p>Content items (web pages etc.) which are in draft form.</p>"
 			onclick="zenarioO.updateYourWorkInProgress();"
 			onmouseover="zenarioO.updateYourWorkInProgress();"
 		>
-			<a></a>
-			<div id="zenario_ywip_dropdown" class="zenario_ywip_loading"></div>
-		</div>';
+			<a></a><div id="zenario_ywip_dropdown" class="zenario_ywip_loading"></div>';
+			if($wipCount > 0) {
+				$topLeftHTML .= '<span id="zenario_wip_recordCount" class="zenario_wip_recordCount">'.$wipCount.'</span>';
+			}
+			$topLeftHTML .= '</div>';
 	
 	$topRightHTML = '
-		<div class="logout_button top_right_button" data-step="4" data-position="left" data-intro="<p><strong>Logout</strong></p><p>This button logs you out of the administration panel of the website.</p>">
+		<div class="logout_button top_right_button" data-step="4" data-position="left" data-intro="<p><strong>Logout</strong></p><p>Log out of administration mode.</p>">
 			<a '. ze\admin::logoutOnclick(). '
 				title="'. ze\admin::phrase('Logout'). '"></a>
 		</div>
-		<div id="organizer_top_right_buttons"></div>';
+		<div id="organizer_top_right_buttons"></div>
+		<div id="organizer_top_right_newicons"></div>';
 }
 
 

@@ -193,6 +193,7 @@ foreach([
 	'viewModuleFolder' => 'View module swatch folder in Organizer',
 	'viewSkinFolder' => 'View skin folder in Organizer',
 	'viewTrash' => 'View&nbsp;Trash',
+	'wwttPlaceholder' => 'Find services...',
 	'yes' => 'Yes',
 	
 	'skLoading' => 'Loading...',

@@ -79,7 +79,7 @@ if ((file_exists(CMS_ROOT. ($logoURL = 'wizard-logo.png')))
 	$logoURL = '../'. $logoURL;
 	
 } else {
-	$logoURL = 'admin/images/zenario_logo.png';
+	$logoURL = 'admin/images/zenario-logo-black.svg';
 	$logoWidth = 142;
 	$logoHeight = 57;
 }

@@ -267,11 +267,11 @@ methods.getSlideDetailsMergeFields = function(slideId, imageType, cb) {
 	
 	mergeFields.privacy_values = [
 		{value: 'public', label: 'Everyone'},
+		{value: 'logged_in', label: 'Private, only show to extranet users'},
+		{value: 'group_members', label: 'Private, only show to extranet users in group(s)...'},
+		{value: 'in_smart_group', label: 'Private, only show to extranet users in smart group...'},
+		{value: 'logged_in_not_in_smart_group', label: 'Private, only show to extranet users NOT in the smart group...'},
 		{value: 'logged_out', label: 'Only show to visitors who are NOT logged in'},
-		{value: 'logged_in', label: 'Private, only show to extranet users who are logged in'},
-		{value: 'group_members', label: 'Private, only show to extranet users in the group(s):'},
-		{value: 'in_smart_group', label: 'Private, only show to extranet users in the smart group:'},
-		{value: 'logged_in_not_in_smart_group', label: 'Private, only show to extranet users NOT in the smart group:'},
 		{value: 'call_static_method', label: "Call a module's static method (advanced):"},
 		{value: 'hidden', label: "Hidden"}
 	];

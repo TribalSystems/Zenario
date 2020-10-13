@@ -157,8 +157,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 				$content = $dummyContentItem;
 				$version = $dummyVersion;
 			}
-	
-	
+			
 			$slotContents = [];
 			ze\plugin::slotContents(
 				$slotContents,
@@ -170,6 +169,21 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 			foreach ($slotContents as $slotName => $slot) {
 				if (isset($panel['items'][$slotName])) {
 					if ($layer == $refinerName) {
+						
+				//Show how many items use a specific to slotName, and display links if possible.
+				$htmlmoduleIds = ze\module::id('zenario_html_snippet');
+				$WysmoduleIds = ze\module::id('zenario_wysiwyg_editor');
+				$moduleIds = [$htmlmoduleIds,$WysmoduleIds];
+				
+				$usageContentItems = ze\layoutAdm::slotUsage($slotName,$moduleIds, $countItems = false);
+				$usage = [
+					'content_item' => $usageContentItems[0] ?? null,
+					'content_items' => count($usageContentItems)
+				];
+		
+				$usageLinks = [
+					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $template['layout_id']. '//'
+				];
 						unset($panel['items'][$slotName]['traits']['empty']);
 				
 						if (!$slot['module_id']) {
@@ -180,13 +194,19 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 							$panel['items'][$slotName]['module_id'] = $slot['module_id'];
 							$panel['items'][$slotName]['traits']['full'] = true;
 							$panel['items'][$slotName]['instance_id'] = $slot['instance_id'];
+							
 					
 							if (empty($slot['content_id']) && ($instance = ze\plugin::details($slot['instance_id']))) {
 								$panel['items'][$slotName]['visitor_sees'] = ze\admin::phrase('Plugin: [[instance_name]]', $instance);
+								$panel['items'][$slotName]['where_used'] = ze\admin::phrase('Plugin: [[instance_name]]', $instance);
 								$panel['items'][$slotName]['traits']['reusable'] = true;
 							} else {
 								$panel['items'][$slotName]['visitor_sees'] = ze\admin::phrase('[[module]]', $panel['items'][$slotName]);
 								$panel['items'][$slotName]['traits']['wireframe'] = true;
+								if($usageContentItems[0] )
+									$panel['items'][$slotName]['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+								else
+									$panel['items'][$slotName]['where_used'] = 'No content';
 							}
 						}
 					}

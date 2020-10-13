@@ -1819,6 +1819,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				html += thus.hierarchicalBoxes(cb, tab, id, value, field, thisField, readOnly, picked_items, sortOrder, existingParents);
 			}
 		}
+		
+		html += thus.displayMissingItems(field);
 	
 	} else if (upload || pick_items || isMultiSelectList) {
 		
@@ -2494,6 +2496,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				html += thus.hierarchicalSelect(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
 			}
 			html += emptyValue + '</select>';
+			
+			html += thus.displayMissingItems(field);
 		
 		}
 		if (isTextFieldWithAutocomplete) {
@@ -2979,7 +2983,9 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 				return;
 			}
 			
-			if (!multiple_select) {
+			if (multiple_select) {
+				thus.pickedItemsChanged(id, field);
+			} else {
 				thus.addToPickedItems(value, id, tab);
 			}
 			thus.$getPickItemsInput(id).focus();
@@ -3333,6 +3339,38 @@ methods.drawSlider = function(cb, id, field, readOnly, before) {
 
 methods.lookupFileDetails = function(fileId) {
 	return zenarioA.lookupFileDetails(fileId);
+};
+
+//This function displays a warning if there are items in the value of a select list/radios/checkboxes field,
+//that are not being displayed or saved because they're missing from the field's LoV.
+methods.displayMissingItems = function(field) {
+	var html = '',
+		missingItemsWarning = thus.tuix.missing_items_warning,
+		missingItems = [],
+		i, item, items;
+	
+	if (!defined(missingItemsWarning)
+	 || !missingItemsWarning
+	 || !field.value) {
+		return '';
+	}
+	
+	items = (field.value + '').split(',');
+	
+	foreach (items as i => item) {
+		if (!field.values
+		 || !field.values[item]) {
+			missingItems.push('#' + htmlspecialchars(item));
+		}
+	}
+	
+	if (missingItems.length) {
+		html = _$div('class', 'zenario_missing_items',
+			zenario.applyMergeFields(missingItemsWarning, {items: missingItems.join(', ')})
+		);
+	}
+	
+	return html;
 };
 
 methods.pickedItemsArray = function(field, value) {
@@ -3927,6 +3965,12 @@ methods.redrawPickedItems = function(id, field, picked_items, reselectedItems) {
 	}
 	
 	field.current_value = value;
+	
+	thus.pickedItemsChanged(id, field);
+};
+
+
+methods.pickedItemsChanged = function(id, field) {
 	
 	//If there is an onchange property, execute it.
 	if (field.onchange) {

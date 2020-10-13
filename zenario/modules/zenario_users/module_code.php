@@ -521,5 +521,25 @@ class zenario_users extends ze\moduleBaseClass {
 		}
 		return $user;
 	}
+	//To show roles and sub-roles
+	public static function getRoleTypesIndexedByIdOrderedByName(){
+		$ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager'); 
+		$rv = [];
+		$ord = 0;
+		$sql = "SELECT 
+					id,
+					parent_id,
+					name
+				FROM " . 
+					DB_PREFIX . $ZENARIO_ORGANIZATION_MANAGER_PREFIX . "user_location_roles
+				ORDER BY name";
+		$result = ze\sql::select($sql);
+		while($row = ze\sql::fetchAssoc($result)){
+			$rv[$row['id']] = ['label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord];
+		}
+		return $rv;
+		
+	
+	}
 	
 }

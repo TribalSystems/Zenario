@@ -601,12 +601,13 @@ class db {
 	//Formerly "connectToDatabase()"
 	public static function connect($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $dbport = '', $reportErrors = true) {
 		try {
-		
-			if ($dbport) {
-				$con = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname, $dbport);
-			} else {
-				$con = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
-			}
+			\ze::ignoreErrors();
+				if ($dbport) {
+					$con = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname, $dbport);
+				} else {
+					$con = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+				}
+			\ze::noteErrors();
 		
 			if ($con) {
 				if (mysqli_query($con,'SET NAMES "UTF8"')
@@ -631,9 +632,13 @@ class db {
 		}
 	
 		if ($reportErrors) {
-			$subjectPrefix = 'Database error at ';
 			$errorText = 'Database connection failure, could not connect to '. $dbname. ' at '. $dbhost;
-			\ze\db::reportError($errorText, @mysqli_errno($con), @mysqli_error($con), $sql = '', $backtrace = '', $subjectPrefix);
+			
+			if ($con) {
+				\ze\db::reportError('Database error at', $errorText, @mysqli_errno($con), @mysqli_error($con));
+			} else {
+				\ze\db::reportError('Database error at', $errorText);
+			}
 		}
 	
 		return false;
@@ -779,7 +784,7 @@ class db {
 		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
 		
 		if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-			\ze\db::reportError("Database query error", $sqlErrno, $sqlError, $sql, $debugBacktrace);
+			\ze\db::reportError('Database error at', 'Database query error', $sqlErrno, $sqlError, $sql, $debugBacktrace);
 		}
 		
 		if (defined('RUNNING_FROM_COMMAND_LINE')) {
@@ -832,21 +837,29 @@ class db {
 	
 	
 	
-
+	
+	public static function errorEmailsEnabled() {
+		return defined('EMAIL_ADDRESS_GLOBAL_SUPPORT') && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true;
+	}
+	
 	//Formerly "reportDatabaseError()"
-	public static function reportError($errtext = '', $errno = '', $error = '', $sql = '', $backtrace = '', $subjectPrefix = 'Error at ') {
+	public static function reportError($subjectPrefix, ...$errorInfo) {
+		
+		if (!\ze\db::errorEmailsEnabled()) {
+			return;
+		}
 		
 		if (!empty($_SERVER['HTTP_HOST'])) {
-			$subject = $subjectPrefix. $_SERVER['HTTP_HOST'];
+			$subject = $subjectPrefix. ' '. $_SERVER['HTTP_HOST'];
 	
 		} elseif (!empty(\ze::$siteConfig[0]['primary_domain'])) {
-			$subject = $subjectPrefix. \ze::$siteConfig[0]['primary_domain'];
+			$subject = $subjectPrefix. ' '. \ze::$siteConfig[0]['primary_domain'];
 	
 		} elseif (!empty(\ze::$siteConfig[0]['last_primary_domain'])) {
-			$subject = $subjectPrefix. \ze::$siteConfig[0]['last_primary_domain'];
+			$subject = $subjectPrefix. ' '. \ze::$siteConfig[0]['last_primary_domain'];
 	
 		} else {
-			$subject = $subjectPrefix. gethostname();
+			$subject = $subjectPrefix. ' '. gethostname();
 		}
 	
 	
@@ -856,7 +869,7 @@ class db {
 			$body .= ' accessing '. $_SERVER['REQUEST_URI'];
 		}
 	
-		$body .= "\n\n". $errtext. "\n\n". $errno. "\n\n". $error. "\n\n". $sql. "\n\n". $backtrace. "\n\n";
+		$body .= "\n\n". implode("\n\n", $errorInfo);
 	
 		// Mail it
 		
@@ -964,7 +977,7 @@ class db {
 		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
 	
 		if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-			\ze\db::reportError('Database query error', '', $error, '', $debugBacktrace);
+			\ze\db::reportError('Database error at', 'Database query error', $error, $debugBacktrace);
 		}
 		
 		if (defined('RUNNING_FROM_COMMAND_LINE')) {

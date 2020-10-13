@@ -169,7 +169,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			if (!$this->userId) {
 				if (ze\admin::id()) {
-					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('You must be logged in as an Extranet User to see this Plugin.')) . '</p>';
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('You must be logged in as an extranet user to see this plugin.')) . '</p>';
 				}
 				return true;
 			}
@@ -800,7 +800,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
 	}
 	
-	public static function getFormSummaryHTML($responseId, $formId = false, $data = false, $repeatRows = []) {
+	public static function getFormSummaryHTML($responseId, $formId = false, $data = false, $repeatRows = [], $includeDownloadLinks = 'admin') {
 		$html = '<table>';
 		
 		//Get form if loading from a responseId
@@ -852,7 +852,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				} else {
 					$displayHTML = '';
 					if (isset($field['value'])) {
-						$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks = 'admin');
+						$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks);
 					}
 					if (isset($field['row']) && !empty($field['firstRepeatBlockField'])) {
 						$rows = count($fields[$field['repeat_start_id']]['rows']);
@@ -1188,7 +1188,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$firstRepeatBlockField = reset($repeatBlockFields);
 				$lastRepeatBlockField = end($repeatBlockFields);
 				
-				if (!$firstRepeatBlockField) {
+				if (!$repeatStartField || $repeatStartField["id"] != $field["repeat_start_id"]) {
 					continue;
 				}
 				
@@ -3519,9 +3519,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$addressFrom = ze::setting('email_address_from');
 		$nameFrom = ze::setting('email_name_from');
 		
-		$body =
-			'<p>' . htmlspecialchars($startLine) . '</p>
-			<p>The form "' . htmlspecialchars($formName) . '" was submitted with the following data:</p>';
+		$body = $startLine;
 		
 		if ($this->form['send_email_to_admin'] && !$this->form['admin_email_use_template']) {
 			if (!empty($mergeFields['breadcrumbs'])) {
@@ -5049,4 +5047,3 @@ class calculator {
         return 0;
     }
 }
-

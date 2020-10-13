@@ -91,7 +91,7 @@ body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode .zenario_slotAdminCon
 body.zenario_pageMode_preview .zenario_slot,
 body.zenario_pageMode_menu .zenario_slot,
 body.zenario_pageMode_rollback .zenario_slot {
-	border: none;
+	/*border: none;*/
 	width: auto;
 }
 
@@ -232,6 +232,12 @@ body.zenario_being_edited .zenario_slot_being_edited .zenario_slot {
 	outline-width: 2px;
 }
 
+/*  When you get a not accesible slot, remove all border  */
+body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow {
+	outline-width: 0;
+}
 
 body.zenario_pageMode_edit .zenario_slotWithNoContents > div.zenario_slot,
 body.zenario_pageMode_item .zenario_slotWithNoContents > div.zenario_slot,
@@ -352,6 +358,56 @@ body.zenario_pageMode_layout .container .responsive_only {
 
 
 
+/* START: Opacity rules */
+
+body.zenario_pageMode_item .zenario_versionControlledPlugin,
+body.zenario_pageMode_menu .zenario_versionControlledPlugin,
+body.zenario_pageMode_template .zenario_versionControlledPlugin {
+	background-color:rgba(0, 128, 0, 0.1); /* green */
+}
+
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1,
+body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1:not(.zenario_showSlotInMenuMode),
+body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1 {
+	background-color:rgba(255, 0, 0, 0.1); /* red */
+	-webkit-border-radius:8px;
+	-moz-border-radius:8px;
+	border-radius:8px;
+}
+
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2,
+body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2,
+body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_showSlotInMenuMode) {
+	background-color:rgba(128, 0, 128, 0.1); /* purple */
+	-webkit-border-radius:8px;
+	-moz-border-radius:8px;
+	border-radius:8px;
+}
+
+body.zenario_pageMode_item .zenario_versionControlledPlugin > .zenario_slot,
+body.zenario_pageMode_menu .zenario_versionControlledPlugin > .zenario_slot,
+body.zenario_pageMode_template .zenario_versionControlledPlugin > .zenario_slot,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1 > .zenario_slot,
+body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1 > .zenario_slot:not(.zenario_showSlotInMenuMode),
+body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1 > .zenario_slot,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2 > .zenario_slot,
+body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2 > .zenario_slot,
+body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_showSlotInMenuMode) > .zenario_slot {
+	mix-blend-mode:luminosity;
+}
+
+body.zenario_pageMode_item .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
+body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
+body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
+body.zenario_pageMode_item .zenario_libraryPlugin > .zenario_slot.zenario_slideshow,
+body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_slideshow,
+body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_slideshow {
+	outline-style:double;
+	outline-width:medium;
+}
+
+/* END: Opacity rules */
+
 
 
 
@@ -460,6 +516,14 @@ div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
 
 div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
 	background: url('../admin/images/slots/icon-add-green.svg') no-repeat center center / 15px 15px;
+}
+
+body.zenario_pageMode_template .zenario_slotWithNoContents div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
+	background: url('../admin/images/slots/icon-plugin-cross-purple.svg') no-repeat center 4px / 16px auto;
+}
+
+body.zenario_pageMode_item .zenario_slotWithNoContents div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
+	background: url('../admin/images/slots/icon-plugin-cross-red.svg') no-repeat center 4px / 16px auto;
 }
 
 .zenario_reusable div.zenario_slotAdminControlBox a.zenario_openSlotControls span {

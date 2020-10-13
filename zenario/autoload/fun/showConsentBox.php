@@ -60,7 +60,7 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
 			$logoURL = \ze\link::absolute(). $logoURL;
 		}
 	} else {
-		$logoURL = \ze\link::absolute(). 'zenario/admin/images/zenario_admin_link_logo.png';
+		$logoURL = \ze\link::absolute(). 'zenario/admin/images/zenario-logo-diamond.svg';
 		$logoWidth = 25;
 		$logoHeight = 19;
 	}

@@ -159,7 +159,7 @@ var zenarioVO = window.zenarioVO = new zenarioAF();
 
 
 //Go to the "Content by Layout" panel by default
-zenarioO.defaultPath = 'zenario__content/panels/content';
+zenarioO.defaultPath = 'zenario__organizer/panels/start_page';
 zenarioO.defaultPathInIframePreload = 'dummy_item/panels/loading_message';
 
 
@@ -267,6 +267,11 @@ zenarioO.open = function(className, e, width, left, top, disablePageBelow, overl
 	zenarioA.openBox(html, className, 'og', e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement);
 	
 	zenarioO.setOrganizerIcons();
+	
+	
+	if (zenarioO.isFullMode()) {
+		zenarioO.setWhereWasThatThingSearch();
+	}
 };
 
 
@@ -4894,15 +4899,20 @@ zenarioO.setBackButton = function() {
 		titles = zenarioO.getBackButtonTitle(-1, true),
 		data = {
 			buttons: []
-		};
+		},
+		domBackButton = get('organizer_backButton');
+	
+	if (!domBackButton) {
+		return;
+	}
 	
 	if (!titles || titles.length == 0) {
 		get('organizer_branding_title').style.display = 'block';
-		get('organizer_backButton').style.display = 'none';
+		domBackButton.style.display = 'none';
 	
 	} else {
 		get('organizer_branding_title').style.display = 'none';
-		get('organizer_backButton').style.display = 'block';
+		domBackButton.style.display = 'block';
 		
 		foreach (titles as i) {
 			data.buttons[i] = {
@@ -4915,7 +4925,7 @@ zenarioO.setBackButton = function() {
 		html = zenarioT.microTemplate('zenario_organizer_back_buttons', data);
 	}
 	
-	get('organizer_backButton').innerHTML = html;
+	domBackButton.innerHTML = html;
 	zenarioA.tooltips('#organizer_backButton *[title]');
 	zenarioA.setTooltipIfTooLarge('.organizer_lastBackButton a', undefined, zenarioA.tooltipLengthThresholds.organizerBackButton);
 };
@@ -5239,6 +5249,7 @@ zenarioO.setNavigation = function(returnData) {
 					onclick: secondLevel.onclick,
 					css_class: item_css_class,
 					label: secondLevel.label || secondLevel.name,
+					keywords: secondLevel.keywords,
 					tooltip: secondLevel.tooltip,
 					item_css_class: item_css_class
 				};
@@ -5281,6 +5292,11 @@ zenarioO.setNavigation = function(returnData) {
 		zenarioO.scrollTopLevelNav($topLevelNav, false);
 	}, 100);
 	zenarioO.setTopLevelNavScrollStatus($topLevelNav);
+};
+
+//Add a function for just getting the navigation data
+zenarioO.getNavigation = function() {
+	return zenarioO.setNavigation(true);
 };
 
 zenarioO.scrollTopLevelNav = function($topLevelNav, up) {
@@ -6156,20 +6172,31 @@ zenarioO.setPanelTitle = function() {
 	
 	var notice, title, width,
 		domRightCol,
-		domNoticeBar;
+		domNoticeBar,
+		$wwttSearch,
+		pi = zenarioO.pi,
+		tuix = zenarioO.tuix;
 	
-	if (zenarioO.pi
-	 && zenarioO.tuix
+	if (pi
+	 && tuix
 	 && (domRightCol = get('organizer_rightColumnTitle'))) {
 		domNoticeBar = get('organizer_noticeBar');
 		
 		domRightCol.style.display = '';
 		
-		title = zenarioO.pi.returnPanelTitle();
+		title = pi.returnPanelTitle();
 		
-		if (zenarioO.tuix.item && zenarioO.tuix.item.css_class) {
+		$wwttSearch = $('#organizer_whereWasThatThing_search');
+		
+		if (pi.returnShowWWTTSearch()) {
+			$wwttSearch.show();
+		} else {
+			$wwttSearch.val('').hide();
+		}
+		
+		if (tuix.item && tuix.item.css_class) {
 			get('organizer_panelTitle').innerHTML =
-				'<div class="listicon organizer_item_image ' + zenarioO.tuix.item.css_class + '"></div><div>' + htmlspecialchars(title) + '</div>';
+				'<div class="listicon organizer_item_image ' + tuix.item.css_class + '"></div><div>' + htmlspecialchars(title) + '</div>';
 		} else {
 			get('organizer_panelTitle').innerHTML = htmlspecialchars(title);
 		}
@@ -6187,7 +6214,7 @@ zenarioO.setPanelTitle = function() {
 		
 		
 		//Check if a notice is set on this panel, and display/hide it if so/not so.
-		notice = zenarioO.tuix.notice;
+		notice = tuix.notice;
 		
 		if (notice
 		 && engToBoolean(notice.show)
@@ -6270,7 +6297,7 @@ zenarioO.setOrganizerIcons = function() {
 	}
 	
 	//Only add the rest of the icons in full-mode.
-	if (zenarioA.isFullOrganizerWindow && !zenarioA.openedInIframe) {
+	if (zenarioO.isFullMode()) {
 		
 		//Add standard icons from the core
 		upperRightIcons.push([zenarioT.microTemplate('zenario_organizer_top_right_icons', {}), 1]);
@@ -6304,7 +6331,98 @@ zenarioO.setOrganizerIcons = function() {
 	
 	//Set the icons
 	$('#organizer_lowerLeftColumn').html(lowerLeftIcons.join('\n'));
-	$('#organizer_topRightIcons').html(upperRightIcons.join('\n'));
+	$('#organizer_top_right_newicons').html(upperRightIcons.join('\n'));
+};
+
+//Set up the "where was that thing" search box at the top of Organizer
+zenarioO.setWhereWasThatThingSearch = function() {
+	
+	var panels = [],
+		nav = zenarioO.getNavigation(),
+		$searchBox = $('#organizer_whereWasThatThing_search'),
+		i, j, l1NavItem, l2NavItem;
+	
+	//This search should use the second-level nav items as the source.
+	//Loop through them all and convert to the format that the search needs.
+	foreach (nav.items as i => l1NavItem) {
+		if (!_.isEmpty(l1NavItem.items)) {
+			foreach (l1NavItem.items as j => l2NavItem) {
+				panels.push({
+					l1Id: l1NavItem.id,
+					l2Id: l2NavItem.id,
+					
+					title: l2NavItem.label,
+					text: l2NavItem.tooltip,
+					keywords: l2NavItem.keywords,
+				});
+			}
+		}
+	}
+	
+	//Set up an autocomplete box that searches this data.
+	//See https://jqueryui.com/autocomplete/#custom-data for info on how this works.
+	$searchBox.autocomplete({
+		classes: {
+			"ui-autocomplete": "organizer_whereWasThatThing_autocomplete"
+		},
+		delay: 100,
+		minLength: 2,
+		source: function(request, response) {
+			
+			if (!request
+			 || !request.term) {
+				return [];
+			}
+			
+			//Slight tweak from the "out of the box" functionality here.
+			//We only want to match search results if they start with the search term.
+			//Partial word matches are okay if it's at the start of a word, but not at the end.
+			var pi, panel, results = [[], [], []],
+				regExSearch = new RegExp('\\b' + $.ui.autocomplete.escapeRegex(request.term) + '\\w*', 'i');
+			
+			//I want to prioritise matches in the title over keyword matches, and
+			//both title and keyword matches over matches in the description.
+			foreach (panels as pi => panel) {
+				if (panel.title && panel.title.match(regExSearch)) {
+					results[0].push(panel);
+				
+				} else if (panel.keywords && panel.keywords.match(regExSearch)) {
+					results[1].push(panel);
+				
+				} else if (panel.text && panel.text.match(regExSearch)) {
+					results[2].push(panel);
+				}
+			}
+			
+			response(results[0].concat(results[1]).concat(results[2]));
+		},
+		
+		focus: function(event, ui) {
+			//Slight tweak from the "out of the box" functionality here.
+			//Don't change what has been typed in the box if someone is keying through the results.
+			//$searchBox.val(ui.item.title);
+			return false;
+		},
+		select: function(event, ui) {
+			//Slight tweak from the "out of the box" functionality here.
+			//When the user selects a result, clear the search box
+			$searchBox.val('');
+			
+			//When the user selects a result, navigate to that panel!
+			zenarioO.topLevelClick(ui.item.l1Id, ui.item.l2Id);
+			return false;
+		}
+	})
+	.autocomplete("instance")._renderItem = function(ul, item) {
+		return $(zenarioT.microTemplate('zenario_organizer_wwtt_item', item)).appendTo(ul);
+	};
+};
+
+
+
+
+zenarioO.isFullMode = function() {
+	return zenarioA.isFullOrganizerWindow && !zenarioA.openedInIframe;
 };
 
 
@@ -6483,7 +6601,7 @@ zenarioO.size = function(refresh) {
 		rightColumnContentBorderWidth = 2,
 		noticeBarHeight = 0,
 		headerHeight = 35,
-		headerToolbar = 55,
+		headerToolbar = 47,
 		bottomWrapHeight = 45,
 		leftColAdjustment,
 		domOrgWrapper = get('zenario_fbog'),
@@ -6533,7 +6651,7 @@ zenarioO.size = function(refresh) {
 			}
 			
 			//Move the search box to just after the notice bar.
-			get('organizer_search').style.top = (noticeBarHeight + 45) + 'px';
+			get('organizer_search').style.top = (noticeBarHeight + 95) + 'px';
 			
 			//Check whether we should show the left-hand-nav
 			if (zenarioO.pi) {

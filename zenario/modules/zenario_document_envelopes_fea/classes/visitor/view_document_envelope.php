@@ -53,6 +53,12 @@ class zenario_document_envelopes_fea__visitor__view_document_envelope extends ze
 		$this->mergeCustomTUIX($tags);
 		zenario_abstract_fea::fillVisitorTUIX($path, $tags, $fields, $values);
 		$this->translatePhrasesInTUIX($tags, $path);
+
+		if ($this->setting('show_title')) {
+			$tags['title_tags'] = $this->setting('title_tags') ?: 'h2';
+		} else {
+			unset($tags['title']);
+		}
 		
 		if ($this->envelopeId) {
 			$tags['key']['envelopeId'] = (int)$this->envelopeId;

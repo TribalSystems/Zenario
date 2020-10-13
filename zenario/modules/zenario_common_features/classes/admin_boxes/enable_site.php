@@ -134,7 +134,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 				
 				if ($tags) {
 					$box['tabs']['site']['errors'][] =
-						ze\admin::phrase('You must publish every Special Page needed by the CMS before you can enable your site. Please publish the following pages: [[tags]].', ['tags' => $tags]);
+						ze\admin::phrase('You must publish all special pages before you can enable your site. Please publish the following pages: [[tags]].', ['tags' => $tags]);
 				}
 			}
 		

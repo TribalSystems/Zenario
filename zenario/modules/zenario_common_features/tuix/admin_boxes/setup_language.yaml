@@ -21,8 +21,7 @@ zenario_setup_language:
                     validation:
                         required: Please enter an English name.
                     side_note: >
-                        The name of the language in English. This will be displayed
-                        in the CMS to Administrators.
+                        The name of the language in English, as will be seen by administrators.
                 language_local_name:
                     label: 'Language Local Name:'
                     type: text
@@ -41,7 +40,7 @@ zenario_setup_language:
                     pre_field_html: >
                         lang_
                     side_note: |
-                        Any Language Pickers on your site will use this CSS class name when they wish to show a flag.
+                        Any language picker plugins will use this CSS class name when they try to show a flag.
                     validation:
                         required: Please enter a class name
                 
@@ -62,7 +61,7 @@ zenario_setup_language:
                     label: 'Use browser language detection'
                     redraw_onchange: Yes
                     side_note: |
-                        The CMS will redirect a visitor to the home page of this language based on the
+                        Zenario will redirect a visitor to the home page of this language based on the
                         language requested by their browser.
                 detect_lang_codes:
                     type: text

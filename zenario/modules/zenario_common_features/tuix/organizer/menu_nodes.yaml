@@ -7,7 +7,8 @@ zenario__menu:
                 languageId: ""
                 sectionId: ""
                 parentId: ""
-            title: All Menu Nodes
+                deleteGrandChildExist: false
+            title: All menu nodes
             db_items:
                 table: |
                     [[DB_PREFIX]]menu_nodes AS mi
@@ -86,7 +87,7 @@ zenario__menu:
                     always_show: true
                     width: xlarge
                 name:
-                    title: Menu Node Text
+                    title: Menu node text
                     searchable: true
                     db_column: mt.name
                     always_show: true
@@ -263,7 +264,7 @@ zenario__menu:
                     admin_box:
                         path: zenario_menu_text
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 edit:
                     priv: _PRIV_EDIT_MENU_ITEM
                     hide_in_select_mode: true
@@ -273,7 +274,7 @@ zenario__menu:
                         key:
                             mode: ""
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 define_menu_text:
                     priv: _PRIV_EDIT_MENU_TEXT
                     visible_if: |
@@ -283,9 +284,9 @@ zenario__menu:
                     admin_box:
                         path: zenario_menu_text
                     with_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     without_columns_set:
-                        traits.can_duplicate: true
+                        can_duplicate: true
                 duplicate:
                     priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
                     visible_if: |
@@ -297,7 +298,7 @@ zenario__menu:
                             translate: true
                             duplicate_from_menu: true
                     with_columns_set:
-                        traits.can_duplicate: true
+                        can_duplicate: true
                 view_dropdown:
                     label: View
                     multiple_select: true
@@ -306,16 +307,16 @@ zenario__menu:
                     parent: view_dropdown
                     php: true
                     hide_in_select_mode: true
-                    label: "View Content Item's translations"
+                    label: "View content item's translations"
                     link:
                         path: zenario__content/panels/chained
                         branch: true
                         refiner: zenario_trans__chained_in_link__from_menu_node
                     with_columns_set:
-                        traits.content: true
+                        content: true
                 view_content:
                     parent: view_dropdown
-                    label: Content Items under this Node in the tree
+                    label: Content items under this menu node
                     link:
                         path: zenario__content/panels/content
                         branch: true
@@ -388,33 +389,8 @@ zenario__menu:
                 
                 delete:
                     priv: _PRIV_DELETE_MENU_ITEM
-                    label: Delete menu node
-                    parent: action_dropdown
-                    multiple_select: true
-                    hide_in_select_mode: true
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure that you wish to delete the menu mode "[[name]]"?
-                                
-                                No content item will be deleted, but if the node links to a content item that item will become an orphan.
-                            multiple_select_message: |
-                                Are you sure that you wish to delete these menu nodes?
-                                
-                                No content items will be deleted, but if the nodes link to content items those items will become orphans.
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete: 1
-                    with_columns_set:
-                        traits.childless: true
-                    without_columns_set:
-                        traits.removable: true
-                        traits.ghost: true
-                delete_recursive:
-                    priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete
+                    multiple_select_label: Delete multiple
                     parent: action_dropdown
                     multiple_select: true
                     hide_in_select_mode: true
@@ -422,29 +398,62 @@ zenario__menu:
                         confirm:
                             message: |
                                 Are you sure that you wish to delete the menu node "[[name]]"?
-                                
-                                Note, it has [[children]] child node(s)! These, and any further child nodes below them, will be deleted.
-                                
-                                No content items will be deleted, but items to which the menu nodes link will become orphans.
                             multiple_select_message: |
                                 Are you sure that you wish to delete these menu nodes?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: 1
+                    with_columns_set:
+                        childless: true
+                    without_columns_set:
+                        removable: true
+                        ghost: true
+                delete_recursive:
+                    priv: _PRIV_DELETE_MENU_ITEM
+                    label: Delete recursively
+                    parent: action_dropdown
+                    multiple_select: false
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure that you wish to delete the menu node "[[name]]"?
                                 
-                                These, and any further child nodes below them, will be deleted.
+                                This menu node has [[children]] child node(s), which will also be deleted.
                                 
-                                No content items will be deleted, but items to which the menu nodes link will become orphans.
+                                No content items will be deleted, but the content items to which the child nodes link will be detached from the menu (orphans).
+                            
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             delete: 1
                     one_with_columns_set:
-                        traits.has_children: true
+                        has_children: true
                     without_columns_set:
-                        traits.removable: true
-                        traits.ghost: true
+                        removable: true
+                        ghost: true
+                delete_grandchild:
+                    priv: _PRIV_DELETE_MENU_ITEM
+                    label: Cannot delete
+                    parent: action_dropdown
+                    multiple_select: false
+                    hide_in_select_mode: true
+                        request:
+                            delete: 1
+                    tooltip: Menu node has grand-child nodes and so cannot be deleted.
+                    one_with_columns_set:
+                        has_grandchild: true
+                    without_columns_set:
+                        removable: false
+                        ghost: true
+                    disabled_if: tuix.key.deleteGrandChildExist == false
+                
                 go_to_menu_in_sk:
                     label: Go to menu node
-                    tooltip: Go to this Menu Node in hierarchical view
+                    tooltip: Go to this menu node in hierarchical view
                     navigation_path: true
                 linked_content_item_dropdown:
                     label: Linked content item
@@ -460,4 +469,4 @@ zenario__menu:
                         key:
                             id_is_menu_node_id: 1
                     with_columns_set:
-                        traits.content: true
+                        content: true

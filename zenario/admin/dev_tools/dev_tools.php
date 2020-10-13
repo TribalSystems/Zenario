@@ -20,20 +20,20 @@ echo
 	
 		switch ($_GET['mode'] ?? false) {
 			case 'zenarioAB';
-				echo ze\admin::phrase('Dev Tools: Specification for Admin Box');
+				echo ze\admin::phrase('TUIX Inspector for an Admin Box');
 				break;
 			case 'zenarioAT';
-				echo ze\admin::phrase('Dev Tools: Specification for Admin Toolbar');
+				echo ze\admin::phrase('TUIX Inspector for the Admin Toolbar');
 				break;
 			case 'zenarioO';
 				if (ze\ring::engToBoolean($_GET['orgMap'] ?? false)) {
-					echo ze\admin::phrase('Dev Tools: Specification for Storekeeper Map');
+					echo ze\admin::phrase("TUIX Inspector for Organizer's map");
 				} else {
-					echo ze\admin::phrase('Dev Tools: Specification for Storekeeper Panel');
+					echo ze\admin::phrase('TUIX Inspector for an Organizer panel');
 				}
 				break;
 			default:
-				echo ze\admin::phrase('Dev Tools: Specification for Front-End Administration');
+				echo ze\admin::phrase('TUIX Inspector for a Front-End Administration plugin');
 				break;
 		}
 

@@ -42,18 +42,6 @@
 									>
 									<i class="fa fa-caret-left" aria-hidden="true"></i>
 									{{this.phrase('Back')}}</a>
-								{% else %}
-									<a
-										class="nest_back nest_browser_back"
-										onclick="
-											if (document.referrer) {
-												history.back();
-												return false;
-											}
-										"
-									>
-									<i class="fa fa-caret-left" aria-hidden="true"></i>
-									{{this.phrase('Back')}}</a>
 								{% endif %}
 							{% endif %}
 							

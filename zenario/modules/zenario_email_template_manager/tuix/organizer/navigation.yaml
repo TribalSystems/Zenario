@@ -4,7 +4,8 @@ zenario__email_template_manager:
     ord: -690
     css_class: zenario_email_template_top_level
     label: Email
-    tooltip: "Send pre-formatted emails from your site, email logs"
+    tooltip: >
+            Define how emails are sent from the site and view sent mail
     nav:
         email_templates: 
             ord: 1

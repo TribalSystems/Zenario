@@ -319,3 +319,23 @@ ul.slimmenu.collapsed li a {
 .zenario_menu_reponsive_multilevel_2 ul.slimmenu.collapsed li.level1_on li.level2_on .sub-collapser:before {
 	color:#3c3c3c;
 }
+
+/* ADMIN HACKS */
+
+	.zenario_adminLoggedIn.zenario_pageMode_edit .zenario_menu_reponsive_multilevel_2,
+	.zenario_adminLoggedIn.zenario_pageMode_item .zenario_menu_reponsive_multilevel_2,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .zenario_menu_reponsive_multilevel_2,
+	.zenario_adminLoggedIn.zenario_pageMode_template .zenario_menu_reponsive_multilevel_2,
+	.zenario_adminLoggedIn.zenario_pageMode_edit .zenario_menu_reponsive_multilevel_2 .menu-collapser,
+	.zenario_adminLoggedIn.zenario_pageMode_item .zenario_menu_reponsive_multilevel_2 .menu-collapser,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .zenario_menu_reponsive_multilevel_2 .menu-collapser,
+	.zenario_adminLoggedIn.zenario_pageMode_template .zenario_menu_reponsive_multilevel_2 .menu-collapser {
+		position:relative;
+	}
+	
+	.zenario_adminLoggedIn.zenario_pageMode_edit .zenario_menu_reponsive_multilevel_2 ul.slimmenu,
+	.zenario_adminLoggedIn.zenario_pageMode_item .zenario_menu_reponsive_multilevel_2 ul.slimmenu,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .zenario_menu_reponsive_multilevel_2 ul.slimmenu,
+	.zenario_adminLoggedIn.zenario_pageMode_template .zenario_menu_reponsive_multilevel_2 ul.slimmenu {
+		position:absolute;
+	}

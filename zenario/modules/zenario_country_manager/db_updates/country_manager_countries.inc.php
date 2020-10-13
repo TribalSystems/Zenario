@@ -29,8 +29,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 ze\dbAdm::revision(12
 , <<<_sql
-	CREATE TABLE IF NOT EXISTS [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries (
-		`id` varchar(5) NOT NULL ,
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]country_manager_countries`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries` (
+		`id` varchar(5) NOT NULL,
 		`english_name` varchar(255),
 		`active` tinyint(1),
 		PRIMARY KEY (`id`)
@@ -685,5 +689,6 @@ _sql
 	SET english_name = "Taiwan"
 		WHERE id = "TW"
 _sql
+
 
 );

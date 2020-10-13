@@ -246,7 +246,7 @@ zenario__layouts:
                 settings:
                     priv: _PRIV_VIEW_TEMPLATE
                     hide_in_select_mode: true
-                    label: Layout properties
+                    label: Edit layout settings
                     admin_box:
                         path: zenario_layout
                     without_columns_set:
@@ -254,7 +254,7 @@ zenario__layouts:
                 edit_grid:
                     priv: _PRIV_EDIT_TEMPLATE
                     hide_in_select_mode: true
-                    label: Edit layout with Gridmaker
+                    label: Edit with Gridmaker
                     popout:
                         href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
                         width: 100%

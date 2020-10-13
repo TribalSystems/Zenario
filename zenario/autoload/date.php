@@ -307,4 +307,50 @@ class date {
 		return \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $displayAdminPhrase);
 
 	}
+	//Added new relative date function for CSLs
+	public static function simpleFormatRelativeDate($timestamp) {
+		$originalTime = $timestamp;
+		
+		if (is_object($timestamp)) {
+			$time = $timestamp;
+			$timestamp = (int) $time->format('U');
+		
+		} else {
+			$time = \ze\user::convertToUsersTimeZone($timestamp);
+			if (!is_numeric($timestamp)) {
+				$timestamp = (int) $time->format('U');
+			}
+		}
+		
+	
+		$etime = time() - (int) $timestamp;
+		$dateDifference = floor($etime/(60*60*24));
+		if($dateDifference==0){
+			
+			$relativeDate = 'Today';
+			
+		} else if ($dateDifference > 1 && $dateDifference < 29){
+			
+			$relativeDate = $dateDifference.' days ago';
+			
+		} else if ($dateDifference > 28){
+			
+			$relativeDate = \ze\date::format($originalTime,'_MEDIUM');
+			
+		} else if($dateDifference > 0){
+			 
+			$relativeDate = 'Yesterday';
+			
+		} else if($dateDifference < -1){
+			
+			$relativeDate = \ze\date::format($originalTime,'_MEDIUM');
+			
+		} else {
+			
+			$relativeDate = \ze\date::format($originalTime,'_MEDIUM');
+		}  
+	
+		return $relativeDate;
+
+	}
 }

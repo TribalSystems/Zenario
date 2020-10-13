@@ -9,7 +9,7 @@ zenario__content:
                     parent: insert_dropdown
                     ord: 99
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
-                    label: Insert nest from library...
+                    label: Insert nest...
                     combine_items:
                         class_name: zenario_common_features
                         path: zenario__modules/panels/plugins/refiners/nests////
@@ -28,7 +28,7 @@ zenario__content:
                 insert_nest_on_item_layer:
                     class_name: zenario_common_features
                     parent: insert_dropdown
-                    label: Insert nest from library...
+                    label: Insert nest...
                     combine_items:
                         class_name: zenario_common_features
                         path: zenario__modules/panels/plugins/refiners/nests////

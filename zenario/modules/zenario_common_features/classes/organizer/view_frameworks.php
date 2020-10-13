@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 	//This file and empty class declaration is needed because, from Zenario version 8.7 onwards,
 	//any module that uses the /classes/ directory must have a file & class declaration for
- 	//everything in TUIX that the module adds in a YAML file.
+	//everything in TUIX that the module adds in a YAML file.
 
 class zenario_common_features__organizer__view_frameworks extends ze\moduleBaseClass {
 	

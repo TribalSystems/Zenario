@@ -52,6 +52,12 @@ class zenario_document_envelopes_fea__visitor__upload_file_to_document_envelope 
 		zenario_abstract_fea::fillVisitorTUIX($path, $tags, $fields, $values);
 		$this->translatePhrasesInTUIX($tags, $path);
 		
+		if ($this->setting('show_title')) {
+			$tags['title_tags'] = $this->setting('title_tags') ?: 'h2';
+		} else {
+			unset($tags['title']);
+		}
+		
 		ze\lang::applyMergeFields($tags['title'], ['envelope_name' => $this->envelope['name']]);
 		
 		if ($this->setting('filenames_must_begin_with_envelope_code')) {

@@ -272,7 +272,7 @@ if (ze::$dbL
 		$logoURL = ze\link::absolute(). $logoURL;
 	}
 } else {
-	$logoURL = 'zenario/admin/images/zenario_logo.png';
+	$logoURL = 'zenario/admin/images/zenario-logo-black.svg';
 	$logoWidth = 142;
 	$logoHeight = 57;
 }

@@ -30,13 +30,19 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Loop through each changed slide, and set its ordinal
 foreach ($ids as $id) {
 	$key = ['id' => $id, 'instance_id' => $instanceId, 'is_slide' => 1];
-	if (ze\row::exists('nested_plugins', $key)) {
+	if ($slide = ze\row::get('nested_plugins', ['states'], $key)) {
 		$newOrd = $ordinals[$id];
 		$newParent = $parentIds[$id];
 		
 		//Tabs sholudn't be children of other tabs
 		if (!$newParent) {
 			ze\row::update('nested_plugins', ['slide_num' => $newOrd], $key);
+			
+			//For the conductor, correct the slide numbers on any paths as well
+			foreach (ze\ray::explodeAndTrim($slide['states']) as $state) {
+				$key = ['instance_id' => $instanceId, 'from_state' => $state];
+				ze\row::update('nested_paths', ['slide_num' => $newOrd], $key);
+			}
 		}
 	}
 }

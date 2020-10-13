@@ -20,16 +20,17 @@ zenario_categories:
                 always_on: true
             fields:
                 name:
-                    label: 'Internal name:'
+                    label: 'Name:'
                     type: text
                     maxlength: 50
                     side_note: >
-                        Internal name.
+                        Only administrators will see this name.
                     validation:
                         required: "Please enter a name."
                 public:
                     label: 'Public'
                     type: checkbox
+                    copy_code_name: true
                     format_onchange: true
                     side_note: >
                         When a category is public, its name may be visible to visitors.
@@ -42,7 +43,7 @@ zenario_categories:
                         zenarioAB.value('public')
                     side_note: The code name may appear in URLs to make them more friendly/meaningful.
                     validation:
-                        required_if_not_hidden: "Please enter a code name."
+                        required_if_not_hidden: "Please enter a code name: this may appear in a URL, for example when viewing a page that has a Content Summary List (CSL) which filters on this category."
                 landing_page:
                     label: 'Landing page:'
                     indent: 1

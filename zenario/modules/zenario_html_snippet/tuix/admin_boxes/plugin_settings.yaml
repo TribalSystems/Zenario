@@ -41,7 +41,8 @@ plugin_settings:
                 hide_in_admin_mode:
                     plugin_setting:
                         name: hide_in_admin_mode
-                    label: 'Hide in Admin Mode:'
+                    label: 'Hide output in admin mode'
+                    side_note: Check this if you some JavaScript in this plugin is clashing with the administration features of Zenario.
                     type: checkbox
                     value: ""
         javascript:

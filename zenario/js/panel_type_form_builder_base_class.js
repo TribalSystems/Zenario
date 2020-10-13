@@ -56,6 +56,11 @@ var methods = methodsOf(
 	panelTypes.form_builder_base_class = extensionOf(panelTypes.base)
 );
 
+//Don't show the "where was that thing" search box when a form builder is open
+methods.returnShowWWTTSearch = function() {
+	return false;
+};
+
 
 //Misc
 
@@ -663,7 +668,7 @@ methods.displayPageFieldOrderErrors = function() {
 };
 
 //Wrapper for an AJAX request
-methods.sendAJAXRequest = function(requests) {
+methods.sendAJAXRequest = function(requests, after) {
 	var actionRequests = zenarioO.getKey(),
 		actionTarget = 
 		'zenario/ajax.php?' +
@@ -693,7 +698,12 @@ methods.sendAJAXRequest = function(requests) {
 		undefined,
 		undefined,
 		clearPreloader
-	).after(clearPreloader);
+	).after(function(result) {
+		clearPreloader();
+		if (after !== undefined) {
+			after(result);
+		}
+	});
 	return result;
 };
 

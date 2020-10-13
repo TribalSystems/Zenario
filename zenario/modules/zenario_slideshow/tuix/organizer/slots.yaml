@@ -9,7 +9,7 @@ zenario__content:
                     parent: insert_dropdown
                     ord: 99
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
-                    label: Insert slideshow from library...
+                    label: Insert slideshow...
                     combine_items:
                         class_name: zenario_common_features
                         path: zenario__modules/panels/plugins/refiners/slideshows////
@@ -28,7 +28,7 @@ zenario__content:
                 insert_slideshow_on_item_layer:
                     class_name: zenario_common_features
                     parent: insert_dropdown
-                    label: Insert slideshow from library...
+                    label: Insert slideshow...
                     combine_items:
                         class_name: zenario_common_features
                         path: zenario__modules/panels/plugins/refiners/slideshows////

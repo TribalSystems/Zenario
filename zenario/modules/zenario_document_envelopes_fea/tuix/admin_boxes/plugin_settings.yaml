@@ -15,8 +15,10 @@ plugin_settings:
                     type: select
                     css_class: iconselectmenu
                     format_onchange: true
-                    value: list_document_envelopes
+                    value: no_mode_selected
                     values:
+                        no_mode_selected:
+                            label: ' -- Inactive -- '
                         list_document_envelopes:
                             label: "List document envelopes"
                         create_document_envelope:
@@ -59,6 +61,12 @@ plugin_settings:
                 desc_snippet:
                     snippet:
                         html: "This tab shows the settings available for the currently selected mode."
+                
+                inactive_message:
+                    visible_if:
+                        lib.modeIn: no_mode_selected
+                    snippet: 
+                        html: 'This plugin is inactive. Please select a mode to make the plugin active.'
                 
                 microtemplate:
                     plugin_setting:
@@ -230,23 +238,24 @@ plugin_settings:
                         visible_if: lib.modeIn('list_document_envelopes', 'view_document_envelope') && lib.value('show_thumbnail_image') && zenarioAB.value("use_fallback_image")
                     validation:
                         required_if_not_hidden: Please select an image.
-                show_envelope_name:
+                show_title:
                     grouping: display_options
                     visible_if:
-                        lib.modeIn: list_files_in_document_envelope
-                    label: Envelope name
+                        lib.modeIn: list_document_envelopes, create_document_envelope, view_document_envelope, edit_document_envelope, list_files_in_document_envelope, upload_file_to_document_envelope
+                    label: Show title
                     type: checkbox
                     plugin_setting:
-                        name: show_envelope_name
+                        name: show_title
                     value: true
                     redraw_onchange: true
                 title_tags:
                     indent: 1
-                    ord: show_envelope_name.1
+                    ord: show_title.1
+                    same_row: true
                     grouping: display_options
                     visible_if:
-                        lib.value: show_envelope_name
-                        lib.modeIn: list_files_in_document_envelope
+                        lib.value: show_title
+                        lib.modeIn: list_document_envelopes, create_document_envelope, view_document_envelope, edit_document_envelope, list_files_in_document_envelope, upload_file_to_document_envelope
                     plugin_setting:
                         name: title_tags
                     label: Tags
@@ -254,28 +263,28 @@ plugin_settings:
                     type: select
                     values:
                         h1:
-                            label: h1
+                            label: Heading1
                             ord: 1
                         h2:
-                            label: h2
+                            label: Heading2
                             ord: 2
                         h3:
-                            label: h3
+                            label: Heading3
                             ord: 3
                         h4:
-                            label: h4
+                            label: Heading4
                             ord: 4
                         h5:
-                            label: h5
+                            label: Heading5
                             ord: 5
                         h6:
-                            label: h6
+                            label: Heading6
                             ord: 6
                         h7:
-                            label: h7
+                            label: Heading7
                             ord: 7
                         p:
-                            label: p
+                            label: Paragraph
                             ord: 8
                 show_id:
                     grouping: show_columns

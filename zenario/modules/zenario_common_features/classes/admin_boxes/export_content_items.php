@@ -29,7 +29,33 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 class zenario_common_features__admin_boxes__export_content_items extends ze\moduleBaseClass {
-	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+	$headers = [
+			'ID',
+			'Alias',
+			'Language',
+			'Title',
+			'Description',
+			'Keywords',
+			'Status',
+			'Date/time first created',
+			'First created by',
+			'Date/time latest version created',
+			'Latest version created by',
+			'Images and animations',
+			'Translations'
+		];	
+	$datasetFieldNames = '<ul>';
+		foreach ($headers as $row) {
+			
+			if ($row) {
+				$datasetFieldNames .= '<li>'.$row.'</li>';
+			}
+		}
+		$datasetFieldNames .= '</ul>';
+		$linkHeader = ze\admin::phrase('<p>Fields to be exported:</p>');
+		$fields['download/desc']['snippet']['html'] = $linkHeader.'<p>'.$datasetFieldNames. '</p>';
+	}
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		// Get row headers
@@ -147,6 +173,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			}
 			
 			$rows[] = $contentItem;
+						
 		}
 		// Download file
 		$downloadFileName = 'Content items export '.date('Y-m-d');

@@ -197,26 +197,28 @@ class file {
 		//Check if this file exists in the system already
 		$key = ['checksum' => $file['checksum'], 'usage' => $file['usage']];
 		if ($existingFile = \ze\row::get('files', ['id', 'filename', 'location', 'path'], $key)) {
-			$key = $existingFile['id'];
-	
-			//If this file is stored in the database, continue running this function to move it to the docstore dir
-			if (!($addToDocstoreDirIfPossible && $existingFile['location'] == 'db')) {
+			if($existingFile['location'] != 's3'){
+				$key = $existingFile['id'];
 		
-				//If this file is already stored, just update the name and remove the 'archived' flag if it was set
-				$path = false;
-				if ($existingFile['location'] == 'db' || ($path = \ze\file::docstorePath($existingFile['path']))) {
-					//If the name has changed, attempt to rename the file in the filesystem
-					/*if ($path && $file['filename'] != $existingFile['filename']) {
-						@rename($path, \ze::setting('docstore_dir'). '/'. $existingFile['path']. '/'. $file['filename']);
-					}
+				//If this file is stored in the database, continue running this function to move it to the docstore dir
+				if (!($addToDocstoreDirIfPossible && $existingFile['location'] == 'db')) {
 			
-					*/
-					\ze\row::update('files', ['filename' => $filename, 'archived' => 0], $key);
-					if ($deleteWhenDone) {
-						unlink($location);
+					//If this file is already stored, just update the name and remove the 'archived' flag if it was set
+					$path = false;
+					if ($existingFile['location'] == 'db' || ($path = \ze\file::docstorePath($existingFile['path']))) {
+						//If the name has changed, attempt to rename the file in the filesystem
+						/*if ($path && $file['filename'] != $existingFile['filename']) {
+							@rename($path, \ze::setting('docstore_dir'). '/'. $existingFile['path']. '/'. $file['filename']);
+						}
+				
+						*/
+						\ze\row::update('files', ['filename' => $filename, 'archived' => 0], $key);
+						if ($deleteWhenDone) {
+							unlink($location);
+						}
+				
+						return $existingFile['id'];
 					}
-			
-					return $existingFile['id'];
 				}
 			}
 		
@@ -349,8 +351,11 @@ class file {
 			}
 		
 			foreach (['advpng', 'jpegoptim', 'jpegtran', 'optipng'] as $program) {
-				self::$options[$program. '_bin'] =
-					\ze\server::programPathForExec(\ze::setting($program. '_path'), $program, true);
+				if ($programPath = \ze\server::programPathForExec(\ze::setting($program. '_path'), $program, true)) {
+					self::$options[$program. '_bin'] = $programPath;
+				} else {
+					unset(self::$options[$program. '_options']);
+				}	
 			}
 		
 			self::$factory = new \ImageOptimizer\OptimizerFactory(self::$options);
@@ -799,14 +804,16 @@ class file {
 	public static function labelDetails($fileId) {
 		
 		$sql = '
-			SELECT id, filename, width, height, checksum, short_checksum, `usage`
+			SELECT id, filename, size, path, location, width, height, checksum, short_checksum, `usage`
 			FROM '. DB_PREFIX. 'files
 			WHERE id = '. (int) $fileId;
 		
 		if ($file = \ze\sql::fetchAssoc($sql)) {
 			
 			$file['label'] = $file['filename'];
-			
+
+			$file['size'] = self::formatSizeUnits($file['size']);
+
 			if (\ze::isAdmin()) {
 				$sql = '
 					SELECT 1
@@ -823,6 +830,19 @@ class file {
 		
 			if ($file['width'] && $file['height']) {
 				$file['label'] .= ' ['. $file['width']. ' × '. $file['height']. 'px]';
+			}
+			if ($file['location'] == 's3') {
+				if ($file['path']) {
+					$s3fileName = $file['path'].'/'.$file['filename'];
+				} else {
+					$s3fileName = $file['filename'];
+				}
+				if ($s3fileName) {
+					if (\ze\module::inc('zenario_ctype_document')) {
+						$presignedUrl = \zenario_ctype_document::getS3FilePresignedUrl($s3fileName);
+					}
+					 $file['s3Link'] = $presignedUrl;
+				}
 			}
 		}
 		
@@ -1768,4 +1788,33 @@ class file {
 		}
 		return false;
 	}
+	public static function formatSizeUnits($bytes){
+        if ($bytes >= 1073741824)
+        {
+            $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+        }
+        elseif ($bytes >= 1048576)
+        {
+            $bytes = number_format($bytes / 1048576, 2) . ' MB';
+        }
+        elseif ($bytes >= 1024)
+        {
+            $bytes = number_format($bytes / 1024, 2) . ' KB';
+        }
+        elseif ($bytes > 1)
+        {
+            $bytes = $bytes . ' bytes';
+        }
+        elseif ($bytes == 1)
+        {
+            $bytes = $bytes . ' byte';
+        }
+        else
+        {
+            $bytes = '0 bytes';
+        }
+
+        return $bytes;
+	}
+	
 }

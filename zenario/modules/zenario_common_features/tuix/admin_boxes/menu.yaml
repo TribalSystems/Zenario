@@ -48,8 +48,8 @@ zenario_menu:
                             !this.value?
                                 ''
                             :    !get('parent_path_of__' + this.id).value?
-                                    this.value + " (1 level)"
-                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " ("+ (get('parent_path_of__' + this.id).value.split("->").length + 1) + " level)";
+                                    this.value + " [level 1]"
+                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " [level"+ (get('parent_path_of__' + this.id).value.split("›").length + 1) + "]";
                 path_of__menu_title:
                     ord: 1003
                     label: 'Path preview:'

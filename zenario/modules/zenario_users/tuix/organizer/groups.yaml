@@ -7,7 +7,7 @@ zenario__users:
             ord: "1.1"
             label: Groups
             tooltip: >
-                View extranet groups
+                Users can be arranged into groups, and permissions to view content can be arranged on a by-group basis.
             link:
                 path: zenario__users/panels/groups
     
@@ -22,7 +22,7 @@ zenario__users:
             default_sort_column: label
             item:
                 css_class: zenario_group
-                tooltip_when_link_is_active: 'View users in the Group "[[label]]"'
+                tooltip_when_link_is_active: 'View users in the group "[[label]]"'
                 link:
                     path: zenario__users/panels/users
                     refiner: group_members

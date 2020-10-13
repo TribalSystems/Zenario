@@ -339,9 +339,7 @@ class moduleAPI {
 						]);
 			
 				} else {
-					if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-						\ze\db::reportError("Twig syntax error in visitor mode", $e->getMessage());
-					}
+					\ze\db::reportError('Twig syntax error at', $e->getMessage());
 	
 					if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
 						echo 'A syntax error has occured in a framework on this section of the site. Please contact a site Administrator.';
@@ -1243,8 +1241,11 @@ class moduleAPI {
 		 && !$isLayoutPreview
 		 && $this->slotLevel == 2
 		 && \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
-			
-			echo '<div id="'. $this->containerId. '-layout_preview" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
+			if ((bool)\ze\admin::id()) {
+				echo '<div id="'. $this->containerId. '-layout_preview" onclick = "zenarioA.adminSlotWrapperClick(\''.htmlspecialchars($this->slotName).'\');" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
+			}	else {
+				echo '<div id="'. $this->containerId. '-layout_preview" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
+			}		
 			
 			if ($this->shouldShowLayoutPreview()
 			 && !$this->eggId
@@ -1352,9 +1353,24 @@ class moduleAPI {
 		} else {
 			$cm = '';
 		}
-		
-		return '
-					<div id="'. $this->containerId. '" class="zenario_slot '. $this->cssClass. $cm. '">';
+		if ((bool)\ze\admin::id()) {
+			return '
+
+					<div id="'. $this->containerId. '"  class="zenario_slot '. $this->cssClass. $cm. '" onclick = "zenarioA.adminSlotWrapperClick(\''.htmlspecialchars($this->slotName).'\');" >';
+		} else {
+			return '
+
+					<div id="'. $this->containerId. '"  class="zenario_slot '. $this->cssClass. $cm. '">';
+		}
+	}
+	
+	protected final function noModeSelected() {
+		if (\ze\priv::check()) {
+			echo
+				'<p class="zenario_inactive_mode">'.
+					\ze\admin::phrase('This plugin is inactive. Please edit its settings to make it active.').
+				'</p>';
+		}
 	}
 	
 	//Close the admin controls for a slot.
@@ -1502,8 +1518,8 @@ class moduleAPI {
 		];
 	}
 
-	protected function redirectToPage($showWelcomePage = true, $redirectBackIfPossible = true, $redirectRegardlessOfPerms = true) {
-		require \ze::funIncPath(__FILE__, __FUNCTION__);
+	protected function redirectToPage($showWelcomePage = true, $redirectBackIfPossible = true, $redirectRegardlessOfPerms = true, $returnDestinationOnly = false) {
+		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	

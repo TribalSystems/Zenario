@@ -4,11 +4,11 @@ zenario__users:
 	nav:
 		sign_in_log:
 			ord: "98"
-			label: Sign-in log
-			tooltip: Log of all user sign-in activity
+			label: User sign-in log
+			tooltip: Log recording when extranet users have signed in to the extranet
 			panel:
 				php: Yes
-				title: Sign-in Log
+				title: User sign-in log
 				notice:
 					show: false
 					type: information
@@ -27,7 +27,7 @@ zenario__users:
 				columns:
 					Time:
 						width: small
-						title: Time Accessed
+						title: Time accessed
 						db_column: usl.login_datetime
 						#format: datetime
 						format: datetime_with_seconds

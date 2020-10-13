@@ -48,7 +48,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 		
 		$langs = ze\lang::getLanguages();
 		foreach($langs as $lang) {
-			$panel['columns']['lang_'. $lang['id']] = ['title' => $lang['id']];
+			$panel['columns']['lang_'. $lang['id']] = ['title' => ' Visitor name ('.$lang['id'].')'];
 		}
 		
 		
@@ -68,8 +68,9 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 				}
 			}
 
-			
+			$accessType = ' (private) ';
 			if ($item['public']) {
+				$accessType = ' (public) ';
 				$item['traits']['public'] = true;
 				
 				foreach($langs as $lang) {
@@ -81,6 +82,9 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 			
 			$item['children'] = ze\categoryAdm::countChildren($id);
 			$item['path'] = ze\categoryAdm::path($id);
+			
+			$item['full_path_label'] = $item['name'];
+			
 			
 			//In FAB pickers, show the full category path (including the names of any parent categories)
 			if (($mode == 'get_item_name' || $mode == 'typeahead_search' || $mode == 'get_item_links' || $mode == 'select') && $item['id']) {
@@ -110,7 +114,9 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 					$fullPathLabel = $item['name'];
 				}
 				
-				$item['full_path_label'] = $fullPathLabel;
+				$item['full_path_label'] = $fullPathLabel.$accessType;
+				
+				
 			}
 		}
 		

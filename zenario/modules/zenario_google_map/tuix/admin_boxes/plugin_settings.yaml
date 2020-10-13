@@ -7,7 +7,7 @@ plugin_settings:
             label: Map
             fields:
                 company_name:
-                    label: 'Company Name:'
+                    label: 'Company name:'
                     type: text
                     plugin_setting:
                         name: company_name
@@ -19,7 +19,7 @@ plugin_settings:
                     plugin_setting:
                         name: address
                     value: >
-                        Blagrave House, 17 Blagrave Street, Reading, England RG1 1QB
+                        R+, 2 Blagrave Street, Reading, RG1 1AZ, United Kingdom
                 width:
                     plugin_setting:
                         name: width

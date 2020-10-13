@@ -1,22 +1,20 @@
 zenario__users:
-    label: Users
+    label: Users & contacts
     css_class: zenario_users__top_level
     tooltip: |
-        Manage users (people who may log in to private areas of your site),
-        contacts (people whom you may email)
-        and administrators (people who may edit your site).
+        Manage users, contacts and administrators
     nav:
         users:
             ord: "1"
             label: 'Users & contacts'
             tooltip: >
-                Store data about contacts, and about users who may access
-                password-protected parts of your site
+                On a site with an extranet, "Users" can access private areas. "Contacts" are other people whose details are stored.
             link:
                 path: zenario__users/panels/users
         suspended_users:
             css_class: zenario_suspended_users
             label: Suspended users
+            tooltip: People who were extranet users but whose accounts are suspended to prevent them logging in
             link:
                 path: zenario__users/panels/users
                 refiner: suspended_users

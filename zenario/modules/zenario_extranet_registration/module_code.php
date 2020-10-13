@@ -253,8 +253,12 @@ class zenario_extranet_registration extends zenario_extranet {
         		
         		if(!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')){
 				    //Show warning
-				    $fields['use_captcha']['side_note'] = "Recaptcha keys are not set. To show a captcha you must set the recaptcha <a href='zenario/admin/organizer.php?fromCID=7&fromCType=html#zenario__administration/panels/site_settings//captcha~.site_settings~tcaptcha~k{&#34;id&#34;%3A&#34;captcha&#34;}' target='_blank'>site settings</a>.";
-                    $fields['use_captcha']['readonly'] = true;
+					$recaptchaLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
+					$fields['use_captcha']['side_note'] = $this->phrase(
+						"Recaptcha keys are not set. To show a captcha you must set the recaptcha [[recaptcha_link]].",
+						['recaptcha_link' => $recaptchaLink]
+					);
+					$fields['use_captcha']['readonly'] = true;
                     $fields['use_captcha']['value'] = 0; 
 				}
 				        

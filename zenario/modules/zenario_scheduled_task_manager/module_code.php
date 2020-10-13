@@ -617,7 +617,8 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		
 		$emails = ze\ray::valuesToKeys(ze\ray::explodeAndTrim($emailList));
 		
-		if ($status == 'error' && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
+		//For errors, if error emails are enabled, also include one to the support address
+		if ($status == 'error' && ze\db::errorEmailsEnabled()) {
 			$emails[EMAIL_ADDRESS_GLOBAL_SUPPORT] = true;
 		}
 		

@@ -169,14 +169,18 @@ class welcome {
 
 
 	//Formerly "readSampleConfigFile()"
-	public static function readSampleConfigFile($patterns) {
+	public static function readSampleConfigFile($patterns, $multiDBValue) {
 		$searches = $replaces = [];
 		foreach ($patterns as $pattern => $value) {
 			$searches[] = '[['. $pattern. ']]';
 			$replaces[] = $value;
 		}
-	
-		return str_replace($searches, $replaces, file_get_contents(CMS_ROOT. 'zenario/admin/db_install/zenario_siteconfig.sample.php'));
+
+		if ($multiDBValue == 'zenario_multisite') {
+			return str_replace($searches, $replaces, file_get_contents(CMS_ROOT. 'zenario/admin/db_install/zenario_siteconfig.local.sample.php'));
+		} else {
+			return str_replace($searches, $replaces, file_get_contents(CMS_ROOT. 'zenario/admin/db_install/zenario_siteconfig.standalone.sample.php'));
+		}
 	}
 
 	//Check whether the config file exists.
@@ -507,7 +511,6 @@ class welcome {
 						}
 					}
 				}
-		
 		
 				if ($mysqlVersion) {
 					$fields['0/mysql_2']['post_field_html'] =
@@ -854,6 +857,7 @@ class welcome {
 	//Formerly "installerAJAX()"
 	public static function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $installStatus, &$freshInstall, &$adminId) {
 		$merge = [];
+
 		$merge['SUBDIRECTORY'] = SUBDIRECTORY;
 		//If the database prefix is already set in the config file, look it up and default the field to it.
 		if (!isset($fields['3/prefix']['current_value'])) {
@@ -863,7 +867,24 @@ class welcome {
 				$values['3/prefix'] = 'z_';
 			}
 		}
-	
+
+		if (!isset($fields['3/multi_db_prefix']['current_value'])) {
+			if (defined('DB_PREFIX_GLOBAL') && DB_PREFIX_GLOBAL && strpos(DB_PREFIX_GLOBAL, '[') === false) {
+				$values['3/multi_db_prefix'] = DB_PREFIX_GLOBAL;
+			} else {
+				$values['3/multi_db_prefix'] = 'z_';
+			}
+		}
+		//To show current version of Zenariosite
+		$currentVersion = \ze\site::versionNumber();
+		$currentVersionArr = explode(" ",$currentVersion);
+		if(sizeof($currentVersionArr)>0){
+			$currentVersion=str_replace(".","",$currentVersionArr[0]);
+		}
+		if (!isset($fields['3/name']['current_value'])) {
+			$values['3/name'] = 'zenariosite_'.$currentVersion;
+		}		
+		
 		//Validation for Step 1: Check if the Admin has accepted the license
 		$licenseAccepted = !empty($values['1/i_agree']);
 	
@@ -883,15 +904,31 @@ class welcome {
 			$merge['DBPASS'] = $values['3/password'];
 			$merge['DBPORT'] = $values['3/port'];
 			$merge['DB_PREFIX'] = $values['3/prefix'];
+			
+		//Validation for Step 3: Validate the Multisite Database Connection
+			$merge['DBHOST_GLOBAL'] = $values['3/multi_db_host'];
+			$merge['DBNAME_GLOBAL'] = $values['3/multi_db_name'];
+			$merge['DBUSER_GLOBAL'] = $values['3/multi_db_user'];
+			$merge['DBPASS_GLOBAL'] = $values['3/multi_db_password'];
+			$merge['DBPORT_GLOBAL'] = $values['3/multi_db_port'];
+			$merge['DB_PREFIX_GLOBAL'] = $values['3/multi_db_prefix'];
 		
 			if (!$merge['DBHOST']) {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Please enter your hostname.');
+			}
+			if (!$merge['DBHOST_GLOBAL'] && $values['3/multi_db'] == 'zenario_multisite') {
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Please enter your multisite hostname.');
 			}
 		
 			if (!$merge['DBNAME']) {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Please enter your database name.');
 			} elseif (preg_match('/[^a-zA-Z0-9_-]/', $merge['DBNAME'])) {
-				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The Database Name should only contain [a-z, A-Z, 0-9, _ and -].');
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The database name should only contain [a-z, A-Z, 0-9, _ and -].');
+			}
+			if (!$merge['DBNAME_GLOBAL'] && $values['3/multi_db'] == 'zenario_multisite') {
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Please enter the name of the global database for multisite authentication.');
+			} elseif (preg_match('/[^a-zA-Z0-9_-]/', $merge['DBNAME_GLOBAL'])) {
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The database name should only contain [a-z, A-Z, 0-9, _ and -].');
 			}
 		
 			if (!$merge['DBUSER']) {
@@ -899,25 +936,67 @@ class welcome {
 			} elseif (preg_match('/[^a-zA-Z0-9_-]/', $merge['DBUSER'])) {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The database username should only contain [a-z, A-Z, 0-9, _ and -].');
 			}
+			if (!$merge['DBUSER_GLOBAL'] && $values['3/multi_db'] == 'zenario_multisite') {
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Please enter the username of the global database for multisite authentication.');
+			} elseif (preg_match('/[^a-zA-Z0-9_-]/', $merge['DBUSER_GLOBAL'])) {
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The database username should only contain [a-z, A-Z, 0-9, _ and -].');
+			}
 		
 			if ($merge['DBPORT'] !== '' && !is_numeric($merge['DBPORT'])) {
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The database port must be a number.');
+			}
+			if ($merge['DBPORT_GLOBAL'] !== '' && !is_numeric($merge['DBPORT_GLOBAL']) && $values['3/multi_db'] == 'zenario_multisite') {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The database port must be a number.');
 			}
 		
 			if (preg_match('/[^a-zA-Z0-9_]/', $merge['DB_PREFIX'])) {
 				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The table prefix should only contain the characters [a-z, A-Z, 0-9 and _].');
 			}
+			if (preg_match('/[^a-zA-Z0-9_]/', $merge['DB_PREFIX_GLOBAL']) && $values['3/multi_db'] == 'zenario_multisite') {
+				$tags['tabs'][3]['errors'][] = \ze\admin::phrase('The table prefix should only contain the characters [a-z, A-Z, 0-9 and _].');
+			}
 		
 			if (empty($tags['tabs'][3]['errors'])) {
 				
+				if($values['3/multi_db'] == 'zenario_multisite')
+				{
+					
+				\ze::$dbG = new \ze\db($merge['DB_PREFIX_GLOBAL'], $merge['DBHOST_GLOBAL'], $merge['DBNAME_GLOBAL'], $merge['DBUSER_GLOBAL'], $merge['DBPASS_GLOBAL'], $merge['DBPORT_GLOBAL'],$reportErrors = false);
+				}
+			
 				\ze::$dbL = new \ze\db($merge['DB_PREFIX'], $merge['DBHOST'], $merge['DBNAME'], $merge['DBUSER'], $merge['DBPASS'], $merge['DBPORT'], $reportErrors = false);
 				
-				if (!\ze::$dbL->con) {
-					\ze::$dbL = null;
-					$tags['tabs'][3]['errors'][] = 
-						\ze\admin::phrase('The database name, username and/or password are invalid.');
-			
-				} else {	
+				if (!\ze::$dbL->con || !\ze::$dbG->con) {
+					if (!\ze::$dbL->con )
+					{
+						\ze::$dbL = null;
+						$tags['tabs'][3]['errors'][] = 
+							\ze\admin::phrase('The database name, username and/or password are invalid.');
+					}
+					elseif (!\ze::$dbG->con && $values['3/multi_db'] == 'zenario_multisite')
+					{
+						\ze::$dbG = null;
+						$tags['tabs'][3]['errors'][] = 
+							\ze\admin::phrase('The database name, username and/or password are invalid for the global database.');
+					}
+				} 
+				if (\ze::$dbL->con ) {	
+				
+				// Check for MySQL max_packet_size being too small
+					if (($result = @\ze\sql::select("SHOW VARIABLES LIKE 'max_allowed_packet'"))
+					 && ($row = \ze\sql::fetchRow($result))
+					 && !empty($row[1])) {
+						$max_allowed_packet = $row[1];
+						if($max_allowed_packet < 4000000 )
+						{
+							
+							$tags['tabs'][3]['errors'][] =
+								\ze\admin::phrase('Your MySQL server\'s max_packet_size variable is set to '.$max_allowed_packet.', we recommend you increase this to 16MB (must be at least 4MB). Without this, you may experience problems when uploading large images or other files.');
+							
+						}
+					
+						
+					}
 				
 					if (!($result = @\ze\sql::select("SELECT VERSION()"))
 						   || !($version = @\ze\sql::fetchRow($result))
@@ -945,16 +1024,37 @@ class welcome {
 							}
 						}
 					}
+					
 				}
+				//Check admins table for global database
+				if (\ze::$dbG
+				 && \ze::$dbG->con
+				 && $values['3/multi_db'] == 'zenario_multisite') {
+						
+						$tablename = $merge['DB_PREFIX_GLOBAL'].'admins';
+
+						$tables = \ze::$dbG->checkTableDef($tablename, true);
+
+						if(!$tables)
+						{
+							$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Connection to the global database succeeded, but the "admins" table (prefixed with your given prefix) does not appear to exist.');
+						}
+						
+				}
+				
 			}
+			
 		}
-	
+		// To set default timezone
+		$fields['4/vis_timezone_settings']['values'] = static::getTimezonesLOV();
+		
 		//No validation for Step 4, but remember the theme and language chosen
 		if ($tags['tab'] > 4 || ($tags['tab'] == 4 && !empty($fields['4/next']['pressed']))) {
 			$merge['LANGUAGE_ID'] = $values['4/language_id'];
 			$merge['VIS_DATE_FORMAT_SHORT'] = $values['4/vis_date_format_short'];
 			$merge['VIS_DATE_FORMAT_MED'] = $values['4/vis_date_format_med'];
 			$merge['VIS_DATE_FORMAT_LONG'] = $values['4/vis_date_format_long'];
+			$merge['VIS_TIMEZONE_SETTINGS'] = $values['4/vis_timezone_settings'];
 			$merge['THEME'] = preg_replace('/\W/', '', $values['4/theme']);
 		}
 	
@@ -1038,7 +1138,7 @@ class welcome {
 						$tags['tabs'][7]['errors'][] =
 							\ze\admin::phrase('Please create a file called zenario_siteconfig.php. If you want this installer to populate it, it can be empty but writable.');
 				
-					} elseif (!@file_put_contents(CMS_ROOT. 'zenario_siteconfig.php', \ze\welcome::readSampleConfigFile($merge))) {
+					} elseif (!@file_put_contents(CMS_ROOT. 'zenario_siteconfig.php', \ze\welcome::readSampleConfigFile($merge,$values['3/multi_db']))) {
 						$tags['tabs'][7]['errors'][] =
 							\ze\admin::phrase('Could not write to file zenario_siteconfig.php');
 						$permErrors = true;
@@ -1303,7 +1403,7 @@ class welcome {
 			case 7:
 				$fields['7/zenario_siteconfig']['pre_field_html'] =
 					'<pre>'. CMS_ROOT. 'zenario_siteconfig.php'. ':</pre>';
-				$fields['7/zenario_siteconfig']['value'] = \ze\welcome::readSampleConfigFile($merge);
+				$fields['7/zenario_siteconfig']['value'] = \ze\welcome::readSampleConfigFile($merge,$values['3/multi_db']);
 				unset($values['7/zenario_siteconfig']);
 			
 			
@@ -1464,6 +1564,7 @@ class welcome {
 						\ze\site::setSetting('vis_date_format_short', $merge['VIS_DATE_FORMAT_SHORT']);
 						\ze\site::setSetting('vis_date_format_med', $merge['VIS_DATE_FORMAT_MED']);
 						\ze\site::setSetting('vis_date_format_long', $merge['VIS_DATE_FORMAT_LONG']);
+						\ze\site::setSetting('zenario_timezones__default_timezone', $merge['VIS_TIMEZONE_SETTINGS']);
 						\ze\site::setSetting('vis_date_format_datepicker', \ze\miscAdm::convertMySQLToJqueryDateFormat($merge['VIS_DATE_FORMAT_SHORT']));
 						\ze\site::setSetting('organizer_date_format', \ze\miscAdm::convertMySQLToJqueryDateFormat($merge['VIS_DATE_FORMAT_MED']));
 					
@@ -1645,6 +1746,9 @@ class welcome {
 			
 			if (!$values['login/username']) {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator username.');
+			}
+			if (preg_match("/[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+.[a-zA-Z]{2,4}/", $values['login/username'])){
+				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Sorry, the admin username looks like an email address. Please enter your administrator username.');
 			}
 		
 			if (!$values['login/password']) {
@@ -2241,6 +2345,7 @@ class welcome {
 		if (!empty($fields['new_admin/save_password_and_login']['pressed'])) {
 			$password = $values['new_admin/password'];
 			$passwordConfirm = $values['new_admin/re_password'];
+			$accept_box = $values['new_admin/accept_box'];
 			
 			if (!$password) {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please enter a password.');
@@ -2249,17 +2354,19 @@ class welcome {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
 				
 			} elseif (!$passwordConfirm) {
-				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please repeat your Password.');
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please enter your password again.');
 				
 			} elseif ($password != $passwordConfirm) {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('_MSG_PASS_2');
 				
+			} elseif (!$accept_box) {
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please confirm that you accept your data will be stored as described below by checking the checkbox.');
+				
 			}
-			
 			//If no errors with validation, then save password and login
 			if (empty($tags['tabs']['new_admin']['errors'])) {
 				\ze\adminAdm::setPassword($adminId, $password, 0);
-				\ze\admin::logIn($adminId);
+				\ze\admin::logIn($adminId, $values['new_admin/remember_me']);
 				return true;
 			}
 		}
@@ -2286,7 +2393,7 @@ class welcome {
 		}
 		// Display last admin login time
 		$admiId=\ze\admin::id();
-		
+
 			if($admiId){
 				$sql = '
 					SELECT id, username, last_login, last_login_ip, created_date
@@ -2376,8 +2483,8 @@ class welcome {
 			$fields['0/docstore_dir_status']['row_class'] = 'sub_valid';
 			$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
 		}
-
-
+		
+		
 		$mrg = [
 			'dir' => $dir = $values['0/backup_dir'],
 			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
@@ -2621,7 +2728,7 @@ class welcome {
             $fields['0/custom_dir_status']['snippet']['html'] =
                 \ze\admin::phrase('The &quot;zenario_custom&quot; directory exists and all the files are committed in svn.');
         }
-
+		
 		if ($fields['0/docstore_dir_status']['row_class'] == 'sub_invalid') {
 			$showCheckAgainButtonIfDirsAreEditable =
 			$fields['0/show_dirs']['pressed'] =
@@ -2762,8 +2869,8 @@ class welcome {
 				$fields['0/public_documents']['hidden'] = true;
 			}
 			
-			$mrg = \ze\file::checkAllImagePublicLinks($check = true);
-			if ($mrg['numMissing']) {
+			$mrg = \ze\file::checkAllImagePublicLinks($check = false);
+			if ($mrg && $mrg['numMissing']) {
 				$show_warning = true;
 				$mrg['manageImagesLink'] = htmlspecialchars('zenario/admin/organizer.php#zenario__content/panels/image_library');
 				
@@ -3422,7 +3529,7 @@ class welcome {
 				
 				$days = \ze\admin::getDaysBeforeAdminsAreInactive();
 				$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
-
+		
 				$sql = '
 					SELECT id, username, last_login, created_date
 					FROM ' . DB_PREFIX . 'admins
@@ -3449,12 +3556,12 @@ class welcome {
 								$row['last_login_date'] = \ze\admin::formatDate($row['last_login'], '_MEDIUM');
 								
 								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
-									\ze\admin::phrase("<a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago.", $row);
+									\ze\admin::phrase("Administrator <a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago, consider whether this person's account should be trashed.", $row);
 							} else {
 								$row['created_date'] = \ze\admin::formatDate($row['created_date'], '_MEDIUM');
 								
 								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
-									\ze\admin::phrase("<a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] and has never logged in.", $row);
+									\ze\admin::phrase("Administrator account <a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] but has never logged in, consider whether this person's account should be trashed.", $row);
 							}
 						}
 					}
@@ -3869,4 +3976,169 @@ class welcome {
 			WHERE m.class_name = '". \ze\escape::sql($moduleClassName). "'";
 		\ze\sql::update($sql);
 	}
+	
+	public static $timezoneOffsets = [];
+	
+	
+	public static function getTimezonesLOV() {
+		$list = [];
+		$timezones = static::getTimezones(\ze\dataset::LIST_MODE_LIST);
+		
+		$ord = 0;
+		foreach ($timezones as $key => $label) {
+			$list[$key] = [
+				'ord' => ++$ord,
+				'label' => $label
+			];
+		}
+		
+		return $list;
+	}
+	
+	
+	public static function getTimezones($mode, $value = false) {
+		switch ($mode) {
+			case \ze\dataset::LIST_MODE_INFO:
+				return ['can_filter' => false];
+			case \ze\dataset::LIST_MODE_VALUE:
+				return \ze\ray::value(self::$timezones, $value);
+			case \ze\dataset::LIST_MODE_LIST:
+				// Get timezone offset from 0 and save against timezone code in array
+				$timezones = self::$timezones;
+				foreach ($timezones as $timezone => &$city) {
+					$dateTimeZone = new \DateTimeZone($timezone);
+					$dateTime = new \DateTime('now', $dateTimeZone);
+					$offset = $dateTimeZone->getOffset($dateTime) / 3600;
+					self::$timezoneOffsets[$timezone] = $offset;
+					$offset = number_format($offset, 2);
+					$offset = ($offset > 0 ? '+' . $offset : $offset);
+					$city = '(UTC '. $offset.') '.$city;
+				}
+				// Sort original array by offsets in offset array
+				uksort($timezones, "self::sortTimezones");
+				// Return sorted array
+				return $timezones;
+		}
+	}
+	
+	public static function sortTimezones($a, $b) {
+		
+		if (self::$timezoneOffsets[$a] == self::$timezoneOffsets[$b]) {
+			return self::$timezones[$a] > self::$timezones[$b];
+		} else {
+			return self::$timezoneOffsets[$a] > self::$timezoneOffsets[$b];
+		}
+	}
+	
+	public static $timezones = 
+			[
+				'Pacific/Midway'       => "Midway Island",
+				'US/Hawaii'            => "Hawaii",
+				'US/Alaska'            => "Alaska",
+				'US/Pacific'           => "Pacific Time (US & Canada)",
+				'America/Tijuana'      => "Tijuana",
+				'US/Mountain'          => "Mountain Time (US & Canada)",
+				'America/Chihuahua'    => "Chihuahua",
+				'America/Mazatlan'     => "Mazatlan",
+				'America/Mexico_City'  => "Mexico City",
+				'America/Monterrey'    => "Monterrey",
+				'Canada/Saskatchewan'  => "Saskatchewan",
+				'US/Central'           => "Central Time (US & Canada)",
+				'US/Eastern'           => "Eastern Time (US & Canada)",
+				'America/Bogota'       => "Bogota",
+				'America/Lima'         => "Lima",
+				'America/Caracas'      => "Caracas",
+				'Canada/Atlantic'      => "Atlantic Time (Canada)",
+				'America/La_Paz'       => "La Paz",
+				'America/Santiago'     => "Santiago",
+				'Canada/Newfoundland'  => "Newfoundland",
+				'America/Buenos_Aires' => "Buenos Aires",
+				'Atlantic/Stanley'     => "Stanley",
+				'Atlantic/Azores'      => "Azores",
+				'Atlantic/Cape_Verde'  => "Cape Verde Is.",
+				'Africa/Casablanca'    => "Casablanca",
+				'Europe/Dublin'        => "Dublin",
+				'Europe/Lisbon'        => "Lisbon",
+				'Europe/London'        => "London",
+				'Africa/Monrovia'      => "Monrovia",
+				'Europe/Amsterdam'     => "Amsterdam",
+				'Europe/Belgrade'      => "Belgrade",
+				'Europe/Berlin'        => "Berlin",
+				'Europe/Bratislava'    => "Bratislava",
+				'Europe/Brussels'      => "Brussels",
+				'Europe/Budapest'      => "Budapest",
+				'Europe/Copenhagen'    => "Copenhagen",
+				'Europe/Ljubljana'     => "Ljubljana",
+				'Europe/Madrid'        => "Madrid",
+				'Europe/Paris'         => "Paris",
+				'Europe/Prague'        => "Prague",
+				'Europe/Rome'          => "Rome",
+				'Europe/Sarajevo'      => "Sarajevo",
+				'Europe/Skopje'        => "Skopje",
+				'Europe/Stockholm'     => "Stockholm",
+				'Europe/Vienna'        => "Vienna",
+				'Europe/Warsaw'        => "Warsaw",
+				'Europe/Zagreb'        => "Zagreb",
+				'Europe/Athens'        => "Athens",
+				'Europe/Bucharest'     => "Bucharest",
+				'Africa/Cairo'         => "Cairo",
+				'Africa/Harare'        => "Harare",
+				'Europe/Helsinki'      => "Helsinki",
+				'Europe/Istanbul'      => "Istanbul",
+				'Asia/Jerusalem'       => "Jerusalem",
+				'Europe/Kiev'          => "Kyiv",
+				'Europe/Minsk'         => "Minsk",
+				'Europe/Riga'          => "Riga",
+				'Europe/Sofia'         => "Sofia",
+				'Europe/Tallinn'       => "Tallinn",
+				'Europe/Vilnius'       => "Vilnius",
+				'Asia/Baghdad'         => "Baghdad",
+				'Asia/Kuwait'          => "Kuwait",
+				'Africa/Nairobi'       => "Nairobi",
+				'Asia/Riyadh'          => "Riyadh",
+				'Asia/Tehran'          => "Tehran",
+				'Europe/Moscow'        => "Moscow",
+				'Asia/Baku'            => "Baku",
+				'Europe/Volgograd'     => "Volgograd",
+				'Asia/Muscat'          => "Muscat",
+				'Asia/Tbilisi'         => "Tbilisi",
+				'Asia/Yerevan'         => "Yerevan",
+				'Asia/Kabul'           => "Kabul",
+				'Asia/Karachi'         => "Karachi",
+				'Asia/Tashkent'        => "Tashkent",
+				'Asia/Kolkata'         => "Kolkata",
+				'Asia/Kathmandu'       => "Kathmandu",
+				'Asia/Yekaterinburg'   => "Ekaterinburg",
+				'Asia/Almaty'          => "Almaty",
+				'Asia/Dhaka'           => "Dhaka",
+				'Asia/Novosibirsk'     => "Novosibirsk",
+				'Asia/Bangkok'         => "Bangkok",
+				'Asia/Jakarta'         => "Jakarta",
+				'Asia/Krasnoyarsk'     => "Krasnoyarsk",
+				'Asia/Chongqing'       => "Beijing",
+				'Asia/Hong_Kong'       => "Hong Kong",
+				'Asia/Kuala_Lumpur'    => "Kuala Lumpur",
+				'Australia/Perth'      => "Perth",
+				'Asia/Singapore'       => "Singapore",
+				'Asia/Taipei'          => "Taipei",
+				'Asia/Ulaanbaatar'     => "Ulaan Bataar",
+				'Asia/Urumqi'          => "Urumqi",
+				'Asia/Irkutsk'         => "Irkutsk",
+				'Asia/Seoul'           => "Seoul",
+				'Asia/Tokyo'           => "Tokyo",
+				'Australia/Adelaide'   => "Adelaide",
+				'Australia/Darwin'     => "Darwin",
+				'Asia/Yakutsk'         => "Yakutsk",
+				'Australia/Brisbane'   => "Brisbane",
+				'Australia/Canberra'   => "Canberra",
+				'Pacific/Guam'         => "Guam",
+				'Australia/Hobart'     => "Hobart",
+				'Australia/Melbourne'  => "Melbourne",
+				'Pacific/Port_Moresby' => "Port Moresby",
+				'Australia/Sydney'     => "Sydney",
+				'Asia/Vladivostok'     => "Vladivostok",
+				'Asia/Magadan'         => "Magadan",
+				'Pacific/Auckland'     => "Auckland",
+				'Pacific/Fiji'         => "Fiji"];
+	
 }

@@ -111,7 +111,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		
 		if (!($_SESSION['extranetUserID'] ?? false)) {
 			if (ze\priv::check()) {
-				echo ze\admin::phrase('You must be logged in as an Extranet User to see this Plugin.');
+				echo ze\admin::phrase('You must be logged in as an extranet user to see this plugin.');
 			}
 			return;
 		}

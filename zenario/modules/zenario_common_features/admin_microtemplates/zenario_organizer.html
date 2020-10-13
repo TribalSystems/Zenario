@@ -10,7 +10,9 @@
 					{{htmlspecialchars(zenarioA.siteSettings.organizer_title).replace(/\bOrganizer\b/gi, '<span class="organizer_name"><span>O</span>rganizer</span>')}}
 				</div>
 				
-				<div id="organizer_backButton" style="display: none;"></div>
+				<% if (zenarioA.isFullOrganizerWindow && !zenarioA.openedInIframe) { %>
+					<input id="organizer_whereWasThatThing_search" placeholder="{{zenarioA.phrase.wwttPlaceholder}}" />
+				<% } %>
 				
 				{{m.topRightHTML}}
 			</div>

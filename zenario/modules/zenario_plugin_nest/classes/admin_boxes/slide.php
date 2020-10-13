@@ -46,6 +46,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			$values['details/use_slide_layout'] = $details['use_slide_layout'];
 			$values['details/invisible_in_nav'] = $details['invisible_in_nav'];
 			$values['details/show_back'] = $details['show_back'];
+			$values['details/no_choice_no_going_back'] = $details['no_choice_no_going_back'];
 			$values['details/show_embed'] = $details['show_embed'];
 			$values['details/show_refresh'] = $details['show_refresh'];
 			$values['details/show_auto_refresh'] = $details['show_auto_refresh'];
@@ -160,7 +161,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		$fields['details/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
 		
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-			$fields['details/role_ids']['values'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
+			$fields['details/role_ids']['values'] = self::getRoleTypesIndexedByIdOrderedByName();
 		} else {
 			$fields['details/role_ids']['hidden'] =
 			$fields['details/privacy']['values']['with_role']['hidden'] = true;
@@ -275,6 +276,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			'always_visible_to_admins' => 1,
 			'use_slide_layout' => '',
 			'show_back' => 0,
+			'no_choice_no_going_back' => 0,
 			'show_embed' => $values['details/show_embed'],
 			'show_refresh' => 0,
 			'show_auto_refresh' => 0,
@@ -288,9 +290,12 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		}
 		
 		if ($box['key']['usesConductor']) {
-			$details['show_back'] = $values['details/show_back'];
 			$details['global_command'] = $values['details/global_command'];
 			$details['use_slide_layout'] = $values['details/use_slide_layout'] ?: '';
+			
+			if ($details['show_back'] = $values['details/show_back']) {
+				$details['no_choice_no_going_back'] = $values['details/no_choice_no_going_back'];
+			}
 			
 			if ($details['show_refresh'] = $values['details/show_refresh']) {
 				if ($details['show_auto_refresh'] = $values['details/show_auto_refresh']) {

@@ -89,6 +89,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				exit;
 			}
 		}
+		
 		// Scheduled publishing datetime option enabled
 		$pIdArr = [];
 		foreach($tags as $tagId){
@@ -101,7 +102,6 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			  AND published_datetime IS NULL AND publisher_id=0" ;
 		$checkIfPublish = ze\sql::select($checkIfPublishsql);
 		$getresult = ze\sql::fetchAssoc($checkIfPublish);
-	
 		if($getresult && $checkIfPublish)
 		{
 			if(sizeof($getresult)>1 )
@@ -113,10 +113,14 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					$values['publish/publish_hours'] = date('G', $sdate);
 					$values['publish/publish_mins'] = date('i', $sdate);
 					$values['publish/publish_date'] = date('Y-m-d',$sdate);
+					
+					$box['tabs']['publish']['notices']['scheduled_warning']['show'] = true;
+					$box['tabs']['publish']['notices']['scheduled_warning']['message'] = "This item is scheduled to be published at " .ze\admin::formatDateTime($getresult['scheduled_publish_datetime'],'vis_date_format_med').".";
 				
 			}
 			
 		}
+		
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

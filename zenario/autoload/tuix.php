@@ -1419,7 +1419,11 @@ class tuix {
 							}
 						
 							if (!isset($field[$currentValue])) {
-								$field[$currentValue] = '';
+								if (!$readOnly && isset($field['value'])) {
+									$field['current_value'] = $field['value'];
+								} else {
+									$field[$currentValue] = '';
+								}
 						
 							//Make sure that checkboxes are either 0 or 1, and catch the case where zeros were
 							//being treated as strings (which is bad because '0' == true in JavaScript).
@@ -1815,6 +1819,7 @@ class tuix {
 					
 						case 'placeholder':
 						case 'subtitle':
+						case 'missing_items_warning':
 						case 'no_items_message':
 						case 'item_count_message':
 						case 'title_for_existing_records':

@@ -1578,4 +1578,23 @@ _sql
     ADD COLUMN `active_timers` int(10) unsigned DEFAULT NULL AFTER `add_user_to_group`
 _sql
 
-);
+); 
+
+if (ze\dbAdm::needRevision(260)) {
+	// Delete any extra repeat-end fields caused by bug
+	$sql = '
+		SELECT u1.id
+		FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields u1
+		WHERE u1.field_type = "repeat_end" AND u1.repeat_start_id NOT IN (
+			SELECT u2.id
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields u2
+		)';
+	$result = ze\sql::select($sql);
+	while ($field = ze\sql::fetchAssoc($result)) {
+		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['id' => $field["id"]]);
+	}
+		
+	ze\dbAdm::revision(260);
+}
+
+

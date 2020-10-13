@@ -62,6 +62,10 @@ body.webkit input {
 	background:url('../admin/images/welcome/border-line-grey-white.gif') repeat-x bottom;
 }
 
+.welcome .welcome_header_logo > img {
+	max-height:60px;
+}
+
 /* Tables */
 
 .welcome #zenario_abtab {
@@ -256,6 +260,11 @@ body.webkit input {
 	max-height:300px;
 	overflow:auto;
 }
+
+.welcome .zenario_ab_row__multi_db_name div.zenario_show_on_open {
+	overflow:none;
+}
+
 .welcome table.revisions {
 	width:100%;
 	margin-left: auto;
@@ -343,11 +352,13 @@ body.webkit input {
 	line-height:30px;
 }
 
-.welcome .zenario_ab_row__host input#host {
+.welcome .zenario_ab_row__host input#host,
+.welcome .zenario_ab_row__multi_db_host #multi_db_host {
 	width: 300px;
 }
 
-.welcome .zenario_ab_row__host input#port {
+.welcome .zenario_ab_row__host input#port,
+.welcome .zenario_ab_row__multi_db_host #multi_db_port {
 	width: 80px;
 	margin-left: 12px;
 }
@@ -847,6 +858,7 @@ body.webkit input {
 
 .welcome h1,
 .welcome h2,
+.welcome h3,
 .welcome p {
 	padding:0;
 	margin:0;
@@ -859,6 +871,11 @@ body.webkit input {
 
 .welcome h2 {
 	font-size:16px;
+	font-weight:normal;
+}
+
+.welcome h3 {
+	font-size:15px;
 	font-weight:normal;
 }
 
@@ -892,6 +909,7 @@ body.webkit input {
 }
 
 .welcome h1,
+.welcome h3,
 .welcome #snippet__link a,
 .welcome .zenario_note_below a,
 .welcome div.thickbox_table #row__path_status div
@@ -1403,16 +1421,15 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover
 	background-position:0 2px;
 	background-size:auto 12px;
 	padding:0 0 0 15px !important;
+	color:#FFF;
 }
 
 #snippet__password_requirements ul li.fail {
 	background-image:url('../zenario/admin/images/icon-error.svg');
-	color:#E30000;
 }
 
 #snippet__password_requirements ul li.pass {
 	background-image:url('../zenario/admin/images/icon-tick-green-circle.svg');
-	color:#00AB00;
 }
 
 /* Tooltip wrap */

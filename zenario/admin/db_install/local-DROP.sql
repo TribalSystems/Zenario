@@ -84,6 +84,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristics`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_content_accesslog`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_content_link`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_country_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_form_fields`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_forms`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_perm_settings`;

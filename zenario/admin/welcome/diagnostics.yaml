@@ -213,7 +213,7 @@ diagnostics:
                     snippet:
                         html: |
                             curl extension enabled in PHP
-                            <br/><small>Needed for translating pages using Google Translate</small>
+                            <br/><small>Needed for translating pages using Google Translate and GeoIP services.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 optional_zip:
                     grouping: sub_table

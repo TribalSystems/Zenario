@@ -143,6 +143,14 @@ foreach ($rules as $rule) {
 				}
 			}
 			break;
+		case 'in_a_group':
+			
+			$descs[] = \ze\admin::phrase('Is a member of any group');
+			break;
+		case 'not_in_a_group':
+			
+			$descs[] = \ze\admin::phrase('Is not a member of any group');
+			break;		
 		case 'activity_band':
 			if($rule['activity_band_id']
 			&& $ZENARIO_USER_ACTIVITY_BANDS_PREFIX = \ze\module::prefix('zenario_user_activity_bands', $mustBeRunning = true)){

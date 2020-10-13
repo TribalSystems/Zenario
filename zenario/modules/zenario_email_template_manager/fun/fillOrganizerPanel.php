@@ -37,16 +37,7 @@ switch ($path) {
 					['email' => ze::setting('debug_override_email_address')]);
 		}
 		
-		if ($refinerName == 'module') {
-			$moduleDetails = ze\row::get('modules', ['display_name'], $refinerId);
-			$panel['title'] = ze\admin::phrase('Email Templates created by the module "[[display_name]]"', $moduleDetails);
-			$panel['no_items_message'] = ze\admin::phrase('There are no Email Templates created by the module "[[display_name]]"', $moduleDetails);
-			
-			// Hide collection buttons
-			$panel['collection_buttons']['create_template']['hidden'] = 
-			$panel['collection_buttons']['test']['hidden'] = true;
-		
-		} elseif ($refinerName == 'email_templates_using_image') {
+		if ($refinerName == 'email_templates_using_image') {
 			$mrg = ze\row::get('files', ['filename'], $refinerId);
 			$panel['title'] = ze\admin::phrase('Email templates using the image "[[filename]]"', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no email templates using the image "[[filename]]"', $mrg);
@@ -123,15 +114,27 @@ switch ($path) {
 			$template = self::getTemplateByCode($refinerId);
 			$panel['title'] = ze\admin::phrase('Emails sent using the template "[[template_name]]"', $template);
 		}
-
+		
 		foreach($panel['items'] as &$item) {
 			$item['cell_css_classes'] = [];
 			if ($item['status']=='success') {
-				$item['cell_css_classes']['status'] = 'zenario_email_template_manager_log__sent';
-				$item['status'] = ze\admin::phrase('Sent');
+				//To show debug mode 'On' in sent email log panel
+				if ($item['debug_mode_flag'] == 1){
+					$item['cell_css_classes']['status'] = 'zenario_email_template_manager_log__sent_debug_mode';
+					$item['status'] = ze\admin::phrase('Success (debug mode)');
+				} else { 
+					$item['cell_css_classes']['status'] = 'zenario_email_template_manager_log__sent';
+					$item['status'] = ze\admin::phrase('Sent');
+				}
 			} elseif ($item['status']=='failure') {
-				$item['cell_css_classes']['status'] = 'zenario_email_template_manager_log__failed';
-				$item['status'] = ze\admin::phrase('Failed Sending');
+				if ($item['debug_mode_flag'] == 1){
+					$item['cell_css_classes']['status'] = 'zenario_email_template_manager_log__failed';
+					$item['status'] = ze\admin::phrase('Failed (debug mode)');
+				} else { 
+					$item['cell_css_classes']['status'] = 'zenario_email_template_manager_log__failed';
+					$item['status'] = ze\admin::phrase('Failed Sending');
+				}
+				
 			}
 		}
 		break;

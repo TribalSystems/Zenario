@@ -1,0 +1,63 @@
+zenario_help_line: 
+    priv: _PRIV_EDIT_SITE_SETTING
+    key: 
+        id: ""
+        isHead: false
+        currentUrl: ""
+    hide_tab_bar: true
+    title: Zenario support line
+    max_height: "500"
+    save_button_message: "Send"
+    tabs: 
+        site: 
+            edit_mode: 
+                enabled: true
+                on: true
+                always_on: true
+            fields: 
+                desc:
+                    snippet:
+                        html: |
+                            <div class = "organizer_help_box"></div>
+                            <p>Enter your query below for support from our team</p>
+                            
+                            
+                name:
+                    label: "Your name:"
+                    type: text
+                    maxlength: "100"
+                    style: 'width: 25em;'
+                    validation:
+                        required: Please enter a name.
+                email:
+                    label: "Your email:"
+                    type: text
+                    maxlength: "200"
+                    validation:
+                        required: Please enter an Email Address.
+                        email: Please enter a valid Email Address.
+                current_url:
+                    label: 'Send the current URL'
+                    type: radios
+                    values:
+                        current_location:
+                            label: "I need help on the current view of the site "
+                            side_note: Organizer or front-end URL will be sent
+                        general_ques:
+                            label: "I have a general question"
+                    value: current_location
+                    format_onchange: true
+               
+                query_message:
+                    label: "Your query:"
+                    type: textarea
+                    dont_trim: true
+                    validation:
+                        required: Please enter your query.
+                    rows: 12
+                
+                
+                
+              
+               
+                

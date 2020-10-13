@@ -233,6 +233,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				email_name_from = '". ze\escape::sql($nameFrom). "',
 				attachment_present = ". (int) !empty($attachments). ",
 				sent_datetime = '". ze\escape::sql(ze\date::now()). "',
+				debug_mode = ". (int)ze::setting('debug_override_enable'). ",
 				`status` = '". ze\escape::sql($status? 'success' : 'failure'). "'";
 
 		if ($addressReplyTo) {

@@ -4,10 +4,12 @@ zenario__locations:
     ord: -890
     css_class: locations_top_level
     label: Locations
-    tooltip: "Model real-world places, addresses and organizations"
+    tooltip: Store data about real-world places, addresses and organizations
     nav:
         locations: 
             label: Locations
+            tooltip: Store data about real-world places, addresses and organizations
+            keywords: "geo, places, place, map"
             link:
                 path: zenario__locations/panel
         hierarchy:

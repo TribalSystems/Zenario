@@ -22,7 +22,7 @@ category: pluggable
 is_pluggable: true
 can_be_version_controlled: false
 nestable: true
-default_instance_name: Untitled Document Envelope
+default_instance_name: Document Envelope Container
 
 inheritance:
     include_javascript_from_module: zenario_abstract_fea

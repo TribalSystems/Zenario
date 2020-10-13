@@ -1,0 +1,2 @@
+In phpMQTT.php:
+	Replaced all array offsets that used curly brackets with square ones, as using curly brackets for this is deprecated

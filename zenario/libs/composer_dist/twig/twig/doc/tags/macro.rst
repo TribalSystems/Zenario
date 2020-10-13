@@ -128,7 +128,10 @@ The scoping rules are the same whether you imported macros via ``import`` or
 Imported macros are always **local** to the current template. It means that
 macros are available in all blocks and other macros defined in the current
 template, but they are not available in included templates or child templates;
-you need to explicitely re-import macros in each template.
+you need to explicitly re-import macros in each template.
+
+Imported macros are not available in the body of ``embed`` tags, you need
+to explicitly re-import macros inside the tag.
 
 When calling ``import`` or ``from`` from a ``block`` tag, the imported macros
 are only defined in the current block and they override macros defined at the
@@ -171,12 +174,10 @@ Named Macro End-Tags
 --------------------
 
 Twig allows you to put the name of the macro after the end tag for better
-readability:
+readability (the name after the ``endmacro`` word must match the macro name):
 
 .. code-block:: twig
 
     {% macro input() %}
         ...
     {% endmacro input %}
-
-Of course, the name after the ``endmacro`` word must match the macro name.

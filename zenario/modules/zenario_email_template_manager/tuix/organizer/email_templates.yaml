@@ -25,8 +25,6 @@ zenario__email_template_manager:
                 There are no email templates. Most modules that send emails will
                 create email templates when they are installed.
             refiners:
-                module:
-                    sql: M.id = [[REFINER_ID]]
                 email_templates_using_image:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]inline_images AS ii

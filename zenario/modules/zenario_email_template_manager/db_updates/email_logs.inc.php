@@ -201,3 +201,9 @@ ze\dbAdm::revision(135
 _sql
 
 );
+ze\dbAdm::revision(137
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log 
+	ADD COLUMN debug_mode tinyint DEFAULT 0 after `status`
+_sql
+);

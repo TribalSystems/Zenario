@@ -19,10 +19,10 @@ plugin_settings:
                     plugin_setting:
                         name: initial_email_address_status
                     values:
-                        not_verified:
-                            label: Require verification
                         verified:
                             label: Don't verify
+                        not_verified:
+                            label: Require verification
                     value: not_verified
                     format_onchange: true
                     side_note: >

@@ -7,11 +7,12 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Search Entry Box Predictive ProBusiness
 description: |
-             <p>This Plugin displays a Search Entry Box.</p>
+             <p>This module makes a plugin that displays a search entry box.</p>
+             <p>This is usually placed in a slot on a layout, so that it appears in most or all pages of a website.</p>
              <p>Visitors can enter text into the page, and then be taken to a search page in their language to display the results.</p>
-             <p>When entering a search phrase, the plugin displays a small dropdown panel which shows a limited number of matching entries to help you quickly refine your search.</p>
+             <p>When entering a search phrase, the plugin displays a small dropdown panel which shows a limited number of matching content items.</p>
              <p>The administrator can configure the dropdown panel by using the plugins setting: maximum entries displayed, maximum characters of content title displayed, maximum characters of content body displayed.</p>
-             <p>Note that this Plugin requires an Instance of the "Search Results" Plugin (or a compatible Plugin) placed on the default search page in order to work.</p>
+             <p>Note that this plugin requires that the zenario_search_results (Search Results) module is running and that its plugin is placed on the default search page.</p>
 category: pluggable
 keywords: find, lookup, predictive, search, type, typeahead
 

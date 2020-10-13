@@ -1,8 +1,23 @@
 <div id="organizer_rightColumnTitle" class="zenario_toolbar_header">
-	<div id="organizer_panelTitle"></div>
+	<div class="organizer_panelTitleWrapper">
+		<div id="organizer_backButton" style="display: none;"></div>
+		<div id="organizer_panelTitle"></div>
+		
+	</div>
+	<div class="viewMode toolbar secondToolbar">
+			<div
+				id="organizer_refreshRightColumn"
+				data-step="7" data-position="left" data-intro="
+					{{'<p><strong>Refresh</strong></p><p>This is a refresh button. Used to refresh a page to ensure changes are applied.</p>'|escape}}
+				"
+			>
+				<a onclick="zenarioO.reloadButton();" title="{{zenarioA.phrase.skRefreshView}}"></a>
+			</div>
+	</div>
+
 	<div id="organizer_topRightIcons"></div>
 	<div id="organizer_noticeBar"></div>
 </div>
-<div id="organizer_header" class="zenario_toolbar_header" onclick="zenarioO.closeInfoBox();"></div>
 <div id="organizer_buttons" class="organizer_rightColumnOptions_panel" onmouseover="zenarioO.closeInfoBox();"></div>
+<div id="organizer_header" class="zenario_toolbar_header" onclick="zenarioO.closeInfoBox();"></div>
 <div id="organizer_rightColumnContent" onmouseover="zenarioO.closeInfoBox();"></div>

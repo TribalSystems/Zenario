@@ -69,3 +69,4 @@ del.zenario_link_status__published_with_draft_401>del{background:url('../admin/i
 del.zenario_link_status__published_401>del{background:url('../admin/images/link_status/published-protected-v2.png') no-repeat center}del.zenario_link_status__published_403>del{background:url('../admin/images/link_status/published-403-v2.png') no-repeat center}
 del.zenario_link_status__spare_domain>del{background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center}del.zenario_link_status__spare_alias>del{background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center}
 del.zenario_link_status__menu_warning>del{background:url('../admin/images/icon-warning.svg') no-repeat center / 16px 16px}div.ace_editor[readonly] .ace_content{background-color:#e0e0e0}
+.zenario_inactive_mode{color:red}

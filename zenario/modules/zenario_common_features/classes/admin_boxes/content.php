@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
-
+use Aws\S3\S3Client;
 
 class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
@@ -297,17 +297,25 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$box['tabs']['categories']['hidden'] = true;
 				$box['tabs']['privacy']['hidden'] = true;
 				// Change code for Special page FAB
-				$specialpagesresult = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $content['equiv_id']]);
-				$pagetype =  explode("zenario_", $specialpagesresult['page_type']);
-				if($_GET['refinerName'] == 'special_pages'){
-				
-					$box['identifier']['label'] = 'This is a special page:';
-					$box['identifier']['value'] = str_replace("_"," ",$pagetype['1']).' page.';
-					
-					if($specialpagesresult['page_type']=='zenario_not_found' || $specialpagesresult['page_type']=='zenario_no_access'){
-						$fields['meta_data/no_menu_warning']['hidden'] = true;
-					}
+				$specialpagesresult = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $content['equiv_id'], 'content_type' =>$content['type']]);
+				$pagetype = '';
+				if ($specialpagesresult){
+					$pagetype = str_replace('_', ' ', ze\ring::chopPrefix('zenario_', $specialpagesresult['page_type'], true)); 
 				}
+				if($pagetype){
+						$fields['meta_data/special_page_message']['hidden'] = false;
+						$fields['meta_data/special_page_message']['snippet']['html']= 'This is a special page: '.$pagetype.' page';
+				}
+				if (array_key_exists("refinerName",$_GET)){
+					if($_GET['refinerName'] == 'special_pages'){
+
+						if($specialpagesresult['page_type']=='zenario_not_found' || $specialpagesresult['page_type']=='zenario_no_access'){
+							$fields['meta_data/no_menu_warning']['hidden'] = true;
+						}
+					}
+					
+				}
+				
 				//
 				$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
 			}
@@ -323,6 +331,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					true,
 					['id' => $box['key']['source_cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['source_cVersion']])
 			) {
+				
 				$values['meta_data/title'] = $version['title'];
 				$values['meta_data/description'] = $version['description'];
 				$values['meta_data/keywords'] = $version['keywords'];
@@ -339,6 +348,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['css/bg_position'] = $version['bg_position'];
 				$values['css/bg_repeat'] = $version['bg_repeat'];
 				$values['file/file'] = $version['file_id'];
+				$values['file/s3_file_id'] = $version['s3_file_id'];
+				$values['file/s3_file_name'] = $version['s3_filename'];
+				
+				
 		
 				if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {
 					$values['meta_data/lock_summary_view_mode'] =
@@ -555,7 +568,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 
 		if ($lockLanguageId) {
-			$box['tabs']['meta_data']['fields']['language_id']['readonly'] = true;
+			$box['tabs']['meta_data']['fields']['language_id']['show_as_a_span'] = true;
 		}
 
 
@@ -563,10 +576,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (isset($box['tabs']['content1'])) {
 			$i = 0;
 			$slots = [];
+			
+			$moduleIds = ze\module::id('zenario_wysiwyg_editor');
 			if ($box['key']['source_cID']
 			 && $box['key']['cType']
 			 && $box['key']['source_cVersion']
-			 && ($slots = ze\contentAdm::mainSlot($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], false, false))
+			 && ($slots = ze\contentAdm::mainSlot($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $moduleIds, false))
 			 && (!empty($slots))) {
 	
 				//Set the content for each slot, with a limit of four slots
@@ -577,7 +592,31 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$values['content'. $i. '/content'] =
 						ze\contentAdm::getContent($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $slot);
 					$fields['content'. $i. '/content']['pre_field_html'] =
-						'<div class="zfab_content_in">'. ze\admin::phrase('Content in [[slotName]]:', ['slotName' => $slot]). '</div>';
+						'<div class="zfab_content_in">'. ze\admin::phrase('Edit [[slotName]] (WYSIWYG area):', ['slotName' => $slot]). '</div>';
+				}
+			}
+		}
+		
+		//Attempt to load the raw html into the content tabs for each RAW HTML
+		if (isset($box['tabs']['rawhtml1'])) {
+			$i = 0;
+			$slots = [];
+			$moduleIds = ze\module::id('zenario_html_snippet');
+			if ($box['key']['source_cID']
+			 && $box['key']['cType']
+			 && $box['key']['source_cVersion']
+			 && ($slots = ze\contentAdm::mainSlot($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $moduleIds, false))
+			 && (!empty($slots))) {
+	
+				//Set the content for each slot, with a limit of four slots
+				foreach ($slots as $slot) {
+					if (++$i > 4) {
+						break;
+					}
+					$values['rawhtml'. $i. '/content'] =
+						ze\contentAdm::getContent($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $slot, 'zenario_html_snippet');
+					$fields['rawhtml'. $i. '/content']['pre_field_html'] =
+						'<div class="zfab_content_in">'. ze\admin::phrase('Edit [[slotName]] (Raw HTML):', ['slotName' => $slot]). '</div>';
 				}
 			}
 		}
@@ -601,12 +640,141 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if ($values['css/background_image'] || $values['css/bg_color'] || $values['css/bg_position'] || $values['css/bg_repeat']) {
 			$values['css/customise_background'] = true;
 		}
+		//To show history tab in content FAB
+		if($box['key']['id']){
+			$box['tabs']['history']['hidden'] = false;
+			$content = ze\row::get('content_items', true, ['tag_id' => $box['key']['id']]);
+			$sql = "SELECT version, created_datetime, 
+							(SELECT username FROM " . DB_PREFIX . "admins as a WHERE a.id = v.creating_author_id) as creating_author,
+							last_modified_datetime, 
+							(SELECT username FROM " . DB_PREFIX . "admins as a WHERE a.id = v.last_author_id) as last_author,
+							published_datetime,scheduled_publish_datetime,
+							(SELECT username FROM " . DB_PREFIX . "admins as a WHERE a.id = v.publisher_id) as publisher
+						FROM " . DB_PREFIX . "content_item_versions as v 
+						WHERE v.tag_id = '" . ze\escape::sql($box['key']['id']) . "'
+						ORDER BY v.version desc";
+			$result = ze\sql::select($sql);
+			if (ze\sql::numRows($result) > 0 ) {
+				
+				$fields['history/th_version']['hidden'] =
+				$fields['history/th_created']['hidden'] =
+				$fields['history/th_last_edited']['hidden'] =
+				$fields['history/th_status']['hidden'] =
+				$fields['history/th_published']['hidden'] =
+				$fields['history/th_comments']['hidden'] = false;
+				
+				
+				$fields['history/no_history_recorded']['hidden'] = true;
+				
+				$totalRowNum = 0;
+				while ($row = ze\sql::fetchAssoc($result)) {
+					++$totalRowNum;
+					$suffix = '__' . $totalRowNum;
+					
+					$values['history' . '/version' . $suffix] = $row['version'];
+					
+					$bycreating_author='';
+					$bypublisher='';
+					$bylast_author='';
+					
+					if($row['creating_author'])
+						$bycreating_author = ' by '.$row['creating_author'];
+				
+					if($row['last_author'])
+						$bylast_author = ' by '.$row['last_author'];
+					
+					if($row['publisher'])
+						$bypublisher = ' by '.$row['publisher'];
+
+					$values['history' . '/last_edited' . $suffix] = ze\admin::formatDateTime($row['last_modified_datetime'], 'vis_date_format_med').$bylast_author;
+					$values['history' . '/published' . $suffix] = ze\admin::formatDateTime($row['published_datetime'], 'vis_date_format_med').$bypublisher;
+					$values['history' . '/created' . $suffix]  = ze\admin::formatDateTime($row['created_datetime'],'vis_date_format_med').$bycreating_author;
+					$values['history' . '/status' . $suffix] = ze\contentAdm::getContentItemVersionStatus($content, $row['version']);
+					if($values['history' . '/status' . $suffix] == 'draft') {
+						if($content['lock_owner_id']) {
+							$admin_details = ze\admin::details($content['lock_owner_id']);
+							$values['history' . '/comments' . $suffix] = ze\admin::phrase('Locked by [[username]]', $admin_details);
+						}
+					}
+					if ($totalRowNum > 500) {
+						break;
+					}
+				}
+				
+			}
+			$changes = [];
+				ze\tuix::setupMultipleRows(
+					$box, $fields, $values, $changes, $filling = true,
+					$box['tabs']['history']['custom_template_fields'],
+					$totalRowNum,
+					$minNumRows = 0,
+					$tabName = 'history'
+				);
+			//To show warning message for locked content item in FAB	
+		   	if($content['lock_owner_id']) {
+				$box['tabs']['meta_data']['notices']['locked_warning']['show'] = true;
+				$admin_details = ze\admin::details($content['lock_owner_id']);
+
+				if(ze\admin::id() == $content['lock_owner_id'])
+				{
+					$box['tabs']['meta_data']['notices']['locked_warning']['message'] = ze\admin::phrase('This item is locked by you.');
+				}
+				else{
+					$box['tabs']['meta_data']['notices']['locked_warning']['message'] = ze\admin::phrase('This item is locked by [[username]].', $admin_details);
+				}
+			
+			}
+			//To show warning message for sheduled datetime content item in FAB
+			$checkIfPublishsql = "SELECT id,scheduled_publish_datetime from ". DB_PREFIX. "content_item_versions 
+					WHERE id IN (". $box['key']['cID']. ")
+			  AND scheduled_publish_datetime IS NOT NULL
+			  AND published_datetime IS NULL AND publisher_id=0" ;
+				$checkIfPublish = ze\sql::select($checkIfPublishsql);
+				$getresult = ze\sql::fetchAssoc($checkIfPublish);
+
+				if($getresult && $checkIfPublish)
+				{
+					if(sizeof($getresult)>0 )
+					{
+						$box['tabs']['meta_data']['notices']['scheduled_warning']['show'] = true;
+						$box['tabs']['meta_data']['notices']['scheduled_warning']['message'] = "This item is scheduled to be published at " .ze\admin::formatDateTime($getresult['scheduled_publish_datetime'],'vis_date_format_med').".";
+					}
+				}
+		
+		}
+		if (ze::setting('aws_s3_support')) {
+			$fields['file/file']['label']= 'Local file:';
+			$fields['file/s3_file_upload']['hidden']= false;
+			$maxUploadSize = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
+			if (ze\dbAdm::apacheMaxFilesize() < 5368706371) {
+				$maxS3UploadSize = $maxUploadSize;
+			} else {
+				$maxS3UploadSize = ze\file::fileSizeConvert(5368706371);
+			}
+			
+			$box['tabs']['file']['fields']['document_desc']['snippet']['html'] = ze\admin::phrase('Please upload a local file (for storage in Zenario\'s docstore), maximum size [[maxUploadSize]].',['maxUploadSize' => $maxUploadSize]); 
+			
+			$box['tabs']['file']['fields']['s3_document_desc']['snippet']['html'] = ze\admin::phrase('You can upload a related file for storage on AWS S3, maximum size [[maxS3UploadSize]].',['maxS3UploadSize' => $maxS3UploadSize]);
+		}
 	}
 	
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$box['tabs']['file']['hidden'] = true;
-
+		
+		if (ze::setting('aws_s3_support')) {
+			
+			if($values['file/s3_file_remove']) {
+				
+				$s3_file_upload = "<iframe id=\"s3_file_upload\" name=\"s3_file_upload\" src=\"" .ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.'zenario/s3FileUpload.php?cId='. $box['key']['cID'] .'&cType='. $box['key']['cType']. '&cVersion='. $box['key']['source_cVersion']."&remove=1\" style=\"border: none;\"></iframe>\n";
+			
+			} else {
+				$s3_file_upload = "<iframe id=\"s3_file_upload\" name=\"s3_file_upload\" src=\"" .ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.'zenario/s3FileUpload.php?cId='. $box['key']['cID'] .'&cType='. $box['key']['cType']. '&cVersion='. $box['key']['source_cVersion']."\" style=\"border: none;\"></iframe>\n";
+			}
+			
+			$fields['file/s3_file_upload']['snippet']['html'] = $s3_file_upload;
+		}
+				
 		if (!$box['key']['cID']) {
 			if ($values['meta_data/layout_id']) {
 				$box['key']['cType'] = ze\row::get('layouts', 'content_type', $values['meta_data/layout_id']);
@@ -763,17 +931,31 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$keywordsCounterHTML = str_replace('[[initial_characters_count]]', strlen($values['meta_data/keywords']) , $keywordsCounterHTML);
 		$box['tabs']['meta_data']['fields']['keywords']['post_field_html'] = $keywordsCounterHTML;
 		
-		
+		$WYSIWYGCount=0;
+		$RawCount=0;
 		//Set up content tabs (up to four of them), for each WYSIWYG Editor
 		if (isset($box['tabs']['content1'])) {
 			$i = 0;
 			$slots = [];
+			$rawslots = [];
 			if ($box['key']['source_cID']
 			 && $box['key']['cType']
 			 && $box['key']['source_cVersion']) {
-				$slots = ze\contentAdm::mainSlot($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], false, false, $values['meta_data/layout_id']);
+				// As per T11743 we need to show slot for more than one module ID 
+				
+				$rawmoduleIds = ze\module::id('zenario_html_snippet');
+				$rawslots = ze\contentAdm::mainSlot($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $rawmoduleIds, false, $values['meta_data/layout_id']);
+
+				$moduleIds = ze\module::id('zenario_wysiwyg_editor');
+				
+				
+				$slots = ze\contentAdm::mainSlot($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $moduleIds, false, $values['meta_data/layout_id']);
 			} else {
 				$slots = ze\layoutAdm::mainSlot($values['meta_data/layout_id'], false, false);
+			}
+			
+			if (!empty($slots)) {
+				$rawslot = sizeof($rawslots);
 			}
 
 			if (!empty($slots)) {
@@ -783,7 +965,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					}
 		
 					$box['tabs']['content'. $i]['hidden'] = false;
-					if (count($slots) == 1) {
+					if (count($slots) == 1 && $rawslot<1) {
 						$box['tabs']['content'. $i]['label'] = ze\admin::phrase('Main content');
 			
 					} elseif (strlen($slot) <= 20) {
@@ -792,40 +974,69 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					} else {
 						$box['tabs']['content'. $i]['label'] = substr($slot, 0, 8). '...'. substr($slot, -8);
 					}
+					$WYSIWYGCount++;
 					ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['content'. $i]['fields']['content']);
-			
-					if (ze\gridAdm::readLayoutCode($values['meta_data/layout_id'], $justCheck = true, $quickCheck = true)) {
-						$fields['content'. $i. '/thumbnail']['hidden'] = false;
-						$fields['content'. $i. '/thumbnail']['snippet']['html'] = '
-							<p style="text-align: center;">
-								<a>
-									<img src="'. htmlspecialchars(
-										ze\link::absolute(). 'zenario/admin/grid_maker/ajax.php?loadDataFromLayout='. (int) $values['meta_data/layout_id']. '&highlightSlot='. rawurlencode($slot). '&thumbnail=1&width=150&height=200'
-									). '" width="150" height="200" style="border: 1px solid black;"/>
-								</a>
-							</p>';
-			
-					} else {
-						$fields['content'. $i. '/thumbnail']['hidden'] = true;
-						$fields['content'. $i. '/thumbnail']['snippet']['html'] = '';
-					}
 				}
 			}
 			
-			// Hide dropdown if no content tabs are visible
-			if ($i <= 1) {
-				$box['tabs']['content_dropdown']['hidden'] = true;
-				if ($i == 1) {
-					unset($box['tabs']['content1']['parent']);
-				}
-			}
-			
+	
 			// Hide extra content tabs
 			while (++$i <= 4) {
 				$box['tabs']['content'. $i]['hidden'] = true;
-				$fields['content'. $i. '/thumbnail']['snippet']['html'] = '';
 			}
 		}
+		
+		//Set up content tabs (up to four of them), for each Raw HTML Snippets
+		if (isset($box['tabs']['rawhtml1'])) {
+			$i = 0;
+			$slots = [];
+			$moduleIds = ze\module::id('zenario_html_snippet');
+			if ($box['key']['source_cID']
+			 && $box['key']['cType']
+			 && $box['key']['source_cVersion']) {
+				$slots = ze\contentAdm::mainSlot($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $moduleIds, false, $values['meta_data/layout_id']);
+			} else {
+				$slots = ze\layoutAdm::mainSlot($values['meta_data/layout_id'], $moduleIds, false);
+			}
+
+			if (!empty($slots)) {
+				foreach ($slots as $slot) {
+					if (++$i > 4) {
+						break;
+					}
+
+					$box['tabs']['rawhtml'. $i]['hidden'] = false;
+					if (count($slots) == 1 && $WYSIWYGCount==0) {
+						$box['tabs']['rawhtml'. $i]['label'] = ze\admin::phrase('Main content');
+			
+					} elseif (strlen($slot) <= 20) {
+						$box['tabs']['rawhtml'. $i]['label'] = $slot;
+			
+					} else {
+						$box['tabs']['rawhtml'. $i]['label'] = substr($slot, 0, 8). '...'. substr($slot, -8);
+					}
+					$RawCount++;
+					ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['rawhtml'. $i]['fields']['content']);
+				}
+			}
+			
+
+			// Hide extra content tabs
+			while (++$i <= 4) {
+				$box['tabs']['rawhtml'. $i]['hidden'] = true;
+			}
+		}
+		// Hide dropdown if no content tabs are visible
+			$bothCount = $WYSIWYGCount+$RawCount;
+			if ($bothCount <= 1) {
+				$box['tabs']['content_dropdown']['hidden'] = true;
+				if ($bothCount == 1 ) {
+					unset($box['tabs']['rawhtml1']['parent']);
+					unset($box['tabs']['content1']['parent']);
+				}
+				
+			}
+		
 		if (isset($box['tabs']['meta_data']['fields']['content_summary'])) {
 			ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
 		}
@@ -884,6 +1095,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					 || ($existingText == $box['key']['last_title'])
 					 || ($existingText == htmlspecialchars($box['key']['last_title']))) {
 						$values['content1/content'] = '<h1>'. htmlspecialchars($values['meta_data/title']). '</h1>';
+					}
+				}
+				
+				//Check if there's a main content area
+				if (isset($box['tabs']['rawhtml1']['hidden'])
+				 && empty($box['tabs']['rawhtml1']['hidden'])) {
+					
+					//Check if the main content area is empty, or was set by this algorithm before.
+					if (empty($values['rawhtml1/content'])
+					 || !($existingText = trim(str_replace('&nbsp;', ' ', strip_tags($values['rawhtml1/content']))))
+					 || ($existingText == $box['key']['last_title'])
+					 || ($existingText == htmlspecialchars($box['key']['last_title']))) {
+						$values['rawhtml1/content'] = '<h1>'. htmlspecialchars($values['meta_data/title']). '</h1>';
 					}
 				}
 				
@@ -1022,7 +1246,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 			//Set the title
 			$version['title'] = $values['meta_data/title'];
-			
 			$version['description'] = $values['meta_data/description'];
 			$version['keywords'] = $values['meta_data/keywords'];
 			$version['release_date'] = $values['meta_data/release_date'];
@@ -1100,6 +1323,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			} else {
 				$version['file_id'] = $values['file/file'];
 			}
+			//To upload file on AWS s3 
+			if ($values['file/s3_file_id']) {
+					$version['s3_filename'] = $values['file/s3_file_name'];
+					$version['s3_file_id'] = $values['file/s3_file_id'];
+				} 
+				else {
+				$version['s3_file_id'] = $values['file/s3_file_id'];
+			}
+			
 		}
 		
 		$changes = !empty($version);
@@ -1114,7 +1346,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (isset($box['tabs']['content1'])
 		 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 			$i = 0;
-			$slots = ze\contentAdm::mainSlot($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], false, false, $values['meta_data/layout_id']);
+			$moduleIds = ze\module::id('zenario_wysiwyg_editor');
+			$slots = ze\contentAdm::mainSlot($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $moduleIds, false, $values['meta_data/layout_id']);
 
 			if (!empty($slots)) {
 				foreach ($slots as $slot) {
@@ -1125,6 +1358,28 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					if (!empty($box['tabs']['content'. $i]['edit_mode']['on'])) {
 						ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['content'. $i]['fields']['content']);
 						ze\contentAdm::saveContent($values['content'. $i. '/content'], $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $slot);
+						$changes = true;
+					}
+				}
+			}
+		}
+		
+		//Save the content tabs (up to four of them), for each RAW HTML
+		if (isset($box['tabs']['rawhtml1'])
+		 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
+			$i = 0;
+			$moduleIds = ze\module::id('zenario_html_snippet');
+			$slots = ze\contentAdm::mainSlot($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $moduleIds, false, $values['meta_data/layout_id']);
+
+			if (!empty($slots)) {
+				foreach ($slots as $slot) {
+					if (++$i > 4) {
+						break;
+					}
+			
+					if (!empty($box['tabs']['rawhtml'. $i]['edit_mode']['on'])) {
+						ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['rawhtml'. $i]['fields']['content']);
+						ze\contentAdm::saveContent($values['rawhtml'. $i. '/content'], $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $slot,'zenario_html_snippet');
 						$changes = true;
 					}
 				}
@@ -1216,7 +1471,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//Don't show the option to add a menu node when editing an existing content item...
 		if ($box['key']['cID']) {
 			
-			$fields['meta_data/create_menu_node']['readonly'] = true;
+			$fields['meta_data/create_menu_node']['hidden'] = true;
 			$values['meta_data/create_menu_node'] = '';
 			
 			if (
@@ -1233,8 +1488,31 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 			
 			if ($menu) {
+				$values['meta_data/menu_content_status'] = $content['status'];
+				//For top-level menu nodes, add a note to the "path" field to make it clear that it's
+				//at the top level
+				if ($menu['parent_id'] == 0) {
+					$fields['meta_data/path_of__menu_text_when_editing']['label'] = ze\admin::phrase('Path preview (top level):');
+					
+				}
+                //To show multilevel menu nodes "path"				
 				$values['meta_data/menu_id_when_editing'] = $menu['mID'];
 				$values['meta_data/menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load'] = $menu['name'];
+				if ($menu['parent_id'] > 0) {
+					$mPath = ze\menuAdm::pathWithSection($menu['id'], true);
+					$mPath = str_replace("Main ›","",$mPath);
+					$mpathArr = explode(' › ',$mPath);
+					$parentPath = explode( '› '.$menu['name'] ,$mPath);
+					//$parentNode= ze\row::getAssocs('menu_text', ['menu_id','name'], ['menu_id' => $menu['parent_id']]);
+					if(is_array($mpathArr) && $mpathArr){
+						$values['meta_data/parent_path_of__menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load']=$parentPath[0];
+						$values['meta_data/path_of__menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load'] = $mPath." [level ".count($mpathArr)."]";
+					}
+				}
+				else
+				{
+					$values['meta_data/path_of__menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load'] = $menu['name']." [level 1]";
+				}
 				$fields['meta_data/no_menu_warning']['hidden'] = true;
 			}
 		
@@ -1246,7 +1524,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$fields['meta_data/menu_pos_under'] =
 			$fields['meta_data/menu_pos_after'] =
 			$fields['meta_data/menu_pos_specific']['hidden'] = true;
-			$fields['meta_data/create_menu_node']['readonly'] = true;
+			$fields['meta_data/create_menu_node']['hidden'] = true;
 			$values['meta_data/create_menu_node'] = 1;
 		
 		} else {
@@ -1322,7 +1600,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 	
 	public function saveMenu(&$box, &$fields, &$values, $changes, $equivId) {
-		
+
 		if ($box['key']['cVersion'] == 1) {
 		
 			//If translating a content item with a menu node, add the translated menu text

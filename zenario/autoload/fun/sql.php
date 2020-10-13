@@ -78,6 +78,7 @@ if ($or) {
 }
 
 $i = 0;
+
 foreach ($rules as $rule) {
 	++$i;
 	
@@ -100,6 +101,7 @@ foreach ($rules as $rule) {
 	
 	switch ($typeOfCheck) {
 		
+		
 		//Handle rules on user-fields
 		case 'user_field':
 			
@@ -110,10 +112,11 @@ foreach ($rules as $rule) {
 			 && (\ze::in($field['type'], 'group', 'checkbox', 'consent', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 				
 				$hashed = !\ze::in($field['type'], 'group', 'checkbox', 'consent') && \ze::$dbL->columnIsHashed($field['is_system_field']? 'users' : 'users_custom_data', $field['db_column']);
-				
+
+
 				//Work out the table alias and column name
 				$col = "`". \ze\escape::sql($field['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". ($hashed? '#' : ''). \ze\escape::sql($field['db_column']). "`";
-		
+				
 				//If you filter by group, an "OR" logic containing multiple groups is allowed.
 				//Check if multiple groups have been picked...
 				$groups = [];
@@ -183,7 +186,65 @@ foreach ($rules as $rule) {
 			}
 			break;
 			
+		//Logic to handle in_a_group  
+		case 'in_a_group':
 		
+		$fieldgroups = \ze\row::getAssocs('custom_dataset_fields', 'db_column', ['type' => 'group']);
+		
+			if ( sizeof($fieldgroups) > 0 ) {
+				
+				$tableJoins .= "
+					". $leftOrInnerJoin. DB_PREFIX. "users_custom_data AS ucd_". $i. "
+					   ON ucd_". $i. ".user_id = `". \ze\escape::sql($usersTableAlias). "`.id";
+				if($or)
+					$and .= " OR ( ";
+				else
+					$and .= " AND ( ";
+				$ctr = 1;
+				foreach ($fieldgroups as $fieldgroup) {
+					if($ctr == sizeof($fieldgroups))
+						$and .= " ucd_". $i. ".".$fieldgroup." = 1 ";
+					else
+						$and .= " ucd_". $i. ".".$fieldgroup." = 1 OR ";
+					$ctr++;
+				}
+				$and .= " ) ";
+				//$firstAndOr = false;
+				$valid = true;
+
+			}
+			break;
+		//Logic to handle not_in_a_group  
+		case 'not_in_a_group':
+		
+		$fieldgroups = \ze\row::getAssocs('custom_dataset_fields', 'db_column', ['type' => 'group']);
+		
+			if ( sizeof($fieldgroups) > 0 ) {
+				
+				$tableJoins .= "
+					". $leftOrInnerJoin. DB_PREFIX. "users_custom_data AS ucd_". $i. "
+					   ON ucd_". $i. ".user_id = `". \ze\escape::sql($usersTableAlias). "`.id";
+
+				if($or)
+					$and .= " OR ( ";
+				else
+					$and .= " AND ( ";
+				
+				$notCtr = 1;
+				foreach ($fieldgroups as $fieldgroup) {
+					if($notCtr == sizeof($fieldgroups))
+						$and .= " ucd_". $i. ".".$fieldgroup." = 0 ";
+					else
+						$and .= " ucd_". $i. ".".$fieldgroup." = 0 AND ";
+					$notCtr++;
+				}
+				$and .= " ) ";
+				//$firstAndOr = false;
+				$valid = true;
+
+			}
+			break;
+			
 		//Logic to handle location permissions, and roles at locations
 		case 'role':
 			
@@ -250,6 +311,7 @@ foreach ($rules as $rule) {
 	} else {
 		$hadNoRules = false;
 	}
+	//echo "test" .$check;
 }
 
 //Catch the case where there were no valid rules.

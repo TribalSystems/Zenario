@@ -57,13 +57,20 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		if ($this->setting('show_date') && $this->setting('date_format')){
 			$dates = ze\row::get('content_item_versions', ['release_date'], ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion]);
 			if ($releaseDate = ze\date::format($dates['release_date'], $this->setting('date_format'))) {
-				$this->mergeFields['Date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('date_html_tag'), 'label' => 'Release date', 'class' => 'release_date'];
+				$this->mergeFields['Date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('date_html_tag'), 'label' => $this->phrase('Release date'), 'class' => 'release_date'];
 				$this->showSections['show_date'] = true;
+			}
+		}
+		if ($this->setting('show_published_date') && $this->setting('published_date_format')){
+			$pDates = ze\row::get('content_item_versions', ['published_datetime'], ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion]);
+			if ($publishedDate = ze\date::format($pDates['published_datetime'], $this->setting('published_date_format'))) {
+				$this->mergeFields['Published_date'] = ['value' => $publishedDate, 'html_tag' => $this->setting('published_date_html_tag'), 'label' => $this->phrase('Published date'), 'class' => 'published_date'];
+				$this->showSections['show_published_date'] = true;
 			}
 		}
 		if ($this->setting('show_writer_name')){
 			if ($writerName = ze\row::get('content_item_versions', 'writer_name', ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion])){
-				$this->mergeFields['Writer_name'] = ['value' => htmlspecialchars($writerName), 'html_tag' => $this->setting('writer_name_html_tag'), 'label' => 'Writer name', 'class' => 'writer_name'];
+				$this->mergeFields['Writer_name'] = ['value' => htmlspecialchars($writerName), 'html_tag' => $this->setting('writer_name_html_tag'), 'label' => $this->phrase('Writer name'), 'class' => 'writer_name'];
 				$this->showSections['show_writer_name'] = true;
 			}
 		}
@@ -84,7 +91,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$width = $height = $url = false;
 				ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
 				if ($url) {
-					$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => 'Writer image', 'class' => 'writer_image'];
+					$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => $this->phrase('Writer image'), 'class' => 'writer_image'];
 					$this->showSections['show_writer_image'] = true;
 				}
 			}
@@ -104,44 +111,44 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$width = $height = $url = false;
 				ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('sticky_image_width'), $this->setting('sticky_image_height'), $this->setting('sticky_image_canvas'), $this->setting('sticky_image_offset'));
 				if ($url) {
-					$this->mergeFields['Sticky_image'] = ['Sticky_Image_Src' => $url, 'Sticky_Image_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('sticky_image_label_html_tag'), 'label' => 'Featured image', 'class' => 'sticky_image'];
+					$this->mergeFields['Sticky_image'] = ['Sticky_Image_Src' => $url, 'Sticky_Image_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('sticky_image_label_html_tag'), 'label' => $this->phrase('Featured image'), 'class' => 'sticky_image'];
 					$this->showSections['show_sticky_image'] = true;
 				}
 			}
 		}
 		
 		if ($this->setting('show_title')){
-			if ($this->mergeFields['Title'] = ['value' => htmlspecialchars(ze::$pageTitle), 'html_tag' => $this->setting('title_html_tag'), 'label' => 'Page title', 'class' => 'page_title']){
+			if ($this->mergeFields['Title'] = ['value' => htmlspecialchars(ze::$pageTitle), 'html_tag' => $this->setting('title_html_tag'), 'label' => $this->phrase('Page title'), 'class' => 'page_title']){
 				$this->showSections['show_title'] = true;
 			}
 		}
 		if ($this->setting('show_description')){
 			if (!empty($description = htmlspecialchars(ze::$pageDesc))) {
-				$this->mergeFields['Description'] = ['value' => $description, 'html_tag' => $this->setting('description_html_tag'), 'label' => 'Page description', 'class' => 'page_description'];
+				$this->mergeFields['Description'] = ['value' => $description, 'html_tag' => $this->setting('description_html_tag'), 'label' => $this->phrase('Page description'), 'class' => 'page_description'];
 				$this->showSections['show_description'] = true;
 			}
 		}
 		if ($this->setting('show_summary')){
 			$row = ze\row::get('content_item_versions', ['content_summary'], ['id'=>$this->cID, 'version' => $this->cVersion, 'type' => $this->cType]);
 			if (!empty($row['content_summary'])) {
-				$this->mergeFields['Summary'] = ['value' => $row['content_summary'], 'html_tag' => $this->setting('summary_html_tag'), 'label' => 'Page summary', 'class' => 'page_summary'];
+				$this->mergeFields['Summary'] = ['value' => $row['content_summary'], 'html_tag' => $this->setting('summary_html_tag'), 'label' => $this->phrase('Page summary'), 'class' => 'page_summary'];
 				$this->showSections['show_summary'] = true;
 			}
 		}	
 		if ($this->setting('show_keywords')){
 			if (!empty($keywords = htmlspecialchars(ze::$pageKeywords))) {
-				$this->mergeFields['Keywords'] = ['value' => $keywords, 'html_tag' => $this->setting('keywords_html_tag'), 'label' => 'Keywords', 'class' => 'keywords'];
+				$this->mergeFields['Keywords'] = ['value' => $keywords, 'html_tag' => $this->setting('keywords_html_tag'), 'label' => $this->phrase('Keywords'), 'class' => 'keywords'];
 				$this->showSections['show_keywords'] = true;
 			}
 		}	
 		if ($this->setting('show_language')){
-			if ($this->mergeFields['Language'] = ['value' => htmlspecialchars(ze::$langId), 'html_tag' => $this->setting('language_html_tag'), 'label' => 'Language code', 'class' => 'language_code']){
+			if ($this->mergeFields['Language'] = ['value' => htmlspecialchars(ze::$langId), 'html_tag' => $this->setting('language_html_tag'), 'label' => $this->phrase('Language code'), 'class' => 'language_code']){
 				$this->showSections['show_language'] = true;
 			}
 		}	
 		
 		if ($this->setting('show_language_name')) {
-			$this->mergeFields['Language_name'] = ['value' => ze\lang::localName(), 'html_tag' => $this->setting('language_name_html_tag'), 'label' => 'Language', 'class' => 'language'];
+			$this->mergeFields['Language_name'] = ['value' => ze\lang::localName(), 'html_tag' => $this->setting('language_name_html_tag'), 'label' => $this->phrase('Language'), 'class' => 'language'];
 			$this->showSections['show_language_name'] = true;
 		}
 		
@@ -157,13 +164,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$this->showSections['categories'][] = $section;
 			}
 			
-			$separator = $this->phrase('_CATEGORY_SEPARATOR');
-			foreach ($this->showSections['categories'] as $i => &$section) {
-				if ($i != $c) {
-					$section['Separator'] = $separator;
-				}
-			}
-			$this->mergeFields['Categories'] = ['html_tag' => $this->setting('categories_html_tag'), 'label' => 'Categories', 'class' => 'categories'];
+			$this->mergeFields['Categories'] = ['html_tag' => $this->setting('categories_html_tag'), 'label' => $this->phrase('Categories'), 'class' => 'categories'];
 		}
 		
 		$this->mergeFields['content'] = [];
@@ -183,6 +184,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			case 'plugin_settings':
 
 				$fields['first_tab/date_format']['hidden'] = !$values['first_tab/show_date'];
+				$fields['first_tab/published_date_format']['hidden'] = !$values['first_tab/show_published_date'];
 				
 				$hidden = !$values['first_tab/show_writer_image'];
 				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
@@ -205,6 +207,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				
 				//All available fields in Details tab
 				$availableFields = ['show_date',
+									'show_published_date',
 									'show_title',
 									'show_description',
 									'show_summary',
@@ -252,9 +255,13 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				
 				//Only process fields selected on Details page
 				foreach($metaData as $field) {
-					if($values[$field] == 1) {
-						$fieldsInOrder[$field] = $fieldsWithNiceNames[$field];
+					if($field)
+					{
+						if($values[$field] == 1) {
+							$fieldsInOrder[$field] = $fieldsWithNiceNames[$field];
+						}
 					}
+						
 				}
 				
 				//If a previously unselected field has been selected now, add it

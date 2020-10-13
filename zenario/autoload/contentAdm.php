@@ -1429,18 +1429,18 @@ class contentAdm {
 		switch ($privacy) {
 			case 'public':
 				return \ze\admin::phrase('Public, visible to everyone');
+			case 'logged_in':
+				return \ze\admin::phrase('Private, only show to extranet users');
+			case 'group_members':
+				return \ze\admin::phrase('Private, only show to extranet users in group(s)...');
+			case 'with_role':
+				return \ze\admin::phrase('Private, only show to extranet users with role...');
+			case 'in_smart_group':
+				return \ze\admin::phrase('Private, only show to extranet users in smart group...');
+			case 'logged_in_not_in_smart_group':
+				return \ze\admin::phrase('Private, only show to extranet users NOT in smart group...');
 			case 'logged_out':
 				return \ze\admin::phrase('Public, only show to visitors who are NOT logged in');
-			case 'logged_in':
-				return \ze\admin::phrase('Private, only show to extranet users who are logged in');
-			case 'group_members':
-				return \ze\admin::phrase('Private, only show to extranet users in a given group...');
-			case 'with_role':
-				return \ze\admin::phrase('Private, only show to extranet users with a given role...');
-			case 'in_smart_group':
-				return \ze\admin::phrase('Private, only show to extranet users in a given smart group...');
-			case 'logged_in_not_in_smart_group':
-				return \ze\admin::phrase('Private, only show to extranet users NOT in a given smart group...');
 			case 'call_static_method':
 				return \ze\admin::phrase("Call a module's static method to decide");
 			case 'send_signal':
@@ -1736,9 +1736,11 @@ class contentAdm {
 	public static function mainSlot($cID, $cType, $cVersion, $moduleId = false, $limitToOne = true, $forceLayoutId = false) {
 	
 		if (!$moduleId) {
-			$moduleId = \ze\module::id('zenario_wysiwyg_editor');
+			$moduleId = [\ze\module::id('zenario_wysiwyg_editor')];
+
+		} elseif (!is_array($moduleId)) {
+			$moduleId = [$moduleId];
 		}
-	
 		$sql = "
 			SELECT tsl.slot_name
 			FROM ". DB_PREFIX. "content_item_versions AS v
@@ -1758,7 +1760,7 @@ class contentAdm {
 			WHERE v.id = ". (int) $cID. "
 			  AND v.type = '". \ze\escape::sql($cType). "'
 			  AND v.version = ". (int) $cVersion. "
-			  AND IFNULL(piil.module_id, pitl.module_id) = ". (int) $moduleId. "
+			  AND IFNULL(piil.module_id, pitl.module_id) in (". \ze\escape::in($moduleId, true). ") 
 			  AND IFNULL(piil.instance_id, pitl.instance_id) = 0
 			GROUP BY tsl.slot_name
 			ORDER BY
@@ -1772,7 +1774,7 @@ class contentAdm {
 			$sql .= "
 				LIMIT 1";
 		}
-	
+
 		$slots = [];
 		$result = \ze\sql::select($sql);
 		while ($row = \ze\sql::fetchAssoc($result)) {

@@ -445,5 +445,20 @@ class zenario_country_manager extends ze\moduleBaseClass {
 		if (ze::$isTwig) return;
 		require ze::funIncPath(__FILE__, __FUNCTION__);
  	}
+ 	
+ 	
+	
+	public static function requestVarMergeField($name) {
+		switch ($name) {
+			case 'name':
+				return self::getCountryName(ze::$vars['countryId']);
+			}
+	}
+	public static function requestVarDisplayName($name) {
+		switch ($name) {
+			case 'name':
+				return 'Country name';
+		}
+	}
 }
 

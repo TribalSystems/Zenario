@@ -165,6 +165,12 @@ methods.returnMultipleSelectEnabled = function() {
 };
 
 
+//Whether to show the "where was that thing" search box when this type of panel is visible.
+methods.returnShowWWTTSearch = function() {
+	return true;
+};
+
+
 //Whether to enable searching on a panel
 methods.returnSearchingEnabled = function() {
 	

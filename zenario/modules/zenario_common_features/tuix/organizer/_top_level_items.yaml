@@ -11,13 +11,26 @@ dummy_item:
             title: Loading...
             no_items_message: Loading...
 
+zenario__organizer:
+    ord: -999
+    css_class: zenario_cms_core_organizer
+    hide_in_frontend: true
+    label: Organizer start page
+    tooltip: "Organizer is the under-the-hood view of your site, and lets you access everything in one central place"
+    nav:
+        start_page:
+            css_class: start_page hidden_nav_link_in_backend
+            label: Organizer start page
+            tooltip: ''
+            link:
+                path: zenario__organizer/panels/start_page
 zenario__content:
     ord: -990
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_content
     label: Content items
-    tooltip: "Create and manage your version-controlled content: HTML pages, news, blogs and other types"
+    tooltip: "Create version-controlled content: HTML pages, news, blogs and more"
     panel:
         loading_message:
             no_items_message: Loading...
@@ -25,14 +38,14 @@ zenario__content:
         special:
             css_class: special_content_published
             label: Special pages
-            tooltip: Non-trashable HTML pages including the home page, not-found and other essentials
+            tooltip: HTML pages including the home page, not-found (404) and other essential content items that cannot be trashed.
             link:
                 path: zenario__content/panels/content
                 refiner: special_pages
         work_in_progress:
             css_class: content_draft
-            label: Work in progress
-            tooltip: View all draft content items
+            label: Draft content items
+            tooltip: View all draft content items, being editing by any administrator
             link:
                 path: zenario__content/panels/content
                 refiner: work_in_progress
@@ -56,20 +69,20 @@ zenario__content:
                 path: zenario__content/panels/content/refiners/trash////
         categories:
             label: Categories
-            tooltip: Hierarchical categorization of content items
+            tooltip: When listing content items in a Content Summary List, they can be filtered by category. Create categories & sub-categories.
             link:
                 path: zenario__content/panels/categories
         image_library:
             label: Image library
             tooltip: |
-                View the images in your site's image library
+                Images on all content items are stored in a central library, even if not currently used. Manage images here.
             link:
                 path: zenario__content/panels/image_library
     data-step: 11
     data-position: right
     data-intro: >
         <p><strong>Content items</strong></p>
-        <p>Create and modify all content items, including HTML pages, news, documents, vacancies etc.</p>
+        <p>Create content items, including HTML pages, news, documents, vacancies etc.</p>
 zenario__menu:
     youtube_video_id: r6otMwh7EVw
     youtube_thumbnail_title: 'Zenario CMS: Menu navigation quick-start guide'
@@ -79,7 +92,8 @@ zenario__menu:
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_menu
     label: Menu navigation
-    tooltip: View your site in according to its navigation hierarchy, and edit the text and structure of the menu.
+    tooltip: >
+            View and edit the site's menu navigation hierarchy
     nav: {}
     data-step: 12
     data-position: right
@@ -91,13 +105,14 @@ zenario__documents:
     priv: _PRIV_VIEW_DOCUMENTS
     css_class: zenario_cms_core_documents
     label: Documents
-    tooltip: 'Create and manage documents'
+    tooltip: Documents arranged in folders, which can be public or private, for public sharing or extranet protection
     youtube_video_id: jR8CDnaoMSo
     youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
     nav:
         documents:
             priv: _PRIV_VIEW_DOCUMENTS
             label: Documents
+            tooltip: Documents arranged in folders, which can be public or private, for public sharing or extranet protection
             link:
                 path: zenario__content/panels/documents
         document_tags:
@@ -112,14 +127,13 @@ zenario__users:
     ord: -790
     priv: _PRIV_VIEW_ADMIN
     css_class: zenario_cms_core_users
-    label: Users
-    tooltip: 'Manage administrators - people who can edit this site'
+    label: Users & contacts
     nav:
         administrators:
             ord: "99"
             priv: _PRIV_VIEW_ADMIN
             label: Administrators
-            tooltip: 'Manage administrators - people who can edit this site'
+            tooltip: 'Manage Zenario administrators - people who can edit this site'
             link:
                 path: zenario__users/panels/administrators
 
@@ -128,19 +142,21 @@ zenario__layouts:
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_templates
-    label: Layout
+    label: Layouts
     tooltip: >
-        Configure layouts and skins, to control the
-        look and feel of your site
+        Create and edit layouts with Gridmaker, edit CSS
     nav:
         layouts:
-            label: Available layouts
+            label: Layouts
             tooltip: |
                 The layouts used to define the layout of your site, and the assignment of plugins in slots
+            keywords: "grid, gridmaker, template, design, page"
             link:
                 path: zenario__layouts/panels/layouts
         archived_layouts:
             label: Archived layouts
+            tooltip: |
+                Layouts that shouldn't be used for new content items, but which may still be in use
             link:
                 path: zenario__layouts/panels/layouts
                 refiner: archived
@@ -150,6 +166,7 @@ zenario__layouts:
             css_class: skin
             label: Skins
             tooltip: Skins, the styling and appearance of your site
+            keywords: "CSS, layout, font, style"
             link:
                 path: zenario__layouts/panels/template_families
 zenario__modules:
@@ -193,7 +210,7 @@ zenario__languages:
     css_class: zenario_cms_core_languages
     label: International
     tooltip: >
-        Configure languages, visitor phrases and the country database
+        Add languages, edit translated phrases, manage lookup tables
     nav:
         languages:
             label: Languages
@@ -216,7 +233,7 @@ zenario__administration:
     css_class: zenario_cms_core_administration
     label: Configuration
     tooltip: >
-        Configure site settings, backups, URLs and other features of your site
+        Manage site settings, datasets, URLs, redirects, backups, and more
     nav:
         site_settings:
             priv: _PRIV_VIEW_SITE_SETTING
@@ -238,7 +255,8 @@ zenario__administration:
                 path: zenario__content/panels/content_types
         custom_datasets:
             label: Datasets
-            tooltip: Manage custom datasets
+            tooltip: Datasets are mini-databases inside Zenario, with customisable schemas
+            keywords: "Database, record, lookup, data, file, spreadsheet, field, column"
             link:
                 path: zenario__administration/panels/custom_datasets
         spare_domains:

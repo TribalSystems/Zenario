@@ -3,12 +3,12 @@
 		{{m.css_class|escape}}
 		{{m.disabled? 'organizer_button_disabled' : ''}}
 	">
-		<% if (m.itemCSSClass) { %>
+		<% if (m.isFirstButton) { %>
 			<div class="organizer_item_toolbar_image">
-				<div class="listicon organizer_item_image {{m.itemCSSClass|escape}}">
+				<div class="listicon organizer_item_image">
 					<div class="organizer_items_selected">
 						<% if (m.itemsSelected > 1) { %>
-							{{m.itemsSelected}} items
+							<span class="zenario_items_count">{{m.itemsSelected}}</span>
 						<% } %>
 					</div>
 				</div>

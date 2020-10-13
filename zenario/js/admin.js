@@ -1325,17 +1325,18 @@ zenarioA.showPlugin = function(el, slotName) {
 //Callback function for refreshPluginSlot()
 zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp, scriptsToRunBefore) {
 	
-	var containerId = plgslt_ + slotName,
+	var script,
+		containerId = plgslt_ + slotName,
 		flags = resp.flags,
 		moduleId = 1*flags.MODULE_ID,
+		isMenu = flags.IS_MENU;
 		isVersionControlled = flags.WIREFRAME,
 		beingEdited = flags.IN_EDIT_MODE,
 		className = flags.NAMESPACE,
 		layoutPreview = flags.LAYOUT_PREVIEW,
 		slotControls = flags.SLOT_CONTROLS,
 		slotControlsCSSClass = flags.SLOT_CONTROLS_CSS_CLASS,
-		domLayoutPreview = get(containerId + '-layout_preview'),
-		script;
+		domLayoutPreview = get(containerId + '-layout_preview');
 	
 	if (moduleId && (!window[className] || _.isEmpty(window[className].slots))) {
 		zenario.addPluginJavaScript(moduleId);
@@ -1386,7 +1387,7 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 	get('zenario_fbAdminSlotControlsContents-' + slotName).innerHTML = slotControls;
 	
 	//Set the current instance id
-	zenario.slot([[slotName, instanceId, moduleId, level, slideId, undefined, beingEdited, isVersionControlled]]);
+	zenario.slot([[slotName, instanceId, moduleId, level, slideId, undefined, beingEdited, isVersionControlled, isMenu]]);
 	
 	
 	//Set tooltips for the area, if we are using tooltips
@@ -3239,7 +3240,36 @@ zenarioA.init = function(
 //Calculate function short names, we need to do this before calling any functions!
 zenario.shrtNms(zenarioA);
 
-
+//Show the thickbox for editing the instance in the slot, if there is one
+zenarioA.adminSlotWrapperClick = function(slotName, tab) {
+	
+	var slotMeta = zenario.slots[slotName];
+	
+	if (zenarioA.toolbar == 'preview' || zenarioA.toolbar == 'create') {
+		return;
+	}
+	else {	
+		if(slotMeta.isVersionControlled == true)
+		{
+			if(zenarioA.toolbar != 'edit' ){
+				zenarioAT.clickTab('edit');
+			}
+			else if(zenarioA.toolbar == 'edit'){
+			return;
+			}
+			
+		}
+		else if((zenarioA.toolbar != 'menu1' || zenarioA.toolbar == 'menu1')&& slotMeta.isMenu == true)
+			zenarioAT.clickTab('menu1');
+		else if((zenarioA.toolbar != 'layout' || zenarioA.toolbar == 'layout' )&& slotMeta.level == 2)
+			zenarioAT.clickTab('layout');
+		else
+			zenarioAT.clickTab('item');
+		
+		
+		return true;
+	}
+};
 
 
 });

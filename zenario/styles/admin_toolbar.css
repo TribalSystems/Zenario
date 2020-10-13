@@ -1211,7 +1211,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	-webkit-border-radius: 2px;
 	-moz-border-radius: 2px;
 	border-radius: 2px;
-	width:44%;
 	width:calc(44% - 12px);
 	color:#000;
 	font-size:11px;

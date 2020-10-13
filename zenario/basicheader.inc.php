@@ -206,8 +206,8 @@ class ze {
 			return true;
 		}
 		
-		if (!ze::$eSent && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
-			ze\db::reportError($errstr, 'in '. $errfile, 'at line '. $errline, '', '', 'PHP error at ');
+		if (!ze::$eSent) {
+			ze\db::reportError('PHP error at', $errstr, 'in '. $errfile, 'at line '. $errline);
 		}
 		
 		ze::$eSent = true;

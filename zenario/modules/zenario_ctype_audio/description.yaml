@@ -30,6 +30,7 @@ content_types:
         default_template_name: Audio Layout
         enable_summary_auto_update: false
         description_field: optional
+        tooltip_text: Audio files, so you can put podcasts and other audio material on your site
         keywords_field: hidden
         summary_field: optional
         release_date_field: optional

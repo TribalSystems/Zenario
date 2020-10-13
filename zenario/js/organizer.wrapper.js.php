@@ -60,6 +60,7 @@ ze\cache::incJS('zenario/js/panel_type_hierarchy');
 ze\cache::incJS('zenario/js/panel_type_hierarchy_with_lazy_load');
 ze\cache::incJS('zenario/js/panel_type_hierarchy_documents');
 ze\cache::incJS('zenario/js/panel_type_slot_reload_on_change');
+ze\cache::incJS('zenario/js/panel_type_start_page');
 
 ze\cache::incJS('zenario/js/panel_type_google_map');
 ze\cache::incJS('zenario/js/panel_type_google_map_or_list');

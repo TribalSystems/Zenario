@@ -81,6 +81,18 @@ zenario__users:
                     css_class: zenario_create_a_new
                     label: Create a smart group...
                     
+                perms:
+                    parent: create_dropdown
+                    priv: _PRIV_MANAGE_GROUP
+                    hide_on_filter: true
+                    hide_in_select_mode: true
+                    css_class: zenario_create_a_new
+                    label: Create a smart group
+                    admin_box:
+                        path: zenario_smart_group
+                        key:
+                            intended_usage: smart_permissions_group
+                    
                 lists:
                     parent: create_dropdown
                     priv: _PRIV_MANAGE_GROUP
@@ -93,17 +105,7 @@ zenario__users:
                         key:
                             intended_usage: smart_newsletter_group
                     
-                perms:
-                    parent: create_dropdown
-                    priv: _PRIV_MANAGE_GROUP
-                    hide_on_filter: true
-                    hide_in_select_mode: true
-                    css_class: zenario_create_a_new
-                    label: Create a smart permissions group
-                    admin_box:
-                        path: zenario_smart_group
-                        key:
-                            intended_usage: smart_permissions_group
+                
                 help:
                     label: Help
                     help:

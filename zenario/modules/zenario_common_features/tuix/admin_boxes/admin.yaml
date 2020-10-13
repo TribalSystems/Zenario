@@ -28,32 +28,20 @@ zenario_admin:
                     full_width: true
                     snippet:
                         html: ''
-                image:
-                    label: 'Image:'
-                    upload:
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
-                username:
-                    label: 'Administrator username:'
-                    type: text
-                    maxlength: "50"
-                    style: 'width: 20em;'
-                    validation:
-                        required: Please enter a username.
-                        username: The username may not contain any special characters.
-                        no_spaces: >
-                            The username may not contain any spaces. Please use
-                            underscores or remove the spaces.
                 first_name:
                     label: 'First Name:'
                     type: text
                     maxlength: "100"
                     style: 'width: 25em;'
+                    onchange: |
+                        if (zenarioAB.tuix.key && !zenarioAB.tuix.key.id) {
+                            var fName = $('#first_name').val();
+                            var lName = $('#last_name').val();
+                            var lastChar = lName.charAt(0)
+                            var userFName = fName.toLowerCase();
+                            var userLName = lastChar.toLowerCase();
+                            $('#username').val(userFName + userLName);
+                        }
                     validation:
                         required: Please enter a First Name.
                 last_name:
@@ -61,8 +49,30 @@ zenario_admin:
                     type: text
                     maxlength: "100"
                     style: 'width: 25em;'
+                    onchange: |
+                        if (zenarioAB.tuix.key && !zenarioAB.tuix.key.id) {
+                            var fName = $('#first_name').val();
+                            var lName = $('#last_name').val();
+                            var lastChar = lName.charAt(0)
+                            var userFName = fName.toLowerCase();
+                            var userLName = lastChar.toLowerCase();
+                            $('#username').val(userFName + userLName);
+                        }
                     validation:
                         required: Please enter a Last Name.
+                username:
+                    label: 'Administrator username:'
+                    type: text
+                    maxlength: "50"
+                    style: 'width: 20em;'
+                    validation:
+                        required: Please enter a username.
+                        username: The admin username may not contain any special characters.
+                        no_spaces: >
+                            The admin username may not contain any spaces. Please use
+                            underscores or remove the spaces.
+                        screen_name: The admin username may not contain any special characters.
+                      
                 email:
                     label: 'Email Address:'
                     type: text
@@ -81,6 +91,16 @@ zenario_admin:
                 is_client_account:
                     label: 'Is client account'
                     type: checkbox
+                image:
+                    label: 'Image:'
+                    upload:
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
                 
         password:
             priv: _PRIV_CHANGE_ADMIN_PASSWORD
@@ -137,7 +157,7 @@ zenario_admin:
                     snippet:
                         html: ""
                 permissions:
-                    type: radios
+                    type: select
                     values:
                         all_permissions:
                             label: "Grant every possible permission"

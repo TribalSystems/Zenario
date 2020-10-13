@@ -21,16 +21,18 @@ zenario_document_upload:
                         #	- .zip
                         dropbox: true
                         dropbox_phrase: 'Upload from Dropbox'
-                    side_note: 'If you cannot see the Dropbox button, go to Configuration and select "API Keys" to enable Dropbox integration.'
                 privacy:
                     label: 'Privacy'
                     type: radios
                     values:
                         public:
                             label: 'Public'
+                            note_below: 'Document will have a fixed, shareable URL that anyone can access. To show the document on a content item, use a Document Container plugin.'
                         private:
                             label: 'Private'
+                            note_below: 'Document will only be accessible to authorised users via a Document Container on a private content item.'
                         offline:
                             label: 'Decide later'
+                            note_below: 'Document will initially be offline (not available for any download), but will be made Public or Private as soon as a content item links to it, depending on the privacy of the content item.'
                     validation:
                         required: 'Choose the privacy of the document.'

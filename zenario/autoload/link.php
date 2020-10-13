@@ -214,10 +214,16 @@ class link {
 
 	const toPluginPageFromTwig = true;
 	public static function toPluginPage(
-		$moduleClassName, $mode = '', $languageId = false, $fullPath = false, $request = '', $forceAliasInAdminMode = false
+		$moduleClassName, $mode = '', $languageId = false, $fullPath = false, $request = '',
+		$forceAliasInAdminMode = false, $checkPerm = false
 	) {
 		$cID = $cType = $state = false;
 		if (\ze\content::pluginPage($cID, $cType, $state, $moduleClassName, $mode, $languageId)) {
+			
+			if ($checkPerm && !\ze\content::checkPerm($cID, $cType)) {
+				return false;
+			}
+			
 			if ($state) {
 				if (is_array($request)) {
 					$request = http_build_query($request);
@@ -227,6 +233,17 @@ class link {
 			return \ze\link::toItem($cID, $cType, $fullPath, $request, false, false, $forceAliasInAdminMode, false, $languageId);
 		}
 		return false;
+	}
+
+	const toPluginPageIfPermissibleFromTwig = true;
+	public static function toPluginPageIfPermissible(
+		$moduleClassName, $mode = '', $languageId = false, $fullPath = false, $request = '',
+		$forceAliasInAdminMode = false
+	) {
+		return \ze\link::toPluginPage(
+			$moduleClassName, $mode, $languageId, $fullPath, $request,
+			$forceAliasInAdminMode, true
+		);
 	}
 
 

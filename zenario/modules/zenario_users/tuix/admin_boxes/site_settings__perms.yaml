@@ -10,16 +10,23 @@ site_settings:
         users: {}
             ord: 1
         organisations:
+            ord: 2
             label: Organisations
             hide_when_children_are_not_visible: true
-            ord: 2
+        countries:
+            ord: 2.1
+            parent: organisations
+            visible_if: zenarioA.running.zenario_company_locations_manager
         companies:
+            ord: 2.2
             parent: organisations
             visible_if: zenarioA.running.zenario_company_locations_manager
         locations:
+            ord: 2.3
             parent: organisations
             visible_if: zenarioA.running.zenario_location_manager
         roles:
+            ord: 2.4
             parent: organisations
             visible_if: zenarioA.running.zenario_organization_manager
         document_envelopes:

@@ -49,7 +49,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
 		
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-			$fields['privacy/role_ids']['values'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name');
+			$fields['privacy/role_ids']['values'] = self::getRoleTypesIndexedByIdOrderedByName();
 		} else {
 			$fields['privacy/role_ids']['hidden'] =
 			$fields['privacy/privacy']['values']['with_role']['hidden'] = true;

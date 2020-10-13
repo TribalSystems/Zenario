@@ -1076,4 +1076,10 @@ _sql
 	MODIFY COLUMN `date_created` datetime NULL DEFAULT NULL
 _sql
 
+);	ze\dbAdm::revision( 185
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+	MODIFY COLUMN `hyperlink` text
+_sql
+
 );

@@ -4,8 +4,8 @@ zenario__users:
     nav:
         access_log:
             ord: "98"
-            label: Content item accesses
-            tooltip: Log of when users accessed password-protected content items
+            label: User access log
+            tooltip: Log of extranet users and the private content items they have accessed
             link:
                 path: zenario__users/panels/access_log
     
@@ -15,14 +15,14 @@ zenario__users:
                 user_access_log:
                     parent: view_dropdown
                     hide_in_select_mode: Yes
-                    label: Access log
+                    label: Content item access log
                     link:
                         path: zenario__users/panels/access_log
                         branch: Yes
                         refiner: user
 
         access_log:
-            title: Access log
+            title: Extranet user content item access log
             
             notice:
                 show: false

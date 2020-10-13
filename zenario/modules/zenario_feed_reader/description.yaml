@@ -23,4 +23,4 @@ is_pluggable: true
 nestable: true
 default_framework: standard
 default_instance_name: Untitled Feed Reader
-can_be_version_controlled: true
+can_be_version_controlled: false

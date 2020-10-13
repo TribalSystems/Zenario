@@ -586,6 +586,7 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 		extension,
 		widthAndHeight,
 		file,
+		fileSize,
 		path,
 		src,
 		mi = {
@@ -602,6 +603,7 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 		mi.css_class = label.css_class;
 		mi.image = label.image;
 		label = mi.label = label.label;
+		mi.fileSize = field.values[item].size;
 	
 	} else if (label) {
 		mi.label = label;
@@ -691,7 +693,14 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 			
 		} else {
 			//Otherwise display a download link
+			if (field.values[item].location && field.values[item].location == 's3') {
+				if (field.values[item].s3Link) {
+					mi.adminDownload = field.values[item].s3Link;
+				}
+				
+			} else {
 			mi.adminDownload = src + "&adminDownload=1";
+			}
 		}
 	}
 	

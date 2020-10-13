@@ -28,6 +28,14 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+//N.b. this variable used to be a parameter, but no-one used it, so I've hardcoded this option in this function now.
+$addCurrent = true;
+
+
+//This function gets all of the breadcrumbs leading up to the current slide.
+//It also gets the smart breadcrumbs at each stage.
+
+
 $backs = [];
 
 if ($this->usesConductor && $this->state) {
@@ -41,11 +49,7 @@ if ($this->usesConductor && $this->state) {
 	}
 
 
-	$backToState = false;
-	if (!empty($this->commands['back'])
-	 && empty($this->commands['back']->cID)) {
-		$backToState = $this->commands['back']->toState;
-	}
+	$backToState = $this->getBackState();
 
 	while ($backToState
 	 && !isset($backs[$backToState])

@@ -48,7 +48,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 											'code' => '_COUNTRY_NAME_' . $id
 										] 
 								);
-						ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['id' => $id]);					
+						ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['id' => $id]);	
+						ze\row::delete('user_country_link', ['country_id' => $id]);				
 
 						$sql = "DELETE FROM "
 									. DB_PREFIX . "visitor_phrases

@@ -14,13 +14,18 @@ plugin_settings:
                         label: Category filters
                         label_class: subheading
                 
+                general_info_snippet:
+                    type: snippet
+                    grouping: content_item_filters
+                    snippet: 
+                        html: "This Content Summary List (CSL) plugin can automatically display links to other content items according to the rules you define here."
                 content_type:
                     plugin_setting:
                         name: content_type
                     grouping: content_item_filters
-                    label: 'Source content type:'
+                    label: 'Filter by content type:'
                     type: select
-                    value: html
+                    value: all
                     values:
                         all: -- All content types --
                     format_onchange: Yes
@@ -29,9 +34,9 @@ plugin_settings:
                     plugin_setting:
                         name: only_show
                     grouping: content_item_filters
-                    label: 'Items to show:'
+                    label: 'Filter by privacy:'
                     type: select
-                    value: all
+                    value: public
                     values:
                         public:
                                     label: Public content items only
@@ -43,16 +48,16 @@ plugin_settings:
                     plugin_setting:
                         name: language_selection
                     grouping: content_item_filters
-                    label: 'Only show items in:'
+                    label: 'Filter by language:'
                     type: select
                     value: visitor
                     values:
                         visitor:
-                                    label: "Visitor's language"
+                                    label: "Show content items in visitor's language"
                         all:
-                                    label: All enabled languages
+                                    label: Show content items in all languages enabled
                         specific_languages:
-                                    label: Specific languages...
+                                    label: Show content items in pecific languages...
                     format_onchange: Yes
                 specific_languages:
                     grouping: content_item_filters
@@ -173,12 +178,11 @@ plugin_settings:
                     plugin_setting:
                         name: only_show_child_items
                     grouping: content_item_filters
-                    label: 'Filter by relative menu position...'
+                    label: 'Filter by menu position'
                     type: checkbox
                     value: ""
                     side_note: >
-                        Use the menu structure to only show content items that are beneath the current content item
-                        in the menu hierarchy.
+                        Only show content items that are in the menu, and are under the current content item in the menu hierarchy.
                     format_onchange: Yes
                 child_item_levels:
                     plugin_setting:
@@ -308,7 +312,7 @@ plugin_settings:
                     visible_if: |
                         zenarioAB.value('enable_omit_category')
                     note_below: "Content items in ANY of the "omit" categories will not be shown."
-        
+                
         overall_list:
             label: Overall list
             fields:
@@ -432,6 +436,30 @@ plugin_settings:
                     label: 'Generate RSS feed'
                     type: checkbox
                     value: "0"
+                zip_archive_enabled:
+                    visible_if: |
+                        zenarioAB.value('content_type', 'first_tab') == 'document'
+                    label: 'Offer to create zip of downloads'
+                    type: checkbox
+                    plugin_setting:
+                        name: zip_archive_enabled
+                    redraw_onchange: true
+                    side_note: Only applies to Document content items.
+                zip_archive_name:
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_value_isnt: 1
+                    label: 'Zip archive name:'
+                    placeholder: 'documents'
+                    plugin_setting:
+                        name: zip_archive_name
+                    type: text
+                    side_note: >
+                        You can specify the name of the target zip archive. If you
+                        leave this field empty, the "documents.zip" name is assumed.
+                    post_field_html: '.zip'
+                    note_below: ''
+                
         each_item:
             label: Each item
             fields:
@@ -482,6 +510,14 @@ plugin_settings:
                     format_onchange: Yes
                     side_note: |
                         Show the feature image of each content item, if it has one. For picture content items, a thumbnail will be automatically generated if no feature image exists.
+                show_file_size:
+                    visible_if: |
+                        zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'all'
+                    label: 'Show file size (applies to document content items only)'
+                    type: checkbox
+                    plugin_setting:
+                        name: show_file_size
+                    redraw_onchange: true
                 fall_back_to_default_image:
                     plugin_setting:
                         name: fall_back_to_default_image
@@ -590,6 +626,9 @@ plugin_settings:
                                     label: Medium
                         _LONG:
                                     label: Long
+                        _RELATIVE:
+                                    label: Relative date/time
+                            
                     requires: show_dates
                     indent: 1
                 show_author:
@@ -732,7 +771,7 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     side_note: |
-                        The content item's lowest level public category will be displayed. Private categories will NOT be shown.
+                        The content items linked with one public category will be displayed underneath each content item. The content items linked with more than one public category will not be displayed. Private categories will not be shown.
                 simple_access_cookie_required:
                     plugin_setting:
                         name: simple_access_cookie_required
@@ -877,3 +916,4 @@ plugin_settings:
                     validation:
                         numeric: The maximum number of results must be a number.
                         required_if_not_hidden: Please enter the maximum number of results.
+                

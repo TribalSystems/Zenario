@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="email_off_state">
+        <g>
+            <path d="M9.002,10.498L17.034,3.407C16.98,3.399 16.931,3.375 16.875,3.375L1.125,3.375C1.09,3.375 1.061,3.391 1.027,3.395L9.002,10.498Z" style="fill:rgb(4,188,8);fill-rule:nonzero;"/>
+            <path d="M18,4.5C18,4.366 17.966,4.242 17.924,4.123L12.252,9.13L17.851,14.029C17.937,13.869 18,13.695 18,13.5L18,4.5Z" style="fill:rgb(4,188,8);fill-rule:nonzero;"/>
+            <path d="M0.088,4.065C0.032,4.199 0,4.346 0,4.5L0,13.5C0,13.664 0.039,13.817 0.102,13.958L5.754,9.113L0.088,4.065Z" style="fill:rgb(4,188,8);fill-rule:nonzero;"/>
+            <path d="M11.402,9.88L8.999,12.002L6.602,9.867L1.065,14.613C1.086,14.614 1.104,14.625 1.125,14.625L16.824,14.625L11.402,9.88Z" style="fill:rgb(4,188,8);fill-rule:nonzero;"/>
+        </g>
+    </g>
+</svg>

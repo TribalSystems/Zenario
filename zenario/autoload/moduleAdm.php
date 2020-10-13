@@ -1084,6 +1084,7 @@ class moduleAdm {
 							content_type_plural_en = '". \ze\escape::sql($type['content_type_plural_en'] ?? ''). "',
 							writer_field = '". \ze\escape::sql($type['writer_field'] ?? 'hidden'). "',
 							description_field = '". \ze\escape::sql($type['description_field'] ?? 'optional'). "',
+							tooltip_text = '". \ze\escape::sql($type['tooltip_text'] ?? ''). "',
 							keywords_field = '". \ze\escape::sql($type['keywords_field'] ?? 'optional'). "',
 							summary_field = '". \ze\escape::sql($type['summary_field'] ?? 'optional'). "',
 							release_date_field = '". \ze\escape::sql($type['release_date_field'] ?? 'optional'). "',

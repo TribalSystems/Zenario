@@ -41,7 +41,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		
 		if (isset($_GET['refiner__archived'])) {
 			$panel['title'] = ze\admin::phrase('Archived Layouts');
-			$panel['no_items_message'] = ze\admin::phrase('No Layouts have been archived.');
+			$panel['no_items_message'] = ze\admin::phrase('This is the graveyard for layouts that shouldn\'t be used for new content.');
 			$panel['item']['css_class'] = 'archived_layout';
 			
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__archived'];
@@ -52,7 +52,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		
 		} elseif ($refinerName == 'content_type') {
 			unset($panel['columns']['archived']['title']);
-			$panel['no_items_message'] = ze\admin::phrase('There are no active Layouts for this Content Type.');
+			$panel['no_items_message'] = ze\admin::phrase('There are no active layouts for this content type.');
 
 		} elseif ($refinerName == 'layouts_using_form') {
 			$mrg = [];

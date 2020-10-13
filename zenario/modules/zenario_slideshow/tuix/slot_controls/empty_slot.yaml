@@ -4,7 +4,7 @@ empty_slot:
     actions:
         insert_slideshow_on_item_layer:
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Insert slideshow from library...
+            label: Insert slideshow...
             page_modes:
                 item: true
             onclick: |
@@ -16,7 +16,7 @@ empty_slot:
         insert_slideshow_on_layout_layer:
             ord: 999
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert slideshow from library...
+            label: Insert slideshow...
             page_modes:
                 layout: true
             onclick: return zenarioA.pickNewPlugin(this, slotName, 2, 'slideshow');

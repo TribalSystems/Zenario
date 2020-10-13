@@ -27,7 +27,7 @@ zenario_content_categories:
                 no_categories:
                     label: 'Categories:'
                     snippet:
-                        html: No Categories have been created.
+                        html: No categories have been created.
         
         
     confirm:
@@ -56,14 +56,14 @@ zenario_content_categories_add:
                     snippet:
                         html: ""    
                 categories_add:
-                    label: 'Add Categories:'
+                    label: 'Add categories:'
                     type: checkboxes
                     values: ""
                     checking_child_checks_parents: true
                 no_categories:
                     label: 'Categories:'
                     snippet:
-                        html: No Categories have been created.
+                        html: No categories have been created.
                 
     confirm:
         message: ''
@@ -91,7 +91,7 @@ zenario_content_categories_remove:
                     snippet:
                         html: ""    
                 categories_remove:
-                    label: 'Remove Categories:'
+                    label: 'Remove categories:'
                     type: checkboxes
                     values: ""
                     checking_parent_checks_children: true

@@ -45,7 +45,7 @@ zenario__administration:
             item_buttons:
                 edit_gui:
                     priv: _PRIV_MANAGE_DATASET
-                    label: Edit
+                    label: Edit dataset schema
                     link:
                         path: zenario__administration/panels/custom_tabs_and_fields_gui
                         refiner: dataset_id

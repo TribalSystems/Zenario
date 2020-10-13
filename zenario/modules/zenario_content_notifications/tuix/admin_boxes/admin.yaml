@@ -10,8 +10,7 @@ zenario_admin:
                 no_notifications:
                     snippet:
                         html: |
-                            This admin does not have the &ldquo;May receive content notifications&rdquo; permission
-                            so cannot receive notifications.
+                            This admin does not have the permission &quot;Publisher / May receive content notifications&quot; so cannot receive notifications. Grant this permission to reveal options here.
                 content_request_notification:
                     label: 'Receive request notifications'
                     note_below: >

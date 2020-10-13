@@ -105,6 +105,17 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 			$fields['text/path_of__menu_title']['label'] = ze\admin::phrase('Path preview (top level):');
 			$fields['text/path_of__text_in_default_language']['label'] = ze\admin::phrase('Path (top level):');
 		}
+		
+		if ($box['key']['parentMenuID']) {
+			$mpathArr = explode(' › ',$values['text/path_of__menu_title']);
+			
+			$fields['text/path_of__menu_title']['value'] = $values['text/path_of__menu_title']." [level ".count($mpathArr)."]"; 
+		}
+		else	
+		{
+			$fields['text/path_of__menu_title']['value'] = self::getMenuText($box['key']['id'], $box['key']['languageId'])." [level 1]";
+		}
+
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

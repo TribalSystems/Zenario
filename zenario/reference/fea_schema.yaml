@@ -1026,6 +1026,12 @@ additionalProperties:
                             This won't have any effect if the column is hidden, this button has a parent,
                             or this button has children.
                     
+                    allow_bypass:
+                        type: boolean
+                        item_button_only: true
+                        description: >
+                            Experimental feature, please don't use foe regular use until it's finalised.
+                    
                     confirm:
                         type: object
                         description: >
@@ -1357,3 +1363,16 @@ additionalProperties:
                 
                 This object is provided as a free-for-all exception, so anyone making a custom application
                 can add anything they need synced in here.
+        
+        missing_items_warning:
+            type: string
+            description: >
+                The form toolkit will not display selected values for checkboxes, radios or select lists
+                that are not in the provided LOV.
+                
+                It will also not save these values.
+                
+                If you want to enable a warning when this is about to happen, you can enable it by adding
+                some text to this property, e.g. "Warning: ID [[items]] missing, save settings to clean up."
+                
+                This works from version 8.8 onwards.

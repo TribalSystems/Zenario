@@ -235,11 +235,17 @@ class zenario_document_envelopes_fea extends zenario_abstract_fea {
 		if ($field == 'name' || $field == 'code') {
 			$envelopeDetails = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX. 'document_envelopes', ['name', 'code'], ['id' => (int) ze::get('envelopeId')]);
 			
-			if ($field == 'name') {
-				return $envelopeDetails['name'];
-			} elseif ($field == 'code') {
-				return $envelopeDetails['code'];
+			if (!empty($envelopeDetails) && is_array($envelopeDetails)) {
+				if ($field == 'name') {
+					return $envelopeDetails['name'];
+				} elseif ($field == 'code') {
+					return $envelopeDetails['code'];
+				}
+			} else {
+				return '';
 			}
+		} else {
+			return '';
 		}
 	}
 }

@@ -209,12 +209,24 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			} else {
 				$item['tooltip'] = ze\admin::phrase('This menu node has no link. Unlinked menu nodes are hidden from visitors unless they have a child menu node that is visible.');
 			}
-	
+			
 			if ($item['children']) {
-				$item['traits'] = ['has_children' => true];
-			} else {
-				$item['traits'] = ['childless' => true];
+				// T11769: Added grand child logic for delete menu node.
+				$Child = ze\row::get('menu_nodes', ['id'], array('parent_id' => $item['mid'])); ;
+				$grandChild = ze\row::get('menu_nodes', ['id'], array('parent_id' => $Child['id'])); 
+			
+				if ($grandChild && $grandChild['id'] > 0) {
+					$item['has_grandchild'] =  true;
+				}
+				else
+				{
+					$item['has_children'] = true;
+				}
+			} 
+			else {
+				$item['childless'] = true;
 			}
+			
 	
 			if ($item['name'] === null) {
 				$item['css_class'] .= ' ghost';
@@ -242,11 +254,11 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					$item['cell_css_classes']['target'] = 'ghost';
 			
 					if ($internalTarget && !$item['target_content_id']) {
-						$item['traits']['can_duplicate'] = true;
+						$item['can_duplicate'] = true;
 					}
 				}
 		
-				$item['traits']['ghost'] = true;
+				$item['ghost'] = true;
 		
 				$item['name'] = ze\menu::name($id, $panel['key']['languageId'], '[[name]] [[[language_id]], untranslated]');
 				$item['row_class'] = 'organizer_untranslated_menu_node';
@@ -274,18 +286,18 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				//Missing Menu Nodes to Content Items can be created by duplicating the Content Item
 				if (!$item['target_lang'] || $item['target_lang'] != ($item['text_lang'] ?: $panel['key']['languageId'])) {
 					if ($internalTarget) {
-						$item['traits']['can_duplicate'] = true;
+						$item['can_duplicate'] = true;
 					}
 				}
 		
 				if ($panel['key']['languageId'] != ze::$defaultLang && !empty($item['translations']) && $item['translations'] > 1) {
-					$item['traits']['removable'] = true;
+					$item['removable'] = true;
 				}
 			}
 	
 			if (!empty($internalTarget)) {
 				$item['frontend_link'] = ze\link::toItem($item['target_content_id'], $item['target_content_type'], false, 'zenario_sk_return=navigation_path');
-				$item['traits']['content'] = true;
+				$item['content'] = true;
 	
 			} elseif (!empty($item['target'])) {
 				$item['frontend_link'] = $item['target'];

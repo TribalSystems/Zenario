@@ -294,9 +294,10 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 				$beingEdited = $instance['class']->beingEdited();
 				
 				if ($isAdmin) {
+					$isMenu = (int) $instance['class']->shownInMenuMode();
 					$isVersionControlled = (int) !empty($instance['content_id']);
 					
-					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
+					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled, ',', (int) $isMenu;
 				} elseif ($beingEdited) {
 					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited;
 				} elseif ($isMainSlot) {

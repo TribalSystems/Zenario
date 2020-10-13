@@ -58,6 +58,8 @@ zenario__content:
                     db_column: ct.writer_field
                 description_field:
                     db_column: ct.description_field
+                tooltip_text:
+                    db_column: ct.tooltip_text
                 keywords_field:
                     db_column: ct.keywords_field
                 summary_field:

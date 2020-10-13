@@ -41,6 +41,12 @@ zenario__content:
                     searchable: true
                     show_by_default: true
                     width: large
+                where_used:
+                    title: Usage
+                    searchable: true
+                    show_by_default: true
+                    width: xlarge
+                    html: true
                 module_id:
                     exists: true
                 instance_id:
@@ -77,7 +83,7 @@ zenario__content:
                     parent: insert_dropdown
                     ord: 99
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
-                    label: Insert plugin from library...
+                    label: Insert plugin...
                     combine_items:
                         path: zenario__modules/panels/modules/refiners/slotable_only////
                         target_path: zenario__modules/panels/plugins
@@ -94,7 +100,7 @@ zenario__content:
                 
                 insert_reusable_on_item_layer:
                     parent: insert_dropdown
-                    label: Insert plugin from library...
+                    label: Insert plugin...
                     combine_items:
                         path: zenario__modules/panels/modules/refiners/slotable_only////
                         target_path: zenario__modules/panels/plugins

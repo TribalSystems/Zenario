@@ -83,7 +83,11 @@
 				<% if ((m.label + '').length > 35) {%>
 					title="{{zenario.htmlspecialchars(zenario.htmlspecialchars(m.label))}}"
 				<% } %>
-			>{{m.label|e}}</span>
+			>{{m.label|e}} 
+				<% if (!m.thumbnail && m.fileSize) { %>
+					[{{m.fileSize}}]
+				<% } %>
+			</span>
 		<% } %>
 		
 		<% if (m.organizerPath) { %>

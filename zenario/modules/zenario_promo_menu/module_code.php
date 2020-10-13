@@ -205,14 +205,17 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					['node_id' => $nodeId]);
 				$box['key']['feature_image_id'] = $row['image_id'] ? $row['image_id'] : '';
 				$file = ze\row::get('files', ['alt_tag'], $row['image_id']);
-				$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['original_value'] = 
-					$file['alt_tag'];
+				if ($file){
+					$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['original_value'] = $file['alt_tag'];
+				}
 				
 				if ($row['overwrite_alt_tag']) {
 					$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $row['overwrite_alt_tag'];
 					$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['changed'] = true;
 				} else {
-					$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $file['alt_tag'];
+					if ($file){
+						$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $file['alt_tag'];
+					}
 				}
 
 				if ($box['key']['id'] && ($menu = ze\menu::details($box['key']['id']))) {

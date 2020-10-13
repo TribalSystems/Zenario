@@ -64,7 +64,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$fields['data/add_logged_in_user_to_group']['values'] = 
 			ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 			
-			if (ze\module::inc('zenario_user_timers')) {
+			if (ze\module::inc('zenario_user_timers') && ze\module::inc('zenario_extranet')) {
 				$fields['data/active_timers']['hidden'] = false;
 				$timerTemplates = [];
 					$result = ze\row::query(ZENARIO_USER_TIMERS_PREFIX . 'user_timer_templates', ['id', 'name', 'type'], []);
@@ -461,7 +461,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		}
 		
-		$box['tabs']['translations']['hidden'] = !$values['details/translate_text'];
+		$box['tabs']['translations']['hidden'] = $values['details/translate_text'];
 		
 		$fields['anti_spam/honeypot_label']['hidden'] = !$values['anti_spam/use_honeypot'];
 		
@@ -633,6 +633,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		if ($values['details/allow_partial_completion'] && !$values['details/partial_completion_mode__auto'] && !$values['details/partial_completion_mode__button']) {
 			$errors[] = ze\admin::phrase('Please select a method to for the "Save and complete later" feature.');
+		}
+
+		if ($values['data/send_email_to_user'] && !($values['data/send_email_to_logged_in_user'] || $values['data/send_email_to_email_from_field'])) {
+			$fields['data/send_email_to_user']['error'] = ze\admin::phrase('Please select at least one of the options below.');
 		}
 		
 		$errors = &$box['tabs']['data']['errors'];

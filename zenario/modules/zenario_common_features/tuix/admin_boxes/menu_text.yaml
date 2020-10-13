@@ -54,8 +54,8 @@ zenario_menu_text:
                             !this.value?
                                 ''
                             :    !get('parent_path_of__' + this.id).value?
-                                    this.value
-                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value;
+                                    this.value + " [level 1]"
+                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " [level"+ (get('parent_path_of__' + this.id).value.split("›").length + 1) + "]";
                 path_of__menu_title:
                     grouping: right_column
                     label: 'Path preview:'

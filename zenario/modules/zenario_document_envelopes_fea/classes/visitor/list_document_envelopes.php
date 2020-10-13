@@ -308,6 +308,12 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
+		if ($this->setting('show_title')) {
+			$tags['title_tags'] = $this->setting('title_tags') ?: 'h2';
+		} else {
+			unset($tags['title']);
+		}
+		
 		$tags['columns']['created']['hidden'] = !$this->setting('show_created_date');
 
 		//On the first load, if sort options are not yet set, default to sorting by date submitted descending

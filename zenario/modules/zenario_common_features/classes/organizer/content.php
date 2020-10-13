@@ -26,6 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
+use Aws\S3\S3Client;
 
 class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
@@ -40,7 +41,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		
 		//Have a refiner that enforces the language filter be set.
 		if ($mode != 'typeahead_search'
-		 && isset($_GET['refiner__filter_by_lang'])
+		 && (isset($_GET['refiner__filter_by_lang']) || isset($_GET['refiner__filter_exclude_documents']))
 		 && !isset($_GET['refiner__zenario_trans__chained_in_link'])) {
 			
 			//If it's not set, set it to one language initially
@@ -114,6 +115,11 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		
 				case 'blog':
 					$panel['columns']['release_date']['show_by_default'] = true;
+			
+					break;
+				case 'document':
+					$panel['item_buttons']['duplicate']['hidden'] = true;
+					$panel['item_buttons']['create_draft_by_overwriting']['hidden'] = true;
 			
 					break;
 			}
@@ -212,6 +218,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				unset($panel['columns']['sync_assist']);
 			}
 		}
+		
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -363,6 +370,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					switch ($col_name) {
 						case 'title':
 						case 'file_id':
+						case 's3_file_id':
 						case 'filename':
 						case 'version':
 						case 'status':
@@ -558,6 +566,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 				
 				$item['css_class'] = ze\contentAdm::getItemIconClass($item['id'], $item['type'], true, $item['status']);
+				$item['tooltip'] = 'This content item has status ' .$item['status'];
 			//Below code is to show clock icon for scheduled publish content.
 				$checkIfPublishsql = "SELECT id,scheduled_publish_datetime from ". DB_PREFIX. "content_item_versions 
 					WHERE id IN (". $item['id']. ")
@@ -572,15 +581,16 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					if(sizeof($getresult)>1 )
 					{
 						$item['css_class'] ='scheduled_tasks_on_icon';
+						$item['tooltip']= 'Scheduled to be published at ' .ze\admin::formatDateTime($getresult['scheduled_publish_datetime'],'vis_date_format_med').'.';
 					}
 				}
 			//
 				
 				// Change code for Special pages tooltip
 				if ($refinerName == 'special_pages'){
-						$specialPage = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $item['equiv_id'], 'content_type' => $item['type']]);
-						$specialPageName = str_replace('_', ' ', ze\ring::chopPrefix('zenario_', $specialPage['page_type'], true));
-						$item['tooltip'] = ze\admin::phrase('Special page: [[name]] page', ['name' => $specialPageName]);
+					$specialPage = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $item['equiv_id'], 'content_type' => $item['type']]);
+					$specialPageName = str_replace('_', ' ', ze\ring::chopPrefix('zenario_', $specialPage['page_type'], true));
+					$item['tooltip'] = ze\admin::phrase('Special page: [[name]] page', ['name' => $specialPageName]);
 				}
 				//		
 				if ($showInOrganiser && ($privacy = $item['privacy'] ?? false)) {
@@ -602,10 +612,11 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']).
 					' '.
 					ze\admin::phrase('([[name]] page)', ['name' => $specialPageName]);
-
+				
 				} else {
 					$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
 				}
+				
 				//
 				$item['traits'] = [];
 				switch ($item['status']) {
@@ -657,7 +668,34 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				if (ze\contentAdm::allowHide($item['id'], $item['type'], $item['status'])) {
 					$item['traits']['hideable'] = true;
 				}
-		
+				//To show blue icon in Content items Organizer panels for unique and primary menu node
+				$menuItems = ze\menu::getFromContentItem($item['id'], $item['type'], true, false, true, true);
+				
+				//Content that is not in the Menu
+				if (empty($menuItems)) {
+					//To show blue icon in Content items Organizer panels for orphan menu node
+						$item['menunodecounter'] = 0;
+
+				//Content with at least one Menu Node
+				} else {
+					
+					$numberOfMenuItems = 0;
+					foreach ($menuItems as $i => &$menuItem) {
+						++$numberOfMenuItems;
+						
+						//Start numbering Menu Nodes from 1, not from 0
+						++$i;
+						if ($i > 1)
+						{
+							$item['menunodecounter'] = 2;
+						}
+						else
+						{
+							$item['menunodecounter'] = 1;
+						}
+					}
+				}
+				
 				if (isset($item['menu_id'])) {
 					//Handle the case where a content item has a translation but a menu node does not
 					if ($path == 'zenario__content/panels/chained' && $item['menu'] === null) {
@@ -686,10 +724,25 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 						}
 					}
 				}
+				if (!empty($item['s3_file_id'])) {
+					$item['traits']['has_s3file'] = true;
+					
+				}
+				if ($item['type'] == 'document')  {
+					$item['has_duplicate'] = false;
+					$item['has_document'] = false;
+					
+				}
+				else
+				{
+					$item['has_duplicate'] = true;
+					$item['has_document'] = true;
+					
+				}
 				
 				if ($mode === 'full' || $mode == 'get_item_data') {
 					$item['frontend_link'] = ze\link::toItem(
-						$item['id'], $item['type'], false, '&zenario_sk_return=navigation_path', $item['alias'],
+						$item['id'], $item['type'], false,$item['alias'],
 						$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
 						$item['equiv_id'], $item['language_id']
 					);
@@ -858,6 +911,12 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
             }    
    
 		}
+		if (ze::setting('aws_s3_support')) {
+			$panel['item_buttons']['download']['label'] = 'Download local file';
+			$panel['item_buttons']['s3_download']['hidden'] = false;
+		} else {
+			$panel['item_buttons']['download']['label'] = 'Download';
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
@@ -999,9 +1058,34 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		$cID = $cType = false;
+		
 		if (ze::post('download') && ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 			//Offer a download for a file being used for a Content Item
 			header('location: '. ze\link::absolute(). 'zenario/file.php?usage=content&cID='. $cID. '&cType='. $cType);
+			exit;
+		}
+		//For s3 download files
+		if (ze::post('s3_download') && ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
+			$presignedUrl = '';	
+			$targetVersion = ze\content::showableVersion($cID,$cType);
+			$version = ze\row::get('content_item_versions',['s3_file_id'],['id'=> $cID, 'version'=> $targetVersion, 'type'=> $cType]);
+			$fileDetails = ze\row::get('files', ['filename','path'], $version['s3_file_id']);
+			if ($fileDetails['path']) {
+				$fileName = $fileDetails['path'].'/'.$fileDetails['filename'];
+			} else {
+				$fileName = $fileDetails['filename'];
+			}
+			if ($fileName) {
+				if (ze\module::inc('zenario_ctype_document')) {
+					$presignedUrl = zenario_ctype_document::getS3FilePresignedUrl($fileName);
+				}
+				if ($presignedUrl) {
+					echo '<script type="text/javascript">
+							window.open("'. $presignedUrl .'", "download")
+
+						 </script>';
+				}
+			}
 			exit;
 		}
 		

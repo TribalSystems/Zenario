@@ -15,7 +15,11 @@
 >
 	<% if (m.showCheckbox) { %>	
 		<div class="organizer_checkbox_at_top_left" onclick="zenarioO.pi.checkboxClick('{{m.id|escape}}', event); return false;" ondblclick="return zenario.stop(event);">
-			<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
+			<input
+				type="{{window.zenarioOSelectMode && !zenarioO.multipleSelectEnabled? 'radio' : 'checkbox'}}"
+				{{m.selected? ' checked="checked"' : ''}}
+				id="organizer_itemcheckbox_{{m.id|escape}}"
+			/>
 		</div>
 	<% } %>
 	<div class="organizer_image_container" title="{{m.tooltip|escape}}">

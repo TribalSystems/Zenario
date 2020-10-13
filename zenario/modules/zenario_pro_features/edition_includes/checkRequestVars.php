@@ -32,6 +32,8 @@ ze::$vars['userId'] =
 ze::$vars['companyId'] =
 ze::$vars['locationId'] = 0;
 
+ze::$vars['countryId'] = '';
+
 //For the Conference FEA
 ze::$vars['conferenceId'] = 
 ze::$vars['sessionId'] = 
@@ -53,6 +55,9 @@ if (!$status) {
 $zclmPrefix = ze\module::prefix('zenario_company_locations_manager');
 $zlmPrefix = ze\module::prefix('zenario_location_manager');
 $zcmPrefix = ze\module::prefix('zenario_conference_manager');
+
+$companyWasFromLocation = false;
+$countryWasFromLocation = false;
 
 if ($zcmPrefix) {
 	//Can be multiple
@@ -92,10 +97,17 @@ if ($zcmPrefix) {
 }
 
 if ($zlmPrefix) {
+	//Look for the location ID in the URL, if it's not yet been set
 	if (!ze::$vars['locationId']) {
-		if (!empty($_REQUEST['locationId'])) {
-			ze::$vars['locationId'] = (int) $_REQUEST['locationId'];
-		}
+		ze::$vars['locationId'] = (int) ($_REQUEST['locationId'] ?? 0);
+	}
+	//If a location is selected, ensure the country id is set from that location,
+	//otherwise look for it in the URL
+	if (ze::$vars['locationId']) {
+		ze::$vars['countryId'] = ze\row::get($zlmPrefix. 'locations', 'country_id', ze::$vars['locationId']);
+		$countryWasFromLocation = true;
+	} else {
+		ze::$vars['countryId'] = $_REQUEST['countryId'] ?? '';
 	}
 }
 
@@ -104,6 +116,7 @@ if ($zclmPrefix) {
 		
 		if (ze::$vars['locationId']
 		 && (ze::$vars['companyId'] = ze\row::get($zclmPrefix. 'company_location_link', 'company_id', ['location_id' => ze::$vars['locationId']]))) {
+			$companyWasFromLocation = true;
 		
 		} elseif (!empty($_REQUEST['companyId'])) {
 			ze::$vars['companyId'] = (int) $_REQUEST['companyId'];
@@ -117,9 +130,10 @@ if (!ze::$vars['userId']) {
 	}
 }
 
-//If a companyId and/or locationId is in the URL, check the current visitor is allowed to see that company and/or location
+//If a countryId, companyId and/or locationId is in the URL, check the current visitor is allowed to see that company and/or location
 if ((ze::$vars['userId'] && !ze\user::can('view', 'user', ze::$vars['userId']))
- || (ze::$vars['companyId'] && !ze\user::can('view', 'company', ze::$vars['companyId']))
+ || (!$countryWasFromLocation && ze::$vars['countryId'] && !ze\user::can('view', 'country', ze::$vars['countryId']))
+ || (!$companyWasFromLocation && ze::$vars['companyId'] && !ze\user::can('view', 'company', ze::$vars['companyId']))
  || (ze::$vars['locationId'] && !ze\user::can('view', 'location', ze::$vars['locationId']))
  || (ze::$vars['conferenceId'] && !ze\row::exists($zcmPrefix . 'conferences', ['id' => ze::$vars['conferenceId']]))
  || (ze::$vars['sessionId'] && !ze\row::exists($zcmPrefix . 'sessions', ['id' => ze::$vars['sessionId']]))) {

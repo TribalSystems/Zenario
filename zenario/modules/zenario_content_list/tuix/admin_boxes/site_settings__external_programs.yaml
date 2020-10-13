@@ -1,0 +1,72 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: external_programs
+    tabs:
+        zip:
+            label: Zip
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: Yes
+                on: No
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            The Content Summary List module offer content in a zip archive to download.
+                zip_path:
+                    site_setting:
+                        name: zip_path
+                    label: 'zip path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use zip -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/zip'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/zip'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                
+        
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: zip_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                max_unpacked_size:
+                    label: 'Unpacked file size limit:'
+                    post_field_html: '&nbsp;MB'
+                    site_setting:
+                        name: max_unpacked_size
+                    type: text
+                    placeholder: 64
+                    value: 64
+                    style: width:150px;
+                    side_note: >
+                        Content Summary List (CSL) plugins can offer zipped downloads of document content items, subject to a maximum size as specified here. This refers to the sum of file sizes before zipping. When the figure is exceeded, the CSL will create a second or third zip file.
+                    validation:
+                        numeric: The file size must be a number.
+                    decimal_places: false
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: zip is working successfully.
+                error:
+                    show: ""
+                    type: error
+                    message: zip is not correctly set up.
+                warning:
+                    show: ""
+                    type: error

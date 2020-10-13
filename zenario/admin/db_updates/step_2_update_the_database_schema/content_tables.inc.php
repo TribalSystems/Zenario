@@ -2799,13 +2799,24 @@ _sql
 	MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 
+
+
+
+
+
+
+
+//
+//	Zenario 8.8
+//
+
 //Custom dataset labels no longer need to be unique
 //The content item index on plugin_pages_by_mode also shouldn't be unique
 //Note that these fixes are being added in a post-branch patch in 8.6 revision 50611,
 //and in a post-branch patch in 8.7 revision 51301, and in 8.8 in revision 51700.
 //However they're safe to re-apply more than once so we don't need the check to see if
 //they've already been applied.
-);	ze\dbAdm::revision(51301
+);	ze\dbAdm::revision(51700
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]custom_datasets`
 	DROP KEY `label`
@@ -2826,10 +2837,62 @@ _sql
 	ADD KEY `content_type` (`content_type`,`equiv_id`)
 _sql
 
+
+//Add a new column to the content_types table
+//(Note - this is written carefully, as the original version of this update caused a SVN clash,
+// so I've given it a new number and am very carefully checking if it's been applied first before running it.)
+);	if (ze\dbAdm::needRevision(51710) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_types LIKE "tooltip_text"'))	ze\dbAdm::revision(51710
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `tooltip_text` varchar(255) NOT NULL default ''
+	AFTER `description_field`
+_sql
+
+
+); ze\dbAdm::revision( 51711
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_types`
+	SET `tooltip_text` = 'Flat view of all HTML page content items'
+	WHERE `content_type_id` = 'html'
+_sql
+
+
+); 	ze\dbAdm::revision( 51904
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `s3_file_id` int(10) unsigned NOT NULL default 0 AFTER `file_id`
+_sql
+
+); ze\dbAdm::revision( 51905
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	MODIFY COLUMN `location` enum('db','docstore','s3') NOT NULL 
+_sql
+); ze\dbAdm::revision( 51906
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `s3_filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL default '' AFTER `filename`
+_sql
+);	ze\dbAdm::revision(51907
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
+	SET name = 'show_title'
+	WHERE name = 'show_envelope_name'
+_sql
+
+
+//Add a "Only show the Back button when the previous slide has more than one item to choose from" flag for slides
+);	ze\dbAdm::revision( 52150
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD COLUMN `no_choice_no_going_back` tinyint(1) NOT NULL default 0
+	AFTER `show_back`
+_sql
+
 //As of 21 Aug 2020 (HEAD, backpatched to 8.7 and 8.8), deleting a content item will wipe its alias.
 //This logic wipes the aliases of already deleted content items.
 //These are safe to re-apply more than once.
-);	ze\dbAdm::revision( 51304
+);	ze\dbAdm::revision( 52201
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]content_items`
 	SET alias = ''

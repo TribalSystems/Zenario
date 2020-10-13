@@ -569,13 +569,25 @@ methods.drawList = function() {
 	
 	thus.sortOutTUIX();
 	
-	thus.cb = new zenario.callback;
-	thus.putHTMLOnPage(thus.pMicroTemplate('list', {}));
-	
 	var page = 1 * thus.tuix.__page__,
 		pageSize = 1 * thus.tuix.__page_size__,
 		itemCount = 1 * thus.tuix.__item_count__,
-		paginationId;
+		items = thus.tuix.items,
+		item, itemId, paginationId;
+	
+	
+	if (thus.hasBypass
+	 && items
+	 && itemCount === 1) {
+		foreach (items as itemId => item) {
+			thus.button(this, thus.hasBypass, item, itemId);
+			return;
+		}
+	}
+	 
+	
+	thus.cb = new zenario.callback;
+	thus.putHTMLOnPage(thus.pMicroTemplate('list', {}));
 	
 	if (page
 	 && pageSize
@@ -1269,6 +1281,7 @@ methods.sortOutTUIX = function() {
 	
 	var tuix = thus.tuix;
 	
+	thus.hasBypass = undefined;
 	thus.newlyNavigated = thus.path != thus.prevPath;
 	thus.multiSelectButtonsExist = false;
 	
@@ -1283,8 +1296,9 @@ methods.sortOutTUIX = function() {
 	
 	var i, id, j, itemButton, childItemButton, col, item, button, sortedItemIds,
 		sortedButtonsAndColumnButtons,
-		sortBy = tuix.sort_by || 'name';
-		sortDesc = engToBoolean(tuix.sort_desc);
+		sortBy = tuix.sort_by || 'name',
+		sortDesc = engToBoolean(tuix.sort_desc),
+		numberofItemsShown = _.size(tuix.items);
 	
 	thus.sortedCollectionButtonIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.collection_buttons);
 	thus.sortedCollectionButtons = [];
@@ -1317,22 +1331,34 @@ methods.sortOutTUIX = function() {
 		thus.sortedItemButtons.push(button);
 	}
 	
+	//Get a list of columns that are not hidden, and handle some other logic
 	thus.pcOfTotal = {};
 	foreach (thus.sortedColumnIds as i => id) {
 		col = tuix.columns[id];
 		col.id = id;
 		
-		if (!thus.hidden(undefined, undefined, id, undefined, col)) {
-			thus.sortedColumns.push(col);
-			thus.visibleColumns[id] = col;
+		//Check the usual rules for something that's hidden
+		if (thus.hidden(undefined, undefined, id, undefined, col)) {
+			continue;
+		}
+		
+		//Special rule for columns in FEA lists: if every cell is hidden, hide the column too!
+		if (tuix._hiddenColumns
+		 && tuix._hiddenColumns[id]
+		 && _.size(tuix._hiddenColumns[id]) == numberofItemsShown) {
+			continue;
+		}
+		
+		
+		thus.sortedColumns.push(col);
+		thus.visibleColumns[id] = col;
+		
+		if (col.convert_to_percentage_of_total) {
+			thus.pcOfTotal[id] = 0;
 			
-			if (col.convert_to_percentage_of_total) {
-				thus.pcOfTotal[id] = 0;
-				
-				foreach (tuix.items as j => item) {
-					if (item[id] == 1*item[id]) {
-						thus.pcOfTotal[id] += 1*item[id];
-					}
+			foreach (tuix.items as j => item) {
+				if (item[id] == 1*item[id]) {
+					thus.pcOfTotal[id] += 1*item[id];
 				}
 			}
 		}
@@ -1407,6 +1433,10 @@ methods.getSortedItemButtons = function(itemIds, isCheckboxSelect) {
 			
 			if (thus.buttonIsntDisabled(button, itemIds)) {
 				thus.setupButtonLinks(button, itemIdsCSV);
+				
+				if (button.allow_bypass) {
+					thus.hasBypass = button;
+				}
 			}
 			
 			if (button.children) {
@@ -2159,7 +2189,7 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 	}
 	
 	
-	showErrorMessage = function() {
+	var showErrorMessage = function() {
 		
 		m.body = msg;
 		m.retry = !!resp.zenario_retry;

@@ -3,6 +3,12 @@
 zenario_alias:
     tabs:
         meta_data:
+            notices:
+                spare_alias_already_exists:
+                    show: false
+                    message: 
+                    type: error
+                    html: true
             fields:
                 alias:
                     redraw_immediately_onchange: true
@@ -20,12 +26,13 @@ zenario_alias:
                 spare_aliases:
                     label: 'Spare aliases:'
                     pick_items:
-                        #path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
+                        path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
                         multiple_select: true
                         nothing_selected_phrase: Content item has no spare aliases
                         enable_type_ahead_search: false
                         allow_typing_anything: true
                         hide_select_button: true
+                        info_button_path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases//
                     cols: 4
                     note_below: |
                         To create spare aliases, just type its name (case sensitive), which will be in the URL after the / (slash). The visitor will then experience a redirect to the main alias. Type a tab or comma button to enter more than one.

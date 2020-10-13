@@ -137,7 +137,7 @@ zenario__content:
                     db_column: c.status
                     format: enum
                     values:
-                        first_draft: '[Not Published]'
+                        first_draft: '[Not published]'
                         published_with_draft: ""
                         hidden_with_draft: '[Hidden]'
                         trashed_with_draft: '[Trashed]'
@@ -153,15 +153,15 @@ zenario__content:
                         logged_out:
                             label: 'Permissions: Public, only show to visitors who are NOT logged in'
                         logged_in:
-                            label: 'Permissions: Private, only show to extranet users who are logged in'
+                            label: 'Permissions: Private, only show to extranet users'
                         group_members:
-                            label: 'Permissions: Private, only show to extranet users in a given group...'
+                            label: 'Permissions: Private, only show to extranet users in group...'
                         in_smart_group:
-                            label: 'Permissions: Private, only show to extranet users in a given smart group...'
+                            label: 'Permissions: Private, only show to extranet users in smart group...'
                         logged_in_not_in_smart_group:
-                            label: 'Permissions: Private, only show to extranet users NOT in a given smart group...'
+                            label: 'Permissions: Private, only show to extranet users NOT in smart group...'
                         with_role:
-                            label: 'Permissions: Private, only show to extranet users with a given role...'
+                            label: 'Permissions: Private, only show to extranet users with role...'
                         call_static_method:
                             label: "Permissions: Call a module's static method to decide"
                         send_signal:

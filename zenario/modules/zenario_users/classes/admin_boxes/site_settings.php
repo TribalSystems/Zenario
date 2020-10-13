@@ -119,6 +119,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 										
 										} else {
 											$directlyAssignedToUser =
+											$byGroupAndCountry =
 											$hasRoleAtCompany =
 											$hasRoleAtLocation =
 											$hasRoleAtLocationAtCompany =
@@ -126,7 +127,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 											
 											//Check if this field is one of the permissions
 											if (($permName = ze\ring::chopPrefix('perm.', $fieldId))
-											 && (ze\user::checkNamedPermExists($permName, $directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations))) {
+											 && (ze\user::checkNamedPermExists($permName, $directlyAssignedToUser, $byGroupAndCountry, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations))) {
 												
 												//Break the permission code-name up into chunks
 												$perm = explode('.', $fieldId);

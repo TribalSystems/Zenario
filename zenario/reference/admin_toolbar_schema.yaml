@@ -158,6 +158,9 @@ properties:
                                     - admin_box
                             -
                                 required:
+                                    - alert
+                            -
+                                required:
                                     - help
                             -
                                 required:
@@ -324,7 +327,8 @@ properties:
                             help: &help
                                 type: object
                                 description: >
-                                    This property provides you with a simple way of displaying a short pop-up message.
+                                    This property provides you with a simple way of displaying
+                                    a short pop-up message with some help text in.
                                 required:
                                     - message
                                 properties:
@@ -343,6 +347,37 @@ properties:
                                         default: question
                                         description: >
                                             The type of message. A different styling will be applied for each different type.
+                            
+                            alert: &alert
+                                type: object
+                                description: >
+                                    This property provides you with a simple way of displaying
+                                    a short pop-up alert message.
+                                    
+                                    This works from version 8.8 onwards.
+                                required:
+                                    - message
+                                properties:
+                                    message:
+                                        type: string
+                                        description: >
+                                            A message to display when clicking on this button.
+                                    html: *message_html
+                                    message_type:
+                                        enum:
+                                            - none
+                                            - error
+                                            - warning
+                                            - question
+                                            - success
+                                        default: warning
+                                        description: >
+                                            The type of message. A different styling will be applied for each different type.
+                                    button_message:
+                                        type: string
+                                        description: >
+                                            A message for the button that dismisses the message.
+                                            Defaults to "OK".
                             
                             navigation_path:
                                 type: string

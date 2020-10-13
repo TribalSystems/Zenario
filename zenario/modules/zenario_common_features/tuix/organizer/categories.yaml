@@ -5,6 +5,8 @@ zenario__content:
         categories:
             title: Content item categories
             view_mode: list
+            panel_type: multi_line_list
+            use_tall_rows: true
             disable_grid_view: Yes
             no_items_message: No categories found.
             db_items:
@@ -37,9 +39,10 @@ zenario__content:
                     searchable: Yes
                     db_column: cat.name
                     always_show: Yes
-                    width: xlarge
+                    width: medium
+                    css_class: label_column
                 item_count:
-                    title: Content Items
+                    title: Content items
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT c.id, c.type)
@@ -57,7 +60,10 @@ zenario__content:
                     title: Public
                     db_column: cat.public
                     format: yes_or_no
-                    disallow_sorting: Yes
+                    yes_phrase: Public
+                    no_phrase: Private
+                    always_show: Yes
+                    parent: name
                 path:
                     title: Path
                 children:

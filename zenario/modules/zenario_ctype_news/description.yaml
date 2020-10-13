@@ -7,9 +7,9 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Content Type News
 description: >
-    <p>This is the base Module for News Content Items in Zenario.</p>
-    <p>This Module installs the News Content Type and enables the creation of News Content Items.</p>
-    <p>You can use the Meta Data Module to display a News Content Item's release date.</p>
+    <p>This is the base module for creating News content items.</p>
+    <p>This module installs the News content type and enables the creation of News content items.</p>
+    <p>You can use the Meta Data module to display a News content item's release date.</p>
 category: content_type
 keywords: news, rss, blog, article
 vlp_class_name: zenario_ctype_news
@@ -22,6 +22,7 @@ content_types:
         enable_summary_auto_update: false
         enable_categories: true
         description_field: optional
+        tooltip_text: News content items, to show latest news on your site, and keep an archive of older articles
         keywords_field: hidden
         summary_field: optional
         release_date_field: mandatory

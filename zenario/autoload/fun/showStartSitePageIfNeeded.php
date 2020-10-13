@@ -35,7 +35,7 @@ if (\ze::$dbL
  && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, \ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	$logoURL = $logoURL;
 } else {
-	$logoURL = 'zenario/admin/images/zenario_logo.png';
+	$logoURL = 'zenario/admin/images/zenario-logo-black.svg';
 	$logoWidth = 142;
 	$logoHeight = 57;
 }
@@ -120,8 +120,8 @@ echo '
 
 
 if ($reportDBOutOfDate && !\ze\priv::check()) {
-	\ze\db::reportError('
-This site is currently unavailable because a major database update needs to be applied.
+	\ze\db::reportError('Database update needed at',
+'This site is currently unavailable because a major database update needs to be applied.
 Please go to '. \ze\link::absolute(). 'zenario/admin/ to apply the update.');
 }
 

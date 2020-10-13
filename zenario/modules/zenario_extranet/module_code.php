@@ -88,10 +88,21 @@ class zenario_extranet extends ze\moduleBaseClass {
 				
 				//Record consent
 				$userDetails = ze\row::get('users', ['first_name', 'last_name', 'email'], ['id' => $_POST['user_id']]);
-				$cID = $cType = false;
-				$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
-				$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
-				ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
+				
+				$userContentItem = $this->setting('terms_and_conditions_page');
+				$useExternalLink = $this->setting('url');
+				if($userContentItem || $useExternalLink) {
+					if ($userContentItem && $this->setting('link_type') == '_CONTENT_ITEM' ){
+						$cID = $cType = false;
+						$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+						$TCLink = $this->linkToItem($cID, $cType, true);
+					} elseif ($useExternalLink && $this->setting('link_type') == '_EXTERNAL_URL' ) {
+						$TCLink = $this->setting('url');
+					}
+				$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+				$linkEnd = '</a>';
+				}
+				ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, $this->phrase("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]));
 				
 				// Save custom fields from frameworks
 				$details = [];
@@ -102,7 +113,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 						$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
 						//check if dataset feild is consent field
 						if ($colType && $colType == "consent") {
-							ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
+							//ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
 						}
 					}
 				}
@@ -147,12 +158,23 @@ class zenario_extranet extends ze\moduleBaseClass {
 						}
 						
 						if ($this->setting('requires_terms_and_conditions') == "always") {
-							$this->subSections['Ts_And_Cs_Section'] = true;
-							$cID = $cType = false;
-							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
-							ze\content::langEquivalentItem($cID, $cType);
-							$TCLink = ['TCLink' => $this->linkToItem($cID, $cType, true)];
-							$this->objects['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
+							$userContentItem = $this->setting('terms_and_conditions_page');
+							$useExternalLink = $this->setting('url');
+							if($userContentItem || $useExternalLink) {
+								if ($userContentItem && $this->setting('link_type') == '_CONTENT_ITEM' ){
+									$cID = $cType = false;
+									$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+									ze\content::langEquivalentItem($cID, $cType);
+									$TCLink = $this->linkToItem($cID, $cType, true);
+								} elseif ($useExternalLink && $this->setting('link_type') == '_EXTERNAL_URL' ) {
+									$TCLink = $this->setting('url');
+								}
+								$this->subSections['Ts_And_Cs_Section'] = true;
+								$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+								$linkEnd = '</a>';
+
+								$this->objects['Ts_And_Cs_Link'] =  $this->phrase ("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+							}
 						}
 						
 						if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
@@ -176,13 +198,25 @@ class zenario_extranet extends ze\moduleBaseClass {
 					}
 					
 					if ($this->hasLoginForm) {
-						if ($this->setting('requires_terms_and_conditions') == 1 && $this->setting('terms_and_conditions_page') && $this->showTermsAndConditionsCheckbox) {
-							$this->subSections['Ts_And_Cs_Section'] = true;
-							$cID = $cType = false;
-							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
-							ze\content::langEquivalentItem($cID, $cType);
-							$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
-							$this->objects['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
+						if ($this->setting('requires_terms_and_conditions') == 1 && ($this->setting('terms_and_conditions_page') || $this->setting('url')) && $this->showTermsAndConditionsCheckbox)
+						{
+							$userContentItem = $this->setting('terms_and_conditions_page');
+							$useExternalLink = $this->setting('url');
+							if($userContentItem || $useExternalLink) {
+								if ($userContentItem && $this->setting('link_type') == '_CONTENT_ITEM' ){
+									$cID = $cType = false;
+									$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+									ze\content::langEquivalentItem($cID, $cType);
+									$TCLink = $this->linkToItem($cID, $cType, true);
+								} elseif ($useExternalLink && $this->setting('link_type') == '_EXTERNAL_URL' ) {
+									$TCLink = $this->setting('url');
+								}
+								$this->subSections['Ts_And_Cs_Section'] = true;
+								$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+								$linkEnd = '</a>';
+
+								$this->objects['Ts_And_Cs_Link'] =  $this->phrase ("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+							}
 						}
 					}
 					
@@ -240,11 +274,24 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$subSections = [];
 		$subSections['Error_Display'] = $this->errors;
 		
-		$cID = $cType = false;
-		$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
-		ze\content::langEquivalentItem($cID, $cType);
-		$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
-		$mergeFields['Ts_And_Cs_Link'] =  $this->phrase('_T_C_LINK', $TCLink);
+		$userContentItem = $this->setting('terms_and_conditions_page');
+		$useExternalLink = $this->setting('url');
+		if($userContentItem || $useExternalLink) {
+			if ($userContentItem && $this->setting('link_type') == '_CONTENT_ITEM' ){
+				$cID = $cType = false;
+				$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+				ze\content::langEquivalentItem($cID, $cType);
+				$TCLink = $this->linkToItem($cID, $cType, true);
+			} elseif ($useExternalLink && $this->setting('link_type') == '_EXTERNAL_URL' ) {
+				$TCLink = $this->setting('url');
+			}
+			$this->subSections['Ts_And_Cs_Section'] = true;
+			$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+			$linkEnd = '</a>';
+			$mergeFields['Ts_And_Cs_Link'] =  $this->phrase ("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+			
+		}
+		
 		
 		echo $this->getLoginOpenForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			echo $this->remember('accept_terms_and_conditions', 1);
@@ -505,10 +552,22 @@ class zenario_extranet extends ze\moduleBaseClass {
 							
 							//Record consent
 							$userDetails = ze\row::get('users', ['first_name', 'last_name', 'email'], ['id' => $userId]);
-							$cID = $cType = false;
-							$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
-							$TCLink = [ 'TCLink' =>$this->linkToItem($cID, $cType, true)];
-							ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, strip_tags($this->phrase('_T_C_LINK', $TCLink)));
+							$userContentItem = $this->setting('terms_and_conditions_page');
+							$useExternalLink = $this->setting('url');
+							if($userContentItem || $useExternalLink) {
+								if ($userContentItem && $this->setting('link_type') == '_CONTENT_ITEM' ){
+									$cID = $cType = false;
+									$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+									ze\content::langEquivalentItem($cID, $cType);
+									$TCLink = $this->linkToItem($cID, $cType, true);
+								} elseif ($useExternalLink && $this->setting('link_type') == '_EXTERNAL_URL' ) {
+									$TCLink = $this->setting('url');
+								}
+								$this->subSections['Ts_And_Cs_Section'] = true;
+								$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+								$linkEnd = '</a>';
+							}
+							ze\user::recordConsent('extranet_login', $this->instanceId, $userId, $userDetails['email'], $userDetails['first_name'] ?? false, $userDetails['last_name'] ?? false, $this->phrase("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]));
 						}
 						if ($user['status'] == 'active') {
 							if ($user['password_needs_changing']) {
@@ -517,7 +576,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 								$this->user_id = $user['id'];
 								$this->old_password = $_POST['extranet_password'] ?? false;
 			
-							} elseif ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page') 
+							} elseif ($this->setting('requires_terms_and_conditions') && ($this->setting('terms_and_conditions_page') || $this->setting('url'))
 								&& (!$user['terms_and_conditions_accepted'] 
 									|| ($this->setting('requires_terms_and_conditions') == 'always' && empty($_REQUEST['extranet_terms_and_conditions'])))) {
 								//show terms and conditions checkbox
@@ -682,8 +741,8 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$mergeFields = [];
 		
 		$this->objects['main_login_heading'] = $mergeFields['main_login_heading'] = $this->phrase('Sign in');
-		$this->objects['email_field_label'] = $mergeFields['email_field_label'] = $this->phrase('Your Email:');
-		$this->objects['screen_name_field_label'] = $mergeFields['screen_name_field_label'] = $this->phrase('Your Screen Name:');
+		$this->objects['email_field_label'] = $mergeFields['email_field_label'] = $this->phrase('Your email:');
+		$this->objects['screen_name_field_label'] = $mergeFields['screen_name_field_label'] = $this->phrase('Your screen name:');
 		$this->objects['password_field_label'] = $mergeFields['password_field_label'] = $this->phrase('Your password:');
 		$this->objects['login_button_text'] = $mergeFields['login_button_text'] = $this->phrase('Login');
 		
@@ -786,6 +845,8 @@ class zenario_extranet extends ze\moduleBaseClass {
 				if (isset($box['tabs']['action_after_login']['fields']['terms_and_conditions_page'])
 				 && isset($box['tabs']['action_after_login']['fields']['requires_terms_and_conditions'])) {
 					$box['tabs']['action_after_login']['fields']['terms_and_conditions_page']['hidden'] = 
+						!$values['action_after_login/requires_terms_and_conditions'];
+					$box['tabs']['action_after_login']['fields']['url']['hidden'] = 
 						!$values['action_after_login/requires_terms_and_conditions'];
 				}
 				

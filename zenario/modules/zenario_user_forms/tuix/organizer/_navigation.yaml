@@ -4,7 +4,8 @@ zenario__user_forms:
     ord: -780
     css_class: zenario_user_forms_top_level
     label: Forms
-    tooltip: 'Manage forms and view form responses'
+    tooltip: >
+            Create online forms and view their responses
     priv: _PRIV_VIEW_FORMS
     nav:
         user_forms:

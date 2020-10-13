@@ -234,6 +234,7 @@ body.ie .zenario_promo_menu ul li:hover .columns_wrap {
 .zenario_promo_menu .feature_wrap .feature_title h2 {
 	display:inline-block;
 	line-height:22px;
+	font-family:'robotoregular',Arial, Helvetica, sans-serif;
 	font-size:1.067em;
 	-webkit-transition : color 200ms ease-in-out;
   	-moz-transition : color 200ms ease-in-out;

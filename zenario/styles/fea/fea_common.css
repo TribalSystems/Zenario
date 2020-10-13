@@ -544,6 +544,14 @@ table.table_list tr th.zfea_col_sorted {
 	width:90%;
 }
 
+.zenario_skin input[type="text"].input_small, 
+.zenario_skin input[type="password"].input_small, 
+.zenario_skin input[type="email"].input_small, 
+.zenario_skin input[type="search"].input_small, 
+.zenario_skin textarea.input_small {
+	width:100px;
+}
+
 /* Zfea Search form
 --------------------------------------------------------------------------------------------------*/
 
@@ -2736,19 +2744,19 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	
 	.error p { margin:0; }
 
-	.zenario_row_with_error .Tokenize,
-	input[type="text"].zenario_field_with_error,
-	input[type="email"].zenario_field_with_error,
-	input[type="search"].zenario_field_with_error,
-	input[type="password"].zenario_field_with_error,
-	select.zenario_field_with_error,
-	textarea.zenario_field_with_error {
+	.zfea .zenario_row_with_error .Tokenize,
+	.zfea input[type="text"].zenario_field_with_error,
+	.zfea input[type="email"].zenario_field_with_error,
+	.zfea input[type="search"].zenario_field_with_error,
+	.zfea input[type="password"].zenario_field_with_error,
+	.zfea select.zenario_field_with_error,
+	.zfea textarea.zenario_field_with_error {
 		-webkit-box-shadow: inset 0px 0 0 2px #CE0011;
 		-moz-box-shadow: inset 0px 0 0 2px #CE0011;
 		box-shadow: inset 0px 0 0 2px #CE0011;
 	}
 	
-	input[type="radio"].zenario_field_with_error {
+	.zfea input[type="radio"].zenario_field_with_error {
 		-webkit-border-radius:50%;
 		-moz-border-radius:50%;
 		border-radius:50%;
@@ -2757,7 +2765,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
     	box-shadow: 0px 0.5px 0.5px 2px #CE0011;
 	}
 	
-	input[type="checkbox"].zenario_field_with_error {
+	.zfea input[type="checkbox"].zenario_field_with_error {
 		-webkit-border-radius:3px;
 		-moz-border-radius:3px;
 		border-radius:3px;
@@ -2766,7 +2774,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
     	box-shadow: 0px 0px 1px 1px #CE0011;
 	}
 	
-	.zfea_inline_error {
+	.zfea .zfea_inline_error {
 		clear:both;
 		padding-top:4px;
 		color:#CE0011;

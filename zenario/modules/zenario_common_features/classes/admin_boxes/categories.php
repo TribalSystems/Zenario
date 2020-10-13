@@ -69,11 +69,15 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 		$langs = ze\lang::getLanguages(false, false, true);
 		
 		foreach ($langs as $key => $lang) {
+			
 			if ($values['details/public']) {
 				if ($box['key']['id']) {
 					$phrase = ze\row::get('visitor_phrases', 'local_text', ['language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $box['key']['id'], 'module_class_name' => 'zenario_common_features']);
+					if (!$phrase) {
+						$phrase = $values['details/name'];
+					}
 				} else {
-					$phrase = "";
+					$phrase = $values['details/name'];
 				}
 				if (!isset($box['tabs']['details']['fields']['visitor_name_' . $key])) {
 					$box['tabs']['details']['fields']['visitor_name_' . $key] =
@@ -83,7 +87,7 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 							'hidden' => false,
 							'indent' => 1,
 							'ord' => 3.1,
-							'validation' => ['required_if_not_hidden' => 'Please enter a visitor name in '. $lang['english_name'] . '.'],
+							'validation' => ['required_if_not_hidden' => 'Please enter the name of this category as it will be seen by visitors, in '. $lang['english_name'] . '.'],
 							'value' => $phrase
 						];
 				} else {
@@ -93,6 +97,22 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 				$box['tabs']['details']['fields']['visitor_name_' . $key]['hidden'] = true;
 			}
 		}
+		//To show code name prepopulated value only one time and make sure it does'nt happen after opening the admin box.
+		if (isset($fields['details/public']['copy_code_name']) && $values['details/public']) {
+			
+			if ($values['details/name'] && !$values['details/code_name'] ) {
+			
+				$values['details/code_name'] = $this->setCodeName(strtolower($values['details/name']));
+			}
+			unset($fields['details/public']['copy_code_name']);
+		}
+	}
+	//To remove non-alphanumeric characters.
+	public function setCodeName($textValue) {
+		$formatText =  preg_replace( '/&/', 'and', $textValue);
+		$formatText =  preg_replace('/\s/', '-',preg_replace( '/[^ \w-]/', '', $formatText));
+		$formatText = substr($formatText,0, 50);
+		return $formatText;
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

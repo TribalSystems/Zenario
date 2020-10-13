@@ -47,7 +47,7 @@ class zenario_users__organizer__access_log extends zenario_users {
 			unset($panel['columns']['Last_Name']);
 			unset($panel['columns']['Email']);
 			unset($panel['columns']['Company_Name']);
-			$panel['title'] = ze\admin::phrase('Access Log for the User "[[user]]"', ['user' => ze\user::identifier($refinerId)]);
+			$panel['title'] = ze\admin::phrase('Private content item access log for "[[user]]"', ['user' => ze\user::identifier($refinerId)]);
 			// Set user Id to export button
 			$panel['collection_buttons']['export']['admin_box']['key']['user_id'] = $refinerId;
 		
@@ -56,7 +56,7 @@ class zenario_users__organizer__access_log extends zenario_users {
 			unset($panel['columns']['Content_Item_Id']);
 			unset($panel['columns']['Content_Item_Type']);
 			unset($panel['columns']['Content_Item_Version']);
-			$panel['title'] = ze\admin::phrase('Access Log for the Content Item "[[tag]]"', ['tag' => ze\content::formatTag($cID, $cType)]);
+			$panel['title'] = ze\admin::phrase('User accesses to content item "[[tag]]"', ['tag' => ze\content::formatTag($cID, $cType)]);
 			// Set tag Id to export button
 			$panel['collection_buttons']['export']['admin_box']['key']['tag_id'] = $refinerId;
 		}
@@ -66,10 +66,10 @@ class zenario_users__organizer__access_log extends zenario_users {
 			$accessLogDuration = '';
 			switch (ze::setting('period_to_delete_the_user_content_access_log')) {
 				case 'never_delete':
-					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log is stored forever.');
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are stored forever.');
 					break;
 				case 0:
-					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log is not stored.');
+					$accessLogDuration = ze\admin::phrase('Private content item accesses are not recorded.');
 					break;
 				case 1:
 					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 day.');

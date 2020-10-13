@@ -966,7 +966,7 @@ if (ze\dbAdm::needRevision(51053)) {
 //however in some weird cases it was possible for the checksum of the file to be recorded before
 //the code that read the value was implemented.
 //(Note: this was back-patched to 8.7, but is safe to re-run.)
-if (ze\dbAdm::needRevision(51303)) {
+if (ze\dbAdm::needRevision(51900)) {
 	
 	if (is_dir(CMS_ROOT. 'cache/tuix')) {
 		ze\row::update('tuix_file_contents', ['last_modified' => 0, 'checksum' => ''], []);
@@ -974,5 +974,22 @@ if (ze\dbAdm::needRevision(51303)) {
 		ze\cache::cleanDirs(true);
 	}
 	
-	ze\dbAdm::revision(51303);
+	ze\dbAdm::revision(51900);
+}
+
+
+//There was a conductor bug where if you re-ordered the slides, the slide numbers got updated on the
+//slides themselves but not on the nests going between them.
+//Fix any bad data where this has happened.
+if (ze\dbAdm::needRevision(52200)) {
+	
+	$result = ze\row::query('nested_plugins', ['instance_id', 'slide_num', 'states'], ['is_slide' => 1, 'states' => ['!' => '']]);
+	foreach ($result as $slide) {
+		foreach (ze\ray::explodeAndTrim($slide['states']) as $state) {
+			$key = ['instance_id' => $slide['instance_id'], 'from_state' => $state];
+			ze\row::update('nested_paths', ['slide_num' => $slide['slide_num']], $key);
+		}
+	}
+	
+	ze\dbAdm::revision(52200);
 }

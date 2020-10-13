@@ -59,7 +59,7 @@ site_settings:
                     empty_value: '-- No Suffix --'
                     note_below: |
                         An optional suffix which every friendly URL will have.
-                        Internal links created by the CMS will have this suffix.
+                        Internal links created by Zenario will have this suffix.
                 mod_rewrite_slashes:
                     indent: 1
                     site_setting:

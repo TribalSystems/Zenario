@@ -34,7 +34,7 @@ site_settings:
                                     &nbsp; &nbsp; /tmp/** r,<br />
                                 </code>
                             </p><p>
-                                Edit <code>/etc/apparmor.d/local/usr.sbin.clamd</code> and uncomment the line:
+                                Edit <code>/etc/apparmor.d/usr.sbin.clamd</code> and uncomment the line:
                             </p><p>
                                 <code>&nbsp; &nbsp; include &lt;local/usr.sbin.clamd&gt;</code>
                             </p><p>

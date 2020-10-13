@@ -100,9 +100,20 @@ zenario_slide:
                     visible_if: tuix.key.usesConductor
                     label: Show a Back button
                     type: checkbox
+                    redraw_onchange: true
                     note_below: |
                         This will look for a path in the nest conductor called "back" or "close".
                         If no path exists, a browser-back will be used.
+                no_choice_no_going_back:
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: Only show the Back button when the previous slide has more than one item to choose from
+                    type: checkbox
+                    value: 1
+                    note_below: |
+                        This check works by counting the number of smart breadcrumbs.
+                        Smart breadcrumbs must be enabled for this to function.
                 
                 global_command:
                     visible_if: tuix.key.usesConductor
@@ -120,6 +131,7 @@ zenario_slide:
                 
                 apply_slide_specific_permissions:
                     label: 'Apply slide-specific permissions'
+                    note_below: Use this to determine which kinds of user or anonymous visitor can see this slide. In a conductor-driven nest you should use User Permissions (in Organizer->Site Settings->User Permissions) and leave this unchecked.
                     type: checkbox
                     redraw_onchange: true
                 
@@ -131,22 +143,25 @@ zenario_slide:
                     type: radios
                     value: public
                     values:
-                        logged_out:
-                            label: Only show to visitors who are NOT logged in
                         logged_in:
-                            label: Private, only show to extranet users who are logged in
+                            label: Private, only show to extranet users
                         group_members:
-                            label: 'Private, only show to extranet users in the group(s):'
+                            label: 'Private, only show to extranet users in group(s)...'
                             split_values_if_selected: true
                         in_smart_group:
-                            label: 'Private, only show to extranet users in the smart group:'
+                            label: 'Private, only show to extranet users in smart group...'
                             split_values_if_selected: true
                         logged_in_not_in_smart_group:
-                            label: 'Private, only show to extranet users NOT in the smart group:'
+                            label: 'Private, only show to extranet users NOT in smart group...'
                             split_values_if_selected: true
                         with_role:
-                            label: 'Private, only show to extranet users with a given role:'
+                            label: 'Private, only show to extranet users with role...'
+                            type: checkboxes
+                            values: ""
+                            checking_child_checks_parents: true
                             split_values_if_selected: true
+                        logged_out:
+                            label: Only show to visitors who are NOT logged in
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
                         hidden:

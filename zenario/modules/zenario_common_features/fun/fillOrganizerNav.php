@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Look up every content type on this site
 //Sort the items in the following order: html, news, blog then documents.
 $sql = "
-	SELECT content_type_id, content_type_name_en, content_type_plural_en
+	SELECT content_type_id, content_type_name_en, content_type_plural_en,tooltip_text
 	FROM ". DB_PREFIX. "content_types AS ct
 	INNER JOIN ". DB_PREFIX. "modules AS m
 	   ON m.id = ct.module_id
@@ -52,7 +52,7 @@ foreach (ze\sql::fetchAssocs($sql) as $details) {
 		'ord' => $thisOrd,
 		'label' => ($details['content_type_plural_en'] ?: $details['content_type_name_en']),
 		'css_class' => 'content_type_'. $cType,
-		'tooltip' => '',
+		'tooltip' => $details['tooltip_text'],
 		'link' => [
 			'path' => 'zenario__content/panels/content',
 			'refiner' => 'content_type',
@@ -81,7 +81,8 @@ foreach (ze\sql::fetchAssocs($sql) as $details) {
 		'ord' => $thisOrd,
 		'css_class' => 'menu_section',
 		'label' => $details['section_name'],
-		'tooltip' => '',
+		'tooltip' => ze\admin::phrase('Menu navigation: edit menu nodes in the menu section "[[section_name]]"', $details),
+		'keywords' => 'Menu navigation',
 		'link' => [
 			'path' => 'zenario__menu/panels/by_language/item//'. ze::$defaultLang. '//item//'. $id. '//'
 	]];
@@ -95,6 +96,7 @@ if ($last) {
 //Look up every language, other than the default one, and add a link to the menu in that language
 $first = true;
 foreach (ze\lang::getLanguages($includeAllLanguages = false, $orderByEnglishName = true, $defaultLangFirst = true) as $langId => $details) {
+	
 	if ($first) {
 		$first = false;
 	} else {
@@ -105,7 +107,8 @@ foreach (ze\lang::getLanguages($includeAllLanguages = false, $orderByEnglishName
 			'ord' => $thisOrd,
 			'css_class' => 'menu_section_language',
 			'label' => $details['english_name'],
-			'tooltip' => '',
+			'tooltip' => ze\admin::phrase('Manage menu nodes in [[english_name]] ([[id]])', $details),
+			'keywords' => 'Menu navigation, language, '. $details['english_name']. ', '. $details['language_local_name'],
 			'link' => [
 				'path' => 'zenario__menu/panels/by_language/item//'. $langId. '//'
 		]];

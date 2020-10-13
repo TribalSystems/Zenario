@@ -220,10 +220,18 @@ zenario_conductor.toggleClick = function(toggleEl, toggleCodeName, revealId, rev
 		}
 	}
 	
-	if (isOn) {
-		$toggleEl.removeClass('zfea_toggle_on').addClass('zfea_toggle_off');
+	if (toggleEl.type && toggleEl.type == 'checkbox') {
+		// if (isOn) {
+		// 	toggleEl.checked = true;
+		// } else {
+		// 	toggleEl.checked = false;
+		// }
 	} else {
-		$toggleEl.removeClass('zfea_toggle_off').addClass('zfea_toggle_on');
+		if (isOn) {
+			$toggleEl.removeClass('zfea_toggle_on').addClass('zfea_toggle_off');
+		} else {
+			$toggleEl.removeClass('zfea_toggle_off').addClass('zfea_toggle_on');
+		}
 	}
 	
 	if (!invertToggle) {

@@ -12,16 +12,22 @@
 	background: url('images/icon-email-template-dark.svg') no-repeat center / 18px auto;
 }
 
-.zenario_email_template_manager_log__failed span {
-	height: 20px !important;
-	padding-left: 30px !important;
-	background: url('images/icon-email-failed.svg') no-repeat 5px 1px / 16px auto;
+.zenario_email_template_manager_log__failed span,
+.zenario_email_template_manager_log__sent span,
+.zenario_email_template_manager_log__sent_debug_mode span {
 	display:inline-block;
+	height: 20px;
+	padding-left: 30px;
+}
+
+.zenario_email_template_manager_log__failed span {
+	background: url('images/icon-email-failed.svg') no-repeat 5px 1px / 16px auto;
 }
 
 .zenario_email_template_manager_log__sent span {
-	height: 20px !important;
-	padding-left: 30px !important;
 	background: url('images/icon-email-sent.svg') no-repeat 5px 1px / 16px auto;
-	display:inline-block;
+}
+
+.zenario_email_template_manager_log__sent_debug_mode span {
+	background: url('../../../admin/images/icon-warning.svg') no-repeat 5px 1px / 16px auto;
 }

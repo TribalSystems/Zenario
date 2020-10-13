@@ -115,3 +115,22 @@
 .zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_on > ul > li.level2_on > ul > li.level3_on > ul > li.level4_on > a:hover {
 	color:#2a98ce;
 }
+
+/* Menu image */
+
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li span.menu_image {
+	float:left;
+}
+
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li span.menu_image img {	
+	width: auto !important;
+    max-height: 22px !important;
+}
+
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li span.menu_image a {
+	padding-right:3px;
+}
+
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li span.menu_image a {
+	padding:7px 5px 0 10px;
+}

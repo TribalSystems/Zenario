@@ -7,8 +7,9 @@ zenario__menu:
         menu_sections:
             ord: 999999
             css_class: menu_section_edit
-            label: Edit sections
-            tooltip: Create, rename and delete menu sections
+            label: Edit menu sections
+            tooltip: >
+                    (Advanced) Menu navigation is divided into "sections", i.e. the visual navigation areas on each page. Edit menu sections here.
             link:
                 path: ''
     panels:

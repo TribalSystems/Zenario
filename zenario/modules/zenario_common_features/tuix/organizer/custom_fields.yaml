@@ -38,6 +38,7 @@ zenario__administration:
                     sql: |
                         cdf.dataset_id = [[REFINER_ID]]
                         AND cdf.type NOT IN ('file_picker','repeat_start')
+                   
             columns:
                 label:
                     title: Label

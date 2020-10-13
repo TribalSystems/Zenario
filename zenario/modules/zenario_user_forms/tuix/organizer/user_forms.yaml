@@ -5,7 +5,7 @@ zenario__user_forms:
         user_forms:
             title: Forms
             view_mode: list
-            no_items_message: No Forms have been created.
+            no_items_message: No forms have been created.
             select_mode_title: Select a form...
             panel_type: multi_line_list
             use_tall_rows: true
@@ -37,7 +37,7 @@ zenario__user_forms:
                     db_column: f.name
                     searchable: true
                     always_show: true
-                    width: xlarge
+                    width: large
                 type:
                     title: Type
                     db_column: f.type
@@ -50,8 +50,7 @@ zenario__user_forms:
                     always_show: true
                 
                 field_count:
-                    title: Field count
-                    tooltip: Field count
+                    title: Fields
                     db_column: |
                         (
                         SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields
@@ -61,20 +60,19 @@ zenario__user_forms:
                     searchable: false
                     disallow_sorting: true
                     align_right: true
-                    width: xxsmall
+                    width: small
                 response_count:
-                    title: Logged responses
-                    tooltip: Logged responses
+                    title: Responses
                     db_column: |
                         (
                         SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
                         WHERE form_id = f.id
                         )
                     align_right: true
-                    width: xxsmall
+                    width: small
                     show_by_default: true
                 latest_response:
-                    title: Latest response date/time
+                    title: Latest
                     tooltip: Latest response date/time
                     db_column: |
                         (
@@ -83,6 +81,7 @@ zenario__user_forms:
                         )
                     #format: datetime
                     show_by_default: true
+                    width: small
                 where_used:
                     title: Usage
                     show_by_default: true
@@ -145,6 +144,13 @@ zenario__user_forms:
                     hide_on_refiner: archived
             
             item_buttons:
+                form_settings:
+                    ord: 1
+                    priv: _PRIV_MANAGE_FORMS
+                    hide_in_select_mode: true
+                    label: Edit form settings
+                    admin_box:
+                        path: zenario_user_form
                 edit_form_fields_gui:
                     ord: 2
                     priv: _PRIV_MANAGE_FORMS

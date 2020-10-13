@@ -5,6 +5,7 @@ zenario__content:
         content:
             key:
                 cType: ''
+                cId: ''
                 language: ''
                 layoutId: ''
             title: All content items, flat view
@@ -90,7 +91,9 @@ zenario__content:
                     exists: true
                 filter_by_lang:
                     exists: true
-                
+                filter_exclude_documents:
+                    sql: 'c.type != "document"'
+                    exists: true
                 content_type:
                     sql: 'c.type = [[REFINER__CONTENT_TYPE]]'
                 language:
@@ -270,6 +273,10 @@ zenario__content:
                         )
                    # show_by_default: false
                     #hidden: true
+                menunodecounter:
+                    ord: 8
+                    title: menunodecounter
+                    #hidden: true
                 description:
                     ord: 8
                     title: Description
@@ -289,6 +296,12 @@ zenario__content:
                     db_column: f.id
                     searchable: No
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
+                s3_file_id:
+                    ord: 10.1
+                    title: S3 File ID
+                    db_column: v.s3_file_id
+                    searchable: No
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')    
                 checksum:
                     db_column: f.checksum
                 mime_type:
@@ -298,6 +311,13 @@ zenario__content:
                     title: Filename
                     db_column: v.filename
                     searchable: true
+                    width: large
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
+                s3_filename:
+                    ord: 11.1
+                    title: S3 filename
+                    db_column: v.s3_filename
+                    searchable: No
                     width: large
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 file_size:
@@ -344,7 +364,7 @@ zenario__content:
                     db_column: c.status
                     format: enum
                     values:
-                        first_draft: '[Not Published]'
+                        first_draft: '[Not published]'
                         published_with_draft: ""
                         hidden_with_draft: '[Hidden]'
                         trashed_with_draft: '[Trashed]'
@@ -360,15 +380,15 @@ zenario__content:
                         logged_out:
                             label: 'Permissions: Public, only show to visitors who are NOT logged in'
                         logged_in:
-                            label: 'Permissions: Private, only show to extranet users who are logged in'
+                            label: 'Permissions: Private, only show to extranet users'
                         group_members:
-                            label: 'Permissions: Private, only show to extranet users in a given group...'
+                            label: 'Permissions: Private, only show to extranet users in group...'
                         in_smart_group:
-                            label: 'Permissions: Private, only show to extranet users in a given smart group...'
+                            label: 'Permissions: Private, only show to extranet users in smart group...'
                         logged_in_not_in_smart_group:
-                            label: 'Permissions: Private, only show to extranet users NOT in a given smart group...'
+                            label: 'Permissions: Private, only show to extranet users NOT in smart group...'
                         with_role:
-                            label: 'Permissions: Private, only show to extranet users with a given role...'
+                            label: 'Permissions: Private, only show to extranet users with role...'
                         call_static_method:
                             label: "Permissions: Call a module's static method to decide"
                         send_signal:
@@ -624,11 +644,40 @@ zenario__content:
                     priv: _PRIV_VIEW_SITE_SETTING
                     parent: settings_dropdown
                     hide_in_select_mode: true
+                    hide_on_refiner: &hide_settings_on_these_refiners
+                        following_item_link: true
+                        filter_by_lang: true
+                        #content_type: true
+                        #language: true
+                        #template: true
+                        category: true
+                        menu_children: true
+                        #special_pages: true
+                        find_duplicates: true
+                        #work_in_progress: true
+                        module_usage: true
+                        module_effective_usage: true
+                        plugin_instance_usage: true
+                        plugin_instance_effective_usage: true
+                        content_items_using_form: true
+                        trash: true
+                        content_items_using_image: true
+                        zenario__locations__create_content: true
+                        group_members: true
+                        form_id: true
                     label: Settings for content item administration
                     admin_box:
                         path: site_settings
                         key:
                             id: administration
+                            
+                settings_ctype_list:
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    hide_on_refiner: *hide_settings_on_these_refiners
+                    label: Enable more content types
+                    link:
+                        path: zenario__modules/panels/modules~-zenario_ctype
                 
                 help:
                     label: Help
@@ -646,6 +695,22 @@ zenario__content:
                             This panel shows all of the content items that have been trashed.
                             To restore a content item, you need to re-draft and then publish it.
             inline_buttons:
+                no_menu_linked:
+                    css_class: zenario_not_at_menu
+                    tooltip: "This content item is not in the menu"
+                    visible_if: >
+                        (item.menunodecounter == 0)
+                one_menu_linked:
+                    css_class: zenario_at_menu_unique
+                    tooltip: "This content item is in the menu"
+                    visible_if: >
+                        (item.menunodecounter == 1)        
+                one_or_more_menu_linked:
+                    css_class: zenario_at_menu_primary
+                    tooltip: "This content item has more than one menu node linking to it"
+                    visible_if: >
+                        (item.menunodecounter == 2)
+                        
                 layout:
                     css_class: zenario_layout_inline_button
                     label: |
@@ -654,7 +719,7 @@ zenario__content:
                         priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
                         path: zenario_content_layout
                     visible_if: |
-                        zenarioA.checkSpecificPerms(id)
+                        zenarioA.checkSpecificPerms(id)                        
                 cant_change_layout:
                     css_class: zenario_layout_inline_button
                     label: |
@@ -666,14 +731,14 @@ zenario__content:
                     tooltip: "[[privacy]]"
                 no_categories:
                     css_class: no_categories
-                    tooltip: "No categories test"
+                    tooltip: "Content item is not in any categories"
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >
                         (item.number_of_categories == 0)
                 one_or_more_categories:
                     css_class: one_or_more_categories
-                    tooltip: "Content item in one or more categories"
+                    tooltip: "Content item is in one or more categories"
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >
@@ -786,6 +851,23 @@ zenario__content:
                             download: 1
                     with_columns_set:
                         traits.has_file: true
+                    without_columns_set:
+                        traits.ghost: true
+                s3_download:
+                    parent: view_dropdown
+                    label: Download S3 file
+                    hidden: true
+                    ajax:
+                        confirm:
+                            message: 'Download the file "[[s3_filename]]"?'
+                            button_message: Download
+                            cancel_button_message: Cancel
+                            message_type: question
+                            download: true
+                        request:
+                            s3_download: 1
+                    with_columns_set:
+                        traits.has_s3file: true
                     without_columns_set:
                         traits.ghost: true
                 view_image:
@@ -1020,8 +1102,10 @@ zenario__content:
                         path: zenario_content
                         key:
                             duplicate: 1
+                    with_columns_set:
+                        has_duplicate: true        
                     without_columns_set:
-                        traits.ghost: true
+                        traits.ghost: true 
                 
                 
                 create_draft_by_copying:
@@ -1031,11 +1115,12 @@ zenario__content:
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
                         traits.not_locked: true
+                        has_document: true
                     without_columns_set:
                         traits.draft: true
                     label: Copy from other...
                     combine_items:
-                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        path: zenario__content/panels/content/refiners/filter_exclude_documents////
                         min_path: zenario__content/panels/languages
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
@@ -1059,9 +1144,10 @@ zenario__content:
                     with_columns_set:
                         traits.draft: true
                         traits.not_locked: true
+                        has_document: true
                     label: Copy from other...
                     combine_items:
-                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        path: zenario__content/panels/content/refiners/filter_exclude_documents////
                         min_path: zenario__content/panels/languages
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content

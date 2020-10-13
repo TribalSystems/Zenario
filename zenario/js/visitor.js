@@ -2212,6 +2212,9 @@ zenario.slot = function(pluginInstances) {
 		if (instance[7]) {
 			p.isVersionControlled = true;
 		}
+		if (instance[8]) {
+			p.isMenu = true;
+		}
 		
 		//If we are replacing an existing instance in admin mode, delete that first
 		var old;
@@ -2419,6 +2422,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 		cutoff,
 		info = [],
 		beingEdited = false,
+		isMenu = false,
 		isVersionControlled = false,
 		scriptsToRun = [],
 		scriptsToRunBefore = [],
@@ -2467,6 +2471,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	
 	//Watch out for the "In Edit Mode" tag from modules in their edit modes
 	beingEdited = flags.IN_EDIT_MODE;
+	isMenu = flags.IS_MENU;
 	isVersionControlled = flags.WIREFRAME;
 	instanceId = flags.INSTANCE_ID;
 	slideId = flags.TAB_ID;
@@ -2601,7 +2606,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 			
 				//If we're not in admin mode, just refresh the slot's innerHTML
 				domSlot.innerHTML = resp.responseText;
-				zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, slideId, undefined, beingEdited, isVersionControlled]]);
+				zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, slideId, undefined, beingEdited, isVersionControlled, isMenu]]);
 			}
 		
 			//Allow modules to call JavaScript function(s) after they have been refreshed

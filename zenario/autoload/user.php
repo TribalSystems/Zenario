@@ -478,12 +478,14 @@ class user {
 	}
 	
 	//Formerly "checkNamedUserPermExists()"
-	public static function checkNamedPermExists($perm, &$directlyAssignedToUser, &$hasRoleAtCompany, &$hasRoleAtLocation, &$hasRoleAtLocationAtCompany, &$onlyIfHasRolesAtAllAssignedLocations) {
+	public static function checkNamedPermExists($perm, &$directlyAssignedToUser, &$byGroupAndCountry, &$hasRoleAtCompany, &$hasRoleAtLocation, &$hasRoleAtLocationAtCompany, &$onlyIfHasRolesAtAllAssignedLocations) {
 	
 		switch ($perm) {
 			case 'manage.conference':
 			//Permissions for changing site settings
 			case 'manage.options-assetwolf':
+			//Permissions for managing asset auto-register settings
+			case 'manage.options-asset-auto-register':
 			//Permissions for changing plugin settings in the advanced interface tools plugin
 			case 'edit.pluginSetting':
 			//Possible permissions for companies, locations and users
@@ -507,14 +509,22 @@ class user {
 			case 'create-location.company':
 				return
 					$hasRoleAtCompany = true;
+			case 'view.country':
+				return
+					$byGroupAndCountry = true;
 			case 'edit.location':
 			case 'delete.location':
 				return
+					$byGroupAndCountry =
 					$hasRoleAtLocation = true;
 			case 'view.location':
 			case 'create-user.location':
 			case 'assign-user.location':
 			case 'deassign-user.location':
+				return
+					$byGroupAndCountry =
+					$hasRoleAtLocation =
+					$hasRoleAtLocationAtCompany = true;
 			case 'view.user':
 			case 'edit.user':
 				return
@@ -537,6 +547,7 @@ class user {
 					$hasRoleAtCompany = true;
 			case 'create-asset.location':
 				return
+					$byGroupAndCountry =
 					$hasRoleAtLocation = true;
 			case 'view.asset':
 			case 'edit.asset':
@@ -547,6 +558,7 @@ class user {
 			case 'sendCommandTo.asset':
 			case 'sendSimpleCommandTo.asset':
 				return
+					$byGroupAndCountry =
 					$hasRoleAtLocation =
 					$hasRoleAtCompany =
 					$hasRoleAtLocationAtCompany =
@@ -638,11 +650,13 @@ class user {
 		$awTable =
 		$hasGlobal =
 		$directlyAssignedToUser =
+		$byGroupAndCountry =
 		$hasRoleAtCompany =
 		$hasRoleAtLocation =
 		$hasRoleAtLocationAtCompany =
 		$onlyIfHasRolesAtAllAssignedLocations =
 		$ASSETWOLF_2_PREFIX =
+		$ZENARIO_LOCATION_MANAGER_PREFIX =
 		$ZENARIO_ORGANIZATION_MANAGER_PREFIX =
 		$ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX = false;
 	
@@ -675,7 +689,7 @@ class user {
 			$isGlobal = true;
 			//Only certain combination of settings are valid, if the name of a permissions check is requested that does not exist
 			//then return false.
-			if (!\ze\user::checkNamedPermExists($perm, $directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations)) {
+			if (!\ze\user::checkNamedPermExists($perm, $directlyAssignedToUser, $byGroupAndCountry, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany, $onlyIfHasRolesAtAllAssignedLocations)) {
 				$hasGlobal = false;
 				break;
 			}
@@ -706,10 +720,10 @@ class user {
 			 && ($groupIds = \ze\user::permSetting($perm. '.groups'))) {
 			
 				//Get a row from the users_custom_data table containing the groups indexed by group id
-				$userGroups = \ze\user::groups($authenticatingUserId, true);
+				$usersGroups = \ze\user::groups($authenticatingUserId, true);
 			
 				foreach (\ze\ray::explodeAndTrim($groupIds, true) as $groupId) {
-					if (!empty($userGroups[$groupId])) {
+					if (!empty($usersGroups[$groupId])) {
 						$hasGlobal = true;
 						break 2;
 					}
@@ -755,6 +769,7 @@ class user {
 			}
 	
 			//Only actually do each check if it's enabled in the site settings
+			$byGroupAndCountry = $byGroupAndCountry && \ze\user::permSetting($perm. '.atCountry');
 			$hasRoleAtLocation = $hasRoleAtLocation && \ze\user::permSetting($perm. '.atLocation');
 			$hasRoleAtCompany = $hasRoleAtCompany && \ze\user::permSetting($perm. '.atCompany');
 			$hasRoleAtLocationAtCompany = $hasRoleAtLocationAtCompany && \ze\user::permSetting($perm. '.atLocationAtCompany');
@@ -762,6 +777,10 @@ class user {
 			//Look up table-prefixes if needed
 			if ($isAW) {
 				$ASSETWOLF_2_PREFIX = \ze\module::prefix('assetwolf_2', true);
+			}
+	
+			if ($byGroupAndCountry) {
+				$ZENARIO_LOCATION_MANAGER_PREFIX = \ze\module::prefix('zenario_location_manager', true);
 			}
 	
 			if ($hasRoleAtCompany || $hasRoleAtLocationAtCompany || $hasRoleAtLocation) {
@@ -790,9 +809,9 @@ class user {
 				$value = self::canInternal(
 					$target, $key, $authenticatingUserId,
 					$perm, $isAW, $awTable, $awIdCol, $isGlobal, $hasGlobal,
-					$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
+					$directlyAssignedToUser, $byGroupAndCountry, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
 					$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
-					$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
+					$ZENARIO_LOCATION_MANAGER_PREFIX, $ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
 				);
 			}
 		
@@ -804,9 +823,9 @@ class user {
 			return self::canInternal(
 				$target, $targetId, $authenticatingUserId,
 				$perm, $isAW, $awTable, $awIdCol, $isGlobal, $hasGlobal,
-				$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
+				$directlyAssignedToUser, $byGroupAndCountry, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
 				$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
-				$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
+				$ZENARIO_LOCATION_MANAGER_PREFIX, $ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
 			);
 		}
 	}
@@ -814,18 +833,23 @@ class user {
 	private static function canInternal(
 		$target, $targetId, $authenticatingUserId,
 		$perm, $isAW, $awTable, $awIdCol, $isGlobal, $hasGlobal,
-		$directlyAssignedToUser, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
+		$directlyAssignedToUser, $byGroupAndCountry, $hasRoleAtCompany, $hasRoleAtLocation, $hasRoleAtLocationAtCompany,
 		$onlyIfHasRolesAtAllAssignedLocations, $ASSETWOLF_2_PREFIX,
-		$ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
+		$ZENARIO_LOCATION_MANAGER_PREFIX, $ZENARIO_ORGANIZATION_MANAGER_PREFIX, $ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX
 	) {
-	
+		
+		$countryId =
 		$companyId =
 		$locationId =
 		$isUserCheck = false;
 	
 		//Look to see what type of object this is a check for
 		switch ($target) {
-			//If this was a check on a company or location, then we can use the provided company or location id
+			//If this was a check on a country, company or location, then we can use the provided id for that variable
+			case 'country':
+				$countryId = $targetId;
+				break;
+		
 			case 'company':
 				$companyId = $targetId;
 				break;
@@ -901,6 +925,53 @@ class user {
 			} else {
 				return false;
 			}
+		}
+		
+		if ($byGroupAndCountry) {
+			if ($countryId || ($locationId && $ZENARIO_LOCATION_MANAGER_PREFIX)) {
+				if ($groupIds = \ze\user::permSetting($perm. '.atCountry.groups')) {
+					if (!$countryId) {
+						//Try to work out what country this location is in.
+						//Though note that we can save ourselves a DB request if the information
+						//we need is already in the core vars.
+						if (!empty(\ze::$vars['countryId'])
+						 && !empty(\ze::$vars['locationId'])
+						 && $locationId == \ze::$vars['locationId']) {
+							$countryId = \ze::$vars['countryId'];
+						} else {
+							$countryId = \ze\sql::fetchValue('
+								SELECT country_id
+								FROM '. DB_PREFIX. $ZENARIO_LOCATION_MANAGER_PREFIX. 'locations
+								WHERE id = '. (int) $locationId
+							);
+						}
+					}
+					
+					if ($countryId) {
+						if (\ze\sql::numRows('
+							SELECT 1
+							FROM '. DB_PREFIX. 'user_country_link
+							WHERE country_id = \''. \ze\escape::sql($countryId). '\'
+							  AND user_id = '. (int) $authenticatingUserId
+						)) {
+							
+							//Get a row from the users_custom_data table containing the groups indexed by group id
+							$usersGroups = \ze\user::groups($authenticatingUserId, true);
+			
+							foreach (\ze\ray::explodeAndTrim($groupIds, true) as $groupId) {
+								if (!empty($usersGroups[$groupId])) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			//Note: this logic doesn't cover giving access to edit user accounts
+			//of other users assigned to locations in your country.
+			//This isn't implemented and is not currently selectable in the User Permissions
+			//site settings.
 		}
 	
 		//The *thing* is assigned to a company, and they have [ANY/the specified] role at ANY location in that company
@@ -1063,6 +1134,29 @@ class user {
 		}
 	
 		return \ze\user::can('create-'. $thingToCreate, $assignedTo, $assignedToId, $multiple, $authenticatingUserId);
+	}
+	
+	
+	public static function canSeeCountries(&$authenticatingUserId, &$canSeeAllCountries, &$canSeeSpecificCountries) {
+		
+		if (!$authenticatingUserId) {
+			$authenticatingUserId = \ze\user::id();
+		}
+		
+		//Check if the current user/visitor has site-wide permissions to see every country
+		$canSeeAllCountries = \ze\user::can('view', 'country', false, false, $authenticatingUserId);
+		
+		//Otherwise check if they are a country manager who can only see their linked countries
+		if (!$canSeeAllCountries
+		 && $authenticatingUserId
+		 && \ze\user::permSetting('view.country.atCountry')
+		 && ($countryManagerGroups = \ze\ray::explodeAndTrim(\ze\user::permSetting('view.country.atCountry.groups'), true))
+		 && ($usersGroups = array_keys(\ze\user::groups($authenticatingUserId, true)))
+		 && (!empty(array_intersect($countryManagerGroups, $usersGroups)))) {
+			$canSeeSpecificCountries = true;
+		}
+		
+		return $canSeeAllCountries || $canSeeSpecificCountries;
 	}
 
 

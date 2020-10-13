@@ -86,13 +86,23 @@ if ($showWelcomePage
 		$this->getCIDAndCTypeFromSetting($cID, $cType, 'welcome_page');
 	}
 	ze\content::langEquivalentItem($cID, $cType);
+
+	if ($returnDestinationOnly) {
+		return ze\content::formatTag($cID, $cType, false, false, true);
+	}
 	$this->headerRedirect($this->linkToItem($cID, $cType, true));
 	
 //Otherwise attempt to redirect the user back where they came from
 } elseif ($redirectBackIfPossible && $validDestURL && ($redirectRegardlessOfPerms || $this->checkPermsOnDestURL())) {
+	if ($returnDestinationOnly) {
+		return ze\content::formatTag($_SESSION['destCID'], $_SESSION['destCType'], false, false, true);
+	}
 	$this->headerRedirect($_SESSION['destURL']);
 
 //Otherwise stay on the current page
 } else {
+	if ($returnDestinationOnly) {
+		return ze\content::formatTag($this->cID, $this->cType, false, false, true);
+	}
 	$this->headerRedirect($this->linkToItem($this->cID, $this->cType, true));
 }

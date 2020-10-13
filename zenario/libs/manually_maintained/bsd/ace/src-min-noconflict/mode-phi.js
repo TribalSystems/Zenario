@@ -119,6 +119,7 @@
 			'getMetricValue': {input: 'key, fromTimestamp[, nodeId]', returns: 'value'},
 			'getMetadata': {input: 'name[, nodeId]', returns: 'value'},
 			'getInheritedMetadata': {input: 'name[, nodeId]', returns: 'value'},
+			'getLocationMetadata': {input: 'name[, nodeId]', returns: 'value'},
 			'getTimestamp': {input: 'description[, timestamp]', returns: 'number'},
 			'getMinValue': {input: 'key, fromTimestamp, toTimestamp[, assetIds]', returns: 'value'},
 			'getMaxValue': {input: 'key, fromTimestamp, toTimestamp[, assetIds]', returns: 'value'},

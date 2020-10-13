@@ -94,6 +94,10 @@ zenario__email_template_manager:
                     db_column: l.status
                     show_by_default: true
                     width: xsmall
+                debug_mode_flag:
+                    title: Debug
+                    db_column: l.debug_mode
+                    hidden: true
                 sent_from_page:
                     title: Sent from page
                     db_column: "CONCAT(l.content_type,'_',l.content_id)"

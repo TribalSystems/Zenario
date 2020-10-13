@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-go-to-content-item-hover">
+        <g>
+            <rect x="0" y="0" width="16" height="16" style="fill:rgb(51,51,51);"/>
+            <g>
+                <path d="M10.968,2.422L5.405,2.422L5.405,5.066L6.727,5.066L6.727,3.744L10.421,3.744L10.694,4.018L10.694,5.727L12.404,5.727L12.678,6.002L12.678,11.678L6.727,11.678L6.727,10.355L5.405,10.355L5.405,13L14,13L14,5.454L10.968,2.422Z" style="fill:white;fill-rule:nonzero;"/>
+                <path d="M6.796,6.342L3.51,6.174L4.11,7.008C0.356,9.709 1.439,12.095 1.739,12.512C1.373,10.243 4.893,8.977 5.31,8.677L5.91,9.511L6.796,6.342Z" style="fill:rgb(229,7,7);fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

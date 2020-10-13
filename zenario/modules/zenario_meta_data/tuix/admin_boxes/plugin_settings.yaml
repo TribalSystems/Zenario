@@ -24,6 +24,46 @@ plugin_settings:
                     type: checkbox
                     value: "0"
                     format_onchange: true
+                show_title:
+                    plugin_setting:
+                        name: show_title
+                    grouping: filters
+                    label: 'Show title'
+                    type: checkbox
+                    value: "1"
+                    format_onchange: true
+                title_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: title_html_tag
+                    grouping: filters
+                    label: Title tags
+                    value: h1
+                    visible_if:
+                        lib.value: show_title
+                    type: select
+                    values: &tags
+                        h1:
+                            label: h1
+                            ord: 1
+                        h2:
+                            label: h2
+                            ord: 2
+                        h3:
+                            label: h3
+                            ord: 3
+                        h4:
+                            label: h4
+                            ord: 4
+                        h5:
+                            label: h5
+                            ord: 5
+                        h6:
+                            label: h6
+                            ord: 6
+                        p:
+                            label: p
+                            ord: 8
                 show_date:
                     plugin_setting:
                         name: show_date
@@ -80,25 +120,63 @@ plugin_settings:
                         p:
                             label: p
                             ord: 8
-                show_title:
+                show_published_date:
                     plugin_setting:
-                        name: show_title
+                        name: show_published_date
                     grouping: filters
-                    label: 'Show title'
+                    label: " Show item's date published"
                     type: checkbox
-                    value: "1"
+                    note_below: "Warning: this shows information only normally visible to administrators."
+                    value: "0"
                     format_onchange: true
-                title_html_tag:
+                published_date_format:
+                    plugin_setting:
+                        name: published_date_format
+                    grouping: filters
+                    label: 'Date format:'
+                    type: radios
+                    format_onchange: true
+                    value: _MEDIUM
+                    values:
+                        _SHORT:
+                            label: Short
+                        _MEDIUM:
+                            label: Medium
+                        _LONG:
+                            label: Long
+                    indent: 1
+                published_date_html_tag:
                     indent: 1
                     plugin_setting:
-                        name: title_html_tag
+                        name: published_date_html_tag
                     grouping: filters
-                    label: Title tags
-                    value: h1
+                    label: Date tags
+                    value: h2
                     visible_if:
-                        lib.value: show_title
+                        lib.value: show_published_date
                     type: select
-                    values: *tags
+                    values: &tags
+                        h1:
+                            label: h1
+                            ord: 1
+                        h2:
+                            label: h2
+                            ord: 2
+                        h3:
+                            label: h3
+                            ord: 3
+                        h4:
+                            label: h4
+                            ord: 4
+                        h5:
+                            label: h5
+                            ord: 5
+                        h6:
+                            label: h6
+                            ord: 6
+                        p:
+                            label: p
+                            ord: 8
                 show_description:
                     plugin_setting:
                         name: show_description

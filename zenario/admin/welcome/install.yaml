@@ -12,7 +12,7 @@ install:
                     snippet:
                         html: |
                             <h1>Welcome to Zenario</h1>
-                            <p>It looks like the CMS has not yet been installed at this location.</p>
+                            <p>It looks like Zenario has not yet been installed.</p>
                 why:
                     pre_field_html: "Why?"
                     type: toggle
@@ -43,7 +43,7 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 1: Open Source License</h1>
+                            <h1>Step 1: BSD Open Source License</h1>
                             <p>Please read the following carefully:</p>
                 license:
                     pre_field_html: |
@@ -112,7 +112,7 @@ install:
                             <h1>Step 2: Database</h1>
                             <p>You will need access to a MySQL database. Please enter information about your database here.</p>
                 host:
-                    label: "Host, and optional port number:"
+                    label: "Hostname, and optional port number:"
                     type: text
                     value: localhost
                     row_class: row_form
@@ -135,7 +135,7 @@ install:
                     row_class: row_form
                     return_key_presses_button: next
                 password:
-                    label: "Password:"
+                    label: "Database Password:"
                     type: password
                     row_class: row_form
                     return_key_presses_button: next
@@ -144,6 +144,70 @@ install:
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
+                multi_db_description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h3>Configure Zenario multisite authentication?</h3>
+                    
+                    tooltip: |
+                            Several Zenario sites can use a single "global" copy of Zenario to perform multisite administrator authentication. If you are a web agency running several client sites, this feature can be helpful.
+                multi_db:
+                    label: |
+                            You may either install Zenario as a standalone CMS, or enter details of an existing "global" site, so administrators of that global site may also administer this new site. (If this is to be the global site, choose "standalone".)
+                    type: select
+                    format_onchange: true
+                    value: zenario_stand
+                    values:
+                        zenario_standalone:
+                            label: "Install a standalone copy of Zenario"
+                        zenario_multisite:
+                            label: "Install Zenario with multisite administrator authentication"
+                multi_db_host:
+                    label: " Global database hostname, and optional port number:"
+                    type: text
+                    value: localhost
+                    row_class: row_form
+                    visible_if:
+                        lib.value('multi_db') == "zenario_multisite"
+                    return_key_presses_button: next
+                multi_db_port:
+                    same_row: true
+                    #label: "Database port number:"
+                    type: text
+                    placeholder: 3306
+                    #note_below: 'You can leave this blank to use the default value'
+                    visible_if:
+                        lib.value('multi_db') == "zenario_multisite"
+                    return_key_presses_button: next
+                multi_db_name:
+                    label: "Global Database Name:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                    visible_if:
+                        lib.value('multi_db') == "zenario_multisite"
+                multi_db_user:
+                    label: "Global Database User:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                    visible_if:
+                        lib.value('multi_db') == "zenario_multisite"
+                multi_db_password:
+                    label: "Global Database Password:"
+                    type: password
+                    row_class: row_form
+                    return_key_presses_button: next
+                    visible_if:
+                        lib.value('multi_db') == "zenario_multisite"
+                multi_db_prefix:
+                    label: "Global Table Prefix:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                    visible_if:
+                        lib.value('multi_db') == "zenario_multisite"
                 previous:
                     value: Back
                     type: submit
@@ -258,7 +322,13 @@ install:
                             label: ''
                     note_below: >
                         Month and day names will be translated into your site's language.
-                
+                vis_timezone_settings:
+                    site_setting:
+                        name: zenario_timezones__default_timezone
+                    label: 'Default timezone:'
+                    type: select
+                    empty_value: -- Select --
+                    value: 'Europe/London'
                 theme:
                     #full_width: true
                     label: 'Skin:'
@@ -271,7 +341,8 @@ install:
                         </div></div>
                 
                 logo:
-                    label: "Your site's logo (optional):"
+                    label: |
+                            Your site's logo (optional); if adding this, please ensure the directories "cache", "public" and "private" are writeable by the web server:
                     upload:
                         multi: false
                         accept: 'image/*'
@@ -316,27 +387,27 @@ install:
                             <h1>Step 4: Your Admin Account</h1>
                             <p>Please enter your details so we can make your first administrator account.</p>
                 first_name:
-                    label: "Your First Name:"
+                    label: "Your first name:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                 last_name:
-                    label: "Your Last Name:"
+                    label: "Your last name:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                 email:
-                    label: "Your Email:"
+                    label: "Your email address:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                 username:
-                    label: "Choose a Username:"
+                    label: "Choose an admin username:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                 password:
-                    label: "Choose a Password:"
+                    label: "Choose a password:"
                     type: password
                     oninput: |
                         zenario.updatePasswordNotifier('#password', '#snippet_password_message');
@@ -353,7 +424,7 @@ install:
                     snippet:
                         html: "&nbsp;"
                 re_password:
-                    label: "Re-enter your Password:"
+                    label: "Re-enter your password:"
                     type: password
                     row_class: row_form
                     return_key_presses_button: next
@@ -432,7 +503,7 @@ install:
                         html: |
                             <h1>Step 5: Site Configuration File</h1>
                             <p>
-                                Zenario requires the following file to contain its configuration settings:
+                                Zenario requires a configuration file to contain its various settings.
                             </p>
                             <p>
                                 This installer can populate the file for you,

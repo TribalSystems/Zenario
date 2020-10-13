@@ -1,4 +1,4 @@
-# Image Optimizer
+# Image Optimizer [![Build Status](https://travis-ci.org/psliwa/image-optimizer.svg?branch=master)](https://travis-ci.org/psliwa/image-optimizer)
 
 This library is handy and very easy to use optimizer for image files. It uses [optipng][2], [pngquant][1], [jpegoptim][6], [svgo][9] and few more libraries,
 so before use it you should install proper libraries on your server. Project contains Vagrantfile that defines testing
@@ -38,7 +38,17 @@ automatically.
 Supported options:
 
 * `ignore_errors` (default: true)
-* `execute_only_first_png_optimizer` (default: true) - execute the first successful or all `png` optimizers
+* `single_optimizer_timeout_in_seconds` (default: 60) - useful when you
+  want to have control how long optimizing lasts. For example in some
+  cases optimizing may not be worth when it takes big amount of time.
+  Pass `null` in order to turn off timeout.
+* `output_filepath_pattern` (default: `%basename%/%filename%%ext%`) -
+  destination where optimized file will be stored. By default it
+  overrides original file. There are 3 placehoders: `%basename%`,
+  `%filename%` (without extension and dot) and `%ext%` (extension with
+  dot) which will be replaced by values from original file.
+* `execute_only_first_png_optimizer` (default: true) - execute the first
+  successful or all `png` optimizers
 * `execute_only_first_jpeg_optimizer` (default: true) - execute the first successful or all `jpeg` optimizers
 * `optipng_options` (default: `array('-i0', '-o2', '-quiet')`) - an array of arguments to pass to the library
 * `pngquant_options` (default: `array('--force')`)

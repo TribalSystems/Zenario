@@ -48,14 +48,29 @@
 		//a little more readable and friendly when creating a new class
 		extensionOf = function(parent, initFun) {
 			if (parent) {
+				//Come up with a constructor function. Either use the one provided,
+				//otherwise try to use the one from the parent class.
 				initFun = initFun || (function() {
 						parent.apply(this, arguments);
 					});
 				
-				initFun.prototype = new parent;
+				//The prototype of the new class needs to be set to an instance of the old class
+				//There are two ways to do this.
+				try {
+					//This version crashes if the constructor function has parameters
+					initFun.prototype = new parent;
+				} catch (e) {
+					//This version works if constructor function has parameters, but crashes on old browsers
+					initFun.prototype = Object.create(parent.prototype);
+				}
+				//Hopefully at least one of those will work.
+				
+				//Finally the constructor needs to be set to the parent
 				initFun.prototype.constructor = parent;
 			
 			} else {
+				//If a dev calls this function without a parent class specified,
+				//simply make a brand new class.
 				initFun = initFun || (function() {});
 			}
 

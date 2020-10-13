@@ -275,7 +275,7 @@ body {
 
 body.ie6 .container,
 body.ie7 .container {
-	zoom:1;
+	zoom: 1;
 }
  
 	.responsive_only,

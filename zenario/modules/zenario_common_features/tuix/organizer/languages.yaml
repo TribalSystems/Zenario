@@ -140,7 +140,7 @@ zenario__languages:
                             
                             Every language has its own defined home page, an HTML content item.
                             
-                            One language must be defined as the "default", and that language's home page is the one to which the CMS directs visitors  when they arrive at your site (if they don't request a URL of a specific page).
+                            One language must be defined as the "default", and that language's home page is the one to which Zenario directs visitors when they arrive at your site (if they don't request a URL of a specific page).
                             
                             To add a language to your site, click "Add a language" and select the language from the list in order to enable it. If you don't see the language you want, you can define a new language with a few parameters.
             item_buttons:

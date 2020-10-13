@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="users_off_state">
+        <g id="New_Symbol_36">
+            <path d="M17.641,13.727C17.101,12.906 15.287,12.394 13.491,11.664C11.695,10.934 11.269,10.68 11.269,10.68L11.252,8.998C11.252,8.998 11.925,8.495 12.134,6.913C12.555,7.032 12.997,6.299 13.02,5.915C13.044,5.543 12.962,4.512 12.449,4.617C12.554,3.843 12.63,3.144 12.594,2.774C12.458,1.426 11.096,0 9,0C6.904,0 5.542,1.426 5.408,2.775C5.371,3.145 5.447,3.844 5.552,4.618C5.038,4.513 4.957,5.544 4.981,5.916C5.004,6.3 5.446,7.033 5.867,6.914C6.076,8.496 6.749,8.999 6.749,8.999L6.732,10.681C6.732,10.681 6.306,10.935 4.51,11.665C2.714,12.395 0.899,12.906 0.36,13.728C-0.125,14.465 0.021,18 0.021,18L17.979,18C17.979,18 18.125,14.465 17.641,13.727Z" style="fill:rgb(4,188,8);fill-rule:nonzero;"/>
+        </g>
+    </g>
+</svg>

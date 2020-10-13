@@ -37,7 +37,19 @@ class zenario_search_results extends ze\moduleBaseClass {
 	protected $results;
 	
 	public function init() {
-		$this->registerPluginPage(null, 'zenario_search_results');
+		//Only zenario_search_results and zenario_search_results_pro modules
+		//should be allowed to register plugin pages. Do not allow search box modules to do that.
+		if ($this->moduleClassName == 'zenario_search_results' || $this->moduleClassName == 'zenario_search_results_pro') {
+			//Check if there already is a plugin page for this module.
+			//Do not register if so.
+			$result = ze\row::query('plugin_pages_by_mode', true, ['module_class_name' => 'zenario_search_results']);
+			if (!ze\sql::numRows($result)) {
+				//Check if this content item already is a plugin page for a different module.
+				if (!ze\row::query('plugin_pages_by_mode', true, ['equiv_id' => \ze::$equivId, 'content_type' => \ze::$cType])) {
+					$this->registerPluginPage(null, 'zenario_search_results');
+				}
+			}
+		}
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);

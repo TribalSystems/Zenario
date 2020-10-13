@@ -53,6 +53,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$values['details/content_type_name_en'] = $details['content_type_name_en'];
 		$values['details/content_type_plural_en'] = $details['content_type_plural_en'];
 		$values['details/description_field'] = $details['description_field'];
+		$values['details/tooltip_text'] = $details['tooltip_text'];
 		$values['details/keywords_field'] = $details['keywords_field'];
 		$values['details/writer_field'] = $details['writer_field'];
 		$values['details/summary_field'] = $details['summary_field'];
@@ -160,6 +161,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				'content_type_name_en' => $values['details/content_type_name_en'],
 				'content_type_plural_en' => $values['details/content_type_plural_en'],
 				'description_field' => $values['details/description_field'],
+				'tooltip_text' => $values['details/tooltip_text'],
 				'keywords_field' => $values['details/keywords_field'],
 				'writer_field' => $values['details/writer_field'],
 				'summary_field' => $values['details/summary_field'],

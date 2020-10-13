@@ -250,16 +250,15 @@ site_settings:
                     type: text
                     readonly: true
                     note_below: |
-                        This is the size of the largest uploaded file that your server will accept.
-                                                    Your server administrator can change this by changing the server's Apache Config.
+                        This is the size of the largest file that can be uploaded to your server. Your server administrator can change this by changing the server's Apache Config (it is the lesser of post_max_size and upload_max_filesize as set in the php.ini file).
                 max_allowed_packet:
                     label: 'MySQL max_packet_size:'
                     type: text
                     readonly: true
                     note_below: |
-                        This is the size of the largest possible command the CMS can send to your database.
+                        This is the size of the largest possible SQL query Zenario can send to your database.
                                                         Images, along with their thumbnails and their working copies, will be added to the database using one command,
-                                                        so this puts a limit on the size of image that you can add to the CMS.
+                                                        so this puts a limit on the size of image that you can add to Zenario.
                                                         Your server administrator can change this by changing the <code>max_allowed_packet</code> setting
                                                         in the server's MySQL configuration.
         file_downloads:
@@ -279,6 +278,108 @@ site_settings:
                     type: checkbox
                     value: 1
                     note_below: "Places a <code>.htaccess</code> file in the temporary document directory to allow access only from the client's IP address."
+                 
+                    
+        awss3_file_downloads:
+            label: AWS S3
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>You can store document content items locally in the docstore, and/or on Amazon's AWS S3 storage.</p>
+                            <p>To use S3, you will need an AWS account and an IAM programmatic user account with access keys.</p>
+                            <p>This works for both public and private document content items. When downloading, Zenario creates a pre-signed URL for users to access each file.</p>
+                aws_s3_support:
+                    site_setting:
+                        name: aws_s3_support
+                    label: 'Enable support for AWS S3'
+                    type: checkbox
+                    redraw_onchange: true
+                    note_below: "AWS S3 permits files up to 5GB to be uploaded, but also see the File Upload Sizes tab and the Largest Possible Upload Size setting for your server; if that is lower than 5GB, file sizes will be limited at the lower size."
+                    
+                aws_s3_region:
+                    indent: 1
+                    site_setting:
+                        name: aws_s3_region
+                    label: 'Region:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
+                    validation:
+                        required_if_not_hidden: Please enter a region.
+                    side_note: 'Enter AWS region, e.g. "eu-west-2"'
+                aws_s3_key_id:
+                    indent: 1
+                    site_setting:
+                        name: aws_s3_key_id
+                    label: 'AWS access key ID:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
+                    validation:
+                        required_if_not_hidden: Please enter key ID.
+                aws_s3_secret_key:
+                    indent: 1
+                    site_setting:
+                        name: aws_s3_secret_key
+                    label: 'AWS secret access key:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
+                    validation:
+                        required_if_not_hidden: Please enter access key.
+                aws_s3_bucket:
+                    indent: 1
+                    site_setting:
+                        name: aws_s3_bucket
+                    label: 'Bucket ARN:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
+                    validation:
+                        required_if_not_hidden: Please enter a bucket.
+                csl_download_note: 
+                    class_name: zenario_content_list
+                    pre_field_html: "<div class=\"zenario_fbInfo\">"
+                    snippet: 
+                        html: "The settings below are used for document content items to show download link and file size of local and S3 files on Content Summary List plugins."
+                    post_field_html: "</div>"
+                    ord: 6
+                    id: csl_download_note
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
+                local_file_link_text:
+                    indent: 1
+                    site_setting:
+                        name: local_file_link_text
+                    label: 'Show local file download link text:'
+                    type: text
+                    value: ""
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
+                
+                s3_file_link_text:
+                    indent: 1
+                    site_setting:
+                        name: s3_file_link_text
+                    label: 'Show s3 file download link text:'
+                    type: text
+                    value: ""
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
+                show_format_and_size:
+                    indent: 1
+                    site_setting:
+                        name: show_format_and_size
+                    label: 'Show format and size'
+                    type: checkbox
+                    value:  1
+                    visible_if: |
+                        zenarioAB.value('aws_s3_support')
         document_tags:
             label: Document tags
             edit_mode:

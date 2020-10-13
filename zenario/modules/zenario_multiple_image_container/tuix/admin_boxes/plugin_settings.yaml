@@ -7,6 +7,7 @@ plugin_settings:
             hidden: true
         
         image_and_link:
+            ord: 4.4
             label: Choose images
             fields:
                 # Overwrite the single image picker from the Banner Plugin with a multiple image picker

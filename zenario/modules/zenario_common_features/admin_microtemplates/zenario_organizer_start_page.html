@@ -1,0 +1,52 @@
+<div id="organizer_start_page" class="organizer_start_page">
+	
+	<!-- Show the links at the top of the panel -->
+	<div class="organizer_start_page_section organizer_start_page_links_section">
+		
+		<!-- The links should be passed to us in the m.links merge field, so just loop through them -->
+		<% var li, link; %>
+		<% foreach (m.links as li => link) { %>
+			
+			<!-- For each one, draw it here here  -->
+			<div class="organizer_start_page_item" id="organizer_start_page_item__{{link.id|escape}}">
+				<a
+					<% if (link.href) { %>
+						href="{{link.href|escape}}"
+					<% } %>
+					<% if (link.onclick) { %>
+						onclick="{{link.onclick|escape}}"
+					<% } %>
+				>
+					<span class="organizer_start_page_item_icon {{link.css_class|escape}}"></span>
+					<label class="organizer_start_page_item_title">{{link.title|escape}}</label>
+					<label class="organizer_start_page_item_text">{{link.text|escape}}</label>
+					<% if (link.recordCount) { %>
+						<span class="organizer_start_page_item_recordCount">{{link.recordCount|escape}}</span>
+					<% } %>					
+				</a>
+			</div>
+		<% } %>
+	</div>
+	
+	
+	<!-- Show the Organizer Nav at the bottom of the panel -->
+	<div class="organizer_start_page_section organizer_start_page_nav_section">
+		<!-- Get Organizer's top-level nav  -->
+		<% var ni, navItem, nav = zenarioO.getNavigation(); %>
+		
+		<!-- Loop through each item  -->
+		<% foreach (nav.items as ni => navItem) { %>
+			<!-- Skip the enter for the start page though!  -->
+			<% if (navItem.id == "zenario__organizer") continue; %>
+			
+			<!-- For each one, draw it here here  -->
+			<div class="organizer_start_page_item" id="organizer_start_page_item__{{navItem.id|escape}}">
+				<a href="{{navItem.href|escape}}" onclick="{{navItem.onclick|escape}}">
+					<span class="organizer_start_page_item_icon {{navItem.css_class|escape}}"></span>
+					<label class="organizer_start_page_item_title">{{navItem.label|escape}}</label>
+					<label class="organizer_start_page_item_text">{{navItem.tooltip|escape}}</label>
+				</a>
+			</div>
+		<% } %>
+	</div>
+</div>

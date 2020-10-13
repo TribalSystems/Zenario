@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 
 namespace ImageOptimizer;
 
@@ -15,23 +15,23 @@ class ChainOptimizer implements Optimizer
     private $executeFirst;
     private $logger;
 
-    public function __construct(array $optimizers, $executeFirst, LoggerInterface $logger)
+    public function __construct(array $optimizers, bool $executeFirst, LoggerInterface $logger)
     {
         $this->optimizers = $optimizers;
-        $this->executeFirst = (boolean) $executeFirst;
+        $this->executeFirst = $executeFirst;
         $this->logger = $logger;
     }
 
-    public function optimize($filepath)
+    public function optimize(string $filepath): void
     {
-        $exceptions = array();
+        $exceptions = [];
         foreach($this->optimizers as $optimizer) {
             try {
                 $optimizer->optimize($filepath);
 
                 if($this->executeFirst) break;
             } catch (Exception $e) {
-                $this->logger->notice($e);
+                $this->logger->error('Error during image optimization. See exception for more details.', [ 'exception' => $e ]);
                 $exceptions[] = $e;
             }
         }

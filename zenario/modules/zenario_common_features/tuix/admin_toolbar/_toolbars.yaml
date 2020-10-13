@@ -242,13 +242,13 @@ sections:
                     priv: _PRIV_CREATE_REVISION_DRAFT
                     confirm:
                         message: |
-                            When you want to edit a content item, the CMS makes a draft version. This won't be seen by site visitors until it is published.
+                            This is a content item that's published. To edit it, Zenario will make a new version as a draft. This won't be seen by site visitors until it is published.
                             
-                            Make a draft?
+                            Happy to proceed?
                         message__editing_published: |
                             You are editing a published content item.
                                 
-                            The CMS will make a draft version. This won't been seen by visitors until it is published.
+                            Zenario will make a draft version. This won't been seen by visitors until it is published.
                         button_message: Make a draft
                         button_message__just_view: Just view settings
                         cancel_button_message: Cancel

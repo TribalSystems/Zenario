@@ -38,13 +38,6 @@
 </div>
 <div class="Grid_Body">
 	<div class="container container_12">
-		<div class="span span2 span1_6 slot_search alpha slot small_slot Slot_Search">
-			<?php ze\plugin::slot('Slot_Search', 'grid'); ?>
-		</div>
-		<div class="span span10 span5_6 omega grid_space">
-			<span class="pad_slot">&nbsp;</span>
-		</div>
-		<div class="grid_clear"></div>
 		<div class="span span12 span1_1 Grouping_Content section alpha omega">
 			<div class="span span6 span1_2 slot_content alpha slot small_slot Slot_Content_1">
 				<?php ze\plugin::slot('Slot_Content_1', 'grid'); ?>
@@ -127,5 +120,5 @@
 	require CMS_ROOT. ze::$templatePath. '/includes/footer.inc.php';
 }?>
 
-<?php //data:eJy1Vk2P2yAQ_SsR5xzqrJSqvrVRs1tpW602lXqoVhaxsY2KGQS4SbTKfy_4K04CXsdtb_CGeTPMPD5eUUwYUyj8-Yp2NNE5CoPFHGWSJtFWEvwLhVqWZI4UA92OK2usVBQzrIwvurfAA8EJkWiOOC6IATfGI_oOwiD9tZYo0gY-zt8IORRmtqZ7kvQ57s5z7CfxCBm4smAW71F88FN8Jbx0URQ1rgrMmMFympDLjfkon4kSwBX9TVr2lgU4O7iCyZNHFffNCvpCb5jJU-Wwc0VRPaO7BZ8gOUxt36XvQIE2BMs4d6ZYWy5SOI8FpaA8i1bANeF6pkisKXDLdin4pT-FxjsKXFnEtbGfxgiqLwXOyCBhRO0SdHyZWOJ1yZip856obtcjJXnydKWXWuu2sk7MbHVdsaF0nkDqFBh1Hl7RGn2b_I9yWPxrOQwR-uTgY_5Gds72cYNPEwTmvLrYPYqozDd3Acd_0wXj7SuZNY3vgVkdrUEWA2xRau0jjqP38cDOR7DAoq3ArAIwN62200hgaaXkPeEA2nRk6v1w5T1Qo49JYp4dp6BwYzoncja8CXlbnzcQU8yc939tGbeDU-wr-d5SiBWIg6RZ7tFdaxx9TFvxPYEonfJo1SeqBccXswRs7SxpQfmPOsT7pfm1FHjfTIO7pdlDykqatEELKiVIFKaYKTM9fSI6law6XjtsmN6Z2X2pbYHs36oZP5JUf07MdRQGHfZsN96BWxFUzluxqEmqNWtW1jRnLBUatGjHU8PHPxmNrDI,//v2// ?>
-<?php //checksum:Fb1MnPqAWhBbhstSA--57wobSb0,// ?>
+<?php //data:eJy1Vl1v2yAU_SsRz3mYUynV_LZFS1upm6pm0h6mChEbO2iYiwAviar894G_4jTgOtn2Zs7lnvt1AL-ihHKuUfzzFW1ZajYojmZTlCuW4rWi5BeKjSrpFGkOpv2urInWOOFEW19054B7SlKq0BQJUlALrqwH_g7SIv29jggbCx-m74QcCjNZsh1N-xw3pzn2k3iEHHxZcIf3KD6GKb5SUfooihrXBeHcYhuW0reFhSifqZYgNPtNW_aWBQTf-4Kpo0cV990OhkKvuM1Tb2Dri6J7Rv8IPkO6v3Z8Pt_TTVBKJnK8AGGoMBNNE8NAuEzfKnUerrDxxpGvwqQ29tMYQfVQkJwOEmLmtqDDy5W9WZac2wbtqO6qHqmlo6cvvcxZ15X1yswW5x0bSucJlMmAM--pk60xVOR_lMPsX8thiDAkhxDzN7r1jk9Y_DpBECGqGzmgiMp88RRI8jdTsN6hljnT-BnY3XgJqhhgw5mzjziOwVufeF-vgsi2A5MKIMKO2i2xJMpJKXjCAYydyLX3w5n3QI8-pal9L7yCIo3plMg78CbkZXNeQcII974ttWVcBcfYZ_K9pBELkHvF8k1Ad61x9DFtxfcEsvTKo1WfrDYcXuwWcL1zpAUTP-oQt3P7u1GQXbOMbua2hoyXLG2DFkwpUCjOCNd2eXz9O5UsOl732TB9sKu70rgGuZ-i5vuRZuZLaq-jOOqwZ1d4B65lVDmv5awmqfYseVnTnLBUaNSiHU8NH_4AOpKT6Q,,//v2// ?>
+<?php //checksum:osutb9Q4ObTF_577NJQNZjNCsDw,// ?>

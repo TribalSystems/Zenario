@@ -187,6 +187,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	
 	public function init() {
+		
+		$hideBackButtonIfNeeded = false;
+		
 		//Flag that this plugin is actually a nest
 		ze::$slotContents[$this->slotName]['is_nest'] = true;
 		
@@ -286,8 +289,13 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 						$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['name_or_title'], true);
 					}
 					
-					if ($conductorEnabled) {
-						$tabMergeFields['Show_Back'] = (bool) $slide['show_back'];
+					if ($conductorEnabled
+					 && $this->slideNum == $slide['slide_num']) {
+					 	
+					 	if ($slide['show_back']) {
+							$tabMergeFields['Show_Back'] = true;
+							$hideBackButtonIfNeeded = (bool) $slide['no_choice_no_going_back'];
+					 	}
 						$tabMergeFields['Show_Refresh'] = (bool) $slide['show_refresh'];
 						$tabMergeFields['Show_Auto_Refresh'] = (bool) $slide['show_auto_refresh'];
 						$tabMergeFields['Auto_Refresh_Interval'] = (int) $slide['auto_refresh_interval'];
@@ -528,6 +536,18 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					self::$addedSubtitle = true;
 					$this->setPageTitle(ze::$pageTitle. ': '. $this->formatTitleText($this->slides[$this->slideNum]['name_or_title']));
 				}
+				
+				
+				if ($hideBackButtonIfNeeded) {
+					if (($backToState = $this->getBackState())
+					 && ($backs = $this->getBackLinks())
+					 && (!empty($backs[$backToState]['smart']))
+					 && (count($backs[$backToState]['smart']) > 1)) {
+					} else {
+						$this->sections['Tab'][$this->slideNum]['Show_Back'] = false;
+					}
+				}
+				
 			}
 		}
 		
@@ -544,9 +564,23 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		return $this->show;
 	}
 	
-	//Get an array of details on the back links, e.g. for use in breadcrumbs
-	public function getBackLinks($addCurrent = true) {
-		return require ze::funIncPath(__FILE__, __FUNCTION__);
+	//This function gets all of the breadcrumbs leading up to the current slide.
+	//It also gets the smart breadcrumbs at each stage.
+	protected $cachedBackLinks = null;
+	public function getBackLinks() {
+		
+		if ($this->cachedBackLinks === null) {
+			$this->cachedBackLinks = require ze::funIncPath(__FILE__, __FUNCTION__);
+		}
+		return $this->cachedBackLinks;
+	}
+	
+	protected function getBackState() {
+		if (!empty($this->commands['back'])
+		 && empty($this->commands['back']->cID)) {
+			return $this->commands['back']->toState;
+		}
+		return false;
 	}
 	
 	public function formatTitleText($text, $htmlescape = false) {
@@ -723,7 +757,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			SELECT
 				id, id AS slide_id,
 				slide_num, css_class, name_or_title, use_slide_layout,
-				states, show_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
+				states, show_back, no_choice_no_going_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
 				request_vars, hierarchical_var, global_command,
 				invisible_in_nav,
 				privacy, at_location, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
@@ -1413,7 +1447,26 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				$this->refreshPluginSlotJS($requests, $scrollToTopOfSlot, $fadeOutAndIn).
 				' return false;"';
 	}
+	//To show roles and sub-roles
+	public static function getRoleTypesIndexedByIdOrderedByName(){
+		$ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager'); 
+		$rv = [];
+		$ord = 0;
+		$sql = "SELECT 
+					id,
+					parent_id,
+					name
+				FROM " . 
+					DB_PREFIX . $ZENARIO_ORGANIZATION_MANAGER_PREFIX . "user_location_roles
+				ORDER BY name";
+		$result = ze\sql::select($sql);
+		while($row = ze\sql::fetchAssoc($result)){
+			$rv[$row['id']] = ['label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord];
+		}
+		return $rv;
+		
 	
+	}
 	
 	public function showFile() {
 		if ($class = $this->getSpecificEgg()) {

@@ -14,6 +14,10 @@ html {
 	position:relative;
 }
 
+.zenario_slot_padding {
+	display:none;
+}
+
 /*  HEADER
 --------------------------------------------------------------------------------------------------*/
 
@@ -44,12 +48,18 @@ html {
 
 /* ADMIN HACKS */
 
-	.zenario_adminLoggedIn.zenario_pageModeIsnt_preview.zenario_pageModeIsnt_menu .Grid_Header {
+	.zenario_adminLoggedIn.zenario_pageMode_edit .Grid_Header,
+	.zenario_adminLoggedIn.zenario_pageMode_item .Grid_Header,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .Grid_Header,
+	.zenario_adminLoggedIn.zenario_pageMode_template .Grid_Header {
 		height:auto;
 	}
-
-	.zenario_adminLoggedIn.zenario_pageModeIsnt_preview.zenario_pageModeIsnt_menu .slot_top {
-		margin-bottom:140px;
+	
+	.zenario_adminLoggedIn.zenario_pageMode_edit .slot_top,
+	.zenario_adminLoggedIn.zenario_pageMode_item .slot_top,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .slot_top,
+	.zenario_adminLoggedIn.zenario_pageMode_template .slot_top {
+		margin-bottom:133px;
 	}
 
 

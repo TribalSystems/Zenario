@@ -216,7 +216,7 @@ zenario__modules:
                 #    with_columns_set:
                 #        traits.is_slide: true
                 copy_plugin_instance:
-                    ord: 999
+                    ord: 221
                     parent: add_plugin
                     hide_on_filter: true
                     only_show_on_refiner: nest

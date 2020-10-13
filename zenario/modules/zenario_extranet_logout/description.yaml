@@ -22,6 +22,14 @@ vlp_class_name: zenario_extranet_logout
 css_class_name: zenario_extranet_logout
 is_pluggable: true
 default_framework: standard
+special_pages:
+    special_page:
+        page_type: zenario_logout
+        default_alias: logout
+        default_title: Logout
+        only_show_to_visitors_who_are_logged_in: true
+        logic: create_and_maintain_in_default_language
+        allow_hide: true
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

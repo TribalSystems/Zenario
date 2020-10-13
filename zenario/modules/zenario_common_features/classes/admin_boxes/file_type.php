@@ -48,7 +48,7 @@ class zenario_common_features__admin_boxes__file_type extends ze\moduleBaseClass
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('You may not register an executable file type.');
 		
 		} elseif (ze\row::exists('document_types', ['type' => $values['details/type']])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('This extension is already registered in the CMS.');
+			$box['tabs']['details']['errors'][] = ze\admin::phrase('This extension is already registered.');
 		}
 	}
 	

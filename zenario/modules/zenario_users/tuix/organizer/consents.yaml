@@ -7,7 +7,7 @@ zenario__users:
             ord: "1.2"
             label: Consent log
             tooltip: >
-                View user consents
+                When completing a form, a consent to store data may be required. View the log of consents.
             link:
                 path: zenario__users/panels/consents
     

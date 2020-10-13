@@ -209,23 +209,8 @@ zenario__users:
                     priv: _PRIV_DELETE_ADMIN
                     label: Trash
                     hide_in_select_mode: true
-                    multiple_select: true
-                    multiple_select_tooltip: Trash the selected local administrators
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure you wish to trash the administrator account "[[username]]"?
-
-                                The account will be disabled but preserved for audit trail purposes. (You can view trashed accounts via the trash can icon.)
-                            multiple_select_message: |
-                                Are you sure you wish to trash the selected administrator accounts?
-
-                                The account will be disabled but preserved for audit trail purposes. (You can view trashed accounts via the trash can icon.)
-                            button_message: Trash
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            trash: "1"
+                    admin_box:
+                        path: zenario_trash_admin
                     with_columns_set:
                         traits.local: true
                         traits.active: true

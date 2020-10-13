@@ -51,23 +51,35 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$values['details/screen_name_confirmed'] = $user['screen_name_confirmed'];
 			$values['details/terms_and_conditions_accepted'] = $user['terms_and_conditions_accepted'];
 			
+			//Look up the list of linked countries for this user
+			$values['details/linked_countries'] =
+				implode(',', ze\row::getValues('user_country_link', 'country_id', ['user_id' => $box['key']['id']]));
+			
 			$suspendedDate = date_format(new DateTime($user['suspended_date']), "d M Y H:i:s");
 			switch($user['status']) {
 				case 'contact':
+					$fields['details/status']['note_below'] = 
+						ze\admin::phrase('A contact cannot log in, but is stored as a customer enquiry record and/or for newsletter emailing.');
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is a contact. Contacts are stored in the database and can be sent emails via Zenario\'s Newsletter system. To convert to an extranet user, close this box and select an action in the "Actions" drop-down.');
+						ze\admin::phrase('To convert to an extranet user, close this box and select an action in the "Actions" drop-down.');
 					break;
 				case 'pending':
+					$fields['details/status']['note_below'] = 
+						ze\admin::phrase('A would-be extranet user who has not yet been activated. Depending on Extranet Registration plugin settings, someone may self-activate their account by verifying their email address, or an administrator may activate the account.');
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is a pending user, meaning that the person cannot log in to a password-protected area of the site until the account is made "Active". To do this, close this box and select an action in the "Actions" drop-down.');
+						ze\admin::phrase('To activate this account, close this box and use "Actions".');
 					break;
 				case 'active':
+					$fields['details/status']['note_below'] = 
+						ze\admin::phrase('A user who can log in to this site\'s extranet area, if it has one.');
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is an extranet user, with a status of "Active", meaning the person can log in to a password-protected area of the site. if you should need to suspend or delete this user\'s account, close this box and select an action in the "Actions" drop-down.');
+						ze\admin::phrase('To suspend this account, close this box and use "Actions".');
 					break;
 				case 'suspended':
+					$fields['details/status']['note_below'] = 
+						ze\admin::phrase('A previously activated extranet user. The account is suspended so they cannot log in. ');
 					$fields['details/status']['side_note'] = 
-						ze\admin::phrase('This person is a extranet user, with a status of "Suspended", meaning that the person cannot log in to a password-protected area of the site until the account is re-activated. To do this, close this box and select an action in the "Actions" drop-down.');
+						ze\admin::phrase('To re-activate, close this box and use "Actions", or "Delete" to delete.');
 					
 					$fields['details/status']['values']['suspended']['label'] .= ' (' . ze\admin::phrase('suspended on [[date]]', ['date' => $suspendedDate]) . ')';
 					break;
@@ -217,12 +229,12 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		if (!empty($box['tabs']['details']['edit_mode']['on'])) {
 			
 			if (!$values['details/status']) {
-				$fields['details/status']['error'] = ze\admin::phrase('Please select a status for this user.');
+				$fields['details/status']['error'] = ze\admin::phrase('Please select an account type for this person.');
 			}
 			
 			if (!($values['details/email'] || $values['details/first_name'] || $values['details/last_name'])) {
 				$fields['details/email']['error'] = $fields['details/first_name']['error'] = $fields['details/last_name']['error'] = 
-					ze\admin::phrase('Please enter an email, a first name or a last name.');
+					ze\admin::phrase('Please enter at least one of: email address, first name, last name.');
 			}
 			
 			//Call the ze\userAdm::isInvalid() function to get any errors in the submission
@@ -346,6 +358,17 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			}
 			
 			$box['key']['id'] = ze\userAdm::save($cols, $box['key']['id']);
+			
+			//Save the list on linked countries for this user
+			//Get a list of country ids selected
+			$countryIds = ze\ray::explodeAndTrim($values['details/linked_countries']);
+			
+			//Delete anything not selected
+			ze\row::delete('user_country_link', ['user_id' => $box['key']['id'], 'country_id' => ['!' => $countryIds]]);
+			
+			foreach ($countryIds as $countryId) {
+				ze\row::set('user_country_link', [], ['user_id' => $box['key']['id'], 'country_id' => $countryId]);
+			}
 		}
 	}
 	

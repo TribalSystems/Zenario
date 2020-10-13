@@ -94,6 +94,17 @@ if (($instance = ze\plugin::details($addPluginInstance))
 	//Update the request vars for this slide
 	ze\pluginAdm::setSlideRequestVars($instanceId, $slideNum);
 	
+	//Updated Title of the plugin when "Copy plugin from existing..." without edit and re-save the plugin 
+	$eggName = ze\row::get('plugin_settings', 'value', ['egg_id' => $eggId, 'name' => 'title']);
+	if ($eggName) {
+		$eggName = ze\module::displayName($instance['module_id']). ': '. $eggName;
+	} else {
+		$eggName = ze\module::displayName($instance['module_id']);
+	}
+					
+	if($eggName){
+		ze\row::update('nested_plugins', ['name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')], $eggId);
+	}
 	
 	return $eggId;
 } else {

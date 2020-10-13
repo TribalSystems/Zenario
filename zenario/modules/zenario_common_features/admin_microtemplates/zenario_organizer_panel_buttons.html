@@ -18,8 +18,9 @@
 			
 					<% var bi, button; %>
 					<% foreach (m.itemButtons as bi => button) { %>
-						<% if (bi == 0 && m.itemCSSClass) { %>
-							<% button.itemCSSClass = m.itemCSSClass; %>
+						<% if (bi == 0) { %>
+							<% button.isFirstButton = true; %>
+							<% button.itemsSelected = m.itemsSelected; %>
 						<% } %>
 						
 						{{zenarioT.microTemplate('zenario_organizer_button', button)}}

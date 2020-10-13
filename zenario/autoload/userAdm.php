@@ -388,6 +388,7 @@ class userAdm {
 	
 		\ze\row::delete('users', $userId);
 		\ze\row::delete('users_custom_data', ['user_id' => $userId]);
+		\ze\row::delete('user_country_link', ['user_id' => $userId]);
 	
 		if ($dataset = \ze\dataset::details('users')) {
 			\ze\row::delete('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'linking_id' => $userId]);

@@ -9,16 +9,23 @@ zenario_export_dataset:
     hide_tab_bar: true
     save_button_message: Export
     cancel_button_message: Cancel
-    max_height: 215
+    max_height: 300
     tabs:
         download:
             label: File
             edit_mode:
                 enabled: true
+            notices: 
+                export_warning: 
+                    show: false
+                    type: warning
+                    message: 'No dataset fields are marked to be included in an export, so your download file will be empty.'
             fields:
+                
                 desc:
                     snippet:
                         html: ''
+           
                 type:
                     label: 'Format:'
                     type: radios

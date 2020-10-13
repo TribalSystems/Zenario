@@ -24,20 +24,20 @@ zenario_user__details:
                     label: "Email:"
                     type: text
                 email_verified: 
-                    label: "Email verified"
+                    label: "Email address verified"
                     type: checkbox
                     redraw_onchange: true
                     readonly: true
-                    side_note: If checked, the user has received an email and clicked on a special link within that email.
+                    side_note: Read-only. If checked, the user has clicked on a verification link within an email from this site, proving that the email address exists and they can access it.
                 salutation: 
                     label: "Salutation:"
                     type: text
                     allow_admin_to_change_visibility: true
                 first_name: 
-                    label: "First Name:"
+                    label: "First name:"
                     type: text
                 last_name: 
-                    label: "Last Name:"
+                    label: "Last name:"
                     type: text
                 status: 
                     label: "Status:"
@@ -46,20 +46,31 @@ zenario_user__details:
                         contact: 
                             ord: 1
                             label: Contact
-                            tooltip: "A user who cannot log in (for data capture or mailing purpose only)"
                         pending: 
                             ord: 2
-                            label: Pending extranet user
-                            tooltip: "A user who needs activation by an administrator before logging in"
+                            label: Extranet user (pending)
                         active: 
                             ord: 3
                             label: Extranet user (active)
-                            tooltip: "A user who can immediately log in to the site's extranet area"
                         suspended: 
                             ord: 4
-                            label: Suspended extranet user
-                            tooltip: "A suspended user who cannot log in"
+                            label: Extranet user (suspended)
                     redraw_onchange: true
+                
+                linked_countries:
+                    visible_if: |
+                        zenarioAB.value('status', 'details')
+                        && zenarioAB.value('status', 'details') != 'contact'
+                        && zenarioA.siteSettings.users_use_linked_countries
+                    label: "Linked countries:"
+                    pick_items:
+                        path: zenario__languages/panels/countries/refiners/active////
+                        min_path: zenario__languages/panels/countries
+                        max_path: zenario__languages/panels/countries
+                        target_path: zenario__languages/panels/countries
+                        multiple_select: true
+                        select_phrase: Select countries...
+                        nothing_selected_phrase: No countries selected
                 
                 screen_name_grouping:
                     dataset_label: '[Screen name grouping]'
@@ -68,7 +79,7 @@ zenario_user__details:
                 
                 screen_name: 
                     grouping: screen_name_grouping
-                    label: "Screen Name:"
+                    label: "Screen name:"
                     type: text
                     visible_if: |
                         zenarioAB.value('status', 'details')
@@ -222,17 +233,17 @@ zenario_user__details:
                     visible_if: |
                         zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
-                    label: "Ask user to change their password on next login"
+                    label: "Must change password on next login"
                     type: checkbox
                     side_note: "When the extranet user next logs in to the site, they will be asked to change their password before they can access the extranet area."
                 terms_and_conditions_accepted:
                     visible_if: |
                         zenarioAB.value('status', 'details')
-                    label: "User/contact has accepted terms and conditions"
-                    side_note: "When checked, this indicates the user has accepted the site's terms and conditions."
+                    label: "Has accepted terms and conditions"
+                    side_note: "When checked, this indicates the user or contact has accepted the site's terms and conditions."
                     type: checkbox
                 send_activation_email_to_user:
-                    label: 'Send activation email to User'
+                    label: 'Send activation email to user'
                     type: checkbox
                     side_note: "Send an activation email to the user with their login details."
                     visible_if: |
@@ -247,7 +258,7 @@ zenario_user__details:
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
                         required_if_not_hidden: Please select an email template
@@ -255,8 +266,8 @@ zenario_user__details:
                         zenarioAB.value('send_activation_email_to_user', 'details')
                         && zenarioAB.value('email', 'details')
                     side_note: >
-                        An email based on the selected Email Template will be sent
-                        to the User.
+                        An email based on the selected email template will be sent
+                        to the user.
                     hidden: Yes
         dates:
             visible_if: |

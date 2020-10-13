@@ -251,8 +251,8 @@ zenario__modules:
                     parent: view_dropdown
                     label: "Module's frameworks"
                     hide_in_select_mode: true
-                    with_columns_set:
-                        is_pluggable: true
+                    visible_if: |
+                        item.is_pluggable && item.status == 'module_running'
                     link:
                         path: zenario__modules/panels/modules/hidden_nav/view_frameworks/panel
                         refiner: module

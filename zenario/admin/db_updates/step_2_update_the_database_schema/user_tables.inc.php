@@ -320,6 +320,41 @@ _sql
 	ADD COLUMN `last_edited_username` varchar(255) DEFAULT NULL after `last_edited_user_id`
 _sql
 
+
+
+
+
+
+
+//
+//	Zenario 8.8
+//
+
+); ze\dbAdm::revision(51700
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]smart_group_rules`
+	MODIFY COLUMN `type_of_check`
+		enum('user_field','role','activity_band','in_a_group','not_in_a_group')
+	NOT NULL default 'user_field'
+_sql
+
+
+//Create a linking table for assigning users into countries
+//(Note: it's a core table, but needs the country manager running before you see
+// the option in the FAB to set it.)
+); ze\dbAdm::revision( 51750
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]user_country_link`
+_sql
+
+, <<<_sql
+	 CREATE TABLE `[[DB_PREFIX]]user_country_link` (
+		`user_id` int(10) unsigned NOT NULL,
+		`country_id` varchar(5) NOT NULL,
+		PRIMARY KEY (`user_id`, `country_id`),
+		UNIQUE KEY (`country_id`, `user_id`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
+_sql
 );
 
 

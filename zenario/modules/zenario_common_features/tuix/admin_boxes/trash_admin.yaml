@@ -1,0 +1,26 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_trash_admin:
+    key:
+        id: ''
+    title: "Trashing admin [[adminString]]"
+    tabs:
+        trash_admin:
+            edit_mode:
+                priv: _PRIV_DELETE_ADMIN
+                enabled: true
+            label: Details
+            notices:
+                trash_admin:
+                    show: true
+                    type: warning
+                    message: |
+                        Are you sure you wish to trash the administrator account "[[adminString]]"?
+                        
+                        Once trashed, the admin account will be disabled but preserved for audit trail purposes.
+                        (You can view trashed accounts via the trash can icon.)
+            fields:
+                dummy_field:
+                    #This field exists to prevent a bug where the admin box does not load correctly, because there are no fields.
+                    snippet:
+                        html: ''

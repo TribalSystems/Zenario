@@ -21,7 +21,7 @@ vlp_class_name: zenario_event_calendar
 css_class_name: zenario_event_calendar
 default_framework: standard
 is_pluggable: true
-can_be_version_controlled: true
+can_be_version_controlled: false
 default_instance_name: Event Calendar
 
 # Warning: adding a new dependency to an existing module will break any existing sites

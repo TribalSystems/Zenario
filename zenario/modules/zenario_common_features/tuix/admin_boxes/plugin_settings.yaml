@@ -28,6 +28,7 @@ plugin_settings:
         css_class: plugin_album_instance
         label: ''
         value: ''
+    missing_items_warning: 'ID [[items]] missing, save settings to clean up.'
     tab: first_tab
     tabs:
         first_tab:
@@ -116,9 +117,9 @@ plugin_settings:
     confirm:
         show: No
         message: |
-            You are editing a Published Content Item.
+            You are editing a content item that's published.
                             
-                            The CMS will make an identical Draft version for you to work on privately. Visitors will only see your changes when you Publish the new version.
-        button_message: Create a Draft
+            Zenario will make a version in draft form for you to work on privately. Visitors won't see any changes until the new version is published.
+        button_message: Create a draft
         cancel_button_message: Cancel
         message_type: warning

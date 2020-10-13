@@ -1,10 +1,10 @@
 <% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
 	<div
-		data-position="top"
+		data-position="bottom-right-aligned"
 		onclick="zenarioAB.enableOrDisableSite();"
 	
 		data-tooltip-options="
-			{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+			{position: {collision: 'flipfit'}}
 		"
 	
 		<% if (zenarioA.siteSettings.site_enabled) { %>
@@ -26,14 +26,26 @@
 		<% } %>
 	></div>
 <% } %>
+<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
+	<div
+	class="organizer_help_box"
+	data-step="16" data-position="bottom-right-aligned"
+	data-intro="{{'<p><strong>Help</strong></p><p>Click here for help.</p>'|escape}}"
+	onclick="zenarioAB.open('zenario_help_line', {currentUrl: document.location.href});"
+	title="Zenario support line"
+	data-tooltip-options="
+		{position: {collision: 'flipfit'}}
+	"
+></div>
+<% } %>
 <div
 	class="organizer_info_box"
 	data-step="16" data-position="bottom-right-aligned"
-	data-intro="{{'<p><strong>Information</strong></p><p>Click here to find out the software and installation details about the CMS version you are using.</p>'|escape}}"
+	data-intro="{{'<p><strong>Information</strong></p><p>Zenario software version and installation details.</p>'|escape}}"
 	onclick="zenarioA.infoBox();"
 	title="View site info"
 	data-tooltip-options="
-		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+		{position: {collision: 'flipfit'}}
 	"
 ></div>
 <% if (zenarioA.adminPrivs._PRIV_VIEW_DIAGNOSTICS) { %>
@@ -42,17 +54,17 @@
 		onclick="zenario.goToURL('welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"
 		title="View site diagnostics"
 		data-tooltip-options="
-			{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+			{position: {collision: 'flipfit'}}
 		"
 	></div>
 <% } %>
 <div
 	class="organizer_help"
 	data-step="17" data-position="bottom-right-aligned"
-	data-intro="{{'<p><strong>CMS Tour guide</strong></p><p>Click here to begin the tour on how to use this software system.</p>'|escape}}"
+	data-intro="{{'<p><strong>Zenario quick tour</strong></p><p>Take a quick tour on how to use Zenario.</p>'|escape}}"
 	onclick="zenarioA.showHelp('#zenario_fbog [data-intro]:visible');"
-	title="CMS Tour guide"
+	title="Zenario quick tour"
 	data-tooltip-options="
-		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+		{position: {collision: 'flipfit'}}
 	"
 ></div>

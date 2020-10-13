@@ -40,7 +40,7 @@ keywords: >
 vlp_class_name: zenario_banner
 css_class_name: zenario_banner
 is_pluggable: true
-can_be_version_controlled: true
+can_be_version_controlled: false
 nestable: true
 default_framework: image_then_title_then_text
 default_instance_name: Untitled Banner

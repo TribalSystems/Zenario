@@ -10,6 +10,10 @@ zenario__languages:
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries AS c'
                 id_column: c.id
+            refiners:
+                active:
+                    sql: 'c.active = 1'
+            refiner_required: false
             default_sort_column: country_name
             columns:
                 country_code:
@@ -53,14 +57,17 @@ zenario__languages:
                     label: 'All'
                     column: country_status
                     remove_filter: true
+                    hide_on_refiner: true
                 active:
                     label: 'Active'
                     column: country_status
                     value: active
+                    hide_on_refiner: true
                 suspended:
                     label: 'Suspended'
                     column: country_status
                     value: suspended
+                    hide_on_refiner: true
             item:
                 css_class: zenario_country_manager_country
                 name: Country

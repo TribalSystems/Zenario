@@ -898,3 +898,11 @@ del.zenario_link_status__menu_warning > del {
 div.ace_editor[readonly] .ace_content {
 	background-color: #e0e0e0;
 }
+
+/*
+	Plugins set to inactive modes
+*/
+
+.zenario_inactive_mode {
+	color: red;
+}

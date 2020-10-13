@@ -624,6 +624,9 @@ if ($methodCall == 'showFile') {
 				if (!empty(ze::$slotContents[$slotName]['content_id'])) {
 					ze\escape::flag('WIREFRAME');
 				}
+				if (ze::$slotContents[$slotName]['class']->shownInMenuMode()) {
+					ze\escape::flag('IS_MENU');
+				}
 			}
 		
 			if ($module->beingEdited()) {

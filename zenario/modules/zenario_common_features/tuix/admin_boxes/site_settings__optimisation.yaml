@@ -16,10 +16,10 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            This tab contains settings for caching the output of the CMS into static files,
+                            This tab contains settings for caching the output of Zenario into static files,
                             to reduce the load on your server and make your web pages load more quickly for visitors.
                             
-                            Visitors' browsers may cache files, even if the caching in the CMS is disabled.
+                            Visitors' browsers may cache files, even if Zenario's caching in disabled.
                             You may prevent this by enabling development mode,
                             or by pressing the &quot;Clear cache and check for changes&quot; button.
                         
@@ -60,7 +60,7 @@ site_settings:
                     note_below: |
                         Reduce the number of downloads by combining multiple CSS files together.
                         This will make your website load faster, but designers may want to turn this off for easier debugging.
-                        (Core files for the CMS will always be combined.)
+                        (Core files for Zenario will always be combined.)
                 
                 js_wrappers:
                     ord: 999
@@ -171,12 +171,12 @@ site_settings:
                     type: checkbox
                     readonly: true
                     note_below: |
-                        Enabling the query cache in MySQL will speed up the CMS when repeated queries are made to the database,
+                        Enabling the query cache in MySQL will speed up Zenario when repeated queries are made to the database,
                         resulting in faster page-generation times and less load on the server.
                         This feature can be enabled by your server administrator.
                 query_cache_size:
                     grouping: zenario_siteconfig
-                    label: 'Query cache Size'
+                    label: 'Query cache size'
                     type: text
                     style: 'width: 6em;'
                     readonly: true

@@ -47,6 +47,8 @@ zenario.lib(function(
 	"use strict";
 	phrase = phrase || {};
 
+var isBackend = !zenario.cID;
+
 
 //A very lightweight function for creating HTML tags,
 //by passing in their attributes in as pairs an array.
@@ -247,6 +249,7 @@ zenarioT.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack,
 		return false;
 	
 	} else {
+		
 		$(el || document.body).on(
 			'drop',
 			function(e) {
@@ -258,7 +261,6 @@ zenarioT.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack,
 				if (preCall) {
 					preCall();
 				}
-				
 				zenarioT.stopFileDragDrop(e);
 				zenarioT.doHTML5Upload(
 					e.target.files || e.dataTransfer.files,
@@ -478,6 +480,7 @@ zenarioT.checkActionUnique = function(object) {
 			'navigation_path',
 			'frontend_link',
 			'help',
+			'alert',
 			'link',
 			'onclick',
 			'panel',
@@ -1090,7 +1093,21 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		if (object.help.message) {
 			zenarioA.showMessage(object.help.message, true, messageType, false, htmlEscapeMessage);
 		}
+		
+	
+	} else if (object.alert) {
+		var messageType = object.alert.message_type || 'warning',
+			htmlEscapeMessage = !object.alert.html,
+			buttonPhrase = object.alert.button_message || zenarioA.phrase.OK;
+		
+		if (object.alert.message) {
+			zenarioA.showMessage(object.alert.message, '', messageType, false, htmlEscapeMessage, true, buttonPhrase);
+		}
 	}
+	
+	//zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase, onOkay) {
+	
+	
 };
 
 
@@ -1197,6 +1214,7 @@ zenarioT.hidden = function(tuixObject, lib, item, id, button, column, field, sec
 
 	return !tuixObject
 		|| engToBoolean(tuixObject.hidden)
+		|| (isBackend? tuixObject.hide_in_backend : tuixObject.hide_in_frontend)
 		|| (tuixObject.visible_if && !zenarioT.eval(tuixObject.visible_if, lib, tuixObject, item, id, button, column, field, section, tab, tuix))
 		|| (tuixObject.js_condition && !zenarioT.eval(tuixObject.js_condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix));
 	

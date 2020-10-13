@@ -591,7 +591,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 					if (thus.tuix.centralised_lists.values[item.values_source].info.can_filter) {
 						actionRequests.filter = item.values_source_filter;
 					}
-					thus.sendAJAXRequest(actionRequests).after(function(lov) {
+					thus.sendAJAXRequest(actionRequests, function(lov) {
 						item.lov = lov;
 						thus.loadFieldValuesListPreview(item.id);
 					});
@@ -918,7 +918,7 @@ methods.clickPage = function(pageId, isNewPage) {
 				mode: 'get_tab_field_record_counts',
 				pageId: pageId
 			};
-			thus.sendAJAXRequest(actionRequests).after(function(recordCounts) {
+			thus.sendAJAXRequest(actionRequests, function(recordCounts) {
 				page.record_counts_fetched = true;
 				if (recordCounts) {
 					foreach (recordCounts as fieldId => recordCount) {
@@ -1039,7 +1039,7 @@ methods.loadFieldsList = function(pageId) {
 				message = "<p><strong>This field contains data on " + field.record_count + " record" + plural + ".</strong></p>";
 				message += "<p>When you save changes to this dataset, this data will be deleted.</p>";
 			} else {
-				message = "<p>This field doesn't contain any data for any user/contact records.</p>";
+				message = "<p>This field isn't populated in any data records.</p>";
 			}
 			
 			message += "<p>Delete this dataset field?</p>";
@@ -1287,7 +1287,7 @@ methods.saveChanges = function() {
 	
 	zenarioA.nowDoingSomething('saving', true);
 	
-	thus.sendAJAXRequest(actionRequests).after(function(info) {
+	thus.sendAJAXRequest(actionRequests, function(info) {
 		zenarioA.nowDoingSomething();
 		
 		if (info) {

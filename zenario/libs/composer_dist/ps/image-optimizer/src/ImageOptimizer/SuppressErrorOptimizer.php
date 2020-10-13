@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 
 namespace ImageOptimizer;
 
@@ -7,7 +7,7 @@ namespace ImageOptimizer;
 use ImageOptimizer\Exception\Exception;
 use Psr\Log\LoggerInterface;
 
-class SuppressErrorOptimizer implements Optimizer
+class SuppressErrorOptimizer implements WrapperOptimizer
 {
     private $optimizer;
     private $logger;
@@ -18,17 +18,17 @@ class SuppressErrorOptimizer implements Optimizer
         $this->logger = $logger;
     }
 
-    public function optimize($filepath)
+    public function optimize(string $filepath): void
     {
         try {
             $this->optimizer->optimize($filepath);
         } catch (Exception $e) {
-            $this->logger->notice($e);
+            $this->logger->error('Error during image optimization. See exception for more details.', [ 'exception' => $e ]);
         }
     }
 
-    public function unwrap()
+    public function unwrap(): Optimizer
     {
-        return $this->optimizer;
+        return $this->optimizer instanceof WrapperOptimizer ? $this->optimizer->unwrap() : $this->optimizer;
     }
 }

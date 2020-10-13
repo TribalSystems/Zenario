@@ -13,7 +13,7 @@ top_right_buttons:
         data-position: down
         data-intro: |
             <p><strong>Administrator</strong></p>
-            <p>This area displays the details of the user logged in.</p>
+            <p>Your administrator details, click to access your profile and password, and enable developer tools.</p>
 
     view_profile:
         parent: admin_name

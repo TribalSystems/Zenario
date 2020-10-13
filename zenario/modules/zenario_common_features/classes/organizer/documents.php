@@ -117,6 +117,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		
 		if (count($panel['items']) <= 0) {
 			unset($panel['collection_buttons']['reorder_root']);
+			unset($panel['collection_buttons']['regenerate_public_links']);
 		}
 	}
 	

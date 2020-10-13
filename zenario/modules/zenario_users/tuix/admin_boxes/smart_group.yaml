@@ -19,6 +19,9 @@ zenario_smart_group:
         locationsExist: false
         rolesExist: false
         activityBandsExist: false
+        isNotMemberExist: false
+        isMemberExist: false
+        
     identifier:
         css_class: zenario_smart_group
         label: Smart Group ID
@@ -67,7 +70,7 @@ zenario_smart_group:
                 
                 members: 
                     ord: 999997
-                    label: "Users that match these rules:"
+                    label: "Users/contacts that match these rules:"
                     type: text
                     readonly: true
                     style: |
@@ -78,7 +81,7 @@ zenario_smart_group:
                     ord: 999998
                     visible_if: tuix.key.intended_usage == 'smart_newsletter_group'
                     full_width: true
-                    label: "Users that match these rules:"
+                    label: "Users/contacts that match these rules:"
                     snippet: 
                         label: No rules are set. All users will be included.
                 
@@ -86,10 +89,10 @@ zenario_smart_group:
                     ord: 999999
                     visible_if: tuix.key.intended_usage == 'smart_permissions_group'
                     full_width: true
-                    label: "Users that match these rules:"
+                    label: "Users/contacts that match these rules:"
                     snippet: 
                         label: No rules are set. No one will be included.
-            
+                        
             custom_template_fields:
                 type__znz:
                     same_row: true
@@ -291,7 +294,12 @@ zenario_smart_group:
                     snippet: 
                         html: |
                             </td></tr>
-    
+                perms_comment:
+                    ord: 100006
+                    visible_if: tuix.key.intended_usage == 'smart_permissions_group'
+                    full_width: true
+                    snippet: 
+                        html: Only people with status of Active can log in to see private content items.
     lovs:
         fields: {}
         types:
@@ -301,8 +309,9 @@ zenario_smart_group:
             group:
                 parent: user_fields
                 ord: 100001
-                label: Group
-                visible_if: tuix.key.groupsExist
+                label: Group (Create a group to enable this option)
+                disabled_if: tuix.key.groupsExist == false
+
             checkbox:
                 parent: user_fields
                 ord: 100002
@@ -335,6 +344,18 @@ zenario_smart_group:
                 parent: has_access_to
                 label: Role
                 visible_if: tuix.key.rolesExist
+                
+            in_a_group:
+                ord: 8
+                parent: has_access_to
+                label: Is a member of any group
+                disabled_if: tuix.key.isMemberExist == false
+                
+            not_in_a_group:
+                ord: 9
+                parent: has_access_to
+                label:  Is not a member of any group
+                disabled_if: tuix.key.isNotMemberExist == false
 
                 
                 

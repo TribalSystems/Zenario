@@ -379,6 +379,38 @@ if (ze\priv::check()) {
 		} elseif ((ze::get('removePlugin') || ze::get('movePlugin')) && $level == 2) {
 			
 			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false, false), 'published' => ze\layoutAdm::usage($layoutId, false, true)];
+			
+			//Show how many items use a specific to slotName, and display links if possible.
+				$htmlmoduleIds = ze\module::id('zenario_html_snippet');
+				$WysmoduleIds = ze\module::id('zenario_wysiwyg_editor');
+				$moduleIds = [$htmlmoduleIds,$WysmoduleIds];
+				
+				$usageContentItems = ze\layoutAdm::slotUsage($slotName,$moduleIds, $countItems = false);	
+				$usage = [
+					'content_item' => $usageContentItems[0] ?? null,
+					'content_items' => count($usageContentItems)
+				];
+		
+				$usageLinks = [
+					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layoutId. '//'
+				];
+				$usedPages = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+				
+				$usagePluginItems = ze\layoutAdm::usage($layoutId, false, false, false, $countItems = false);
+	
+				$pluginusage = [
+					'content_item' => $usagePluginItems[0] ?? null,
+					'content_items' => count($usagePluginItems)
+				];
+		
+				$pluginusageLinks = [
+					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layoutId. '//'
+				];
+				$pluginusedPages = implode('; ', ze\miscAdm::getUsageText($pluginusage, $pluginusageLinks));
+				
+				$ahrfeLink = 'zenario/admin/organizer.php?fromCID='.$cID.'&fromCType='.$cType.'#zenario__layouts/panels/layouts/item_buttons/view_slots//'.$layoutId.'//';
+				$alink = "<a href = ".$ahrfeLink.">view layout usage </a>";
+				
 
 			$placement = ze\row::get(
 				'plugin_layout_link',
@@ -394,13 +426,19 @@ if (ze\priv::check()) {
 				if (ze::get('movePlugin')) {
 					echo ze\admin::phrase('Are you sure you wish to move the [[display_name]]?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
 				} else {
-					echo ze\admin::phrase('Are you sure you wish to remove the [[display_name]] from the layout?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
+					if(!$usageContentItems[0])
+					{
+						echo ze\admin::phrase('Are you sure you wish to remove the plugin [[display_name]] from layout '.$layoutId.'?  <br/><br/>No content items have version-controlled content in this slot.', $mrg);
+					}
+					else{
+						echo ze\admin::phrase('Are you sure you wish to remove the plugin [[display_name]] from layout '.$layoutId.'?  <br/><br/>This slot contains content on '.$usedPages.'. <br/><br/>We recommend you edit the content items and remove or relocate the content they have in this slot before removing the plugin from the layout.', $mrg);
+					}
 				}
 			} else {
 				if (ze::get('movePlugin')) {
 					echo ze\admin::phrase('Are you sure you wish to move this plugin?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
 				} else {
-					echo ze\admin::phrase('Are you sure you wish to remove this plugin from the layout?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
+					echo ze\admin::phrase('Are you sure you wish to remove this plugin from the layout?<br/><br/>This plugin contains content on '.$pluginusedPages.', '.$alink.'.Please edit and remove the content before removing the plugin from the layout.', $mrg);
 				}
 			}
 	

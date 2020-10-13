@@ -103,7 +103,12 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		$box['title'] =
 			ze\admin::phrase('Editing the alias for content item "[[tag]]"',
 				['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
-		
+				
+		$aliasUrl = ze\link::toItem($box['key']['cID'], $box['key']['cType'], true, '', false, true, true);
+
+		$aliasURL = '<a href="'.$aliasUrl.'" target= "_blank"> '.$aliasUrl. '</a>';
+		$fields['meta_data/alias']['note_below'] =
+			ze\admin::phrase('This content item can be accessed via the URL [[alias_url]]', ['alias_url' => $aliasURL]);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -142,6 +147,16 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			}
 			
 			ze\row::update('content_items', $cols, $key);
+		}
+		
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		if(!$_GET['refinerName'])
+		{
+			ze\tuix::closeWithFlags(['go_to_url' => $values['meta_data/alias'] ]);
+			exit;
 		}
 		
 	}

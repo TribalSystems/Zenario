@@ -1,0 +1,15 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slide:
+    lovs:
+        title_merge_fields:
+            country:
+                label: 'Country'
+            '[[company_id]]':
+                parent: country
+                data-class: country_icon
+                label: 'Country ID: [[countryId]]'
+            '[[zenario_country_manager:name]]':
+                parent: country
+                data-class: country_icon
+                label: 'Country name: [[zenario_country_manager:name]]'

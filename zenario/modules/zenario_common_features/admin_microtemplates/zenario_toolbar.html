@@ -4,12 +4,12 @@
 			<li class="zenario_at_top_left_dropdown zenario_at_button_with_children">
 				<a
 					class="zenario_at_top_left_org_link"
-					href="{{zenarioATLinks.organizer|escape}}#{{zenarioATLinks.organizer_hash|escape}}"
+					href="{{zenarioATLinks.organizer|escape}}#zenario__organizer/panels/start_page"
 					id="zenario_organizer_button"
 				><span class="zenario_at_button_main">
 					Go to Organizer
 				</span></a>
-				<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link', zenarioO.setNavigation(true).items)}}</ul>
+				<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link', zenarioO.getNavigation().items)}}</ul>
 			</li>
 		</ul>
 	</div>
@@ -66,6 +66,18 @@
 						onclick="zenarioA.infoBox();"
 						title="About Zenario"
 					></div>
+					<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
+						<div
+							class="zenario_at_dev_icon organizer_help_box"
+							data-step="16" data-position="bottom-right-aligned"
+							data-intro="{{'<p><strong>Help</strong></p><p>Click here for Help.</p>'|escape}}"
+							onclick="zenarioAB.open('zenario_help_line', {currentUrl: document.location.href});"
+							title="Zenario support line"
+							data-tooltip-options="
+								{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+							"
+						></div>
+					<% } %>
 				
 					<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
 						<div
@@ -90,7 +102,8 @@
 							<% } %>
 						></div>
 					<% } %>
-				</div>
+					
+			</div>
 		
 				<div class="zenario_at_status_button">
 					{{zenarioT.microTemplate('zenario_toolbar_status_icon', m.sections.status_button)}}

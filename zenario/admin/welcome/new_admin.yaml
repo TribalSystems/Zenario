@@ -14,7 +14,7 @@ new_admin:
                         html: |
                             <h1>Welcome [[username]]!</h1>
                             <p>
-                                After entering a password you can login and begin administrating your site.
+                                Please choose a password to confirm your account. After that, you will have administrator access to this site.
                             </p>
                 password:
                     label: "Password:"
@@ -35,13 +35,27 @@ new_admin:
                     snippet:
                         html: "&nbsp;"
                 re_password:
-                    label: "Re-enter your Password:"
+                    label: "Re-enter your password:"
                     type: password
                     row_class: row_form
                     return_key_presses_button: save_password_and_login
+                accept_box:
+                    type: checkbox
+                    row_class: row_form
+                    return_key_presses_button: save_password_and_login
+                    label:  I accept that my email, name and other details will be stored on this site, for the purposes of administering the site.
+                remember_me:
+                    type: checkbox
+                    row_class: row_form
+                    value: true
+                    return_key_presses_button: save_password_and_login
+                    label: Remember me
+                    tooltip: |
+                        If checked, you will see a "Login" button on the top-right of the website front-end the next time you come to the site.
                 save_password_and_login:
                     value: Save and login
                     type: submit
                     full_width: true
                     style: |
                         float: right;
+                

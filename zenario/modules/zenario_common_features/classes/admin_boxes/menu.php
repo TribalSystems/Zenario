@@ -349,9 +349,9 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		foreach ($langs as $lang) {
 			$path = $box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['value'];
 			if($path){
-				$nodes = explode('>',$path);
+				$nodes = explode('›',$path);
 				if(is_array($nodes) && $nodes){
-					$box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['value']= $path." (".count($nodes)." level)";	
+					$box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['value']= $path." [level".count($nodes)."]";	
 				}
 			}
 			

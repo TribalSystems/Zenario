@@ -73,7 +73,7 @@ class zenario_extranet_change_password extends zenario_extranet {
 		
 		if (!ze\user::id()) {
 			if (ze\priv::check()) {
-				echo ze\admin::phrase('You must be logged in as an Extranet User to see this Plugin.');
+				echo ze\admin::phrase('You must be logged in as an extranet user to see this plugin.');
 			}
 			return;
 		}

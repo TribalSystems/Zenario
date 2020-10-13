@@ -36,13 +36,37 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 	 	$box['key']['export_ids'] = $box['key']['id'];
 	 	//...then clear $box['key']['id'] so that when the FAB is saved it does not select all of the items it exported
 	 	$box['key']['id'] = '';
-	 	
-	 	
-		$fields['download/desc']['snippet']['html'] = ze\admin::phrase(
-			'<p>Only dataset fields marked to be included in exports will appear in your download. You can mark fields by checking the "Include in export" option in the <a href="zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[dataset]]//" target="zenario_dataset_editor">dataset editor<a>.</p>
+		$dataset = ze\dataset::details($box['key']['dataset']);
+		
+		//To show which fields included in export
+		$sql = self::getExportableDatasetFieldsSQL($box['key']['dataset']);
+		$result = ze\sql::select($sql);
+		$datasetFieldNames = '<ul>';
+		$fieldExists = false;
+		while ($row = ze\sql::fetchAssoc($result)) {
+			
+			if ($row['label']) {
+				$fieldExists = true;
+				$datasetFieldNames .= '<li>'.str_replace(":","",$row['label']).'</li>';
+			}
+		}
+		$datasetFieldNames .= '</ul>';
+		if($fieldExists) {
+			$linkHeader = ze\admin::phrase('<p>Fields to be exported:</p>');
+		} else {
+			$linkHeader = '';
+			$box['tabs']['download']['notices']['export_warning']['show'] = true;
+		}
+		
+		
+		$datasetExportFields = $datasetFieldNames;
+		$linkFooter = ze\admin::phrase(
+			'<p>To add fields, open the <a href="zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[dataset]]//" target="zenario_dataset_editor">'.$dataset['label'].' dataset<a>. Select the fields required, and mark them to be included in export.</p>
 			<br>
-			<p>If you\'re running any filters you will export the filtered view instead of all records.</p>'
+			<p>If your current view includes filters, the export will include only the filtered records.</p>'
 		, ['dataset' => $box['key']['dataset']]);
+		$fields['download/desc']['snippet']['html'] = $linkHeader.'<p>'.$datasetExportFields. '</p>'.$linkFooter ;
+		
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -50,6 +74,7 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		$result = ze\sql::select($sql);
 		$count = ze\sql::numRows($result);
 		if ($count <= 0) {
+			$box['tabs']['download']['notices']['export_warning']['show'] = false;
 			$box['tabs']['download']['errors'][] = ze\admin::phrase('No dataset fields are marked to be included in an export, so your download file will be empty.');
 		}
 	}
@@ -233,7 +258,7 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 	
 	private static function getExportableDatasetFieldsSQL($datasetId) {
 		$sql = '
-			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.field_name
+			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.label, f.field_name
 			FROM '.DB_PREFIX.'custom_dataset_fields f
 			INNER JOIN '.DB_PREFIX.'custom_dataset_tabs t
 				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)

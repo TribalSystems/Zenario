@@ -13,6 +13,10 @@ zenario_content_type_details:
                 priv: _PRIV_EDIT_CONTENT_TYPE
                 enabled: true
             fields:
+                tooltip_text:
+                    label: ''
+                    type: text
+                    show_as_a_span: true
                 module_id:
                     label: 'Module:'
                     readonly: true
@@ -32,7 +36,6 @@ zenario_content_type_details:
                     label: 'Name (plural):'
                     type: text
                     maxlength: "255"
-                
                 when_creating:
                     label: 'When creating:'
                 
@@ -57,7 +60,7 @@ zenario_content_type_details:
                         public:
                             label: Public, visible to everyone
                         logged_in:
-                            label: Private, only show to extranet users who are logged in
+                            label: Private, only show to extranet users
                 
                 menu_nodes:
                     indent: 1

@@ -7,13 +7,16 @@ zenario_export_content_items:
     hide_tab_bar: Yes
     save_button_message: Export
     cancel_button_message: Cancel
-    max_height: 110
+    max_height: 350
     tabs:
         download:
             label: File
             edit_mode:
                 enabled: true
             fields:
+                desc:
+                    snippet:
+                        html: ''
                 type:
                     label: 'Format:'
                     type: radios

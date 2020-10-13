@@ -114,7 +114,7 @@ zenario.on('', '', 'eventSetOrganizerIcons', function() {
 		}
 		
 		if (tooltipOptions.content = times[1]) {
-			tooltipOptions.position = {my: 'left+2 center', at: 'right center', collision: 'flipfit'};
+			tooltipOptions.position = {my: 'center top', at: 'center bottom', collision: 'flipfit'};
 			zenarioA.tooltips('#' + zenario_page_caching, tooltipOptions);
 		}
 	}, 200);

@@ -34,7 +34,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		$this->exitIfCannotEditDataset($datasetId);
 		$dataset = ze\dataset::details($datasetId);
 		
-		$panel['title'] = ze\admin::phrase('Managing the dataset "[[label]]"', $dataset);
+		$panel['title'] = ze\admin::phrase('Editing the dataset schema "[[label]]"', $dataset);
 		$panel['dataset'] = $dataset;
 		
 		//Whether to allow adding fields of type "group"

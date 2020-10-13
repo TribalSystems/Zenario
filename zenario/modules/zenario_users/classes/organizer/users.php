@@ -199,7 +199,11 @@ class zenario_users__organizer__users extends zenario_users {
 				
 			}else{
 				unset($panel['collection_buttons']['add']);
-				unset($panel['item_buttons']['delete']);
+				if ($refinerName == 'group_members' || $refinerName == 'smart_group') {
+					//unset($panel['item_buttons']['delete']);
+				} else {
+					unset($panel['item_buttons']['delete']);
+				}
 				unset($panel['collection_buttons']['import_dropdown']);
 			}
 			

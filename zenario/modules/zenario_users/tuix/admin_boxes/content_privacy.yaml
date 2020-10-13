@@ -21,7 +21,7 @@ zenario_content_privacy:
                 desc:
                     full_width: Yes
                     snippet:
-                        html: Use this screen to change permissions.
+                        html: Use this screen to determine permissions for this content item.
                 
                 
                 privacy:
@@ -30,22 +30,25 @@ zenario_content_privacy:
                     values:
                         public:
                             label: Public, visible to everyone
-                        logged_out:
-                            label: Public, only show to visitors who are NOT logged in
                         logged_in:
-                            label: Private, only show to extranet users who are logged in
+                            label: Private, only show to extranet users
                         group_members:
-                            label: 'Private, only show to extranet users in the group(s):'
+                            label: 'Private, only show to extranet users in group(s)...'
                             split_values_if_selected: true
                         in_smart_group:
-                            label: 'Private, only show to extranet users in the smart group:'
+                            label: 'Private, only show to extranet users in smart group...'
                             split_values_if_selected: true
                         logged_in_not_in_smart_group:
-                            label: 'Private, only show to extranet users NOT in the smart group:'
+                            label: 'Private, only show to extranet users NOT in smart group...'
                             split_values_if_selected: true
                         with_role:
-                            label: 'Private, only show to extranet users with a given role:'
+                            label: 'Private, only show to extranet users with role...'
+                            type: checkboxes
+                            values: ""
+                            checking_child_checks_parents: true
                             split_values_if_selected: true
+                        logged_out:
+                            label: Public, only show to visitors who are NOT logged in
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
                             split_values_if_selected: true

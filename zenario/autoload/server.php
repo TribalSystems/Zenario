@@ -285,9 +285,9 @@ class server {
 	}
 	
 	//Wrapper function for the phpMQTT library.
-	//Note: This library is currently not included in the publically downloadable version of Zenario.
-	//If you're using this version of Zenario then you'll need to install phpMQTT using composer before you can call this function in your code!
 	public static function mqttConnect($host, $port, $username, $password, $clientId = null) {
+		require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/phpmqtt/phpMQTT.php';
+		
 		$mqtt = new \Bluerhinos\phpMQTT($host, $port, $clientId ?? $username);
 		if ($mqtt->connect(true, NULL, $username, $password)) {
 			return $mqtt;

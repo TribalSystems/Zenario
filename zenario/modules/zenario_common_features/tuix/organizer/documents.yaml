@@ -99,6 +99,7 @@ zenario__content:
                     title: Short checksum
                     searchable: true
                     ascii_only: true
+                    show_by_default: true
                     db_column: f.short_checksum
                     hidden: false
                     css_class: "zenario_document_sub_fields"
@@ -145,15 +146,7 @@ zenario__content:
                     hide_on_filter: true
                     admin_box:
                         path: zenario_document_folder
-                        
-                reorder_root:
-                    priv: _PRIV_EDIT_DOCUMENTS
-                    hide_on_filter: true
-                    hide_in_select_mode: true
-                    label: Re-order
-                    admin_box:
-                        path: zenario_reorder_documents
-                        
+                
                 regenerate_public_links:
                     priv: _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS
                     hide_on_filter: true
@@ -205,16 +198,7 @@ zenario__content:
                 actions_dropdown:
                     label: Actions
                     multiple_select: true
-                    hide_when_children_are_not_visible: true
-                reorder:
-                    priv: _PRIV_EDIT_DOCUMENTS
-                    hide_on_filter: true
-                    hide_in_select_mode: true
-                    label: Re-order
-                    admin_box:
-                        path: zenario_reorder_documents
-                    with_columns_set:
-                        traits.is_folder: true
+                    hide_when_children_are_not_visible: true                
                 rename:
                     priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown

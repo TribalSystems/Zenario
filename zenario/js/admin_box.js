@@ -672,8 +672,6 @@ zenarioAB.enableOrDisableSite = function() {
 		}
 	);
 };
-
-
 zenarioAB.updateSEP = function() {
 	zenario.actAfterDelayIfNotSuperseded('updateSEP', function() {
 		$('#microtemplate__search_engine_preview').html(zenarioAB.microTemplate('zenario_admin_box_search_engine_preview', {}));

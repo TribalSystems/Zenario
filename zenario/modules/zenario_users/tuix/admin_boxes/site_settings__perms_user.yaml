@@ -124,11 +124,27 @@ site_settings:
                         name: perm.create-user.location.by.group
                     indent: 1
                     type: checkbox
-                    label: 'The current user a member of the group(s):'
+                    label: 'The current user is a member of the group(s):'
                     redraw_onchange: true
                 perm.create-user.location.groups:
                     site_setting:
                         name: perm.create-user.location.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items: *pick_group
+                    validation:
+                        required_if_not_hidden: Please select a group who can create a user at a location.
+                perm.create-user.location.by.atCountry:
+                    site_setting:
+                        name: perm.create-user.location.by.atCountry
+                    indent: 1
+                    row_class: zfab_or
+                    type: checkbox
+                    label: 'The current user is linked to the country the location is in, and is a member of the group(s):'
+                    redraw_onchange: true
+                perm.create-user.location.atCountry.groups:
+                    site_setting:
+                        name: perm.create-user.location.atCountry.groups
                     hide_if_previous_outdented_value_isnt: 1
                     indent: 2
                     pick_items: *pick_group

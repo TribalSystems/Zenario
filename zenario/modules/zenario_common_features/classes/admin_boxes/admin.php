@@ -398,6 +398,8 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				|| (ze\db::connectGlobal()
 						&& ze\row\g::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
 					$box['tabs']['details']['errors'][] = ze\admin::phrase('An Administrator with this Username already exists. Please choose a different Username.');
+				} elseif (preg_match('/[A-Z]/', $values['details/username'])) {
+					$fields['details/username']['error'] = ze\admin::phrase('The admin username must not contain upper case characters.');
 				}
 			}
 

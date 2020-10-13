@@ -87,4 +87,18 @@ class curl {
 		return $result;
 	}
 
+	// Takes a curl response header as a string and returns an array of headers
+	public static function getHeadersFromResponse($string) {
+		$headers = [];
+		foreach (explode("\n", $string) as $i => $line) {
+			if ($i == 0) {
+				$headers["http_code"] = $line;
+			} else {
+				list($key, $value) = explode(": ", trim($line));
+				$headers[$key] = $value;
+			}
+		}
+		return $headers;
+	}
+
 }

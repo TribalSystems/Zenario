@@ -697,12 +697,42 @@ class layoutAdm {
 		return \ze\link::absolute(). 'zenario/admin/organizer.php#'.
 				'zenario__layouts/panels/template_families/view_content//'. \ze\ring::encodeIdForOrganizer($templateFamily).  '//';
 	}
-	
-	
-	
-	
-	
-	
-	
+	//Function to display content item attached with particular slotname
+	public static function slotUsage($slotName, $moduleId = false, $countItems = true) {
+		
+		if (!$moduleId) {
+			$moduleId = [\ze\module::id('zenario_wysiwyg_editor')];
+
+		} elseif (!is_array($moduleId)) {
+			$moduleId = [$moduleId];
+		}
+		
+		if ($countItems) {
+			$sqlSlot = "
+				SELECT COUNT(DISTINCT cti.tag_id)";
+		} else {
+			$sqlSlot = "
+				SELECT DISTINCT cti.tag_id";
+		}
+
+
+		$sqlSlot .= " FROM ". DB_PREFIX. "plugin_settings AS zps 
+					 LEFT JOIN ". DB_PREFIX. "plugin_instances zpi
+						ON zps.instance_id = zpi.id 
+					 INNER JOIN ". DB_PREFIX. "content_items as cti
+						ON zpi.content_id = cti.id
+						AND zpi.content_version IN (cti.admin_version)
+					 where zpi.slot_name='".$slotName. "' and 
+					 zps.value !='' and  
+					 zps.name='html' and 
+					 cti.status in ('first_draft','published','draft','published_with_draft') and
+ 					 zpi.module_id in (". \ze\escape::in($moduleId, true). ")";
+						
+		if ($countItems) {
+			return \ze\sql::fetchValue($sqlSlot);
+		} else {
+			return \ze\sql::fetchValues($sqlSlot);
+		}
+	}
 
 }

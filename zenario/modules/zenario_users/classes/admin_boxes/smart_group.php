@@ -91,12 +91,20 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						}
 						break;
 					
+					case 'in_a_group':
+						++$n;
+						$values['smart_group/type__'. $n] = 'in_a_group';
+						break;
+					case 'not_in_a_group':
+						++$n;
+						$values['smart_group/type__'. $n] = 'not_in_a_group';
+						break;
 					//If a role is picked, set the select list
 					case 'role':
 						++$n;
 						$values['smart_group/type__'. $n] = 'role';
 						$values['smart_group/role__'. $n] = $rule['role_id'];
-						break;
+						break;		
 						
 					case 'activity_band':
 						++$n;
@@ -113,7 +121,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 					$box['title'] = ze\admin::phrase('Editing the smart newsletter group "[[name]]".', $details);
 					break;
 				case 'smart_permissions_group':
-					$box['title'] = ze\admin::phrase('Editing the smart permissions group "[[name]]".', $details);
+					$box['title'] = ze\admin::phrase('Editing the smart group "[[name]]".', $details);
 					break;
 			}
 		
@@ -125,7 +133,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 					$box['title'] = ze\admin::phrase('Creating a smart newsletter group');
 					break;
 				case 'smart_permissions_group':
-					$box['title'] = ze\admin::phrase('Creating a smart permissions group');
+					$box['title'] = ze\admin::phrase('Creating a smart group');
 					break;
 			}
 		}
@@ -179,11 +187,6 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			//Look for fields, exclude the tabs
 			if (!empty($field['parent']) && !empty($field['type'])) {
 				
-				//Permissions always require status to be active; there's no need to have the option for status
-				if ($box['key']['intended_usage'] == 'smart_permissions_group' && $field['db_column'] == 'status') {
-					$unsets[] = $fieldId;
-					continue;
-				}
 				
 				//If a field is flagged as "fundamental", add it to the main list and remove it from the second list
 				//Note that currently "fundamental" is only implemented for lists.
@@ -213,7 +216,10 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						
 					case 'group':
 						$field['visible_if'] = "zenarioAB.valueOnThisRow('type__', field.id) == 'group'";
+						$box['lovs']['types']['group']['label'] = 'Group';
 						$box['key']['groupsExist'] = true;
+						$box['key']['isMemberExist'] = true;
+						$box['key']['isNotMemberExist'] = true;
 						$optGroups['groups'][$field['parent']] = true;
 						break;
 			
@@ -357,7 +363,8 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		$fields['smart_group/members']['hidden'] = empty($rules);
 		
 		if (!empty($rules)) {
-			$values['smart_group/members'] = ze\smartGroup::countMembers($rules);
+			
+				$values['smart_group/members'] = ze\smartGroup::countMembers($rules);
 		}
 	}
 
@@ -387,10 +394,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				$rule['not'] = 0;
 				$rule['must_match'] = $values['smart_group/must_match'];
 				$rule['intended_usage'] = $box['key']['intended_usage'];
-				
-				//var_dump($type);
-				//exit;
-				
+								
 				switch ($type) {
 					//If a role is picked, set the select list
 					case 'role':
@@ -399,6 +403,18 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 							$rules[] = $rule;
 						}
 						break;
+					case 'in_a_group':
+							$rule['value'] = 'active';
+							$rule['type_of_check'] = $type;
+							$rules[] = $rule;
+						
+						break;
+					case 'not_in_a_group':
+							$rule['value'] = 'active';
+							$rule['type_of_check'] = $type;
+							$rules[] = $rule;
+						
+						break;			
 						
 					case 'activity_band':
 						if ($rule['activity_band_id'] = $values['smart_group/activity_bands__'. $n]) {
@@ -500,7 +516,6 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			
 			ze\row::set('smart_group_rules', $rule, $key);
 		}
-		
 		
 		//Delete any old existing rules that weren't just overwritten when saving about
 		$sql = "

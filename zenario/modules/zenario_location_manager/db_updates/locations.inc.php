@@ -951,4 +951,12 @@ _sql
 	ADD COLUMN `last_edited_username` varchar(255) DEFAULT NULL after `last_edited_user_id`
 _sql
 
+
+//Add an index on country Id
+); ze\dbAdm::revision(170
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	ADD KEY (`country_id`)
+_sql
+
 ); 

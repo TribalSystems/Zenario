@@ -41,15 +41,15 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 					$mrg['display_name'] = $module['display_name'];
 					$panel['key']['moduleClass'] = $module['class_name'];
 			
-					$panel['title'] = ze\admin::phrase('Phrases in the Language "[[lang_name]]" (source: "[[display_name]]" Module)', $mrg);
-					$panel['no_items_message'] = ze\admin::phrase('There are no "[[lang_name]]" Phrases for the "[[display_name]]" Module', $mrg);
+					$panel['title'] = ze\admin::phrase('Phrases of the module [[display_name]] in the language "[[lang_name]]"', $mrg);
+					$panel['no_items_message'] = ze\admin::phrase('The module [[display_name]] has no phrases in language "[[lang_name]]"', $mrg);
 				}
 		
 				unset($panel['columns']['module_class_name']);
 	
 			} elseif ($refinerName == 'language') {
-				$panel['title'] = ze\admin::phrase('Phrases in the Language "[[lang_name]]"', $mrg);
-				$panel['no_items_message'] = ze\admin::phrase('There are no Phrases in the Language "[[lang_name]]"', $mrg);
+				$panel['title'] = ze\admin::phrase('Phrases in the language "[[lang_name]]"', $mrg);
+				$panel['no_items_message'] = ze\admin::phrase('There are no phrases in the language "[[lang_name]]"', $mrg);
 			}
 	
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
@@ -282,17 +282,17 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 			
 					if (is_numeric($ids)) {
 						$mrg['code'] = ze\row::get('visitor_phrases', 'code', ['id' => $ids]);
-						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the Phrase &quot;[[code]]&quot;?', $mrg), '</p>';
+						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the phrase &quot;[[code]]&quot;?', $mrg), '</p>';
 					} else {
-						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the selected Phrases?'), '</p>';
+						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the selected phrases?'), '</p>';
 					}
 			
 					if ($mrg['cnt']) {
 						if ($mrg['cnt'] == 1) {
-							echo '<p>', ze\admin::phrase('1 translated Phrase will also be deleted.', $mrg), '</p>';
+							echo '<p>', ze\admin::phrase('1 translated phrase will also be deleted.', $mrg), '</p>';
 				
 						} else {
-							echo '<p>', ze\admin::phrase('[[cnt]] translated Phrases will also be deleted.', $mrg), '</p>';
+							echo '<p>', ze\admin::phrase('[[cnt]] translated phrases will also be deleted.', $mrg), '</p>';
 						}
 					}
 		
@@ -340,7 +340,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 		
 				} else {
 					if ($className != $row['module_class_name']) {
-						echo ze\admin::phrase('You can only merge phrases if they are all for the same Module');
+						echo ze\admin::phrase('You can only merge phrases if they are all for the same module');
 						exit;
 					}
 				}

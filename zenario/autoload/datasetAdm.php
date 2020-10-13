@@ -300,7 +300,14 @@ class datasetAdm {
 		}
 		
 		$key['dataset_id'] = $dataset['id'];
-	
+		
+		
+		//Attempted bugfix for a problem of fields that should have been classified as "other_system_field"
+		//being misclassified by devs on registration.
+		//Filter out any field where the db_column is set to an empty string.
+		$key['db_column'] = ['!' => ''];
+		
+		
 		if ($flat) {
 			$columns = ['id', 'is_system_field', 'label', 'default_label'];
 		} else {

@@ -307,6 +307,7 @@ class skinAdm {
 			foreach ([
 				'zenario_custom/templates',
 				'zenario/js',
+				'zenario/reference',
 				'zenario/styles',
 				'zenario/modules',
 				'zenario_custom/modules',

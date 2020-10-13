@@ -107,14 +107,22 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 					
 					} else {
 						$sql = "
-							SELECT 1
+							SELECT content_id,content_type,alias
 							FROM ". DB_PREFIX. "spare_aliases
 							WHERE `alias`= '". ze\escape::sql($alias). "'
 							  AND (content_id, content_type) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::sql($box['key']['cType']). "'))
 							LIMIT 1";
-					
+						
+						$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['show'] = false;
 						if (ze\sql::numRows($sql)) {
-							$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('"[[alias]]" already exists as a spare alias.', ['alias' => $alias]);
+							$aliasResult = ze\sql::fetchAssoc($sql);
+							$aliasTag = ze\content::formatTag($aliasResult['content_id'], $aliasResult['content_type']);
+							$linkSpare = ' <a href = "'.ze\link::absolute().'zenario/admin/organizer.php#zenario__administration/panels/zenario_settings_pro_features__spare_aliases" target= "_blank"> View this spare alias. </a>';
+							
+							$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['show'] = true;
+							$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['message'] = ze\admin::phrase('\'[[alias]]\' already exists as a spare alias. It points to \'[[aliasTag]]\' [[linkSpare]]', ['alias' => $alias,'aliasTag' => $aliasTag,'linkSpare' => $linkSpare]);
+							
+							$fields['meta_data/spare_aliases']['error'] = true;
 						}
 					}
 				}

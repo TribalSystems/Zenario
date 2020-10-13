@@ -165,10 +165,12 @@ if ($status === ZENARIO_403_NO_PERMISSION) {
 
 } elseif ($status === ZENARIO_401_NOT_LOGGED_IN) {
 	//Set the destination so the Visitor can come back here when logged in
-	$_SESSION['destCID'] = $content['id'];
-	$_SESSION['destCType'] = $content['type'];
-	$_SESSION['destURL'] = ze\link::protocol(). ze\link::host(). $_SERVER['REQUEST_URI'];
-	$_SESSION['destTitle'] = $version['title'];
+	if ($content) {
+		$_SESSION['destCID'] = $content['id'];
+		$_SESSION['destCType'] = $content['type'];
+		$_SESSION['destURL'] = ze\link::protocol(). ze\link::host(). $_SERVER['REQUEST_URI'];
+		$_SESSION['destTitle'] = $version['title'];
+	}
 	ze::$canCache = false;
 	
 	//Show the login page
@@ -604,13 +606,11 @@ if ($specificInstance || $specificSlot) {
 	} else {
 		echo 
 			'<div style="padding:auto; margin:auto; text-align: center; position: absolute; top: 35%; width: 100%;">',
-				htmlspecialchars($msg = ze\admin::phrase('Template File "[[file]]" is missing. ', ['file' => $file])),
+				htmlspecialchars($msg = ze\admin::phrase('Layout file "[[file]]" is missing. ', ['file' => $file])),
 				'<a href="zenario/admin/organizer.php">Go to Organizer</a>',
 			'</div>';
 		
-		if (!$isAdmin && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-			ze\db::reportError($msg);
-		}
+		ze\db::reportError('Layout file missing at', $msg);
 	}
 	
 	echo "\n", '</div></div></div>';

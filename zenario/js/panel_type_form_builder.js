@@ -894,7 +894,7 @@ methods.addTUIXTabEvents = function(itemType, itemId, tuixTabId) {
 					mode: 'validate_salesforce_field',
 					item: itemJSON
 				};
-				thus.sendAJAXRequest(actionRequests).after(function(response) {
+				thus.sendAJAXRequest(actionRequests, function(response) {
 					//Validation successfull
 					if (response === true) {
 						var notices = ['Field is valid.'];
@@ -1345,7 +1345,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 						if (thus.tuix.centralised_lists.values[item.values_source].info.can_filter) {
 							actionRequests.filter = item.values_source_filter;
 						}
-						thus.sendAJAXRequest(actionRequests).after(function(lov) {
+						thus.sendAJAXRequest(actionRequests, function(lov) {
 							item.lov = lov;
 							thus.loadFieldValuesListPreview(item.id);
 						});
@@ -2148,7 +2148,7 @@ methods.saveChanges = function() {
 
 	zenarioA.nowDoingSomething('saving', true);
 	
-	thus.sendAJAXRequest(actionRequests).after(function(info) {
+	thus.sendAJAXRequest(actionRequests, function(info) {
 		zenarioA.nowDoingSomething();
 		
 		if (info) {

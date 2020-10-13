@@ -44,7 +44,7 @@ class zenario_breadcrumbs extends zenario_menu {
 		$this->onlyIncludeOnLinks		= true;
 		$this->showInvisibleMenuItems	= true;
 		
-		$this->showInMenuMode();
+		//$this->showInMenuMode();
 		
 		//Get the Menu Node for this content item
 		$this->currentMenuId = ze\menu::getIdFromContentItem(ze::$equivId, ze::$cType, $this->sectionId, $mustBePrimary = true);

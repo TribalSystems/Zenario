@@ -19,7 +19,7 @@
 #          be quickly turned on or off by the first checkbox. This will also add a
 #          toggle button to allow the longer list to be hidden.
 #    
-#    The CMS will then add the CSS, JavaScript, loading logic and saving logic needed.
+#    Zenario will then add the CSS, JavaScript, loading logic and saving logic needed.
 zenario_admin:
     tabs:
         permissions:
@@ -69,6 +69,7 @@ zenario_admin:
                             label: Set a content item's feature image
                         _PRIV_MANAGE_MEDIA:
                             label: Manage images
+                    value: "_PRIV_VIEW_CONTENT_ITEM_SETTINGS,_PRIV_EDIT_DRAFT,_PRIV_CREATE_FIRST_DRAFT,_PRIV_CREATE_TRANSLATION_FIRST_DRAFT,_PRIV_CREATE_REVISION_DRAFT,_PRIV_DELETE_DRAFT,_PRIV_EDIT_CONTENT_ITEM_CATEGORIES,_PRIV_EDIT_CONTENT_ITEM_PERMISSIONS,_PRIV_EDIT_CONTENT_ITEM_TEMPLATE,_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE,_PRIV_MANAGE_MEDIA"
                 perm_editmenu:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -107,6 +108,7 @@ zenario_admin:
                             parent: _PRIV_VIEW_MENU_ITEM
                             label: Delete a menu section
                             label_class: zfab_scary_option
+                    value: "_PRIV_VIEW_MENU_ITEM,_PRIV_EDIT_MENU_TEXT,_PRIV_EDIT_MENU_ITEM,_PRIV_ADD_MENU_ITEM,_PRIV_DELETE_MENU_ITEM,_PRIV_REORDER_MENU_ITEM"
                 perm_publish:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -152,6 +154,7 @@ zenario_admin:
                         #    label: Manage documents
                         _PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST:
                             label: May receive content notifications
+                    value: "_PRIV_PUBLISH_CONTENT_ITEM,_PRIV_HIDE_CONTENT_ITEM,_PRIV_CANCEL_CHECKOUT,_PRIV_DELETE_TRASHED_CONTENT_ITEMS,_PRIV_MANAGE_CATEGORY,_PRIV_MANAGE_EMAIL_TEMPLATE,_PRIV_VIEW_LANGUAGE,_PRIV_MANAGE_LANGUAGE_CONFIG,_PRIV_MANAGE_LANGUAGE_PHRASE,_PRIV_VIEW_REUSABLE_PLUGIN,_PRIV_MANAGE_REUSABLE_PLUGIN,_PRIV_MANAGE_SPARE_ALIAS,_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST"
                 perm_designer:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -187,6 +190,7 @@ zenario_admin:
                         _PRIV_RESET_MODULE:
                             label: Uninitialise a module
                             label_class: zfab_scary_option
+                    value: "_PRIV_VIEW_TEMPLATE,_PRIV_EDIT_TEMPLATE,_PRIV_VIEW_SLOT,_PRIV_MANAGE_ITEM_SLOT,_PRIV_MANAGE_TEMPLATE_SLOT"
                 perm_manage:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -218,7 +222,7 @@ zenario_admin:
                             parent: _PRIV_VIEW_ADMIN
                             label: Change an admin's password
                             label_class: zfab_scary_option
-
+                    value: "_PRIV_VIEW_ADMIN"
                 # The Anonymous Comments Module or the Users Module will unhide these and
                 # add permissions here if either is running.
                 perm_edit_users:
@@ -235,7 +239,6 @@ zenario_admin:
                     hidden: true
                     full_width: true
                     checking_child_checks_parents: true
-                
                 perm_restore:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -260,7 +263,6 @@ zenario_admin:
                             parent: _PRIV_BACKUP_SITE
                             label: Reset the site
                             label_class: zfab_scary_option
-                
                 perm_system:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -299,6 +301,7 @@ zenario_admin:
                             label_class: zfab_scary_option
                         _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS:
                             label: Re-generate document public links
+                    value: "_PRIV_VIEW_DIAGNOSTICS,_PRIV_APPLY_DATABASE_UPDATES,_PRIV_VIEW_SITE_SETTING,_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS"
                 perm_documents:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -317,3 +320,4 @@ zenario_admin:
                         _PRIV_EDIT_DOCUMENTS:
                             parent: _PRIV_VIEW_DOCUMENTS
                             label: Upload, edit, delete documents
+                    value: "_PRIV_VIEW_DOCUMENTS,_PRIV_EDIT_DOCUMENTS"

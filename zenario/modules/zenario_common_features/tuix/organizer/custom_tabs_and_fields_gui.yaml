@@ -96,7 +96,7 @@ zenario__administration:
                                 label: Include in export
                                 type: checkbox
                                 visible_if: |
-                                    lib.tuix.show_include_in_export_option && ((item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item.is_new_field)) || item.allow_admin_to_change_export)
+                                    lib.tuix.show_include_in_export_option && ((item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item._just_added)) || item.allow_admin_to_change_export)
                             autocomplete:
                                 label: Autocomplete
                                 type: checkbox

@@ -60,7 +60,10 @@
 						{% if Show_Item_Title %}
 							<{{Item_Title_Tags}} class="content_list_title {{item.Content_Type|e}}">
 								<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
-								{% if 'Language' in item%}<span>({{item.Language|e}})</span>{% endif %}
+								{% if Show_File_Size and item.Local_File_Size %}
+									({{item.Local_File_Size}})
+								{% endif %} 
+								{% if item.Language %}<span>({{item.Language|e}})</span>{% endif %}
 							</{{Item_Title_Tags}}>
 						{% endif %}
 						{% if Show_Author_Image %}
@@ -78,7 +81,15 @@
 							<div class="content_list_excerpt">{{item.Excerpt_Text}}</div>
 						{% endif %}
 					</div>
-					
+					{% if item.Logged_in_user_is_admin and item.Content_panel_organizer_href_start %}
+					<div class="content_list_infoIcon">
+						<a
+							class="zenario_front_end_picked_item_info"
+							href="
+								{{item.Content_panel_organizer_href_start}}"
+							target="_blank">i</a>
+					</div>
+					{% endif %}
 					{% if Show_Category and item.Category %}
 						{% if item.Category_Landing_Page_Link %}
 							<a href="{{item.Category_Landing_Page_Link|e}}">

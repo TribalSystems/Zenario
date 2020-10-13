@@ -7,37 +7,27 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Registration
 description: |
-    <p>This Module allows visitors to the site to register and become Extranet Users.</p>
-            <p>When you install this Module it will automatically create a Registration page on your site.</p>
-            <p>The default behaviour is to have just one Registration page,
-                however you may create a Registration page for each Language on your site
-                by creating translations of the original Registration page in each Language.</p>
-            <p>To register, visitors must enter their email address (and choose a screen name, if you have enabled screen names in your site's settings).</p>
-            <p>In order for Users to complete the registration process with no intervention from yourself, you must choose an appropriate Email Template (e.g. 'Registration Confirmation') in the Module's settings.
-            The Module will then send a registration email to each User who signs up. They must then click a link inside the email (confirming their email address) to be automatically activated on the site.</p>
-            <p>By selecting an Email Template on the "Notification" tab in the Module Slot Settings you can receive email notifications every time when a new User has signed up.</p>
-            <p>You can create your own or customize existing Email Templates. The Email Template can contain various Merge Fields. The Merge Fields are fields, that will be replaced by real values on email sent. You can use the following fields in the Emails sent by the Extranet Registration Module:</p>
+    <p>This module allows visitors to the site to register and become extranet users.</p>
+    <p>When you install this module it will automatically create a registration page on your site.</p>
+    <p>The default behaviour is to have just one registration page, but on a multi-language site you may create one page for each language on your site by creating translations of the original content item in each language.</p>
+    <p>To register, people must enter their email address (and choose a screen name, if you have enabled screen names in your site's settings).</p>
+    <p>We recommend that there plugin is set to send a verification email to each new user's email address,  and that the user chooses their own password; but other configurations are possible.</p>
+    <p>It is possible for administrators to receive notification of each user who signs up, set this on the plugin's "User activation" tab.</p>
+    <p>You can create your own or customize existing email templates. The email template can contain various merge fields:</p>
             <ul>
-                <li>[[first_name]] - Visitor's first name.</li>
-                <li>[[last_name]] - Visitor's last name.</li>
-                <li>[[screen_name]] - Visitor's screen name.</li>
-                <li>[[password]] - Visitor's password.</li>
-                <li>[[email]] - Visitor's email address.</li>
-                <li>[[hash]] - A hash code required to activate the email address (for use in email verification Templates only).</li>
-                <li>[[ip_address]] - The IP address of the computer using which new User was registered.</li>
-                <li>[[cms_url]] - A Website URL.
-                <li>[[email_confirmation_link]] - A confirmation link to finish registration process (for use in email verification Templates only).</li>
-                <li>[[organizer_link]] - A link to the newly created User in Organizer (for use in admin notification Templates only).</li>
-                <li>[[user_groups]] - Comma separated list of groups to which user is signed up. Please note, this merge field can be used after User's email address verification.</li>
-                <li>[[*characteristic_name*]] - A value of the User's characteristic. Name of the characteristic should match the merge field name.</li>
+                <li>[[first_name]] - user's first name</li>
+                <li>[[last_name]] - user's last name</li>
+                <li>[[screen_name]] - user's screen name</li>
+                <li>[[password]] - user's password (only available at the time of sign-up)</li>
+                <li>[[email]] - user's email address</li>
+                <li>[[hash]] - a hash code required to activate the email address (for use in email verification templates only)</li>
+                <li>[[cms_url]] - this website's URL
+                <li>[[email_confirmation_link]] - a confirmation link to finish registration process (for use in email verification email templates only)</li>
+                <li>[[organizer_link]] - a link to the newly created user in Organizer (for use in admin notification templates only).</li>
+                <li>[[user_groups]] - comma separated list of groups to which user is signed up (can only be used after user's email address verification).</li>
             </ul>
-            <p>The User's status will remain pending until they have confirmed their email address. Once they have done this, they will be made 'active' and will be able to log in to your site.</p>
-            <p>Alternatively, you can not pick an Email Template, and manually activate any Users who sign up.</p>
-            <p>This Module supports flexible forms. The standard framework comes with a form that captures data for the first_name and last_name fields. By editing the framework, you may also capture data for the following fields:
-            title, middle_name, maiden_name, alt_email, website, job_title, company_name, bus_address1, bus_address2, bus_address3, bus_town, bus_state, bus_postcode, bus_country_id, bus_phone, mobile, fax, res_address1, res_address2, res_address3, res_town, res_state, res_postcode, res_country_id, res_phone and address_pref.</p>
-            
-            <p>This module creates the ability for you to specify a Registration Code and to link the Code to one or more Groups. When a User, in the process of registering, enters a valid Code, the User will automatically be made a member of the Group(s).</p>
-            <p>You can specify that a valid Code is mandatory, in which case the registration process will force new Users to enter a valid Code in order to register.</p>
+    <p>The user's status will remain pending until they have confirmed their email address. Once they have done this, they will be made 'active' and will be able to log in to your site.</p>
+    <p>If you prefer to avoid users activating themselves, you can choose that an administrator manually activates all new users.</p>
 category: management
 keywords: extranet, new, register, sign, signup, user
 

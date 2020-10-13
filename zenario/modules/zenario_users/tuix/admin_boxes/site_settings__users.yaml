@@ -192,6 +192,25 @@ site_settings:
                     value: details
                     side_note: |
                         When a group is created from the Groups panel, add the Group to this tab of the Edit User/Contacts admin box. Go to Datasets->Users to re-arrange.
+        
+        countries:
+            label: Countries
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    snippet:
+                        p: |
+                            Use this to enable the linked countries feature for extranet users.
+                            When editing an extranet user, you will be able to set which countries they are associated with.
+                users_use_linked_countries:
+                    site_setting:
+                        name: users_use_linked_countries
+                    label: 'Enable linked countries'
+                    type: checkbox
+                    value: ''
+        
         unconfirmed_users:
             label: Unconfirmed users
             edit_mode:

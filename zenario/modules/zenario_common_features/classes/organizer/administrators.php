@@ -91,10 +91,10 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			}
 			
 			$item['last_login'] = ze\admin::formatDateTime($item['last_login'], 'vis_date_format_med', $useDefaultLang = true);
-				
+
 			//Check if an admin has ever logged in.
 			if ($sessionId = $item['session_id']) {
-				
+
 				if(file_exists(session_save_path(). "/sess_" . $sessionId)) {
 					clearstatcache(true, session_save_path(). "/sess_" . $sessionId);
 					$sessionInfo = stat(session_save_path(). "/sess_" . $sessionId);
@@ -106,7 +106,25 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 					$inactivityDuration = (time() - $lastActivityTimestamp);
 				
 					if($inactivityDuration < 600) {
-						$item['last_login'] = 'Logged in now';
+						//When 2FA is true, show logged in now (pending 2FA) in last_login column.
+						if(ze\site::description('enable_two_factor_authentication_for_admin_logins'))
+						{
+							$sqlCode = "
+								Select value FROM ". DB_PREFIX. "admin_settings
+								WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
+								  AND admin_id ='". $id. "'";
+								  $sqlCodeResult = ze\sql::select($sqlCode);
+								  $sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
+								  if($sqlCodeRow['value'])
+								  {
+									  $item['last_login'] = 'Logged in now';
+								  } else {
+									  $item['last_login'] = 'Logged in now (pending 2FA)';
+								  }
+						} else {
+							$item['last_login'] = 'Logged in now';
+						}
+						
 					}
 				}
 			}
@@ -153,14 +171,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__users/panels/administrators') return;
 		
-		if (($_POST['trash'] ?? false) && ze\priv::check('_PRIV_DELETE_ADMIN')) {
-			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				if ($id != $_SESSION['admin_userid'] ?? false) {
-					ze\adminAdm::delete($id);
-				}
-			}
-		
-		} elseif (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_DELETE_ADMIN') && zenario_common_features::canCreateAdditionalAdmins()) {
+		if (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_DELETE_ADMIN') && zenario_common_features::canCreateAdditionalAdmins()) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\adminAdm::delete($id, true);
 			}

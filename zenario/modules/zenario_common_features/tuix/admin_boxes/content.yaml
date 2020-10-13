@@ -33,7 +33,7 @@ zenario_content:
         target_menu_title: ''
         
         last_title: ''
-        
+    
     identifier:
         css_class: content_draft
         label: Content item ID 
@@ -50,7 +50,23 @@ zenario_content:
                     show: false
                     type: warning
                     message: The chosen Layout is archived.
+                locked_warning:
+                    show: false
+                    type: warning
+                    message: ''
+                scheduled_warning:
+                    show: false
+                    type: warning
+                    message: ''
             fields:
+                special_page_message:
+                    ord: 19
+                    hidden: true 
+                    pre_field_html: "<div class=\"zenario_fbInfo\">"
+                    snippet: 
+                        html: ""
+                    post_field_html: "</div>"
+                    
                 title:
                     ord: 20
                     label: 'Browser title:'
@@ -103,8 +119,6 @@ zenario_content:
                             </label>
                     side_note: |
                         The release date is the publicly-displayed date of this content item. It may be different from the date you edit or publish it.
-                
-                
                 
                 menu:
                     ord: 32
@@ -191,7 +205,10 @@ zenario_content:
                     hide_if_previous_outdented_value_isnt: specific
                     pick_items: *pick_menu_pos
                     validation:
-                        required_if_not_hidden: Please select a position.
+                        required_if_not_hidden: Please select where this item should appear in the menu.
+                menu_content_status:
+                    type: hidden
+                    same_row: true        
                 menu_text:
                     grouping: menu
                     indent: 1
@@ -212,16 +229,59 @@ zenario_content:
                     label: 'Menu node text:'
                     type: text
                     maxlength: 255
+                    same_row: true
                     onchange: zenarioAB.tuix.___menu_text_changed = true;
                     validation:
                         required_if_not_hidden: Please enter some text for the menu node.
+                    oninput: |
+                        
+                        var $warningRow = $('#row__redraft_menu_warning'),
+                            $warningEl = $('#redraft_menu_warning');
+                        
+                        if (lib.value('menu_text_when_editing') != this.value
+                         && lib.valueIn('menu_content_status', 'draft', 'hidden_with_draft', 'published_with_draft')) {
+                            $warningRow.removeClass('zfab_inline_warning_hidden');
+                            $warningEl.text('Warning: The change to the menu node text will go live immediately, but you will need to publish the content item so that its changes go live.');
+                        
+                        } else
+                        if (lib.value('menu_text_when_editing') != this.value
+                         && lib.value('menu_content_status') == 'published') {
+                            $warningRow.removeClass('zfab_inline_warning_hidden');
+                            $warningEl.text('Warning: The change to the menu node text will go live immediately. For the content item, a new version will be created and you should publish this so that any other changes go live.');
+                        
+                        } else {
+                            $warningRow.addClass('zfab_inline_warning_hidden');
+                            $warningEl.text('');
+                        }
+                        
+                        get('path_of__' + this.id).value =
+                            !this.value?
+                                ''
+                            :    !get('parent_path_of__' + this.id).value?
+                                    this.value + " [level 1]"
+                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " [level "+ (get('parent_path_of__' + this.id).value.split(" › ").length + 1) + "]";    
                 menu_text_when_editing_on_load:
                     type: hidden
                     hidden: true
-                
-                
-                
-                
+                redraft_menu_warning:
+                    row_class: zfab_inline_warning_hidden
+                    grouping: menu
+                    indent: 1
+                    snippet:
+                        html: |
+                            <div id="redraft_menu_warning" class="zenario_fbWarning"></div>
+                path_of__menu_text_when_editing:
+                    grouping: menu
+                    hide_if_empty: true
+                    ord: 1003
+                    label: 'Path preview:'
+                    type: textarea
+                    disabled: disabled
+                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
+                parent_path_of__menu_text_when_editing:
+                    ord: 1004
+                    same_row: true
+                    type: hidden
                 alias:
                     ord: 50
                     label: 'Alias:'
@@ -251,6 +311,7 @@ zenario_content:
                         $('#suggest_alias_from_title').hide();
                 alias_warning_display_wrapper:
                     ord: alias.02
+                    row_class: zfab_inline_warning_hidden
                     snippet:
                         html: |
                             <div id="alias_warning_display"></div>
@@ -259,6 +320,8 @@ zenario_content:
                     hidden: true
                 alias_changed:
                     type: hidden
+                    same_row: true
+                    hide_if_empty: true
                 description:
                     ord: 70
                     label: 'Description meta tag:'
@@ -441,10 +504,6 @@ zenario_content:
                     insert_link_button:
                         exists: true
                     style: 'height: 250px;'
-                thumbnail:
-                    full_width: true
-                    snippet:
-                        html: ''
         content2:
             ord: 25.02
             edit_mode:
@@ -459,10 +518,6 @@ zenario_content:
                     insert_link_button:
                         exists: true
                     style: 'height: 250px;'
-                thumbnail:
-                    full_width: true
-                    snippet:
-                        html: ''
         content3:
             ord: 25.03
             edit_mode:
@@ -477,10 +532,6 @@ zenario_content:
                     insert_link_button:
                         exists: true
                     style: 'height: 250px;'
-                thumbnail:
-                    full_width: true
-                    snippet:
-                        html: ''
         content4:
             ord: 25.04
             edit_mode:
@@ -495,10 +546,67 @@ zenario_content:
                     insert_link_button:
                         exists: true
                     style: 'height: 250px;'
-                thumbnail:
-                    full_width: true
-                    snippet:
                         html: ''
+        rawhtml1:
+            ord: 25.05
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: code_editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    language: html
+                    tall_as_possible: true
+        rawhtml2:
+            ord: 25.06
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: code_editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    language: html
+                    tall_as_possible: true
+        rawhtml3:
+            ord: 25.07
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: code_editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    language: html
+                    tall_as_possible: true
+        rawhtml4:
+            ord: 25.08
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
+            fields:
+                content:
+                    full_width: true
+                    type: code_editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    language: html
+                    tall_as_possible: true
         css:
             ord: 31
             label: Background & CSS
@@ -603,7 +711,96 @@ zenario_content:
                             label: " • Don't repeat"
                     visible_if: |
                         lib.value('customise_background') == true
+        history:
+            edit_mode:
+                enabled: false
+            label: History
+            hidden: true
+            ord: 36
+            fields:
+                no_history_recorded:
+                    snippet:
+                        html: 'No history recorded.'
+                th_version:
+                    <div class="responsive_table_wrap"><table class="zfab_grey_table"><thead><tr><th>:
+                    hidden: true
+                    snippet:
+                        label: 'Version'
+                    </th>:
+                th_status:
+                    <th>:
+                    hidden: true
+                    snippet:
+                        label: 'Status'
+                    </th>:    
+                th_created:
+                    <th>:
+                    hidden: true
+                    snippet:
+                        label: 'Created'
+                    </th>:
+                th_last_edited:
+                    <th>:
+                    hidden: true
+                    snippet:
+                        label: 'Last edited'
+                    </th>:
+                th_published:
+                    <th>:
+                    hidden: true
+                    snippet:
+                        label: 'Published'
+                    </th>:    
+                th_comments:
+                    <th>:
+                    hidden: true
+                    snippet:
+                        label: 'Comments'
+                    </th></tr></thead>:
                 
+                table_end:
+                    hidden: true
+                    ord: 999999
+                    </table></div>:
+            
+            custom_template_fields:
+                version__znz:
+                    <tr><td>:
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+                    </td>:
+                status__znz:
+                    <td>:
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+                    </td>:
+                created__znz:
+                    <td>:
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+                    </td>:
+                last_edited__znz:
+                    <td>:
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+                    </td>:
+                published__znz:
+                    <td>:
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+                    </td>:    
+                comments__znz:
+                    <td>:
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+                    </td></tr>:
+
         file:
             ord: 35
             label: File
@@ -617,6 +814,33 @@ zenario_content:
                         drag_and_drop: true
                         accept: ''
                         extensions: []
+                        
+                s3_document_desc:
+                    ord: 21
+                    visible_if: |
+                        zenarioAB.tuix.key.cType == 'document'
+                    snippet:
+                        html: ""
+                
+                s3_file_upload:
+                    ord: 22
+                    label: 'S3 file:'
+                    snippet:
+                        html: ""
+                    hidden: true
+                s3_file_id:
+                    ord: 23
+                    label: ''
+                    type: hidden
+
+                s3_file_name:
+                    ord: 24
+                    label: ''
+                    type: hidden
+                s3_file_remove:
+                    ord: 25
+                    label: ''
+                    type: hidden    
         
         # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
         privacy:
@@ -643,7 +867,7 @@ zenario_content:
                 no_categories:
                     label: 'Categories:'
                     snippet:
-                        html: No Categories have been created.
+                        html: No categories have been created.
         
         plugins:
             ord: 90
@@ -744,3 +968,4 @@ zenario_content:
         html: true
         cancel_button_message: Cancel
         message_type: warning
+    
