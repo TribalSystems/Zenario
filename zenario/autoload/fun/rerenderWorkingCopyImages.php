@@ -41,24 +41,33 @@ if ($recreateCustomThumbnailOnes) {
 	if ($removeOldCopies) {
 		$sql = "
 			UPDATE ". DB_PREFIX. "files SET
-				custom_thumbnail_1_width = 0,
-				custom_thumbnail_1_height = 0,
+				custom_thumbnail_1_width = NULL,
+				custom_thumbnail_1_height = NULL,
 				custom_thumbnail_1_data = NULL
-			WHERE mime_type IN ". $mimeType;
+			WHERE mime_type IN ". $mimeType . "
+			  AND custom_thumbnail_1_width IS NOT NULL";
 		\ze\sql::update($sql);
 	}
 	
 	if (($custom_thumbnail_1_width = (int) \ze::setting('custom_thumbnail_1_width'))
 	 && ($custom_thumbnail_1_height = (int) \ze::setting('custom_thumbnail_1_height'))){
 		$sql = "
-			SELECT id, location, path, filename, data AS custom_thumbnail_1_data, mime_type, width AS custom_thumbnail_1_width, height AS custom_thumbnail_1_height
+			SELECT id
 			FROM ". DB_PREFIX. "files
 			WHERE mime_type IN ". $mimeType. "
 			  AND (width > ". (int) $custom_thumbnail_1_width. " OR height > ". (int) $custom_thumbnail_1_height. ")
-			  AND custom_thumbnail_1_data IS NULL";
+			  AND custom_thumbnail_1_width IS NULL";
 		$result = \ze\sql::select($sql);
 		
-		while($img = \ze\sql::fetchAssoc($result)) {
+		while ($id = \ze\sql::fetchValue($result)) {
+			$imageSql = "
+				SELECT id, location, path, filename, data AS custom_thumbnail_1_data, mime_type, width AS custom_thumbnail_1_width, height AS custom_thumbnail_1_height
+				FROM ". DB_PREFIX. "files
+				WHERE id = " . (int)$id;
+			
+			$imageResult = \ze\sql::select($imageSql);
+			$img = \ze\sql::fetchAssoc($imageResult);
+			
 			if ($img['location'] == 'docstore') {
 				if ($path = ze\file::docstorePath($img['path'])) {
 					$img['custom_thumbnail_1_data'] = file_get_contents($path);
@@ -85,24 +94,33 @@ if ($recreateCustomThumbnailTwos) {
 	if ($removeOldCopies) {
 		$sql = "
 			UPDATE ". DB_PREFIX. "files SET
-				custom_thumbnail_2_width = 0,
-				custom_thumbnail_2_height = 0,
+				custom_thumbnail_2_width = NULL,
+				custom_thumbnail_2_height = NULL,
 				custom_thumbnail_2_data = NULL
-			WHERE mime_type IN ". $mimeType;
+			WHERE mime_type IN ". $mimeType . "
+			  AND custom_thumbnail_2_width IS NOT NULL";
 		\ze\sql::update($sql);
 	}
 	
 	if (($custom_thumbnail_2_width = (int) \ze::setting('custom_thumbnail_2_width'))
 	 && ($custom_thumbnail_2_height = (int) \ze::setting('custom_thumbnail_2_height'))) {
 		$sql = "
-			SELECT id, location, path, filename, data AS custom_thumbnail_2_data, mime_type, width AS custom_thumbnail_2_width, height AS custom_thumbnail_2_height
+			SELECT id
 			FROM ". DB_PREFIX. "files
 			WHERE mime_type IN ". $mimeType. "
 			  AND (width > ". (int) $custom_thumbnail_2_width. " OR height > ". (int) $custom_thumbnail_2_height. ")
-			  AND custom_thumbnail_2_data IS NULL";
+			  AND custom_thumbnail_2_width IS NULL";
 		$result = \ze\sql::select($sql);
 		
-		while($img = \ze\sql::fetchAssoc($result)) {
+		while ($id = \ze\sql::fetchValue($result)) {
+			$imageSql = "
+				SELECT id, location, path, filename, data AS custom_thumbnail_2_data, mime_type, width AS custom_thumbnail_2_width, height AS custom_thumbnail_2_height
+				FROM ". DB_PREFIX. "files
+				WHERE id = " . (int)$id;
+			
+			$imageResult = \ze\sql::select($imageSql);
+			$img = \ze\sql::fetchAssoc($imageResult);
+			
 			if ($img['location'] == 'docstore') {
 				if ($path = ze\file::docstorePath($img['path'])) {
 					$img['custom_thumbnail_2_data'] = file_get_contents($path);

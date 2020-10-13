@@ -3509,10 +3509,11 @@ class welcome {
 		$values['0/backup_dir'] = preg_replace('/[\\\\\\/]+$/', '', $values['0/backup_dir']);
 		$values['0/docstore_dir'] = preg_replace('/[\\\\\\/]+$/', '', $values['0/docstore_dir']);
 	
-		//On multisite sites, don't allow local Admins to change the directory paths
-		if (\ze\db::hasGlobal() && !($_SESSION['admin_global_id'] ?? false)) {
+		//On multisite sites, only allow changing the directory paths if:
+		//this is a global admin,
+		//or this is a local admin with the "Change site settings" permission.
+		if (\ze\db::hasGlobal() && !($_SESSION['admin_global_id'] ?? false) && !\ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
 			$_SESSION['zenario_installer_disallow_changes_to_dirs'] = true;
-	
 		//Only allow changes to the directories if they were not correctly set to start with
 		} elseif (!isset($_SESSION['zenario_installer_disallow_changes_to_dirs'])) {
 			$_SESSION['zenario_installer_disallow_changes_to_dirs'] =
@@ -3520,7 +3521,7 @@ class welcome {
 			 && $fields['0/docstore_dir_status']['row_class'] == 'sub_valid';
 		}
 	
-		if ($_SESSION['zenario_installer_disallow_changes_to_dirs']) {
+		if ($_SESSION['zenario_installer_disallow_changes_to_dirs'] && !$freshInstall && $task != 'install') {
 			$fields['0/backup_dir']['readonly'] = true;
 			$fields['0/docstore_dir']['readonly'] = true;
 	

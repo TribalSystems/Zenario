@@ -737,13 +737,13 @@ if (ze\dbAdm::needRevision(48641)) {
 	$result = ze\sql::select($sql);
 	
 	$modules = [
-		DB_PREFIX . 'search_entry_box',
-		DB_PREFIX . 'search_entry_box_predictive_probusiness',
-		DB_PREFIX . 'search_results',
-		DB_PREFIX . 'search_results_pro',
-		DB_PREFIX . 'advanced_search',
-		DB_PREFIX . 'content_list',
-		DB_PREFIX . 'blog_news_list'
+		'zenario_search_entry_box',
+		'zenario_search_entry_box_predictive_probusiness',
+		'zenario_search_results',
+		'zenario_search_results_pro',
+		'zenario_advanced_search',
+		'zenario_content_list',
+		'zenario_blog_news_list'
 	];
 	
 	$values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 50];

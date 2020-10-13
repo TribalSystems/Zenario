@@ -2825,4 +2825,15 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
 	ADD KEY `content_type` (`content_type`,`equiv_id`)
 _sql
+
+//As of 21 Aug 2020 (HEAD, backpatched to 8.7 and 8.8), deleting a content item will wipe its alias.
+//This logic wipes the aliases of already deleted content items.
+//These are safe to re-apply more than once.
+);	ze\dbAdm::revision( 51304
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_items`
+	SET alias = ''
+	WHERE status = "deleted" AND alias <> ''
+_sql
+
 );
