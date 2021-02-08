@@ -380,7 +380,7 @@ zenario__content:
                         path: zenario_publish
                 delete:
                     priv: _PRIV_DELETE_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                         && item.id != item.equiv_id
                     hide_in_select_mode: true
@@ -414,7 +414,7 @@ zenario__content:
                             delete: 1
                 trash:
                     priv: _PRIV_HIDE_CONTENT_ITEM
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                         && item.id != item.equiv_id
                     hide_in_select_mode: true

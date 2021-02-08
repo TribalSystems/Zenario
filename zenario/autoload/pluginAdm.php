@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -890,7 +890,7 @@ class pluginAdm {
 
 	//Replace one instance with another
 	//Formerly "replacePluginInstance()"
-	public static function replace($oldmoduleId = false, $oldInstanceId, $newmoduleId = false, $newInstanceId, $cID = false, $cType = false, $cVersion = false, $slotName = false) {
+	public static function replace($oldmoduleId, $oldInstanceId, $newmoduleId, $newInstanceId, $cID = false, $cType = false, $cVersion = false, $slotName = false) {
 	
 		if ((!$oldmoduleId && !($oldmoduleId = \ze\row::get('plugin_instances', 'module_id', $oldInstanceId)))
 		 || (!$newmoduleId && !($newmoduleId = \ze\row::get('plugin_instances', 'module_id', $newInstanceId)))) {
@@ -1000,7 +1000,7 @@ class pluginAdm {
 			   ON gsl.link_from = 'slide'
 			  AND gsl.link_from_id = np.id
 			  AND np.is_slide = 1
-			WHERE np.instance_id = ". $instanceId);
+			WHERE np.instance_id = ". (int) $instanceId);
 	
 		foreach ([
 			'nested_paths', 'plugin_instance_store',
@@ -1061,7 +1061,7 @@ class pluginAdm {
 	
 
 	//Formerly "updatePluginInstanceInTemplateSlot()"
-	public static function updateLayoutSlot($instanceId, $slotName, $templateFamily = false, $layoutId, $moduleId = false, $cID = false, $cType = false, $cVersion = false, $copySwatchUp = false, $copySwatchDown = false) {
+	public static function updateLayoutSlot($instanceId, $slotName, $templateFamily, $layoutId, $moduleId = false, $cID = false, $cType = false, $cVersion = false, $copySwatchUp = false, $copySwatchDown = false) {
 	
 		if ($cID && $cType && !$cVersion) {
 			$cVersion = \ze\content::latestVersion($cID, $cType);

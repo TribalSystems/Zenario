@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -136,7 +136,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	
 	protected static function redirectPath(
 		$instanceId, $fromState,
-		$oldToState, $oldEquivId = 0, $oldContentType = '',
+		$oldToState, $oldEquivId, $oldContentType,
 		$newToState, $newEquivId = 0, $newContentType = ''
 	) {
 		ze\row::update('nested_paths',

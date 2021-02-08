@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -75,8 +75,8 @@ if ($_GET['cId'] && $_GET['cType'] && $_GET['cVersion']) {
 				
 				</div>';
 			echo '<script type="text/javascript" > 
-			parent.document.getElementById("s3_file_id").value = "'.$s3file['fid'].'";
-			parent.document.getElementById("s3_file_name").value = "'.$s3file['filename'].'";				
+			parent.document.getElementById("s3_file_id").value = "'. ze\escape::js($s3file['fid']). '";
+			parent.document.getElementById("s3_file_name").value = "'. ze\escape::js($s3file['filename']).'";				
 			</script>';
 		
 			echo '<div class = "remove_s3">

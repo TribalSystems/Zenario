@@ -73,7 +73,7 @@ diagnostics:
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: PHP version 7.0 or later
+                        html: PHP version 7.2 or later
                     visible_if: zenarioAW.togglePressed(field)
                 opcache_misconfigured:
                     grouping: sub_table

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -384,7 +384,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
             $consentFields = [];
             $sql = "select f.id, f.name, df.dataset_id 
                     from ".DB_PREFIX.ZENARIO_USER_FORMS_PREFIX."user_form_fields f inner join ".DB_PREFIX."custom_dataset_fields df 
-                    where df.type='consent' and f.user_form_id=".$formId." and df.id= f.user_field_id";
+                    where df.type='consent' and f.user_form_id=". (int) $formId. " and df.id= f.user_field_id";
        
             $result = ze\sql::select($sql);
             while($row = ze\sql::fetchAssoc($result)){

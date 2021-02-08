@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -278,12 +278,20 @@ class zenario_multiple_image_container extends zenario_banner {
 				switch ($values['links/link_type_'. $imageId]) {
 					case '_CONTENT_ITEM':
 						if (!$values['links/hyperlink_target_'. $imageId]) {
+							$fields['links/hyperlink_target_'. $imageId]['error'] = true;
 							$box['tabs']['links']['errors']['no_content_item'] = ze\admin::phrase('Please select a content item');
+						}
+						if ($values['links/link_to_anchor_'. $imageId]) {
+							if (!$values['links/hyperlink_anchor_'. $imageId]) {
+								$fields['links/hyperlink_anchor_'. $imageId]['error'] = true;
+								$box['tabs']['links']['errors']['no_anchor_name'] = ze\admin::phrase('Please enter an anchor name');
+							}
 						}
 						break;
 					
 					case '_EXTERNAL_URL':
 						if (!$values['links/url_'. $imageId]) {
+							$fields['links/url_'. $imageId]['error'] = true;
 							$box['tabs']['links']['errors']['no_url'] = ze\admin::phrase('Please enter a URL');
 						}
 						break;

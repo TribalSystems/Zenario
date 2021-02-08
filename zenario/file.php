@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,16 +27,27 @@
  */
 
 //Get the checksum and intended usage of this file from the request
-$usage = isset($_GET['usage'])? $_GET['usage'] : 'image';
-$checksum = isset($_GET['checksum'])? $_GET['checksum'] : (isset($_GET['c'])? $_GET['c'] : false);
 $requestedWidth = isset($_GET['width'])? (int) $_GET['width'] : '';
 $requestedHeight = isset($_GET['height'])? (int) $_GET['height'] : '';
 $retina = !empty($_GET['retina']);
-$key = isset($_GET['k'])? $_GET['k'] : '';
 $adminBackend = false;
 
-if ($checksum !== false) {
-	$checksum = preg_replace('/[^\\w-]/', '', $checksum);
+if (isset($_GET['checksum'])) {
+	$checksum = preg_replace('@[^\w\-\=]@', '', $_GET['checksum']);
+} elseif (isset($_GET['c'])) {
+	$checksum = preg_replace('@[^\w\-\=]@', '', $_GET['c']);
+} else {
+	$checksum = '';
+}
+if (isset($_GET['usage'])) {
+	$usage = preg_replace('@[^\w\-\=]@', '', $_GET['usage']);
+} else {
+	$usage = 'image';
+}
+if (isset($_GET['k'])) {
+	$key = preg_replace('@[^\w\-\=]@', '', $_GET['k']);
+} else {
+	$key = '';
 }
 
 //Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).

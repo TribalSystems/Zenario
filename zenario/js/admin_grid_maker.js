@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -483,6 +483,28 @@ zenarioGM.drawAddToolbar = function() {
 			helper: "clone",
 			revert: "invalid"
 		});
+	
+	var $addToolbar = $( "#"+ zenarioGM.addToolbarId ),
+		position = $addToolbar.position();
+	
+	//Fix a bug that caused the yellow box to stay attached to the right of the screen,
+	//and keep stretching if someone tries to pull it away.
+	//This is caused by the "right: 30px;" rule, however this rule does need to be there
+	//to get the positioning of the box correct.
+	//If the position is well defined, get whatever the current value is based off of the
+	//CSS calculation, and then manually set it to its own current value.
+	//Then it's safe to remove the "right: 30px;" rule to fix the bug, without affecting
+	//the positioning.
+	if (position
+	 && defined(position.top)
+	 && defined(position.left)) {
+		$addToolbar.css({
+			right: 'auto',
+			top: position.top,
+			left: position.left
+		});
+	}
+	
 	 $( "#"+ zenarioGM.addToolbarId ).draggable({ cursor: "move"});
 };
 

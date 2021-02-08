@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -671,11 +671,13 @@ class moduleAPI {
 			}
 			
 			\ze\row::set('plugin_pages_by_mode',
-				['equiv_id' => \ze::$equivId, 'content_type' => \ze::$cType],
 				[
-					'module_class_name' => $moduleClassName ?? $this->moduleClassName,
-					'mode' => $mode ?? ($this->setting('mode') ?: ''),
+					'equiv_id' => \ze::$equivId,
+					'content_type' => \ze::$cType,
 					'state' => substr(\ze\escape::ascii($state), 0, 2)
+				], [
+					'module_class_name' => $moduleClassName ?? $this->moduleClassName,
+					'mode' => $mode ?? ($this->setting('mode') ?: '')
 				]
 			);
 		}
@@ -1340,7 +1342,7 @@ class moduleAPI {
 	}
 	
 	//Display the admin controls for a slot
-	private final function startIncludeAdminControls() {
+	private function startIncludeAdminControls() {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1564,11 +1566,11 @@ class moduleAPI {
 		return $this->zAPIFrameworkField($attributes);
 	}
 	
-	private final function zAPIFrameworkField($attributes, $i = false, $lov = false, $readonly = false, $saveVal = null, $dispVal = null) {
+	private function zAPIFrameworkField($attributes, $i = false, $lov = false, $readonly = false, $saveVal = null, $dispVal = null) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	private final function zAPIFrameworkLOV($type, &$attributes, &$lov) {
+	private function zAPIFrameworkLOV($type, &$attributes, &$lov) {
 		//Load the List of Values for a field
 		if ($type == 'checkbox' || $type == 'radio' || $type == 'select' || $type == 'toggle' || $type == 'text') {
 			if (!empty($attributes['source_module']) && !empty($attributes['source_method']) && \ze\module::inc($attributes['source_module'])) {

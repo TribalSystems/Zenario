@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -75,24 +75,36 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 			}
 		}
 		
-		//Set up the primary key from the requests given
-		if ($box['key']['id'] && !$box['key']['cID']) {
-			ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
+		
+		if ($total == 1) {
+			//Set up the primary key from the requests given
+			if ($box['key']['id'] && !$box['key']['cID']) {
+				ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
+			}
+		
+			$content =
+				ze\row::get(
+					'content_items',
+					['id', 'type', 'tag_id', 'language_id', 'equiv_id', 'alias', 'visitor_version', 'admin_version', 'status'],
+					['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
+		
+			$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
+		
+		} else {
+			unset($box['identifier']);
+			
+			$fields['layout/desc']['snippet']['html'] =
+				$fields['layout/desc']['snippet']['html_multi'];
 		}
+		unset($fields['layout/desc']['snippet']['html_multi']);
 		
-		$content =
-			ze\row::get(
-				'content_items',
-				['id', 'type', 'tag_id', 'language_id', 'equiv_id', 'alias', 'visitor_version', 'admin_version', 'status'],
-				['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
-		
-		$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
 		
 		if (!$canEdit) {
 			$box['tabs']['cant_edit']['hidden'] = false;
 		
 		} elseif (!$box['key']['cType']) {
 			$box['tabs']['mix_of_types']['hidden'] = false;
+			$box['tab'] = 'mix_of_types';
 		
 		} else {
 			$box['tabs']['layout']['hidden'] = false;

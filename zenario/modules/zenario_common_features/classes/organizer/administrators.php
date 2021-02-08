@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -112,7 +112,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 							$sqlCode = "
 								Select value FROM ". DB_PREFIX. "admin_settings
 								WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
-								  AND admin_id ='". $id. "'";
+								  AND admin_id = ". (int) $id;
 								  $sqlCodeResult = ze\sql::select($sqlCode);
 								  $sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
 								  if($sqlCodeRow['value'])

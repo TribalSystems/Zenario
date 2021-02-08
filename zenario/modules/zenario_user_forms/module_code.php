@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -778,7 +778,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	//Get visible form field data in email
-	private function sendVisibleFieldsFormEmail($startLine, $email, $mergeFields = [],$responseId, $attachments = [], 		$replyToEmail = false, $replyToName = false, $adminDownloadLinks = false) {
+	private function sendVisibleFieldsFormEmail($startLine, $email, $mergeFields, $responseId, $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false) {
 		$formName = $this->form['name'] ? trim($this->form['name']) : '[blank name]';
 		$formId = $this->form['id'];
 		//var_dump($this->form['id']);

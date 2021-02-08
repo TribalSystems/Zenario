@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 		cache_if = {u: 'User', g: 'GET', p: 'POST', s: 'SESSION', c: 'COOKIE'},
 		clear_cache_by = {};
 	
-	for (slotNameNestId in zenarioCD.slots) {
+	for (var slotNameNestId in zenarioCD.slots) {
 		if (!slotName
 		 || slotNameNestId == slotName
 		 || slotNameNestId.substr(0, slotName.length + 1) == slotName + '-'
@@ -67,7 +67,7 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 	
 	if (cantCache) {
 		css = 'zenario_cache_disabled';
-		html += '<h1 class="' + css + '">This ' + type + ' cannot be cached.</h1><h2>Caching is disabled for this ' + type + '.</h2>';
+		html += '<h1 class="' + css + '">This ' + type + ' does not support caching.</h1><h2>The developer did not enable support for caching for this ' + type + '.</h2>';
 	
 	} else {
 		
@@ -132,7 +132,7 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 			html = '<h1 class="' + css + '">This ' + type + ' can be cached and was just written to the cache.</h1>' + html;
 		
 		} else {
-			html = '<h1 class="' + css + '">This ' + type + ' could be cached if Plugin Caching was enabled in the Site Settings.</h1>' + html;
+			html = '<h1 class="' + css + '">This ' + type + ' could be cached if plugin caching was enabled in Configuration->Site Settings, Optimisation interface.</h1>' + html;
 		}
 	}
 	

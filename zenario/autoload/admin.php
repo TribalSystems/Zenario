@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -554,7 +554,8 @@ class admin {
 			FROM ' . DB_PREFIX . 'admins
 			WHERE id = ' . (int)$adminId . '
 			AND authtype = "local" 
-			AND COALESCE(last_login, created_date) < DATE_SUB(NOW(), INTERVAL ' . (int)$days . ' DAY)';
+			AND COALESCE(last_login, created_date) < DATE_SUB(NOW(), INTERVAL ' . (int)$days . ' DAY)
+			LIMIT 1';
 		$result = \ze\sql::select($sql);
 		return \ze\sql::numRows($result) > 0;
 	}

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -538,7 +538,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			ze::$dbL->checkTableDef($tableName = DB_PREFIX . 'users_custom_data');
 			
 			if ($this->setting('user_custom_fields')) {
-				$result = ze\sql::select("select db_column, type, label from ".DB_PREFIX."custom_dataset_fields where id in (".$this->setting('user_custom_fields').")");
+				$result = ze\sql::select("select db_column, type, label from ".DB_PREFIX."custom_dataset_fields where id in (". ze\escape::in($this->setting('user_custom_fields'), true). ")");
 			
 				// Save custom fields from plugin settings
 				while ($column = ze\sql::fetchAssoc($result)) {

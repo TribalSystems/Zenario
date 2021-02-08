@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1252,7 +1252,10 @@ class miscAdm {
 										[
 											'dataset_id' => $datasetId, 
 											'tab_name' => $tabName, 
-											'field_name' => $fieldName]);
+											'field_name' => $fieldName
+										],
+										$ignore = false, $ignoreMissingColumns = true
+									);
 								}
 							}
 						}

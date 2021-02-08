@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -599,7 +599,7 @@ class db {
 
 
 	//Formerly "connectToDatabase()"
-	public static function connect($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $dbport = '', $reportErrors = true) {
+	public static function connect($dbhost, $dbname, $dbuser, $dbpass, $dbport = '', $reportErrors = true) {
 		try {
 			\ze::ignoreErrors();
 				if ($dbport) {

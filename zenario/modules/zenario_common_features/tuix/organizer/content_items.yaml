@@ -276,7 +276,7 @@ zenario__content:
                 menunodecounter:
                     ord: 8
                     title: menunodecounter
-                    #hidden: true
+                    hidden: true
                 description:
                     ord: 8
                     title: Description

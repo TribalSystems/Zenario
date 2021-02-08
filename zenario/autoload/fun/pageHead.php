@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -298,7 +298,7 @@ if ($isAdmin) {
 }
 
 
-if (\ze::$cID) {
+if (\ze::$cID && \ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML =
 	$bgWidth = $bgHeight = $bgURL = false;
 	

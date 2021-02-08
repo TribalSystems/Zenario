@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -169,7 +169,11 @@ if ($status === ZENARIO_403_NO_PERMISSION) {
 		$_SESSION['destCID'] = $content['id'];
 		$_SESSION['destCType'] = $content['type'];
 		$_SESSION['destURL'] = ze\link::protocol(). ze\link::host(). $_SERVER['REQUEST_URI'];
-		$_SESSION['destTitle'] = $version['title'];
+		
+		if (!empty($version)
+		 && !empty($version['title'])) {
+			$_SESSION['destTitle'] = $version['title'];
+		}
 	}
 	ze::$canCache = false;
 	

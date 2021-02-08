@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,6 @@ define('ZENARIO_VERSION', '8.8');
 define('ZENARIO_MAJOR_VERSION', '8');
 define('ZENARIO_MINOR_VERSION', '8');
 define('ZENARIO_IS_BUILD', true);
-define('ZENARIO_REVISION', '52729');
+define('ZENARIO_REVISION', '53370');
 
 define('TINYMCE_DIR', 'zenario/libs/manually_maintained/lgpl/tinymce_4_7_3/');

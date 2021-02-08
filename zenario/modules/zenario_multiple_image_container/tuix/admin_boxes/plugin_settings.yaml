@@ -186,8 +186,6 @@ plugin_settings:
                   
                 hyperlink_anchor_znz:
                     indent: 2
-                    validation:
-                        required_if_not_hidden: Please enter an anchor name.
                     grouping: 'image_link image_link_znz'
                     plugin_setting:
                         name: hyperlink_anchor_znz
@@ -196,8 +194,6 @@ plugin_settings:
                     maxlength: 255
                     visible_if: |
                         zenarioAB.value('link_type_znz') == '_CONTENT_ITEM' && zenarioAB.value('link_to_anchor_znz')
-                    validation:
-                        required_if_not_hidden: Please enter an anchor name.
                     side_note: >
                         If you have an anchor on the page, you can specify it here and you'll be
                         taken to its location on navigation.

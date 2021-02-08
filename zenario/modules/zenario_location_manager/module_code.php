@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -590,7 +590,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					foreach ($fieldsToCheck as $tuixName => $dbName) {
 						$sql = "SELECT DISTINCT " . ze\escape::sql($dbName) . "
 								FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
-								WHERE id IN (" . ze\escape::sql($box['key']['id']) . ")
+								WHERE id IN (" . ze\escape::in($box['key']['id'], true) . ")
 								LIMIT 2";
 								
 						$result = ze\sql::select($sql);
@@ -632,7 +632,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							FROM " 
 								. DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 							WHERE 
-								id IN (" . ze\escape::sql($box['key']['id']) . ")
+								id IN (" . ze\escape::in($box['key']['id'], true) . ")
 							LIMIT 2";
 							
 					$result = ze\sql::select($sql);
@@ -663,7 +663,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							FROM ". DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l
 							INNER JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link AS lssl
 							   ON l.id = lssl.location_id
-							WHERE lssl.location_id IN (". $box['key']['id']. ")
+							WHERE lssl.location_id IN (". ze\escape::in($box['key']['id'], true). ")
 							GROUP BY lssl.sector_id";
 						$result = ze\sql::select($sql);
 						while ($row = ze\sql::fetchAssoc($result)) {
@@ -1111,7 +1111,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 					$sql .= implode(",",$fieldsToChangeSQL);
 							
-					$sql .= " WHERE id IN (" . ze\escape::sql($box['key']['id']) . ")";
+					$sql .= " WHERE id IN (" . ze\escape::in($box['key']['id'], true) . ")";
 					
 					$result = ze\sql::update($sql);
 				}
@@ -1247,7 +1247,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 								if ($organizationFlag) {
 									$sql = ' UPDATE ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data
 									SET `' . ze\escape::sql($organizationFlag['db_column']) . '` = 0
-									WHERE location_id IN (' . ze\escape::in($ids) . ')';
+									WHERE location_id IN (' . ze\escape::in($ids, true) . ')';
 									ze\sql::update($sql);
 								}
 							}
@@ -1262,7 +1262,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 								if ($organizationFlag) {
 									$sql = ' UPDATE ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data
 									SET `' . ze\escape::sql($organizationFlag['db_column']) . '` = 1
-									WHERE location_id IN (' . ze\escape::in($ids) . ')';
+									WHERE location_id IN (' . ze\escape::in($ids, true) . ')';
 									ze\sql::update($sql);
 								}
 							}

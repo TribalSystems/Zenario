@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -508,7 +508,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$item['cType'] = $row['type'];
 				$item['cVersion'] = $row['version'];
 				$item['Id'] = $row['type']. '_'. $row['id'];
-				$item['Target_Blank'] = 'target = "_blank"';
+				$item['Target_Blank'] = '';
 				$item['Local_File_Id'] = $row['file_id'];
 				$item['s3_File_Id'] = $row['s3_file_id'];
 				$s3FileDetails = ze\row::get('files', ['size','filename','path'], $row['s3_file_id']);
@@ -931,7 +931,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		$downLoadpage = false;
 		$linkResult = [];
-		$fileName = $this->phrase('prepare archive');
+		$fileName = $this->phrase('Prepare zip');
 		$Link = '';
 		$noContent = false;
 		$mainLinkArr = [];
@@ -1087,10 +1087,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Link' => $Link,
 			'FilenameArr' => ($fileNameArr ?? []),
 			'Empty_Archive' => $noContent,
-			'ARCHIVE_READY_FOR_DOWNLOAD' => $this->phrase('Download zip archive:'),
+			'ARCHIVE_READY_FOR_DOWNLOAD' => $this->phrase('Download zip:'),
 			'NO_CONTENT_ITEMS' => $this->phrase('No documents to download.'),
-			'PREPARING_DOCUMENTS' => $this->phrase('Preparing your zip archive...'),
-			'DOWNLOAD_PREPARE_LABEL' => $this->phrase('Download all documents as a zip archive:'),
+			'PREPARING_DOCUMENTS' => $this->phrase('Preparing your zip file...'),
+			'DOWNLOAD_PREPARE_LABEL' => $this->phrase('Download all documents as a zip file:'),
 			'Download_Page' => $downLoadpage,
 			'Main_Link_Array' => $mainLinkArr,
 			'Main_Link_Slot' => $this->slotName,
@@ -1142,14 +1142,14 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$sql = '
 						SELECT id,name,parent_id
 						FROM ' . DB_PREFIX . 'categories
-						WHERE public = 1 And id IN (' . ze\escape::in($categoryIds) . ')';
+						WHERE public = 1 And id IN (' . ze\escape::in($categoryIds, true) . ')';
 				}
 				else{
 								
 					$sql = '
 						SELECT id,name,parent_id
 						FROM ' . DB_PREFIX . 'categories
-						WHERE id IN (' . ze\escape::in($categoryIds) . ')';
+						WHERE id IN (' . ze\escape::in($categoryIds, true) . ')';
 				}
 				$result = ze\sql::select($sql);
 			

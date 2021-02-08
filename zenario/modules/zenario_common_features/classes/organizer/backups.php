@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -107,8 +107,8 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 			
 			$filename = $_FILES['Filedata']['name'];
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
-			if (!in_array($ext, ['sql', 'gz'])) {
-				echo '<!--Message_Type:Error-->Only .sql or .gz files can be uploaded as database backups';
+			if (!in_array($ext, ['sql', 'gz', 'encrypted'])) {
+				echo '<!--Message_Type:Error-->Only .sql, .gz, or .encrypted files can be uploaded as database backups';
 			} elseif (file_exists(ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
 				echo '<!--Message_Type:Error-->A database backup with the same name already exists';
 			} elseif (\ze\fileAdm::moveUploadedFile($_FILES['Filedata']['tmp_name'], ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {

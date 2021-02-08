@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			$pIdArr = $pId[1];
 		}
 		$checkIfPublishsql = "SELECT id,scheduled_publish_datetime from ". DB_PREFIX. "content_item_versions 
-					WHERE id IN (". ze\escape::in($pIdArr, 'checkIfPublishsql'). ")
+					WHERE id IN (". ze\escape::in($pIdArr, true). ")
 			  AND scheduled_publish_datetime IS NOT NULL
 			  AND published_datetime IS NULL AND publisher_id=0" ;
 		$checkIfPublish = ze\sql::select($checkIfPublishsql);

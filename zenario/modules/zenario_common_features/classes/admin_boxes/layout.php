@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 						ON civ.id = ci.id
 						AND ci.admin_version = civ.version
 						AND ci.type = civ.type
-					WHERE civ.layout_id = ' . $details['layout_id'];
+					WHERE civ.layout_id = '. (int) $details['layout_id'];
 				
 				$result = ze\sql::select($sql);
 				$contentItem = (ze\sql::fetchAssoc($result));

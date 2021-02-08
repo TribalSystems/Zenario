@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -92,7 +92,7 @@ class zenario_users__organizer__access_log extends zenario_users {
 				
 			}
 			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
-			$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View Data Protection settings</a>";
+			$accessLogDuration .= " <a target='_blank' href='". htmlspecialchars($link). "'>". ze\admin::phrase('View Data Protection settings'). "</a>";
 			$panel['notice']['show'] = true;
 			$panel['notice']['message'] = $accessLogDuration.".";
 			$panel['notice']['html'] = true;

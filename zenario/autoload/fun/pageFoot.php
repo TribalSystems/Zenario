@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -129,26 +129,22 @@ if ($isAdmin || $isWelcomeOrWizard) {
 }
 
 
-$checkPrefixes = $prefix != 'zenario/';
-
 foreach (\ze::$jsLibs as $lib => $stylesheet) {
 	
 	if ($stylesheet) {
-		if ($checkPrefixes) {
-			if ($stylesheet[0] != '/'
-			 && strpos($stylesheet, '://') === false) {
-				$stylesheet = $prefix. '../'. $stylesheet;
-			}
+		$thisPrefix = '';
+		if ($stylesheet[0] != '/'
+		 && strpos($stylesheet, '://') === false) {
+			$thisPrefix = $absURL;
 		}
-		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, htmlspecialchars($stylesheet). '?', $v, '"/>';
+		
+		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', $thisPrefix, htmlspecialchars($stylesheet). '?', $v, '"/>';
 	}
 	
+	$thisPrefix = '';
 	if ($lib[0] != '/'
 	 && strpos($lib, '://') === false) {
-		
-		if ($checkPrefixes) {
-			$lib = $prefix. '../'. $lib;
-		}
+		$thisPrefix = $absURL;
 		
 		if (strpos($lib, '?v=') === false
 		 && strpos($lib, '&v=') === false) {
@@ -159,7 +155,7 @@ foreach (\ze::$jsLibs as $lib => $stylesheet) {
 			}
 		}
 	}
-	echo "\n", $scriptTag, ' src="', htmlspecialchars($lib), '"></script>';
+	echo "\n", $scriptTag, ' src="', $thisPrefix, htmlspecialchars($lib), '"></script>';
 }
 	
 
@@ -330,7 +326,7 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 
 //Check to see if there is anything we need to output from the head/foot slots.
 //We need to pay attention to the logic for showing to admins, cookie consent, and overriding
-if (\ze::$cID) {
+if (\ze::$cID && \ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML = false;
 	
 	$sql = "

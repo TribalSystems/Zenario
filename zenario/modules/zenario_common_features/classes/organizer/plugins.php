@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -322,7 +322,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		if ($path != 'zenario__modules/panels/plugins') return;
 		
 		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
-			foreach (ze\ray::explodeAndTrim($ids) as $id) {
+			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\pluginAdm::delete($id);
 			}
 		}

@@ -41,6 +41,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]languages`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]last_sent_warning_emails`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]layouts`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]local_revision_numbers`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]lock__clean_dirs`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]lov_salutations`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_hierarchy`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_nodes`;

@@ -1102,8 +1102,17 @@ body.ie6 .headerPanel .secondToolbar {
 	padding-right: 1px;
 }
 
+#zenario_fbAdminViewModeOptions.zenario_view_options {
+	max-height:65vh;
+	overflow-y:auto;
+}
 
-#zenario_fbAdminViewModeOptions div#organizer_colsortfields,
+#zenario_fbAdminViewModeOptions div#organizer_colsortfields {
+	overflow:hidden;
+	max-height:none !important;
+	padding-bottom:10px;
+}
+
 #zenario_fbAdminViewModeOptions div#organizer_filterfields {
 	overflow: auto;
 	overflow-x: hidden;

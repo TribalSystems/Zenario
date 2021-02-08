@@ -25,7 +25,8 @@ zenario_alias:
                     side_note: |
                         An alias for this content item, and part of its URL.
                         The combination of a content item's alias and its language code is unique.
-                        Lower case only, may not contain spaces or special characters.
+                        Aliases can only contain the letters a-z, numbers, underscores or hyphens.
+                        They may not contain spaces or special characters.
                 a_warning_display:
                     same_row: true
                     snippet:

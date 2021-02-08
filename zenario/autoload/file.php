@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1054,17 +1054,23 @@ class file {
 				//We'll try to create a subdirectory inside public/images/ using the short checksum as the name
 				$path = \ze\cache::createDir($image['short_checksum'], 'public/images', false);
 			
-				//If this is a resize, we'll put the resize in another subdirectory using the code above as the name
-				if ($path && $imageNeedsToBeResized) {
+				//If this is a resize, we'll put the resize in another subdirectory using the code above as the name.
+				//(Note: Except for SVGs which are vector images and don't need resizing.)
+				if ($path && $imageNeedsToBeResized && !$isSVG) {
 					$path = \ze\cache::createDir($image['short_checksum']. '/'. $settingCode, 'public/images', false);
 				}
 		
 			//If the image should be in the private directory, don't worry about a friendly URL and
 			//just use the full hash.
 			} else {
-				//Workout a hash for the image at this size
-				$hash = \ze::hash64($settingCode. '_'. $image['checksum']);
-			
+				//Workout a hash for the image at this size.
+				//Except for SVGs, the hash should also include the resize parameters
+				if ($isSVG) {
+					$hash = $image['checksum'];
+				} else {
+					$hash = \ze::hash64($settingCode. '_'. $image['checksum']);
+				}			
+				
 				//Try to get a directory in the cache dir
 				$path = \ze\cache::createDir($hash, 'images', false);
 			}

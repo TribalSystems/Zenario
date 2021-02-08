@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2020, Tribal Limited
+ * Copyright (c) 2021, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -103,7 +103,7 @@ class welcome {
 	//This file includes common functionality for running SQL scripts
 
 	//Formerly "runSQL()"
-	public static function runSQL($prefix = false, $file, &$error, $patterns = false, $replacements = false) {
+	public static function runSQL($prefix, $file, &$error, $patterns = false, $replacements = false) {
 		
 		\ze\dbAdm::getTableEngine();
 		$error = false;
@@ -440,7 +440,7 @@ class welcome {
 		$fields['0/php_1']['post_field_html'] =
 			\ze\admin::phrase('&nbsp;(<em>you have version [[version]]</em>)', ['version' => htmlspecialchars($phpVersion)]);
 	
-		if (!\ze\welcome::compareVersionNumber($phpVersion, '7.0.0')) {
+		if (!\ze\welcome::compareVersionNumber($phpVersion, '7.2.0')) {
 			$fields['0/php_1']['row_class'] = $invalid;
 	
 		} else {
@@ -450,7 +450,7 @@ class welcome {
 	
 		$phpWarning = false;
 		if (!$fields['0/opcache_misconfigured']['hidden'] =
-			\ze\welcome::compareVersionNumber(phpversion(), '7.0.0')
+			\ze\welcome::compareVersionNumber(phpversion(), '7.2.0')
 		 || !\ze\server::checkFunctionEnabled('ini_get')
 		 || !\ze\ring::engToBoolean(ini_get('opcache.enable'))
 		 || \ze\ring::engToBoolean(ini_get('opcache.dups_fix'))
@@ -957,45 +957,21 @@ class welcome {
 			}
 		
 			if (empty($tags['tabs'][3]['errors'])) {
-				
-				if($values['3/multi_db'] == 'zenario_multisite')
-				{
-					
-				\ze::$dbG = new \ze\db($merge['DB_PREFIX_GLOBAL'], $merge['DBHOST_GLOBAL'], $merge['DBNAME_GLOBAL'], $merge['DBUSER_GLOBAL'], $merge['DBPASS_GLOBAL'], $merge['DBPORT_GLOBAL'],$reportErrors = false);
-				}
 			
 				\ze::$dbL = new \ze\db($merge['DB_PREFIX'], $merge['DBHOST'], $merge['DBNAME'], $merge['DBUSER'], $merge['DBPASS'], $merge['DBPORT'], $reportErrors = false);
 				
-				if (!\ze::$dbL->con || !\ze::$dbG->con) {
-					if (!\ze::$dbL->con )
-					{
-						\ze::$dbL = null;
-						$tags['tabs'][3]['errors'][] = 
-							\ze\admin::phrase('The database name, username and/or password are invalid.');
-					}
-					elseif (!\ze::$dbG->con && $values['3/multi_db'] == 'zenario_multisite')
-					{
-						\ze::$dbG = null;
-						$tags['tabs'][3]['errors'][] = 
-							\ze\admin::phrase('The database name, username and/or password are invalid for the global database.');
-					}
-				} 
-				if (\ze::$dbL->con ) {	
-				
-				// Check for MySQL max_packet_size being too small
+				if (\ze::$dbL && \ze::$dbL->con) {
+					// Check for MySQL max_packet_size being too small
 					if (($result = @\ze\sql::select("SHOW VARIABLES LIKE 'max_allowed_packet'"))
 					 && ($row = \ze\sql::fetchRow($result))
 					 && !empty($row[1])) {
-						$max_allowed_packet = $row[1];
-						if($max_allowed_packet < 4000000 )
-						{
-							
-							$tags['tabs'][3]['errors'][] =
-								\ze\admin::phrase('Your MySQL server\'s max_packet_size variable is set to '.$max_allowed_packet.', we recommend you increase this to 16MB (must be at least 4MB). Without this, you may experience problems when uploading large images or other files.');
-							
-						}
-					
 						
+						$max_allowed_packet = $row[1];
+						if ($max_allowed_packet < 4000000) {
+							$tags['tabs'][3]['errors'][] =
+								\ze\admin::phrase('Your MySQL server\'s max_packet_size variable is set to [[max_allowed_packet]], we recommend you increase this to 16MB (must be at least 4MB). Without this, you may experience problems when uploading large images or other files.',
+									['max_allowed_packet' => $max_allowed_packet]);
+						}
 					}
 				
 					if (!($result = @\ze\sql::select("SELECT VERSION()"))
@@ -1025,23 +1001,25 @@ class welcome {
 						}
 					}
 					
-				}
-				//Check admins table for global database
-				if (\ze::$dbG
-				 && \ze::$dbG->con
-				 && $values['3/multi_db'] == 'zenario_multisite') {
-						
-						$tablename = $merge['DB_PREFIX_GLOBAL'].'admins';
-
-						$tables = \ze::$dbG->checkTableDef($tablename, true);
-
-						if(!$tables)
-						{
-							$tags['tabs'][3]['errors'][] = \ze\admin::phrase('Connection to the global database succeeded, but the "admins" table (prefixed with your given prefix) does not appear to exist.');
+					if ($values['3/multi_db'] == 'zenario_multisite') {
+						\ze::$dbG = new \ze\db($merge['DB_PREFIX_GLOBAL'], $merge['DBHOST_GLOBAL'], $merge['DBNAME_GLOBAL'], $merge['DBUSER_GLOBAL'], $merge['DBPASS_GLOBAL'], $merge['DBPORT_GLOBAL'],$reportErrors = false);
+					
+						if (\ze::$dbG && \ze::$dbG->con) {
+							if (!\ze::$dbG->checkTableDef($merge['DB_PREFIX_GLOBAL']. 'admins', true)) {
+								$tags['tabs'][3]['errors'][] =
+									\ze\admin::phrase('Connection to the global database succeeded, but the "admins" table (prefixed with your given prefix) does not appear to exist.');
+							}
+						} else {
+							\ze::$dbG = null;
+							$tags['tabs'][3]['errors'][] = 
+								\ze\admin::phrase('The database name, username and/or password are invalid for the global database.');
 						}
-						
-				}
-				
+					}
+				} else {
+					\ze::$dbL = null;
+					$tags['tabs'][3]['errors'][] = 
+						\ze\admin::phrase('The database name, username and/or password are invalid.');
+				} 
 			}
 			
 		}
@@ -2398,7 +2376,7 @@ class welcome {
 				$sql = '
 					SELECT id, username, last_login, last_login_ip, created_date
 					FROM ' . DB_PREFIX . 'admins
-					WHERE id = '.$admiId.'
+					WHERE id = '. (int) $admiId. '
 					  AND `status` = \'active\'
 					ORDER BY last_login';
 				$result = \ze\sql::select($sql);		
