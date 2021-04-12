@@ -398,7 +398,7 @@ To correct this, please ask your system administrator to perform a
 				"\n\n",
 				\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass),
 				"\n\n",
-				\ze\lang::phrase('Developers: if this message is constantly occurs, even on valid files, then this is probably a misclassification in the UNIX file utility. You can fix this by adding an exception/correction in the function check() in zenario/autoload/file.php.', [], $moduleClass);
+				\ze\lang::phrase('Developers: if this message constantly occurs, even on valid files, then this is probably a misclassification in the UNIX file utility. You can fix this by adding an exception/correction in the function check() in zenario/autoload/file.php.', [], $moduleClass);
 			exit;
 		}
 	}

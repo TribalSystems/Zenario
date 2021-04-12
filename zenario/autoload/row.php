@@ -243,6 +243,9 @@ class row {
 		} elseif ($d->isSet && $in) {
 			$sql .= $sign. 'FIND_IN_SET(\''. \ze\escape::sql((string) $val). '\', '. $cSql. ')';
 	
+		} elseif ($d->isASCII) {
+			$sql .= $cSql. $sign. ' \''. \ze\escape::sql(\ze\escape::ascii((string) $val)). '\'';
+	
 		} else {
 			$sql .= $cSql. $sign. ' \''. \ze\escape::sql((string) $val). '\'';
 		}

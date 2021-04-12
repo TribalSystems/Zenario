@@ -929,11 +929,7 @@ class plugin {
 	
 
 	//Formerly "getPluginInstanceDetails()"
-	public static function details($instanceIdOrName, $fetchBy = 'id') {
-	
-		if (!$instanceIdOrName) {
-			return false;
-		}
+	public static function details($instanceIdOrName, $useFullName = false) {
 	
 		$sql = "
 			SELECT
@@ -954,27 +950,24 @@ class plugin {
 				m.status
 			FROM ". DB_PREFIX. "plugin_instances AS i
 			INNER JOIN ". DB_PREFIX. "modules AS m
-			   ON m.id = i.module_id";
-	
-		if ($fetchBy == 'id') {
-			$sql .= "
+			   ON m.id = i.module_id
 			WHERE i.id = ". (int) $instanceIdOrName;
 	
-		} elseif ($fetchBy == 'name') {
-			$sql .= "
-			WHERE i.name = '". \ze\escape::sql($instanceIdOrName). "'";
-	
-		} else {
+		$instance = \ze\sql::fetchAssoc($sql);
+		
+		if (!$instance) {
 			return false;
 		}
-	
-		$result = \ze\sql::select($sql);
-		$instance = \ze\sql::fetchAssoc($result);
 	
 		if ($instance['content_id'] && \ze\priv::check()) {
 			$instance['instance_name'] = $instance['display_name'];
 		} else {
-			$instance['instance_name'] = \ze\plugin::codeName($instance['instance_id'], $instance['class_name']);
+			$codeName = \ze\plugin::codeName($instance['instance_id'], $instance['class_name']);
+			if ($useFullName) {
+				$instance['instance_name'] = $codeName. ' '. $instance['name'];
+			} else {
+				$instance['instance_name'] = $codeName;
+			}
 		}
 	
 		unset($instance['display_name']);
@@ -983,7 +976,7 @@ class plugin {
 
 	//Formerly "getPluginInstanceName()"
 	public static function name($instanceId) {
-		$instanceDetails = \ze\plugin::details($instanceId);
+		$instanceDetails = \ze\plugin::details($instanceId, true);
 		return $instanceDetails['instance_name'];
 	}
 

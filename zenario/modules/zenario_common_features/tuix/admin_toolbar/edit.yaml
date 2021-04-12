@@ -244,10 +244,6 @@ sections:
                 tooltip: This content item is locked by you
                 ajax:
                     confirm:
-                        message: |
-                            Are you sure that you wish to unlock this content item?
-                            
-                            Any administrator who has authoring permission will be able to make changes to it.
                         button_message: Unlock
                         cancel_button_message: Cancel
                         message_type: warning

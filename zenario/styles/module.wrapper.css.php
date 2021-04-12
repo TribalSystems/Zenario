@@ -31,7 +31,7 @@ require '../basicheader.inc.php';
 
 
 //Get a list of module ids from the url
-$modules = array_unique(explode(',', $_GET['ids']));
+$modules = array_unique(explode(',', $_GET['ids'] ?? ''));
 $moduleDetails = [];
 
 //Ensure that the site name and subdirectory are part of the ETag, as modules can have different ids on different servers

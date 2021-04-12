@@ -26,7 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
-use Aws\S3\S3Client;
 
 class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
@@ -566,25 +565,17 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 				
 				$item['css_class'] = ze\contentAdm::getItemIconClass($item['id'], $item['type'], true, $item['status']);
-				$item['tooltip'] = 'This content item has status ' .$item['status'];
-			//Below code is to show clock icon for scheduled publish content.
-				$checkIfPublishsql = "SELECT id,scheduled_publish_datetime from ". DB_PREFIX. "content_item_versions 
-					WHERE id IN (". $item['id']. ")
-			  AND scheduled_publish_datetime IS NOT NULL
-			  AND published_datetime IS NULL AND publisher_id=0" ;
-			 
-				$checkIfPublish = ze\sql::select($checkIfPublishsql);
-				$getresult = ze\sql::fetchAssoc($checkIfPublish);
-	
-				if($getresult && $checkIfPublish)
-				{
-					if(sizeof($getresult)>1 )
-					{
-						$item['css_class'] ='scheduled_tasks_on_icon';
-						$item['tooltip']= 'Scheduled to be published at ' .ze\admin::formatDateTime($getresult['scheduled_publish_datetime'],'vis_date_format_med').'.';
-					}
+				$item['statusPhrase'] = ze\contentAdm::statusPhrase($item['status']);
+				$item['tooltip'] = ze\admin::phrase('This content item has status [[statusPhrase]]', $item);
+				
+				if ($item['scheduled_publish_datetime']) {
+					$item['css_class'] = 'scheduled_tasks_on_icon';
+					
+					$item['publication_time'] = 
+						ze\admin::formatDateTime($item['scheduled_publish_datetime'], 'vis_date_format_med');
+				
+					$item['tooltip'] = ze\admin::phrase("Scheduled to be published at [[publication_time]].", $item);
 				}
-			//
 				
 				// Change code for Special pages tooltip
 				if ($refinerName == 'special_pages'){
@@ -911,7 +902,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
             }    
    
 		}
-		if (ze::setting('aws_s3_support')) {
+		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
 			$panel['item_buttons']['download']['label'] = 'Download local file';
 			$panel['item_buttons']['s3_download']['hidden'] = false;
 		} else {
@@ -970,30 +961,39 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		// Set unlock ajax message
 		} elseif ($_GET['unlock'] ?? false) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-			if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
+				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 					$contentInfo = ze\row::get('content_items', ['admin_version', 'lock_owner_id'], ['id'=>$cID, 'type'=>$cType]);
 					$cVersion = $contentInfo['admin_version'];
 					$adminDetails = ze\admin::details($contentInfo['lock_owner_id']);
-					echo 'Are you sure that you wish to ';
-					if (!ze\priv::check(false, $cID, $cType)) {
-						echo 'force-';
-					}
-					echo 'unlock on this content item? ';
-					if ($date = ze\row::get('content_item_versions', 'scheduled_publish_datetime', ['id'=>$cID,'type'=>$cType,'version'=>$cVersion])) {
-						echo 'It is scheduled to be published by '.$adminDetails['first_name'].' '.$adminDetails['last_name'].' on '. ze\admin::formatDateTime($date, 'vis_date_format_long');
+					
+					if (ze\priv::check(false, $cID, $cType)) {
+						echo ze\admin::phrase('Are you sure that you wish to unlock on this content item?');
 					} else {
-						echo 'Any administrator who has authoring permission will be able to make changes to it.';
+						echo ze\admin::phrase('Are you sure that you wish to force-unlock on this content item?');
+					}
+					
+					echo ' ';
+					
+					if ($date = ze\row::get('content_item_versions',
+						'scheduled_publish_datetime',
+						['id' => $cID, 'type' => $cType, 'version' => $cVersion]
+					)) {
+						$mrg = $adminDetails;
+						$mrg['publicationTime'] = ze\admin::formatDateTime($date, 'vis_date_format_long');
+						echo ze\admin::phrase('It is scheduled to be published by [[first_name]] [[last_name]] on [[publicationTime]].', $mrg);
+					} else {
+						echo ze\admin::phrase('Any administrator who has authoring permission will be able to make changes to it.');
 					}
 				}
 			}
+		
 		// Unlock a content item
 		} elseif (ze::post('unlock')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-			if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
+				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 					// Unlock the item & remove scheduled publication
 					if (ze\priv::check('_PRIV_CANCEL_CHECKOUT') || ze\priv::check(false, $cID, $cType)) {
 						$cVersion = ze\row::get('content_items', 'admin_version', ['id'=>$cID, 'type'=>$cType]);
-						ze\row::update('content_item_versions', ['scheduled_publish_datetime' => null], ['id'=>$cID,'type'=>$cType,'version'=>$cVersion]);
 						ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => null], ['id' => $cID, 'type' => $cType]);
 					}
 				}

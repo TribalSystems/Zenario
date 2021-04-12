@@ -176,6 +176,7 @@ zenario_newsletter:
                         multiple_select: true
                         select_phrase: "Select recipients' smart newsletter group(s)..."
                         nothing_selected_phrase: "No recipients' smart newsletter groups selected"
+                        disallow_refiners_looping_on_min_path: true
                 exclude_recipients_with_opt_out:
                     label: Exclude recipients with newsletter opt-out field checked
                     type: checkbox

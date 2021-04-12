@@ -698,41 +698,35 @@ class layoutAdm {
 				'zenario__layouts/panels/template_families/view_content//'. \ze\ring::encodeIdForOrganizer($templateFamily).  '//';
 	}
 	//Function to display content item attached with particular slotname
-	public static function slotUsage($slotName, $moduleId = false, $countItems = true) {
+	public static function slotUsage($layoutId, $slotName) {
 		
-		if (!$moduleId) {
-			$moduleId = [\ze\module::id('zenario_wysiwyg_editor')];
-
-		} elseif (!is_array($moduleId)) {
-			$moduleId = [$moduleId];
-		}
-		
-		if ($countItems) {
-			$sqlSlot = "
-				SELECT COUNT(DISTINCT cti.tag_id)";
-		} else {
-			$sqlSlot = "
-				SELECT DISTINCT cti.tag_id";
-		}
-
-
-		$sqlSlot .= " FROM ". DB_PREFIX. "plugin_settings AS zps 
-					 LEFT JOIN ". DB_PREFIX. "plugin_instances zpi
-						ON zps.instance_id = zpi.id 
-					 INNER JOIN ". DB_PREFIX. "content_items as cti
-						ON zpi.content_id = cti.id
-						AND zpi.content_version IN (cti.admin_version)
-					 where zpi.slot_name='".$slotName. "' and 
-					 zps.value !='' and  
-					 zps.name='html' and 
-					 cti.status in ('first_draft','published','draft','published_with_draft') and
- 					 zpi.module_id in (". \ze\escape::in($moduleId, true). ")";
+		$sql = "
+			SELECT DISTINCT c.tag_id
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+			   ON v.id = c.id
+			  AND v.type = c.type
+			  AND v.version IN (c.visitor_version, admin_version)
+			  AND v.layout_id = ". (int) $layoutId. "
+			INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
+			   ON pi.content_id = v.id
+			  AND pi.content_type = v.type
+			  AND pi.content_version = v.version
+			  AND pi.slot_name = '". \ze\escape::sql($slotName).  "'
+			INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
+			   ON ps.instance_id = pi.id
+			  AND ps.is_content = 'version_controlled_content'
+			  AND ps.name = 'html'
+			  AND ps.value != ''
+			  AND ps.value IS NOT NULL
+			WHERE c.status NOT IN ('hidden','trashed','deleted')
+			  AND (c.id, c.type) IN (
+				SELECT DISTINCT vs.id, vs.type
+				FROM ". DB_PREFIX. "content_item_versions AS vs
+				WHERE vs.layout_id = ". (int) $layoutId. "
+			  )";
 						
-		if ($countItems) {
-			return \ze\sql::fetchValue($sqlSlot);
-		} else {
-			return \ze\sql::fetchValues($sqlSlot);
-		}
+		return \ze\sql::fetchValues($sql);
 	}
 
 }

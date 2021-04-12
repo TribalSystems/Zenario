@@ -380,8 +380,8 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				);
 	}	
 
-	public static function eventDraftCreated ($cIDTo, $cIDFrom, $cType, $cVersionTo, $cVersionFrom) {
-		if ($cType == 'event' ) {
+	public static function eventDraftCreated($cIDTo, $cIDFrom, $cTypeTo, $cVersionTo, $cVersionFrom, $cTypeFrom) {
+		if ($cTypeFrom == 'event' && $cTypeTo == 'event') {
 			$sql = "INSERT INTO " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
 					SELECT " . (int) $cIDTo . " AS id,
 						" . (int) $cVersionTo . " AS version,

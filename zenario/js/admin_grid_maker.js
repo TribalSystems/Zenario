@@ -136,7 +136,7 @@ zenarioGM.drawOptions = function() {
 	
 	$('.ui-tooltip').remove();
 	get(formId).innerHTML = html;
-	zenarioA.tooltips('#' + formId);
+	zenarioA.tooltips('#' + formId + '  *[title]');
 	
 	if (!zenarioGM.data.fluid) {
 		zenarioGM.recalcColumnAndGutterOptions(zenarioGM.data);
@@ -360,7 +360,7 @@ zenarioGM.drawPreview = function() {
 	
 	$('.ui-tooltip').remove();
 	get(zenarioGM.gridId).innerHTML = html;
-	zenarioA.tooltips('#' + zenarioGM.gridId);
+	zenarioA.tooltips('#' + zenarioGM.gridId + '  *[title]');
 	
 	//I want to set an iframe up so that the preview shows in the iframe.
 	//I would want to use GET, but the grid data can be too large for GET on some servers so I need to use post.
@@ -555,7 +555,7 @@ zenarioGM.drawLinks = function() {
 	
 	$('.ui-tooltip').remove();
 	//get(linksId).innerHTML =html;
-	zenarioA.tooltips('#' + linksId);
+	zenarioA.tooltips('#' + linksId + '  *[title]');
 	
 	
 	//The links and form will have a set height.

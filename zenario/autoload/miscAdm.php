@@ -134,7 +134,7 @@ class miscAdm {
 		//Check if this links to any plugins
 		if (!empty($usage['plugins'])) {
 			$instanceId = $usage['plugin'];
-			$name = \ze\plugin::codeName($instanceId);
+			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
 				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
@@ -172,7 +172,7 @@ class miscAdm {
 		//Check if this links to any nests
 		if (!empty($usage['nests'])) {
 			$instanceId = $usage['nest'];
-			$name = \ze\plugin::codeName($instanceId, 'zenario_plugin_nest');
+			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
 				$link = 'zenario__modules/panels/plugins/refiners/nests////'. (int) $instanceId;
@@ -210,7 +210,7 @@ class miscAdm {
 		//Check if this links to any slideshows
 		if (!empty($usage['slideshows'])) {
 			$instanceId = $usage['slideshow'];
-			$name = \ze\plugin::codeName($instanceId, 'zenario_slideshow');
+			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
 				$link = 'zenario__modules/panels/plugins/refiners/slideshows////'. (int) $instanceId;

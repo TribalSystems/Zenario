@@ -1634,11 +1634,7 @@ class welcome {
 							}
 						}
 					
-						//Populate the menu_hierarchy and the menu_positions tables
-						\ze\menuAdm::recalcAllHierarchy();
-					
-						//Update the special pages, creating new ones if needed
-						\ze\contentAdm::addNeededSpecialPages();
+						\ze\welcome::postInstallTasks();
 					}
 				}
 			
@@ -1660,6 +1656,38 @@ class welcome {
 		}
 	
 		return false;
+	}
+	
+	//Some tasks that should be run immediately after a fresh install or site reset.
+	public static function postInstallTasks() {
+		//Zenario has lots of metadata tables, that might not have been correctly populated
+		//by the hand-written installer SQL after a fresh install or site reset.
+		//We'll automatically populate them now
+		
+		//Populate the menu_hierarchy and the menu_positions tables
+		\ze\menuAdm::recalcAllHierarchy();
+		
+		//If any content items were pre-created in the installer SQL,
+		//run the syncInlineFileContentLink() function to make sure their
+		//metadata is up to date.
+		foreach (\ze\sql::select('
+			SELECT id, type, admin_version
+			FROM '. DB_PREFIX. 'content_items'
+		) as $content) {
+			\ze\contentAdm::syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
+		}
+		
+		//And the same for plugins
+		foreach (\ze\sql::select('
+			SELECT id, content_id, content_type, content_version, is_nest, is_slideshow
+			FROM '. DB_PREFIX. 'plugin_instances
+			WHERE content_id = 0'
+		) as $instance) {
+			\ze\contentAdm::resyncLibraryPluginFiles($instance['id'], $instance);
+		}
+	
+		//Update the special pages, creating new ones if needed
+		\ze\contentAdm::addNeededSpecialPages();
 	}
 
 	public static function enableCaptchaForAdminLogins() {
@@ -2369,54 +2397,48 @@ class welcome {
 		if (!\ze::setting('docstore_dir')) {
 			\ze\site::setSetting('docstore_dir', \ze\dbAdm::suggestDir('docstore'));
 		}
-		// Display last admin login time
-		$admiId=\ze\admin::id();
+		
+		//Display last admin login time
+		$sql = '
+			SELECT id, username, last_login, last_login_ip, created_date
+			FROM ' . DB_PREFIX . 'admins
+			WHERE id = '. (int) \ze\admin::id(). '
+			  AND `status` = \'active\'
+			ORDER BY last_login';
+		
+		if ($row = \ze\sql::fetchAssoc($sql)) {
+			$adminhtml = '';
 
-			if($admiId){
-				$sql = '
-					SELECT id, username, last_login, last_login_ip, created_date
-					FROM ' . DB_PREFIX . 'admins
-					WHERE id = '. (int) $admiId. '
-					  AND `status` = \'active\'
-					ORDER BY last_login';
-				$result = \ze\sql::select($sql);		
-				while ($row = \ze\sql::fetchAssoc($result)) {
-						$adminhtml='';
-
-					if(\ze::request('task')=='diagnostics' && $row['last_login']) {
-							$adminhtml .= '<h2>This login</h2>';
-							$adminLastLogin=$row['last_login'];
-							$adminhtml .= '<p>You logged in: ' .\ze\admin::formatDateTime($adminLastLogin, '_MEDIUM'). '</p>';
-					} elseif ($_SESSION['admin_last_login']) {	
+			if (\ze::request('task') == 'diagnostics' && $row['last_login']) {
+				$adminhtml .= '<h2>This login</h2>';
+				$adminhtml .= '<p>You logged in: '. htmlspecialchars(\ze\admin::formatDateTime($row['last_login'], '_MEDIUM')). '</p>';
+			
+			} elseif (!empty($_SESSION['admin_last_login'])) {
+				$adminhtml .= '<h2>Your last login</h2>';
+				$adminhtml .= '<p>You last logged in: '. htmlspecialchars(\ze\admin::formatDateTime($_SESSION['admin_last_login'], '_MEDIUM')). '</p>';
+			}		
+			
+			if ($row['last_login_ip']) {	
+				$adminhtml .= '<p>IP address: '. htmlspecialchars($row['last_login_ip']);
+				
+				if (\ze\module::inc("zenario_geoip_lookup")) {
+					if ($userCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($row['last_login_ip'])) {
+						if (\ze\module::inc("zenario_country_manager")
+						 && ($userCountryName = \zenario_country_manager::getCountryName($userCountry))) {
+							$adminhtml .= ' ('. htmlspecialchars($userCountryName). ')';
 						
-							$adminhtml .= '<h2>Your last login</h2>';
-							$adminLastLogin = $_SESSION['admin_last_login'];
-							$adminhtml .= '<p>You last logged in: ' .\ze\admin::formatDateTime($adminLastLogin, '_MEDIUM'). '</p>';
-					}		
-					if ($row['last_login_ip']) {	
-						$adminhtml .= '<p>IP address: ' .$row['last_login_ip'];
-						if (\ze\module::inc("zenario_geoip_lookup")) {
-							$userCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($row['last_login_ip']);
-							if ($userCountry) {
-								if (\ze\module::inc("zenario_country_manager")) {
-									$userCountryName = \zenario_country_manager::getCountryName($userCountry) ;
-									if ($userCountryName) {
-										$adminhtml .= '  ('.$userCountryName.')' ;
-									}
-								}
-								else
-								{
-									$adminhtml .= '  ( '.$userCountry.' )' ;
-								}
-							}
+						} else {
+							$adminhtml .= ' ('. htmlspecialchars($userCountry). ')';
 						}
-						$adminhtml .='</p>';
 					}
 				}
-			$fields['0/show_administrators_logins']['snippet']['html'] = $adminhtml;
-			$fields['0/show_administrators_logins']['row_class'] = 'section_valid';
+				$adminhtml .= '</p>';
 			}
-		$fields['0/show_administrators_logins']['hidden'] = empty($fields['0/show_administrators_logins']['snippet']['html']);
+		}
+		$fields['0/show_administrators_logins']['hidden'] = empty($adminhtml);
+		$fields['0/show_administrators_logins']['snippet']['html'] = $adminhtml;
+		$fields['0/show_administrators_logins']['row_class'] = 'section_valid';
+		
 		
 		$fields['0/template_dir']['value']	= $tdir = CMS_ROOT. 'zenario_custom/templates/grid_templates';
 		$fields['0/cache_dir']['value']	= CMS_ROOT. 'cache';
@@ -3626,7 +3648,7 @@ class welcome {
 			$fields['0/dirs']['row_class'] == 'section_valid'
 		 && $fields['0/site']['row_class'] == 'section_valid'
 		 && $fields['0/content']['row_class'] == 'section_valid'
-		 && $fields['0/administrators']['row_class'] = 'section_valid'
+		 && $fields['0/administrators']['row_class'] == 'section_valid'
 		 && $fields['0/system_requirements']['row_class'] == 'section_valid';
 	
 		if (!$everythingIsOkay) {
@@ -4002,121 +4024,121 @@ class welcome {
 	public static function sortTimezones($a, $b) {
 		
 		if (self::$timezoneOffsets[$a] == self::$timezoneOffsets[$b]) {
-			return self::$timezones[$a] > self::$timezones[$b];
+			return self::$timezones[$a] <=> self::$timezones[$b];
 		} else {
-			return self::$timezoneOffsets[$a] > self::$timezoneOffsets[$b];
+			return self::$timezoneOffsets[$a] <=> self::$timezoneOffsets[$b];
 		}
 	}
 	
 	public static $timezones = 
-			[
-				'Pacific/Midway'       => "Midway Island",
-				'US/Hawaii'            => "Hawaii",
-				'US/Alaska'            => "Alaska",
-				'US/Pacific'           => "Pacific Time (US & Canada)",
-				'America/Tijuana'      => "Tijuana",
-				'US/Mountain'          => "Mountain Time (US & Canada)",
-				'America/Chihuahua'    => "Chihuahua",
-				'America/Mazatlan'     => "Mazatlan",
-				'America/Mexico_City'  => "Mexico City",
-				'America/Monterrey'    => "Monterrey",
-				'Canada/Saskatchewan'  => "Saskatchewan",
-				'US/Central'           => "Central Time (US & Canada)",
-				'US/Eastern'           => "Eastern Time (US & Canada)",
-				'America/Bogota'       => "Bogota",
-				'America/Lima'         => "Lima",
-				'America/Caracas'      => "Caracas",
-				'Canada/Atlantic'      => "Atlantic Time (Canada)",
-				'America/La_Paz'       => "La Paz",
-				'America/Santiago'     => "Santiago",
-				'Canada/Newfoundland'  => "Newfoundland",
-				'America/Buenos_Aires' => "Buenos Aires",
-				'Atlantic/Stanley'     => "Stanley",
-				'Atlantic/Azores'      => "Azores",
-				'Atlantic/Cape_Verde'  => "Cape Verde Is.",
-				'Africa/Casablanca'    => "Casablanca",
-				'Europe/Dublin'        => "Dublin",
-				'Europe/Lisbon'        => "Lisbon",
-				'Europe/London'        => "London",
-				'Africa/Monrovia'      => "Monrovia",
-				'Europe/Amsterdam'     => "Amsterdam",
-				'Europe/Belgrade'      => "Belgrade",
-				'Europe/Berlin'        => "Berlin",
-				'Europe/Bratislava'    => "Bratislava",
-				'Europe/Brussels'      => "Brussels",
-				'Europe/Budapest'      => "Budapest",
-				'Europe/Copenhagen'    => "Copenhagen",
-				'Europe/Ljubljana'     => "Ljubljana",
-				'Europe/Madrid'        => "Madrid",
-				'Europe/Paris'         => "Paris",
-				'Europe/Prague'        => "Prague",
-				'Europe/Rome'          => "Rome",
-				'Europe/Sarajevo'      => "Sarajevo",
-				'Europe/Skopje'        => "Skopje",
-				'Europe/Stockholm'     => "Stockholm",
-				'Europe/Vienna'        => "Vienna",
-				'Europe/Warsaw'        => "Warsaw",
-				'Europe/Zagreb'        => "Zagreb",
-				'Europe/Athens'        => "Athens",
-				'Europe/Bucharest'     => "Bucharest",
-				'Africa/Cairo'         => "Cairo",
-				'Africa/Harare'        => "Harare",
-				'Europe/Helsinki'      => "Helsinki",
-				'Europe/Istanbul'      => "Istanbul",
-				'Asia/Jerusalem'       => "Jerusalem",
-				'Europe/Kiev'          => "Kyiv",
-				'Europe/Minsk'         => "Minsk",
-				'Europe/Riga'          => "Riga",
-				'Europe/Sofia'         => "Sofia",
-				'Europe/Tallinn'       => "Tallinn",
-				'Europe/Vilnius'       => "Vilnius",
-				'Asia/Baghdad'         => "Baghdad",
-				'Asia/Kuwait'          => "Kuwait",
-				'Africa/Nairobi'       => "Nairobi",
-				'Asia/Riyadh'          => "Riyadh",
-				'Asia/Tehran'          => "Tehran",
-				'Europe/Moscow'        => "Moscow",
-				'Asia/Baku'            => "Baku",
-				'Europe/Volgograd'     => "Volgograd",
-				'Asia/Muscat'          => "Muscat",
-				'Asia/Tbilisi'         => "Tbilisi",
-				'Asia/Yerevan'         => "Yerevan",
-				'Asia/Kabul'           => "Kabul",
-				'Asia/Karachi'         => "Karachi",
-				'Asia/Tashkent'        => "Tashkent",
-				'Asia/Kolkata'         => "Kolkata",
-				'Asia/Kathmandu'       => "Kathmandu",
-				'Asia/Yekaterinburg'   => "Ekaterinburg",
-				'Asia/Almaty'          => "Almaty",
-				'Asia/Dhaka'           => "Dhaka",
-				'Asia/Novosibirsk'     => "Novosibirsk",
-				'Asia/Bangkok'         => "Bangkok",
-				'Asia/Jakarta'         => "Jakarta",
-				'Asia/Krasnoyarsk'     => "Krasnoyarsk",
-				'Asia/Chongqing'       => "Beijing",
-				'Asia/Hong_Kong'       => "Hong Kong",
-				'Asia/Kuala_Lumpur'    => "Kuala Lumpur",
-				'Australia/Perth'      => "Perth",
-				'Asia/Singapore'       => "Singapore",
-				'Asia/Taipei'          => "Taipei",
-				'Asia/Ulaanbaatar'     => "Ulaan Bataar",
-				'Asia/Urumqi'          => "Urumqi",
-				'Asia/Irkutsk'         => "Irkutsk",
-				'Asia/Seoul'           => "Seoul",
-				'Asia/Tokyo'           => "Tokyo",
-				'Australia/Adelaide'   => "Adelaide",
-				'Australia/Darwin'     => "Darwin",
-				'Asia/Yakutsk'         => "Yakutsk",
-				'Australia/Brisbane'   => "Brisbane",
-				'Australia/Canberra'   => "Canberra",
-				'Pacific/Guam'         => "Guam",
-				'Australia/Hobart'     => "Hobart",
-				'Australia/Melbourne'  => "Melbourne",
-				'Pacific/Port_Moresby' => "Port Moresby",
-				'Australia/Sydney'     => "Sydney",
-				'Asia/Vladivostok'     => "Vladivostok",
-				'Asia/Magadan'         => "Magadan",
-				'Pacific/Auckland'     => "Auckland",
-				'Pacific/Fiji'         => "Fiji"];
-	
+		[
+			'Pacific/Midway'       => "Midway Island",
+			'US/Hawaii'            => "Hawaii",
+			'US/Alaska'            => "Alaska",
+			'US/Pacific'           => "Pacific Time (US & Canada)",
+			'America/Tijuana'      => "Tijuana",
+			'US/Mountain'          => "Mountain Time (US & Canada)",
+			'America/Chihuahua'    => "Chihuahua",
+			'America/Mazatlan'     => "Mazatlan",
+			'America/Mexico_City'  => "Mexico City",
+			'America/Monterrey'    => "Monterrey",
+			'Canada/Saskatchewan'  => "Saskatchewan",
+			'US/Central'           => "Central Time (US & Canada)",
+			'US/Eastern'           => "Eastern Time (US & Canada)",
+			'America/Bogota'       => "Bogota",
+			'America/Lima'         => "Lima",
+			'America/Caracas'      => "Caracas",
+			'Canada/Atlantic'      => "Atlantic Time (Canada)",
+			'America/La_Paz'       => "La Paz",
+			'America/Santiago'     => "Santiago",
+			'Canada/Newfoundland'  => "Newfoundland",
+			'America/Buenos_Aires' => "Buenos Aires",
+			'Atlantic/Stanley'     => "Stanley",
+			'Atlantic/Azores'      => "Azores",
+			'Atlantic/Cape_Verde'  => "Cape Verde Is.",
+			'Africa/Casablanca'    => "Casablanca",
+			'Europe/Dublin'        => "Dublin",
+			'Europe/Lisbon'        => "Lisbon",
+			'Europe/London'        => "London",
+			'Africa/Monrovia'      => "Monrovia",
+			'Europe/Amsterdam'     => "Amsterdam",
+			'Europe/Belgrade'      => "Belgrade",
+			'Europe/Berlin'        => "Berlin",
+			'Europe/Bratislava'    => "Bratislava",
+			'Europe/Brussels'      => "Brussels",
+			'Europe/Budapest'      => "Budapest",
+			'Europe/Copenhagen'    => "Copenhagen",
+			'Europe/Ljubljana'     => "Ljubljana",
+			'Europe/Madrid'        => "Madrid",
+			'Europe/Paris'         => "Paris",
+			'Europe/Prague'        => "Prague",
+			'Europe/Rome'          => "Rome",
+			'Europe/Sarajevo'      => "Sarajevo",
+			'Europe/Skopje'        => "Skopje",
+			'Europe/Stockholm'     => "Stockholm",
+			'Europe/Vienna'        => "Vienna",
+			'Europe/Warsaw'        => "Warsaw",
+			'Europe/Zagreb'        => "Zagreb",
+			'Europe/Athens'        => "Athens",
+			'Europe/Bucharest'     => "Bucharest",
+			'Africa/Cairo'         => "Cairo",
+			'Africa/Harare'        => "Harare",
+			'Europe/Helsinki'      => "Helsinki",
+			'Europe/Istanbul'      => "Istanbul",
+			'Asia/Jerusalem'       => "Jerusalem",
+			'Europe/Kiev'          => "Kyiv",
+			'Europe/Minsk'         => "Minsk",
+			'Europe/Riga'          => "Riga",
+			'Europe/Sofia'         => "Sofia",
+			'Europe/Tallinn'       => "Tallinn",
+			'Europe/Vilnius'       => "Vilnius",
+			'Asia/Baghdad'         => "Baghdad",
+			'Asia/Kuwait'          => "Kuwait",
+			'Africa/Nairobi'       => "Nairobi",
+			'Asia/Riyadh'          => "Riyadh",
+			'Asia/Tehran'          => "Tehran",
+			'Europe/Moscow'        => "Moscow",
+			'Asia/Baku'            => "Baku",
+			'Europe/Volgograd'     => "Volgograd",
+			'Asia/Muscat'          => "Muscat",
+			'Asia/Tbilisi'         => "Tbilisi",
+			'Asia/Yerevan'         => "Yerevan",
+			'Asia/Kabul'           => "Kabul",
+			'Asia/Karachi'         => "Karachi",
+			'Asia/Tashkent'        => "Tashkent",
+			'Asia/Kolkata'         => "Kolkata",
+			'Asia/Kathmandu'       => "Kathmandu",
+			'Asia/Yekaterinburg'   => "Ekaterinburg",
+			'Asia/Almaty'          => "Almaty",
+			'Asia/Dhaka'           => "Dhaka",
+			'Asia/Novosibirsk'     => "Novosibirsk",
+			'Asia/Bangkok'         => "Bangkok",
+			'Asia/Jakarta'         => "Jakarta",
+			'Asia/Krasnoyarsk'     => "Krasnoyarsk",
+			'Asia/Chongqing'       => "Beijing",
+			'Asia/Hong_Kong'       => "Hong Kong",
+			'Asia/Kuala_Lumpur'    => "Kuala Lumpur",
+			'Australia/Perth'      => "Perth",
+			'Asia/Singapore'       => "Singapore",
+			'Asia/Taipei'          => "Taipei",
+			'Asia/Ulaanbaatar'     => "Ulaan Bataar",
+			'Asia/Urumqi'          => "Urumqi",
+			'Asia/Irkutsk'         => "Irkutsk",
+			'Asia/Seoul'           => "Seoul",
+			'Asia/Tokyo'           => "Tokyo",
+			'Australia/Adelaide'   => "Adelaide",
+			'Australia/Darwin'     => "Darwin",
+			'Asia/Yakutsk'         => "Yakutsk",
+			'Australia/Brisbane'   => "Brisbane",
+			'Australia/Canberra'   => "Canberra",
+			'Pacific/Guam'         => "Guam",
+			'Australia/Hobart'     => "Hobart",
+			'Australia/Melbourne'  => "Melbourne",
+			'Pacific/Port_Moresby' => "Port Moresby",
+			'Australia/Sydney'     => "Sydney",
+			'Asia/Vladivostok'     => "Vladivostok",
+			'Asia/Magadan'         => "Magadan",
+			'Pacific/Auckland'     => "Auckland",
+			'Pacific/Fiji'         => "Fiji"
+		];
 }

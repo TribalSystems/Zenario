@@ -37,6 +37,11 @@ class escape {
 		return preg_replace('@[^(\x20-\x7E)]*@', '', $text);
 	}
 	
+	//Remove non-utf8 characters
+	public static function utf8($text) {
+		return mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+	}
+	
 	
 
 	//This function is used in AJAX requests to send additional metadata and flags to the JavaScript running on the client.

@@ -6,7 +6,7 @@ zenario_publish:
         id: ""
         cID: ""
         cType: ""
-    max_height: 230
+    max_height: 280
     hide_tab_bar: true
     save_button_message: Publish
     cancel_button_message: Cancel

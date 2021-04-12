@@ -22,4 +22,10 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log` MODIFY COLUMN `referrer_url` text CHARACTER SET utf8mb4 NULL
 _sql
+
+);	ze\dbAdm::revision( 22
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log`
+	MODIFY COLUMN `page_alias` varchar(255) CHARACTER SET utf8mb4 NOT NULL
+_sql
 );

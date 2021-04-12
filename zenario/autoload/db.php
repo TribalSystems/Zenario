@@ -43,6 +43,7 @@ class col {
 	public $isSet = false;
 	public $isJSON = false;
 	public $isPK = false;
+	public $isASCII = false;
 	
 	public function __construct($f) {
 		
@@ -75,6 +76,48 @@ class col {
 
 			case 245:
 				$this->isJSON = true;
+				break;
+
+			case 253:
+				//For char and varchar columns, attempt to work out whether they are actually ASCII
+				//columns.
+				//Unfortunately, the info from fetch_fields() doesn't tell us this, it incorrectly
+				//reports that they are UTF8 based on the connection details.
+				//To work around this, I'll have a list of columns that I know should be ASCII.
+				//This list isn't exhaustive, as I'm not worried about every single column,
+				//just those that are likely to be read from the URL and victim to someone trying
+				//to hack values in the URL.
+				switch ($this->col) {
+					case 'bg_color':
+					case 'checksum':
+					case 'code_name':
+					case 'content_type':
+					case 'content_type_id':
+					case 'field_name':
+					case 'hash':
+					case 'hyperlink_hash':
+					case 'json_data_hash':
+					case 'landing_page_content_type':
+					case 'owner_type':
+					case 'panel_type':
+					case 'remove_hash':
+					case 'short_checksum':
+					case 'tag_id':
+					case 'tracker_hash':
+					case 'usage':
+						$this->isASCII = true;
+						break;
+					
+					case 'type':
+						if (defined('DB_PREFIX')) {
+							if ($this->tbl === DB_PREFIX. 'content_items'
+							 || $this->tbl === DB_PREFIX. 'content_item_versions'
+							 || $this->tbl === DB_PREFIX. 'translation_chains') {
+								$this->isASCII = true;
+							}
+						}
+						break;
+				}
 				break;
 		}
 		
@@ -455,6 +498,17 @@ class db {
 			
 				//Look out for encrypted versions of columns
 				if ($col[0] === '%') {
+					
+					//This is a work-around so that any bad/corrupted tables in the database
+					//won't cause an error on the screen.
+					//If a column has been deleted, but the encrypted or hashed version is
+					//still there, just ignore it and move on.
+					if (!isset($this->cols[$prefixAndTable][substr($col, 1)])) {
+						continue;
+					}
+					//Note: this isn't an ideal fix, ideally the table definition wouldn't
+					//get corrupted in the first place.
+					
 					//If they exist, load the encryption wrapper library
 					\ze\zewl::init();
 					//Record that this column should be encrypted
@@ -462,6 +516,17 @@ class db {
 			
 				//Look out for hashed versions of columns
 				} elseif ($col[0] === '#') {
+					
+					//This is a work-around so that any bad/corrupted tables in the database
+					//won't cause an error on the screen.
+					//If a column has been deleted, but the encrypted or hashed version is
+					//still there, just ignore it and move on.
+					if (!isset($this->cols[$prefixAndTable][substr($col, 1)])) {
+						continue;
+					}
+					//Note: this isn't an ideal fix, ideally the table definition wouldn't
+					//get corrupted in the first place.
+					
 					//Record that this column should be hashed
 					$this->cols[$prefixAndTable][substr($col, 1)]->hashed = true;
 			

@@ -19,21 +19,22 @@ Options -Indexes
 
 <IfModule mod_expires.c>
 	AddType application/font-woff .woff
+	AddType application/font-woff .woff2
 	AddType text/css .css
 	AddType text/javascript .js
 
 	
 	ExpiresActive On
-	ExpiresByType application/font-woff "access plus 1 month"
-	ExpiresByType text/css "access plus 1 month"
-	ExpiresByType image/gif "access plus 1 month"
-	ExpiresByType image/png "access plus 1 month"
-	ExpiresByType image/jpeg "access plus 1 month"
-	ExpiresByType image/svg+xml "access plus 1 month"
-	ExpiresByType image/x-icon "access plus 1 month"
-	ExpiresByType image/vnd.microsoft.icon "access plus 1 month"
-	ExpiresByType application/x-javascript "access plus 1 month"
 	ExpiresByType application/javascript "access plus 1 month"
+	ExpiresByType application/x-javascript "access plus 1 month"
+	ExpiresByType text/css "access plus 1 month"
+	ExpiresByType application/font-woff "access plus 1 year"
+	ExpiresByType image/gif "access plus 1 year"
+	ExpiresByType image/jpeg "access plus 1 year"
+	ExpiresByType image/png "access plus 1 year"
+	ExpiresByType image/svg+xml "access plus 1 year"
+	ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
+	ExpiresByType image/x-icon "access plus 1 year"
 </IfModule>
 
 <IfModule mod_deflate.c>

@@ -381,11 +381,7 @@ if (ze\priv::check()) {
 			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false, false), 'published' => ze\layoutAdm::usage($layoutId, false, true)];
 			
 			//Show how many items use a specific to slotName, and display links if possible.
-				$htmlmoduleIds = ze\module::id('zenario_html_snippet');
-				$WysmoduleIds = ze\module::id('zenario_wysiwyg_editor');
-				$moduleIds = [$htmlmoduleIds,$WysmoduleIds];
-				
-				$usageContentItems = ze\layoutAdm::slotUsage($slotName,$moduleIds, $countItems = false);	
+			$usageContentItems = ze\layoutAdm::slotUsage($layoutId, $slotName);	
 				$usage = [
 					'content_item' => $usageContentItems[0] ?? null,
 					'content_items' => count($usageContentItems)

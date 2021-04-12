@@ -26,7 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
-use Aws\S3\S3Client;
 
 class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
@@ -215,6 +214,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					'content_items',
 					['id', 'type', 'tag_id', 'language_id', 'equiv_id', 'alias', 'visitor_version', 'admin_version', 'status'],
 					['id' => $box['key']['source_cID'], 'type' => $box['key']['cType']]);
+			
+			if (!$content) {
+				echo ze\admin::phrase('Source content item not found');
+				exit;
+			}
 		}
 
 
@@ -724,25 +728,32 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 			
 			}
-			//To show warning message for sheduled datetime content item in FAB
-			$checkIfPublishsql = "SELECT id,scheduled_publish_datetime from ". DB_PREFIX. "content_item_versions 
-					WHERE id IN (". (int) $box['key']['cID']. ")
-			  AND scheduled_publish_datetime IS NOT NULL
-			  AND published_datetime IS NULL AND publisher_id=0" ;
-				$checkIfPublish = ze\sql::select($checkIfPublishsql);
-				$getresult = ze\sql::fetchAssoc($checkIfPublish);
-
-				if($getresult && $checkIfPublish)
-				{
-					if(sizeof($getresult)>0 )
-					{
-						$box['tabs']['meta_data']['notices']['scheduled_warning']['show'] = true;
-						$box['tabs']['meta_data']['notices']['scheduled_warning']['message'] = "This item is scheduled to be published at " .ze\admin::formatDateTime($getresult['scheduled_publish_datetime'],'vis_date_format_med').".";
-					}
-				}
+			
+			
+			//Show a note if this is scheduled to be published
+			$sql = "
+				SELECT c.id, c.type, v.scheduled_publish_datetime
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+				   ON v.id = c.id
+				  AND v.type = c.type
+				  AND v.version = c.admin_version
+				WHERE c.id = ". (int) $box['key']['cID']. "
+				  AND c.type = '". ze\escape::sql($box['key']['cType']). "'
+				  AND v.scheduled_publish_datetime IS NOT NULL";
 		
+			if ($row = ze\sql::fetchAssoc($sql)) {
+				$box['tabs']['meta_data']['notices']['scheduled_warning']['show'] = true;
+				
+				$row['publication_time'] = 
+					ze\admin::formatDateTime($row['scheduled_publish_datetime'], 'vis_date_format_med');
+				
+				$box['tabs']['meta_data']['notices']['scheduled_warning']['message'] =
+					ze\admin::phrase("This item is scheduled to be published at [[publication_time]].", $row);
+			}
 		}
-		if (ze::setting('aws_s3_support')) {
+		
+		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
 			$fields['file/file']['label']= 'Local file:';
 			$fields['file/s3_file_upload']['hidden']= false;
 			$maxUploadSize = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
@@ -762,7 +773,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$box['tabs']['file']['hidden'] = true;
 		
-		if (ze::setting('aws_s3_support')) {
+		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
 			
 			if($values['file/s3_file_remove']) {
 				

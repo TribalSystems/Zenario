@@ -26,7 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
-use Aws\S3\S3Client;
 
 class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseClass {
 
@@ -84,13 +83,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		if (isset($fields['filesizes/apache_max_filesize'])) {
 			$fields['filesizes/apache_max_filesize']['value'] = ze\dbAdm::apacheMaxFilesize();
-		}
-		if (isset($fields['awss3_file_downloads/local_file_link_text']) && !$fields['awss3_file_downloads/local_file_link_text']['value']) {
-			$fields['awss3_file_downloads/local_file_link_text']['value'] = 'Download';
-		}
-		if (isset($fields['awss3_file_downloads/s3_file_link_text']) && !$fields['awss3_file_downloads/s3_file_link_text']['value']) {
-			$fields['awss3_file_downloads/s3_file_link_text']['value'] = 'Download from S3';
-			$fields['awss3_file_downloads/show_format_and_size']['value'] = true;
 		}
 		if (isset($fields['filesizes/max_allowed_packet'])) {
 			$fields['filesizes/max_allowed_packet']['value'] = '?';
@@ -926,30 +918,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					$box['tabs'][$dir]['fields'][$dir]['current_value'] = preg_replace('/[\\\\\\/]+$/', '', $box['tabs'][$dir]['fields'][$dir]['current_value']);
 				}
 			}
-		}
-		if ($box['setting_group'] == 'files_and_images' && $values['awss3_file_downloads/aws_s3_support']){
-			$awsS3Region = $values['awss3_file_downloads/aws_s3_region'];
-			$awsS3KeyId = $values['awss3_file_downloads/aws_s3_key_id'];
-			$awsS3SecretKey = $values['awss3_file_downloads/aws_s3_secret_key'];
-			$awsS3Bucket = $values['awss3_file_downloads/aws_s3_bucket'];
-			if ($awsS3Region && $awsS3KeyId && $awsS3SecretKey && $awsS3Bucket) {
-				$bucket = ltrim($awsS3Bucket, 'arn:aws:s3:::');
-				$s3 = new Aws\S3\S3Client([
-					'region'  => $awsS3Region,
-					'version' => 'latest',
-					'credentials' => [
-						'key'    => $awsS3KeyId,
-						'secret' => $awsS3SecretKey,
-					]
-				]);
-
-				// Send a PutObject request and get the result object.
-				$bucketResponse = $s3->doesBucketExist($bucket);
-				if (!$bucketResponse) {
-					$box['tabs']['awss3_file_downloads']['errors'][] = ze\admin::phrase('Connection failed! Please check your credentials.');
-				}
-			}
-				
 		}
 	}
 	

@@ -235,7 +235,7 @@ if ($cVersion == ze::$adminVersion && ze::$isDraft) {
 		$menu = ze\menu::getFromContentItem($cID, $cType);
 		
 		$redirect_page = ze\admin::phrase('the Home page');
-		if ($menu['parent_id']) {
+		if ($menu && $menu['parent_id']) {
 			$redirectContent = ze\row::get('menu_nodes', ['equiv_id', 'content_type'], ['id' => $menu['parent_id']]);
 			$redirectCID = $redirectContent['equiv_id'];
 			$redrectCType = $redirectContent['content_type'];

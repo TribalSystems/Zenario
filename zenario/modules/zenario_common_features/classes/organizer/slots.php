@@ -169,17 +169,6 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 			foreach ($slotContents as $slotName => $slot) {
 				if (isset($panel['items'][$slotName])) {
 					if ($layer == $refinerName) {
-						
-				//Show how many items use a specific to slotName, and display links if possible.
-				$htmlmoduleIds = ze\module::id('zenario_html_snippet');
-				$WysmoduleIds = ze\module::id('zenario_wysiwyg_editor');
-				$moduleIds = [$htmlmoduleIds,$WysmoduleIds];
-				
-				$usageContentItems = ze\layoutAdm::slotUsage($slotName,$moduleIds, $countItems = false);
-				$usage = [
-					'content_item' => $usageContentItems[0] ?? null,
-					'content_items' => count($usageContentItems)
-				];
 		
 				$usageLinks = [
 					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $template['layout_id']. '//'
@@ -203,7 +192,15 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 							} else {
 								$panel['items'][$slotName]['visitor_sees'] = ze\admin::phrase('[[module]]', $panel['items'][$slotName]);
 								$panel['items'][$slotName]['traits']['wireframe'] = true;
-								if($usageContentItems[0] )
+								
+								//Show how many items use a specific to slotName, and display links if possible.
+								$usageContentItems = ze\layoutAdm::slotUsage($template['layout_id'], $slotName);
+								$usage = [
+									'content_item' => $usageContentItems[0] ?? null,
+									'content_items' => count($usageContentItems)
+								];
+								
+								if(isset($usageContentItems[0]) && $usageContentItems[0])
 									$panel['items'][$slotName]['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 								else
 									$panel['items'][$slotName]['where_used'] = 'No content';

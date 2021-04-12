@@ -87,7 +87,7 @@ email_templates:
             
             To confirm your login, please click the following button:
             
-            <p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[URL]][[SUBDIRECTORY]]admin?verification_code=[[CODE]]">AUTHENTICATE</a></p>
+            <p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[URL]][[SUBDIRECTORY]]admin.php?verification_code=[[CODE]]">AUTHENTICATE</a></p>
             
             If the above link doesn't work, copy the following code (all UPPER CASE letters) and paste it into your browser:
             

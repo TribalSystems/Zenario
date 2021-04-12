@@ -31,6 +31,9 @@ class zenario_error_log extends ze\moduleBaseClass {
 	
 	//Called when a 404 error is triggered to log it
 	public static function log404Error($pageAlias, $httpReferer = '') {
+		
+		$pageAlias = ze\escape::utf8($pageAlias);
+		
 		$logged = date('Y-m-d H:i:s');
 		if (strlen($pageAlias) > 255) {
 			$pageAlias = mb_substr($pageAlias, 0, 252, 'UTF-8').'...';

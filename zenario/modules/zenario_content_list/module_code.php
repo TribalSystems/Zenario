@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
-use Aws\S3\S3Client;
+
 class zenario_content_list extends ze\moduleBaseClass {
 	
 	protected $dataField;
@@ -527,10 +527,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 					} else {
 						$fileName = $s3FileDetails['filename'];
 					}
-					if ($fileName && ze::setting('aws_s3_support')) {
-						if (ze\module::inc('zenario_ctype_document')) {
-							$presignedUrl = zenario_ctype_document::getS3FilePresignedUrl($fileName);
-						}
+					if ($fileName && ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
+						$presignedUrl = zenario_ctype_document::getS3FilePresignedUrl($fileName);
 						if ($presignedUrl) {
 							$item['S3_Anchor_Link'] =  $presignedUrl;
 						}
@@ -1079,7 +1077,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Local_File_Size' => ze::setting('local_file_size'),
 			'Show_File_Size' => $this->setting('show_file_size'),
 			'S3_File_Link_Text' => ze::setting('s3_file_link_text') ? ze::setting('s3_file_link_text') : 'Download original/large version',
-			'Aws_Link' => ze::setting('aws_s3_support'),
+			'Aws_Link' => ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document'),
 			'Show_Format_And_Size' => ze::setting('show_format_and_size'),
 			'Link_To_Download_Page' => $Link_To_Download_Page,
 			'Anchor_Link' => $this->linkToItemAnchor($this->cID,$this->cType,true,'&build=1&slotName='.$this->slotName.'&ids=' . $allIdsValue),

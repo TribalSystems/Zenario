@@ -1073,11 +1073,7 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 			//Try to restore the settings again. This should work fully this time.
 			\ze\dbAdm::restoreLocationalSiteSettings();
 		
-			//Populate the menu_hierarchy and the menu_positions tables
-			\ze\menuAdm::recalcAllHierarchy();
-		
-			//Update the special pages, creating new ones if needed
-			\ze\contentAdm::addNeededSpecialPages();
+			\ze\welcome::postInstallTasks();
 		
 			return true;
 		}

@@ -110,7 +110,6 @@ zenario_slide:
                     hide_if_previous_outdented_value_isnt: 1
                     label: Only show the Back button when the previous slide has more than one item to choose from
                     type: checkbox
-                    value: 1
                     note_below: |
                         This check works by counting the number of smart breadcrumbs.
                         Smart breadcrumbs must be enabled for this to function.

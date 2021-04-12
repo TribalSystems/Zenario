@@ -1394,7 +1394,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			//Attempt to get phrases from the PHP code as well.
 			//If this is a modal plugin, look for the mode in the classes subdirectory, otherwise try looking at the module_code.php.
 			//Note that I am not handling modules/classes that extend other modules/classes right now.
-			if ($usesClassesDir = $mode && file_exists($modeDir = CMS_ROOT. ze::moduleDir($moduleClassName, 'classes/visitor/'. $mode. '.php', true))) {
+			if ($usesClassesDir = $mode
+			 && ($modeDir = ze::moduleDir($moduleClassName, 'classes/visitor/'. $mode. '.php', true))
+			 && (file_exists($modeDir = CMS_ROOT. $modeDir))) {
 				$php = file_get_contents($modeDir);
 			} else {
 				$php = file_get_contents(CMS_ROOT. ze::moduleDir($moduleClassName, 'module_code.php'));

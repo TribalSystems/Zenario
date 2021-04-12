@@ -318,9 +318,9 @@ class cache {
 		if (!empty($_REQUEST['no_cache'])) {
 			$maxAge = 0;
 	
-		//Set a time-out of about a month
+		//Set a time-out of about a year
 		} elseif ($maxAge === false) {
-			$maxAge = 60*60*24*28;
+			$maxAge = 60*60*24*30*12;
 		}
 	
 		session_cache_limiter(false);

@@ -90,37 +90,46 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			}
 		}
 		
-		// Scheduled publishing datetime option enabled
-		$pIdArr = [];
-		foreach($tags as $tagId){
-			$pId = explode('_',$tagId);
-			$pIdArr = $pId[1];
-		}
-		$checkIfPublishsql = "SELECT id,scheduled_publish_datetime from ". DB_PREFIX. "content_item_versions 
-					WHERE id IN (". ze\escape::in($pIdArr, true). ")
-			  AND scheduled_publish_datetime IS NOT NULL
-			  AND published_datetime IS NULL AND publisher_id=0" ;
-		$checkIfPublish = ze\sql::select($checkIfPublishsql);
-		$getresult = ze\sql::fetchAssoc($checkIfPublish);
-		if($getresult && $checkIfPublish)
-		{
-			if(sizeof($getresult)>1 )
-			{
-				$values['publish/publish_options'] = 'schedule';
-			
-					$sdate = $getresult['scheduled_publish_datetime'];
-					$sdate = strtotime($sdate);
-					$values['publish/publish_hours'] = date('G', $sdate);
-					$values['publish/publish_mins'] = date('i', $sdate);
-					$values['publish/publish_date'] = date('Y-m-d',$sdate);
-					
-					$box['tabs']['publish']['notices']['scheduled_warning']['show'] = true;
-					$box['tabs']['publish']['notices']['scheduled_warning']['message'] = "This item is scheduled to be published at " .ze\admin::formatDateTime($getresult['scheduled_publish_datetime'],'vis_date_format_med').".";
-				
-			}
-			
-		}
 		
+		//Show a note if any of these items are scheduled to be published
+		$sql = "
+			SELECT c.id, c.type, v.scheduled_publish_datetime
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+			   ON v.id = c.id
+			  AND v.type = c.type
+			  AND v.version = c.admin_version
+			WHERE c.tag_id in (". ze\escape::in($tags, 'sql'). ")
+			  AND v.scheduled_publish_datetime IS NOT NULL";
+		
+		$result = ze\sql::select($sql);
+		$count = ze\sql::numRows($result);
+		$row = ze\sql::fetchAssoc($result);
+		
+		if ($count > 0) {
+			$box['tabs']['publish']['notices']['scheduled_warning']['show'] = true;
+			
+			if ($count > 1
+			 || count($tags) > 1) {
+				$box['tabs']['publish']['notices']['scheduled_warning']['message'] =
+					ze\admin::phrase('These items are scheduled to be published at various times. Please check each one for details.');
+			
+			} else {
+				$row['publication_time'] = 
+					ze\admin::formatDateTime($row['scheduled_publish_datetime'], 'vis_date_format_med');
+				
+				$box['tabs']['publish']['notices']['scheduled_warning']['message'] =
+					ze\admin::phrase("This item is scheduled to be published at [[publication_time]].", $row);
+				
+				
+				$values['publish/publish_options'] = 'schedule';
+				
+				$sdate = ze\date::new($row['scheduled_publish_datetime']);
+				$values['publish/publish_hours'] = $sdate->format('G');
+				$values['publish/publish_mins'] = $sdate->format('i');
+				$values['publish/publish_date'] = $sdate->format('Y-m-d');
+			}
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
