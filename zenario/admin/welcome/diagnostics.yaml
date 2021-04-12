@@ -747,11 +747,7 @@ diagnostics:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
-                    visible_if: zenarioAW.togglePressed(field)                
-                
-                
-                
-                
+                    visible_if: zenarioAW.togglePressed(field)    
                 content:
                     grouping: sub_table
                     full_width: true
@@ -769,13 +765,11 @@ diagnostics:
                 content_nothing_unpublished: *blank_child
                     snippet:
                         html: You have no unpublished content items.
-                content_unpublished_1: *blank_child
-                content_unpublished_2: *blank_child
-                content_unpublished_3: *blank_child
-                content_unpublished_4: *blank_child
-                content_unpublished_5: *blank_child
-                content_more_unpublished: *blank_child
+                content_unpublished: *blank_child
+                    snippet:
+                        html: 
                 
+                content_more_unpublished: *blank_child
                 
                 administrators:
                     grouping: sub_table

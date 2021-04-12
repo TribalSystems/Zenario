@@ -90,16 +90,14 @@ class zenario_copyright extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-			if(!$this->setting('display_single_year')){
-				$values['first_tab/display_single_year'] = 'current_year';
-			}
-			
-			if(!$this->setting('end_year_type')){
-				$values['first_tab/end_year_type'] = 'current_year';
-			}
-
+				if (!$values['first_tab/display_single_year']) {
+					$values['first_tab/display_single_year'] = 'current_year';
+				}
+				
+				if (!$values['first_tab/end_year_type']) {
+					$values['first_tab/end_year_type'] = 'current_year';
+				}
+				break;
 		}
 	}
-	
-	
 }

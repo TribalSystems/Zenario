@@ -37,8 +37,12 @@ class zenario_document_envelopes_fea__visitor__upload_file_to_document_envelope 
 		$this->envelopeId = ze::request('envelopeId');
 		if ($this->envelopeId && !empty(ze\user::id()) && ze\user::can('manage', $this->idVarName)) {
 			$this->envelope = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', true, ['id' => $this->envelopeId]);
-			$this->runVisitorTUIX();
-			return true;
+			if ($this->envelope) {
+				$this->runVisitorTUIX();
+				return true;
+			} else {
+				return ZENARIO_403_NO_PERMISSION;
+			}
 		} else {
 			return ZENARIO_403_NO_PERMISSION;
 		}

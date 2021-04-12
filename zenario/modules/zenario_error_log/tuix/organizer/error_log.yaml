@@ -6,6 +6,10 @@ zenario__administration:
             item:
                 css_class: zenario_error_log
             title: Error log
+            notice:
+                show: false
+                type: information
+                message: ''
             no_items_message: The error log is empty
             view_mode: list
             disable_grid_view: true
@@ -32,6 +36,7 @@ zenario__administration:
                     title: Requested page alias
                     db_column: page_alias
                     show_by_default: true
+                    width: large
                     searchable: true
                 referrer_url:
                     title: Referrer URL
@@ -52,3 +57,4 @@ zenario__administration:
                     label: Clear log
                     admin_box:
                         path: zenario_clear_error_log
+                

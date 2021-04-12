@@ -9,6 +9,7 @@ zenario__users:
         users:
             title: 'All users & contacts'
             panel_type: multi_line_list_or_grid
+            css_class: three_line_list_panel
             use_tall_rows: true
             grid_view_microtemplate: 'zenario_grid_view_user'
             label_format_for_grid_view: '[[identifier]]'

@@ -28,7 +28,7 @@
 
 
 define('YUI_COMPRESSOR_PATH', 'zenario/libs/manually_maintained/bsd/yuicompressor/yuicompressor-2.4.8.jar');
-define('CLOSURE_COMPILER_PATH', 'zenario/libs/not_to_redistribute/closure-compiler/compiler.jar');
+define('CLOSURE_COMPILER_PATH', 'zenario/libs/not_to_redistribute/closure-compiler/closure-compiler.jar');
 
 //Use the closure compiler for .js files if it has been installed
 //(otherwise we must use YUI Compressor which gives slightly larger filesizes).
@@ -934,7 +934,9 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 						
 						} else {
 							//Use this line to actually run minification
-							exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v. ' --language_in ECMASCRIPT5 --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
+							exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v.
+								' --language_in ECMASCRIPT_2019 --language_out ECMASCRIPT_2015 --compilation_level SIMPLE'.
+								' --js_output_file '.
 										escapeshellarg($minFile).
 								//Code to generate a source-map if needed
 									//' --source_map_format=V3 --create_source_map '.

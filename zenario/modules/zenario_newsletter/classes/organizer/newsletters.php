@@ -206,9 +206,16 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			set_time_limit(60 * 10);
 			self::sendNewsletter($ids);
 			
+			$linkHref = ze\link::absolute() .'zenario/admin/organizer.php#zenario__email_template_manager/panels/newsletters/collection_buttons/archive//'. (int) $ids. '//';
+			$linkOnclick = "zenarioA.closeFloatingBox();";
+			
+			$link = '<a href="' . $linkHref . '" onclick="' . $linkOnclick . '">';
+			$link .= ze\admin::phrase('View Sent Newsletter in Archive.');
+			$link .= '</a>';
+			
 			echo '<!--Message_Type:Success-->
-				<p>', ze\admin::phrase('Newsletter Sent.'), '</p>
-				<p><a href="#zenario__email_template_manager/panels/newsletters/collection_buttons/archive//', (int) $ids, '//" onclick="zenarioA.closeFloatingBox();">', ze\admin::phrase('View Sent Newsletter in Archive.'), '</a></p>';
+				<p>' . ze\admin::phrase('Newsletter Sent.') . '</p>
+				<p>' . $link . '</p>';
 		
 		
 		//Duplicate the newsletter

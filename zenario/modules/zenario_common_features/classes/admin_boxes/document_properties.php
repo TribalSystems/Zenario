@@ -33,17 +33,17 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($documentId = $box['key']['id']) {
 			$documentTagsString = '';
-			
-			$documentDetails = ze\row::get('documents',['file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title'],  $documentId);
-			$documentName = ze\row::get('documents', 'filename', ['type' => 'file','id' => $documentId]);
-			$box['title'] = ze\admin::phrase('Editing metadata for document "[[filename]]"', ["filename"=>$documentName]);
+
+			$documentDetails = ze\row::get('documents', ['file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title', 'filename', 'folder_name', 'privacy'],  $documentId);
+			$documentName = $documentDetails['filename'];
+			$box['title'] = ze\admin::phrase('Editing metadata for document "[[filename]]"', ["filename" => $documentName]);
 			
 			$values['details/document_title'] = $documentDetails['title'];
 			$extension = pathinfo($documentName, PATHINFO_EXTENSION);
 			$values['details/document_extension'] = $extension;
 			$values['details/document_name'] = pathinfo($documentName, PATHINFO_FILENAME);
 			$fields['details/document_name']['post_field_html'] = '&nbsp;.' . $extension;
-			$fileDatetime=ze\row::get('documents', 'file_datetime', ['type' => 'file','id' => $documentId]);
+			$fileDatetime = ze\row::get('documents', 'file_datetime', ['type' => 'file','id' => $documentId]);
 			$values['details/date_uploaded'] = $fileDatetime;
 			
 			if (ze::setting('enable_document_tags')) {
@@ -61,13 +61,15 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			
 			$values['extract/extract_wordcount'] = $documentDetails['extract_wordcount'];
 			$values['extract/extract'] = ($documentDetails['extract'] ? $documentDetails['extract']: 'No plain-text extract');
+
+			$fileInfo = ze\row::get('files', ['mime_type', 'short_checksum', 'location', 'path'], $documentDetails['file_id']);
 			
 			// Add a preview image for JPEG/PNG/GIF images 
 			if (!empty($documentDetails['thumbnail_id'])) {
 				$this->getImageHtmlSnippet($documentDetails['thumbnail_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
 			} else {
 				$fields['upload_image/delete_thumbnail_image']['hidden'] = true;
-				$mimeType = ze\row::get('files', 'mime_type', $documentDetails['file_id']);
+				$mimeType = $fileInfo['mime_type'];
 				if ($mimeType == 'image/gif' || $mimeType == 'image/png' || $mimeType == 'image/jpeg' || $mimeType == 'image/pjpeg') {
 					$this->getImageHtmlSnippet($documentDetails['file_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
 				} else {
@@ -76,12 +78,22 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			}
 			
 			//Get privacy settings
-			$values['details/privacy'] = ze\row::get('documents', 'privacy', ['id' => $box['key']['id']]);
+			$values['details/privacy'] = $documentDetails['privacy'];
 			
 			//Get short checksum
-			$values['details/checksum'] = ze\row::get('files', 'short_checksum', $documentDetails['file_id']);
+			$values['details/checksum'] = $fileInfo['short_checksum'];
 			
 			$box['identifier']['value'] = ze\admin::phrase('Document ID [[id]], checksum "[[checksum]]"', ['id' => $documentId, 'checksum' => $values['details/checksum']]);
+
+			//Location (DB, docstore, s3)
+			$storageString = "Stored in the [[storage_location]]";
+			if ($fileInfo['location'] == 'docstore') {
+				$storageString .= ", folder name [[folder_name]].";
+			} else {
+				$storageString .= ".";
+			}
+
+			$fields['details/document_name']['note_below'] = ze\admin::phrase($storageString, ['storage_location' => $fileInfo['location'], 'folder_name' => $fileInfo['path']]);
 		}
 	}
 	
@@ -204,7 +216,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			ze\document::generatePublicLink($documentId);
 		//... or delete public link if the document is private or offline.
 		} else {
-			ze\document::deletePublicLink($documentId);
+			ze\document::deletePublicLink($documentId, $documentDeleted = false, $documentPrivacy);
 		}
 	}
 	

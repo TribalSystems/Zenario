@@ -26,6 +26,22 @@ site_settings:
                     label: 'Google Maps Geocode API key:'
                     type: text
                     note_below: Geocode API key should only be used for Location Map and Listing module. For all other purposes, please use the regular API key (above).
+        google_custom_search:
+            label: Google Programmable Search
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This site can display Google Programmable Search results on a web page. To make it do so, please enter an API key in the box below.
+                google_custom_search_json_api_key:
+                    site_setting:
+                        name: google_custom_search_json_api_key
+                    label: 'Google Programmable Search JSON API key:'
+                    type: text
+                    note_below: You can obtain an API key <a href="https://developers.google.com/custom-search/v1/overview" target="_blank">here</a>.
         dropbox:
             label: Dropbox
             edit_mode:

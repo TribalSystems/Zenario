@@ -6,7 +6,12 @@ zenario_alias:
             notices:
                 spare_alias_already_exists:
                     show: false
-                    message: 
+                    #message is set in PHP class.
+                    type: error
+                    html: true
+                alias_cannot_also_be_spare_alias:
+                    show: false
+                    #message is set in PHP class.
                     type: error
                     html: true
             fields:

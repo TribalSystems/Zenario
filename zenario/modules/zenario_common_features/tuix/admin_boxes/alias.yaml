@@ -15,6 +15,12 @@ zenario_alias:
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_DRAFT
+            notices:
+                cannot_change_alias:
+                    show: false
+                    type: warning
+                    html: true
+                    #message is set in the PHP class.
             fields:
                 alias:
                     label: 'Alias:'

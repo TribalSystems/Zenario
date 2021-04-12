@@ -43,7 +43,7 @@ common_definitions:
         - "null"
     css_class: &css_class
         type: string
-        description: A CSS class name to add to this element, which should be used to define an icon.
+        description: A CSS class name to add to this element.
     ord: &ord
         type: *stringy
         description: >
@@ -302,6 +302,7 @@ additionalProperties:
                 required:
                     - title
                 properties:
+                    css_class: *css_class
                     title:
                         type: string
                         description: >

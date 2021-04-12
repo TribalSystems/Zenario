@@ -1,33 +1,36 @@
 site_settings:
-	setting_group: zenario_error_log__site_settings_group
-	title: |
-		Settings for Error Log
-	tabs:
-		details:
-			label: Details
-			edit_mode:
-				enabled: Yes
-			fields:
-				period_to_delete_error_log: 
-					site_setting:
-						name: period_to_delete_error_log
-					label: "Delete data from error log:"
-					type: select
-					values: 
-						"90": 
-							label: Delete data older than 3 months
-							ord: "1"
-						"180": 
-							label: Delete data older than 6 months
-							ord: "4"
-						"365": 
-							label: Delete data older than 1 year
-							ord: "5"
-						"730": 
-							label: Delete data older than 2 years
-							ord: "6"
-						"1095": 
-							label: Delete data older than 3 years
-							ord: "7"
-					empty_value: "Never delete"
-					note_below: "Warning: Data older than specified period will be permanently deleted when a new error is logged."
+    setting_group: zenario_error_log__site_settings_group
+    title: |
+        Settings for Error Log
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: Yes
+            fields:
+                period_to_delete_error_log: 
+                    site_setting:
+                        name: period_to_delete_error_log
+                    label: "Delete data from error log:"
+                    type: select
+                    values: 
+                        "never_delete": 
+                            label: Never delete
+                            ord: "1"
+                        "90": 
+                            label: Delete data older than 3 months
+                            ord: "2"
+                        "180": 
+                            label: Delete data older than 6 months
+                            ord: "4"
+                        "365": 
+                            label: Delete data older than 1 year
+                            ord: "5"
+                        "730": 
+                            label: Delete data older than 2 years
+                            ord: "6"
+                        "1095": 
+                            label: Delete data older than 3 years
+                            ord: "7"
+                    value: "never_delete"
+                    note_below: "Warning: Data older than specified period will be permanently deleted when a new error is logged."

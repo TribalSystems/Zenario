@@ -14,7 +14,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            The Content Summary List module offer content in a zip archive to download.
+                            The module Content Summary List can offer document content items in a zip download.
                 zip_path:
                     site_setting:
                         name: zip_path

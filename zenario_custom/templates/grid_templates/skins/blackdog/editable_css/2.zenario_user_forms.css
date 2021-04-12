@@ -125,6 +125,7 @@
 	bottom:0;
 	right:50px;
 	display:none;
+	min-height:32px;
 }
 
 .zenario_user_forms.form_popup .form_wrapper {

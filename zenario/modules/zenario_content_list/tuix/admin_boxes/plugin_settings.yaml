@@ -605,7 +605,13 @@ plugin_settings:
                     side_note: |
                         Display image at double density.
                     enable_microtemplates_in_properties: true
-                
+                show_permalink:
+                    label: 'Show permalink'
+                    plugin_setting:
+                        name: show_permalink
+                    type: checkbox
+                    value: "0"
+                    
                 show_dates:
                     plugin_setting:
                         name: show_dates
@@ -823,6 +829,8 @@ plugin_settings:
                     value: ""
                     side_note: >
                         With this option enabled the content language will be shown next to the document title.
+                        
+                
         pagination:
             label: Pagination
             notices:

@@ -331,7 +331,7 @@ if ($systemRequirementsMet && $installed) {
 				ze\db::loadSiteConfig();
 			
 				//Check if a password change is needed/requested
-				$needToChangePassword = ($task == 'change_password' || ze\row::get('admins', 'password_needs_changing', ze\admin::id()));
+				$needToChangePassword = ($task == 'change_password' || ze\row::get('admins', 'password_needs_changing', $_SESSION['admin_userid']));
 			
 				if ($needToChangePassword) {
 					ze\welcome::prepareAdminWelcomeScreen('change_password', $source, $tags, $fields, $values, $changes);			

@@ -24,11 +24,14 @@ zenario_setup_module:
                 enabled: Yes
                 always_on: Yes
                 enable_revert: No
-            notices:
-                are_you_sure:
-                    type: warning
-                    message: ""
             fields:
+                module_start_desc:
+                    ord: "9000"
+                    full_width: Yes
+                    hidden: Yes
+                    type: hidden
+                    snippet:
+                        html: 'Start the module'
                 grant_perms_desc:
                     ord: "10000"
                     full_width: Yes

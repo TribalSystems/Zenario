@@ -240,4 +240,22 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		}
 		
 	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		//If it looks like this was opened from the front-end
+		//(i.e. there's no sign of any of Organizer's variables)
+		//then try to redirect the admin to whatever the visitor URL should be
+		if (!isset($_GET['refinerName'])) {
+			$link = ze\link::toItem(
+				$box['key']['cID'], $box['key']['cType'],
+				$fullPath = true, '', false,
+				false, $forceAliasInAdminMode = true
+			);
+			
+			ze\tuix::closeWithFlags(['go_to_url' => $link]);
+			exit;
+		}
+	}
+	
 }

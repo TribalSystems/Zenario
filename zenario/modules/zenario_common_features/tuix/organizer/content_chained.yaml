@@ -224,6 +224,10 @@ zenario__content:
                     item_link: menu_item
                 menu_id:
                     db_column: mi.id
+                scheduled_publish_datetime:
+                    title: 'Scheduled publish date/time'
+                    db_column: v.scheduled_publish_datetime
+                    format: datetime
             default_sort_column: tag
             label_format_for_grid_view: |
                 [[tag]]
@@ -393,25 +397,8 @@ zenario__content:
                         traits.not_locked: true
                     without_columns_set:
                         traits.ghost: true
-                    ajax:
-                        confirm:
-                            message: |
-                                You are about to delete the draft version of "[[tag]]".
-                                
-                                Deleting this draft will not affect the published version of this item, if it exists. However, the deletion cannot be undone.
-                                
-                                Are you sure you wish to proceed?
-                            multiple_select_message: |
-                                You are about to delete the draft versions of the selected content items.
-                                
-                                Deleting a draft will not affect any published versions of these items, if they exist. However, the deletions cannot be undone.
-                                
-                                Are you sure you wish to proceed?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete: 1
+                    admin_box:
+                        path: zenario_delete_draft
                 trash:
                     priv: _PRIV_HIDE_CONTENT_ITEM
                     visible_if_for_all_selected_items: |

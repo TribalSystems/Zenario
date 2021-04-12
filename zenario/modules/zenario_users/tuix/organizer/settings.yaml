@@ -7,6 +7,9 @@ zenario__administration:
                 users:
                     name: Users and Contacts
                     desc: Settings that affect extranet users and contacts.
+                    keywords: group username sign signin signup register spam junk login password passwords group groups country countries
                 perms:
                     name: User Permissions
                     desc: Settings that control what data can be seen or changed by which extranet users
+                    keywords: group groups permissions role roles
+                    

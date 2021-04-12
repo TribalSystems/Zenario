@@ -291,7 +291,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 				$adminId = ze\row::get('content_items', 'lock_owner_id', ['id'=>$citem['id'], 'type'=>$citem['type']]);
 				ze\contentAdm::publishContent($citem['id'], $citem['type'], $adminId);
 				$action = true;
-				echo ze\admin::phrase('Published Content Item [[tag]]', ['tag' => ze\content::formatTag($citem['id'], $citem['type'])]), "\n";
+				echo ze\admin::phrase('Published content item [[tag]]', ['tag' => ze\content::formatTag($citem['id'], $citem['type'])]), "\n";
 			}
 			
 			// Update scheduled time
@@ -302,7 +302,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 		}
 		
 		if (!$action) {
-			echo ze\admin::phrase('No Content Items to Publish'), "\n";
+			echo ze\admin::phrase('No content items to publish'), "\n";
 		}
 		
 		return $action;
@@ -358,8 +358,8 @@ class zenario_common_features extends ze\moduleBaseClass {
 	public static function addToMessage(&$message, $plugabbleCount, $versionControlledCount, $row, $linkToLibraryPlugin, $linkToVersionControlledPlugin) {
 		if ($plugabbleCount) {
 			$message .= ze\admin::nPhrase(
-				'<p>There is [[count]] "[[display_name]]" library plugin linking to this Content Item. "[[link]]".</p>',
-				'<p>There are [[count]] "[[display_name]]" library plugins linking to this Content Item. "[[link]]" and [[count2]] other[[s]].</p>', 
+				'<p>There is [[count]] "[[display_name]]" plugin linking to this content item. "[[link]]".</p>',
+				'<p>There are [[count]] "[[display_name]]" plugins linking to this content item. "[[link]]" and [[count2]] other[[s]].</p>', 
 				$plugabbleCount,
 				[
 					'count' => $plugabbleCount, 
@@ -370,8 +370,8 @@ class zenario_common_features extends ze\moduleBaseClass {
 		}
 		if ($versionControlledCount) {
 			$message .= ze\admin::nPhrase(
-				'<p>There is [[count]] "[[display_name]]" version controlled plugin linking to this Content Item. "[[link]]".</p>',
-				'<p>There are [[count]] "[[display_name]]" version controlled plugins linking to this Content Item. "[[link]]" plus [[count2]] other plugin[[s]].</p>',
+				'<p>There is [[count]] "[[display_name]]" version controlled plugin linking to this content item. "[[link]]".</p>',
+				'<p>There are [[count]] "[[display_name]]" version controlled plugins linking to this content item. "[[link]]" plus [[count2]] other plugin[[s]].</p>',
 				$versionControlledCount,
 				[
 					'count' => $versionControlledCount, 
@@ -395,18 +395,16 @@ class zenario_common_features extends ze\moduleBaseClass {
 			
 			switch ($values[$tabName . '/action'. $suffix]) {
 				case 'delete':
-					$cID = $cType = false;
-					ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-				
 					if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_DELETE_DRAFT', $cID, $cType)) {
-						ze\contentAdm::deleteDraft($cID, $cType);
+						if (ze::in($cType, 'audio', 'document', 'picture', 'video')) {
+							ze\contentAdm::deleteContentItem($cID, $cType);
+						} else {
+							ze\contentAdm::deleteDraft($cID, $cType);
+						}
 					}
 					break;
 					
 				case 'trash':
-					$cID = $cType = false;
-					ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-				
 					if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType)) {
 						ze\contentAdm::trashContent($cID, $cType);
 					}

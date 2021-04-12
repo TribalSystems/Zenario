@@ -88,11 +88,20 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		//Check permissions
 		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
+			$box['tabs']['meta_data']['notices']['alias_cannot_also_be_spare_alias']['show'] = false;
 			
 			foreach (ze\ray::explodeAndTrim($values['spare_aliases']) as $alias) {
 				
 				if ($alias == $values['meta_data/alias']) {
-					$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('The text "[[alias]]" cannot be both the main alias and a spare alias.', ['alias' => $alias]);
+					$href = ze\link::protocol() . ze\link::host() . SUBDIRECTORY . 'zenario/admin/organizer.php#zenario__administration/panels/zenario_settings_pro_features__spare_aliases';
+					$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+					$linkEnd = '</a>';
+					$box['tabs']['meta_data']['notices']['alias_cannot_also_be_spare_alias']['message'] =
+						ze\admin::phrase('There is already a spare alias "[[alias]]", so you cannot also use it for this item\'s alias. [[link_start]]View spare aliases[[link_end]]',
+						['alias' => $alias, 'link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+					$box['tabs']['meta_data']['notices']['alias_cannot_also_be_spare_alias']['show'] = true;
+					$fields['meta_data/alias']['error'] = true;
 				
 				} else {
 					$sql = "
@@ -120,7 +129,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 							$linkSpare = ' <a href = "'.ze\link::absolute().'zenario/admin/organizer.php#zenario__administration/panels/zenario_settings_pro_features__spare_aliases" target= "_blank"> View this spare alias. </a>';
 							
 							$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['show'] = true;
-							$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['message'] = ze\admin::phrase('\'[[alias]]\' already exists as a spare alias. It points to \'[[aliasTag]]\' [[linkSpare]]', ['alias' => $alias,'aliasTag' => $aliasTag,'linkSpare' => $linkSpare]);
+							$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['message'] = ze\admin::phrase('\'[[alias]]\' already exists as a spare alias. It points to \'[[aliasTag]]\'. [[linkSpare]]', ['alias' => $alias,'aliasTag' => $aliasTag,'linkSpare' => $linkSpare]);
 							
 							$fields['meta_data/spare_aliases']['error'] = true;
 						}

@@ -1179,7 +1179,7 @@ class pluginAdm {
 	//Update the request vars that are stored against each slide
 	//You can call this for a specific slide, all slides in a specific nest, every nest & slide on a site that uses a specific plugin,
 	//or for every nest & slide on a site.
-	public static function setSlideRequestVars($instanceId = false, $slideNum = false, $moduleId = false, $eggId = false) {
+	public static function setSlideRequestVars($instanceId = false, $moduleId = false) {
 		
 		$prevInstance = -1;
 		$moduleCommands = [];
@@ -1209,7 +1209,11 @@ class pluginAdm {
 			WHERE slide.is_slide = 1
 			  AND slide.`states` != \'\'';
 		
-		if ($moduleId) {
+		if ($instanceId) {
+			$sql .= '
+			  AND slide.instance_id = '. (int) $instanceId;
+		
+		} elseif ($moduleId) {
 			$sql .= '
 			  AND slide.instance_id IN (
 				SELECT DISTINCT module.instance_id
@@ -1218,24 +1222,8 @@ class pluginAdm {
 			  )';
 		}
 		
-		if ($instanceId) {
-			$sql .= '
-			  AND slide.instance_id = '. (int) $instanceId;
-			
-			if ($slideNum) {
-				$sql .= '
-			  AND slide.slide_num = '. (int) $slideNum;
-			}
-		}
-		
-		if ($eggId) {
-			$sql .= '
-			  AND egg.id = '. (int) $eggId;
-		}
-			
 		$sql .= '
 			ORDER BY slide.instance_id, slide.id';
-		
 		
 		
 		foreach (\ze\sql::select($sql) as $egg) {

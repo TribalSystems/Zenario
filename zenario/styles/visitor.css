@@ -303,3 +303,26 @@ input[type="password"].border_green {
 span.zenario_copy {
 	cursor: pointer;
 }
+
+/*
+	Toastr
+*/
+
+
+#toast-container > .toast {
+	font-family:Arial,Helvetica,Sans-Serif;
+	font-size:13px;
+}
+
+/*
+	Lazy load images
+*/
+
+.zenario_skin img.lazy {
+	display:block;
+}
+
+.zenario_skin img.lazy[src=""],
+.zenario_skin img.lazy:not([src]) {
+  visibility: hidden;
+}

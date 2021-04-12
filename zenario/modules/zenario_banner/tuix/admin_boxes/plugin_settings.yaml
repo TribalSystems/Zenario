@@ -37,13 +37,24 @@ plugin_settings:
                     value: h2
                     same_row: true
                 
-                translate_text:
-                     plugin_setting:
-                         name: translate_text
-                     label: 'Make this plugin multilingual using the phrases system'
-                     type: checkbox
-                     value: 1
-                     format_onchange: true
+                set_an_anchor:
+                    plugin_setting:
+                        name: set_an_anchor
+                    label: 'Set an anchor'
+                    type: checkbox
+                    value: false
+                    format_onchange: true
+                anchor_name:
+                    plugin_setting:
+                        name: anchor_name
+                    indent: 1
+                    type: text
+                    label: 'Anchor name:'
+                    validation:
+                        required_if_not_hidden: 'Please enter the anchor name.'
+                    visible_if: zenarioAB.value('set_an_anchor')
+                    #This field has an oninput event, set in the fillAdminBox method,
+                    #and a side_note, set in the formatAdminBox method.
                 
                 text:
                     plugin_setting:
@@ -69,6 +80,14 @@ plugin_settings:
                     width: "150"
                     maxlength: "255"
                     value: ""
+                
+                translate_text:
+                    plugin_setting:
+                        name: translate_text
+                    label: 'Make this plugin multilingual using the phrases system'
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
             
         image_and_link:
             label: Image/link

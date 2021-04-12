@@ -38,8 +38,13 @@ class zenario_document_envelopes_fea__visitor__list_files_in_document_envelope e
 		$this->envelopeId = ze::request('envelopeId');
 		
 		if ($this->envelopeId) {
-			$this->runVisitorTUIX();
-			return true;
+			$this->envelope = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', true, ['id' => $this->envelopeId]);
+			if ($this->envelope) {
+				$this->runVisitorTUIX();
+				return true;
+			} else {
+				return ZENARIO_403_NO_PERMISSION;
+			}
 		} else {
 			return ZENARIO_403_NO_PERMISSION;
 		}
@@ -170,6 +175,7 @@ class zenario_document_envelopes_fea__visitor__list_files_in_document_envelope e
 				$documentIds = ze::request('documentId');
 				self::deleteDocumentsInEnvelope($envelopeId, $documentIds);
 				self::updateEnvelopeFileFormats($envelopeId);
+				self::pickNewEnvelopeThumbnailIfNeededAndPossible($envelopeId);
 				break;
 			default:
 				echo 'Error, unrecognised command';

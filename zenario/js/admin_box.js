@@ -157,9 +157,11 @@ zenarioAB.size = function(refresh) {
 	
 	var width = Math.floor($(window).width()),
 		height = Math.floor($(window).height()),
+		previewHidden = false,
 		newWidth,
 		windowSizedChanged,
 		boxHeight,
+		maxBoxWidth,
 		tabContainerHeight,
 		maxTabContainerHeight,
 		paddingHeight,

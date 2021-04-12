@@ -195,7 +195,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 			}
 		}
 		
-		$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze::$equivId]);
+		$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze::$equivId, 'type' => ze::$cType]);
 		
 		//Before adding document to data array, check for privacy error 
 		if ($document['privacy'] == 'public' || ($document['privacy'] == 'private' && $contentItemPrivacy != 'public' && $contentItemPrivacy != 'logged_out')) {
@@ -510,7 +510,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 			$allowedDocumentIds = [];
 			foreach ($documentIds as $documentId) {
 				$privacy = ze\row::get('documents', 'privacy', ['id' => $documentId]);
-				$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze::$equivId]);
+				$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze::$equivId, 'type' => ze::$cType]);
 				if ($privacy == 'public' || ($privacy == 'private' && $contentItemPrivacy != 'public' && $contentItemPrivacy != 'logged_out')) {
 					//Only include private documents in the .zip file if the content item isn't public. Never include offline documents.
 					$allowedDocumentIds[] = $documentId;

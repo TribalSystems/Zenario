@@ -62,7 +62,7 @@ methods.getHierarchyMicroTemplateHTML = function(m) {
 
 methods.getItems = function() {
 	var m = thus.getMergeFieldsForItemsAndColumns(),
-		i, j, l, item, cell,
+		i, j, l, item, name, column, cell,
 		line_number,
 		max = -1,
 		lineHeader, lineHeaders = {};

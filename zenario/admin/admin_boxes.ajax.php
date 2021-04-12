@@ -461,7 +461,7 @@ if ($debugMode) {
 					$cfield['type'] = str_replace(['centralised_', 'dataset_'], '', $cfield['type']);
 				}
 				
-				if ($cfield['type'] == 'text') {
+				if (ze::in($cfield['type'], 'text', 'url')) {
 					$cfield['maxlength'] = 255;
 				}
 				

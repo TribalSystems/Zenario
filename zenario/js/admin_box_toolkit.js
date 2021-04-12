@@ -524,6 +524,7 @@ methods.typeaheadSearchEnabled = function(field, id, tab) {
 methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 
 	var pAndR,
+		conductorVars, key, value,
 		pick_items = field.pick_items,
 		pathDetails = pick_items.path && zenarioO.convertNavPathToTagPathAndRefiners(pick_items.path),
 		targetPathDetails = pick_items.target_path && zenarioO.convertNavPathToTagPathAndRefiners(pick_items.target_path);
@@ -539,6 +540,14 @@ methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 	}
 	
 	if (pAndR) {
+		
+		if (pick_items.add_conductor_vars_to_type_ahead_search
+		 && (conductorVars = thus.getConductorVars())) {
+			foreach (conductorVars as key => value) {
+				pAndR.request[key] = value;
+			}
+		}
+		
 		return URLBasePath + 'zenario/admin/organizer.ajax.php?_typeahead_search=1&path=' + encodeURIComponent(pAndR.path) + zenario.urlRequest(pAndR.request);
 	}
 };
@@ -634,9 +643,11 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 			path += '/' + item;
 		} else {
 			path += '//' + item;
+		
 		}
 		
 		mi.organizerPath = path;
+		mi.organizerId = item;
 	}
 	
 	

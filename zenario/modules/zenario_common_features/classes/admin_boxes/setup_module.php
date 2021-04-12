@@ -68,11 +68,12 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 				$box['save_button_message'] = ze\admin::phrase('Start module');
 		
 				$box['max_height'] = 60;
-				$box['tabs']['confirm']['notices']['are_you_sure']['show'] = true;
+				//$box['tabs']['confirm']['notices']['are_you_sure']['show'] = true;
 		}
 
 		$box['tabs']['confirm']['hidden'] = false;
-		$box['tabs']['confirm']['notices']['are_you_sure']['message'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
+		$box['tabs']['confirm']['fields']['module_start_desc']['hidden'] = false;
+		$box['tabs']['confirm']['fields']['module_start_desc']['snippet']['html'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
 
 		if ($module['status'] == 'module_not_initialized'
 		 && ($perms = ze\moduleAdm::scanPermissionsFromDescription($module['class_name']))) {

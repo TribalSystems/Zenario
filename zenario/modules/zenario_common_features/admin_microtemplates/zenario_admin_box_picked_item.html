@@ -95,7 +95,7 @@
 				target="_blank"
 				class="zenario_fab_picked_item_info"
 				<% if (!m.isInDropDown) { %>
-					href="{{URLBasePath|e}}zenario/admin/organizer.php#{{m.organizerPath|e}}"
+					href="{{URLBasePath|e}}zenario/admin/organizer_deep_link.php?path={{m.organizerPath|e}}&amp;id={{m.organizerId|e}}"
 				<% } %>
 			>i</a>
 		<% } %>

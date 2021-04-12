@@ -2058,7 +2058,7 @@ zenarioO.setPanel = function() {
 		$header = zenarioO.getHeader(),
 		$panel = zenarioO.getPanel(),
 		$footer = zenarioO.getFooter(),
-		itemsGone = false;
+		itemsGone = false,
 		n = 0;
 	
 	
@@ -2149,9 +2149,7 @@ zenarioO.setPanel = function() {
 	zenarioO.setBackButton();
 	zenarioO.getPageCount();
 	
-	path = zenarioO.path.split('/');
-	get('organizer__box_wrap').className = path.join('__') + ' organizer_panel__' + path.pop();
-	
+	get('organizer__box_wrap').className = zenarioO.pi.returnPanelClassName();
 	zenarioO.pi.showPanel($header, $panel, $footer);
 	
 	if (zenarioO.tuix.toast) {
@@ -2958,7 +2956,7 @@ zenarioO.toggleQuickFilter = function(id, turnOn) {
 		changedSomething = false,
 		quick_filter_buttons =
 			zenarioO.tuix
-		 && zenarioO.tuix.quick_filter_buttons
+		 && zenarioO.tuix.quick_filter_buttons,
 		button =
 			quick_filter_buttons
 		 && quick_filter_buttons[id];
@@ -4254,7 +4252,7 @@ zenarioO.switchColumnOrder = function(a, b, viewOptions) {
 	if (typeof a == 'object') {
 		var n,
 			col,
-			columnsToMove = {};
+			columnsToMove = {},
 			moveableColumns = {},
 			pi = -1,
 			positions = [];
@@ -4937,6 +4935,7 @@ zenarioO.getBackButtonTitle = function(times, getArray) {
 
 zenarioO.getSelectedItemFromLastPanel = function(path) {
 	var id,
+		panelInstance,
 		selectedItems = false;
 	
 	if ((panelInstance = zenarioO.getFromLastPanel(zenarioO.branches.length-1, zenarioO.path, 'panel_instances', true))
@@ -6074,7 +6073,7 @@ zenarioO.checkItemPickable = function(id) {
 zenarioO.getInlineButtons = function(id) {
 	
 	var bi = -1,
-		buttons = [],
+		button, buttons = [],
 		disabled,
 		i, itemNo, ids;
 	
@@ -6358,7 +6357,7 @@ zenarioO.setWhereWasThatThingSearch = function() {
 			}
 		}
 	}
-	
+		
 	//Set up an autocomplete box that searches this data.
 	//See https://jqueryui.com/autocomplete/#custom-data for info on how this works.
 	$searchBox.autocomplete({
@@ -6689,7 +6688,7 @@ zenarioO.size = function(refresh) {
 			//This line fixes a bug where the height of the floating div keeps changing when Organizer is opened
 			//by specifically setting it to what it was read as
 			if (!zenarioA.isFullOrganizerWindow) {
-				Math.floor($zenario_fbog.height(height));
+				$zenario_fbog.height(height);
 			}
 			
 			get('organizer_rightColumn').style.height =

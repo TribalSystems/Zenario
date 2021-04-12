@@ -126,7 +126,7 @@ function update(source) {
 	}	
 
 	//compute start x position for each node
-	for(idx in nodes_hor_dist_ary){
+	for (var idx in nodes_hor_dist_ary){
 		if(idx > 0) nodes_hor_dist_ary[idx] += nodes_hor_dist_ary[idx-1];
 	}
 
@@ -309,7 +309,7 @@ function closeAll(d) {
 			d.children = null;
 		}
 
-		for (childId in d._children) {
+		for (var childId in d._children) {
 			closeAll(d._children[childId]);
 		}					
 	}		
@@ -325,11 +325,11 @@ function toggleAll(d,maxLevelCount,levelCount) {
 		}
 
 		if (d.children) {
-			for (childId in d.children) {
+			for (var childId in d.children) {
 				toggleAll(d.children[childId],maxLevelCount,levelCount);
 			}
 		} else if (d._children) {
-			for (childId in d._children) {
+			for (var childId in d._children) {
 				toggleAll(d._children[childId],maxLevelCount,levelCount);
 			}					
 		}

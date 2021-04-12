@@ -81,17 +81,20 @@ methods.showPanel = function($header, $panel, $footer) {
 	
 	thus.fixTUIXData()
 	
-	//Load right panel
+	//Load right panel (pages list and fields lists)
 	thus.loadPagesList();
 	thus.loadFieldsList(thus.currentPageId);
 	
 	//Load left panel
 	var stopAnimation = true;
 	if (thus.editingThing == 'field') {
+		// Show an editor for the selected field
 		thus.openFieldEdit(thus.editingThingId, thus.editingThingTUIXTabId, stopAnimation);
 	} else if (thus.editingThing == 'page') {
+		// Show an editor for the selected page
 		thus.openPageEdit(thus.editingThingId, thus.editingThingTUIXTabId, stopAnimation);
 	} else {
+		// Show a list of fields that can be added by drag and drop
 		thus.loadNewFieldsPanel(true);
 	}
 	
@@ -439,7 +442,7 @@ methods.saveCurrentOpenDetails = function(deleted) {
 				thus.validateTUIX(itemType, item, thus.editingThingTUIXTabId, tags);
 				
 				foreach (tags.tabs as var tuixTabId => var tuixTab) {
-					foreach (tuixTab.fields as var tuixFieldId => tuixField) {
+					foreach (tuixTab.fields as var tuixFieldId => var tuixField) {
 						if (tuixField.error) {
 							errors.push(tuixField.error);
 						}
@@ -477,7 +480,7 @@ methods.displayPageFieldOrderErrors = function() {
 	var inRepeatBlock = false;
 	var repeatStartFieldId = false;
 	for (var i = 0; i < fields.length; i++) {
-		field = fields[i];
+		var field = fields[i];
 		if (field.type == 'repeat_start' && !inRepeatBlock) {
 			repeatStartFieldId = field.id;
 			inRepeatBlock = true;
@@ -584,7 +587,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 			
 			if (changedFieldId == 'values_source') {
 				if (item.values_source) {
-					actionRequests = {
+					var actionRequests = {
 						mode: 'get_centralised_lov',
 						method: item.values_source
 					};
@@ -600,11 +603,15 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 					thus.loadFieldValuesListPreview(item.id);
 				}
 			}
-		
+			
 			if (item.is_system_field) {
-				tags.tabs[tab].fields.is_protected.note_below = 'System fields cannot be deleted';
+				tags.tabs[tab].fields.is_protected.label = 'Protected/system field';
+				tags.tabs[tab].fields.is_protected.note_below = 'This is a system field and cannot be deleted or edited.';
 				tags.tabs[tab].fields.is_protected.readonly = true;
 				tags.tabs[tab].fields.is_protected.value = true;
+			}
+			if (!thus.tuix.priv_protect) {
+				tags.tabs[tab].fields.is_protected.readonly = true;
 			}
 		
 			if (['editor', 'textarea', 'file_picker'].indexOf(item.type) != -1) {
@@ -921,9 +928,11 @@ methods.clickPage = function(pageId, isNewPage) {
 			thus.sendAJAXRequest(actionRequests, function(recordCounts) {
 				page.record_counts_fetched = true;
 				if (recordCounts) {
-					foreach (recordCounts as fieldId => recordCount) {
+					foreach (recordCounts as var fieldId => var recordCount) {
 						var field = thus.getItem('field', fieldId);
-						field.record_count = recordCount;
+						if (field) {
+							field.record_count = recordCount;
+						}
 					}
 				}
 			});
@@ -1029,6 +1038,7 @@ methods.loadFieldsList = function(pageId) {
 		}
 		
 		var field = thus.tuix.items[fieldId];
+		var message;
 		if (field.is_protected) {
 			message = "<p>This field is protected, and might be important to your site!</p>";
 			message += "<p>If you're sure you want to delete this field then first unprotect it.</p>";
@@ -1111,7 +1121,7 @@ methods.getOrderedMergeFieldsForFields = function(pageId) {
 		}
 	}
 	
-	foreach (groups as groupName => group) {
+	foreach (groups as var groupName => var group) {
 		group.fields.sort(thus.sortByOrd);
 		if (group.fields.length) {
 			group._is_sortable = true;

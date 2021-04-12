@@ -501,7 +501,9 @@ plugin_settings:
                         reorder_items: true
                         multiple_select: true
                         enable_type_ahead_search: true
-                        path: zenario__administration/panels/custom_fields/refiners/user_custom_fields_only////
+                        path: zenario__administration/panels/custom_fields_hierarchy/refiners/user_custom_fields_only////
+                        visible_if_for_all_selected_items: item.is_field
+                        disallow_refiners_looping_on_min_path: true
                         hide_select_button: true
                     
         text:

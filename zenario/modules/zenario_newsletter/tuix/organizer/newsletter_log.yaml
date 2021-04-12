@@ -40,7 +40,7 @@ zenario__email_template_manager:
                     searchable: true
                 email:
                     title: Email
-                    db_column: nul.email
+                    db_column: u.email
                     show_by_default: true
                     searchable: true
                 email_overridden_by:

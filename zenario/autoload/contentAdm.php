@@ -199,14 +199,28 @@ class contentAdm {
 		 && \ze::setting('auto_set_release_date') == 'on_publication_if_not_set') {
 			$version['release_date'] = \ze\date::now();
 		}
+
+		if (\ze::in($cType, 'audio', 'document', 'picture', 'video')) {
+			$currentPublishedVersion = \ze\row::get('content_items', 'visitor_version', ['id' => $cID, 'type' => $cType]);
+			$currentPublishedFileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $currentPublishedVersion]);
+
+			$currentDraftFileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+			
+			//Try to delete old files used by previous versions.
+			if ($currentDraftFileId != $currentPublishedFileId) {
+				//Only delete unused files if this is a published content item with an unpublished draft.
+				//The code below will not be executed for never published first drafts.
+				if ($currentPublishedFileId) {
+					\ze\file::deleteMediaContentItemFileIfUnused($cID, $cType, $currentPublishedFileId);
+				}
+			}
+		}
 	
 		\ze\row::update('content_items', $content, ['id' => $cID, 'type' => $cType]);
 		\ze\row::update('content_item_versions', $version, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	
 		\ze\pluginAdm::removeUnusedVCs($cID, $cType, $content['admin_version']);
 		\ze\contentAdm::syncInlineFileContentLink($cID, $cType, $content['admin_version'], true);
-	
-		//\ze::publishContent($cID, $cType, $cVersion, $cVersion-1, $adminId);
 	
 		$prev_version = $cVersion - 1;
 	
@@ -658,6 +672,15 @@ class contentAdm {
 		$cVersion = $content['admin_version'];
 		$content['lock_owner_id'] = 0;
 		$content['locked_datetime'] = null;
+
+		if (\ze::in($cType, 'audio', 'document', 'picture', 'video')) {
+			$adminVersionFileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $content['admin_version']]);
+			$visitorVersionFileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $content['visitor_version']]);
+
+			if ($content['admin_version'] != $content['visitor_version'] && $adminVersionFileId != $visitorVersionFileId) {
+				\ze\file::deleteMediaContentItemFileIfUnused($cID, $cType, $adminVersionFileId);
+			}
+		}
 	
 		if ($content['status'] == 'first_draft') {
 			$content['status'] = 'deleted';
@@ -677,7 +700,6 @@ class contentAdm {
 		} else {
 			return;
 		}
-	
 	
 		\ze\row::update('content_items', $content, ['id' => $cID, 'type' => $cType]);
 	
@@ -749,8 +771,12 @@ class contentAdm {
 	public static function deleteContentItem($cID, $cType) {
 		$content = ['id' => $cID, 'type' => $cType];
 	
-		$result = \ze\row::query('content_item_versions', ['id', 'type', 'version'], $content);
+		$result = \ze\row::query('content_item_versions', ['id', 'type', 'version', 'file_id'], $content);
 		while ($version = \ze\sql::fetchAssoc($result)) {
+			if (\ze::in($cType, 'audio', 'document', 'picture', 'video')) {
+				\ze\file::deleteMediaContentItemFileIfUnused($cID, $cType, $version['file_id']);
+			}
+			
 			\ze\contentAdm::deleteVersion($version['id'], $version['type'], $version['version']);
 			\ze\module::sendSignal('eventContentDeleted',['cID' => $version['id'], 'cType' => $version['type'], 'cVersion' => $version['version']]);
 		}
@@ -969,6 +995,10 @@ class contentAdm {
 		if (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_HIDE_CONTENT_ITEM', $contentItemLanguageId)) {
 			return false;
 		}
+
+		if (\ze::in($cType, 'audio', 'document', 'picture', 'video')) {
+			return true;
+		}
 	
 		if ($status == 'first_draft') {
 			if (\ze\content::isSpecialPage($cID, $cType) && !\ze\contentAdm::allowRemoveEquivalence($cID, $cType)) {
@@ -997,6 +1027,10 @@ class contentAdm {
 		} else {
 			if ($status === false) {
 				$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+			}
+
+			if (\ze::in($cType, 'audio', 'document', 'picture', 'video')) {
+				return false;
 			}
 		
 			if ($status == 'published'
@@ -1282,7 +1316,7 @@ class contentAdm {
 				$error[] = \ze\admin::phrase("You cannot use the name of a directory as an alias (e.g. 'admin', 'cache', 'private', 'public', 'zenario', ...)");
 		
 			} elseif (is_numeric($alias)) {
-				$error[] = \ze\admin::phrase("You must enter a non-numeric alias.");
+				$error[] = \ze\admin::phrase("Your alias must contain some letters and not just numbers.");
 		
 			} elseif (preg_match('/[^a-zA-Z 0-9_-]/', $alias)) {
 				$error[] = \ze\admin::phrase("An alias can only contain the letters a-z, numbers, underscores or hyphens.");

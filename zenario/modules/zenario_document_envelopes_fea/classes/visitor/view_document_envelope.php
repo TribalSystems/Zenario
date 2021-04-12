@@ -166,6 +166,7 @@ class zenario_document_envelopes_fea__visitor__view_document_envelope extends ze
 			switch ($command) {
 				case 'delete_document_envelope':
 					if (ze\user::can('manage', $this->idVarName, $this->envelopeId)) {
+						self::deleteDocumentsInEnvelope((int)$envelopeId);
 						ze\row::delete(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', ['id' => (int)$envelopeId]);
 					}
 					break;

@@ -1060,6 +1060,21 @@ additionalProperties:
                                                 Note: for backwards compatability reasons, this property
                                                 defaults to true for the admin box toolkit.
                                         
+                                        add_conductor_vars_to_type_ahead_search:
+                                            type: boolean
+                                            description: >
+                                                If an FAB is opened from a conductor, and the admin opens the settings
+                                                from the front-end, you can set this option to pass the conductor
+                                                variables on to the AJAX request for the type-ahead search.
+                                                
+                                                (If an item was already selected when the FAB was opened, the variables
+                                                 will also be passed on in the AJAX request to look up the item's name.)
+                                                
+                                                This only works for FABs that have the slotName variable in their key,
+                                                and are opened from the front-end.
+                                                
+                                                This works from version 8.9 onwards.
+                                        
                                         hide_select_button:
                                             type: boolean
                                             description: >

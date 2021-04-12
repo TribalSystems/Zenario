@@ -6,3 +6,8 @@ zenario_content_list.generateZIP = function(el,requests,slotname)
 }
 
 
+zenario_content_list.copyLink = function(text) {
+	if (zenario.copy(text)) {
+		toastr.success(zenario.vphrase.copiedToClipboard, '', {'positionClass': 'toast-bottom-left'});
+	}
+};

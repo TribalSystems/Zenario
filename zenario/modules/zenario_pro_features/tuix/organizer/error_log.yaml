@@ -6,7 +6,7 @@ zenario__administration:
             item_buttons:
                 create_alias:
                     priv: _PRIV_MANAGE_SPARE_ALIAS
-                    label: Create a spare alias
+                    label: Fix this error
                     admin_box:
                         path: zenario_pro_features_spare_alias
                         key:
@@ -20,4 +20,12 @@ zenario__administration:
                         key:
                             id_is_error_log_id: true
                     visible_if_for_all_selected_items: item.connected_spare_alias_destination
-                            
+                delete_log:
+                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    hide_when_no_search_results: true
+                    label: Delete all like this
+                    admin_box:
+                        path: zenario_delete_error_log
+                        key:
+                            id_is_error_log_id: true
+                     hide_in_select_mode: Yes

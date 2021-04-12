@@ -82,7 +82,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		}
 
 		if (isset($fields['filesizes/apache_max_filesize'])) {
-			$fields['filesizes/apache_max_filesize']['value'] = ze\dbAdm::apacheMaxFilesize();
+			$fields['filesizes/apache_max_filesize']['value'] = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
 		}
 		if (isset($fields['filesizes/max_allowed_packet'])) {
 			$fields['filesizes/max_allowed_packet']['value'] = '?';
@@ -90,7 +90,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			if ($result = @ze\sql::select("SHOW VARIABLES LIKE 'max_allowed_packet'")) {
 				$settings = [];
 				if ($row = ze\sql::fetchRow($result)) {
-					$fields['filesizes/max_allowed_packet']['value'] = $row[1];
+					$fields['filesizes/max_allowed_packet']['value'] = ze\file::fileSizeConvert($row[1]);
 				}
 			}
 		}
@@ -643,6 +643,12 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if (isset($box['tabs']['wkhtmltopdf'])) {
 			$box['tabs']['wkhtmltopdf']['notices']['error']['show'] =
 			$box['tabs']['wkhtmltopdf']['notices']['success']['show'] = false;
+
+			if ($values['wkhtmltopdf/wkhtmltopdf_path'] && $values['wkhtmltopdf/wkhtmltopdf_path'] == 'PATH') {
+				$fields['wkhtmltopdf/wkhtmltopdf_path']['note_below'] = ze\admin::phrase('Warning: If you use this program in a scheduled task, it may not be found because the PATH environment variable may be different when called via cron.');
+			} else {
+				unset($fields['wkhtmltopdf/wkhtmltopdf_path']['note_below']);
+			}
 			
 			if (!empty($box['tabs']['wkhtmltopdf']['fields']['test']['pressed'])) {
 				if (($programPath = ze\server::programPathForExec($values['wkhtmltopdf/wkhtmltopdf_path'], 'wkhtmltopdf'))
@@ -862,7 +868,9 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('The JPEG quality must be a number between 80 and 100.');
 			}
 		}
-
+		if (isset($values['filesizes/content_max_filesize']) && $values['filesizes/content_max_filesize'] && ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'],$values['filesizes/content_max_filesize_unit']) > ze\dbAdm::apacheMaxFilesize()) {
+			$box['tabs']['filesizes']['errors'][] = ze\admin::phrase('The Maximum Content File Size value should be not more than the Largest Possible Upload Size value.');
+		}
 		if (!empty($values['smtp/smtp_specify_server'])) {
 			if (empty($values['smtp/smtp_host'])) {
 				$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter a Server Name.');

@@ -81,10 +81,10 @@ if ($includeOrganizer) {
 zenarioA.moduleCodeHash = "', $moduleCodeHash, '";';
 	
 	
-	if ($apacheMaxFilesize = \ze\dbAdm::apacheMaxFilesize()) {
+	if ($MaxFilesize = \ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit'))) {
 		echo '
-zenarioA.maxUpload = ', (int) $apacheMaxFilesize, ';
-zenarioA.maxUploadF = "', \ze\escape::js(\ze\lang::formatFilesizeNicely($apacheMaxFilesize, $precision = 0, $adminMode = true)), '";';
+zenarioA.maxUpload = ', (int) $MaxFilesize, ';
+zenarioA.maxUploadF = "', \ze\escape::js(\ze\lang::formatFilesizeNicely($MaxFilesize, $precision = 0, $adminMode = true)), '";';
 	}
 	
 		echo '

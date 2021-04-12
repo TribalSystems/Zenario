@@ -1597,4 +1597,11 @@ if (ze\dbAdm::needRevision(260)) {
 	ze\dbAdm::revision(260);
 }
 
+ze\dbAdm::revision(261
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `make_urls_non_clickable_user` tinyint(1) NOT NULL DEFAULT '0' AFTER `send_email_to_logged_in_user`,
+	ADD COLUMN `make_urls_non_clickable_admin` tinyint(1) NOT NULL DEFAULT '0' AFTER `send_email_to_admin`
+_sql
 
+);

@@ -4,6 +4,8 @@ zenario__modules:
     panels:
         tuix_snippets:
             priv: _PRIV_EDIT_SITE_SETTING
+            item:
+                css_class: tuix_snippets
             title: TUIX snippets
             no_items_message: No TUIX snippets have been created on this site
             #view_mode: list
@@ -21,20 +23,28 @@ zenario__modules:
                 custom_json:
                     db_column: ts.custom_json
                 num_columns:
-                    title: № of TUIX columns defined
+                    title: Columns defined
                     show_by_default: true
-                    width: large
+                    align_right: true
+                    empty_value: None
+                    #width: large
                 num_collection_buttons:
-                    title: № of TUIX collection buttons defined
+                    title: Collection buttons defined
                     show_by_default: true
+                    align_right: true
+                    empty_value: None
                     width: large
                 num_item_buttons:
-                    title: № of TUIX item buttons defined
+                    title: Item buttons defined
                     show_by_default: true
+                    align_right: true
+                    empty_value: None
                     width: large
                 usage:
-                    title: Number of plugins using this Snippet
+                    title: Plugin usage
                     show_by_default: true
+                    align_right: true
+                    empty_value: None
                     db_column: |
                         COUNT(DISTINCT ps.instance_id, ps.egg_id)
                     table_join: |

@@ -16,7 +16,7 @@ zenario__content:
                       AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
             
             panel_type: multi_line_list_or_grid
-            
+            css_class: two_line_list_panels
             use_tall_rows: true
             
             grid_view_microtemplate: zenario_grid_view_image
@@ -570,6 +570,23 @@ zenario__content:
                             message_type: warning
                         request:
                             send_to_documents: 1
+                
+                copy_to_mic_images:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Copy to MIC images
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: >
+                                Are you sure you wish to copy the selected image "[[filename]]" to MIC images?
+                            multiple_select_message: >
+                                Are you sure you wish to copy the selected images to MIC images?
+                            button_message: Copy to MIC images
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            copy_to_mic_images: 1
                     
                 delete:
                     priv: _PRIV_MANAGE_MEDIA
@@ -591,7 +608,7 @@ zenario__content:
                 delete_in_use:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Delete
-                    multiple_select: false
+                    multiple_select: true
                     hide_in_select_mode: true
                     visible_if_for_any_selected_items: >
                         item.in_use_anywhere

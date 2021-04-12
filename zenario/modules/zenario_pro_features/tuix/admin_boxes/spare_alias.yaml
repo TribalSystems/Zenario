@@ -33,7 +33,7 @@ zenario_pro_features_spare_alias:
                     grouping: left
                     label: 'Spare alias:'
                     type: text
-                    maxlength: "75"
+                    maxlength: 255
                     style: 'width:350px'
                     onkeyup: |
                         var $preview = $('#spare_alias_preview');
@@ -60,7 +60,7 @@ zenario_pro_features_spare_alias:
                     pre_field_html: 'Preview:<br>'
                     snippet:
                         html: ''
-                 redirect_target_url:
+                redirect_target_url:
                     grouping: left
                     type: text
                     style: display:none;
@@ -104,3 +104,15 @@ zenario_pro_features_spare_alias:
                     indent: 1
                     onkeyup: |
                         $('#alias').keyup();
+                delete_error_log:
+                    grouping: right
+                    label: ''                    
+                    type: checkbox
+                    value: false
+                delete_alias:              
+                    type: hidden  
+    confirm:
+        show: false
+        html: true
+        cancel_button_message: Cancel
+        message_type: warning

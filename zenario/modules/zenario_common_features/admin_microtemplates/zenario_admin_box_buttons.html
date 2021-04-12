@@ -20,7 +20,16 @@
 			zfab_disabled
 		<% } %>
 	"><span>{{zenarioA.phrase.prev}}</span></a>
+	<% var currentTab = zenarioAB.tuix.tab; %>
+	<% var currentTabLabel = zenarioAB.tuix.tabs[currentTab].label; %>
+	<% var parentName = zenarioAB.tuix.tabs[currentTab].parent; %>
 	
+	<% if (parentName && currentTabLabel) { %>
+		<% var parentNameLabel = zenarioAB.tuix.tabs[parentName].label; %>
+		<span class="zfab_current_tab_label"><span>{{parentNameLabel|escape}} / {{currentTabLabel|escape}}</span></span>
+	<% } else { %>	
+		<span class="zfab_current_tab_label"><span>{{currentTabLabel|escape}}</span></span>
+	<% } %>
 	<a class="zfab_np zfab_next
 		<% if (zenarioAB.nextTab) { %>
 			" onclick="zenarioAB.clickTab('{{zenarioAB.nextTab|e}}');

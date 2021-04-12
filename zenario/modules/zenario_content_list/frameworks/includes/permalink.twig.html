@@ -1,0 +1,28 @@
+<span class="shareable_link">
+	<span class="shareable_link_input" >
+		<span
+			class="zenario_copy" style="display: none;"
+			id="copyLinkButton_{{itemElId}}"
+			onmouseover="
+				if (window.$) $('#noteCopyLink_{{itemElId}}').show().css('display', 'inline-block');
+			"
+			onmouseout="
+				if (window.$) $('#noteCopyLink_{{itemElId}}').hide();
+			"
+			onclick="
+				if (window.$) {
+					zenario_content_list.copyLink('{{ze('escape', 'jsOnClick', item.CopyLink)}}');
+					$('#noteCopyLink_{{itemElId}}').hide();
+					return false;
+				}
+			"
+		>
+			<i class="fa fa-copy"></i>
+		</span>
+
+		<span id="noteCopyLink_{{itemElId}}" class="zenario_copy_link zenario_visitor_tooltip tooltip_top_center" style="display: none;">
+			<span class="ui-tooltip-content">{{"Copy to clipboard"|trans}}</span>
+			<span class="tooltip_arrow"></span>
+		</span>
+	</span>
+</span>

@@ -446,16 +446,51 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		
 		//Delete images, even if they're used
 		} elseif (ze::get('delete_in_use') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
-			$mrg = ze\row::get('files', ['filename'], $ids);
-			$usageLinks = self::imageUsageLinks($ids);
-			$usage = ze\fileAdm::getImageUsage($ids);
-			
-			echo '
-				<p>', ze\admin::phrase('Are you sure you wish to delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
-				<ul><li>', implode('</li><li>', ze\miscAdm::getUsageText($usage, $usageLinks, $fullPath = true)), '</li></ul>';
+			$idsArray = ze\ray::explodeAndTrim($ids, true);
+			$count = count($idsArray);
+			if ($count == 1) {
+				$id = $idsArray[0];
+				$mrg = ze\row::get('files', ['filename'], $id);
+				$usageLinks = self::imageUsageLinks($id);
+				$usage = ze\fileAdm::getImageUsage($id);
+				
+				echo '
+					<p>', ze\admin::phrase('Are you sure you wish to delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
+					<ul><li>', implode('</li><li>', ze\miscAdm::getUsageText($usage, $usageLinks, $fullPath = true)), '</li></ul>';
+			} elseif ($count > 0) {
+				$usedImages = $unusedImaged = 0;
+				foreach ($idsArray as $id) {
+					if (ze\fileAdm::getImageUsage($id)) {
+						$usedImages++;
+					} else {
+						$unusedImaged++;
+					}
+				}
+
+				if ($usedImages > 0) {
+					if ($unusedImaged > 0) {
+						$phrase = ze\admin::nPhrase(
+							'You have selected [[total_images]] images for deletion, but one of them is in use. Are you sure you wish to delete them?',
+							'You have selected [[total_images]] images for deletion, but [[unused_images]] of them are in use. Are you sure you wish to delete them?',
+							$unusedImaged,
+							['unused_images' => $unusedImaged, 'total_images' => $count]
+						);
+					} else {
+						$phrase = ze\admin::phrase(
+							'You have selected [[used_images]] images for deletion. All of them are in use. Are you sure you wish to delete them?',
+							['used_images' => $usedImages]
+						);
+					}
+				}
+
+				echo '
+					<p>', $phrase;
+			}
 		
 		} elseif (ze::post('delete_in_use') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
-			ze\contentAdm::deleteImage($ids);
+			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
+				ze\contentAdm::deleteImage($id);
+			}
 
 		//Detach an image from a content item or newsletter
 		} elseif (($_POST['remove'] ?? false) && $key && $privCheck) {
@@ -510,6 +545,13 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						//If the image is public, a public link will be automatically generated.
 						ze\document::create($fileId, $file['filename'], 0, $file['privacy']);
 					}
+				}
+			}
+			
+		} elseif ($_POST['copy_to_mic_images'] ?? false) {
+			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
+				if ($file = \ze\row::get('files', ['filename', 'location', 'data', 'privacy'], $id)) {
+					\ze\file::copyInDatabase('mic', $id, false, false, $addToDocstoreDirIfPossible = true);
 				}
 			}
 			

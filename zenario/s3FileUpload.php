@@ -104,7 +104,7 @@ if ($_GET['cId'] && $_GET['cType'] && $_GET['cVersion']) {
 			$size = '['. ze\file::formatSizeUnits($filesdetails['size']) .']';
 		}		
 		
-		
+		//if(isset($_GET['Download']) && $_GET['Download']){
 			
 			if ($filesdetails['path']) {
 					$fileName = $filesdetails['path'].'/'.$filesdetails['filename'];
@@ -113,7 +113,7 @@ if ($_GET['cId'] && $_GET['cType'] && $_GET['cVersion']) {
 				}
 				
 			
-
+		//}
 		
 		
 		echo '<div class = "s3_container"><div class = "s3_container_inner">';

@@ -1,0 +1,74 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+  module_class_name: zenario_google_programmable_search
+  tabs:
+    first_tab:
+      ord: 1
+      label: Settings
+      fields:
+        #Groupings
+        results:
+          type: grouping
+          snippet:
+            label: Results
+            label_class: subheading
+        options:
+          type: grouping
+          snippet:
+            label: Options
+            label_class: subheading
+        
+        show_icon:
+          plugin_setting:
+            name: show_icon
+          grouping: results
+          type: checkbox
+          label: 'Show icon'
+          value: true
+        show_date_and_description:
+          plugin_setting:
+            name: show_date_and_description
+          grouping: results
+          type: checkbox
+          label: 'Show date and description'
+          value: true
+        title_tags:
+          plugin_setting:
+            name: title_tags
+          grouping: options
+          label: 'Title heading tags:'
+          type: select
+          values: &tags
+            h1: Heading 1
+            h2: Heading 2
+            h3: Heading 3
+            h4: Heading 4
+            h5: Heading 5
+            h6: Heading 6
+            p: Paragraph
+          value: h2
+        search_result_title_tags:
+          plugin_setting:
+            name: search_result_title_tags
+          grouping: options
+          label: 'Search result heading tags:'
+          type: select
+          values: *tags
+          value: h3
+        missing_api_key:
+          hidden: true
+          grouping: options
+          pre_field_html: '<div class="zenario_fbWarning">'
+          snippet:
+            html: ''
+          post_field_html: '</div>'
+        custom_search_engine_id:
+          plugin_setting:
+            name: custom_search_engine_id
+          type: text
+          grouping: options
+          label: "Google Programmable Search engine ID:"
+          validation:
+            required: This field is required.
+          note_below: You can manage custom search engines <a href="https://cse.google.com/cse/all" target="_blank">here</a>.

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<atom:link href="{{RSS_Link}}" rel="self" type="application/xml" />
+		<title>{{Title}}</title>
+		<link>{{Link}}</link>
+		<description>{{Description}}</description>
+		
+		{% for item in RSS_Item %}
+			<item>
+				<title>{{item.Title}}</title>
+				<description>{{item.Excerpt_Text}}</description>
+				<link>{{item.Full_Link}}</link>
+				<guid>{{item.Full_Link}}</guid>
+				{% if item.Language %}
+					<language>{{item.Language}}</language>
+				{% endif %}
+				{% if item.Date %}
+					<pubDate>{{item.Date}}</pubDate>
+				{% endif %}
+			</item>
+		{% endfor %}
+	</channel>
+</rss>

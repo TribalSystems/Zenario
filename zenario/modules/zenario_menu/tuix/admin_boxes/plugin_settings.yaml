@@ -4,6 +4,7 @@ plugin_settings:
     module_class_name: zenario_menu
     tabs:
         first_tab:
+            ord: 1
             label: Menu display
             fields:
                 menu_section:

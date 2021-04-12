@@ -36,7 +36,7 @@ zenario__administration:
                 api_keys:
                     name: API Keys
                     desc: API Keys and settings for third party services.
-                    keywords: dropbox google translate translation tools
+                    keywords: key keys api dropbox captcha recaptcha google map maps translate translation tools
                 categories:
                     name: Categories
                     desc: Settings for categories.
@@ -47,22 +47,22 @@ zenario__administration:
                 data_protection:
                     name: Data Protection
                     desc: "Settings that control how long data is stored and shows what data is encrypted."
+                    keywords: data protection recording deletion encryption consent log
                 date_and_time:
                     name: Date and Time
                     desc: Set the formats used when displaying dates and times.
-                    keywords: date format date-picker time format
+                    keywords: date format date-picker format time timezone zone
                 dirs:
-                    name: Backups and document storage
+                    name: Backups
                     desc: >
-                        Manage backups and change the location of the document storage directory.
+                        Settings for the backup storage directory and automated backups.
                     keywords: backup log directory
                 domains:
                     priv: _PRIV_VIEW_SITE_SETTING
                     name: Domains
                     desc: Set the primary domain, admin domain and cookie domain for your site.
                     keywords: >
-                        primary domain
-                        admin domain
+                        primary domain redirect admin domain
                         cookie-free domain for hosting static files
                 embedding:
                     priv: _PRIV_VIEW_SITE_SETTING
@@ -87,11 +87,11 @@ zenario__administration:
                     keywords: >
                         antiword pdftotext pdf-to-text pdf to text ghostscript word document
                         plain text extract plaintext extract image thumbnail
-                        png jpeg jpg optimize optimise
+                        png jpeg jpg optimize optimise zip
                 logos_and_branding:
                     css_class: favicon
                     priv: _PRIV_VIEW_SITE_SETTING
-                    name: Site logos and Branding
+                    name: Site logos and branding
                     desc: >
                         Upload or remove the favicon, and the logo used on the site-disabled and
                         admin login screen.
@@ -103,6 +103,7 @@ zenario__administration:
                     keywords: >
                         image thumbnail working copy jpeg file upload sizes
                         file download restrict by IP document
+                        aws S3 enable support for aws s3
                 head_and_foot:
                     name: Site-wide <head> and <body> HTML
                     desc: |
@@ -116,8 +117,7 @@ zenario__administration:
                     desc: Settings that affect extranet users & contacts.
                     keywords: >
                         screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
-                        linked countries
-                        linked country
+                        country countries linked country linked countries
                 optimisation:
                     name: Optimisation
                     desc: Settings that affect or speed up web pages.
@@ -142,12 +142,12 @@ zenario__administration:
             # but we put them here anyway as this is the logical place to look for them
                 site_enabled:
                     css_class: site_enabled
-                    name: Site mode (Enabled)
+                    name: Site is ENABLED
                     desc: Change site mode (production, development or disabled).
                     is_not_site_setting: true
                 site_disabled:
                     css_class: site_disabled
-                    name: Site mode (Disabled)
+                    name: Site is DISABLED
                     desc: Change site mode (production, development or disabled).
                     is_not_site_setting: true
                 site_reset:

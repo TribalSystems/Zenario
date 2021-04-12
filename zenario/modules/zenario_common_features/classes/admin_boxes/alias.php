@@ -73,6 +73,44 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			//only allow the alias to be changed in the primary language.
 			if ($box['key']['equivId'] != $box['key']['cID']) {
 				unset($box['tabs']['meta_data']['edit_mode']);
+				
+				//A notice will be displayed, explaining why the alias cannot be changed.
+				//It will include a front-end link to the default language content item,
+				//as well as an Organizer link to the translation chain.
+				//First, get the default lang content item tag, format it, and format the language name nicely.
+				$defaultLangContentItemTag = $box['key']['cType'] . "_" . $box['key']['equivId'];
+				$defaultLangContentItemTagFormatted = ze\content::formatTag($box['key']['equivId'], $box['key']['cType']);
+				$defaultLangContentItemLangId = ze\row::get('content_items', 'language_id', ['id' => $box['key']['equivId'], 'type' => $box['key']['cType']]);
+				$defaultLangContentItemLangName = ze\lang::name($defaultLangContentItemLangId);
+				
+				//Build the front-end link string, and merge field values...
+				$aliasString = "Changing the alias of this content item is not possible here, as this item is not in the site's default language ([[lang]]).";
+
+				$defaultLangContentItemTagHref = $this->linkToItem($box['key']['equivId'], $box['key']['cType'], true);
+				$defaultLangContentItemTagLinkStart = '<a href="' . htmlspecialchars($defaultLangContentItemTagHref) . '" target="_blank">';
+				$defaultLangContentItemTagLinkEnd = '</a>';
+
+				//... then do the same for the translation chain link...
+				$thisItemTranslationChainHref =
+					ze\link::protocol() . ze\link::host() . SUBDIRECTORY
+					. 'zenario/admin/organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//item_buttons/zenario_trans__view' . $defaultLangContentItemTag;
+				$thisItemTranslationChainLinkStart = '<a href="' . htmlspecialchars($thisItemTranslationChainHref) . '" target="_blank">';
+				$thisItemTranslationChainLinkEnd = '</a>';
+				$linksString = "Go to [[ci_link_start]][[ci_tag_formatted]][[ci_link_end]] and edit its alias, or [[tc_link_start]]view this item's translation chain[[tc_link_end]].";
+
+				//... and finally join the 2 strings, and apply all the merge fields.
+				$box['tabs']['meta_data']['notices']['cannot_change_alias']['show'] = true;
+				$box['tabs']['meta_data']['notices']['cannot_change_alias']['message'] =
+					ze\admin::phrase($aliasString . " " . $linksString,
+					[
+						'lang' => $defaultLangContentItemLangName,
+						'ci_link_start' => $defaultLangContentItemTagLinkStart,
+						'ci_tag_formatted' => $defaultLangContentItemTagFormatted,
+						'ci_link_end' => $defaultLangContentItemTagLinkEnd,
+						'tc_link_start' => $thisItemTranslationChainLinkStart,
+						'tc_link_end' => $thisItemTranslationChainLinkEnd
+					]
+				);
 			}
 		}
 		
@@ -122,7 +160,6 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 				$box['tabs']['meta_data']['errors'] = array_merge($box['tabs']['meta_data']['errors'], $errors);
 			}
 		}
-		
 	}
 	
 	
@@ -148,15 +185,14 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			
 			ze\row::update('content_items', $cols, $key);
 		}
-		
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		if(!$_GET['refinerName'])
-		{
-			ze\tuix::closeWithFlags(['go_to_url' => $values['meta_data/alias'] ]);
-			exit;
+		if (!array_key_exists("refinerName",$_GET)){
+
+				ze\tuix::closeWithFlags(['go_to_url' => $values['meta_data/alias'] ]);
+				exit;
 		}
 		
 	}

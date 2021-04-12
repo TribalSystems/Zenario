@@ -1,0 +1,11 @@
+{% if Show_Sticky_Image %}
+	<div class="sticky_image">
+		{% if LINKS_IN_INCLUDES %}
+			<a {{item.Link}}{{item.Target_Blank}}>
+				{{item.Sticky_Image}}
+			</a>
+		{% else %}
+			{{item.Sticky_Image}}
+		{% endif %}
+	</div>
+{% endif %}

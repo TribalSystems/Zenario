@@ -303,6 +303,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				// Change code for Special page FAB
 				$specialpagesresult = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $content['equiv_id'], 'content_type' =>$content['type']]);
 				$pagetype = '';
+
 				if ($specialpagesresult){
 					$pagetype = str_replace('_', ' ', ze\ring::chopPrefix('zenario_', $specialpagesresult['page_type'], true)); 
 				}
@@ -386,6 +387,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					}
 				}
 			}
+
+			//Location (DB, docstore, s3)
+			if ($values['file/file']) {
+				$fileInfo = ze\row::get('files', ['location', 'path'], $values['file/file']);
+				$storageString = "Stored in the [[storage_location]]";
+				if (!empty($fileInfo['location']) && $fileInfo['location'] == 'docstore') {
+					$storageString .= ", folder name [[folder_name]].";
+				} else {
+					$storageString .= ".";
+				}
+
+				$fields['file/file']['note_below'] = ze\admin::phrase($storageString, ['storage_location' => $fileInfo['location'] ?? '', 'folder_name' => $fileInfo['path'] ?? '']);
+			}
 		} else {
 			//If we are enforcing a specific Content Type, ensure that only layouts of that type can be picked
 			if ($box['key']['target_cType']) {
@@ -454,7 +468,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 			} else {
 				$box['key']['cType'] = ($box['key']['target_cType'] ?: ($box['key']['cType'] ?: 'html'));
-				$layoutId = $contentType['default_layout_id'];
+				
+				if ($contentType && is_array($contentType) && !empty($contentType['default_layout_id'])) {
+					$layoutId = $contentType['default_layout_id'];
+				} else {
+					$layoutId = 0;
+				}
 			}
 			$contentType = ze\row::get('content_types', true, $box['key']['cType']);
 			
@@ -546,6 +565,16 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$box['title'] =
 						ze\admin::phrase('Creating a translation in "[[lang]]" of the content item "[[tag]]" ([[old_lang]]).',
 							['tag' => $tag, 'old_lang' => $content['language_id'], 'lang' => ze\lang::name($box['key']['target_language_id'])]);
+					//Check if the source content item is in the menu.
+					//If it is, offer to add the translation to the menu.
+					//Otherwise, do not show the menu section.
+					$sourceContentItemMenu = ze\menu::getFromContentItem($box['key']['source_cID'], $box['key']['cType']);
+					if (!$sourceContentItemMenu) {
+						$fields['meta_data/menu_text']['hidden'] = true;
+					} else {
+						unset($fields['meta_data/menu_text']['indent']);
+					}
+					$fields['meta_data/menu_invisible']['hidden'] = true;
 			
 				} elseif ($box['key']['source_cVersion'] < $content['admin_version']) {
 					$box['title'] =
@@ -757,13 +786,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$fields['file/file']['label']= 'Local file:';
 			$fields['file/s3_file_upload']['hidden']= false;
 			$maxUploadSize = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
+			
+			if (ze\dbAdm::apacheMaxFilesize() < ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit'))) {
+				$maxLocalUploadSize = $maxUploadSize;
+			} else {
+				$maxLocalUploadSize = ze\file::fileSizeConvert(ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit')));
+			}
 			if (ze\dbAdm::apacheMaxFilesize() < 5368706371) {
 				$maxS3UploadSize = $maxUploadSize;
 			} else {
 				$maxS3UploadSize = ze\file::fileSizeConvert(5368706371);
 			}
 			
-			$box['tabs']['file']['fields']['document_desc']['snippet']['html'] = ze\admin::phrase('Please upload a local file (for storage in Zenario\'s docstore), maximum size [[maxUploadSize]].',['maxUploadSize' => $maxUploadSize]); 
+			$box['tabs']['file']['fields']['document_desc']['snippet']['html'] = ze\admin::phrase('Please upload a local file (for storage in Zenario\'s docstore), maximum size [[maxLocalUploadSize]].',['maxLocalUploadSize' => $maxLocalUploadSize]); 
 			
 			$box['tabs']['file']['fields']['s3_document_desc']['snippet']['html'] = ze\admin::phrase('You can upload a related file for storage on AWS S3, maximum size [[maxS3UploadSize]].',['maxS3UploadSize' => $maxS3UploadSize]);
 		}
@@ -772,7 +807,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$box['tabs']['file']['hidden'] = true;
-		
 		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
 			
 			if($values['file/s3_file_remove']) {
@@ -785,6 +819,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			$fields['file/s3_file_upload']['snippet']['html'] = $s3_file_upload;
 		}
+		
 				
 		if (!$box['key']['cID']) {
 			if ($values['meta_data/layout_id']) {
@@ -1334,6 +1369,26 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			} else {
 				$version['file_id'] = $values['file/file'];
 			}
+
+			if ($version['file_id']) {
+				if ($box['key']['cType'] && ze::in($box['key']['cType'], 'audio', 'document', 'picture', 'video')) {
+					//Editing a draft
+					if (!$newDraftCreated && $box['key']['cVersion'] == $box['key']['source_cVersion']) {
+						//Look up the file ID for the published version.
+						//Then look up the file ID for the current draft.
+						//Delete the file if no other content item uses it, but beware not to affect the published version.
+						$currentPublishedVersion = ze\row::get('content_items', 'visitor_version', ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
+						$currentPublishedFileId = ze\row::get('content_item_versions', 'file_id', ['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $currentPublishedVersion]);
+
+						$currentDraftFileId = ze\row::get('content_item_versions', 'file_id', ['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']]);
+
+						if ($currentDraftFileId != $currentPublishedFileId && $currentDraftFileId != $version['file_id']) {
+								ze\file::deleteMediaContentItemFileIfUnused($box['key']['cID'], $box['key']['cType'], $currentDraftFileId);
+						}
+					}
+				}
+			}
+			
 			//To upload file on AWS s3 
 			if ($values['file/s3_file_id']) {
 					$version['s3_filename'] = $values['file/s3_file_name'];
@@ -1430,6 +1485,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$sectionId = isset($box['key']['target_menu_section']) ? $box['key']['target_menu_section'] : false;
 			if ($menu = ze\menu::getFromContentItem($box['key']['cID'], $box['key']['cType'], $fetchSecondaries = false, $sectionId)) {
 				$box['key']['id'] = $menu['id'];
+			}
+		}
+		
+		if (!array_key_exists("refinerName",$_GET)){
+			if ($values['meta_data/alias']) {
+				ze\tuix::closeWithFlags(['go_to_url' => $values['meta_data/alias']]);
+				exit;
 			}
 		}
 	}

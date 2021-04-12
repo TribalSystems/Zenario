@@ -63,7 +63,16 @@ methods.returnPageSize = function() {
 
 
 methods.generateTotals = function(data, itemsToCount) {
-
+	var ci,
+		column,
+		itemId,
+		item,
+		value,
+		total,
+		foundANumber,
+		decimalPlaces,
+		maxDecimalPlaces;
+	
 	//Loop through each column, trying to put a total in it
 	if (data
 	 && data.columns) {

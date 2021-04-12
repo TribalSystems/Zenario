@@ -33,6 +33,13 @@ class zenario_extranet_change_email extends zenario_extranet {
 	
 	public function init() {
 		$this->registerPluginPage();
+
+		//Be mean and reset Captcha status on every plugin reload.
+		//Make spambots deal with it every time they refresh the page
+		//and attempt to change someone else's email!
+		if (isset($_SESSION['captcha_passed__'. $this->instanceId])) {
+			unset($_SESSION['captcha_passed__'. $this->instanceId]);
+		}
 		
 		if (($_POST['action'] ?? false)=='prepare_email_change'){
 			if (ze\user::id()) {
@@ -56,7 +63,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 			} else {
 				$this->mode = 'modeLogin';
 			}
-		} 
+		}
 		return true;
 	}
 
@@ -132,6 +139,11 @@ class zenario_extranet_change_email extends zenario_extranet {
 	public function modeChangeEmailForm(){
 		$this->addLoggedInLinks();
 		
+		if ($this->enableCaptcha()) {
+			$this->subSections['Captcha'] = true;
+			$this->objects['Captcha'] = $this->captcha2();
+		}
+		
 		$loggedInUserData = ze\user::details(ze\user::id());
 		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
@@ -158,6 +170,16 @@ class zenario_extranet_change_email extends zenario_extranet {
 					$this->errors[] = ['Error'=>$this->phrase('Error. The new email address is the same as the current one.')];
 				} else {
 					$this->errors[] = ['Error'=>$this->phrase('_EMAIL_ALREADY_IN_USE')];
+				}
+			}
+
+			if ($this->enableCaptcha()) {
+				if ($this->checkCaptcha2()) {
+					if (!$this->errors) {
+						$_SESSION['captcha_passed__'. $this->instanceId] = true;
+					}
+				} else {
+					$this->errors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
 				}
 			}
 
@@ -196,7 +218,30 @@ class zenario_extranet_change_email extends zenario_extranet {
 		}
 	}
 	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-	}	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {
+			//Show warning
+			$recaptchaLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
+			$fields['use_captcha']['side_note'] = $this->phrase(
+				"Recaptcha keys are not set. To show a captcha you must set the recaptcha [[recaptcha_link]].",
+				['recaptcha_link' => $recaptchaLink]
+			);
+			$fields['use_captcha']['readonly'] = true;
+			$fields['use_captcha']['value'] = 0; 
+		}
+	}
 	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//...
+	}
+	
+	protected function enableCaptcha() {
+		return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
+	}
+
+	public function addToPageHead() {
+		if ($this->enableCaptcha()) {
+			$this->loadCaptcha2Lib();
+		}
+	}
 }

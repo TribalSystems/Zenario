@@ -985,7 +985,7 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 
 	//Given a backup, restore the database from it
 	//Formerly "restoreDatabaseFromBackup()"
-	public static function restoreFromBackup($backupPath, &$failures, $checkEnabled) {
+	public static function restoreFromBackup($backupPath, &$failures, $restoringOverExistingSite) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 

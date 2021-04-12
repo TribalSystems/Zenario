@@ -1,3 +1,7 @@
+{% if Title_Anchor_Enabled %}
+	<a id="{{Title_Anchor|e}}" class="anchor"></a>
+{% endif %}
+
 {% if Link_Href %}
 	<a {{Link_Href}}{{Target_Blank}}>
 {% endif %}
@@ -37,9 +41,11 @@
 		<div class="banner_content">
 			{% if Title %}
 				<div class="banner_title">
-					<{{Title_Tags}}>
-						{{Title}}
-					</{{Title_Tags_Close}}>
+					{% if Title %}
+						<{{Title_Tags}}>
+							{{Title}}
+						</{{Title_Tags_Close}}>
+					{% endif %}
 				</div>
 			{% endif %}
 	

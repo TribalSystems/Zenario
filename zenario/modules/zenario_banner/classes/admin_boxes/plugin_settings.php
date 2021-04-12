@@ -61,6 +61,24 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$box['tabs']['image_and_link']['fields']['enlarge_canvas']['note_below'] =
 				ze\admin::phrase('If placed in a nest or slideshow, the canvas size setting will be overridden by the setting of the nest or slideshow.');
 		}
+
+		$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_special_characters'] =
+			$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_spaces'] =
+			$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_commas'] =
+				ze\admin::phrase('Anchor name cannot contain spaces or special characters.');
+		
+		$box['tabs']['first_tab']['fields']['anchor_name']['oninput'] = '
+			var side_note = document.getElementById("row__anchor_name").getElementsByClassName("zenario_note_content")[0];
+			var anchor_name = document.getElementById("row__anchor_name").getElementsByClassName("zfab_row_fields")[0].firstElementChild.value;
+
+			if (!anchor_name) {
+				anchor_name = "[anchorname]";
+			}
+
+			if (side_note) {
+				side_note.textContent =
+					"You can link to this anchor using #" + anchor_name + ". Please make sure your anchor is unique within the page on which you place this plugin.";
+			}';
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -303,6 +321,15 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
 			unset($fields['image_and_link/mobile_behaviour']['side_note']);
+		}
+		
+		if ($values['first_tab/set_an_anchor']) {
+			$anchorName = $values['first_tab/anchor_name'] ?: '[anchorname]';
+			$box['tabs']['first_tab']['fields']['anchor_name']['side_note'] =
+				ze\admin::phrase(
+					'You can link to this anchor using #[[anchor_name]]. Please make sure your anchor is unique within the page on which you place this plugin.',
+					['anchor_name' => htmlspecialchars($anchorName)]
+				);
 		}
 		
 		/////////////////////////

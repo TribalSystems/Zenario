@@ -25,7 +25,7 @@ login:
                     snippet:
                         html: "<h1>Please login</h1>"
                 username:
-                    label: "Administrator username:"
+                    label: "Administrator username or registered email:"
                     type: text
                     row_class: row_form
                     class: username

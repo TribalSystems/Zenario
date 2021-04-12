@@ -76,7 +76,7 @@ zenario__administration:
                                 label: Protected
                                 type: checkbox
                                 format_onchange: true
-                                note_below: A protected field is important to the operation of the site.
+                                note_below: Fields critical to the working of user/admin interfaces should be protected.
                                 visible_if: |
                                     item.type != 'other_system_field' && item.type != 'repeat_start'
                                 format_onchange: true

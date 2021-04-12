@@ -11,16 +11,21 @@ zenario_list_tuix_snippets:
         name:
             title: Name
         num_columns:
-            title: Number of TUIX columns defined
-            show_by_default: true
+            title: Columns defined
+            #align_right: true
+            empty_value: None
         num_collection_buttons:
-            title: Number of TUIX collection buttons defined
-            show_by_default: true
+            title: Collection buttons defined
+            #align_right: true
+            empty_value: None
         num_item_buttons:
-            title: Number of TUIX item buttons defined
-            show_by_default: true
+            title: Item buttons defined
+            #align_right: true
+            empty_value: None
         usage:
-            title: Usage
+            title: Plugin usage
+            #align_right: true
+            empty_value: None
     collection_buttons:
         create:
             location: column_header

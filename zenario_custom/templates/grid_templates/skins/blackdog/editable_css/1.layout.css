@@ -62,6 +62,34 @@ html {
 		margin-bottom:133px;
 	}
 
+/*  HEADER WITH RESPOSIVE DATA PUSH AND PULL MENU
+--------------------------------------------------------------------------------------------------*/
+
+body > .Grid_Header {
+	position:absolute;
+	z-index:97 !important;
+	width:100%;
+	top:36px;
+	left:0;
+	right:0;
+}
+
+.mm-wrapper_opening .Grid_Header {
+	z-index:1 !important;
+}
+
+body.zenario_adminLoggedIn > .Grid_Header {
+	top:165px;
+}
+
+body.zenario_adminLoggedIn > .Grid_Header.fixed_header {
+	top:0;
+}
+
+body.zenario_adminLoggedIn.zenario_pageMode_template > .Grid_Header,
+body.zenario_adminLoggedIn.zenario_pageMode_item > .Grid_Header {
+	z-index:0 !important;
+}
 
 /*  BODY
 --------------------------------------------------------------------------------------------------*/

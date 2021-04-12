@@ -53,10 +53,10 @@ plugin_settings:
                         html: |
                             Use this if you need to add JavaScript to the bottom of the page.
                             The
-                            <a href="http://zenar.io/ref-var-slotname" target="_blank"><code>slotName</code></a>
+                            <a href="https://zenar.io/ref-var-slotname" target="_blank"><code>slotName</code></a>
                             and
-                            <a href="http://zenar.io/ref-var-containerid" target="_blank"><code>containerId</code></a>
-                            variables are avilable to use in your code if you need them.
+                            <a href="https://zenar.io/ref-var-containerid" target="_blank"><code>containerId</code></a>
+                            variables are available to use in your code if you need them.
                             
                 javascript:
                     plugin_setting:

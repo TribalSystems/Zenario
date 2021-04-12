@@ -168,6 +168,13 @@ methods.getLastKeyId = function(limitOfOne) {
 	return thus.getKeyId(limitOfOne);
 };
 
+methods.getConductorVars = function(slotNameIn) {
+	var slotName = slotNameIn || thus.tuix.key.slotName || thus.slotName,
+		zenario_conductor = window.zenario_conductor;
+	
+	return zenario_conductor && zenario_conductor.getVars && zenario_conductor.getVars(slotName);
+};
+
 
 methods.getTitle = function() {
 	
@@ -2184,7 +2191,13 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								oninit: undefined
 							}),
 						optionsWithImagesAndLinks = _.extend({}, normalOptions, {
-								toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
+                                                                menubar: true,
+                                                                menu: {
+                                                                        insert: {title: 'Insert', items: 'link | anchor hr charmap'},
+                                                                        table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
+                                                                        tools: {title: 'Tools', items: 'searchreplace | code'}
+                                                                },
+								toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | code fullscreen',
 		
 								file_browser_callback: zenarioA.fileBrowser,
 								init_instance_callback: function(instance) {
@@ -2202,7 +2215,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								toolbar: 'undo redo | image | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
 							}),
 						optionsWithLinks = _.extend({}, optionsWithImages, {
-								toolbar: 'undo redo | link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
+								toolbar: 'undo redo | link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | code fullscreen'
 							});
 				
 					if (readOnly) {
@@ -2613,7 +2626,19 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		if (field.tooltip) {
-			html += _$div("class", "zenario_field_tooltip", "title", field.tooltip, '?');
+			if (field.tooltip_link) {
+				displayItem = '<a href="' + field.tooltip_link + '"';
+				
+				if (field.tooltip_link_open_in_new_window) {
+					displayItem += ' target="blank"';
+				}
+				
+				displayItem += '>?</a>';
+			} else {
+				displayItem = '?';
+			}
+
+			html += _$div("class", "zenario_field_tooltip", "title", field.tooltip, displayItem);
 		}
 		
 		if (hasPostFieldTags) {
@@ -3434,7 +3459,7 @@ methods.pickedItemsArray = function(field, value) {
 			} else
 			if (((path = field.pick_items && field.pick_items.target_path)
 			  || (path = field.pick_items && field.pick_items.path))
-			 && (panel = zenarioA.getItemFromOrganizer(path, i))
+			 && (panel = zenarioA.getItemFromOrganizer(path, i, undefined, field.pick_items.add_conductor_vars_to_type_ahead_search? thus.getConductorVars(): undefined))
 			) {
 				if (!field.values) {
 					field.values = {};

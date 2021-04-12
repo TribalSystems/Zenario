@@ -207,7 +207,10 @@ class zenario_banner extends ze\moduleBaseClass {
 				}
 			
 			} elseif ($linkTo == '_EXTERNAL_URL') {
-				$url = 'url';
+				if (!$url) {
+					$url = 'url';
+				}
+				
 				if ($link = $this->setting($url)) {
 					$mergeFields['Link_Href'] =
 					$mergeFields['Image_Link_Href'] =
@@ -399,10 +402,13 @@ class zenario_banner extends ze\moduleBaseClass {
 				$image = ze\row::get('files', $cols, $imageId);
 			}
 			
+			$alt_tag = '';
 			if ($this->setting('alt_tag')) {
 				$alt_tag = htmlspecialchars($this->setting('alt_tag'));
 			} else {
-				$alt_tag = htmlspecialchars($image['alt_tag']);
+				if (!empty($image)) {
+					$alt_tag = htmlspecialchars($image['alt_tag']);
+				}
 			}
 			$this->mergeFields['Image_Alt'] = $alt_tag;
 			
@@ -597,6 +603,8 @@ class zenario_banner extends ze\moduleBaseClass {
 		
 		$this->subSections['Text'] = (bool) $this->setting('text') || $this->editing;
 		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;
+		$this->subSections['Title_Anchor_Enabled'] = (bool) $this->setting('set_an_anchor');
+		$this->subSections['Title_Anchor'] = $this->setting('anchor_name');
 		$this->subSections['More_Link_Text'] = (bool) $this->setting('more_link_text');
 		
 		$this->mergeFields['Title_Tags'] =

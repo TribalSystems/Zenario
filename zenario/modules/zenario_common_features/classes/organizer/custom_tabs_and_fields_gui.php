@@ -36,6 +36,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		
 		$panel['title'] = ze\admin::phrase('Editing the dataset schema "[[label]]"', $dataset);
 		$panel['dataset'] = $dataset;
+		$panel['priv_protect'] = ze\priv::check('_PRIV_PROTECT_UNPROTECT_DATASET_FIELD');
 		
 		//Whether to allow adding fields of type "group"
 		$panel['use_groups_field'] = ($dataset['system_table'] == 'users');
@@ -690,7 +691,10 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		//Do not allow other_system_fields to be edited other than ordinal
 		if ((isset($field['_changed']) || isset($field['_new'])) && (!$existingField || $existingField['type'] != 'other_system_field')) {
 			if (empty($existingField['is_system_field'])) {
-				$values['protected'] = !empty($field['is_protected']);
+				// Check permission required to change protected status
+				if (ze\priv::check('_PRIV_PROTECT_UNPROTECT_DATASET_FIELD')) {
+					$values['protected'] = !empty($field['is_protected']);
+				}
 				$values['readonly'] = !empty($field['is_readonly']);
 				if ($field['type'] != 'repeat_start') {
 					$values['db_column'] = empty($field['db_column']) ? '' : mb_substr(trim($field['db_column']), 0, 64);

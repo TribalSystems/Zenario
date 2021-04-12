@@ -79,10 +79,10 @@ switch ($path) {
 		$accessLogDuration = '';
 			switch (ze::setting('period_to_delete_the_email_template_sending_log_headers')) {
 				case 'never_delete':
-					$accessLogDuration = ze\admin::phrase('Entries in the sent email log is stored forever.');
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are stored forever.');
 					break;
 				case 0:
-					$accessLogDuration = ze\admin::phrase('Entries in the sent email log is not stored.');
+					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are not stored.');
 					break;
 				case 1:
 					$accessLogDuration = ze\admin::phrase('Entries in the sent email log are deleted after 1 day.');
@@ -158,5 +158,10 @@ switch ($path) {
 		} else {
 			unset($panel['columns']['plugin_email_address']);
 		}
+		break;
+	
+	case 'zenario__email_template_manager/panels/other_email_addresses':
+		//...
+
 		break;
 }

@@ -3,23 +3,72 @@ email_templates:
         subject: "Zenario is installed successfully!"
         from: Zenario Installer
         body: |
-            Congratulations! You have successfully installed Zenario.
-            
-            Your site's home page is [[URL]][[SUBDIRECTORY]]
-            
-            To administer your site, please go to [[URL]][[SUBDIRECTORY]]zenario/admin
-            
-            Your admin username is [[USERNAME]]
-            
-            You can get free support and documentation at http://zenar.io.
-            
-            Follow us on Twitter at https://twitter.com/ZenarioCMS.
-            
-            For commercial support, hosting, design and development services, please visit http://tribalsystems.uk.
-            
-            Thank you for choosing Zenario!
-            
-             -- Your friendly team at zenar.io
+            <table style="table-layout: auto; width: 860px; height: 656px;" border="0" width="100%" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr>
+                        <td style="vertical-align: top; width: 860px; background: #f0f0f0;">
+                            <table style="table-layout: auto; margin: 30px auto;" border="0" width="620" cellspacing="0" cellpadding="0" align="center">
+                                <tbody>
+                                    <tr>
+                                        <td style="background: #FFFFFF; vertical-align: top;">
+                                            <table style="table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0">
+                                                <tbody>
+                                                    
+                                                    <!-- HEADER -->
+                                                    <tr>
+                                                        <td style="background: #3c3c3b; color: #fff; padding: 35px 0; border-bottom: 3px solid  #132833; text-align: center;">Company Logo</td>
+                                                    </tr>
+            <tr>
+            <td style="font-family: Arial, Helvetica; padding: 0px 20px 0px; font-size: 14px; line-height: 22px; color: #132833;">
+            <p>&nbsp;</p>                                                    
+                <p>Congratulations! You have successfully installed Zenario.</p>
+                
+                <p>Your site's home page is <a href = "[[URL]][[SUBDIRECTORY]]">[[URL]][[SUBDIRECTORY]]</a>.</p>
+                
+                <p>To administer your site, please go to <a href = "[[URL]][[SUBDIRECTORY]]zenario/admin">[[URL]][[SUBDIRECTORY]]zenario/admin</a> and log in with your admin username, [[USERNAME]].</p>
+                
+                <p>You can get free support and documentation at <a href = "http://zenar.io">http://zenar.io</a>.</p>
+                
+                <p>For commercial support, hosting, design and development services, please visit <a href = "http://tribalsystems.uk" >http://tribalsystems.uk</a>.</p>
+                
+                <p>Thank you for choosing Zenario!</p>
+                
+                <p> -- Your friendly team at Tribal Systems</p>
+            <p>&nbsp;</p>
+                                                                    
+            </td>
+            </tr>
+            <!-- FOOTER -->
+            <tr>
+                <td style="padding: 0px;">
+                    <table style="font-family: Tahoma, Geneva, sans-serif; table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0" bgcolor="#3c3c3b">
+                        <tbody>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <br>
+                                    <p style="text-align: center; color: #fff; font-size: 13px; line-height: 18px;">© Your company<br> <span style="font-size: 11px;">Contact details</span></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="color: #3c3c3b;">&nbsp;.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        </td>
+        </tr>
+        </tbody>
+        </table>
     reset_password_local_admin:
         subject: Your Zenario Admin Username and Password
         from: false

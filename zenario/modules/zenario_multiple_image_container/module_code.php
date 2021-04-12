@@ -299,4 +299,171 @@ class zenario_multiple_image_container extends zenario_banner {
 			}
 		}
 	}
+
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//...
+	}
+
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($path == 'plugin_settings') {
+			
+			//Make sure all images selected are stored in the docstore, and have the "usage" column value 'mic'.
+			if ($values['image_and_link/image']) {
+				$sql = '
+					SELECT id, filename
+					FROM ' . DB_PREFIX . 'files
+					WHERE id IN (' . ze\escape::in($values['image_and_link/image']) . ')
+					AND location = "db"';
+				
+				$result = ze\sql::select($sql);
+				while ($file = ze\sql::fetchAssoc($result)) {
+					$usage = [];
+	
+					$usageSql = "
+						SELECT foreign_key_to, is_nest, is_slideshow, GROUP_CONCAT(DISTINCT foreign_key_id, foreign_key_char) AS concat
+						FROM ". DB_PREFIX. "inline_images
+						WHERE image_id = ". (int) $file['id']. "
+						AND in_use = 1
+						AND archived = 0
+						AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template') 
+						GROUP BY foreign_key_to, is_nest, is_slideshow";
+					
+					$usageResults = ze\sql::fetchAssocs($usageSql);
+					
+					foreach ($usageResults as $usageResult) {
+						$keyTo = $usageResult['foreign_key_to'];
+					
+						if ($keyTo == 'content') {
+							$usage['content_items'] = \ze\sql::fetchValue("
+								SELECT GROUP_CONCAT(foreign_key_char, '_', foreign_key_id)
+								FROM ". DB_PREFIX. "inline_images
+								WHERE image_id = ". (int) $file['id']. "
+								AND archived = 0
+								AND foreign_key_to = 'content'
+							");
+						
+						} elseif ($keyTo == 'library_plugin') {
+							if ($usageResult['is_slideshow']) {
+								$usage['slideshows'] = $usageResult['concat'];
+								
+							} elseif ($usageResult['is_nest']) {
+								$usage['nests'] = $usageResult['concat'];
+							
+							} else {
+								$usage['plugins'] = $usageResult['concat'];
+							}
+							
+						} else {
+							$usage[$keyTo. 's'] = $usageResult['concat'];
+						}
+					}
+	
+					$MICPluginsAndSettings = $nonMICPluginsAndSettings = [];
+					if (!empty($usage['plugins'])) {
+						//Make a list of plugin types in case this image needs to be duplicated later.
+	
+						foreach (explode(',', $usage['plugins']) as $plugin) {
+							$pluginSql = '
+								SELECT pi.id, ps.value, m.class_name
+								FROM ' . DB_PREFIX . 'plugin_instances pi
+								INNER JOIN ' . DB_PREFIX . 'modules m
+									ON pi.module_id = m.id
+								LEFT JOIN ' . DB_PREFIX . 'plugin_settings ps
+									ON ps.instance_id = pi.id
+								WHERE pi.id = ' . (int)$plugin . '
+								AND ps.name = "image"';
+							$pluginResult = ze\sql::fetchAssoc($pluginSql);
+	
+							if ($pluginResult) {
+								if ($pluginResult['class_name'] == 'zenario_multiple_image_container') {
+									$MICPluginsAndSettings[$pluginResult['id']] = ['value' => $pluginResult['value']];
+								} else {
+									$nonMICPluginsAndSettings[$pluginResult['id']] = ['value' => $pluginResult['value']];
+								}
+							}
+						}
+					}
+	
+					if (!empty($usage['nests'])) {
+						//Make a list of plugin types in case this image needs to be duplicated later.
+	
+						foreach (explode(',', $usage['nests']) as $nest) {
+							$pluginSql = '
+								SELECT np.instance_id AS id, np.id AS egg_id, ps.value, m.class_name
+								FROM ' . DB_PREFIX . 'nested_plugins np
+								INNER JOIN ' . DB_PREFIX . 'modules m
+									ON np.module_id = m.id
+								LEFT JOIN ' . DB_PREFIX . 'plugin_settings ps
+									ON ps.instance_id = np.instance_id
+									AND ps.egg_id = np.id
+								WHERE np.instance_id = ' . (int)$nest . '
+								AND ps.name = "image"';
+							$pluginResult = ze\sql::fetchAssoc($pluginSql);
+	
+							if ($pluginResult) {
+								if ($pluginResult['class_name'] == 'zenario_multiple_image_container') {
+									$MICPluginsAndSettings[$pluginResult['egg_id']] = ['value' => $pluginResult['value'], 'nest_id' => $pluginResult['id']];
+								} else {
+									$nonMICPluginsAndSettings[$pluginResult['egg_id']] = ['value' => $pluginResult['value'], 'nest_id' => $pluginResult['id']];
+								}
+							}
+						}
+					}
+					
+					$fileInfo = ze\row::get('files', ['filename', 'checksum', 'short_checksum'], ['id' => $file['id']]);
+					$duplicateInMicLibrary = ze\row::get('files', 'id', ['checksum' => $fileInfo['checksum'], 'usage' => 'mic', 'id' => ['!=' => $file['id']]]);
+					
+					if (!empty($usage['slideshows']) || !empty($usage['content_items']) || count($nonMICPluginsAndSettings) > 0 || $duplicateInMicLibrary) {
+						//If the image is used by anything else other than just MIC plugins, then duplicate the file with new usage value,
+						//update any MIC plugin settings to use the new file ID instead,
+						//and create the correct entry in the "inline_images" table.
+						//Also move the file to docstore.
+						if ($duplicateInMicLibrary) {
+							$newFileId = $duplicateInMicLibrary;
+						} else {
+							$newFileId = ze\file::copyInDatabase('mic', $file['id'], false, true, $addToDocstoreDirIfPossible = true);
+						}
+	
+						foreach ($MICPluginsAndSettings as $pluginId => $plugin) {
+							$oldImageSettings = $plugin['value'];
+							
+							$newImageSettingsArray = [];
+							$oldImageSettingsArray = explode(',', $oldImageSettings);
+							foreach ($oldImageSettingsArray as $entry) {
+								if ($entry == $file['id']) {
+									$newImageSettingsArray[] = $newFileId;
+								} else {
+									$newImageSettingsArray[] = $entry;
+								}
+							}
+							
+							$newImageSettingsArray = array_unique($newImageSettingsArray);
+							$newImageSettings = implode(',', $newImageSettingsArray);
+	
+							$wherePluginSettings = [
+								'name' => 'image',
+								'foreign_key_to' => 'multiple_files',
+								'value' => ze\escape::in($oldImageSettings)
+							];
+	
+							if (!empty($plugin['nest_id'])) {
+								$wherePluginSettings['instance_id'] = (int)$plugin['nest_id'];
+								$wherePluginSettings['egg_id'] = (int)$pluginId;
+							} else {
+								$whwherePluginSettingsere['instance_id'] = (int)$pluginId;
+							}
+	
+							ze\row::update('plugin_settings', ['value' => ze\escape::in($newImageSettings)], $wherePluginSettings);
+						}
+					} else {
+						//Alternatively, if the image is used only by MIC plugins, then just move it to docstore and update the "usage" column.
+						$pathDS = false;
+						ze\file::moveFileFromDBToDocstore($pathDS, $file['id'], $fileInfo['filename'], $fileInfo['checksum']);
+	
+						ze\row::update('files', ['usage' => 'mic', 'data' => NULL, 'path' => $pathDS, 'location' => 'docstore'], ['id' => (int)$file['id']]);
+					}
+				}
+			}
+		}
+	}
 }

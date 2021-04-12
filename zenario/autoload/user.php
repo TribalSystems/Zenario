@@ -1402,11 +1402,7 @@ class user {
 				} elseif (!empty($row['editedOrCreatedUsername'])) {
 					$userOrAdmin = ($row['editedOrCreatedUsername'] ?? false) . " (user account deleted)";
 				} else {
-					if ($adminFacing) {
-						$userOrAdmin = "unknown admin";
-					} else {
-						$userOrAdmin = "(no user account found)";
-					}
+					$userOrAdmin = "unknown";
 				}
 			
 				if (!empty($relativeDate)) {

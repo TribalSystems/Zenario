@@ -447,7 +447,8 @@ methods.drawEditor = function(
 	gGutterNested,
 	gColWidthPercent, gGutterWidthPercent
 ) {
-	var level = 0,
+	var data,
+		level = 0,
 		gridScrollTop = 0;
 	
 	//thus.data should contain all of the information on the boxes
@@ -1137,7 +1138,8 @@ methods.drawEditor = function(
 			//they are only allowed at the top level!
 			if (sameContainers || !fromContainer || !fromContainer.cells[fromPos].grid_break) {
 				
-				var newWidth = 2;
+				var msg,
+					newWidth = 2;
 				
 				//If this is something from the "add" toolbar, create a new element
 				switch (dMoved.add) {

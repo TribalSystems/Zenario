@@ -214,6 +214,9 @@ class phi {
 			$whitelist['getMetricValue'] = 'ze\\assetwolf::getMetricValue';
 			$whitelist['getTimestamp'] = 'ze\\assetwolf::getTimestamp';
 			$whitelist['getAllChildIds'] = 'ze\\assetwolf::getAllChildIds';
+			$whitelist['getAllChildAssetIds'] = 'ze\\assetwolf::getAllChildAssetIds';
+			$whitelist['getAllChildDataPoolIds'] = 'ze\\assetwolf::getAllChildDataPoolIds';
+			$whitelist['getAssetReliability'] = 'ze\\assetwolf::getAssetReliabilityFromPhi';
 			$whitelist['getImmediateChildIds'] = 'ze\\assetwolf::getImmediateChildIds';
 			$whitelist['getInheritedMetadata'] = 'ze\\assetwolf::getInheritedMetadataFromPhi';
 			$whitelist['getLocationMetadata'] = 'ze\\assetwolf::getLocationMetadataFromPhi';

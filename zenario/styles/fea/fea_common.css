@@ -1536,6 +1536,12 @@ body.mobile .zfea_search_buttons {
 	background-position:center;
 }
 
+.icon_button.recalculate_icon {
+	background-image:url('images/icon-white-recalculate-placeholder.svg');
+	background-repeat:no-repeat;
+	background-position:center;
+}
+
 .zenario_skin .icon_button {
 	width:30px;
 	padding:0;
@@ -2923,10 +2929,10 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 .zenario_skin .zenario_plugin_nest .zenario_breadcrumbs ul.smart_breadcrumbs {
 	opacity:0;
 	visibility:hidden;
-	-webkit-transition: all 0.3s ease-in-out;
-  	-moz-transition: all 0.3s ease-in-out;
-  	-o-transition: all 0.3s ease-in-out;
-  	transition: all 0.3s ease-in-out;
+	-webkit-transition: all 0.1s ease-in-out;
+  	-moz-transition: all 0.1s ease-in-out;
+  	-o-transition: all 0.1s ease-in-out;
+  	transition: all 0.1s ease-in-out;
   	
 
     position: absolute;
@@ -3525,4 +3531,103 @@ body.mobile .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_v
 		text-align:center;
 	}
 	
+}
+
+
+
+
+
+
+/*
+	Styles for the on/off switches,
+	taken from https://proto.io/freebies/onoff/
+*/
+
+.onoffswitch {
+    position: relative; width: 63px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #999999; border-radius: 20px;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 30px; padding: 0; line-height: 30px;
+    font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+    content: "✓";
+    padding-left: 10px;
+    background-color: #40A080; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+    content: "╳";
+    padding-right: 10px;
+    background-color: #AAAAAA; color: #202020;
+    text-align: right;
+}
+.onoffswitch-switch {
+    display: block; width: 18px; margin: 6px;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: 29px;
+    border: 2px solid #999999; border-radius: 20px;
+    transition: all 0.3s ease-in 0s; 
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px; 
+}
+
+/* Customized styles */
+
+.onoffswitch .onoffswitch-label {
+	width:calc(100% - 4px); /* clear */
+}
+
+.onoffswitch {
+	width:78px;
+}
+
+.onoffswitch-switch {
+	right:47px;
+}
+
+.zfea_form_row label.onoffswitch-label {
+	display:block;
+	padding:0;
+}
+
+.onoffswitch-inner::before,
+.onoffswitch-inner::after {
+	font-family: "FontAwesome";
+	font-size: 18px;
+}
+
+.onoffswitch-inner::before {
+	content: "\f00c";
+	background-color:#32bb82;
+}
+
+.onoffswitch-inner::after {
+	content: "";
+	background-color:#aeaeae;
+	color:#666;
+}
+
+.onoffswitch-label,
+.onoffswitch-switch {
+	border:1px solid #687780;
 }

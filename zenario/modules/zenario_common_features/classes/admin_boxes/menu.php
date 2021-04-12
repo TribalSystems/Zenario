@@ -245,7 +245,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		}
 		
 		//If there are any custom GET requests, load them from the DB
-		$values['advanced/add_custom_get_requests'] = (bool) $menu['custom_get_requests'];
+		$values['advanced/add_custom_get_requests'] = (is_array($menu) && !empty($menu['custom_get_requests']));
 		if ($box['key']['id'] && $values['advanced/add_custom_get_requests']) {
 			$values['advanced/custom_get_requests'] = str_replace('&', ',', $menu['custom_get_requests']);
 			$explodedGetRequests = explode(',', $values['advanced/custom_get_requests']);

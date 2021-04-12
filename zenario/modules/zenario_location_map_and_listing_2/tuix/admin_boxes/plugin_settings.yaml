@@ -115,12 +115,13 @@ plugin_settings:
                         reorder_items: true
                         multiple_select: true
                         enable_type_ahead_search: true
-                        path: zenario__administration/panels/custom_fields/refiners/dataset_id//
+                        path: zenario__administration/panels/custom_fields_hierarchy/refiners/dataset_id//
                         info_button_path: zenario__administration/panels/custom_datasets/item_buttons/edit_gui//
+                        visible_if_for_all_selected_items: item.is_field
+                        disallow_refiners_looping_on_min_path: true
                     note_below: |
                         Custom field data will appear on the location list and the map.
                         However, only checkbox-type fields will appear on the location list of filters.
-                
                 location_display:
                     grouping: filter_locations
                     plugin_setting:

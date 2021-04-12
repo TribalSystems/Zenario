@@ -1011,7 +1011,7 @@ class moduleAdm {
 		
 		//Recalculate any request vars set by this module's plugins
 		if (!empty($desc['path_commands'])) {
-			\ze\pluginAdm::setSlideRequestVars(false, false, $moduleId);
+			\ze\pluginAdm::setSlideRequestVars(false, $moduleId);
 		}
 
 		return true;

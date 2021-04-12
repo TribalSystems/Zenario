@@ -364,7 +364,7 @@ class document {
 		$content .= "	RewriteEngine On "."\n";
 		$redirectFromFileName = str_replace(' ', '\ ', $redirectFromFileName );
 		$redirectToFileName = str_replace(' ', '\ ', \ze\file::safeName($redirectToFileName));
-		$content .= "	RewriteRule ^".$redirectFromFileName."$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/". $redirectToFileName ." [R=302] "."\n";
+		$content .= "	RewriteRule ^".$redirectFromFileName."$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/". $redirectToFileName ." [R=301] "."\n";
 		$content .= "</IfModule>";
 		fwrite($f, $content);
 		fclose($f);

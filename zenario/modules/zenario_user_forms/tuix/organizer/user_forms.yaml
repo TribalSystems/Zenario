@@ -8,6 +8,7 @@ zenario__user_forms:
             no_items_message: No forms have been created.
             select_mode_title: Select a form...
             panel_type: multi_line_list
+            css_class: two_line_list_panel
             use_tall_rows: true
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS f'

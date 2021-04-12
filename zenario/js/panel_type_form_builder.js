@@ -89,17 +89,20 @@ methods.showPanel = function($header, $panel, $footer) {
 	
 	thus.fixTUIXData();
 	
-	//Load right panel
+	//Load right panel (pages list and fields list)
 	thus.loadPagesList();
 	thus.loadFieldsList(thus.currentPageId);
 	
 	//Load left panel
 	var stopAnimation = true;
 	if (thus.editingThing == 'field') {
+		// Show an editor for the selected field
 		thus.openFieldEdit(thus.editingThingId, thus.editingThingTUIXTabId, stopAnimation);
 	} else if (thus.editingThing == 'page') {
+		// Show an editor for the selected page
 		thus.openPageEdit(thus.editingThingId, thus.editingThingTUIXTabId, stopAnimation);
 	} else {
+		// Show a list of fields that can be added by drag and drop
 		thus.loadNewFieldsPanel(true);
 	}
 	
@@ -890,7 +893,7 @@ methods.addTUIXTabEvents = function(itemType, itemId, tuixTabId) {
 				var itemJSON = JSON.stringify(item);
 				
 				//Send item details to be validated by salesforce
-				actionRequests = {
+				var actionRequests = {
 					mode: 'validate_salesforce_field',
 					item: itemJSON
 				};
@@ -1091,7 +1094,7 @@ methods.loadFieldsList = function(pageId) {
 		var fieldId = $(this).data('id');
 		if (thus.saveCurrentOpenDetails()) {
 			var field = thus.getItem('field', fieldId);
-			message = '<p>Are you sure you want to duplicate the field "' + field.name + '"?</p>';
+			var message = '<p>Are you sure you want to duplicate the field "' + field.name + '"?</p>';
 			zenarioA.floatingBox(message, 'Duplicate', 'warning', true, false, undefined, undefined, function() {
 				var newFieldId = thus.createField(undefined, field.ord + 0.1, undefined, fieldId);
 				thus.clickField(newFieldId, true);
@@ -1110,7 +1113,7 @@ methods.loadFieldsList = function(pageId) {
 			return;
 		}
 		
-		message = '<p>Are you sure you want to update this dataset repeat field?</p>';
+		var message = '<p>Are you sure you want to update this dataset repeat field?</p>';
 		zenarioA.floatingBox(message, 'Update', 'warning', true, false, undefined, undefined, function() {
 			
 			var datasetRepeatFieldId = repeatField.dataset_field_id;
@@ -1265,6 +1268,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 							tags.tabs[tab].fields.next_button_text.hidden = true;
 							tags.tabs[tab].fields.visibility.readonly = true;
 							tags.tabs[tab].fields.visibility.value = 'visible';
+							tags.tabs[tab].fields.visibility.note_below = 'This is the last page, it is always visible.';
 						}
 						break;
 					}
@@ -1338,7 +1342,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 					
 				} else if (changedFieldId == 'values_source') {
 					if (item.values_source) {
-						actionRequests = {
+						var actionRequests = {
 							mode: 'get_centralised_lov',
 							method: item.values_source
 						};
@@ -1797,7 +1801,7 @@ methods.saveCurrentOpenDetails = function(deleted) {
 				thus.validateTUIX(itemType, item, thus.editingThingTUIXTabId, tags);
 				
 				foreach (tags.tabs as var tuixTabId => var tuixTab) {
-					foreach (tuixTab.fields as var tuixFieldId => tuixField) {
+					foreach (tuixTab.fields as var tuixFieldId => var tuixField) {
 						if (tuixField.error) {
 							errors.push(tuixField.error);
 						}
@@ -1877,7 +1881,7 @@ methods.displayPageFieldOrderErrors = function() {
 	
 	var inRepeatBlock = false;
 	for (var i = 0; i < fields.length; i++) {
-		field = fields[i];
+		var field = fields[i];
 		if (field.type == 'repeat_start' && !inRepeatBlock) {
 			inRepeatBlock = true;
 		} else if (field.type == 'repeat_end') {

@@ -2899,4 +2899,60 @@ _sql
 	WHERE status = "deleted" AND alias <> ''
 _sql
 
+
+//Update the files table to fix some slow queries.
+//In HEAD/8/9, I'm adding keys to the thumbnail width/height columns.
+//In all versions, I'm also fixing an inconsistency where we sometimes store missing dimensions as a 0,
+//and sometimes as a null, by now always using null.
+);	ze\dbAdm::revision( 52500
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	ADD KEY (`custom_thumbnail_1_width`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	ADD KEY (`custom_thumbnail_1_height`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	ADD KEY (`custom_thumbnail_2_width`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	ADD KEY (`custom_thumbnail_2_height`)
+_sql
+
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files`
+	SET custom_thumbnail_1_width = NULL
+	WHERE custom_thumbnail_1_width = 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files`
+	SET custom_thumbnail_1_height = NULL
+	WHERE custom_thumbnail_1_height = 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files`
+	SET custom_thumbnail_2_width = NULL
+	WHERE custom_thumbnail_2_width = 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files`
+	SET custom_thumbnail_2_height = NULL
+	WHERE custom_thumbnail_2_height = 0
+_sql
+
+);	ze\dbAdm::revision( 52501
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(255) CHARACTER SET utf8mb4 NOT NULL
+_sql
+
 );

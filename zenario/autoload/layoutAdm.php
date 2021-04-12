@@ -697,6 +697,7 @@ class layoutAdm {
 		return \ze\link::absolute(). 'zenario/admin/organizer.php#'.
 				'zenario__layouts/panels/template_families/view_content//'. \ze\ring::encodeIdForOrganizer($templateFamily).  '//';
 	}
+	
 	//Function to display content item attached with particular slotname
 	public static function slotUsage($layoutId, $slotName) {
 		

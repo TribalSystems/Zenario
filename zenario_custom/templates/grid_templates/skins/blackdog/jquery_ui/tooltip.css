@@ -3,6 +3,7 @@
 
 .zenario_visitor_tooltip {
 	font-size: 11px;
+	line-height:14px;
 	padding:6px 8px;
 	background:#323232;
 	color:#fff;
@@ -14,6 +15,8 @@
 	border-radius: 5px;
 	max-width:130px;
 	text-align:center;
+	font-family:'robotoregular',Arial, Helvetica, sans-serif;
+	opacity:1;
 }
 
 .zenario_visitor_tooltip.tooltip_top_center {

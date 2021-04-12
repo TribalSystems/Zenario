@@ -182,6 +182,10 @@
   		padding-top:8px;
 	}
 	
+	.slot_logo .zenario_banner .banner_image img {
+  		max-height:30px;
+	}
+	
 	.mm-opened .zenario_slideshow .nest_wrap {
 		margin-left:0;
 	}

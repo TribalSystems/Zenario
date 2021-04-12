@@ -2173,8 +2173,8 @@ zenario.enc = function(id, className, moduleClassNameForPhrases, feaPaths, jsNot
 //Create encapculated objects for slots/instances
 zenario.slot = function(pluginInstances) {
 	
-	var p, i, pluginInstance,
-		instanceId,
+	var i, instance, instanceId,
+		p, pluginInstance,
 		moduleId,
 		moduleClassName, slotName,
 		updatedSlots = [];
@@ -3541,7 +3541,7 @@ zenario.fixJSON = function(json) {
 zenario.addPluginJavaScript = function(moduleId, callback) {
 	
 	//Work out the path from the plugin name and the swatch name
-	filePath = 'zenario/js/plugin.wrapper.js.php?ids=' + moduleId + '&v=' + zenarioCSSJSVersionNumber;
+	var filePath = 'zenario/js/plugin.wrapper.js.php?ids=' + moduleId + '&v=' + zenarioCSSJSVersionNumber;
 	
 	if (zenario.inAdminMode) {
 		filePath += '&admin=1';

@@ -1,0 +1,50 @@
+{% if missingApiKey %}
+    <p>{{missingApiKey}}</p>
+{% elseif No_Results %}
+	<div class="search_no_results">
+    	<p>{{No_Results_Phrase}}</p>
+	</div>
+{% else %}
+    <{{Title_Tags}}>Search</{{Title_Tags}}>
+    <div class="search_area">
+        <div>
+            {% if Search_Label %}
+                <label>{{"Search"|trans}}</label>
+            {% endif %}
+
+            <form onsubmit="{{onSubmit}}" action="{{action}}" method="get">
+                <input type="text" class="search_input_box" id="{{Search_Field_ID}}" name="searchTerm" value="{{searchTerm|e}}"
+                    {% if Placeholder %}
+                        placeholder="{{Placeholder_Phrase|trans}}"
+                    {% endif %}
+                />
+                <input id="{{Search_Button_ID}}" type="submit" class="search_entry_button" value="{{'Search'|trans}}"/>
+                <input type="hidden" name="page" value="1" />
+            </form>
+        </div>
+    </div>
+
+    {# This div is empty on load. It will be populated by search results. #}
+    <div id="{{Search_Results_Div_ID}}" class="search_results">
+        {% if Search_Results %}    
+            {% for Result in Search_Results %}
+                <div class="{{Result.oddOrEven}} search_result {% if Result.cse_thumbnail.src %} with_image {% endif %}">
+                    {% if showIcon and Result.cse_thumbnail.src %}
+                    	<div class="search_result_image">
+                        	<a href="{{Result.link}}"><img src="{{Result.cse_thumbnail.src}}" width="{{Result.cse_thumbnail.width}}" height="{{Result.cse_thumbnail.height}}" /></a>
+                    	</div>
+                    {% endif %}
+                    <div class="search_result_content">
+                    	<{{Search_Result_Title_Tags}} class="search_result_title"><a href="{{Result.link}}">{{Result.htmlTitle}}</a></{{Search_Result_Title_Tags}}>
+                        
+                        {% if showDateAndDescription and Result.htmlSnippet %}
+                            <span>{{Result.htmlSnippet}}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {{Pagination}}
+        {% endif %}
+    </div>
+{% endif %}

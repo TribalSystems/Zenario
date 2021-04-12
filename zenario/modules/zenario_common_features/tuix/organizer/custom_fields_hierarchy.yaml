@@ -1,0 +1,32 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+
+zenario__administration:
+    panels:
+        custom_fields_hierarchy:
+            back_link: false
+            
+            panel_type: hierarchy
+            
+            hierarchy:
+                column: parent_id
+        
+            refiners:
+                dataset_id: {}
+                custom_fields_only: {}
+                user_fields: {}
+                user_custom_fields_only: {}
+                exclude_image_pickers: {}
+            
+            disable_periodic_refresh: true
+            label_format_for_picked_items: "[[label]]"
+            columns:
+                parent_id: {}
+                label:
+                    title: Label
+                    searchable: true
+                    always_show: true
+                type:
+                    title: Type
+                    searchable: false
+                    always_show: true

@@ -414,10 +414,11 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		
 		//Check the password fields
 		if ($box['key']['id'] && ze\ring::engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)) {
+			$passwordValidation = \ze\user::checkPasswordStrength($values['password/password']);
 			if (!$values['password/password']) {
 				$box['tabs']['password']['errors'][] = ze\admin::phrase('Please enter a Password.');
 
-			} elseif (!ze\user::checkPasswordStrength($values['password/password'])) {
+			} elseif (!$passwordValidation['password_matches_requirements']) {
 				$box['tabs']['password']['errors'][] = ze\admin::phrase('The password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters.');
 
 			} elseif (!$values['password/password_confirm']) {

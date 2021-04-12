@@ -412,7 +412,7 @@ zenario_user_form:
                             label: 'Send email using template'
                     value: use_template
                     format_onchange: true
-                    indent: 2             
+                    indent: 2
                     
                 user_email_template_logged_in_user:
                     label: 'Email template:'
@@ -469,11 +469,20 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: Please select an email template for user emails.
                     indent: 3
+                
+                make_urls_non_clickable_user:
+                    indent: 1
+                    label: 'Make URLs non-clickable'
+                    type: checkbox
+                    side_note: 'Converts URLs to a non-clickable pattern using [.] instead of dots.'
+                    visible_if: zenarioAB.value('send_email_to_user');
+                
                 send_email_to_admin:
                     label: 'Send email to administrator'
                     type: checkbox
                     format_onchange: true
                 # BEGIN send_email_to_admin options
+                
                 send_email_to_admin_condition:
                     indent: 1
                     label: "Send email to admin condition:"
@@ -559,7 +568,14 @@ zenario_user_form:
                     side_note: Select the form field in which the user enters their last name
                     indent: 2
                 # END reply_to options
+                make_urls_non_clickable_admin:
+                    indent: 1
+                    label: 'Make URLs non-clickable'
+                    type: checkbox
+                    side_note: 'Converts URLs to a non-clickable pattern using [.] instead of dots.'
+                    visible_if: zenarioAB.value('send_email_to_admin');
                 # END send_email_to_admin options
+                
                 # BEGIN actions after form submissions 
                 line_br_3:
                     snippet:
@@ -697,6 +713,8 @@ zenario_user_form:
                             label: Delete after 3 months
                         365:
                             label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
                         never_delete:
                             label: Save forever  
                     format_onchange: true

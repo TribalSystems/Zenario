@@ -296,3 +296,36 @@ p.phone:before {
 .zenario_sensitive_content .zenario_sensitive_content_wrap .zenario_sc_buttons a:hover {
 	text-decoration:none;
 }
+
+/* Shared links
+--------------------------------------------------------------------------------------------------*/
+
+.shareable_link,
+.shareable_link_input {
+	display:inline-block;
+}
+
+.shareable_link_input {
+	position:relative;
+}
+
+.shareable_link .zenario_copy {
+	width:20px;
+	height:14px;
+	background:url('../images/icon-copy-link.svg') no-repeat center center / 100% auto;
+}
+
+.shareable_link .zenario_copy:hover {
+	background:url('../images/icon-copy-link-blue.svg') no-repeat center center / 100% auto;
+}
+
+.shareable_link .zenario_copy .fa-copy {
+	display:none;
+}
+
+.shareable_link_input .zenario_visitor_tooltip {
+	white-space:nowrap;
+	position:absolute;
+	top:25px;
+	left:-40px;
+}

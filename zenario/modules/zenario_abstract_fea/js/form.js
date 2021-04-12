@@ -1395,13 +1395,13 @@ methods.sortOutTUIX = function() {
 	if (_.isEmpty(tuix.list_groupings)) {
 		thus.sortedListGroupings = [undefined];
 	} else {
-		thus.sortedListGroupings = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.list_groupings, 'label');
+		thus.sortedListGroupings = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.list_groupings, 'ord');
 	}
 	
 	if (_.isEmpty(tuix.list_outer_groupings)) {
 		thus.sortedListOuterGroupings = [undefined];
 	} else {
-		thus.sortedListOuterGroupings = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.list_outer_groupings, 'label');
+		thus.sortedListOuterGroupings = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.list_outer_groupings, 'ord');
 	}
 	
 	thus.last.tuix = tuix;

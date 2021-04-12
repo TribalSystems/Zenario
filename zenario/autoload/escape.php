@@ -78,11 +78,13 @@ class escape {
 		);
 	}
 
+	const jsFromTwig = true;
 	//Formerly "jsEscape()"
 	public static function js($text) {
 		return strtr(addcslashes($text, "\\\n\r\"'"), ['&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e', '{' => '\\x7b', '}' => '\\x7d']);
 	}
 
+	const jsOnClickFromTwig = true;
 	//Formerly "jsOnClickEscape()", "jsOnclickEscape()"
 	public static function jsOnClick($text) {
 		return htmlspecialchars(addcslashes($text, "\\\n\r\"'"));
@@ -219,5 +221,18 @@ class escape {
 		return $sql;
 	}
 
+	public static function makeURLsNotClickable($text, $ignoreEmailAddresses = true) {
+		$pattern = '/[a-zA-Z0-9\-\.\@]+\.[a-zA-Z]{2,4}(\:[0-9]+)?(\/\S*)?/';
+		
+		if (preg_match_all($pattern, $text, $out)) {
+			foreach ($out[0] as $url) {
+				if (!$ignoreEmailAddresses || strpos($url, '@') === false) {
+					$nonClickableUrl = str_replace('.', '[.]', $url);
+					$text = str_replace($url, $nonClickableUrl, $text);
+				}
+			}
+		}
 
+		return $text;
+	}
 }

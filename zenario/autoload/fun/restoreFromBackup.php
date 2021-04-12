@@ -28,9 +28,9 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-//\ze\dbAdm::restoreFromBackup($backupPath, &$failures, $checkEnabled)
+//\ze\dbAdm::restoreFromBackup($backupPath, &$failures, $restoringOverExistingSite)
 
-if ($checkEnabled && !\ze\dbAdm::restoreEnabled()) {
+if ($restoringOverExistingSite && !\ze\dbAdm::restoreEnabled()) {
 	$failures[] = \ze\dbAdm::restoreEnabledMsg();
 	return false;
 }
@@ -100,6 +100,21 @@ if (!$g = $open($backupPath, 'rb')) {
 	
 	return false;
 }
+
+
+
+//If Assetwolf is running, we'll need to stop the background threads running before we do the backup
+if ($awRunning = $restoringOverExistingSite && ze\module::inc('assetwolf_2')) {
+	\ze\assetwolf::includeLocks();
+	
+	//Grab locks and pause the threads as usual
+	\ze\assetwolf\locks::getLocksOnAllThreads();
+	
+	//We'll need to keep the threads paused, however we need to release the locks otherwise the backup
+	//will not be able to actually run
+	\ze\assetwolf\locks::releaseLocksOnAllThreads($unpause = false);
+}
+
 
 
 $needed_packet = 0;
@@ -366,6 +381,11 @@ if (!empty($failures)) {
 		@\ze\sql::cacheFriendlyUpdate('DROP TABLE IF EXISTS `'. $importTable. '`');
 	}
 	
+	//Resume Assetwolf's background threads, if we paused them earlier.
+	if ($awRunning) {
+		\ze\assetwolf\locks::releaseLocksOnAllThreads();
+	}
+	
 	return false;
 
 } else {
@@ -392,6 +412,11 @@ if (!empty($failures)) {
 	}
 	
 	\ze\dbAdm::restoreLocationalSiteSettings();
+	
+	//Note that Assetwolf's background threads will likely still be paused, even though we've
+	//just replaced everything in the database, as they get paused just before a backup is created.
+	//I could call the releaseLocksOnAllThreads() function to unpause them here, however
+	//I'm not going to do that, an intentionally make an admin or superuser manually restart them.
 	
 	return true;
 }

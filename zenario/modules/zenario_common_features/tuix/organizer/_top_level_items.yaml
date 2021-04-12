@@ -78,6 +78,12 @@ zenario__content:
                 Images on all content items are stored in a central library, even if not currently used. Manage images here.
             link:
                 path: zenario__content/panels/image_library
+        mic_image_library:
+            label: MIC images
+            tooltip: |
+                View and manage images used by Multiple Image Container plugins.
+            link:
+                path: zenario__content/panels/mic_image_library
     data-step: 11
     data-position: right
     data-intro: >
@@ -190,7 +196,7 @@ zenario__modules:
         tuix_snippets:
             ord: 99
             priv: _PRIV_EDIT_SITE_SETTING
-            css_class: zenario_separator_before_this
+            css_class: zenario_separator_before_this tuix_snippets
             label: TUIX Snippets
             tooltip: >
                 Use this panel to create snippets of customised TUIX code that can be used to
@@ -239,6 +245,33 @@ zenario__administration:
             priv: _PRIV_VIEW_SITE_SETTING
             label: Site settings
             tooltip: Configure how Zenario works
+            keywords: >
+                editing security 2fa two factor authentication auto-lock drafts autolock permissions new content items release date minimum admin password strength
+                api keys key dropbox captcha recaptcha google map maps translate translation tools 
+                category categories
+                cookie implied consent explicit consent message
+                data protection GDPR personal PDE encryption consent 
+                time date format zone timezone
+                log directory 
+                primary domain redirect cookie-free
+                docstore public private thumbnail resize 
+                embed iframe X-Frame-Options
+                email smtp mail test debug
+                errors php warnings php notices mysql strict database twig
+                antivirus antiword pdftotext pdf-to-text pdf to text ghostscript word document plain text extract plaintext extract image html->pdf word->text compress jpegs compress pngs pdf->image pdf->text thumbnail png jpeg jpg optimize optimise zip 
+                favicon mobile icon home screen icon logo organizer
+                image thumbnail working copy jpeg file upload sizes
+                file download IP
+                aws S3
+                form forms profanity filter
+                invisible
+                meta head tag analytics social media 
+                mod_rewrite suffix behaviour for translations alias language code 
+                screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
+                country countries
+                CSS wrappers compress
+                queries query SQL run-time notices strict errors
+                caching cache stats statistics clear
             link:
                 path: zenario__administration/panels/site_settings
         backups:

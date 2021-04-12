@@ -458,7 +458,44 @@ To correct this, please ask your system administrator to perform a
 		return $usage;
 	}
 	
-	
+	//Get the $usage details for an image in the MIC library.
+	public static function getMICImageUsage($imageId) {
+		$module = 'zenario_multiple_image_container';
+		$moduleId = \ze\row::get('modules', 'id', ['class_name' => \ze\escape::sql($module)]);
+
+		$usage = [];
+		$instances = \ze\module::getModuleInstancesAndPluginSettings($module);
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['image'])) {
+				foreach (explode(',', $instance['settings']['image']) as $micImageId) {
+					if ($micImageId == $imageId) {
+						if ($instance['egg_id']) {
+							if (!isset($usage[$micImageId]['nest'])) {
+								$usage[$micImageId]['nest'] = $instance['instance_id'];
+								$usage[$micImageId]['nests'] = 1;
+							} else {
+								$usage[$micImageId]['nests']++;
+							}
+						} else {
+							if (!isset($usage[$micImageId]['plugin'])) {
+								$usage[$micImageId]['plugin'] = $instance['instance_id'];
+								$usage[$micImageId]['plugins'] = 1;
+							} else {
+								$usage[$micImageId]['plugins']++;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (isset($usage[$imageId]) && count($usage[$imageId]) >= 1) {
+			return \ze\miscAdm::getUsageText($usage[$imageId], $usageLinks = []);
+		} else {
+			return null;
+		}
+	}
 	
 	
 	

@@ -4,6 +4,33 @@ site_settings:
     title: Editing settings for documents, files and images
     setting_group: files_and_images
     tabs:
+        docstore_dir:
+            label: Docstore
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                dir_2_blurb:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                You should create a directory on your server where Zenario can store documents.
+                            </p><p>
+                                Please create a directory on your server in which to keep these backups.
+                                Enter an absolute path starting with a slash, but do not add a trailing slash.
+                            </p>
+                docstore_dir:
+                    site_setting:
+                        name: docstore_dir
+                        protect_from_database_restore: true
+                    label: 'Source document directory (Docstore):'
+                    type: text
+                    #onkeyup: zenarioAB.quickValidateWelcomePage(500);
+                #docstore_dir_status:
+                #    snippet:
+                #        html: '&nbsp;'
+
         image_privacy:
             label: Image privacy
             edit_mode:
@@ -213,7 +240,7 @@ site_settings:
                         name: content_max_filesize
                     label: 'Maximum Content File Size:'
                     type: text
-                    value: 20000000
+                    value: 20
                     note_below: >
                         This allows you to set a maximum allowed uploadable file
                         size (in bytes) for Pictures, Audio, Video, and other
@@ -221,40 +248,33 @@ site_settings:
                     validation:
                         required: Please enter a Maximum Content File Size.
                         numeric: The Maximum Content File Size must be numeric.
-                max_content_image_filesize:
+                    decimal_places: ""
+                content_max_filesize_unit:
                     site_setting:
-                        name: max_content_image_filesize
-                    label: 'Maximum Image File Size:'
-                    type: text
-                    value: 500000
-                    note_below: |
-                        This allows you to set a maximum allowed uploadable file size (in bytes) for images which are to be used with HTML and
-                                                    other types of Content Items.
-                    validation:
-                        required: Please enter a Maximum Image File Size.
-                        numeric: The Maximum Content Image File Size must be numeric.
-                max_content_movie_filesize:
-                    site_setting:
-                        name: max_content_movie_filesize
-                    label: 'Maximum Animation File Size:'
-                    type: text
-                    value: 20000000
-                    note_below: |
-                        This allows you to set a maximum allowed uploadable file size (in bytes) for Animation which are to be used with HTML and
-                                                    other types of Content Items.
-                    validation:
-                        required: Please enter a Maximum Animation File Size.
-                        numeric: The Maximum Content Movie File Size must be numeric.
+                        name: content_max_filesize_unit
+                    label: 'Unit:'
+                    same_row: true
+                    type: select
+                    values:
+                        KB:
+                            label: KB
+                        MB:
+                            label: MB
+                        GB:
+                            label: GB
+                    value: MB
+                    redraw_onchange: true
+                    hide_if_empty: true
                 apache_max_filesize:
                     label: 'Largest Possible Upload Size:'
                     type: text
-                    readonly: true
+                    show_as_a_span: true
                     note_below: |
                         This is the size of the largest file that can be uploaded to your server. Your server administrator can change this by changing the server's Apache Config (it is the lesser of post_max_size and upload_max_filesize as set in the php.ini file).
                 max_allowed_packet:
                     label: 'MySQL max_packet_size:'
                     type: text
-                    readonly: true
+                    show_as_a_span: true
                     note_below: |
                         This is the size of the largest possible SQL query Zenario can send to your database.
                                                         Images, along with their thumbnails and their working copies, will be added to the database using one command,

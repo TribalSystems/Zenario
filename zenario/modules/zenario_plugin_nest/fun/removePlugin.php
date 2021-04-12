@@ -54,6 +54,6 @@ if (($instance = ze\plugin::details($instanceId))
 	
 		ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
 	
-		ze\pluginAdm::setSlideRequestVars($instanceId, false, false, $eggId);
+		ze\pluginAdm::setSlideRequestVars($instanceId);
 	}
 }

@@ -115,6 +115,7 @@
 			//N.b. I removed a few such as attribute from the autocomplete/documentation but they're still usable
 			
 			//Assetwolf's functions
+			'getAssetReliability': {input: 'fromTimestamp, toTimestamp[, assetIds]', returns: 'value'},
 			'getHistoricValue': {input: 'key, timestamp[, nodeId]', returns: 'value'},
 			'getMetricValue': {input: 'key, fromTimestamp[, nodeId]', returns: 'value'},
 			'getMetadata': {input: 'name[, nodeId]', returns: 'value'},
@@ -124,6 +125,8 @@
 			'getMinValue': {input: 'key, fromTimestamp, toTimestamp[, assetIds]', returns: 'value'},
 			'getMaxValue': {input: 'key, fromTimestamp, toTimestamp[, assetIds]', returns: 'value'},
 			'getAllChildIds': {input: '[schema[, nodeId]]', returns: 'ids'},
+			'getAllChildAssetIds': {input: '[nodeId]', returns: 'ids'},
+			'getAllChildDataPoolIds': {input: '[nodeId]', returns: 'ids'},
 			'getImmediateChildIds': {input: '[schema[, nodeId]]', returns: 'ids'},
 			'getParentNodeId': {input: '[schema[, nodeId]]', returns: 'id'},
 			'query': {input: 'fromTimestamp, toTimestamp, assetIds', returns: 'cursor'},

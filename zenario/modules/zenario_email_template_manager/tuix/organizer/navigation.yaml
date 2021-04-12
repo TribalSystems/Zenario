@@ -29,8 +29,15 @@ zenario__email_template_manager:
             link:
                 path: zenario__modules/panels/plugins
                 refiner: email_address_setting
+        other_email_addresses:
+            ord: 6
+            priv: _PRIV_VIEW_USER
+            label: Timer plans
+            tooltip: "View other modules that have an email address"
+            link:
+                path: zenario__email_template_manager/panels/other_email_addresses
         site_setting_email_addresses:
-            ord: 5.1
+            ord: 7
             priv: _PRIV_VIEW_USER
             label: Site-wide recipients
             tooltip: "View site settings that have an email address"

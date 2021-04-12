@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: dirs
-    title: Editing settings for backups and document storage
+    title: Editing settings for backups
     tabs:
         
         automated_backups:
@@ -115,29 +115,4 @@ site_settings:
                 #    snippet:
                 #        html: '&nbsp;'
         
-        docstore_dir:
-            label: Docstore
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-            fields:
-                dir_2_blurb:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <p>
-                                You should create a directory on your server where Zenario can store documents.
-                            </p><p>
-                                Please create a directory on your server in which to keep these backups.
-                                Enter an absolute path starting with a slash, but do not add a trailing slash.
-                            </p>
-                docstore_dir:
-                    site_setting:
-                        name: docstore_dir
-                        protect_from_database_restore: true
-                    label: 'Source document directory (Docstore):'
-                    type: text
-                    #onkeyup: zenarioAB.quickValidateWelcomePage(500);
-                #docstore_dir_status:
-                #    snippet:
-                #        html: '&nbsp;'
+        

@@ -489,7 +489,7 @@ zenarioA.toggleShowHelpTourNextTime = function() {
 
 //Get information on a single item from Storekeeper 
 zenarioA.getSKItem =
-zenarioA.getItemFromOrganizer = function(path, id, async) {
+zenarioA.getItemFromOrganizer = function(path, id, async, request) {
 	
 	if (typeof path == 'string') {
 		if (zenarioO.map) {
@@ -505,6 +505,10 @@ zenarioA.getItemFromOrganizer = function(path, id, async) {
 		url =
 			URLBasePath +
 			'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=' + encodeURIComponent(path.path);
+	
+	if (defined(request)) {
+		url += zenario.urlRequest(request);
+	}
 	
 	if (defined(id)) {
 		url += '&_item=';
@@ -1084,7 +1088,21 @@ zenarioA.pluginSlotEditSettings = function(el, slotName, fabPath, requests, tab)
 	var instanceId = zenario.slots[slotName].instanceId;
 	
 	if (!get('zenario_theme_name_' + slotName + '__0') && instanceId) {
-		zenarioAB.open(fabPath || 'plugin_settings', _.extend({cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion, slotName: slotName, instanceId: instanceId, frontEnd: 1}, requests || {}), tab);
+		
+		requests = _.extend(
+			{
+				cID: zenario.cID,
+				cType: zenario.cType,
+				cVersion: zenario.cVersion,
+				slotName: slotName,
+				instanceId: instanceId,
+				frontEnd: 1
+			},
+			zenarioAB.getConductorVars(slotName) || {},	
+			requests || {}
+		);
+		
+		zenarioAB.open(fabPath || 'plugin_settings', requests, tab);
 	}
 	
 	return false;
@@ -1276,7 +1294,7 @@ zenarioA.removePlugin = function(el, slotName, level) {
 		};
 	
 	if (level > 1) {
-		html = zenario.moduleNonAsyncAJAX('zenario_common_features', req, false);
+		var html = zenario.moduleNonAsyncAJAX('zenario_common_features', req, false);
 		
 		if (zenarioA.loggedOut(html)) {
 			return;
@@ -1329,7 +1347,7 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 		containerId = plgslt_ + slotName,
 		flags = resp.flags,
 		moduleId = 1*flags.MODULE_ID,
-		isMenu = flags.IS_MENU;
+		isMenu = flags.IS_MENU,
 		isVersionControlled = flags.WIREFRAME,
 		beingEdited = flags.IN_EDIT_MODE,
 		className = flags.NAMESPACE,
@@ -2020,7 +2038,8 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 		 && zenarioAB.tuix.tabs
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[editorId];
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[editorId],
+		pick_items;
 
 	
 	//Remember the open window, the name of the file browser's URL field (this will be something like "mceu_48-inp),
@@ -2990,7 +3009,7 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 			resp.responseText = msg;
 		}
 		
-		showErrorMessage = function() {
+		var showErrorMessage = function() {
 			
 			var hasReply = resp.zenario_retry,
 				hasContinueAnyway = resp.zenario_continueAnyway && resp.data,

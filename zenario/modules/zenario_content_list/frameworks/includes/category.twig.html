@@ -1,0 +1,19 @@
+{% if item.Logged_in_user_is_admin and item.Content_panel_organizer_href_start %}
+	<div class="content_list_infoIcon">
+		<a
+			class="zenario_front_end_picked_item_info"
+			href="{{item.Content_panel_organizer_href_start}}"
+			target="_blank"
+		>i</a>
+	</div>
+{% endif %}
+
+{% if Show_Category and item.Category %}
+	{% if item.Category_Landing_Page_Link %}
+		<a href="{{item.Category_Landing_Page_Link|e}}">
+	{% endif %}
+	<div class="content_list_category category_{{item.Category_Id|e}}">{{item.Category|e}}</div>
+	{% if item.Category_Landing_Page_Link %}
+		</a>
+	{% endif %}
+{% endif %}

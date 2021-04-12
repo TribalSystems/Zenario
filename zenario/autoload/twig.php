@@ -79,6 +79,7 @@ class twig {
 		self::$twig->addFunction(new \Twig\TwigFunction('session', '\\ze::session'));
 		self::$twig->addFunction(new \Twig\TwigFunction('requireJsLib', '\\ze::requireJsLib'));
 
+		self::$twig->addFunction(new \Twig\TwigFunction('sum', 'array_sum'));
 		self::$twig->addFunction(new \Twig\TwigFunction('print_r', 'print_r'));
 		self::$twig->addFunction(new \Twig\TwigFunction('var_dump', 'var_dump'));
 		self::$twig->addFunction(new \Twig\TwigFunction('json_encode', 'json_encode'));

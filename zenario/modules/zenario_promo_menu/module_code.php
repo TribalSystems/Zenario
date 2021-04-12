@@ -203,19 +203,52 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				$row = ze\row::get(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image',
 					['use_feature_image', 'image_id', 'feature_image_is_retina', 'canvas', 'width', 'height', 'offset', 'use_rollover_image', 'rollover_image_id', 'title', 'text', 'link_type', 'link_visibility', 'dest_url', 'open_in_new_window', 'overwrite_alt_tag'],
 					['node_id' => $nodeId]);
-				$box['key']['feature_image_id'] = $row['image_id'] ? $row['image_id'] : '';
-				$file = ze\row::get('files', ['alt_tag'], $row['image_id']);
-				if ($file){
-					$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['original_value'] = $file['alt_tag'];
-				}
 				
-				if ($row['overwrite_alt_tag']) {
-					$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $row['overwrite_alt_tag'];
-					$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['changed'] = true;
-				} else {
-					if ($file){
-						$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $file['alt_tag'];
+				if ($row && is_array($row)) {
+					if ($row['image_id']) {
+						$box['key']['feature_image_id'] = $row['image_id'];
+						
+						$file = ze\row::get('files', ['alt_tag'], $row['image_id']);
+						if ($file){
+							$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['original_value'] = $file['alt_tag'];
+						}
+						
+						if ($row['overwrite_alt_tag']) {
+							$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $row['overwrite_alt_tag'];
+							$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['multiple_edit']['changed'] = true;
+						} else {
+							if ($file){
+								$values['feature_image/zenario_promo_menu__overwrite_alt_tag'] = $file['alt_tag'];
+							}
+						}
 					}
+
+					$values['feature_image/zenario_promo_menu__feature_image_checkbox'] = $row['use_feature_image'];
+					$values['feature_image/zenario_promo_menu__feature_image'] = $row['image_id'];
+					$values['feature_image/zenario_promo_menu__canvas'] = empty($row['canvas']) ? 'unlimited' : $row['canvas'];
+					$values['feature_image/zenario_promo_menu__feature_image_is_retina'] =
+						$row['feature_image_is_retina']
+						|| ($values['feature_image/zenario_promo_menu__canvas'] != 'unlimited');
+					$values['feature_image/zenario_promo_menu__width'] = $row['width'];
+					$values['feature_image/zenario_promo_menu__height'] = $row['height'];
+					$values['feature_image/zenario_promo_menu__offset'] = $row['offset'];
+					$values['feature_image/zenario_promo_menu__use_rollover'] = $row['use_rollover_image'];
+					$values['feature_image/zenario_promo_menu__rollover_image'] = $row['rollover_image_id'];
+					$values['feature_image/zenario_promo_menu__title'] = $row['title'];
+					$values['feature_image/zenario_promo_menu__text'] = $row['text'];
+					$values['feature_image/zenario_promo_menu__link_type'] = empty($row['link_type']) ? 'no_link' : $row['link_type'];
+					switch($row['link_type']) {
+						case 'content_item':
+							$values['feature_image/zenario_promo_menu__hyperlink_target'] = $row['dest_url'];
+							break;
+						case 'external_url':
+							$values['feature_image/zenario_promo_menu__url'] = $row['dest_url'];
+							break;
+					}
+					$values['feature_image/zenario_promo_menu__hide_private_item'] = empty($row['link_visibility']) ? 'always_show' : $row['link_visibility'];
+					$values['feature_image/zenario_promo_menu__target_blank'] = $row['open_in_new_window'];
+				} else {
+					$box['key']['feature_image_id'] = '';
 				}
 
 				if ($box['key']['id'] && ($menu = ze\menu::details($box['key']['id']))) {
@@ -229,31 +262,6 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					$values['feature_image/use_rollover_image'] = (bool) $menu['rollover_image_id'];
 					$values['feature_image/rollover_image_id'] = $menu['rollover_image_id'];
 				}
-				
-				$values['feature_image/zenario_promo_menu__feature_image_checkbox'] = $row['use_feature_image'];
-				$values['feature_image/zenario_promo_menu__feature_image'] = $row['image_id'];
-				$values['feature_image/zenario_promo_menu__canvas'] = empty($row['canvas']) ? 'unlimited' : $row['canvas'];
-				$values['feature_image/zenario_promo_menu__feature_image_is_retina'] =
-					$row['feature_image_is_retina']
-					|| ($values['feature_image/zenario_promo_menu__canvas'] != 'unlimited');
-				$values['feature_image/zenario_promo_menu__width'] = $row['width'];
-				$values['feature_image/zenario_promo_menu__height'] = $row['height'];
-				$values['feature_image/zenario_promo_menu__offset'] = $row['offset'];
-				$values['feature_image/zenario_promo_menu__use_rollover'] = $row['use_rollover_image'];
-				$values['feature_image/zenario_promo_menu__rollover_image'] = $row['rollover_image_id'];
-				$values['feature_image/zenario_promo_menu__title'] = $row['title'];
-				$values['feature_image/zenario_promo_menu__text'] = $row['text'];
-				$values['feature_image/zenario_promo_menu__link_type'] = empty($row['link_type']) ? 'no_link' : $row['link_type'];
-				switch($row['link_type']) {
-					case 'content_item':
-						$values['feature_image/zenario_promo_menu__hyperlink_target'] = $row['dest_url'];
-						break;
-					case 'external_url':
-						$values['feature_image/zenario_promo_menu__url'] = $row['dest_url'];
-						break;
-				}
-				$values['feature_image/zenario_promo_menu__hide_private_item'] = empty($row['link_visibility']) ? 'always_show' : $row['link_visibility'];
-				$values['feature_image/zenario_promo_menu__target_blank'] = $row['open_in_new_window'];
 				break;
 		}
 	}

@@ -319,7 +319,7 @@ class admin {
 	//Also, if you're only after their details and not the password check, then you can
 	//set the password to false to avoid checking passwords.
 	//Formerly "checkPasswordAdmin()"
-	public static function checkPassword($adminUsernameOrEmail, &$details, $password, $checkViaEmail = false) {
+	public static function checkPassword($adminUsernameOrEmail, &$details, $password, $checkViaEmail = false, $checkBoth = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	

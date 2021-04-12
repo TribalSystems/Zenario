@@ -35,13 +35,19 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		 && $box['key']['id_is_error_log_id']
 		 && ze\module::inc('zenario_error_log')) {
 			$brokenAlias = ze\row::get(ZENARIO_ERROR_LOG_PREFIX.'error_log', 'page_alias', ['id' => $box['key']['id']]);
+			$brokenAlias = substr($brokenAlias, 0, 255);
+			
 			if (ze\row::exists('spare_aliases', ['alias' => $brokenAlias])) {
 				$box['key']['id'] = $brokenAlias;
 			} else {
 				$box['key']['id'] = '';
 				$values['spare_alias/alias'] = $brokenAlias;
+				$fields['spare_alias/alias']['readonly'] = true;
+				$box['title'] = ze\admin::phrase('Fixing the 404 error "[[alias]]"', ['alias' => ($brokenAlias)]);
 			}
 			
+			$fields['spare_alias/delete_error_log']['label'] = ze\admin::phrase('Delete all instances of "[[alias]]" from error log', ['alias' => $brokenAlias]);
+			$values['spare_alias/delete_alias'] = $brokenAlias;
 		}
 		
 		if (!$box['key']['id']) {
@@ -49,12 +55,12 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 			$box['tabs']['spare_alias']['edit_mode']['always_on'] = true;
 			
 			if(isset($values['spare_alias/hyperlink_target'])){
-				$values['spare_alias/hyperlink_target'] = "html_1";
+				$values['spare_alias/hyperlink_target'] = ze::$homeCType . '_' . ze::$homeEquivId;
 			}
-
+			
 		} else {
 			$details = ze\row::get('spare_aliases', true, $box['key']['id']);
-			$box['title'] = ze\admin::phrase('Editing the alias "[[alias]]"', ['alias' => ($details['alias'])]);
+			$box['title'] = ze\admin::phrase('Editing the spare alias "[[alias]]"', ['alias' => ($details['alias'])]);
 				
 			$fields['spare_alias/alias']['value'] = $details['alias'];
 			$fields['spare_alias/alias']['readonly'] = true;
@@ -66,6 +72,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 			} else {
 				$fields['spare_alias/ext_url']['value'] = $details['ext_url'];
 			}
+			
 		}
 		
 		//Show suffix if settings enabled
@@ -101,10 +108,25 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		if ($alias !== "") {
 			$alias .= $suffix;
 		}
-		$fields['spare_alias/preview']['snippet']['html'] = '<a id="spare_alias_preview" data-base="' . ze\link::absolute() . '" data-suffix="' . $suffix . '" href="' . ($values['spare_alias/redirect_target_url'] ?? '') . '" target="spare_alias_preview">' . ze\link::absolute() . $alias . '</a>';
+		$fields['spare_alias/preview']['snippet']['html'] = '<a id="spare_alias_preview" data-base="' . ze\link::absolute() . '" data-suffix="' . $alias . '" href="' . ze\link::absolute() . $alias . '" target="spare_alias_preview">' . ze\link::absolute() . $alias . '</a>';
+
+		
+			
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		$box['confirm']['show'] = false;
+		$box['confirm']['message'] = '';
+		if ($values['spare_alias/delete_error_log']== true) {
+			if (ze\module::inc('zenario_error_log')) {
+				
+				$aliasCount = ze\row::count(ZENARIO_ERROR_LOG_PREFIX.'error_log', ['page_alias' => $values['spare_alias/alias']]);
+			
+				$box['confirm']['show'] = true;
+				$box['confirm']['message'] = \ze\admin::phrase('[[number]] instances of "[[name]]" will be deleted from the error log.',['number' => $aliasCount, 'name' => $values['spare_alias/alias']]);
+				$box['confirm']['button_message'] = \ze\admin::phrase('Confirm ');
+			}
+		}
 		if (!$box['key']['id']) {
 			if (!$values['spare_alias/alias']) {
 				$box['tabs']['spare_alias']['errors'][] = ze\admin::phrase('Please enter an Alias.');
@@ -147,6 +169,20 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		
 		ze\row::set('spare_aliases', $row, ['alias' => $alias]);
 		
+		//Delete all instances of alias from error log		
+		if ($values['spare_alias/delete_error_log']== true) {
+			if (ze\module::inc('zenario_error_log')) {
+				$deleteAliasLog = $values['spare_alias/delete_alias'];
+				
+				if ($deleteAliasLog) {
+					$sql = '
+					DELETE FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+					WHERE page_alias = "' . ze\escape::sql($deleteAliasLog) . '"';
+					ze\sql::update($sql);
+				}
+			}
+			
+		}
 	}
 	
 }

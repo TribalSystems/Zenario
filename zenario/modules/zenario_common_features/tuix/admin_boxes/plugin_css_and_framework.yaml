@@ -93,6 +93,20 @@ plugin_settings:
                     snippet: {}
                     note_below: ''
         
+        cant_determine_which_skin:
+            parent: advanced_dropdown
+            hidden: true
+            label: CSS
+            fields: {}
+            notices:
+                cant_determine_which_skin:
+                    show: true
+                    type: information
+                    message: >
+                        Zenario can't determine the CSS that this plugin will use from Organizer
+                        because this site uses more than one skin.
+                        Open these settings from the front end to see the CSS options.
+        
         framework_tab:
             parent: advanced_dropdown
             label: Framework

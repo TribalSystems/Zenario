@@ -63,7 +63,10 @@ body.webkit input {
 }
 
 .welcome .welcome_header_logo > img {
+	width:auto;
+	max-width: 300px;
 	max-height:60px;
+	height:auto;
 }
 
 /* Tables */
@@ -1281,19 +1284,22 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover
 	margin-right:5px;
 }
 
-#welcome div[class*="content_unpublished"] {
-	position:relative;
+#welcome #snippet__content_unpublished {
+	display:block;
+	max-height:220px;
+	overflow-y:auto;
 }
 
-#welcome div[class*="content_unpublished"] .organizer_item_image {
+#welcome #snippet__content_unpublished .zenario_row_for_snippet {
+	position:relative;
+	display:block;
+	padding:5px 5px 5px 25px;
+}
+
+#welcome #snippet__content_unpublished .zenario_row_for_snippet .organizer_item_image {
 	position:absolute;
 	top:5px;
-	left:20px;
-}
-
-#welcome div[class*="content_unpublished"] .zfab_row_fields > span {
-	display:block;
-	margin-left:25px;
+	left:0;
 }
 
 #welcome div.content_item_plugin_privacy_mismatch {

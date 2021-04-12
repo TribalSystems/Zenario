@@ -1,127 +1,30 @@
-{% if RSS %}<?xml version="1.0" encoding="UTF-8" ?>
-	<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-		<channel>
-			<atom:link href="{{RSS_Link}}" rel="self" type="application/xml" />
-			<title>{{Title}}</title>
-			<link>{{Link}}</link>
-			<description>{{Description}}</description>
-			
-			{% for item in RSS_Item %}
-				<item>
-					<title>{{item.Title}}</title>
-					<description>{{item.Excerpt_Text}}</description>
-					<link>{{item.Full_Link}}</link>
-					<guid>{{item.Full_Link}}</guid>
-					{% if item.Language %}
-						<language>{{item.Language}}</language>
-					{% endif %}
-					{% if item.Date %}
-						<pubDate>{{item.Date}}</pubDate>
-					{% endif %}
-				</item>
-			{% endfor %}
-		</channel>
-	</rss>
+{% if RSS %}{% include this.frameworkBaseDir() ~ 'includes/rss.twig.html' %}
 {% else %}
-	{% if All_Currently_Selected_Categories %}
-		<div class="currently_selected_categories">
-		<h5>Category filters</h5>
-		 
-			{% if More_Than_One and  All_Or_Any %}
-				<p class="label">{{All_Or_Any|trans}}</p>
-			{% endif %}	
-		    
-		    <ul>
-				{% for category in All_Currently_Selected_Categories %}
-					<li>{{category}}</li>
-				{% endfor %}
-	 		</ul>
-	 	</div>
-	{% endif %}
-		
+	
+	{% include this.frameworkBaseDir() ~ 'includes/header.twig.html' %}
+	
+	{% set LINKS_IN_INCLUDES = true %}
+	
 	{% if Rows %}
-		{% if Show_RSS_Link %}
-			<div class="content_list_rss_link"><a href="{{RSS_Link}}"><span>{{'_RSS'|trans}}</span></a></div>
-		{% endif %}
-		{% if Show_Title %}
-			<{{Title_Tags}}>{{Title_With_Content}}</{{Title_Tags}}>
-		{% endif %}
-		<div class="content_list_listing{% if Content_Items_Equal_Height %} setmychildren {% endif %}">
-			{% for item in Row %}
-				<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
-					<div class="content_list_title_date">
-						{% if Show_Item_Title %}
-							<{{Item_Title_Tags}} class="content_list_title {{item.Content_Type|e}}">
-								<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a>
-								{% if Show_File_Size and item.Local_File_Size %}
-									({{item.Local_File_Size}})
-								{% endif %} 
-								{% if item.Language %}<span>({{item.Language|e}})</span>{% endif %}
-							</{{Item_Title_Tags}}>
-						{% endif %}
-						{% if Show_Author_Image %}
-							<div class="content_list_author_image">
-								<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}" width="{{item.Author_Image_Width|e}}" height="{{item.Author_Image_Height|e}}"/>
-							</div>
-						{% endif %}
-						{% if Show_Author %}
-							<p class="content_list_author">{{item.Author|e}}</p>
-						{% endif %}
-						{% if Show_Date %}
-							<p class="content_list_date">{{item.Date|e}}</p>
-						{% endif %}
-					</div>
-					{% if Show_Sticky_Image %}
-						<div class="sticky_image">
-							<a {{item.Link}}{{item.Target_Blank}}>
-								{{item.Sticky_Image}}
-							</a>
-						</div>
-					{% endif %}
-					<div class="content_list_text">
-						{% if Show_Excerpt %}
-							<div class="content_list_excerpt">{{item.Excerpt_Text}}</div>
-						{% endif %}
-					</div>
-					{% if item.Logged_in_user_is_admin and item.Content_panel_organizer_href_start %}
-					<div class="content_list_infoIcon">
-						<a
-							class="zenario_front_end_picked_item_info"
-							href="
-								{{item.Content_panel_organizer_href_start}}"
-							target="_blank">i</a>
-					</div>
-					{% endif %}
-					{% if Show_Category and item.Category %}
-						{% if item.Category_Landing_Page_Link %}
-							<a href="{{item.Category_Landing_Page_Link|e}}">
-						{% endif %}
-						<div class="content_list_category category_{{item.Category_Id|e}}">{{item.Category|e}}</div>
-						{% if item.Category_Landing_Page_Link %}
-							</a>
-						{% endif %}
-					{% endif %}
-					
-					<div class="content_list_more">
-						<a {{item.Link}}{{item.Target_Blank}}>{{'_MORE'|trans}}</a>
-					</div>
+		{% for item in Row %}
+			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
+				<div class="content_list_title_date">
+					{% include this.frameworkBaseDir() ~ 'includes/title.twig.html' %}
 				</div>
-			{% endfor %}
-			{% if More %}
-				<a class="content_list_more_link" {{More_Link}}>{{More_Link_Title|e}}</a>
-			{% endif %}
-		</div>
+				
+				{% include this.frameworkBaseDir() ~ 'includes/feature_image.twig.html' %}
+				
+				<div class="content_list_text">
+					{% include this.frameworkBaseDir() ~ 'includes/excerpt.twig.html' %}
+				</div>
+				
+				{% include this.frameworkBaseDir() ~ 'includes/category.twig.html' %}
+				
+				{% include this.frameworkBaseDir() ~ 'includes/more.twig.html' %}
+			</div>
+		{% endfor %}
 	{% endif %}
-	{% if No_Rows %}
-		{% if Show_No_Title %}
-			<{{Title_Tags}}>{{Title_With_No_Content|e}}</{{Title_Tags}}>
-		{% endif %}
-	{% endif %}
-	{% if Years %}
-		<form class="content_list_date_select">
-			{{'_PUBLISHED:'|trans}}
-		</form>
-	{% endif %}
-	{{Pagination}}
+	
+	{% include this.frameworkBaseDir() ~ 'includes/footer.twig.html' %}
 
 {% endif %}

@@ -1,0 +1,22 @@
+zenario_delete_error_log:
+    title: "Delete the same"
+    max_height: 100
+    hide_tab_bar: true
+    save_button_message: Delete
+    cancel_button_message: Cancel
+    key:
+        id: ""
+        id_is_error_log_id: false
+    tabs:
+        delete:
+            edit_mode:
+                enabled: true
+            notices: 
+                are_you_sure: 
+                    show: "1"
+                    type: warning
+                    message: ""
+            fields:
+                info_1:
+                    snippet:
+                        html: 'Error log entries with this text will be deleted.'

@@ -703,6 +703,15 @@ additionalProperties:
                         type: string
                         description: >
                             A tooltip for this button
+                    tooltip_link:
+                        type: string
+                        description: >
+                            If this property is set, the tooltip icon will become a clickable link.
+                            You can use relative or absolute links. To use an absolute link, please include <code>http(s)://www</code>.
+                    tooltip_link_open_in_new_window:
+                        type: boolean
+                        description: >
+                            If a tooltip link in use, this property will open the link in a new window when set to true.
                     
                     icon_left:
                         type: string
@@ -985,6 +994,15 @@ additionalProperties:
                         type: string
                         description: >
                             A tooltip for this button
+                    tooltip_link:
+                        type: string
+                        description: >
+                            If this property is set, the tooltip icon will become a clickable link.
+                            You can use relative or absolute links. To use an absolute link, please include <code>http(s)://www</code>.
+                    tooltip_link_open_in_new_window:
+                        type: boolean
+                        description: >
+                            If a tooltip link in use, this property will open the link in a new window when set to true.
                     
                     icon_left:
                         type: string
@@ -1030,7 +1048,18 @@ additionalProperties:
                         type: boolean
                         item_button_only: true
                         description: >
-                            Experimental feature, please don't use foe regular use until it's finalised.
+                            This can be used when showing a list of items, each with a "view" button.
+                            
+                            If you do not wish to show the list when only one item is shown, you can set this property to true
+                            on the "view" button.
+                            
+                            When a list only has one item, and this is set, the "view" button will automatically be followed.
+                            
+                            Note that this only works well when used at the top of the navigation.
+                            
+                            Also, you should probably set the
+                            "Only show the Back button when the previous slide has more than one item to choose from"
+                            option on the next slide.
                     
                     confirm:
                         type: object

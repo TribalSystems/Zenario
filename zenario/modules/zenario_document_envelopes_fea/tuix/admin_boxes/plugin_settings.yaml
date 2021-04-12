@@ -473,7 +473,9 @@ plugin_settings:
                         name: custom_field_1
                     format_onchange: true
                     pick_items:
-                        path: zenario__administration/panels/custom_fields/refiners/dataset_id//
+                        path: zenario__administration/panels/custom_fields_hierarchy/refiners/dataset_id//
+                        visible_if_for_all_selected_items: item.is_field
+                        disallow_refiners_looping_on_min_path: true
                 make_custom_field_1_searchable:
                     indent: 1
                     grouping: show_columns

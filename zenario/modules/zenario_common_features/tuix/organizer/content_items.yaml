@@ -760,7 +760,7 @@ zenario__content:
             item_buttons:
                 settings:
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: Edit metadata & content
+                    label: Edit content item
                     admin_box:
                         path: zenario_content
                     without_columns_set:
@@ -1105,7 +1105,7 @@ zenario__content:
                     with_columns_set:
                         has_duplicate: true        
                     without_columns_set:
-                        traits.ghost: true 
+                        traits.ghost: true
                 
                 
                 create_draft_by_copying:
@@ -1206,6 +1206,24 @@ zenario__content:
                         traits.ghost: true
                     admin_box:
                         path: zenario_delete_draft
+                delete_media_content_item:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
+                        && (item.type == 'audio' || item.type == 'document' || item.type == 'picture' || item.type == 'video')
+                        && item.status != 'first_draft'
+                    hide_in_select_mode: true
+                    label: Delete content item
+                    multiple_select: true
+                    multiple_select_label: Delete content items
+                    with_columns_set:
+                        traits.deletable: true
+                        traits.not_locked: true
+                    without_columns_set:
+                        traits.ghost: true
+                    admin_box:
+                        path: zenario_delete_media_content_item
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM

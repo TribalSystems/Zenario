@@ -122,7 +122,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			
 					break;
 			}
-	
+		
 			//Task #9514: Release Date should always be visible if you are looking at a Content Type where it is mandatory.
 			if ($details = ze\contentAdm::cTypeDetails($panel['key']['cType'])) {
 				foreach ([
@@ -221,7 +221,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-
+		
 		if($contentType=($_REQUEST['refiner__content_type'] ?? false)){
 			if(ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'=>$contentType])){
 				unset($panel['inline_buttons']['no_categories']);
@@ -553,7 +553,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				if ($checkSpecificPerms && ze\priv::check(false, $item['id'], $item['type'])) {
 					$item['_specific_perms'] = true;
 				}
-		
+				
 				if ($item['lock_owner_id']) {
 					$adminDetails = ze\admin::details($item['lock_owner_id']);
 					$item['lock_owner_name'] = $adminDetails['first_name'].' '.$adminDetails['last_name'];
@@ -719,6 +719,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$item['traits']['has_s3file'] = true;
 					
 				}
+
 				if ($item['type'] == 'document')  {
 					$item['has_duplicate'] = false;
 					$item['has_document'] = false;
@@ -747,6 +748,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					}
 			
 					$item['navigation_path'] = 'zenario__content/panels/content//'. $id;
+					
 					
 				}
 			}
@@ -782,6 +784,10 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					}
 				} else {
 					++$numEquivs;
+
+					if ($item['id'] == $cID && $item['type'] == $panel['key']['cType']) {
+						$item['traits']['deletable'] = false;
+					}
 				}
 			}
 	
@@ -920,26 +926,6 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
 					if (ze\contentAdm::allowHide($cID, $cType) && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType)) {
 						ze\contentAdm::hideContent($cID, $cType);
-					}
-				}
-			}
-
-		} elseif (ze::post('trash')) {
-			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				$cID = $cType = false;
-				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
-					if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType)) {
-						ze\contentAdm::trashContent($cID, $cType);
-					}
-				}
-			}
-
-		} elseif (ze::post('delete')) {
-			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				$cID = $cType = false;
-				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
-					if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_DELETE_DRAFT', $cID, $cType)) {
-						ze\contentAdm::deleteDraft($cID, $cType);
 					}
 				}
 			}

@@ -143,7 +143,7 @@ methods.addFieldValue = function(item, label, ord) {
 	if (typeof item.lov === 'undefined') {
 		item.lov = {};
 	}
-	newValueId = 't' + (++thus.newItemCount);
+	var newValueId = 't' + (++thus.newItemCount);
 	item.lov[newValueId] = {
 		label: label,
 		ord: ord || _.size(item['lov']) + 100

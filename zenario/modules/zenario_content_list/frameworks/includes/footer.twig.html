@@ -1,0 +1,60 @@
+{% if Rows %}
+		{% if More %}
+			<a class="content_list_more_link" {{More_Link}}>{{More_Link_Title|e}}</a>
+		{% endif %}
+	</div>
+{% endif %}
+{% if No_Rows %}
+	{% if Show_No_Title %}
+		<{{Title_Tags}}>{{Title_With_No_Content|e}}</{{Title_Tags}}>
+	{% endif %}
+{% endif %}
+{% if Years %}
+	<form class="content_list_date_select">
+		{{'_PUBLISHED:'|trans}}
+	</form>
+{% endif %}
+
+{{Pagination}}
+
+
+{# Zip downloads of files #}
+
+{% if Error %}
+	{{Message}}
+{% endif %}
+
+{% if Empty_Archive %}
+	{{NO_CONTENT_ITEMS}}
+{% endif %}
+{% if Link_To_Download_Page %}
+	<div
+		id="generating_documents_{{Main_Link_Slot}}"
+		class="download_documents_preparing_archive"
+		style="display:none;"
+	>
+		{{PREPARING_DOCUMENTS}}
+	</div>
+	<div id="link_to_download_page_{{Main_Link_Slot}}" class="link_to_zip_download_page">
+		<span>{{DOWNLOAD_PREPARE_LABEL}}</span>
+		<a {{Anchor_Link}} onclick="
+			zenario_content_list.generateZIP(this, '{{ze('escape', 'jsOnClick', DownloadRequest)}}', '{{slotName}}');
+			return false;
+		">{{Filename}}</a>
+	</div>
+{% endif %}
+{% if Download_Page %}
+	<div id="download_documents_links" >
+		{% for linkItem in Main_Link_Array %}
+			{% if linkItem.errorMsg %}
+				<div id="download_documents_errmsg" >{{linkItem.errorMsg}}</div>
+			{% endif %}
+			{% if linkItem.labelName and linkItem.fileName %}
+				<div id="download_documents_link" >
+					<span>{{linkItem.labelName}}</span>
+					<a href="{{linkItem.linkName}}">{{linkItem.fileName}}</a> 
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+{% endif %}

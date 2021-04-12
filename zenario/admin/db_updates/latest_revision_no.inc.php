@@ -27,15 +27,15 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 52202);
+define('LATEST_REVISION_NO', 52501);
 define('LATEST_BIG_CHANGE_REVISION_NO', 52150);
 define('INSTALLER_REVISION_NO', 41600);
 define('INSTALLER_DEFAULT_THEME', 'blackdog');
 
 define('ZENARIO_IS_HEAD', false);
-define('ZENARIO_VERSION', '8.8');
+define('ZENARIO_VERSION', '8.9');
 define('ZENARIO_MAJOR_VERSION', '8');
-define('ZENARIO_MINOR_VERSION', '8');
+define('ZENARIO_MINOR_VERSION', '9');
 define('ZENARIO_IS_BUILD', true);
 define('ZENARIO_REVISION', '53725');
 

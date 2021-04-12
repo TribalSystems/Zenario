@@ -20,40 +20,12 @@ sections:
             alias:
                 parent: property_dropdown
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                    && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
+                visible_if: zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
                     edit: true
                 label: Edit alias
                 admin_box:
                     path: zenario_alias
-#            head:
-#                parent: property_dropdown
-#                priv: _PRIV_MANAGE_ITEM_SLOT
-#                visible_if: |
-#                    zenarioA.checkSpecificPermsOnThisPage()
-#                appears_in_toolbars:
-#                    edit: true
-#                label: HTML in head of page 01
-#                admin_box:
-#                    path: zenario_head_foot_slot
-#                    key:
-#                        mode: head
-#                        level: item
-#            foot:
-#                parent: property_dropdown
-#                priv: _PRIV_MANAGE_ITEM_SLOT
-#                visible_if: |
-#                    zenarioA.checkSpecificPermsOnThisPage()
-#                appears_in_toolbars:
-#                    edit: true
-#                label: HTML at foot of page
-#                admin_box:
-#                    path: zenario_head_foot_slot
-#                    key:
-#                        mode: foot
-#                        level: item
             layout:
                 parent: property_dropdown
                 priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
@@ -84,10 +56,6 @@ sections:
                     target_path: zenario__content/panels/image_library
                     min_path: zenario__content/panels/image_library
                     disallow_refiners_looping_on_min_path: true
-            #view_dropdown: &view_dropdown
-            #    label: View
-            #    hide_when_children_are_not_visible: true
-            #    onmouseover: 'zenarioA.closeSlotControls();'
             lock_dropdown: &lock_dropdown
                 label: Locking
                 hide_when_children_are_not_visible: true
@@ -282,4 +250,3 @@ sections:
             lock_dropdown: *lock_dropdown
 
             view_items_images: *view_items_images
-            

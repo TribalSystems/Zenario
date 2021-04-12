@@ -45,3 +45,11 @@ plugin_settings:
                         required: "Please select an email template."
                     value: zenario_extranet_change_email__to_user_email_change_successful_en
                     note_below: 'By default this plugin uses the email template with code "zenario_extranet_change_email__to_user_email_change_successful_en".'
+                
+                use_captcha:
+                    plugin_setting:
+                        name: use_captcha
+                    label: 'Show captcha'
+                    type: checkbox
+                    side_note: >
+                        Require completion of a captcha to ensure we're dealing with a human.

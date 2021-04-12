@@ -52,6 +52,11 @@ if (!$content || !$version) {
 	$adminToolbar['sections']['layout']['buttons']['settings']['label'] = ze\admin::phrase('[[name]] properties', ['name' => $templateDetails['file_base_name']]);
 	$adminToolbar['sections']['layout']['buttons']['settings']['admin_box']['key']['id'] = ze::$layoutId;
 	
+	//Hide "copy from.." when content type is document
+	if ($cType == 'document') {
+		$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['hidden'] = true;
+	}
+		
 	//Set the link to Grid Maker
 	if (isset($adminToolbar['sections']['layout']['buttons']['edit_grid'])) {
 		//To Do: only set the link if this Layout was actually made using grid maker

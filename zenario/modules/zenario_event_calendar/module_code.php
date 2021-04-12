@@ -149,11 +149,16 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			$currentMonthEventsTitle = $this->getMonthEventDesc($year,$month,$langIDs);
 			$currentMonthEventsOneLess = $numberOfEvents-1;
 			
-			if ($numberOfEvents>1){
+			if ($numberOfEvents > 1) {
 				$currentMonthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$currentMonthEventsTitle[0]['title']."</span><span class = 'event_count has_events  more_event'>+".$currentMonthEventsOneLess." ".$this->phrase('more')."</span>";
-			}else
-			{
-				$currentMonthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$currentMonthEventsTitle[0]['title']."</span>";
+			} else {
+				if (!empty($currentMonthEventsTitle)) {
+					$title = $currentMonthEventsTitle[0]['title'];
+				} else {
+					$title = '';
+				}
+				
+				$currentMonthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$title."</span>";
 			}
 			
 			if ($this->isEventDay($year,$month,$j,$langIDs)){
@@ -242,10 +247,16 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 				$monthEventsTitle = $this->getMonthEventDesc($year,$month,$lang);
 				$monthEventsOneLess = $monthEvents-1;
 				
-				if ($monthEvents>1){
+				if ($monthEvents > 1) {
 					$monthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$monthEventsTitle[0]['title']."</span><span class = 'event_count has_events  more_event'>+".$monthEventsOneLess." ".$this->phrase('more')."</span>";
-				}else{
-					$monthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$monthEventsTitle[0]['title']."</span>";
+				} else {
+					if (!empty($monthEventsTitle)) {
+						$title = $monthEventsTitle[0]['title'];
+					} else {
+						$title = '';
+					}
+					
+					$monthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$title."</span>";
 				}
 				
 				if ($this->isEventMonth($year,$month,$langIDs)){
@@ -462,11 +473,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			$events[] = $row;
 		}
 		
-		if ($events){
-			return $events;
-		}else{
-			return null;
-		}
+		return $events;
 	}
 
 	function isEventDay($year,$month,$day,$langs){

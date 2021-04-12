@@ -40,8 +40,8 @@ tinymce.js
   With:
 	var compileSchema = function (type, settings) {
   
-  Uncomment the definition:
-		eventAttributes =
+  Uncomment the definition (and add a "var" to fix the strict error):
+		var eventAttributes =
 
   Replace:
       // Add HTML5 items to globalAttributes, blockContent, phrasingContent

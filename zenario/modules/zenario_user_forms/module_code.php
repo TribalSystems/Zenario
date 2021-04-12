@@ -778,10 +778,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	//Get visible form field data in email
-	private function sendVisibleFieldsFormEmail($startLine, $email, $mergeFields, $responseId, $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false) {
+	private function sendVisibleFieldsFormEmail($startLine, $email, $mergeFields, $responseId, $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false) {
 		$formName = $this->form['name'] ? trim($this->form['name']) : '[blank name]';
 		$formId = $this->form['id'];
-		//var_dump($this->form['id']);
+		
 		$subject = 'New form submission for: ' . $formName;
 		$addressFrom = ze::setting('email_address_from');
 		$nameFrom = ze::setting('email_name_from');
@@ -791,11 +791,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		
-			$body = $startLine;
+		$body = $this->getFormSummaryHTML($responseId);
 		
-			$body .=$this->getFormSummaryHTML($responseId);
+		if ($makeURLsNotClickable) {
+			$body = ze\escape::makeURLsNotClickable($body);
+		}
+		
+		//Only add the start line once the links in the body have been made non-clickable.
+		$body = $startLine . $body;
 		
 		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
+		
 		zenario_email_template_manager::putBodyInTemplate($body);
 		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
 	}
@@ -856,12 +862,28 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					}
 					if (isset($field['row']) && !empty($field['firstRepeatBlockField'])) {
 						$rows = count($fields[$field['repeat_start_id']]['rows']);
-						$html .= '<tr><th colspan="2" class="subheader">Repeating section ' . (int)$field['row'] . ' of ' . (int)$rows . '</th></tr>';
+						
+						//If this is a field in a repeating section, look up the section's label and use it.
+						//Otherwise, fall back on just "Repeating section".
+						if ($fields[$field['repeat_start_id']]['label']) {
+							$repeatSectionLabel = $fields[$field['repeat_start_id']]['label'] . ' (' . (int)$field['row'] . ' of ' . (int)$rows . ')';
+						} elseif ($fields[$field['repeat_start_id']]['name']) {
+							$repeatSectionLabel = $fields[$field['repeat_start_id']]['name'] . ' (' . (int)$field['row'] . ' of ' . (int)$rows . ')';
+						} else {
+							$repeatSectionLabel = 'Repeating section ' . (int)$field['row'] . ' of ' . (int)$rows;
+						}
+
+						$html .= '<tr><th colspan="2" class="subheader">' . $repeatSectionLabel . '</th></tr>';
 					}
 					if($displayHTML)
 						$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . $displayHTML . '</td></tr>';
 					else
-						$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>[Empty]</td></tr>';
+						//Catch the case where the value is a 0 rather than "empty".
+						if (isset($field['value']) && is_numeric($field['value'])) {
+							$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>0</td></tr>';
+						} else {
+							$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>[Empty]</td></tr>';
+						}
 						
 				}
 			}
@@ -2813,6 +2835,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	private function validateForm($pageId, $validateAllFields, $ignoreRequiredFields) {
 		$t = $this->form['translate_text'];
+
+		//Validate honeypot field
+		if ($this->form['use_honeypot'] && isset($_POST['field_hp']) && $_POST['field_hp'] !== '') {
+		    $this->errors['honeypot'] = static::fPhrase('This field must be left blank.', [], $t);
+		}
+		
+		//Validate captcha
+		$error = $this->getCaptchaError();
+		if ($error) {
+			$this->errors['captcha'] = $error;
+		}
+
 		if ($pageId == 'summary') {
 			if ($this->form['enable_summary_page_required_checkbox'] && empty($_POST['summary_required_checkbox'])) {
 				$this->errors['summary_required_checkbox'] = static::fPhrase($this->form['summary_page_required_checkbox_error_message'], [], $t);
@@ -2848,17 +2882,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$this->errors['global_top'] = ze\lang::phrase('Please check below for errors.');
 				}
 			}
-		}
-		
-		//Validate honeypot field
-		if ($this->form['use_honeypot'] && isset($_POST['field_hp']) && $_POST['field_hp'] !== '') {
-		    $this->errors['honeypot'] = static::fPhrase('This field must be left blank.', [], $t);
-		}
-		
-		//Validate captcha
-		$error = $this->getCaptchaError();
-		if ($error) {
-			$this->errors['captcha'] = $error;
 		}
 		
 		//Custom messages by modules extending this
@@ -3265,6 +3288,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$sendEmailToAdmin = ($this->form['send_email_to_admin'] && $this->form['admin_email_addresses']);
 			$userEmailMergeFields = false;
 			$adminEmailMergeFields = false;
+			$makeURLsNotClickableUser = $sendEmailToUser && $this->form['make_urls_non_clickable_user'];
+			$makeURLsNotClickableAdmin = $sendEmailToAdmin && $this->form['make_urls_non_clickable_admin'];
 			
 			//Send an email to the user
 			if ($sendEmailToUser) {
@@ -3277,14 +3302,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($email) {
 						if ($this->form['user_email_use_template_for_logged_in_user']==1) {
 							if ($this->form['user_email_template_logged_in_user']) {
-								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_logged_in_user'], $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true);
+								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_logged_in_user'], $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, false, false, $makeURLsNotClickableUser);
 							}
 						}
 						elseif($this->form['user_email_use_template_for_logged_in_user']==2) {
-							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId);
+							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
 						}
 						else {
-							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields);
+							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, [], false, false, false, $makeURLsNotClickableUser);
 						}
 					}
 				}
@@ -3294,15 +3319,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if ($email) {
 						if ($this->form['user_email_use_template_for_email_from_field']==1) {
 							if ($this->form['user_email_template_from_field']) {
-								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_from_field'], $userEmailMergeFields);
+								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_from_field'], $userEmailMergeFields, [], [], false, false, false, $makeURLsNotClickableUser);
 								
 							}
 						}
 						elseif($this->form['user_email_use_template_for_email_from_field']==2) {
-							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId);
+							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
 						}
 						else {
-							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true);
+							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, $makeURLsNotClickableUser);
 						}
 						
 					}
@@ -3384,18 +3409,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 			
 					if ($this->form['admin_email_use_template']==1 && $this->form['admin_email_template']) {
-						zenario_email_template_manager::sendEmailsUsingTemplate($this->form['admin_email_addresses'], $this->form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName);
+						zenario_email_template_manager::sendEmailsUsingTemplate($this->form['admin_email_addresses'], $this->form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName, $makeURLsNotClickableAdmin);
 					}
 					elseif($this->form['admin_email_use_template']==2) {
 						$startLine = '<p>Dear admin,<p>';
 						$startLine .= '<p>The form "' . htmlspecialchars($this->form['name']) . '" (form ID '.htmlspecialchars($this->form['id']).') was submitted from '. $url .' with the following data:</p>';
 						
-						$this->sendVisibleFieldsFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields,$responseId, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true);
+						$this->sendVisibleFieldsFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields,$responseId, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin);
 					}
 					else {
 						$startLine = 'Dear admin,';
 						$startLine .= '<p>The form "' . htmlspecialchars($this->form['name']) . '" (form ID '.htmlspecialchars($this->form['id']).') was submitted from '. $url .' with the following data:</p>';
-						$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true);
+						$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin);
 					}
 				}
 			}
@@ -3439,7 +3464,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$emailMergeFields['cms_url'] = ze\link::absolute();
 			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false, $this->form['verification_email_template'], $emailMergeFields, []);
+			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false, $this->form['verification_email_template'], $emailMergeFields, [], [], false, false, false, $makeURLsNotClickableAdmin);
 		}
 	}
 	
@@ -3513,13 +3538,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $mergeFields;
 	}
 	
-	private function sendUnformattedFormEmail($startLine, $email, $mergeFields = [], $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false) {
+	private function sendUnformattedFormEmail($startLine, $email, $mergeFields = [], $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false) {
 		$formName = $this->form['name'] ? trim($this->form['name']) : '[blank name]';
 		$subject = 'New form submission for: ' . $formName;
 		$addressFrom = ze::setting('email_address_from');
 		$nameFrom = ze::setting('email_name_from');
 		
-		$body = $startLine;
+		$body = '';
 		
 		if ($this->form['send_email_to_admin'] && !$this->form['admin_email_use_template']) {
 			if (!empty($mergeFields['breadcrumbs'])) {
@@ -3551,7 +3576,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if (!$url) {
 			$url = ze\link::absolute();
 		}
+
+		if ($makeURLsNotClickable) {
+			$body = ze\escape::makeURLsNotClickable($body);
+		}
+		
+		//Only add the start line once the links in the body have been made non-clickable.
+		$body = $startLine . $body;
+		
 		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
+		
 		zenario_email_template_manager::putBodyInTemplate($body);
 		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
 	}
@@ -4606,7 +4640,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$fieldIdLink[$oldFieldId] = $newFieldId;
 				
 				if ($formCRMIntegrationModuleRunning) {
-					if (!empty($data['crm_fields'])) {
+					if (!empty($data['crm_fields'][$oldFieldId])) {
 						$data['crm_fields'][$oldFieldId]['form_field_id'] = $newFieldId;
 						ze\row::insert(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'crm_fields', $data['crm_fields'][$oldFieldId]);
 					}

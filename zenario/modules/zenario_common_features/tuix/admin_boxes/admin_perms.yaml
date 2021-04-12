@@ -296,7 +296,7 @@ zenario_admin:
                             label: Manage datasets
                             label_class: zfab_scary_option
                         _PRIV_PROTECT_UNPROTECT_DATASET_FIELD:
-                            #parent: _PRIV_MANAGE_DATASET
+                            parent: _PRIV_MANAGE_DATASET
                             label: Protect / unprotect dataset fields
                             label_class: zfab_scary_option
                         _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS:

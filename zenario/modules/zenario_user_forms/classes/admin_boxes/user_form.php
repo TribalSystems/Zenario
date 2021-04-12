@@ -59,6 +59,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$fields['data/no_duplicate_submissions']['hidden'] = true;
 			$fields['data/duplicate_submission_message']['hidden'] = true;
 			$fields['data/add_logged_in_user_to_group']['hidden'] = true;
+			
 		}
 		$fields['data/add_user_to_group']['values'] = 
 		$fields['data/add_logged_in_user_to_group']['values'] = 
@@ -341,6 +342,9 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				$box['tabs']['details']['notices']['usage']['type'] = 'warning';
 			}
 			
+			$values['data/make_urls_non_clickable_user'] = $record['make_urls_non_clickable_user'];
+			$values['data/make_urls_non_clickable_admin'] = $record['make_urls_non_clickable_admin'];
+			
 		} else {
 			unset($box['tabs']['translations']);
 			$box['title'] = ze\admin::phrase('Creating a Form');
@@ -379,7 +383,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$fields['details/type']['snippet']['label'] = zenario_user_forms::getFormTypeEnglish($box['key']['type']);
 		
 		//Get consent fields
-		if(!empty($box['key']['id'])){
+		if (!empty($box['key']['id'])) {
 		    $formId = $box['key']['id'];
             $consentFields = [];
             $sql = "select f.id, f.name, df.dataset_id 
@@ -461,7 +465,9 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		}
 		
-		$box['tabs']['translations']['hidden'] = $values['details/translate_text'];
+		if (isset($box['tabs']['translations'])) {
+			$box['tabs']['translations']['hidden'] = $values['details/translate_text'];
+		}
 		
 		$fields['anti_spam/honeypot_label']['hidden'] = !$values['anti_spam/use_honeypot'];
 		
@@ -863,6 +869,8 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$record['send_email_to_admin_condition_field'] = null;
 		}
 		
+		$record['make_urls_non_clickable_user'] = (($values['send_email_to_user'] && $values['make_urls_non_clickable_user']) ? true : false);
+		$record['make_urls_non_clickable_admin'] = (($values['send_email_to_admin'] && $values['make_urls_non_clickable_admin']) ? true : false);
 		
 		if ($id = $box['key']['id']) {
 			ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $record, ['id' => $id]);

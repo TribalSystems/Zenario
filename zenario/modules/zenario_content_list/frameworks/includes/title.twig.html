@@ -1,0 +1,93 @@
+{% if Show_Item_Title %}
+	{% if Aws_Link and item.s3_File_Id %}
+		<{{Item_Title_Tags}}
+			class="
+				content_list_title
+				{{item.Content_Type|e}}
+				{% if item.Disabled %}
+					disabled_link
+				{% endif %}
+			"
+			{% if Show_Permalink and item.Local_File_Id %}
+				{% set itemElId = containerId ~ item.cID ~ '_' ~ item.cType %}
+				onmouseover="
+					if (window.$) $('#copyLinkButton_{{itemElId}}').show().css('display', 'inline-block');
+				"
+				onmouseout="
+					if (window.$) $('#copyLinkButton_{{itemElId}}').hide();
+				"
+			{% endif %}
+		>
+			<span class="link_title">{{item.Title|e}}</span>
+			
+			{% if Show_Permalink and item.Local_File_Id %}
+				{% include this.frameworkBaseDir() ~ 'includes/permalink.twig.html' %}
+			{% endif %}
+		</{{Item_Title_Tags}}>
+		
+		<div class="link_downloads">
+			{% if item.Local_File_Id %}
+				<a {{item.Link}}{{item.Target_Blank}}>{{Local_File_Link_Text}}</a>
+				
+				{% if Show_Format_And_Size %}
+					({{item.Local_File_Size}}) | 
+				{% endif %}
+			{% endif %}
+			{% if item.s3_File_Id %}
+				<a href="{{item.S3_Anchor_Link}}" download>{{S3_File_Link_Text}}</a>
+				
+				{% if Show_Format_And_Size %}
+					({{item.S3_File_Size}})
+				{% endif %}
+			{% endif %}
+		</div>
+	{% else %}
+		<{{Item_Title_Tags}}
+			class="
+				content_list_title
+				{{item.Content_Type|e}}
+				{% if item.Disabled %}
+					disabled_link
+				{% endif %}
+			"
+			{% if Show_Permalink %}
+				{% set itemElId = containerId ~ item.cID ~ '_' ~ item.cType %}
+				onmouseover="
+					if (window.$) $('#copyLinkButton_{{itemElId}}').show().css('display', 'inline-block');
+				"
+				onmouseout="
+					if (window.$) $('#copyLinkButton_{{itemElId}}').hide();
+				"
+			{% endif %}
+		>
+			{% if LINKS_IN_INCLUDES %}
+				<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
+			{% else %}
+				{{item.Title|e}}
+			{% endif %}
+			
+			{% if Show_File_Size and item.Local_File_Size %}
+				({{item.Local_File_Size}})
+			{% endif %}
+			
+			{% if Show_Permalink %}
+				{% include this.frameworkBaseDir() ~ 'includes/permalink.twig.html' %}
+			{% endif %}
+			
+			{% if item.Language %}
+				<span>({{item.Language|e}})</span>
+			{% endif %}
+		</{{Item_Title_Tags}}>
+	{% endif %}
+{% endif %}
+{% if Show_Author_Image %}
+	<div class="content_list_author_image">
+		<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}" width="{{item.Author_Image_Width|e}}" height="{{item.Author_Image_Height|e}}"/>
+	</div>
+{% endif %}
+{% if Show_Author %}
+	<p class="content_list_author">{{item.Author|e}}</p>
+{% endif %}
+{% if Show_Date %}
+	<p class="content_list_date">{{item.Date|e}}</p>
+{% endif %}

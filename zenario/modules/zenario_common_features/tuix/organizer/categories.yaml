@@ -6,6 +6,7 @@ zenario__content:
             title: Content item categories
             view_mode: list
             panel_type: multi_line_list
+            css_class: two_line_list_panel
             use_tall_rows: true
             disable_grid_view: Yes
             no_items_message: No categories found.

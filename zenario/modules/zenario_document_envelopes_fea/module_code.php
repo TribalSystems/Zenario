@@ -110,6 +110,9 @@ class zenario_document_envelopes_fea extends zenario_abstract_fea {
 	
 	public static function deleteDocumentsInEnvelope($envelopeId = false, $documentIds = '') {
 		if ($envelopeId) {
+			$envelopeDetails = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', true, ['id' => $envelopeId]);
+			$clearEnvelopeThumbnailId = false;
+			
 			if ($documentIds) {
 				//If document IDs were passed, only delete these...
 				$documentIds = explode(',', $documentIds);
@@ -155,6 +158,15 @@ class zenario_document_envelopes_fea extends zenario_abstract_fea {
 						}
 						ze\row::delete('files', ['id' => $fileId, 'usage' => 'document_in_envelope']);
 					}
+
+					//Check if the file is the envelope thumbnail. If it is, set the envelope thumbnail to 0.
+					if ($fileId == $envelopeDetails['thumbnail_id']) {
+						$clearEnvelopeThumbnailId = true;
+					}
+				}
+				
+				if ($clearEnvelopeThumbnailId) {
+					ze\row::set(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', ['thumbnail_id' => 0], ['id' => $envelopeId]);
 				}
 				
 				return true;
@@ -180,6 +192,47 @@ class zenario_document_envelopes_fea extends zenario_abstract_fea {
 				)
 				WHERE id = '. (int)$envelopeId;
 			ze\sql::update($sql);
+		} else {
+			return false;
+		}
+	}
+	
+	public static function pickNewEnvelopeThumbnailIfNeededAndPossible($envelopeId = false) {
+		if ($envelopeId) {
+			$envelopeDetails = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', true, ['id' => $envelopeId]);
+			if ($envelopeDetails['thumbnail_id'] && ze\row::exists('files', ['id' => $envelopeDetails['thumbnail_id']])) {
+				return false;
+			} else {
+				$fileIds = [];
+				$fileIdsQuery = ze\row::query(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'documents_in_envelope', 'file_id', ['envelope_id' => $envelopeId]);
+				while ($fileId = ze\sql::fetchValue($fileIdsQuery)) {
+					$documentFilename = ze\row::get('files', 'filename', ['id' => $fileId]);
+					if ($documentFilename) {
+						$parts = explode('.', $documentFilename);
+
+						$fileFormat = $parts[count($parts) - 1];
+						$fileMimeType = ze\file::mimeType($fileFormat);
+						$fileIsImageOrSVG = ze\file::isImageOrSVG($fileMimeType);
+
+						if ($fileFormat == 'pdf' || $fileIsImageOrSVG) {
+							if ($fileFormat == 'pdf') {
+								$thumbnailFilePath = rawurldecode(CMS_ROOT . ze\file::link($fileId));
+								if ($thumbnailFilePath = ze\file::createPpdfFirstPageScreenshotPng($thumbnailFilePath)) {
+									$thumbnailBaseName = basename($thumbnailFilePath) . '.png';
+									$thumbnailFileId = ze\file::addToDatabase('document_in_envelope_thumbnail', $thumbnailFilePath, $thumbnailBaseName, true, true);
+								
+									$envelopeNewThumbnailId = $thumbnailFileId;
+								}
+							} else {
+								$envelopeNewThumbnailId = $fileId;
+							}
+
+							ze\row::set(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes', ['thumbnail_id' => $envelopeNewThumbnailId], ['id' => $envelopeId]);
+							return true;
+						}
+					}
+				}
+			}
 		} else {
 			return false;
 		}

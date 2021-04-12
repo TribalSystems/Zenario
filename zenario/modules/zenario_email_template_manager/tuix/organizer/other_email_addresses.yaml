@@ -1,0 +1,39 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__email_template_manager:
+    panels:
+        other_email_addresses:
+            #This panel has no content, but other modules can extend it to inject their rows.
+            #Each module that is supposed to extend this panel needs to have a yaml file with a dummy button,
+            #and populate the items in the fillOrganizerPanel method.
+            #The first module to extend this panel is Zenario User Timers.
+            title: Timer plans
+            no_items_message: There are no timer plans to display
+            panel_type: multi_line_list
+            css_class: two_line_list_panel
+            use_tall_rows: true
+            columns:
+                id:
+                    title: ID
+                    format: id
+                    align_right: true
+                    hidden: true
+                    width: xxsmall
+                name:
+                    title: Instance name
+                    always_show: true
+                    searchable: true
+                    width: xlarge
+                    html: true
+                type:
+                    title: Type
+                    parent: name
+                    always_show: true
+                email_address_value:
+                    title: Value
+                    always_show: true
+                    searchable: true
+                    width: xlarge
+            default_sort_column: name
+            item:
+                css_class: setting

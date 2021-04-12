@@ -618,6 +618,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					
 					$box['tabs']['all_css_tab']['label'] = ze\admin::phrase('CSS (all [[pluginsOfThisType]])', $module);
 				} else {
+					$box['tabs']['cant_determine_which_skin']['hidden'] = false;
 					$box['tabs']['this_css_tab']['hidden'] = true;
 					$box['tabs']['all_css_tab']['hidden'] = true;
 				}
@@ -1163,7 +1164,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				}
 				
 				//Set the Nested Plugin's name
-				if ($box['key']['eggId']) {
+				if ($box['key']['instanceId']){
 					//For Nested Plugins, check to see if there is a Plugin Setting with the <use_value_for_plugin_name> tag set,
 					//which should be the name of the Nested Plugin
 					//Empty or Hidden fields don't count; otherwise the value of <use_value_for_plugin_name> indicates which field has priority.
@@ -1218,7 +1219,18 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					} else {
 						$eggName = ze\module::displayName($box['key']['moduleId']);
 					}
-	
+					$nestedpk = [
+						'instance_id' => $box['key']['instanceId'],
+						'egg_id' => $box['key']['eggId'],
+						'name' => 'nested_title'
+						];
+					$nestedvalue['instance_id'] = $box['key']['instanceId'];
+					$nestedvalue['name'] = 'nested_title';
+					$nestedvalue['egg_id'] = $box['key']['eggId'];
+					$nestedvalue['value'] = $eggName;
+					ze\row::set('plugin_settings', $nestedvalue, $nestedpk);
+				}
+				if($box['key']['eggId']) {	
 					ze\row::update('nested_plugins', ['name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')], $box['key']['eggId']);
 				}
 
@@ -1235,7 +1247,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				}
 				
 				//Update the request vars for this slide
-				ze\pluginAdm::setSlideRequestVars($box['key']['instanceId'], $box['key']['slideNum']);
+				ze\pluginAdm::setSlideRequestVars($box['key']['instanceId']);
 				
 				
 			//Experimenting with having plugin settings and frameworks visible on the same tab again

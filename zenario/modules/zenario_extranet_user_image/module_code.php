@@ -41,9 +41,9 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 			
 			ze\fileAdm::exitIfUploadError(true, false, true, $fileVar = 'extranet_upload_image');
 			
-			if (ze::setting('max_content_image_filesize') < $_FILES['extranet_upload_image']['size']) {
+			if (ze\file::fileSizeBasedOnUnit(ze::setting('max_content_image_filesize'),ze::setting('max_content_image_filesize_unit')) < $_FILES['extranet_upload_image']['size']) {
 				$this->sections['Errors'] = true;
-				$this->sections['Error'] = ['Error' => $this->phrase('Your image must be smaller than [[bytes]] bytes', ['bytes'=>setting('max_content_image_filesize')])];
+				$this->sections['Error'] = ['Error' => $this->phrase('Your image must be smaller than [[filesize]] [[unit]]', ['filesize'=>setting('max_content_image_filesize'), 'unit'=>setting('max_content_image_filesize_unit')])];
 			} elseif (empty($_FILES['extranet_upload_image']) || empty($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = ['Error' => $this->phrase('_ERROR_NO_IMAGE_SELECTED')];

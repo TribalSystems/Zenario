@@ -203,6 +203,14 @@ methods.returnIsMultiLineList = function() {
 	return false;
 };
 
+methods.returnPanelClassName = function() {
+	var path = zenarioO.path.split('/'),
+		panelClassName = thus.tuix.css_class || '',
+		className = path.join('__') + ' organizer_panel__' + path.pop() + ' ' + panelClassName;
+	
+	return className;
+};
+
 //Function to search and sort the items on the client side.
 //You should return an array of matching ids in the correct order.
 methods.sortAndSearchItems = function() {
@@ -219,6 +227,7 @@ methods.searchItems = function(items, searchTerm) {
 	
 	if (defined(searchTerm)) {
 		var lowerCaseSearchTerm = (searchTerm + '').toLowerCase(),
+			matches, value, numeric,
 			itemNo, id, c, column;
 		
 		for (itemNo = items.length - 1; itemNo >= 0; --itemNo) {

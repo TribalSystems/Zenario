@@ -30,46 +30,68 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'profanity_filter_text'], $refinerId);
+		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'profanity_filter_text', 'period_to_delete_response_headers'], $refinerId);
 		$panel['title'] = ze\admin::phrase('Responses for form "[[name]]"', $form);
 
         //Information to view Data Protection settings
-		$accessLogDuration = '';
-			switch (ze::setting('period_to_delete_the_form_response_log_headers')) {
-				case 'never_delete':
-					$accessLogDuration = ze\admin::phrase('Form responses are stored forever.');
-					break;
-				case 0:
-					$accessLogDuration = ze\admin::phrase('Form responses are not stored.');
-					break;
-				case 1:
-					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 day.');
-					break;
-				case 7:
-					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 week.');
-					break;
-				case 30:
-					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 month.');
-					break;
-				case 90:
-					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 3 months.');
-					break;
-				case 365:
-					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 1 year.');
-					break;
-				case 730:
-					$accessLogDuration = ze\admin::phrase('Form responses are deleted after 2 years.');
-					break;
-				
-			}
-			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
-			$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View Data Protection settings</a>";
-			$panel['notice']['show'] = true;
-			$panel['notice']['message'] = $accessLogDuration.".";
-			$panel['notice']['html'] = true;
+		$siteSetting = ze::setting('period_to_delete_the_form_response_log_headers');
 
-		//
+		$phrase = '';
 		
+		//Check if the form responses follow the site setting.
+		if (!$form['period_to_delete_response_headers'] && !is_numeric($form['period_to_delete_response_headers'])) {
+			//"Use site-wide setting" is selected.
+			$setting = $siteSetting;
+		} else {
+			//Individual form setting overrides the site setting.
+			$setting = $form['period_to_delete_response_headers'];
+		}
+
+		switch ($setting) {
+			case 'never_delete':
+				$phrase .= 'Form responses are stored forever';
+				break;
+			case 0:
+				$phrase .= 'Form responses are not stored';
+				break;
+			case 1:
+				$phrase .= 'Form responses are deleted after 1 day';
+				break;
+			case 7:
+				$phrase .= 'Form responses are deleted after 1 week';
+				break;
+			case 30:
+				$phrase .= 'Form responses are deleted after 1 month';
+				break;
+			case 90:
+				$phrase .= 'Form responses are deleted after 3 months';
+				break;
+			case 365:
+				$phrase .= 'Form responses are deleted after 1 year';
+				break;
+			case 730:
+				$phrase .= 'Form responses are deleted after 2 years';
+				break;
+		}
+
+		//If this form's individual setting for responses is different to the site setting, inform the admin.
+		//Please note: this will happen even in a silly situation
+		//where the selected form individual setting is identical to the site setting.
+		if ($form['period_to_delete_response_headers'] || is_numeric($form['period_to_delete_response_headers'])) {
+			$phrase .= "; this overrides the global settings";
+		}
+		$phrase .= ".";
+
+		$href = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+		$linkStart = "<a target='_blank' href='" . $href . "'>";
+		$linkEnd = "</a>";
+
+		$phrase .= " [[link_start]]View Data Protection settings[[link_end]].";
+		
+		$panel['notice']['show'] = true;
+		$panel['notice']['message'] = ze\admin::phrase($phrase, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+		$panel['notice']['html'] = true;
+
 		if (!ze::setting('zenario_user_forms_set_profanity_filter') || !$form['profanity_filter_text']) {
 			unset($panel['columns']['blocked_by_profanity_filter']);
 			unset($panel['columns']['profanity_filter_score']);

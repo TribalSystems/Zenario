@@ -52,12 +52,11 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 				FROM ' . DB_PREFIX . 'languages';
 			$result = ze\sql::select($sql);
 			
-			$allLanguages = [];
+			$this->data['Active_languages'] = [];
 			while ($row = ze\sql::fetchValue($result)) {
-				$allLanguages[] = $row;
+				$this->data['Active_languages'][] = $row;
 			}
 			
-			$this->data['Active_languages'] = implode(',', $allLanguages);
 			$this->data['Default_language'] = ze::setting('default_language');
 			
 			$this->data['cID'] = ze::$cID;
@@ -65,17 +64,23 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 			
 			//Get an array of active countries.
 			$sql = '
-				SELECT id
+				SELECT id, english_name
 				FROM ' . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 				WHERE active = 1';
 			$result = ze\sql::select($sql);
 			
-			$activeCountries = [];
-			while ($row = ze\sql::fetchValue($result)) {
-				$activeCountries[] = $row;
+			$this->data['Active_countries'] = [];
+			while ($row = ze\sql::fetchAssoc($result)) {
+				$this->data['Active_countries'][$row['id']] = $row['english_name'];
 			}
 			
-			$this->data['Active_countries'] = implode(',', $activeCountries);
+			//This module allows detecting the user's country,
+			//suggesting it, and asking the user if it's correct.
+			//Please note that this variable is usable in custom frameworks,
+			//but the standard framework does not make use of it.
+			if (ze\module::inc('zenario_geoip_lookup')) {
+				$this->data['Detected_country'] = zenario_geoip_lookup::getCountryCodeForVisitorByIP();
+			}
 			
 			$this->callScript('zenario_country_language_picker','disablePageScrolling');
 			

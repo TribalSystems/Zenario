@@ -36,10 +36,15 @@ class zenario_user_forms__admin_boxes__plugin_settings extends ze\moduleBaseClas
 		
 		$formId = $values['first_tab/user_form'];
 		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['type', 'allow_partial_completion', 'partial_completion_mode'], $formId);
-		$fields['first_tab/partial_completion_button_position']['hidden'] = !($form && $form['allow_partial_completion'] && $form['partial_completion_mode'] == 'button' || $form['partial_completion_mode'] == 'auto_and_button');
-		
-		//Only show the option to hide extranet links to registration forms
-		$fields['first_tab/hide_extranet_links']['hidden'] = $form['type'] != 'registration';
+
+		if (is_array($form)) {
+			$fields['first_tab/partial_completion_button_position']['hidden'] = !($form && $form['allow_partial_completion'] && $form['partial_completion_mode'] == 'button' || $form['partial_completion_mode'] == 'auto_and_button');
+			
+			//Only show the option to hide extranet links to registration forms
+			$fields['first_tab/hide_extranet_links']['hidden'] = $form['type'] != 'registration';
+		} else {
+			$fields['first_tab/partial_completion_button_position']['hidden'] = $fields['first_tab/hide_extranet_links']['hidden'] = true;
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

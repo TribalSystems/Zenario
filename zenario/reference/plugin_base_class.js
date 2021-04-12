@@ -230,7 +230,7 @@ zenario.lib(function(
 		//Returns the slot name that this Plugin is in
 		//Warning: If this Plugin is in more than one slot on a page then it's not defined which one be returned
 		this.slotName = function() {
-			foreach (this.slots as i) {
+			foreach (this.slots as var i) {
 				return this.slots[i].slotName;
 			}
 			return false;

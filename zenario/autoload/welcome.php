@@ -1587,7 +1587,7 @@ class welcome {
 							$addressFrom = false,
 							$nameFrom = $source['email_templates']['installed_cms']['from'],
 							false, false, false,
-							$isHTML = false);
+							$isHTML = true);
 					
 					
 						//Apply database updates
@@ -1751,12 +1751,9 @@ class welcome {
 			\ze\tuix::applyValidation($tags['tabs']['login'], true);
 			
 			if (!$values['login/username']) {
-				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator username.');
+				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator username or registered email.');
 			}
-			if (preg_match("/[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+.[a-zA-Z]{2,4}/", $values['login/username'])){
-				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Sorry, the admin username looks like an email address. Please enter your administrator username.');
-			}
-		
+			
 			if (!$values['login/password']) {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator password.');
 			}
@@ -1768,7 +1765,7 @@ class welcome {
 			if (empty($tags['tabs']['login']['errors'])) {
 				$details = [];
 			
-				$adminIdL = \ze\admin::checkPassword($values['login/username'], $details, $values['login/password'], $checkViaEmail = false);
+				$adminIdL = \ze\admin::checkPassword($values['login/username'], $details, $values['login/password'], $checkViaEmail = false, $checkBoth = true);
 			
 				if (!$adminIdL || \ze::isError($adminIdL)) {
 					$tags['tabs']['login']['errors']['details_wrong'] = \ze\admin::phrase('_ERROR_ADMIN_LOGIN_USERNAME');
@@ -3452,44 +3449,33 @@ class welcome {
 				$show_warning = true;
 				$i = 0;
 				while ($row = \ze\sql::fetchAssoc($result)) {
-					
-					if (++$i > 5) {
-						$row['link'] = 'zenario/admin/organizer.php#zenario__content/panels/content/refiners/work_in_progress////';
-						
-						$fields['0/content_more_unpublished']['hidden'] = false;
-						$fields['0/content_more_unpublished']['row_class'] = 'warning';
-						$fields['0/content_more_unpublished']['snippet']['html'] =
-							\ze\admin::nPhrase('[[count]] other page is in draft mode. <a target="blank" href="[[link]]">View...</a>',
-								'[[count]] other pages are in draft mode. <a target="blank" href="[[link]]">View...</a>',
-								abs($rowCount - 5), $row);
-					
+					++$i;
+					$row['tag'] = htmlspecialchars(\ze\content::formatTag($row['id'], $row['type'], $row['alias'], $row['language_id']));
+					$row['link'] = htmlspecialchars(\ze\link::toItem($row['id'], $row['type'], true));
+					$row['class'] = 'organizer_item_image '. \ze\contentAdm::getItemIconClass($row['id'], $row['type'], true, $row['status']);
+		
+					//If a content item has ever been edited, show last modified date and admin who modified it, but not created date...
+					if ($row['last_modified_datetime']) {
+						$item['unpublished_content_info'] =
+							\ze\admin::phrase('Last edit [[time]] by [[admin]].', [
+								'time' => \ze\admin::relativeDate($row['last_modified_datetime']),
+								'admin' => \ze\admin::formatName($row['last_author'])
+							]);
 					} else {
-						$row['tag'] = htmlspecialchars(\ze\content::formatTag($row['id'], $row['type'], $row['alias'], $row['language_id']));
-						$row['link'] = htmlspecialchars(\ze\link::toItem($row['id'], $row['type'], true));
-						$row['class'] = 'organizer_item_image '. \ze\contentAdm::getItemIconClass($row['id'], $row['type'], true, $row['status']);
-			
-						//If a content item has ever been edited, show last modified date and admin who modified it, but not created date...
-						if ($row['last_modified_datetime']) {
-							$item['unpublished_content_info'] =
-								\ze\admin::phrase('Last edit [[time]] by [[admin]].', [
-									'time' => \ze\admin::relativeDate($row['last_modified_datetime']),
-									'admin' => \ze\admin::formatName($row['last_author'])
-								]);
-						} else {
-							//... otherwise, show created date and admin who created it.
-							$item['unpublished_content_info'] =
-								\ze\admin::phrase('Created [[time]] by [[admin]].', [
-									'time' => \ze\admin::relativeDate($row['created_datetime']),
-									'admin' => \ze\admin::formatName($row['creator'])
-								]);
-						}
-                
-						$specialPageUnpublishedMessage = (\ze\content::isSpecialPage($row['id'], $row['type'])) ? \ze\admin::phrase('<br />This page is a special page and it should be published.') : "";
-						$fields['0/content_unpublished_'. $i]['hidden'] = false;
-						$fields['0/content_unpublished_'. $i]['row_class'] = ''; //Don't display warning triangle icons for unpublished items anymore. Deleting this line will show a green tick icon.
-						$fields['0/content_unpublished_'. $i]['snippet']['html'] =
-							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode.', $row) . $specialPageUnpublishedMessage.'<br/>'.$item['unpublished_content_info'];
+						//... otherwise, show created date and admin who created it.
+						$item['unpublished_content_info'] =
+							\ze\admin::phrase('Created [[time]] by [[admin]].', [
+								'time' => \ze\admin::relativeDate($row['created_datetime']),
+								'admin' => \ze\admin::formatName($row['creator'])
+							]);
 					}
+			
+					$specialPageUnpublishedMessage = (\ze\content::isSpecialPage($row['id'], $row['type'])) ? \ze\admin::phrase('<br />This page is a special page and it should be published.') : "";
+					$fields['0/content_unpublished']['hidden'] = false;
+					$fields['0/content_unpublished']['row_class'] = 'content_unpublished_wrap'; //Don't display warning triangle icons for unpublished items anymore. Deleting this line will show a green tick icon.
+					$fields['0/content_unpublished']['snippet']['html'] .='<div id="row__content_unpublished_'. $i.'" style="" class=" zenario_ab_row__content_unpublished_'. $i.'    zenario_row_for_snippet ">'.
+						\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode. ', $row) . $specialPageUnpublishedMessage.'<br/>'.$item['unpublished_content_info'].'</div>';
+				
 				}
 			}
 			

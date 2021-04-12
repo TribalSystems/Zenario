@@ -110,7 +110,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 							}
 						
 						} elseif ($path = ze\file::getPathOfUploadInCacheDir($values['file/file'])) {
-							if (ze::setting('content_max_filesize') < filesize($path)) {
+							if (ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit')) < filesize($path)) {
 								$box['tabs']['file']['errors'][] = ze\admin::phrase('This file is larger than the Maximum Content File Size as set in the Site Settings.');
 						
 							} elseif (!$this->isFileTypeAllowed($path)) {
@@ -172,7 +172,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 										'The [[file]] is not an MP3 file.',
 										['file' => htmlspecialchars($_FILES['Filedata']['name'])]);
 							
-							} elseif (ze::setting('content_max_filesize') < filesize($_FILES['Filedata']['tmp_name'])) {
+							} elseif (ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit')) < filesize($_FILES['Filedata']['tmp_name'])) {
 								echo
 									ze\admin::phrase(
 										'The [[file]] is larger than the Maximum Content File Size as set in the Site Settings.',

@@ -48,6 +48,7 @@ zenario_edit_document_envelope: &definition
                         select_phrase: Select image...
                     upload:
                         multi: false
+                        upload_phrase: 'Upload...'
                         accept: 'image/*'
                         extensions:
                             - .gif

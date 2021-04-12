@@ -312,8 +312,10 @@ class file {
 	
 			if ($deleteWhenDone) {
 				rename($location, $dir. $file['filename']);
+				\ze\cache::chmod($dir. $file['filename'], 0666);
 			} else {
 				copy($location, $dir. $file['filename']);
+				\ze\cache::chmod($dir. $file['filename'], 0666);
 			}
 	
 			$file['location'] = 'docstore';
@@ -423,6 +425,29 @@ class file {
 		
 			\ze\row::delete('files', $fileId);
 		}
+	}
+
+	public static function deleteMediaContentItemFileIfUnused($cID, $cType, $fileId) {
+		if ($cID && $cType && $fileId) {
+			$tagId = $cType . '_' . $cID;
+			$sql = '
+				SELECT GROUP_CONCAT(ci.id) AS content_items
+				FROM ' . DB_PREFIX . 'content_items ci
+				LEFT JOIN ' . DB_PREFIX . 'content_item_versions civ
+					ON civ.tag_id = ci.tag_id
+				WHERE civ.file_id = ' . (int) $fileId . '
+				AND ci.tag_id <> "' . \ze\escape::sql($tagId) . '"
+				AND ci.status NOT IN ("deleted", "trashed", "hidden")';
+			$result = \ze\sql::select($sql);
+			$usage = \ze\sql::fetchValue($result);
+			
+			if (!$usage) {
+				\ze\file::delete($fileId);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	//Remove an image from the public/images/ directory
@@ -1003,6 +1028,7 @@ class file {
 		}
 	
 		$imageNeedsToBeResized = $imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight;
+		$pregeneratedThumbnailUsed = false;
 	
 	
 		//Check the privacy settings for the image
@@ -1127,7 +1153,8 @@ class file {
 					$imageWidth = $image[$c[1]];
 					$imageHeight = $image[$c[2]];
 					$image['data'] = \ze\row::get('files', $c[0], $fileId);
-				
+					$pregeneratedThumbnailUsed = true;
+					
 					//Repeat the call to \ze\file::resizeImageByMode() to resize the thumbnail to the correct size again
 					\ze\file::resizeImageByMode(
 						$mode, $imageWidth, $imageHeight,
@@ -1150,12 +1177,16 @@ class file {
 					break;
 				}
 			}
-		
+			
+			if ($image['location'] == 'docstore') {
+				$pathDS = self::docstorePath($image['path']);
+			}
+			
 			if (empty($image['data'])) {
 				if ($image['location'] == 'db') {
 					$image['data'] = \ze\row::get('files', 'data', $fileId);
 			
-				} elseif ($pathDS = self::docstorePath($image['path'])) {
+				} elseif ($image['location'] == 'docstore' && $pathDS) {
 					$image['data'] = file_get_contents($pathDS);
 			
 				} else {
@@ -1168,12 +1199,21 @@ class file {
 			}
 			
 			//If $useCacheDir is set, attempt to store the image in the cache directory
-			if ($useCacheDir && $path
-			 && file_put_contents($filepath, $image['data'])) {
-				\ze\cache::chmod($filepath, 0666);
-			
-				//Try to optimise the image, if the libraries are installed
-				self::optimiseImage($filepath);
+			if ($useCacheDir && $path) {
+				if ($imageNeedsToBeResized || $pregeneratedThumbnailUsed || $image['location'] == 'db') {
+					file_put_contents($filepath, $image['data']);
+					\ze\cache::chmod($filepath, 0666);
+				
+					//Try to optimise the image, if the libraries are installed.
+					//Please note: private images will not be optimised, as they need to be re-generated periodically.
+					if ($privacy == 'public') {
+						self::optimiseImage($filepath);
+					}
+				} elseif ($image['location'] == 'docstore') {
+					if (!file_exists($filepath)) {
+						\ze\server::symlinkOrCopy($pathDS, $filepath);
+					}
+				}
 			
 				if ($internalFilePath) {
 					$url = $filepath;
@@ -1794,6 +1834,32 @@ class file {
 		}
 		return false;
 	}
+
+	public static function moveFileFromDBToDocstore(&$path, $fileId, $filename, $checksum) {
+		$location = self::docstorePath($fileId);
+
+		if (
+			is_dir($dir = \ze::setting('docstore_dir'). '/')
+			&& is_writable($dir)
+			&& (
+				(is_dir($dir = $dir. ($path = preg_replace('/\W/', '_', $filename). '_'. $checksum). '/'))
+				|| (mkdir($dir) && \ze\cache::chmod($dir, 0777))
+			)
+		) {
+	
+			if (file_exists($dir. $filename)) {
+				unlink($dir. $filename);
+			}
+	
+			copy($location, $dir. $filename);
+			\ze\cache::chmod($dir. $filename, 0666);
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public static function formatSizeUnits($bytes){
         if ($bytes >= 1073741824)
         {
@@ -1822,5 +1888,15 @@ class file {
 
         return $bytes;
 	}
-	
+	public static function fileSizeBasedOnUnit($filevalue, $units) {
+		$calculatedFilesize = $filevalue;
+		if ($units == 'GB') {
+			$calculatedFilesize = $filevalue * 1073741824;
+		} elseif ($units == 'MB') {
+			$calculatedFilesize = $filevalue * 1048576;
+		} elseif ($units == 'KB') {
+			$calculatedFilesize = $filevalue * 1024;
+		}
+		return $calculatedFilesize;
+	}
 }

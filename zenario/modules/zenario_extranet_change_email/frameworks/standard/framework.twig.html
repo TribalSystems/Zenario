@@ -30,6 +30,16 @@
                     {{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_field"})}}
                 </div>
                 {{this.frameworkField({'type': "hidden", 'name': "action", 'value': "prepare_email_change"})}}
+                
+                {% if Captcha %}
+                    <div class="extranet_field">
+                        <div class="captcha">
+                        {{"Please help us combat form submissions by spam devices:"|trans}}
+                        {{Captcha}}
+                        </div>
+                    </div>
+                {% endif %}
+                
                 <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_email" class="extranet_submit i" value="{{'_CHANGE_EMAIL'|trans}}" /></div></div>
             </div>
         {% endif %}

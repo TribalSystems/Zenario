@@ -49,7 +49,7 @@ class zenario_forum_list extends zenario_content_list {
 	}
 	
 	//Overwite certain functionality from zenario_content_list
-	function lookForContent() {
+	function lookForContent($paginationRequired = true) {
 		
 		$this->showScreennames = (bool) ze::setting('user_use_screen_name');
 		

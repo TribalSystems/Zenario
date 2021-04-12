@@ -175,9 +175,16 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 				self::sendNewsletterToAdmins($ids, $values['send/admin_options']);
 				self::sendNewsletter($ids, true);
 				
+				$linkHref = ze\link::absolute() .'zenario/admin/organizer.php#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/archive//'. (int) $ids. '//';
+				$linkOnclick = "zenarioA.closeFloatingBox();";
+
+				$link = '<a href="' . $linkHref . '" onclick="' . $linkOnclick . '">';
+				$link .= ze\admin::phrase('View Sent Newsletter in Archive.');
+				$link .= '</a>';
+				
 				$msg = '<!--Message_Type:Success-->';
 				$msg .= '<p>'. ze\admin::phrase('Newsletter Sent.'). '</p>';
-				$msg .= '<p><a href="#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/archive//'. (int) $ids. '//" onclick="zenarioA.closeFloatingBox();">'. ze\admin::phrase('View Sent Newsletter in Archive.'). '</a></p>';
+				$msg .= '<p>' . $link . '</p>';
 				
 				ze\tuix::closeWithFlags(['close_with_message' => $msg]);
 				exit;

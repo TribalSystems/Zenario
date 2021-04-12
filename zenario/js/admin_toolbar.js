@@ -155,6 +155,19 @@ zenarioAT.clickTab = function(toolbar) {
 				$('body').addClass('zenario_slotWand_off').removeClass('zenario_slotWand_on');
 			}
 			
+			//If switching to edit mode, look for an editable plugin and scroll the admin's view to that plugin
+			if (newPageMode == 'edit' ) {
+				
+				var $vcp = $(".zenario_versionControlledPlugin");
+				
+				if ($vcp.length) {
+					zenario.scrollTop($vcp.offset().top - 150, 2000);
+					setTimeout(function() {
+						$('.zenario_admin_tooltip').hide();
+					}, 0);
+				}
+			}
+						
 			//Toggle the Grid on the item/layout tabs
 			if ((newPageMode == 'item' || newPageMode == 'layout') && zenarioA.showGridOn) {
 				zenarioAT.showGridOnOff(true);

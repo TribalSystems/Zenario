@@ -39,11 +39,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Have an optional parameter that lets us check by email and not username
-if ($checkViaEmail) {
+if ($checkBoth) {
+	$whereStatement = "(email = '". \ze\escape::sql($adminUsernameOrEmail). "' OR username = BINARY '". \ze\escape::sql($adminUsernameOrEmail). "')";
+} elseif ($checkViaEmail) {
 	$whereStatement = "email = '". \ze\escape::sql($adminUsernameOrEmail). "'";
 } else {
 	$whereStatement = "username = BINARY '". \ze\escape::sql($adminUsernameOrEmail). "'";
-}
+} 
+
 
 $passwordColumns = "
 	authtype,

@@ -18,10 +18,10 @@ plugin_settings:
                         
                     label: Images
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__content/panels/mic_image_library
+                        min_path: zenario__content/panels/mic_image_library
+                        max_path: zenario__content/panels/mic_image_library
+                        target_path: zenario__content/panels/mic_image_library
                         multiple_select: true
                         select_phrase: Select from Organizer...
                     format_onchange: false

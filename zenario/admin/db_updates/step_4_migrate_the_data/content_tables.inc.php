@@ -993,3 +993,316 @@ if (ze\dbAdm::needRevision(52200)) {
 	
 	ze\dbAdm::revision(52200);
 }
+
+//Starting with this release, all Multiple Image Container files will be stored in the docstore.
+//Their "usage" value will be "mic".
+//Any existing image that is used for other purposes (not just MIC plugins) will be duplicated with the new "usage" value,
+//and all plugins where it was used will instead use the new file.
+if (ze\dbAdm::needRevision(52205)) {
+	
+	$module = 'zenario_multiple_image_container';
+	if (ze\module::isRunning($module)) {
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => ze\escape::sql($module)]);
+
+		$imageIds = [];
+		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['image'])) {
+				foreach (explode(',', $instance['settings']['image']) as $imageId) {
+					$imageIds[] = $imageId;
+				}
+			}
+		}
+
+		if (!empty($imageIds)) {
+			//Remove duplicates
+			$imageIds = array_unique($imageIds);
+			$imageIds = implode(',', $imageIds);
+
+			$imageCount = 0;
+			$imagesMovedToDocstore = [];
+			$imagesDuplicatedAndMovedToDocstore = [];
+
+			//Check which of these images are stored in the DB, and move them to docstore.
+			$sql = '
+				SELECT id, filename
+				FROM ' . DB_PREFIX . 'files
+				WHERE id IN (' . ze\escape::in($imageIds) . ')
+				AND location = "db"';
+			
+			$result = ze\sql::select($sql);
+			while ($file = ze\sql::fetchAssoc($result)) {
+				$usage = [];
+
+				$usageSql = "
+					SELECT foreign_key_to, is_nest, is_slideshow, GROUP_CONCAT(DISTINCT foreign_key_id, foreign_key_char) AS concat
+					FROM ". DB_PREFIX. "inline_images
+					WHERE image_id = ". (int) $file['id']. "
+					AND in_use = 1
+					AND archived = 0
+					AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template') 
+					GROUP BY foreign_key_to, is_nest, is_slideshow";
+				
+				$usageResults = ze\sql::fetchAssocs($usageSql);
+				
+				foreach ($usageResults as $usageResult) {
+					$keyTo = $usageResult['foreign_key_to'];
+				
+					if ($keyTo == 'content') {
+						$usage['content_items'] = \ze\sql::fetchValue("
+							SELECT GROUP_CONCAT(foreign_key_char, '_', foreign_key_id)
+							FROM ". DB_PREFIX. "inline_images
+							WHERE image_id = ". (int) $file['id']. "
+							AND archived = 0
+							AND foreign_key_to = 'content'
+						");
+					
+					} elseif ($keyTo == 'library_plugin') {
+						if ($usageResult['is_slideshow']) {
+							$usage['slideshows'] = $usageResult['concat'];
+							
+						} elseif ($usageResult['is_nest']) {
+							$usage['nests'] = $usageResult['concat'];
+						
+						} else {
+							$usage['plugins'] = $usageResult['concat'];
+						}
+						
+					} else {
+						$usage[$keyTo. 's'] = $usageResult['concat'];
+					}
+				}
+
+				$MICPluginsAndSettings = $nonMICPluginsAndSettings = [];
+				if (!empty($usage['plugins'])) {
+					//Make a list of plugin types in case this image needs to be duplicated later.
+
+					foreach (explode(',', $usage['plugins']) as $plugin) {
+						$pluginSql = '
+							SELECT pi.id, ps.value, m.class_name
+							FROM ' . DB_PREFIX . 'plugin_instances pi
+							INNER JOIN ' . DB_PREFIX . 'modules m
+								ON pi.module_id = m.id
+							LEFT JOIN ' . DB_PREFIX . 'plugin_settings ps
+								ON ps.instance_id = pi.id
+							WHERE pi.id = ' . (int)$plugin . '
+							AND ps.name = "image"';
+						$pluginResult = ze\sql::fetchAssoc($pluginSql);
+
+						if ($pluginResult) {
+							if ($pluginResult['class_name'] == 'zenario_multiple_image_container') {
+								$MICPluginsAndSettings[$pluginResult['id']] = ['value' => $pluginResult['value']];
+							} else {
+								$nonMICPluginsAndSettings[$pluginResult['id']] = ['value' => $pluginResult['value']];
+							}
+						}
+					}
+				}
+
+				if (!empty($usage['nests'])) {
+					//Make a list of plugin types in case this image needs to be duplicated later.
+
+					foreach (explode(',', $usage['nests']) as $nest) {
+						$pluginSql = '
+							SELECT np.instance_id AS id, np.id AS egg_id, ps.value, m.class_name
+							FROM ' . DB_PREFIX . 'nested_plugins np
+							INNER JOIN ' . DB_PREFIX . 'modules m
+								ON np.module_id = m.id
+							LEFT JOIN ' . DB_PREFIX . 'plugin_settings ps
+								ON ps.instance_id = np.instance_id
+								AND ps.egg_id = np.id
+							WHERE np.instance_id = ' . (int)$nest . '
+							AND ps.name = "image"';
+						$pluginResult = ze\sql::fetchAssoc($pluginSql);
+
+						if ($pluginResult) {
+							if ($pluginResult['class_name'] == 'zenario_multiple_image_container') {
+								$MICPluginsAndSettings[$pluginResult['egg_id']] = ['value' => $pluginResult['value'], 'nest_id' => $pluginResult['id']];
+							} else {
+								$nonMICPluginsAndSettings[$pluginResult['egg_id']] = ['value' => $pluginResult['value'], 'nest_id' => $pluginResult['id']];
+							}
+						}
+					}
+				}
+
+				if (!empty($usage['slideshows']) || !empty($usage['content_items']) || count($nonMICPluginsAndSettings) > 0) {
+					//If the image is used by anything else other than just MIC plugins, then duplicate the file with new usage value,
+					//update any MIC plugin settings to use the new file ID instead,
+					//and create the correct entry in the "inline_images" table.
+					//Also move the file to docstore.
+					$oldFileInfo = ze\row::get('files', ['filename', 'short_checksum'], ['id' => $file['id']]);
+					$newFileId = ze\file::copyInDatabase('mic', $file['id'], false, true, $addToDocstoreDirIfPossible = true);
+
+					foreach ($MICPluginsAndSettings as $pluginId => $plugin) {
+						$oldImageSettings = $plugin['value'];
+						
+						$newImageSettingsArray = [];
+						$oldImageSettingsArray = explode(',', $oldImageSettings);
+						foreach ($oldImageSettingsArray as $entry) {
+							if ($entry == $file['id']) {
+								$newImageSettingsArray[] = $newFileId;
+							} else {
+								$newImageSettingsArray[] = $entry;
+							}
+						}
+						$newImageSettings = implode(',', $newImageSettingsArray);
+
+						$wherePluginSettings = [
+							'name' => 'image',
+							'foreign_key_to' => 'multiple_files',
+							'value' => ze\escape::in($oldImageSettings)
+						];
+
+						$whereInlineImages = [
+							'image_id' => (int)$file['id'],
+							'in_use' => 1,
+							'archived' => 0,
+							'is_slideshow' => 0,
+							'foreign_key_to' => 'library_plugin'
+						];
+
+						if (!empty($plugin['nest_id'])) {
+							$wherePluginSettings['instance_id'] = (int)$plugin['nest_id'];
+							$wherePluginSettings['egg_id'] = (int)$pluginId;
+
+							$whereInlineImages['foreign_key_id'] = (int)$plugin['nest_id'];
+							$whereInlineImages['is_nest'] = 1;
+						} else {
+							$whwherePluginSettingsere['instance_id'] = (int)$pluginId;
+
+							$whereInlineImages['foreign_key_id'] = (int)$pluginId;
+							$whereInlineImages['is_nest'] = 0;
+						}
+
+						ze\row::update('plugin_settings', ['value' => ze\escape::in($newImageSettings)], $wherePluginSettings);
+						ze\row::update('inline_images', ['image_id' => (int)$newFileId], $whereInlineImages);
+						$imageCount ++;
+						$imagesDuplicatedAndMovedToDocstore[$file['id']] = $oldFileInfo;
+						$imagesDuplicatedAndMovedToDocstore[$file['id']]['new_id'] = $newFileId;
+						$imagesDuplicatedAndMovedToDocstore[$file['id']]['docstore_path'] = ze\row::get('files', 'path', ['id' => $newFileId]);
+					}
+				} else {
+					//Alternatively, if the image is used only by MIC plugins, then just move it to docstore and update the "usage" column.
+					$fileInfo = ze\row::get('files', ['filename', 'checksum', 'short_checksum'], ['id' => $file['id']]);
+					
+					$pathDS = false;
+					ze\file::moveFileFromDBToDocstore($pathDS, $file['id'], $fileInfo['filename'], $fileInfo['checksum']);
+
+					ze\row::update('files', ['usage' => 'mic', 'data' => NULL, 'path' => $pathDS, 'location' => 'docstore'], ['id' => (int)$file['id']]);
+					$imageCount ++;
+					$imagesMovedToDocstore[$file['id']] = $fileInfo;
+					$imagesMovedToDocstore[$file['id']]['docstore_path'] = $pathDS;
+				}
+			}
+
+			if ($imageCount > 0) {
+				$subject = ze\admin::phrase('Zenario [[zenario_version]] update: images moved to docstore', ['zenario_version' => ZENARIO_VERSION]);
+				$addressToOverriddenBy = \ze::setting('debug_override_email_address');
+
+				$message = ze\admin::phrase('Number of images moved to docstore: [[count]]', ['count' => (int)$imageCount]);
+				$message .= "\n";
+
+				if (count($imagesMovedToDocstore) > 0) {
+					$message .= "\n";
+					$message .= ze\admin::phrase('Images moved to docstore:');
+					foreach ($imagesMovedToDocstore as $movedImageId => $movedImageInfo) {
+						$message .= "\n";
+						$message .= ze\admin::phrase(
+							'ID: [[id]], filename: [[filename]], short checksum: [[short_checksum]]',
+							['id' => $movedImageId, 'filename' => $movedImageInfo['filename'], 'short_checksum' => $movedImageInfo['short_checksum']]
+						);
+					}
+				}
+
+				if (count($imagesDuplicatedAndMovedToDocstore) > 0) {
+					$message .= "\n";
+					$message .= ze\admin::phrase('Images duplicated and moved to docstore:');
+					foreach ($imagesDuplicatedAndMovedToDocstore as $movedImageId => $movedImageInfo) {
+						$message .= "\n";
+						$message .= ze\admin::phrase(
+							'Previous ID: [[previous_id]], new ID: [[new_id]], filename: [[filename]], short checksum: [[short_checksum]], docstore path: [[docstore_path]]',
+							[
+								'previous_id' => $movedImageId,
+								'new_id' => $movedImageInfo['new_id'],
+								'filename' => $movedImageInfo['filename'],
+								'short_checksum' => $movedImageInfo['short_checksum'],
+								'docstore_path' => $movedImageInfo['docstore_path']
+							]
+						);
+					}
+				}
+
+				ze\server::sendEmail($subject, $message, EMAIL_ADDRESS_GLOBAL_SUPPORT, $addressToOverriddenBy);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(52205);
+}
+
+if (ze\dbAdm::needRevision(52219)) {
+	$module = 'assetwolf_2';
+	if (ze\module::isRunning($module)) {
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => ze\escape::sql($module)]);
+		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['enable.metadata']) && $instance['settings']['enable.metadata'] == 1) {
+				ze\row::update('plugin_settings', ['value' => 'show_all'], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'enable.metadata']);
+			}
+		}
+	}
+
+	ze\dbAdm::revision(52219);
+}
+//For Maximum Content File Size settings we need to update value from bytes to MB
+if (ze\dbAdm::needRevision(52220)) {
+	
+	$filesizevalueArr = ze\row::get('site_settings', ['value','default_value'], ['name' => "content_max_filesize"]);
+	$filesizeUnit = ze\row::get('site_settings', 'value', ['name' => "content_max_filesize_unit"]);
+	$unitInsert = false;
+	if($filesizevalueArr['value']){
+		if(!$filesizeUnit){
+			if  (ze\row::exists('site_settings', ['name' => "content_max_filesize_unit"])) {
+				$unitInsert = false;
+			} else {
+				$unitInsert = true;
+			}
+		} else {
+			$unitInsert = false;
+		}
+		$filesizevalue = $filesizevalueArr['value'];
+	}
+	else{
+		$filesizevalue = $filesizevalueArr['default_value'];
+		$unitInsert = true;
+	}
+	if ($filesizevalue && !$filesizeUnit) {
+		
+		if ($filesizevalue < 1000000) {
+			$fileValue = 1;
+			$fileUnit = 'MB';
+		} else {
+			$fileSizeConvertValue = ze\file::fileSizeConvert($filesizevalue);
+			$convertArray = explode(' ', $fileSizeConvertValue);
+			$fileValue = $convertArray[0];
+			$fileUnit = $convertArray[1];
+		}
+		if ($fileValue) {
+			ze\row::update('site_settings', ['value' => round($fileValue)], ['name' => "content_max_filesize"]);
+		}
+		if ($fileUnit) {
+			if($unitInsert){
+				ze\row::insert(
+								'site_settings',
+								['name' => 'content_max_filesize_unit', 'default_value' => 'MB', 'encrypted' => 0, 'secret' => 0, 'protect_from_database_restore' => 0,'value' => $fileUnit]	
+								);
+			}
+			else{
+				ze\row::update('site_settings', ['value' => $fileUnit], ['name' => "content_max_filesize_unit"]);
+			}
+		}
+	}
+	ze\dbAdm::revision(52220);
+}

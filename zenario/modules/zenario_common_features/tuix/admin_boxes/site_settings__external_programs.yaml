@@ -283,11 +283,11 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                When Zenario writes a JPEG image to either the
-                                <code>/public/images/</code> or the
-                                <code>/private/images/</code> directory,
-                                it will try to use one of the following programs to optimize
-                                the image.
+                                JPEG images marked as "public"
+                                (and thus cached in the
+                                <code>/public/images/</code> directory)
+                                will be compressed for faster download using one of the programs below.
+                                (Images marked as "private" will not be compressed.)
                             </p><p>
                                 If neither is installed on your server then your server administrator will need to install them;
                                 e.g. by running:
@@ -555,11 +555,11 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                When Zenario writes a PNG image to either the
-                                <code>/public/images/</code> or the
-                                <code>/private/images/</code> directory,
-                                it will try to use the following programs to optimize
-                                the image.
+                                PNG images marked as "public"
+                                (and thus cached in the
+                                <code>/public/images/</code> directory)
+                                will be compressed for faster download using one of the programs below.
+                                (Images marked as "private" will not be compressed.)
                             </p><p>
                                 If neither is installed on your server then your server administrator will need to install them;
                                 e.g. by running:
