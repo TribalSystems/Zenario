@@ -376,13 +376,13 @@ zenario__content:
                 clear_all_usage:
                     ord: 100
                     parent: usage_dropdown
-                    label: Clear all
+                    label: Clear filters
                     clear_all: true
                 
                 clear_all_tags:
                     ord: 99999
                     parent: tags
-                    label: Clear all
+                    label: Clear filters
                     clear_all: true
             
             

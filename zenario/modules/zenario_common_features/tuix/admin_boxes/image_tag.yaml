@@ -30,8 +30,6 @@ zenario_image_tag:
                     validation:
                         required: |
                             Please enter a name.
-                        no_spaces: |
-                            Tag names cannot contain spaces.
                         screen_name: |
                             Tag names can contain only alphanumeric characters, underscores or hyphens.
                 color:

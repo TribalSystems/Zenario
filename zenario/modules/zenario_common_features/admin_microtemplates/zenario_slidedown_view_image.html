@@ -2,7 +2,7 @@
 	<table>
 		<tr><td class="slidedown_table_image">
 			<img
-				src="{{URLBasePath|escape}}zenario/file.php?id={{m.id|escape}}&amp;c={{zenarioO.columnValue(m.id, 'checksum')|escape}}&amp;closeup=1&amp;usage={{zenarioO.columnValue(m.id, 'usage') ?? 'image'|e}}"
+				src="{{URLBasePath|escape}}zenario/file.php?id={{m.id|escape}}&amp;c={{zenarioO.columnValue(m.id, 'checksum')|escape}}&amp;closeup=1&amp;usage={{zenarioO.columnValue(m.id, 'usage') || 'image'|e}}"
 				width="{{Math.floor(Math.min(zenarioO.columnRawValue(m.id, 'width'), Math.min(zenarioO.columnRawValue(m.id, 'width') / zenarioO.columnRawValue(m.id, 'height') * 400, 400)))|escape}}"
 				height="{{Math.floor(Math.min(zenarioO.columnRawValue(m.id, 'height'), Math.min(zenarioO.columnRawValue(m.id, 'height') / zenarioO.columnRawValue(m.id, 'width') * 400, 400)))|escape}}"
 			/>

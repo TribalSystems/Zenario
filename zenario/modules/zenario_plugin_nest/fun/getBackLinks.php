@@ -150,44 +150,67 @@ if ($this->usesConductor && $this->state) {
 		
 		if ($lastBack && !empty($lastBack['smart'])) {
 			
-			foreach ($lastBack['smart'] as &$vbc) {
+			foreach ($lastBack['smart'] as &$sbc) {
 				
-				if (!empty($vbc['request']) && is_array($vbc['request'])) {
+				if (!empty($sbc['request']) && is_array($sbc['request'])) {
 					
-					//Check whether the requests for this breadcrumb look like
+					//Check whether the requests for this smart breadcrumb look like
 					//they match the request for the main breadcrumb.
 					//If so, highlight that one as the current one
 					$isCurrent = true;
-					foreach ($vbc['request'] as $key => $value) {
+					foreach ($sbc['request'] as $sbcKey => $sbcValue) {
 						
-						//If we see a key such as "dataPoolId2", and it doesn't match,
-						//try again with just "dataPoolId".
-						if (!isset($requests[$key])) {
-							switch ($key) {
+						$mbcKey = $sbcKey;
+						
+						//Some fallbacks in case we don't get an exact match
+						if (!isset($requests[$mbcKey])) {
+							switch ($mbcKey) {
+								
+								//Catch the case where the smart breadcrumb has a key such as
+								//"dataPoolId2", but the main breadcrumb just uses "dataPoolId".
 								case 'dataPoolId1':
 								case 'dataPoolId2':
 								case 'dataPoolId3':
 								case 'dataPoolId4':
 								case 'dataPoolId5':
-									$key = 'dataPoolId';
+									
+									//If they match, it's okay to switch them
+									if (isset($requests['dataPoolId']) && $requests['dataPoolId'] == $sbcValue) {
+										$mbcKey = 'dataPoolId';
+									}
+									break;
+								
+								//Catch the case where the main breadcrumb has a key such as
+								//"dataPoolId2", but the smart breadcrumb just uses "dataPoolId".
+								case 'dataPoolId':
+									
+									//If they match, it's okay to switch them
+									for ($i = 1; $i <=5; ++$i) {
+										if (isset($requests['dataPoolId'. $i]) && $requests['dataPoolId'. $i] == $sbcValue) {
+											$mbcKey = 'dataPoolId'. $i;
+											break;
+										}
+									}
+									break;
 							}
 						}
 						
-						if (!isset($requests[$key])
-						 || $requests[$key] != $value) {
+						if (!(isset($requests[$mbcKey]) && $requests[$mbcKey] == $sbcValue)) {
 							$isCurrent = false;
+							break;
 						}
 					}
+					
 				} else {
 					$isCurrent = false;
-					$vbc['request'] = [];
+					$sbc['request'] = [];
 				}
 				
-				if (!isset($vbc['current'])) {
-					$vbc['current'] = $isCurrent;
+				if (!isset($sbc['current'])) {
+					$sbc['current'] = $isCurrent;
 				}
 				
-				$vbc['request']['state'] = $requests['state'];
+				$sbc['request']['state'] = $requests['state'];
 			}
 		}
 		
@@ -198,9 +221,9 @@ if ($this->usesConductor && $this->state) {
 	if ($lastBack && !empty($lastBack['smart'])) {
 		
 		if ($this->forwardCommand && isset($this->commands[$this->forwardCommand])) {
-			foreach ($lastBack['smart'] as &$vbc) {
-				$vbc['request']['state'] = $this->commands[$this->forwardCommand]->toState;
-				$vbc['current'] = false;
+			foreach ($lastBack['smart'] as &$sbc) {
+				$sbc['request']['state'] = $this->commands[$this->forwardCommand]->toState;
+				$sbc['current'] = false;
 			}
 		} else {
 			unset($lastBack['smart']);
@@ -215,9 +238,9 @@ if ($this->usesConductor && $this->state) {
 		if (!$back['is_next'] && !empty($back['smart'])) {
 			
 			$includesCurrent = false;
-			foreach ($back['smart'] as &$vbc) {
+			foreach ($back['smart'] as &$sbc) {
 				
-				if ($vbc['current']) {
+				if ($sbc['current']) {
 					$includesCurrent = true;
 					break;
 				}

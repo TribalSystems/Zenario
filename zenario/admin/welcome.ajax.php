@@ -138,7 +138,13 @@ ze\tuix::parse2($source, $removedColumns, 'welcome');
 if (($_POST['_format'] ?? false) || ($_POST['_validate'] ?? false)) {
 	$clientTags = $tags = json_decode($_POST['_box'], true);
 }
-$getRequest = json_decode($_GET['get'], true);
+
+if (isset($_GET['get'])) {
+	$getRequest = json_decode($_GET['get'], true);
+} else {
+	$getRequest = null;
+}
+
 $task = $_GET['task'] ?? false;
 
 

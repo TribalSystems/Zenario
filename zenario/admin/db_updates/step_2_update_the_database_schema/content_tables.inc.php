@@ -2900,6 +2900,11 @@ _sql
 _sql
 
 
+//
+//	Zenario 8.9
+//
+
+
 //Update the files table to fix some slow queries.
 //In HEAD/8/9, I'm adding keys to the thumbnail width/height columns.
 //In all versions, I'm also fixing an inconsistency where we sometimes store missing dimensions as a 0,
@@ -2953,6 +2958,16 @@ _sql
 );	ze\dbAdm::revision( 52501
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(255) CHARACTER SET utf8mb4 NOT NULL
+_sql
+
+
+//Correct any bad data left over from a bug where it was possible to make an image tag
+//name with upper case characters.
+//Note that this is being added in a post-branch patch, but is safe to repeat.
+);	ze\dbAdm::revision( 52502
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]image_tags`
+	SET `name` = LOWER(`name`)
 _sql
 
 );

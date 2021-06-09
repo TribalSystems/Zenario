@@ -1,1 +1,1 @@
-<?php require 'zenario/admin/welcome.php'; ?>
+<?php require 'zenario/admin/welcome.php';

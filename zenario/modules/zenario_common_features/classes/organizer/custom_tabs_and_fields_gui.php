@@ -323,10 +323,15 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					$existingPages[$row['name']] = $row;
 				}
 				
+				$existingCols = [];
 				$existingFields = [];
 				$result = ze\row::query('custom_dataset_fields', ['id', 'tab_name', 'is_system_field', 'db_column', 'type', 'allow_admin_to_change_visibility', 'allow_admin_to_change_export', 'protected', 'min_rows', 'max_rows', 'repeat_start_id', 'create_index'], ['dataset_id' => $datasetId]);
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$existingFields[$row['id']] = $row;
+					
+					if (!$row['is_system_field'] && $row['db_column']) {
+						$existingCols[$row['db_column']] = true;
+					}
 				}
 				
 				//Make sure requested changes are all valid before saving...
@@ -474,12 +479,22 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 								|| ($existingField && isset($values['create_index']) && ($values['create_index'] != $existingField['create_index']))
 							)
 						) {
-							//Make sure there are no clashes by renaming columns to unique name and then to new name later
-							$field['temp_db_column'] = '__tmp_col_' . (++$columnIndex) . '_' . ze\ring::randomFromSet();
-							ze\row::update('custom_dataset_fields', ['db_column' => $field['temp_db_column'], 'db_update_running' => true], $field['id']);
+							$field['final_db_column_we_want'] = $field['db_column'];
 							
-							$columnUpdates[$field['id']] = ['db_column' => $field['db_column'], 'old_db_column' => $oldName, 'temp_db_column' => $field['temp_db_column'], 'new_rows' => $newRows, 'old_rows' => $oldRows];
+							//The ze\datasetAdm::createFieldInDB() function was designed with making one change at a time in mind
+							//There's a possible issue where if you make multiple changes at once, and rename columns to each
+							//others' names on mass, there will be a collision and the update will fail.
+							if (($existingField && $oldName !== $field['db_column'])
+							 || (!$existingField && isset($existingCols[$field['db_column']]))) {
+								$field['db_column'] = '__tmp_col_' . (++$columnIndex) . '_' . ze\ring::randomFromSet();
+								ze\row::update('custom_dataset_fields', ['db_column' => $field['db_column']], $field['id']);
+							}
+							
+							//Create and/or update the field with any changes
 							ze\datasetAdm::createFieldInDB($field['id'], $oldName);
+							
+							//Note down each column we're updating, so we can finish the updates in a "part 2" later
+							$columnUpdates[] = [$field, $newRows, $oldRows];
 						}
 						
 						//Update field values
@@ -507,16 +522,23 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						}
 					}
 					
-					foreach ($columnUpdates as $fieldId => $update) {
-						ze\row::update('custom_dataset_fields', ['db_column' => $update['db_column']], $fieldId);
-						ze\datasetAdm::createFieldInDB($fieldId, $update['temp_db_column']);
+					//Continue with updating the columns, that we had to delay earlier
+					foreach ($columnUpdates as $columnUpdate) {
+						[$field, $newRows, $oldRows] = $columnUpdate;
 						
-						//Create multiple columns for fields in a repeating section
-						if ($update['new_rows'] || $update['old_rows']) {
-							ze\datasetAdm::createFieldMultiRowsInDB($fieldId, $update['old_db_column'], $update['new_rows'], $update['old_rows']);
+						//Remove any temporary names we added earlier as a work-around for renaming columns
+						if ($field['final_db_column_we_want'] !== $field['db_column']) {
+							$oldName = $field['db_column'];
+							$field['db_column'] = $field['final_db_column_we_want'];
+							
+							ze\row::update('custom_dataset_fields', ['db_column' => $field['db_column']], $field['id']);
+							ze\datasetAdm::createFieldInDB($field['id'], $oldName);
 						}
 						
-						ze\row::update('custom_dataset_fields', ['db_update_running' => false], $fieldId);
+						//Create multiple columns for fields in a repeating section
+						if ($newRows || $oldRows) {
+							ze\datasetAdm::createFieldMultiRowsInDB($field['id'], $field['db_column'], $newRows, $oldRows);
+						}
 					}
 				}
 				

@@ -116,16 +116,16 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename must not contain any of the following characters: \\ / : ; * ? " < > |');
 		}
 		
+		//Ensure image tags are all lower-case
+		$values['details/tags'] = mb_strtolower($values['details/tags']);
+		
 		$tags = ze\ray::explodeAndTrim($values['details/tags']);
 		
-		//Validate the tags
+		//Validate the image tags
 		foreach ($tags as $tagName) {
 			$tagName = trim($tagName);
 		
-			if (preg_match('/\s/', $tagName) !== 0) {
-				$box['tabs']['details']['errors']['spaces'] = ze\admin::phrase("Tag names cannot contain spaces.");
-		
-			} elseif (!ze\ring::validateScreenName(trim($tagName))) {
+			if (!ze\ring::validateScreenName(trim($tagName))) {
 				$box['tabs']['details']['errors']['alphanumeric'] = ze\admin::phrase("Tag names can contain only alphanumeric characters, underscores or hyphens.");
 			}
 		}

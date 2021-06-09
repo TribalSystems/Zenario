@@ -573,15 +573,21 @@ class datasetAdm {
 		if (($field = \ze\dataset::fieldDetails($fieldId))
 		 && ($dataset = \ze\dataset::details($field['dataset_id']))) {
 		
-			$exists = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], $field['db_column']);
-		
-			$oldColType = false;
-			if (!$exists && $oldName && $oldName != $field['db_column']) {
+			$existingColType = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], $field['db_column']);
+			$columnExists = (bool) $existingColType;
+			
+			if ($oldName && $oldName != $field['db_column']) {
 				$oldColType = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], $oldName);
+			
+			} elseif ($columnExists) {
+				$oldColType = $existingColType;
+			
+			} else {
+				$oldColType = false;
 			}
 		
 			$keys = [];
-			if (($exists && ($columnName = $field['db_column']))
+			if (($columnExists && ($columnName = $field['db_column']))
 			 || ($oldColType && ($columnName = $oldName))) {
 			
 				$sql = "
@@ -609,7 +615,7 @@ class datasetAdm {
 		
 			if ($def === '') {
 				//Some fields (e.g. checkboxes, file pickers) don't store their values in the table
-				if ($exists) {
+				if ($columnExists) {
 					//If they do have a column here we need to drop it
 					$sql .= "
 						DROP COLUMN";
@@ -620,22 +626,23 @@ class datasetAdm {
 				}
 			
 			} else {
+				
+				//Bugfix - when changing a TINYTEXT to a varchar, remove any null values
+				if ($field['create_index'] && $oldColType && strtolower($oldColType) == 'tinytext') {
+					\ze\sql::update("
+						UPDATE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
+						SET `". \ze\escape::sql($oldName). "` = ''
+						WHERE `". \ze\escape::sql($oldName). "` IS NULL
+					");
+				}
+				
 				//Rename an existing column
 				if ($oldColType) {
 					$sql .= "
 						CHANGE COLUMN `". \ze\escape::sql($oldName). "` ";
-					
-					if ($field['create_index'] && $oldColType == 'TINYTEXT') {
-						//Bugfix - when changing a TINYTEXT to a varchar, remove any null values
-						\ze\sql::update("
-							UPDATE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
-							SET `". \ze\escape::sql($oldName). "` = ''
-							WHERE `". \ze\escape::sql($oldName). "` IS NULL
-						");
-					}
 			
 				//Modify an existing column
-				} elseif ($exists) {
+				} elseif ($columnExists) {
 					$sql .= "
 						MODIFY COLUMN";
 			

@@ -32,11 +32,22 @@ class zenario_common_features__admin_boxes__image_tag extends ze\moduleBaseClass
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		if ($box['key']['id']) {
+		//Hack to fix a bug where you can have a tag named "0".
+		//Usually the FABs don't populate the id field if it's set to 0, however we
+		//would specifically want that in this case
+		if (isset($_REQUEST['id'])
+		 && $_REQUEST['id'] == '0') {
+			$box['key']['id'] = '0';
+		}
+		
+		if ($box['key']['id'] != '') {
 			if (!$details = ze\row::get('image_tags', true, ['name' => $box['key']['id']])) {
 				echo ze\admin::phrase('Could not find a tag with the name "[[name]]"', $details);
 				exit;
 			}
+			
+			//Ensure image tags are all lower-case
+			$box['key']['id'] = mb_strtolower($box['key']['id']);
 			
 			$values['details/name'] = $details['name'];
 			$values['details/color'] = $details['color'];
@@ -44,6 +55,9 @@ class zenario_common_features__admin_boxes__image_tag extends ze\moduleBaseClass
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		
+		//Ensure image tags are all lower-case
+		$values['details/name'] = mb_strtolower($values['details/name']);
 		
 		if ($values['details/name'] == $box['key']['id']) {
 		} elseif (ze\row::exists('image_tags', ['name' => $values['details/name']])) {
@@ -55,7 +69,7 @@ class zenario_common_features__admin_boxes__image_tag extends ze\moduleBaseClass
 		ze\priv::exitIfNot('_PRIV_MANAGE_MEDIA');
 		
 		$ids = [];
-		if ($box['key']['id']) {
+		if ($box['key']['id'] != '') {
 			$ids = ['name' => $box['key']['id']];
 		}
 		
