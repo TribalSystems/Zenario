@@ -129,23 +129,64 @@ if ($isAdmin || $isWelcomeOrWizard) {
 }
 
 
+//Loop through all of the libraries we're trying to include
 foreach (\ze::$jsLibs as $lib => $stylesheet) {
 	
+	//Allow up to one stylesheet per library
 	if ($stylesheet) {
-		$thisPrefix = '';
+		
+		//If the stylesheet path is absolute, or external, don't do any manipulations
 		if ($stylesheet[0] != '/'
 		 && strpos($stylesheet, '://') === false) {
-			$thisPrefix = $absURL;
+			
+			//For relative paths, we need to deal with a mismatch between how they're specified
+			//and how the $prefix variable works.
+			
+			//Check if this library is in the Zenario directory
+			if ($zenarioLib = \ze\ring::chopPrefix('zenario/', $stylesheet)) {
+				
+				//If so, we can follow the $prefix rules and give this a nice relative URL
+				$stylesheet = $prefix. $zenarioLib;
+			} else {
+				//Otherwise it will need the SUBDIRECTORY added
+				$stylesheet = SUBDIRECTORY. $stylesheet;
+			}
+			
+			//Auto add the cache-killer
+			if (strpos($stylesheet, '?v=') === false
+			 && strpos($stylesheet, '&v=') === false) {
+				if (strpos($stylesheet, '?') === false) {
+					$stylesheet .= '?'. $v;
+				} else {
+					$stylesheet .= '&'. $v;
+				}
+			}
 		}
 		
-		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', $thisPrefix, htmlspecialchars($stylesheet). '?', $v, '"/>';
+		echo "\n", '<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($stylesheet), '"/>';
 	}
 	
-	$thisPrefix = '';
+	
+	//Add the JS file
+	
+	//If the stylesheet path is absolute, or external, don't do any manipulations
 	if ($lib[0] != '/'
 	 && strpos($lib, '://') === false) {
-		$thisPrefix = $absURL;
 		
+		//For relative paths, we need to deal with a mismatch between how they're specified
+		//and how the $prefix variable works.
+		
+		//Check if this library is in the Zenario directory
+		if ($zenarioLib = \ze\ring::chopPrefix('zenario/', $lib)) {
+			
+			//If so, we can follow the $prefix rules and give this a nice relative URL
+			$lib = $prefix. $zenarioLib;
+		} else {
+			//Otherwise it will need the SUBDIRECTORY added
+			$lib = SUBDIRECTORY. $lib;
+		}
+		
+		//Auto add the cache-killer
 		if (strpos($lib, '?v=') === false
 		 && strpos($lib, '&v=') === false) {
 			if (strpos($lib, '?') === false) {
@@ -155,7 +196,8 @@ foreach (\ze::$jsLibs as $lib => $stylesheet) {
 			}
 		}
 	}
-	echo "\n", $scriptTag, ' src="', $thisPrefix, htmlspecialchars($lib), '"></script>';
+	
+	echo "\n", $scriptTag, ' src="', htmlspecialchars($lib), '"></script>';
 }
 	
 

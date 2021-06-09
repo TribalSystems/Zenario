@@ -42,23 +42,23 @@ if (\ze::$dbL
 
 
 if ($reportDBOutOfDate && \ze\priv::check()) {
-	$errorMessage = '<p>This site is currently unavailable because a major database update needs to be applied.</p><p>Please go to <a href="[[admin_link]]">zenario/admin/</a> to apply the update.</p>';
-	$adminLink = 'admin.php';
+	$errorMessage = '<p>This site is currently unavailable because a major database update needs to be applied.</p><p>Please go to <a href="[[admin_link]]">/admin</a> to apply the update.</p>';
+	$adminLink = \ze\link::absolute(). 'admin.php';
 
 //If there's a specifc page in the request, keep the admin on that page after they log in
 } elseif ($_REQUEST['cID'] ?? false) {
 	$errorMessage = \ze::setting('site_disabled_message');
-	$adminLink = 'admin.php?cID='. rawurlencode($_REQUEST['cID'] ?? false). '&cType='. rawurlencode($_REQUEST['cType'] ?? false);
+	$adminLink = \ze\link::absolute(). 'admin.php?cID='. rawurlencode($_REQUEST['cID'] ?? false). '&cType='. rawurlencode($_REQUEST['cType'] ?? false);
 
 //If you need to enable a language, the "here" link should point to the languages panel
 } elseif (!\ze\row::exists('languages', [])) {
 	$errorMessage = \ze::setting('site_disabled_message');
-	$adminLink = 'admin.php?og=zenario__languages/panels/languages';
+	$adminLink = \ze\link::absolute(). 'admin.php?og=zenario__languages/panels/languages';
 
 //If you need to enable your site, the "here" link should point to the "Set-up" panel to do that
 } else {
 	$errorMessage = \ze::setting('site_disabled_message');
-	$adminLink = 'admin.php?og=zenario__administration/panels/site_settings//site_disabled';
+	$adminLink = \ze\link::absolute(). 'admin.php?og=zenario__administration/panels/site_settings//site_disabled';
 }
 
 $errorMessage = \ze\admin::phrase($errorMessage, ['admin_link' => htmlspecialchars($adminLink)]);
@@ -122,6 +122,6 @@ echo '
 if ($reportDBOutOfDate && !\ze\priv::check()) {
 	\ze\db::reportError('Database update needed at',
 'This site is currently unavailable because a major database update needs to be applied.
-Please go to '. \ze\link::absolute(). 'zenario/admin/ to apply the update.');
+Please go to '. \ze\link::absolute(). 'admin to apply the update.');
 }
 

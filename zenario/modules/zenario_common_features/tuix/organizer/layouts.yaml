@@ -32,6 +32,7 @@ zenario__layouts:
                     db_column: l.layout_id
                     sort_column: l.layout_id
                     searchable: true
+                    chop_prefix_from_search: L
                     width: xxsmall
                 name:
                     title: Layout description

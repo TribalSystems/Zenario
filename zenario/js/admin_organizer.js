@@ -2613,18 +2613,36 @@ zenarioO.noItemsSelected = function() {
 
 
 
-
-zenarioO.parseReturnLink = function(url, replace) {
+//Given an existing URL, attempt to add an extra parameter to it
+zenarioO.parseReturnLink = function(url, replaceWith) {
 	
-	if (!defined(replace)) {
+	var lookFor = 'zenario_sk_return=navigation_path';
+	
+	if (!defined(replaceWith)) {
 		if (url && zenario.currentHash && !zenario.browserIsIE(7)) {
-			replace = 'zenario_sk_return=' + zenario.currentHash.replace('#', '');
+			replaceWith = 'zenario_sk_return=' + zenario.currentHash.replace('#', '');
 		} else {
-			replace = '';
+			replaceWith = '';
 		}
 	}
 	
-	return zenario.addBasePath(('' + url).replace('zenario_sk_return=navigation_path', replace));
+	url = ('' + url);
+	
+	
+	//We have a placeholder pattern that's usually used for this.
+	//If we see the placeholder pattern in the URL, put our replacement in there.
+	if (url.indexOf(lookFor) != -1) {
+		url = url.replace(lookFor, replaceWith);
+	
+	//Otherwise just try and add the request on to the end of the URL
+	} else if (url.indexOf('?') != -1) {
+		url += '&' + replaceWith;
+	
+	} else {
+		url += '?' + replaceWith;
+	}
+	
+	return zenario.addBasePath(url);
 };
 
 //Get a property, either from the panel's current refiner, or from the panel.
