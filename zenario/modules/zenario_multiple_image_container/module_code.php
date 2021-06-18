@@ -205,6 +205,15 @@ class zenario_multiple_image_container extends zenario_banner {
 				$values['image_and_link/link_type'] = $enlargeImageOptionPicked? '_ENLARGE_IMAGE' : '';
 				parent::formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 				
+				//This next line is a work-around for a bug.
+				//The multiple image container always uses images, and doesn't use anything
+				//that's not an image. We always want to show the options for the image canvas.
+				//The formatAdminBox() from the banner isn't quite designed for showing options
+				//for multiple images, it assumes they'll be just one image, so sometimes we
+				//get a glitch in the above function call where it hides the settings for image canvas.
+				//The line below just overrides that if it happens, and makes sure that they are shown.
+				$this->showHideImageOptions($fields, $values, 'image_and_link', $hidden = false);
+				
 				//Tweak/remove some of the banner plugin's options
 				//(Note that these aren't done in our TUIX file because they would be
 				// overridden in zenario_banner::formatAdminBox(),
