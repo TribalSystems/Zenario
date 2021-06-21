@@ -66,13 +66,21 @@ if ($level == 1) {
 }
 
 $mrg = ['slotName' => $slotName];
-$controls['info']['slot_lite_details']['label'] = ze\admin::phrase('Slot: <span>[[slotName]]</span>', $mrg);
-$controls['info']['slot_name']['label'] = ze\admin::phrase('Slot name: <span>[[slotName]]</span>', $mrg);
+$controls['info']['slot_name_in_edit_mode']['label'] =
+$controls['info']['slot_name_in_item_mode']['label'] =
+$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span>', $mrg);
 
 switch ($level) {
 	case 1:
 		$pageMode = ['item' => true];
-		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('In this slot on this content item:');
+		
+		$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
+		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this layout', $mrg);
+		
+		//Show the "in this slot" blurb when looking at the wrong layer and it needs to be made clear
+		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('This slot on this content item contains:');
+		$controls['info']['in_this_slot']['page_modes'] = ['layout' => true];
+		unset($controls['info']['in_this_slot']['hidden']);
 		
 		if (ze::$cVersion == ze::$adminVersion) {
 			$couldChange = !ze::$locked && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType);
@@ -91,12 +99,22 @@ switch ($level) {
 	
 	case 2:
 		$pageMode = ['layout' => true];
+		
+		$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
+		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
+		
+		//Only show the "in this slot" blurb when looking at the wrong layer and it needs to be made clear
+		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('This slot on this layout contains:');
+		$controls['info']['in_this_slot']['page_modes'] = ['item' => true];
+		unset($controls['info']['in_this_slot']['hidden']);
+		
 		$couldChange = $canChange = ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT');
-		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('In this slot on this layout:');
 		
 		break;
 	
 	default:
+		$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
+		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this layout', $mrg);
 		$couldChange = $canChange = false;
 		break;
 }
@@ -115,7 +133,6 @@ if (!$moduleId) {
 	
 	if (!$level) {
 		//Empty slots
-		unset($controls['info']['opaque']);
 		unset($controls['re_move_place']['replace_reusable_on_item_layer']);
 		unset($controls['re_move_place']['replace_nest_on_item_layer']);
 		unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
@@ -132,7 +149,7 @@ if (!$moduleId) {
 			) as $module) {
 				$controls['actions'][] = [
 					'ord' => ++$i,
-					'label' => ze\admin::phrase('Insert a [[display_name]]', $module),
+					'label' => ze\admin::phrase('Insert a version-controlled [[display_name]]', $module),
 					'page_modes' => ['layout' => true],
 					'onclick' => "zenarioA.addNewWireframePlugin(this, '". ze\escape::js($slotName). "', ". (int) $module['id']. ");"
 				];
@@ -140,7 +157,8 @@ if (!$moduleId) {
 		}
 	} else {
 		//Opaque slots
-		unset($controls['info']['empty']);
+		$controls['info']['slot_name_in_item_mode']['label'] =
+		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> set to show nothing on this content item', $mrg);
 		unset($controls['actions']['insert_reusable_on_item_layer'], $controls['re_move_place']['insert_reusable_on_item_layer']);
 		unset($controls['actions']['insert_nest_on_item_layer'], $controls['re_move_place']['insert_nest_on_item_layer']);
 		unset($controls['actions']['insert_slideshow_on_item_layer'], $controls['re_move_place']['insert_slideshow_on_item_layer']);
@@ -173,19 +191,17 @@ if (!$moduleId) {
 	#}
 	
 	
-	//Get information from the plugin itself
-	
-	//Show the wrapping html, id and css class names for the slot
-	if (isset(ze::$slotContents[$slotName]['class']) && !empty(ze::$slotContents[$slotName]['class'])) {
-		$a = [];
-		ze::$slotContents[$slotName]['class']->zAPIGetCachableVars($a);
-		$framework = $a[0];
-		$cssClass = $a[4];
-		
-		$controls['info']['slot_css_class']['label'] = ze\admin::phrase('CSS classes: <input class="zenario_class_name_preview" readonly="readonly" value="[[cssClass]]">', ['cssClass' => htmlspecialchars($cssClass)]);
-	} else {
-		unset($controls['info']['slot_css_class']);
-	}
+	#We've hidden the plugin and slot's CSS classes for now to reduce clutter.
+	#if (isset(ze::$slotContents[$slotName]['class']) && !empty(ze::$slotContents[$slotName]['class'])) {
+	#	$a = [];
+	#	ze::$slotContents[$slotName]['class']->zAPIGetCachableVars($a);
+	#	$framework = $a[0];
+	#	$cssClass = $a[4];
+	#	
+	#	$controls['info']['slot_css_class']['label'] = ze\admin::phrase('CSS classes: <input class="zenario_class_name_preview" readonly="readonly" value="[[cssClass]]">', ['cssClass' => htmlspecialchars($cssClass)]);
+	#} else {
+	#	unset($controls['info']['slot_css_class']);
+	#}
 	
 	ze\pluginAdm::fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, $controls['info'], $controls['actions'], $controls['re_move_place']);
 
@@ -253,7 +269,7 @@ if (!$moduleId) {
 		unset($controls['re_move_place']['replace_nest_on_item_layer']);
 		unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
 	}
-	if (!$couldChange || ($level == 1 && !$overriddenPlugin) || $isVersionControlled || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
+	if (!$couldChange || ($level == 1 && !$overriddenPlugin) || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
 		unset($controls['re_move_place']['hide_plugin']);
 	}
 
@@ -360,6 +376,10 @@ if ($overriddenPlugin) {
 		unset($controls['actions']['insert_nest_on_layout_layer'], $controls['re_move_place']['replace_nest_on_layout_layer']);
 		unset($controls['actions']['insert_slideshow_on_layout_layer'], $controls['re_move_place']['replace_slideshow_on_layout_layer']);
 	}
+	
+	//It's a bit hard to have meaningful text on the slot name on the top in layout mode here,
+	//so we'll just change it back to something generic.
+	$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span>', $mrg);
 	
 	
 } else {

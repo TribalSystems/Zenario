@@ -59,15 +59,15 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			$allJobsEnabled = ze::setting('jobs_enabled');
 			$scheduledPublishingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobPublishContent', 'module_class_name' => 'zenario_common_features']);
 			if (!($allJobsEnabled && $scheduledPublishingEnabled)) {
-				$scheduledTaskLink = ze\link::absolute() . 
-					'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
+				$scheduledTaskHref = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
+				$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
+				$linkEnd = "</a>";
+
+				$string = "Scheduled publishing is not available. The Scheduled Task Manager is installed but the scheduled publishing task (jobPublishContent) is not enabled. [[link_start]]Click for more info.[[link_end]]";
+
 				$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
-				$fields['publish/publish_options']['values']['schedule']['post_field_html'] = "
-					<br />
-					<br />
-					Scheduled publishing is not available. The Scheduled Task Manager is installed 
-					but the Scheduled Publishing task is not enabled. 
-					<a href='".$scheduledTaskLink."'>Click for more info.</a>";
+				$fields['publish/publish_options']['values']['schedule']['post_field_html'] = "<br /><br />";
+				$fields['publish/publish_options']['values']['schedule']['post_field_html'] .= ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			} else {
 				$values['publish/publish_date'] = date('Y-m-d');
 			}
@@ -90,10 +90,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			}
 		}
 		
-		
 		//Show a note if any of these items are scheduled to be published
 		$sql = "
-			SELECT c.id, c.type, v.scheduled_publish_datetime
+			SELECT c.id, c.type, v.scheduled_publish_datetime, c.lock_owner_id
 			FROM ". DB_PREFIX. "content_items AS c
 			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 			   ON v.id = c.id
@@ -108,6 +107,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		
 		if ($count > 0) {
 			$box['tabs']['publish']['notices']['scheduled_warning']['show'] = true;
+			$box['save_button_message'] = ze\admin::phrase('Submit');
 			
 			if ($count > 1
 			 || count($tags) > 1) {
@@ -118,9 +118,17 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				$row['publication_time'] = 
 					ze\admin::formatDateTime($row['scheduled_publish_datetime'], 'vis_date_format_med');
 				
-				$box['tabs']['publish']['notices']['scheduled_warning']['message'] =
-					ze\admin::phrase("This item is scheduled to be published at [[publication_time]].", $row);
-				
+				if ($row['lock_owner_id']) {
+					$adminDetails = ze\admin::details($row['lock_owner_id']);
+					$row['first_name'] = $adminDetails['first_name'];
+					$row['last_name'] = $adminDetails['last_name'];
+
+					$scheduledWarningPhrase = "This item is scheduled by [[first_name]] [[last_name]] to be published at [[publication_time]].";
+				} else {
+					$scheduledWarningPhrase = "This item is scheduled to be published at [[publication_time]].";
+				}
+
+				$box['tabs']['publish']['notices']['scheduled_warning']['message'] = ze\admin::phrase($scheduledWarningPhrase, $row);
 				
 				$values['publish/publish_options'] = 'schedule';
 				
@@ -129,6 +137,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				$values['publish/publish_mins'] = $sdate->format('i');
 				$values['publish/publish_date'] = $sdate->format('Y-m-d');
 			}
+		} else {
+			unset($fields['publish/publish_options']['values']['cancel']);
 		}
 	}
 
@@ -175,7 +185,6 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			return false;
 		}
 	}
-		
 
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -198,15 +207,13 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				}
 			}
 			
-		} else {
+		} elseif ($values['publish/publish_options'] == 'schedule') {
 			if ($clash = static::checkForClashingPublicationDates($box['key']['id'])) {
 				$box['tabs']['publish']['errors']['before'] =
 					ze\admin::phrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].', $clash);
 			}
 		}
-		
 	}
-	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$ids = (($box['key']['id']) ? $box['key']['id'] : $box['key']['cID']);
@@ -226,19 +233,25 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					if (ze::session('last_item') == $cType. '_'. $cID) {
 						$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 					}
-				} else {
+				} elseif ($values['publish/publish_options'] == 'schedule') {
 					// Publish at a later date
 					$scheduled_publish_datetime = $values['publish/publish_date'].' '.$values['publish/publish_hours'].':'.$values['publish/publish_mins'].':00';
 					$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
-					ze\row::update('content_item_versions', ['scheduled_publish_datetime'=>$scheduled_publish_datetime], ['id' =>$cID, 'type'=>$cType, 'version'=>$cVersion]);
+					ze\row::update('content_item_versions', ['scheduled_publish_datetime' => $scheduled_publish_datetime], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 					
 					// Lock content item
 					$adminId = $_SESSION['admin_userid'] ?? false;
-					ze\row::update('content_items', ['lock_owner_id'=>$adminId, 'locked_datetime'=>date('Y-m-d H:i:s')], ['id' =>$cID, 'type'=>$cType]);
+					ze\row::update('content_items', ['lock_owner_id' => $adminId, 'locked_datetime'=>date('Y-m-d H:i:s')], ['id' => $cID, 'type' => $cType]);
+				} elseif ($values['publish/publish_options'] == 'cancel') {
+					//Cancel publishing
+					$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
+					ze\row::update('content_item_versions', ['scheduled_publish_datetime' => NULL], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+
+					// Unlock content item
+					ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => NULL], ['id' => $cID, 'type' => $cType]);
 				}
 			}
 		}
-		
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -257,5 +270,4 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			exit;
 		}
 	}
-	
 }

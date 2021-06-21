@@ -2,29 +2,66 @@
 ---
 sections:
     translations:
-        custom_template_buttons:
-            dropdown:
+        custom_template_buttons_current:
+            'znz_dropdown':
                 label: '[[id]]'
-                css_class: ''
-                hide_when_children_are_not_visible: true
-            
-            go:
-                label: 'Go to [[english_name]] translation'
-                parent: ''
-                frontend_link: ''
-            
-            this:
+                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__[[status]] zenario_at_trans_dropdown_current'
+            'znz_this':
                 label: 'This is the [[english_name]] translation'
-                parent: ''
+                label_og: 'This is the original (in [[english_name]])'
+                parent: 'znz_dropdown'
                 frontend_link: ''
+        
+        custom_template_buttons_exists:
+            'znz_dropdown':
+                label: '[[id]]'
+                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__[[status]]'
+            'znz_go':
+                label: 'Go to [[english_name]] translation'
+                label_og: 'Go to the original (in [[english_name]])'
+                parent: 'znz_dropdown'
+                frontend_link: ''
+        
+        custom_template_buttons_missing_cant_create:
+            'znz_dropdown':
+                label: '[[id]]'
+                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__missing'
             
-            create:
+        custom_template_buttons_missing_can_create:
+            'znz_dropdown':
+                label: '[[id]]'
+                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__missing'
+            
+            'znz_create':
                 label: 'Create a translation in [[english_name]]'
-                parent: ''
+                parent: 'znz_dropdown'
                 admin_box: 
                     path: zenario_content
                     key: 
-                        id: ''
+                        id: 'zlangIdz'
                         translate: 1
             
+            'znz_add_existing_translation_to_chain':
+                label: 'Add an existing content item in [[english_name]] to this chain'
+                parent: 'znz_dropdown'
+                pick_items:
+                    path: zenario__content/panels/content/refiners/add_translation_to_chain//zlangIdz//
+                    min_path: zenario__content/panels/content
+                    max_path: zenario__content/panels/content
+                    target_path: zenario__content/panels/content
+                    disallow_refiners_looping_on_min_path: true
+                    one_to_one_choose_phrase: Add to chain
+                    disabled_if_for_all_selected_items: |
+                        item.is_collision
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to add this content item to the chain?
+                            button_message: Add
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            add_existing_translation_to_chain: 1
+        
+        
         buttons: {}

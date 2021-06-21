@@ -57,7 +57,7 @@ common_definitions:
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
             
-            See http://zenar.io/visibility-in-tuix for examples.
+            See https://zenar.io/visibility-in-tuix for examples.
     disabled_if: &disabled_if
         type:
             - string
@@ -71,7 +71,7 @@ common_definitions:
             
             If the code provided evaluates to <code>true</code> the button will be disabled.
             
-            See http://zenar.io/visibility-in-tuix for examples.
+            See https://zenar.io/visibility-in-tuix for examples.
 
 
 $schema: 'http://json-schema.org/draft-04/schema#'
@@ -1179,7 +1179,7 @@ additionalProperties:
                             A snippet of JavaScript code to be evaluated for each selected item.
                             Each item must match for the button to be shown.
                             
-                            See http://zenar.io/visibility-in-tuix for examples.
+                            See https://zenar.io/visibility-in-tuix for examples.
                     
                     visible_if_for_any_selected_items:
                         type: string
@@ -1188,7 +1188,7 @@ additionalProperties:
                             A snippet of JavaScript code to be evaluated for each selected item.
                             At least one item must match for the button to be shown.
                             
-                            See http://zenar.io/visibility-in-tuix for examples.
+                            See https://zenar.io/visibility-in-tuix for examples.
                     
                     disabled:
                         type: boolean
@@ -1212,7 +1212,7 @@ additionalProperties:
                             A snippet of JavaScript code to be evaluated for each selected item.
                             If at least one item matches, the button will be disabled.
                             
-                            See http://zenar.io/visibility-in-tuix for examples.
+                            See https://zenar.io/visibility-in-tuix for examples.
                     
                     disabled_tooltip:
                         type: string

@@ -121,8 +121,9 @@ if ($methodCall == 'refreshPlugin'
 		ze\plugin::slotContents(
 			ze::$slotContents,
 			ze::$cID, ze::$cType, ze::$cVersion,
-			ze::$layoutId, ze::$templateFamily, ze::$templateFileBaseName,
-			$instanceId, $slotName, $ajaxReload = true, $runPlugins = true, $exactMatch, $overrideSettings, $overrideFrameworkAndCSS);
+			ze::$layoutId,
+			$instanceId, $slotName, $ajaxReload = true,
+			$runPlugins = true, $exactMatch, $overrideSettings, $overrideFrameworkAndCSS);
 		
 		foreach (ze::$slotContents as $s => &$instance) {
 			$slotName = $s;
@@ -619,6 +620,8 @@ if ($methodCall == 'showFile') {
 			ze\escape::flag('MODULE_ID', $moduleId);
 			
 			ze\escape::flag('NAMESPACE', ze\ray::value(ze::$slotContents[$slotName], 'class_name'));
+			
+			ze\escape::flag('WHAT_THIS_IS', $module->returnWhatThisIs());
 			
 			if (!empty(ze::$slotContents[$slotName]['instance_id'])) {
 				if (!empty(ze::$slotContents[$slotName]['content_id'])) {

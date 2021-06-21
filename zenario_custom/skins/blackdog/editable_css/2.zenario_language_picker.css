@@ -1,0 +1,44 @@
+.zenario_language_picker__default_style .lang_pick_box {
+	overflow:hidden;
+}
+
+.zenario_language_picker__default_style .lang_pick_box .lang_choose_text,
+.zenario_language_picker__default_style .lang_pick_box .lang_choices {
+	display:inline-block;
+	float:left;
+}
+
+.zenario_language_picker__default_style .lang_pick_box .lang_choices {
+	padding-left:5px;
+}
+
+.zenario_language_picker__default_style .lang_pick_box .lang_choices select {
+	height:22px;
+	padding:0 3px;
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+	border-radius:0;
+}
+
+.zenario_language_picker__default_style .lang_pick_box .lang_choices .lang_flag {
+	display:inline-block;
+	float:left;
+	margin-left:5px;
+}
+
+.zenario_language_picker__default_style .lang_pick_box .lang_choices .lang_flag:first-child {
+	margin-left:0;
+}
+
+.zenario_language_picker__default_style .lang_pick_box .lang_choices .lang_flag span {
+	display:none;
+}
+
+/* Top
+--------------------------------------------------------------------------------------------------*/
+
+.slot_top .zenario_language_picker .lang_pick_box {
+	padding:5px 0;
+	font-size:0.813em;
+}
+

@@ -85,7 +85,7 @@ common_definitions:
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
             
-            See http://zenar.io/visibility-in-tuix for examples.
+            See https://zenar.io/visibility-in-tuix for examples.
 
 
 $schema: 'http://json-schema.org/draft-04/schema#'
@@ -212,6 +212,18 @@ additionalProperties:
                 
                 This works from version 7.7 onwards.
         
+        disable_selecting_tab_from_url:
+            type: boolean
+            description: >
+                This allows you to disable the feature where a FAB can be opened on a specific
+                tab by requesting it in the URL.
+                
+                You would want to do this if you are making a multi-step wizard, and
+                want to make sure that users always start on step 1 when the wizard
+                is opened.
+                
+                This works from version 9.0 onwards.
+        
         hide_tab_bar:
             type: boolean
             description: >
@@ -304,7 +316,7 @@ additionalProperties:
             description: >
                 A message to display after saving.
                 
-                You can use all of the features from http://zenar.io/customising-popout-messages-in-admin-mode
+                You can use all of the features from https://zenar.io/customising-popout-messages-in-admin-mode
                 in order to customise the message.
                 
                 Note: this will clash with the <code>popout_message</code> property in Organizer;
@@ -1588,6 +1600,14 @@ additionalProperties:
                                                 field.
                                                 
                                                 From version 8 onwards, you can enter a value of true to highlight the field in red without a message.
+                                        ascii_only:
+                                            type: *booly
+                                            description: >
+                                                An error message to display if a non-ascii character is entered for this
+                                                field.
+                                                This works from version 9.0 onwards.
+                                                
+                                                You can enter a value of true to highlight the field in red without a message.
                                         mobile_number:
                                             type: *booly
                                             description: >
@@ -1705,6 +1725,17 @@ additionalProperties:
                                                 
                                                 This works from version 8.0 onwards.
                                 
+                                onoff:
+                                    type: boolean
+                                    description: >
+                                        You can set this property to turn a checkbox into an on/off toggle.
+                                        
+                                        This uses code from https://proto.io/freebies/onoff/.
+                                        
+                                        Note that this option will add the HTML, but not the styles needed.
+                                        You'll need to add the CSS yourself!
+                                        
+                                        This works from version 9.0 onwards.
                                 indeterminate:
                                     type: boolean
                                     description: >
@@ -2165,7 +2196,7 @@ additionalProperties:
             
                                                     Options will be disabled/unselectable if the code provided does not evaluate to <code>true</code>.
             
-                                                    See http://zenar.io/visibility-in-tuix for examples.
+                                                    See https://zenar.io/visibility-in-tuix for examples.
                                             
                                             
                                             split_values_if_selected:

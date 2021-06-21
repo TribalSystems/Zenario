@@ -150,8 +150,8 @@ if ($resultSp = \ze\sql::select($sql)) {
 							
 								//We'll need to put a something on this page
 								//Work out a free main slot to put a Plugin in
-								$template = \ze\row::get('layouts', ['layout_id', 'file_base_name', 'family_name'], $layoutId);
-								$slotName = \ze\layoutAdm::mainSlotByName($template['family_name'], $template['file_base_name']);
+								$template = \ze\row::get('layouts', ['layout_id'], $layoutId);
+								$slotName = \ze\layoutAdm::mainSlotByName($template['layout_id']);
 						
 								//Check if this Plugin is Slotable, and if so attempt to put this Plugin on the page
 								if ($module['is_pluggable']) {

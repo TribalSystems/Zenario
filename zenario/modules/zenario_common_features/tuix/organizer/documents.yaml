@@ -30,7 +30,6 @@ zenario__content:
             default_sort_column: name
             no_items_message: There are no documents or folders
             columns:
-                
                 id:
                     title: ID
                     format: id
@@ -131,6 +130,9 @@ zenario__content:
                 plaintext_extract_details:
                     title: Extract text
                     width: xxlarge
+                mime_type:
+                    hidden: true
+                    db_column: f.mime_type
             collection_buttons:
                 upload:
                     priv: _PRIV_EDIT_DOCUMENTS
@@ -302,7 +304,7 @@ zenario__content:
                         item.mime_type == "application/pdf"
                         && zenarioA.siteSettings.pdftotext_path 
                         && zenarioA.siteSettings.ghostscript_path
-                    label: Rescan text and thumbnail
+                    label: Rescan text/image extract
                     without_columns_set:
                         traits.is_folder: true
                     ajax:

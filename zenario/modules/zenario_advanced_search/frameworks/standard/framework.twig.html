@@ -59,22 +59,6 @@
 	
 		{% if Search_Result_Rows %}
 			<div class="search_results">
-				{% for item in Search_Result_document_Row %}
-					<div class="search_result {{this.oddOrEven()}}">
-						<div class="search_result_image {{item.Icon_Class}}">{{item.Sticky_image_HTML_tag}}</div>
-						<div class="search_result_content">
-							<div class="search_result_title">
-								<h2>
-									{{item.Result_No}}. <a href="{{item.url}}">{{item.title}}</a> 
-									{{item.language_name}}
-								</h2>
-							</div>
-							<div class="breadcrumb">{{item.Breadcrumb}}</div>
-							<div class="search_result_summary">{{item.content_bodymain}}</div>
-						</div>
-					</div>
-				{% endfor %}
-				
 				{% for item in Search_Result_Row %}
 					<div class="search_result {{this.oddOrEven()}}">
 						<div class="search_result_image {{item.Icon_Class}}">{{item.Sticky_image_HTML_tag}}</div>
@@ -84,6 +68,28 @@
 									{{item.Result_No}}. <a href="{{item.url}}">{{item.title}}</a> 
 									{{item.language_name}}
 								</h2>
+								{% if Show_scores %}
+									{{item.score}}
+								{% endif %}
+							</div>
+							<div class="breadcrumb">{{item.Breadcrumb}}</div>
+							<div class="search_result_summary">{{item.content_bodymain}}</div>
+						</div>
+					</div>
+				{% endfor %}
+				
+				{% for item in Search_Result_document_Row %}
+					<div class="search_result {{this.oddOrEven()}}">
+						<div class="search_result_image {{item.Icon_Class}}">{{item.Sticky_image_HTML_tag}}</div>
+						<div class="search_result_content">
+							<div class="search_result_title">
+								<h2>
+									{{item.Result_No}}. <a href="{{item.url}}">{{item.title}}</a> 
+									{{item.language_name}}
+								</h2>
+								{% if Show_scores %}
+									{{item.score}}
+								{% endif %}
 							</div>
 							<div class="breadcrumb">{{item.Breadcrumb}}</div>
 							<div class="search_result_summary">{{item.content_bodymain}}</div>
@@ -100,6 +106,9 @@
 									{{item.Result_No}}. <a href="{{item.url}}">{{item.title}}</a> 
 									{{item.language_name}}
 								</h2>
+								{% if Show_scores %}
+									{{item.score}}
+								{% endif %}
 							</div>
 							<div class="breadcrumb">{{item.Breadcrumb}}</div>
 							<div class="search_result_summary">{{item.content_bodymain}}</div>

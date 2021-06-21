@@ -1506,20 +1506,6 @@ sendStateToServerDiff:
 #        <p>
 #            Nothing.
 #        </p>
-#setPhiVariables:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
 #setPickedItems:
 #    summary: |
 #        A summary.

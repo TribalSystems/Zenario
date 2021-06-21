@@ -1,0 +1,48 @@
+{% if Error %}
+	{{Message}}
+{% endif %}
+
+{% if Empty_Archive %}
+	{{No_images_to_download}}
+{% endif %}
+
+{% if Image_ids_for_zip_download %}
+	<div
+		id="generating_images_{{Main_Link_Slot}}"
+		class="download_images_preparing_archive"
+		style="display:none;"
+	>
+		{{'Preparing your zip file...'|trans}}
+	</div>
+	<div id="link_to_download_page_{{Main_Link_Slot}}" class="link_to_zip_download_page">
+		<span>{{'Download all images as a zip:'|trans}}</span>
+		<div class="prepare_data">
+			{{openForm}}
+				<input type="hidden" name="imageIds" value="{{Image_ids_for_zip_download|e}}"/>
+				<input type="hidden" name="slotName" value="{{Slot_name|e}}"/>
+				<div class="controls">
+					<input type="submit" name="prepareDownloadData" value="{{'Prepare zip'|trans}}"/>
+				</div>
+			{{closeForm}}
+		</div>
+	</div>
+{% endif %}
+
+{% if Download_Page %}
+	<div id="download_images_links" >
+		{% for linkItem in Main_Link_Array %}
+			{% if linkItem.errorMsg %}
+				<div id="download_images_errmsg" >{{linkItem.errorMsg}}</div>
+			{% endif %}
+			{% if linkItem.fileName %}
+				<div id="download_images_link" >
+					{% if linkItem.labelName %}
+						<span>{{linkItem.labelName}}</span>
+					{% endif %}
+					<a href="{{linkItem.linkName}}">{{linkItem.fileName}}</a>
+					<span>{{linkItem.fileSize}}</span>
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+{% endif %}

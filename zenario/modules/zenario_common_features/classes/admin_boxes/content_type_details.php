@@ -65,6 +65,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$values['details/default_permissions'] = $details['default_permissions'];
 		$values['details/hide_private_item'] = $details['hide_private_item'];
 		$values['details/hide_menu_node'] = $details['hide_menu_node'];
+		$values['details/allow_pinned_content'] = $details['allow_pinned_content'];
 		
 		$values['details/prompt_to_create_a_menu_node'] = $details['prompt_to_create_a_menu_node']? 'prompt' : 'dont_prompt';
 		$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
@@ -174,7 +175,8 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				'menu_node_position_edit' => $values['details/menu_node_position_edit'] ?: 'suggest',
 				'default_permissions' => $values['details/default_permissions'],
 				'hide_private_item' => $values['details/hide_private_item'],
-				'hide_menu_node' => $values['details/hide_menu_node']
+				'hide_menu_node' => $values['details/hide_menu_node'],
+				'allow_pinned_content' => $values['details/allow_pinned_content']
 			];
 			
 			if ($values['details/summary_field'] != 'hidden') {

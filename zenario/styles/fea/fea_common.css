@@ -894,6 +894,104 @@ table.table_list tr th.zfea_col_sorted {
 	width:50px;
 }
 
+/* order number feature*/
+
+.zfea_zenario_list_papers .papers_wrap {
+	clear:both;
+}
+
+.zfea_zenario_list_papers .papers_wrap .paper {
+	width:calc(100% - 50px);
+	padding-left:50px;
+	padding-bottom:20px;
+	position:relative;
+}
+
+.zfea_zenario_list_papers .papers_wrap .paper p.ordinal {
+	display:inline-block;
+	position:absolute;
+	top:0;
+	left:0;
+	
+	width: 30px;
+	height: 30px;
+	text-align: center;
+	border-radius: 50%;
+	line-height: 30px;
+	background: rgba(0,0,0,0.2);
+	color:#333;
+	cursor:default;
+}
+
+.zfea_zenario_list_papers .papers_wrap .paper p.ordinal span.tooltip {
+	display:inline-block;
+	font-size: 11px;
+	line-height:1.2em;
+	padding:6px 8px;
+	background:#323232;
+	color:#fff;
+	opacity:1;
+	border:0;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	width:100px;
+	position:absolute;
+	z-index:9;
+	top:34px;
+	left:0;
+	
+	opacity:0;
+	visibility:hidden;
+   	-webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+}
+
+.zfea_zenario_list_papers .papers_wrap .paper p.ordinal span.tooltip:after {
+	bottom: 100%;
+	left: 15px;
+	border: solid transparent;
+	content: "";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-color: rgba(51, 51, 51, 0);
+	border-bottom-color: #333333;
+	border-width: 4px;
+	margin-left: -4px;
+}
+
+.zfea_zenario_list_papers .papers_wrap .paper p.ordinal:hover span.tooltip {
+	opacity:1;
+	visibility:visible;
+}
+
+.zfea_zenario_list_papers .papers_wrap .paper .buttons a {
+	width:auto;
+	min-width:50px;
+}
+
+/* Seminar edit order number
+--------------------------------------------------------------------------------------------------*/
+
+.zfea_zenario_edit_seminar form div[id*="row__paper_"] .zfea_row_fields {
+	overflow:hidden;
+	border-top:1px solid #333;
+	padding:17px 0 0 0;
+}
+
+.zfea_zenario_edit_seminar form div[id*="row__paper_"] .zfea_row_fields > div {
+	width:80px;
+	float:left;
+}
+
+.zfea_zenario_edit_seminar form div[id*="row__paper_"] .zfea_row_fields > div.title {
+	width:calc(100% - 80px);
+	float:right;
+}
+
 /* Conference
 --------------------------------------------------------------------------------------------------*/
 
@@ -3533,65 +3631,8 @@ body.mobile .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_v
 	
 }
 
-
-
-
-
-
-/*
-	Styles for the on/off switches,
-	taken from https://proto.io/freebies/onoff/
-*/
-
-.onoffswitch {
-    position: relative; width: 63px;
-    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
-}
-.onoffswitch-checkbox {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-.onoffswitch-label {
-    display: block; overflow: hidden; cursor: pointer;
-    border: 2px solid #999999; border-radius: 20px;
-}
-.onoffswitch-inner {
-    display: block; width: 200%; margin-left: -100%;
-    transition: margin 0.3s ease-in 0s;
-}
-.onoffswitch-inner:before, .onoffswitch-inner:after {
-    display: block; float: left; width: 50%; height: 30px; padding: 0; line-height: 30px;
-    font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
-    box-sizing: border-box;
-}
-.onoffswitch-inner:before {
-    content: "✓";
-    padding-left: 10px;
-    background-color: #40A080; color: #FFFFFF;
-}
-.onoffswitch-inner:after {
-    content: "╳";
-    padding-right: 10px;
-    background-color: #AAAAAA; color: #202020;
-    text-align: right;
-}
-.onoffswitch-switch {
-    display: block; width: 18px; margin: 6px;
-    background: #FFFFFF;
-    position: absolute; top: 0; bottom: 0;
-    right: 29px;
-    border: 2px solid #999999; border-radius: 20px;
-    transition: all 0.3s ease-in 0s; 
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
-    margin-left: 0;
-}
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-    right: 0px; 
-}
-
-/* Customized styles */
+/*  Toggles. Styles for the on/off switches, 
+	Style 1: with tick and cross */
 
 .onoffswitch .onoffswitch-label {
 	width:calc(100% - 4px); /* clear */

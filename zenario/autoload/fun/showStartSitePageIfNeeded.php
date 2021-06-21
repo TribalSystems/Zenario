@@ -58,7 +58,7 @@ if ($reportDBOutOfDate && \ze\priv::check()) {
 //If you need to enable your site, the "here" link should point to the "Set-up" panel to do that
 } else {
 	$errorMessage = \ze::setting('site_disabled_message');
-	$adminLink = \ze\link::absolute(). 'admin.php?og=zenario__administration/panels/site_settings//site_disabled';
+	$adminLink = \ze\link::absolute(). 'admin.php?og=zenario__organizer/panels/start_page';
 }
 
 $errorMessage = \ze\admin::phrase($errorMessage, ['admin_link' => htmlspecialchars($adminLink)]);

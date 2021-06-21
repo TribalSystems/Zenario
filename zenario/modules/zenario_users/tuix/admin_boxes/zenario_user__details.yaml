@@ -250,9 +250,10 @@ zenario_user__details:
                         zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     format_onchange: Yes
-                    hidden: Yes
+                    hidden: true
                 email_to_send:
-                    label: 'Email Template:'
+                    label: 'Email template:'
+                    indent: 1
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
@@ -264,11 +265,11 @@ zenario_user__details:
                         required_if_not_hidden: Please select an email template
                     visible_if: |
                         zenarioAB.value('send_activation_email_to_user', 'details')
-                        && zenarioAB.value('email', 'details')
                     side_note: >
                         An email based on the selected email template will be sent
                         to the user.
-                    hidden: Yes
+                    hidden: true
+                    #The note_below is added in PHP.
         dates:
             visible_if: |
                 zenarioAB.tuix.key.id

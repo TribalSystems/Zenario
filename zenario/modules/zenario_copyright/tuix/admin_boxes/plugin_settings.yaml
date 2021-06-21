@@ -4,6 +4,11 @@ plugin_settings:
     tabs:
         first_tab:
             label: Details
+            notices:
+                caching_note:
+                    show: false
+                    type: warning
+                    message: "Note: if the year is out of date, please press Save to update it to the current year."
             fields:
                 company_name:
                     plugin_setting:
@@ -109,6 +114,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter an end year.
                         numeric: The end year must be a number.
+                
                 link_type:
                     plugin_setting:
                         name: link_type

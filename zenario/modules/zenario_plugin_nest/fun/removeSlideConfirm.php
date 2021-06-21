@@ -66,7 +66,7 @@ $usagePublished = ze\pluginAdm::usage($instanceId, true);
 if ($usage > 1 || $usagePublished > 0) {
 	$message .=
 		'<p>'. ze\admin::phrase(
-			'This will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] Content Item(s) in total</a>).</span>',
+			'This will affect <span class="zenario_x_published_items">[[published]] published content item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] content item(s) in total</a>).</span>',
 			[
 				'pages' => $usage,
 				'published' => $usagePublished,

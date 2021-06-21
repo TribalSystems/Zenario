@@ -2969,7 +2969,11 @@ zenarioO.inlineButtonClick = function(id, itemId) {
 	}
 };
 
-zenarioO.toggleQuickFilter = function(id, turnOn) {
+zenarioO.checkIfClearAllAvailable = function(id) {
+	return zenarioO.toggleQuickFilter(id, false, true);
+}
+
+zenarioO.toggleQuickFilter = function(id, turnOn, checkIfClearAllAvailable) {
 
 	var c, i, otherButton, filterType,
 		changedSomething = false,
@@ -3001,13 +3005,22 @@ zenarioO.toggleQuickFilter = function(id, turnOn) {
 			 || button.parent == otherButton.parent) {
 				if (c = otherButton.column) {
 					if (zenarioO.getFilterValue('s', c)) {
-						zenarioO.setFilterValue('s', c, false);
-						zenarioO.clearFilter(c);
-						changedSomething = true;
+						
+						if (checkIfClearAllAvailable) {
+							return true;
+						} else {
+							zenarioO.setFilterValue('s', c, false);
+							zenarioO.clearFilter(c);
+							changedSomething = true;
+						}
 					}
 				}
 			}
 		}
+	}
+	
+	if (checkIfClearAllAvailable) {
+		return false;
 	}
 	
 	//If this quick-filter-button has a column set, try to either
@@ -6306,12 +6319,13 @@ zenarioO.setOrganizerIcons = function() {
 	
 	var i, j,
 		_$div = zenarioT.div,
-		lowerLeftIcons = [], upperRightIcons = [],
+		lowerLeftIcons = [], panelIcons = [], upperRightIcons = [],
 		pos, icons, iconGroups, icon;
 	
-	//Add the debug icon if dev tools are enabled. This is added even in select/quick mode.
+	//Add the dev tools button to the panel icons if dev tools are enabled.
+	//This is added even in select/quick mode.
 	if (zenarioT.showDevTools()) {
-		upperRightIcons.push([_$div("id", "organizer_debug_button", "class", "zenario_debug", "onmouseover", "zenarioO.infoBox(this);", "onclick", "zenarioO.closeInfoBox(); zenarioA.debug('zenarioO');", _$div()), 99]);
+		panelIcons.push([_$div("id", "organizer_debug_button", "class", "zenario_debug", "onmouseover", "zenarioO.infoBox(this);", "onclick", "zenarioO.closeInfoBox(); zenarioA.debug('zenarioO');", _$div()), 99]);
 	}
 	
 	//Only add the rest of the icons in full-mode.
@@ -6328,28 +6342,38 @@ zenarioO.setOrganizerIcons = function() {
 			if (iconGroups['↗']) {
 				upperRightIcons = upperRightIcons.concat(iconGroups['↗']);
 			}
+			if (iconGroups['↱']) {
+				panelIcons = panelIcons.concat(iconGroups['↱']);
+			}
 			if (iconGroups['↙']) {
 				lowerLeftIcons = lowerLeftIcons.concat(iconGroups['↙']);
 			}
 		}
 		
 		//Sort each group
-		lowerLeftIcons.sort(zenarioT.sortArray);
 		upperRightIcons.sort(zenarioT.sortArray);
+		panelIcons.sort(zenarioT.sortArray);
+		lowerLeftIcons.sort(zenarioT.sortArray);
 	}
 	
 	//Remove the sort columns and just leave the HTML
-	foreach (lowerLeftIcons as i) {
-		lowerLeftIcons[i] = lowerLeftIcons[i][0];
-	}
-
 	foreach (upperRightIcons as i) {
 		upperRightIcons[i] = upperRightIcons[i][0];
 	}
 	
+	foreach (panelIcons as i) {
+		panelIcons[i] = panelIcons[i][0];
+	}
+	
+	foreach (lowerLeftIcons as i) {
+		lowerLeftIcons[i] = lowerLeftIcons[i][0];
+	}
+	
 	//Set the icons
+	$('#organizer_topRightIcons').html(upperRightIcons.join('\n'));
+	$('#organizer_panelIcons').html(panelIcons.join('\n'));
 	$('#organizer_lowerLeftColumn').html(lowerLeftIcons.join('\n'));
-	$('#organizer_top_right_newicons').html(upperRightIcons.join('\n'));
+
 };
 
 //Set up the "where was that thing" search box at the top of Organizer

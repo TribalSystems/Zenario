@@ -74,12 +74,12 @@ zenario_admin:
                         screen_name: The admin username may not contain any special characters.
                       
                 email:
-                    label: 'Email Address:'
+                    label: 'Email address:'
                     type: text
                     maxlength: "200"
                     validation:
-                        required: Please enter an Email Address.
-                        email: Please enter a valid Email Address.
+                        required: Please enter an email address.
+                        email: Please enter a valid email address.
                 inform_by_email:
                     visible_if: '!zenarioAB.tuix.key.id'
                     label: 'Inform by email'
@@ -87,7 +87,7 @@ zenario_admin:
                     disabled: true
                     value: 1
                     note_below: >
-                        If checked, the Administrator will receive an email with the update. 
+                        If checked, Zenario will send the administrator an email with the update. 
                 is_client_account:
                     label: 'Is client account'
                     type: checkbox
@@ -112,11 +112,11 @@ zenario_admin:
                 new_admin:
                     show: false
                     type: information
-                    message: The administrator will receive a link via email where they can set a password.
+                    message: Zenario will send the administrator an email with a link to where they can set a password.
                 is_trashed:
                     show: false
                     type: warning
-                    message: This administrator is trashed and cannot log in.
+                    message: This administrator's account has been trashed and they cannot log in.
             fields:
                 desc:
                     full_width: true
@@ -137,8 +137,7 @@ zenario_admin:
                     label: 'Password needs changing'
                     type: checkbox
                     note_below: >
-                        If checked, the Administrator will be prompted to change
-                        their password when they next log in.
+                        If checked, the administrator will be prompted to change their password when they next log in.
                     visible_if: zenarioAB.tuix.key.id
         permissions:
             label: Permissions
@@ -150,7 +149,7 @@ zenario_admin:
                 is_trashed:
                     show: false
                     type: warning
-                    message: This administrator is trashed and cannot log in.
+                    message: This administrator's account has been trashed and they cannot log in.
             fields:
                 desc:
                     full_width: true
@@ -170,7 +169,7 @@ zenario_admin:
                             label: "Grant by language / content type / content item"
                             side_note: |
                                 This administrator will be allowed to edit content items if they match one of the rules below.
-                                They will not be allowed to access other parts of the system (e.g. users, emails, ...)
+                                They will not be allowed to access other parts of Zenario (e.g. users, emails, etc.)
                     value: specific_actions
                     format_onchange: true
                 
@@ -217,8 +216,14 @@ zenario_admin:
                         select_phrase: Select a content item...
                         #nothing_selected_phrase:
                         disallow_refiners_looping_on_min_path: true
-                    
-                    
-                    
                 
+                desc_at_bottom:
+                    visible_if: |
+                        zenarioAB.value('permissions') &&
+                        zenarioAB.value('permissions') != 'all_permissions'
+                    note_below: |
+                        Administrators without specific permissions can view ALL content items,
+                        irrespective of publishing status or user permission.
+                    
+                    
                 

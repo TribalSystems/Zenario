@@ -16,6 +16,9 @@ zenario_user_form:
                 always_on: true
             ord: 1
             fields:
+                last_page_visibility:
+                    type: text
+                    hidden: true
                 type:
                     ord: 1
                     label: 'Type:'
@@ -88,13 +91,13 @@ zenario_user_form:
                 partial_completion_mode__auto:
                     ord: 13.1
                     type: checkbox
-                    label: Automatically save when changing form page
+                    label: Automatically save when changing form step
                     visible_if: zenarioAB.value('allow_partial_completion')
                     indent: 1
                 partial_completion_mode__button:
                     ord: 13.2
                     type: checkbox
-                    label: Show a save button on each form page
+                    label: Show a save button on each form step
                     visible_if: zenarioAB.value('allow_partial_completion')
                     redraw_onchange: true
                     indent: 1
@@ -147,37 +150,37 @@ zenario_user_form:
                 
                 show_page_switcher:
                     ord: 15
-                    label: Show page switcher
+                    label: Show step switcher
                     type: checkbox
                     redraw_onchange: true
                 page_switcher_navigation:
                     ord: 16
-                    label: 'Page switcher navigation:'
+                    label: 'Step switcher navigation:'
                     type: select
                     values:
                         none:
                             ord: 1
-                            label: Show a tab for each page without a hyperlink
+                            label: Show a tab for each step without a hyperlink
                         only_visited_pages:
                             ord: 2
-                            label: Show a tab for each page and show a hyperlink if the user has visited the page
+                            label: Show a tab for each step and show a hyperlink if the user has visited the step
                     visible_if: zenarioAB.value('show_page_switcher');
                     indent: 1
                 enable_summary_page:
                     ord: 17
-                    label: 'Enable summary page'
+                    label: 'Show a summary as the final step'
                     type: checkbox
                     redraw_onchange: true
                 enable_summary_page_required_checkbox:
                     ord: 18
-                    label: 'Add a required checkbox to the summary page'
+                    label: 'Show a mandatory checkbox on the summary step (e.g. a confirmation)'
                     type: checkbox
                     indent: 1
                     redraw_onchange: true
                     visible_if: zenarioAB.value('enable_summary_page')
                 summary_page_required_checkbox_label:
                     ord: 19
-                    label: 'Label:'
+                    label: 'Checkbox label:'
                     type: text
                     indent: 2
                     maxlength: 250
@@ -187,7 +190,7 @@ zenario_user_form:
                         required_if_not_hidden: 'Please enter the label for the required checkbox.'
                 summary_page_required_checkbox_error_message:
                     ord: 20
-                    label: 'Error message:'
+                    label: 'Error message if not checked:'
                     type: text
                     maxlength: 250
                     indent: 2
@@ -197,7 +200,7 @@ zenario_user_form:
                         required_if_not_hidden: 'Please enter the error message for the required checkbox.'
                 summary_page_lower_text:
                     ord: 21
-                    label: 'Summary page lower text:'
+                    label: 'Add text at the bottom of the summary step:'
                     type: textarea
                     indent: 1
                     visible_if: zenarioAB.value('enable_summary_page')
@@ -780,7 +783,7 @@ zenario_user_form:
                         required_if_not_hidden: Please select a type of captcha.
                     indent: 1
                 extranet_users_use_captcha:
-                    label: 'Require extranet users to complete a captcha'
+                    label: 'Require captcha even if user is an extranet user'
                     type: checkbox
                     indent: 1
         translations:

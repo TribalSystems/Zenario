@@ -87,7 +87,7 @@ zenario__administration:
                     keywords: >
                         antiword pdftotext pdf-to-text pdf to text ghostscript word document
                         plain text extract plaintext extract image thumbnail
-                        png jpeg jpg optimize optimise zip
+                        png jpeg jpg optimize optimise zip html->pdf word->text compress jpegs compress pngs pdf->image pdf->text
                 logos_and_branding:
                     css_class: favicon
                     priv: _PRIV_VIEW_SITE_SETTING
@@ -119,7 +119,7 @@ zenario__administration:
                         screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
                         country countries linked country linked countries
                 optimisation:
-                    name: Optimisation
+                    name: Cache
                     desc: Settings that affect or speed up web pages.
                     keywords: >
                         compress web pages quickly
@@ -149,6 +149,11 @@ zenario__administration:
                     css_class: site_disabled
                     name: Site is DISABLED
                     desc: Change site mode (production, development or disabled).
+                    is_not_site_setting: true
+                site_offline:
+                    css_class: site_disabled
+                    name: Site is OFFLINE, awaiting language
+                    desc: Zenario needs at least one language to be enabled in order to run.
                     is_not_site_setting: true
                 site_reset:
                     priv: _PRIV_RESET_SITE

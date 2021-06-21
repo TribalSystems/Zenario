@@ -17,7 +17,7 @@ zenario__content:
                     ord: 3.1
                     parent: property_dropdown
                     priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
-                    label: Edit permissions
+                    label: Change permissions
                     multiple_select: true
                     admin_box:
                         path: zenario_content_privacy

@@ -62,7 +62,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$box['key']['target_menu_parent'] = $box['key']['id'];
 		
 				$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
+				$box['key']['cType'] = $box['key']['target_cType'];
 	
+			} elseif ($box['key']['id'] && $box['key']['id_is_menu_node_id']) {
+				//Create a new Content Item/Menu Node under an existing child one
+				$box['key']['target_menu'] = $box['key']['id'] . '_' . $box['key']['target_menu_section'];
+				
+				$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
+				$box['key']['cType'] = $box['key']['target_cType'];
+
 			} elseif ($box['key']['id'] && ($menuContentItem = ze\menu::getContentItem($box['key']['id']))) {
 				//Edit an existing Content Item based on its Menu Node
 				$box['key']['cID'] = $menuContentItem['equiv_id'];
@@ -223,6 +231,30 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 
 		if ($content) {
+			//On the language selector, disable languages for which translations already exist,
+			//and mark the currently selected language.
+			if (!ze\content::isSpecialPage($box['key']['cID'], $box['key']['cType'])) {
+				if ($content['language_id'] && $fields['meta_data/language_id']['values'][$content['language_id']]) {
+					$fields['meta_data/language_id']['values'][$content['language_id']]['label'] .= ' (' . ze\admin::phrase('selected') . ')';
+				}
+
+				$contentEquivId = ze\content::equivId($content['id'], $content['type']);
+				$otherTranslationsResult =
+					ze\row::query(
+						'content_items',
+						'language_id',
+						['equiv_id' => (int) $contentEquivId, 'type' => $box['key']['cType'], 'id' => ['!' => $content['id']]]);
+				$otherTranslations = ze\sql::fetchValues($otherTranslationsResult);
+				if (!empty($otherTranslations)) {
+					foreach ($otherTranslations as $otherTranslation) {
+						if ($fields['meta_data/language_id']['values'][$otherTranslation]) {
+							$fields['meta_data/language_id']['values'][$otherTranslation]['disabled'] = true;
+							$fields['meta_data/language_id']['values'][$otherTranslation]['label'] .= ' (' . ze\admin::phrase('translation already exists') . ')';
+						}
+					}
+				}
+			}
+
 			if ($box['key']['duplicate'] || $box['key']['translate']) {
 				//Don't allow the layout to be changed when duplicating
 				$fields['meta_data/layout_id']['readonly'] = true;
@@ -235,7 +267,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					if (!ze::setting('translations_different_aliases')) {
 						$fields['meta_data/alias']['readonly'] = true;
 						$box['tabs']['meta_data']['fields']['alias']['note_below'] =
-							ze\admin::phrase('Note: on this site, aliases are the same on all content items in a translation chain.');
+							ze\admin::phrase('All content items in a translation chain have the same alias (see site settings).');
 					}
 				}
 				
@@ -243,7 +275,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				//Check to see if there are any library plugins on this page set at the item level
 				$slots = [];
 				ze\plugin::slotContents($slots, $box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'],
-					$layoutId = false, $templateFamily = false, $templateFileBaseName = false,
+					$layoutId = false,
 					$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
 					$runPlugins = false
 				);
@@ -263,7 +295,34 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$values['plugins/instance_id'. $suffix] = $slot['instance_id'];
 						$values['plugins/plugin'. $suffix] = $instance['instance_name'] . ' (' . $instance['name'] . ')';
 						$values['plugins/new_name'. $suffix] =  ze\admin::phrase('[[name]] (copy)', $instance);
+						
+						$className = ze\module::className($slot['module_id']);
+						
+						if ($className == 'zenario_slideshow_simple') {
+							
+							$fields['plugins/action'. $suffix]['empty_value'] = "- Select what to do with this slideshow -";
+							$fields['plugins/action'. $suffix]['values']['original']['label'] = "Use same slideshow";
+							
+						} elseif ($className == 'zenario_plugin_nest') {
+							$fields['plugins/action'. $suffix]['empty_value'] = "- Select what to do with this nest -";
+							$fields['plugins/action'. $suffix]['values']['original']['label'] = "Use same nest";
+							
+						} else {
+							$fields['plugins/action'. $suffix]['empty_value'] = "- Select what to do with this plugin -";
+							$fields['plugins/action'. $suffix]['values']['original']['label'] = "Use same plugin";
+							
+						}
+						$fields['plugins/action'. $suffix]['values']['duplicate']['label'] = "Make a copy";
+						$fields['plugins/action'. $suffix]['values']['empty']['label'] = "Leave the slot empty";
+						
+						$fields['plugins/action'. $suffix]['values']['original']['ord'] = 1;
+						$fields['plugins/action'. $suffix]['values']['duplicate']['ord'] = 1.1;
+						$fields['plugins/action'. $suffix]['values']['empty']['ord'] = 1.2;
+						
+						
 					}
+					
+					
 				}
 				
 				//If there are, show the plugins tab, with options for each one
@@ -271,8 +330,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$box['tabs']['plugins']['hidden'] = false;
 					
 					$fields['plugins/desc']['snippet']['p'] =
-						ze\admin::nphrase('There is 1 library plugin in use on this content item. Please select what you wish to do with this.',
-							'There are [[count]] library plugins in use on this content item. Please select what you wish to do with them.',
+						ze\admin::nphrase('There is 1 library plugins/nests/slideshows in slots on this content item. Please select what you wish to do with this.',
+							'There are [[count]] library plugins/nests/slideshows in slots on this content item. Please select what you wish to do with them.',
 							$numPlugins
 						);
 						
@@ -321,11 +380,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					
 				}
 				
-				//
 				$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
 			}
 	
-			$values['meta_data/language_id'] = $content['language_id'];
+			$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = $content['language_id'];
 	
 			$fields['meta_data/layout_id']['pick_items']['path'] = 
 				'zenario__layouts/panels/layouts/refiners/content_type//' . $content['type']. '//';
@@ -355,9 +413,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['file/file'] = $version['file_id'];
 				$values['file/s3_file_id'] = $version['s3_file_id'];
 				$values['file/s3_file_name'] = $version['s3_filename'];
+
+				$fields['meta_data/pinned']['hidden'] = !ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $box['key']['cType']]);
+				$values['meta_data/pinned'] = $version['pinned'];
 				
-				
-		
 				if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {
 					$values['meta_data/lock_summary_view_mode'] =
 					$values['meta_data/lock_summary_edit_mode'] = $version['lock_summary'];
@@ -447,10 +506,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//Set default values
 		if ($content) {
 			if ($box['key']['duplicate'] || $box['key']['translate']) {
-				$values['meta_data/language_id'] = ze::ifNull($box['key']['target_language_id'], ze::ifNull($_GET['languageId'] ?? false, ($_GET['language'] ?? false), $content['language_id']));
+				$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ze::ifNull($_GET['languageId'] ?? false, ($_GET['language'] ?? false), $content['language_id']));
 			}
 		} else {
-			$values['meta_data/language_id'] = ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ze::$defaultLang);
+			$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ze::$defaultLang);
 		}
 		
 		if (!$version) {
@@ -475,7 +534,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$layoutId = 0;
 				}
 			}
-			$contentType = ze\row::get('content_types', true, $box['key']['cType']);
 			
 			$values['meta_data/layout_id'] = $layoutId;
 			
@@ -510,12 +568,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (!$version && $box['key']['target_title']) {
 			$values['meta_data/title'] = $box['key']['target_title'];
 		}
-
-		//Don't let the language be changed if this Content Item already exists, or will be placed in a set language for the menu
-		if (!$box['key']['duplicate'] && ($content || $box['key']['target_menu_section'])) {
-			$lockLanguageId = true;
-		}
-
 		if (isset($box['tabs']['categories']['fields']['desc'])) {
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
@@ -600,7 +652,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$box['title'] = ze\admin::phrase('Creating a content item, [[content_type_name_en]]', $contentType);
 		}
 
-		if ($lockLanguageId) {
+		if ($lockLanguageId || ($box['key']['cID'] && $box['key']['cType'] && ze\content::isSpecialPage($box['key']['cID'], $box['key']['cType']))) {
 			$box['tabs']['meta_data']['fields']['language_id']['show_as_a_span'] = true;
 		}
 
@@ -1112,6 +1164,97 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				unset($fields['meta_data/description']['post_field_html']);
 				unset($fields['meta_data/description']['note_below']);
 			}
+
+			//Extra info field when editing content items on a site
+			//with multiple languages enabled
+			$languagesEnabledOnSite = ze\lang::getLanguages(false, false, $defaultLangFirst = true);
+			$numLanguageEnabled = count($languagesEnabledOnSite);
+			$defaultLanguage = ze::$defaultLang;
+
+			if ($numLanguageEnabled > 1) {
+				$mainLanguageContentItemSql = "
+					SELECT id, type, language_id, alias, visitor_version, admin_version, status, tag_id
+					FROM ". DB_PREFIX. "content_items
+					WHERE equiv_id = " . (int) $equivId . "
+					AND type = '" . ze\escape::sql($box['key']['cType']) . "'
+					AND id = " . (int) $equivId;
+				$mainLanguageContentItemResult = ze\sql::select($mainLanguageContentItemSql);
+				$mainLanguageContentItem = ze\sql::fetchAssoc($mainLanguageContentItemResult);
+
+				$translationsCountSql = "
+					SELECT COUNT(id)
+					FROM ". DB_PREFIX. "content_items
+					WHERE equiv_id = " . (int) $equivId . "
+					AND type = '" . ze\escape::sql($box['key']['cType']) . "'
+					AND id <> " . (int) $box['key']['cID'];
+				$translationsCountResult = ze\sql::select($translationsCountSql);
+				$translationsCount = ze\sql::fetchValue($translationsCountResult);
+
+				$translationChainHref =
+					ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/content/refiners/content_type//' 
+					. htmlspecialchars($box['key']['cType']) . '//item_buttons/zenario_trans__view//' . htmlspecialchars($mainLanguageContentItem['tag_id']) . '//';
+				$translationChainLinkStart = '<a href="' . $translationChainHref . '" target="_blank">';
+				$translationChainLinkEnd = '</a>';
+				$viewTranslationChainPhrase = ze\admin::phrase('[[link_start]]View translation chain[[link_end]]', ['link_start' => $translationChainLinkStart, 'link_end' => $translationChainLinkEnd]);
+				
+				$fields['meta_data/content_item_translation_info']['hidden'] = false;
+				$fields['meta_data/content_item_translation_info']['snippet']['html'] = '<div class="zenario_fbInfo">';
+
+				if ($box['key']['cID'] == $equivId) {
+					//This is the main or the only content item in the chain.
+					if ($values['meta_data/language_id_on_load'] == $defaultLanguage) {
+						//If this is the content item in the site's main language,
+						//show the translation counter.
+						
+						$fields['meta_data/content_item_translation_info']['snippet']['html'] .=
+							ze\admin::nPhrase(
+								"This content item has 1 translation.",
+								"This content item has [[translation_count]] translations.",
+								(int) $translationsCount,
+								['translation_count' => (int) $translationsCount]
+							);
+						$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ' ' . $viewTranslationChainPhrase;
+					} else {
+						if ($translationsCount > 0) {
+							$defaultLanguageName = $languagesEnabledOnSite[$defaultLanguage]['english_name'];
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .=
+								ze\admin::phrase(
+									'This item is in a translation chain with no item in the default language ([[default_language_name]]).',
+									['default_language_name' => $defaultLanguageName]
+								);
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ' ' . $viewTranslationChainPhrase;
+						} else {
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ze\admin::phrase('This item is not in a translation chain.');
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ' ' . $viewTranslationChainPhrase;
+						}
+					}
+				} else {
+					//This is a translation.
+					if ($mainLanguageContentItem['language_id'] == $defaultLanguage) {
+						//The main item in this chain is in the site's default language.
+						$mainLanguageContentItemTag = ze\content::formatTag($mainLanguageContentItem['id'], $mainLanguageContentItem['type'], ($mainLanguageContentItem['alias'] ?? false));
+						
+						$fields['meta_data/content_item_translation_info']['snippet']['html'] .=
+							ze\admin::phrase('This item is in the translation chain of "[[tag]]".', ['tag' => $mainLanguageContentItemTag]);
+						$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ' ' . $viewTranslationChainPhrase;
+					} else {
+						if ($translationsCount > 0) {
+							$defaultLanguageName = $languagesEnabledOnSite[$defaultLanguage]['english_name'];
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .=
+								ze\admin::phrase(
+									'This item is in a translation chain with no item in the default language ([[default_language_name]]).',
+									['default_language_name' => $defaultLanguageName]
+								);
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ' ' . $viewTranslationChainPhrase;
+						} else {
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ze\admin::phrase('This item is not in a translation chain.');
+							$fields['meta_data/content_item_translation_info']['snippet']['html'] .= ' ' . $viewTranslationChainPhrase;
+						}
+					}
+				}
+
+				$fields['meta_data/content_item_translation_info']['snippet']['html'] .= '</div>';
+			}
 		}
 		if (!$values['meta_data/alias_changed']) {
 			$fields['meta_data/suggest_alias_from_title']['style'] = 'display:none';
@@ -1230,7 +1373,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$fields['meta_data/writer_name']['error'] = ze\admin::phrase('Please enter a writer name.');
 		}
 
-		if ($box['key']['translate']) {
+		if ($box['key']['translate'] || ($box['key']['cID'] && $values['meta_data/language_id'] != $values['meta_data/language_id_on_load'])) {
 			$equivId = ze\content::equivId($box['key']['source_cID'], $box['key']['cType']);
 	
 			if (ze\row::exists('content_items', ['equiv_id' => $equivId, 'type' => $box['key']['cType'], 'language_id' => $values['meta_data/language_id']])) {
@@ -1261,7 +1404,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		//Create a new Content Item, or a new Draft of a Content Item, as needed.
 		$newDraftCreated = ze\contentAdm::createDraft($box['key']['cID'], $box['key']['source_cID'], $box['key']['cType'], $box['key']['cVersion'], $box['key']['source_cVersion'], $values['meta_data/language_id']);
-		$forceMarkAsEditsMade = $newDraftCreated;
 
 		if (!$box['key']['cID']) {
 			exit;
@@ -1299,6 +1441,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$version['writer_name'] = $values['meta_data/writer_name'];
 			#$version['in_sitemap'] = $values['meta_data/in_sitemap'];
 			$version['in_sitemap'] = !$values['meta_data/exclude_from_sitemap'];
+			$version['pinned'] = $values['meta_data/pinned'];
 	
 			ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
 			$version['content_summary'] = $values['meta_data/content_summary'];
@@ -1327,6 +1470,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$instanceId = $values['plugins/instance_id'. $suffix];
 					$eggId = false;
 					ze\pluginAdm::rename($instanceId, $eggId, $newName, $createNewInstance = true);
+					ze\pluginAdm::updateItemSlot($instanceId, $slotName, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
+				} elseif ($values['plugins/action'. $suffix] == 'empty') {
+					
+					$slotName = $values['plugins/slotname'. $suffix];
+					$instanceId = '';
+					$eggId = false;
 					ze\pluginAdm::updateItemSlot($instanceId, $slotName, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
 				}
 			}
@@ -1454,7 +1603,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		//Update the content_item_versions table
 		if ($changes) {
-			ze\contentAdm::updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version, $forceMarkAsEditsMade);
+			ze\contentAdm::updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version);
 		}
 
 
@@ -1476,6 +1625,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			ze\contentAdm::deleteUnusedBackgroundImages();
 		}
 		
+		//If changing the language of an existing content item, save it now.
+		if ($values['meta_data/language_id_on_load'] != $values['meta_data/language_id']) {
+			ze\row::set('content_items', ['language_id' => $values['meta_data/language_id']], ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
+			
+			//If this content item's language gets changed to the site's default language,
+			//the equiv ID of the entire chain will be changed to this content item's one.
+			//Otherwise, nothing will happen.
+			ze\contentAdm::resyncEquivalence($box['key']['cID'], $box['key']['cType']);
+		}
 		
 		$this->saveMenu($box, $fields, $values, $changes, $equivId);
 	}
@@ -1522,6 +1680,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$menu = ze\menu::details($box['key']['target_menu_parent']);
 			$defaultPos = 'under';
 		
+		} elseif ($box['key']['target_menu']) {
+			$menu = ze\menu::details($box['key']['target_menu']);
+			$defaultPos = 'under';
+		
 		} else {
 			$menu = false;
 		}
@@ -1545,6 +1707,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if ($box['key']['cID']) {
 			
 			$fields['meta_data/create_menu_node']['hidden'] = true;
+			unset($fields['meta_data/no_menu_warning']['indent']);
 			$values['meta_data/create_menu_node'] = '';
 			
 			if (
@@ -1605,8 +1768,14 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				//Set the menu positions for before/after/under
 				$values['meta_data/menu_pos_before'] = $menu['section_id']. '_'. $menu['id']. '_'. $beforeNode;
 				$values['meta_data/menu_pos_under'] = $menu['section_id']. '_'. $menu['id']. '_'. $underNode;
-				$values['meta_data/menu_pos_after'] =
-				$values['meta_data/menu_pos_specific'] = $menu['section_id']. '_'. $menu['parent_id']. '_'. $underNode;
+
+				if ($box['key']['target_menu']) {
+					$values['meta_data/menu_pos_after'] =
+					$values['meta_data/menu_pos_specific'] = $menu['section_id']. '_'. $menu['id']. '_'. $underNode;
+				} else {
+					$values['meta_data/menu_pos_after'] =
+					$values['meta_data/menu_pos_specific'] = $menu['section_id']. '_'. $menu['parent_id']. '_'. $underNode;
+				}
 			
 				//That last line of code above will actually place the new menu node at the end of the current line.
 				//If there's a menu node after the current one, then that's not technically the position after this one,
@@ -1736,7 +1905,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				&& $values['meta_data/menu_text_when_editing_on_load']
 				&& $values['meta_data/menu_text_when_editing'] != $values['meta_data/menu_text_when_editing_on_load']
 			) {
-				ze\row::update('menu_text', ['name' => $values['meta_data/menu_text_when_editing']], ['menu_id' => $values['meta_data/menu_id_when_editing'], 'language_id' => $values['meta_data/language_id']]);
+				ze\row::update('menu_text', ['name' => $values['meta_data/menu_text_when_editing'], 'language_id' => $values['meta_data/language_id']], ['menu_id' => $values['meta_data/menu_id_when_editing'], 'language_id' => $values['meta_data/language_id_on_load']]);
 			}
 		}
 	}

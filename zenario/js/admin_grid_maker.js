@@ -60,7 +60,7 @@ zenarioGM.addToolbarId = 'grid_add_toolbar';
 
 
 
-zenarioGM.init = function(data, layoutId, layoutName, familyName) {
+zenarioGM.init = function(data, layoutId, layoutName) {
 	if (typeof data == 'object') {
 		zenarioGM.data = data;
 	} else {
@@ -74,7 +74,7 @@ zenarioGM.init = function(data, layoutId, layoutName, familyName) {
 		zenarioGM.layoutId = layoutId;
 	}
 	
-	zenarioGM.checkData(layoutName, familyName);
+	zenarioGM.checkData(layoutName);
 	zenarioGM.checkDataR(zenarioGM.data.cells);
 	zenarioGM.rememberNames(zenarioGM.data.cells);
 	

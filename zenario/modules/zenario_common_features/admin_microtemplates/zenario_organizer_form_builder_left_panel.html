@@ -21,7 +21,7 @@
 				<div class="field_type" data-type="restatement"><span class="restatement"></span><h4>Mirrored</h4></div>
 				<div class="field_type" data-type="document_upload"><span class="document_upload"></span><h4>Multi-upload</h4></div>
 				<div class="field_type" data-type="section_description"><span class="section_description"></span><h4>Subheading</h4></div>
-				<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeat block</h4></div>
+				<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeating section</h4></div>
 				<div class="field_type" data-type="calculated"><span class="calculated"></span><h4>Calculated</h4></div>
 			</div>
 		</div>
@@ -57,7 +57,12 @@
 								<span class="edit_field_name_button">Edit</span>
 							</div>
 							<div class="edit_mode" style="display:none;">
-								<input name="name" id="field__name" type="text" value="{{m.name|e}}" maxlength="255" placeholder="Field name (admin use only)"/>
+								<% if (m.mode == 'edit_field') { %>
+									<input name="name" id="field__name" type="text" value="{{m.name|e}}" maxlength="255" placeholder="Field name"/>
+								<% } else if (m.mode == 'edit_page') { %>
+									<input name="name" id="field__name" type="text" value="{{m.name|e}}" maxlength="255" placeholder="Step name"/>
+								<% } %>
+								
 								<span class="done_field_name_button">Done</span>
 							</div>
 							
@@ -80,7 +85,7 @@
 				</div>
 				<% if (m.mode == 'edit_page') { %>
 					<div class="bottom_buttons">
-						<input id="organizer_remove_form_page" type="button" value="Delete page"/>
+						<input id="organizer_remove_form_page" type="button" value="Delete step"/>
 					</div>
 				<% } %> 
 			</form>

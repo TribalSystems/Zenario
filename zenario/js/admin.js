@@ -854,7 +854,7 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 			grid = zenarioA.getGridSlotDetails(slotName);
 		
 		if (get('zenario_fbAdminSlotControls-' + slotName).innerHTML.indexOf('zenario_long_option') == -1) {
-			width = 255;
+			width = 300;
 		} else {
 			width = 280;
 		}
@@ -892,24 +892,23 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 		
 		infoSel = '#zenario_slot_control__' + slotName + '__info__';
 		
-		//Set the CSS class that the grid is using
-		if (grid.cssClass) {
-			//Strip out some technical class-names that make the grid work but designers don't need to see
-			grid.cssClass = grid.cssClass.replace(/\bspan\d*_?\d*\s/g, '');
-			
-			//$(infoSel + 'grid_css_class').show();
-			$(infoSel + 'grid_css_class > span').text(grid.cssClass);
-		} else {
-			$(infoSel + 'grid_css_class').hide();
-		}
-		
-		//Set the width of this slot
-		if (grid.widthInfo) {
-			//$(infoSel + 'grid_width').show();
-			$(infoSel + 'grid_width > span').text(grid.widthInfo);
-		} else {
-			$(infoSel + 'grid_width').hide();
-		}
+		//We've hidden the plugin and slot's CSS classes for now to reduce clutter.
+		//if (grid.cssClass) {
+		//	//Strip out some technical class-names that make the grid work but designers don't need to see
+		//	grid.cssClass = grid.cssClass.replace(/\bspan\d*_?\d*\s/g, '');
+		//	
+		//	//$(infoSel + 'grid_css_class').show();
+		//	$(infoSel + 'grid_css_class > span').text(grid.cssClass);
+		//} else {
+		//	$(infoSel + 'grid_css_class').hide();
+		//}
+		//
+		//if (grid.widthInfo) {
+		//	//$(infoSel + 'grid_width').show();
+		//	$(infoSel + 'grid_width > span').text(grid.widthInfo);
+		//} else {
+		//	$(infoSel + 'grid_width').hide();
+		//}
 		
 		//Don't show the "copy embed link" option if this browser doesn't support copy and paste
 		if (!zenario.canCopy()) {
@@ -1347,6 +1346,7 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 		containerId = plgslt_ + slotName,
 		flags = resp.flags,
 		moduleId = 1*flags.MODULE_ID,
+		whatThisIs = flags.WHAT_THIS_IS || '',
 		isMenu = flags.IS_MENU,
 		isVersionControlled = flags.WIREFRAME,
 		beingEdited = flags.IN_EDIT_MODE,
@@ -1412,6 +1412,9 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 	zenario.tooltips('#' + containerId + ' a');
 	zenario.tooltips('#' + containerId + ' img');
 	zenario.tooltips('#' + containerId + ' input');
+	
+	zenarioA.tooltips('#' + containerId + '-wrap', {content: whatThisIs, items: '#' + containerId + '-wrap'});
+
 };
 
 
@@ -3134,8 +3137,11 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
             
             if (relativePath) {
                 //Make sure link is to a content item (following .htaccess rules for aliases)
+                //and not a link to something like the admin login or Organizer.
                 requestURI = relativePath.split('?')[0].split('#')[0];
-                if (!requestURI.match(/\/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)\//)) {
+                
+                if (!requestURI.match(/\/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)\//)
+                 && !requestURI.match(/\/(admin|organizer)\.php/)) {
                     if (match = requestURI.match(/^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html)$/)) {
                         resolvedURL = '/?cID=' + match[1];
                     } else {
@@ -3192,7 +3198,6 @@ zenarioA.addLinkStatus = function($el, status) {
 zenarioA.init = function(
 	cVersion,
 	adminId,
-	templateFamily,
 	
 	toolbar,
 	pageMode,
@@ -3210,7 +3215,6 @@ zenarioA.init = function(
 ) {
 	zenario.cVersion = cVersion;
 	zenario.adminId = adminId;
-	zenario.templateFamily = templateFamily;
 	
 	zenarioA.toolbar = toolbar;
 	zenarioA.pageMode = pageMode;

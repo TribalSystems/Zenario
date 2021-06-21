@@ -272,6 +272,11 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 						$item['name_or_title'] .= ' | '. implode(', ', $toText);
 					}
 				}
+
+				//If a slide uses a static method, display the details.
+				if ($item['module_class_name'] && $item['method_name']) {
+					$item['uses_static_method'] = '[Static method used]';
+				}
 			
 			} else {
 				$item['prefix'] = strtolower(convertToRoman($item['ordinal'])). '. ';

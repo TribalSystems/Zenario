@@ -9,6 +9,7 @@ plugin_settings:
                     plugin_setting:
                         name: user_form
                         foreign_key_to: user_form
+                        use_value_for_plugin_name: true
                     pick_items:
                         path: zenario__user_forms/panels/user_forms
                         min_path: zenario__user_forms/panels/user_forms
@@ -84,4 +85,3 @@ plugin_settings:
                         name: hide_extranet_links
                     label: Hide extranet links
                     type: checkbox
-                

@@ -330,12 +330,14 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 				$slideId = $instance['class']->zAPIGetTabId();
 				$isMainSlot = isset($instance['class']) && ($instance['level'] ?? false) == 1 && substr($slotName, 0, 1) == 'M';
 				$beingEdited = $instance['class']->beingEdited();
+				$isVersionControlled = (int) !empty($instance['content_id']);
 				
 				if ($isAdmin) {
 					$isMenu = (int) $instance['class']->shownInMenuMode();
-					$isVersionControlled = (int) !empty($instance['content_id']);
 					
 					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled, ',', (int) $isMenu;
+				} elseif ($isVersionControlled) {
+					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
 				} elseif ($beingEdited) {
 					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited;
 				} elseif ($isMainSlot) {

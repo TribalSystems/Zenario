@@ -1,0 +1,628 @@
+.zenario_user_forms .form_field {
+	padding:10px 0;
+}
+
+.zenario_user_forms .form_field .field_title {
+	padding:0 0 5px 0;
+	color:#999;
+}
+
+.zenario_user_forms .form_field:not(.field_checkbox) .field_title {
+	font-size:0.75em;
+	text-transform:uppercase;
+}
+
+.zenario_user_forms .form_field.mandatory .field_title {
+	color:#000;
+}
+
+/* Fancy Checkboxes / Radios */
+
+.zenario_user_forms .field_checkbox,
+.zenario_user_forms .field_radios {
+	position:relative;
+}
+
+.zenario_user_forms .field_checkbox > label.field_title,
+.zenario_user_forms .field_radios > label.field_title,
+.zenario_user_forms .form_field .values_wrap .field_radio > label,
+.zenario_user_forms .form_field .values_wrap .field_checkbox > label {
+	padding-left:30px;
+}
+
+.zenario_user_forms .field_checkbox input[type=checkbox] + label,
+.zenario_user_forms .field_radios input[type=radio] + label {
+  display: block;
+  cursor: pointer;
+}
+
+.zenario_user_forms .field_checkbox input[type=checkbox],
+.zenario_user_forms .field_radios input[type=radio] {
+  display: none;
+}
+
+.zenario_user_forms .field_checkbox input[type=checkbox] + label:before,
+.zenario_user_forms .field_radios input[type=radio] + label:before {
+  content: "\2573";
+  border: 1px solid #b8babc;
+  display: inline-block;
+  font-size:18px;
+  width: 18px;
+  height: 18px;
+  line-height:18px;
+  vertical-align: bottom;
+  color: transparent;
+  
+  position:absolute;
+  left:0;
+}
+
+.zenario_user_forms .field_radios input[type=radio] + label:before {
+	-moz-border-radius:50%;
+	-webkit-border-radius:50%;
+	border-radius:50%;
+}
+
+.zenario_user_forms .field_checkbox input[type=checkbox]:checked + label:before,
+.zenario_user_forms .field_radios input[type=radio]:checked + label:before {
+  background-color: #000;
+  border-color: #000;
+  color: #fff;
+}
+
+/* End Fancy Checkboxes / Radios */
+
+.zenario_user_forms .form_field.mandatory input[type='text'], 
+.zenario_user_forms .form_field.mandatory input[type='password'], 
+.zenario_user_forms .form_field.mandatory input[type='email'], 
+.zenario_user_forms .form_field.mandatory textarea, 
+.zenario_user_forms .form_field.mandatory select,
+.zenario_user_forms .field_checkbox.mandatory input[type=checkbox] + label:before,
+.zenario_user_forms .field_radios.mandatory input[type=radio] + label:before {
+	border-color:#555;
+	-webkit-box-shadow:inset 0 0 0 1px #555;
+       -moz-box-shadow:inset 0 0 0 1px #555;
+            box-shadow:inset 0 0 0 1px #555;
+}
+
+.zenario_user_forms .form_field.has_error input[type='text'], 
+.zenario_user_forms .form_field.has_error input[type='password'], 
+.zenario_user_forms .form_field.has_error input[type='email'], 
+.zenario_user_forms .form_field.has_error input[type='search'], 
+.zenario_user_forms .form_field.has_error textarea, 
+.zenario_user_forms .form_field.has_error select {
+	border-color:#AF0615;
+}
+
+.zenario_user_forms .form_field.mandatory.has_error input[type='text'], 
+.zenario_user_forms .form_field.mandatory.has_error input[type='password'], 
+.zenario_user_forms .form_field.mandatory.has_error input[type='email'], 
+.zenario_user_forms .form_field.mandatory.has_error textarea, 
+.zenario_user_forms .form_field.mandatory.has_error select,
+.zenario_user_forms .field_checkbox.mandatory.has_error input[type=checkbox] + label:before,
+.zenario_user_forms .field_radios.mandatory.has_error input[type=radio] + label:before {
+	-webkit-box-shadow:inset 0 0 0 1px #AF0615;
+       -moz-box-shadow:inset 0 0 0 1px #AF0615;
+            box-shadow:inset 0 0 0 1px #AF0615;
+}
+
+.zenario_user_forms .field_checkbox.mandatory.has_error input[type=checkbox] + label:before,
+.zenario_user_forms .field_radios.mandatory.has_error input[type=radio] + label:before {
+	border-color:#AF0615;
+}
+
+.zenario_user_forms .form_field input[type='text']:focus, 
+.zenario_user_forms .form_field input[type='password']:focus, 
+.zenario_user_forms .form_field input[type='email']:focus, 
+.zenario_user_forms .form_field input[type='search']:focus, 
+.zenario_user_forms .form_field textarea:focus, 
+.zenario_user_forms .form_field select:focus {
+	outline:none;
+	outline:0;
+	border-color:#2a98ce;
+}
+
+.zenario_user_forms .form_field.mandatory input[type='text']:focus, 
+.zenario_user_forms .form_field.mandatory input[type='password']:focus, 
+.zenario_user_forms .form_field.mandatory input[type='email']:focus, 
+.zenario_user_forms .form_field.mandatory textarea:focus, 
+.zenario_user_forms .form_field.mandatory select:focus,
+.zenario_user_forms .field_checkbox.mandatory input[type=checkbox] + label:focus:before,
+.zenario_user_forms .field_radios.mandatory input[type=radio] + label:focus:before {
+	-webkit-box-shadow:inset 0 0 0 1px #2a98ce;
+       -moz-box-shadow:inset 0 0 0 1px #2a98ce;
+            box-shadow:inset 0 0 0 1px #2a98ce;
+}
+
+.zenario_user_forms .form_field.field_date {
+	overflow:hidden;
+}
+
+.zenario_user_forms .form_field input[type='text'].hasDatepicker {
+	max-width:200px;
+	background:url('../images/icon-calendar-grey.png') no-repeat right center;
+}
+
+.zenario_user_forms .form_field.field_date input[type="button"].clear_date {
+	min-width:0;
+	width:20px;
+	height:20px;
+	line-height:12px;
+	padding:0 0 4px;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
+	margin-left:4px;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap .field_radio input[type='radio'] {
+	margin-right:4px;
+}
+
+.zenario_user_forms .form_field.field_checkbox {
+	overflow:hidden;
+}
+
+.zenario_user_forms .form_field.field_checkbox input {
+	float:left;
+	margin-top:4px;
+}
+
+.zenario_user_forms .form_field.field_checkbox .field_title {
+	display:inline-block;
+	float:left;
+	width:calc(100% - 30px);
+}
+
+.zenario_user_forms .form_field.field_group .field_title {
+	padding-left:8px;
+}
+
+.zenario_user_forms .form_field.field_checkbox .note_to_user {
+	clear:both;
+	float:none;
+	font-size:0.857em;
+	font-style:italic;
+}
+
+.zenario_user_forms .form_field.field_checkbox > .note_to_user {
+	padding-left:30px;
+}
+
+.zenario_user_forms .form_field.field_checkbox .note_to_user a {
+	text-decoration:underline;
+}
+
+.zenario_user_forms .form_field .values_wrap .field_radio {
+	padding:5px 0;
+}
+
+/* User forms, default styles
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms.zenario_user_forms__default_style .form_wrapper {
+	max-width:740px;
+	margin:auto;
+	overflow:hidden;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_wrapper h2 {
+	text-align:center;
+	font-size:2em;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons {
+	overflow:hidden;
+	margin-top:20px;
+	text-align:center;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons .next,
+.zenario_user_forms.zenario_user_forms__default_style fieldset .form_buttons .next.submit {
+	float:right;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons .previous {
+	float:left;
+}
+
+.zenario_user_forms.zenario_user_forms__default_style .form_buttons .next.submit {
+	float:none;
+}
+
+/* User forms, repeated blocks
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms .repeat_block > .field_title {
+	margin-top:10px;
+	font-weight:500;
+	font-size:1.15em;
+	border-bottom:1px solid #ccc;
+}
+
+.zenario_user_forms .repeat_block > .field_title,
+.zenario_user_forms .repeat_block .repeat_rows {
+	padding:20px;
+}
+
+.zenario_user_forms .repeat_block .repeat_rows {
+	overflow:hidden;
+	margin:0 0 10px;
+	background:#f6f7f8;
+}
+
+.zenario_user_forms .repeat_block .repeat_rows .repeat_row {
+	position:relative;
+	padding:10px 20px;
+	margin-bottom:15px;
+	background:#e3eaf0;
+	border:1px solid #c8d5e1;
+}
+
+.zenario_user_forms .repeat_block .repeat_rows .repeat_row div.delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 0;
+    line-height: 0;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.zenario_user_forms .repeat_block .repeat_rows .repeat_row div.delete:hover {
+	opacity:0.9;
+}
+
+.zenario_user_forms .repeat_block .repeat_rows .repeat_row div.delete:before {
+    font-family: "FontAwesome";
+    content: "\f057";
+    color: #D51A24;
+    font-size: 26px;
+    line-height: 26px;
+    text-indent: 0;
+}
+
+.zenario_user_forms .repeat_block .repeat_rows .repeat_block_buttons {
+	text-align:center;
+	margin-top:10px;
+}
+
+.zenario_user_forms .repeat_block > .field_title,
+.zenario_user_forms .form_fields table tr th.subheader {
+	background:#e4e8e9;
+}
+
+/* User forms, Summary
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms .form_fields table tr td:first-child {
+	width:35%;
+}
+
+/* User forms, Grouping_Contact
+------------------------------------------------------------------------------------------------- */
+
+.Grouping_Contact .zenario_user_forms .form_wrapper {
+	margin-left:30px;
+}
+
+/* User forms, popup
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms.form_popup {
+	width:300px !important;
+	position:fixed;
+	z-index:100;
+	bottom:0;
+	right:50px;
+	display:none;
+	min-height:32px;
+}
+
+.zenario_user_forms.form_popup .form_wrapper {
+	position:absolute;
+	bottom:0;
+	right:0;
+	width:300px;
+	height:38px;
+}
+
+.zenario_user_forms.form_popup,
+.zenario_user_forms.form_popup .form_wrapper,
+.zenario_user_forms.form_popup .form_wrapper > h2,
+.zenario_user_forms.form_popup .success > h2 {
+	-webkit-border-top-left-radius: 4px;
+	-webkit-border-top-right-radius: 4px;
+	-moz-border-radius-topleft: 4px;
+	-moz-border-radius-topright: 4px;
+	border-top-left-radius: 4px;
+}
+
+.zenario_user_forms.form_popup .form_wrapper > h2,
+.zenario_user_forms.form_popup .success > h2 {
+	height:18px;
+	padding:10px; 
+	margin:0;
+	font-size:16px;
+	line-height:15px;
+	background:#ec5c30;
+	color:#FFF;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	text-align:left;
+	cursor:pointer;
+}
+
+.zenario_user_forms.form_popup .form_wrapper > h2:before,
+.zenario_user_forms.form_popup .success > h2:before {
+	font-family: 'FontAwesome';
+	content: "\f0e0";
+	position:relative;
+	left:0;
+	top:0;
+	padding-right:12px;
+}
+
+.zenario_user_forms.form_popup .form_wrapper > h2 {
+	background-image:url('../images/background-contact.png');
+	background-position:right top;
+	background-repeat:no-repeat;
+}
+
+.zenario_user_forms.form_popup .user_form {
+	height:580px;
+	padding:10px 20px 20px;
+	-webkit-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	-moz-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	position:relative;
+}
+
+.zenario_user_forms.form_popup .user_form .form_error {
+	color:#AF0615;
+	font-size:0.938em;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field {
+	padding:6px 0 3px 0;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.field_section_description {
+	padding-top:0;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.field_section_description .description p {
+	margin-bottom:0;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field .field_title {
+	font-size:0.875em;
+	padding-bottom:5px;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field:not(.field_checkbox) .field_title {
+	font-size:0.65em;
+	text-transform:uppercase;
+	padding-bottom:0;
+}
+
+.zenario_user_forms.form_popup.hide .close {
+	display:none;
+}
+
+.zenario_user_forms.form_popup.show .close {
+	position:absolute;
+	top:580px;
+	right:-25px;
+	padding-top:0;
+	width:25px;
+	height:28px;
+	display:block;
+	-webkit-border-top-right-radius: 4px;
+	-webkit-border-bottom-right-radius: 4px;
+	-moz-border-radius-topright: 4px;
+	-moz-border-radius-bottomright: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	cursor:pointer;
+	
+	text-indent:-999;
+	font-size:0;
+	line-height:0;
+}
+
+.zenario_user_forms.form_popup.show .close:before {
+	font-family: 'FontAwesome';
+	content: "\f00d";
+	font-size:18px;
+	padding-left:5px;
+	text-indent:initial;
+	font-size:18px;
+	line-height:24px;
+}
+
+.zenario_user_forms.form_popup .user_form input[type="text"], 
+.zenario_user_forms.form_popup .user_form input[type="email"],  
+.zenario_user_forms.form_popup .user_form textarea {
+	width:calc(100% - 20px);
+	color:#808285;
+	font-size:0.875em;
+}
+
+.zenario_user_forms.form_popup .user_form input[type="text"], 
+.zenario_user_forms.form_popup .user_form input[type="email"] {
+	height:34px;
+	line-height:34px;
+	padding-top:0;
+	padding-bottom:0;
+}
+
+.zenario_user_forms.form_popup .user_form textarea {
+	height:100px;
+}
+
+.zenario_user_forms.form_popup .form_field.mandatory input[type="text"], 
+.zenario_user_forms.form_popup .form_field.mandatory input[type="password"], 
+.zenario_user_forms.form_popup .form_field.mandatory input[type="email"], 
+.zenario_user_forms.form_popup .form_field.mandatory textarea, 
+.zenario_user_forms.form_popup .form_field.mandatory select {
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"],
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"],
+.zenario_user_forms.form_popup .user_form .form_field.has_error textarea {
+	-moz-box-shadow:    0 0 0 1px #AF0615;
+  	-webkit-box-shadow: 0 0 0 1px #AF0615;
+  	box-shadow:         0 0 0 1px #AF0615;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"],
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"],
+.zenario_user_forms.form_popup .user_form .form_field.has_error textarea,
+.zenario_user_forms.form_popup .user_form .form_field.has_error.field_checkbox label {
+	background:#fff url('../images/icon-error-space.png') no-repeat right 8px;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"]:focus,
+.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"]:focus,
+.zenario_user_forms.form_popup .user_form .form_field.has_error textarea:focus {
+	border-color:#B4B4B4;
+	background:#fff;
+	-moz-box-shadow:    none;
+  	-webkit-box-shadow: none;
+  	box-shadow:         none;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field.has_error .form_error {
+	display:none;
+}
+
+.zenario_user_forms.form_popup .user_form .form_buttons {
+	text-align:center;
+}
+
+.zenario_user_forms.form_popup .user_form .form_buttons input[type="button"] {
+	width:100%;
+	height:50px;
+	margin-top:10px;
+	font-size:15px;
+	padding:0 0 3px;
+}
+
+.zenario_user_forms.form_popup.hide .form_wrapper {
+    -webkit-transition: all 0.8s ease-in;
+    -moz-transition: all 0.8s ease-in;
+    -o-transition: all 0.8s ease-in;
+    transition: all 0.8s ease-in;
+}
+
+.zenario_user_forms.form_popup.show .form_wrapper {
+	bottom:580px;
+    -webkit-transition: all 0.8s ease-in;
+    -moz-transition: all 0.8s ease-in;
+    -o-transition: all 0.8s ease-in;
+    transition: all 0.8s ease-in;
+}
+
+.zenario_user_forms.form_popup .success p {
+	padding:20px;
+	text-align:center;
+}
+
+.zenario_user_forms.form_popup .success {
+	opacity:1;
+	width:300px;
+	height:calc(580px + 40px);
+	font-size:16px;
+	line-height:24px;
+	padding:0;
+	margin-bottom:0;
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+	border-radius:0;
+	-webkit-border-top-left-radius: 4px;
+	-webkit-border-top-right-radius: 4px;
+	-moz-border-radius-topleft: 4px;
+	-moz-border-radius-topright: 4px;
+	border-top-left-radius: 4px;
+	-webkit-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	-moz-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+	box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
+    -webkit-transition: all 0.4s ease-in;
+    -moz-transition: all 0.4s ease-in;
+    -o-transition: all 0.4s ease-in;
+    transition: all 0.4s ease-in;
+}
+
+.zenario_user_forms.form_popup.hide .success {
+	opacity:0;
+    -webkit-transition: all 0.4s ease-in;
+    -moz-transition: all 0.4s ease-in;
+    -o-transition: all 0.4s ease-in;
+    transition: all 0.4s ease-in;
+}
+
+.zenario_user_forms.form_popup .user_form,
+.zenario_user_forms.form_popup.show .close,
+.zenario_user_forms.form_popup .success {
+	background:#FFF;
+}
+
+.zenario_user_forms.form_popup .user_form,
+.zenario_user_forms.form_popup.show .close,
+.zenario_user_forms.form_popup.show .close:before,
+.zenario_user_forms.form_popup .success,
+.zenario_user_forms.form_popup .success p {
+	color:#000;
+}
+
+.zenario_user_forms.form_popup .user_form .field_section_description.bottom_text {
+	text-align:center;
+	font-size:14px;
+	line-height:18px;
+}
+
+.zenario_user_forms.form_popup .user_form .field_section_description.bottom_text .field_title {
+	display:block;
+	color:#f6c7d4;
+	font-weight:700;
+}
+
+.zenario_user_forms.form_popup .user_form .field_section_description.bottom_text p {
+	margin-bottom:0;
+	font-weight:500;
+}
+
+.zenario_user_forms.form_popup.hide .success {
+	display:none;
+}
+
+.Grid_Footer .zenario_user_forms.form_popup .form_field * {
+	color:#333;
+}
+
+.Grid_Footer .zenario_user_forms.form_popup .form_field.field_checkbox {
+	padding-top:8px;
+}
+
+.zenario_user_forms.form_popup .form_field.field_checkbox .field_title {
+	padding-top:3px;
+}
+
+.zenario_user_forms.form_popup .form_field.field_checkbox .field_title,
+.zenario_user_forms.form_popup .form_field.field_checkbox .note_to_user {
+	font-size:0.75em;
+	line-height:1.3em;
+}
+
+.zenario_user_forms.form_popup .user_form .form_field:not(.mandatory) .field_title {
+	color:#999;
+}

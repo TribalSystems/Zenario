@@ -309,59 +309,70 @@ zenario__content:
                     hidden: true
                 in_use_anywhere:
                     parent: usage_dropdown
+                    clear_all: true
                     label: In use
                     column: in_use_anywhere
                 #not_in_use_anywhere:
                 #    parent: usage_dropdown
+                #    clear_all: true
                 #    label: Not in use
                 #    column: in_use_anywhere
                 #    invert: true
                 usage_content:
                     parent: usage_dropdown
+                    clear_all: true
                     label: Attached to a content item
                     column: usage_content
                     value: 1
                 #not_usage_content:
                 #    parent: usage_dropdown
+                #    clear_all: true
                 #    label: Not attached to a content item
                 #    column: usage_content
                 #    value: 1
                 #    invert: true
                 usage_plugins:
                     parent: usage_dropdown
+                    clear_all: true
                     label: Used by a library plugin
                     column: usage_plugins
                     value: 1
                 #not_usage_plugins:
                 #    parent: usage_dropdown
+                #    clear_all: true
                 #    label: Not used by a library plugin
                 #    column: usage_plugins
                 #    value: 1
                 #    invert: true
                 usage_nests:
                     parent: usage_dropdown
+                    clear_all: true
                     label: Used by a nest
                     column: usage_nests
                     value: 1
                 usage_slideshows:
                     parent: usage_dropdown
+                    clear_all: true
                     label: Used by a slideshow
                     column: usage_slideshows
                     value: 1
                 usage_email_templates:
                     parent: usage_dropdown
+                    clear_all: true
                     label: Used by an email template
                     column: usage_email_templates
                     value: 1
                 
                 usage_menu_node:
                     parent: usage_dropdown
+                    clear_all: true
                     label: Used by a menu node
                     column: usage_menu_nodes
                     value: 1
                 
                 #not_usage_email_templates:
                 #    parent: usage_dropdown
+                #    clear_all: true
                 #    label: Not used by an email template
                 #    column: usage_email_templates
                 #    value: 1
@@ -369,6 +380,7 @@ zenario__content:
                 duplicate_filename:
                     ord: 99
                     parent: usage_dropdown
+                    clear_all: true
                     label: Duplicate file names
                     column: duplicate_filename
                     value: 1
@@ -376,14 +388,16 @@ zenario__content:
                 clear_all_usage:
                     ord: 100
                     parent: usage_dropdown
-                    label: Clear filters
                     clear_all: true
+                    visible_if: zenarioO.checkIfClearAllAvailable('clear_all_usage');
+                    label: Clear filter
                 
                 clear_all_tags:
                     ord: 99999
                     parent: tags
-                    label: Clear filters
                     clear_all: true
+                    visible_if: zenarioO.checkIfClearAllAvailable('clear_all_tags');
+                    label: Clear filter
             
             
             item:
@@ -559,13 +573,14 @@ zenario__content:
                         
                 send_to_documents:
                     priv: _PRIV_MANAGE_MEDIA
-                    label: Send to Documents
+                    label: Copy to document library
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: >
-                                Are you sure you wish to send the selected image "[[filename]]" to Documents?
-                            button_message: Send to Documents
+                                Are you sure you wish to send the selected image "[[filename]]" to the document library?
+                            button_message: Copy to document library
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
@@ -574,6 +589,7 @@ zenario__content:
                 copy_to_mic_images:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Copy to MIC images
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     multiple_select: true
                     ajax:

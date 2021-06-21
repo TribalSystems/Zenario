@@ -13,6 +13,13 @@ zenario_upload_replacement_document:
                 enabled: true
             label: Details
             fields:
+                info:
+                    snippet:
+                        html: "<div class=\"zenario_fbInfo\">You can replace this document's file with a new file, while preserving all references to the document.</div>"
+                link_info:
+                    hidden: true
+                    snippet:
+                        html: "<div class=\"zenario_fbInfo\">The new file will have a new directory name and filename in the /public/ directory, but Zenario will make a Permanent Redirect from the old one to the new one, thus avoiding not-found responses.</div>"
                 desc:
                     hidden: true
                     pre_field_html: "<div class=\"zenario_fbWarning\">"
@@ -29,14 +36,14 @@ zenario_upload_replacement_document:
                 keep_meta_data:
                     label: 'Keep current title and any dataset fields'
                     type: checkbox
-                    value: 1
+                    value: 0
                     
                 keep_thumbnail_image:
                     label: 'Keep current thumbnail image'
                     type: checkbox
-                    value: 1
+                    value: 0
                 
                 keep_extract_text:
                     label: 'Keep current extract text'
                     type: checkbox
-                    value: 1
+                    value: 0

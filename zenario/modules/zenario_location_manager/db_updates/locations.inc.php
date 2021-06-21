@@ -959,4 +959,35 @@ _sql
 	ADD KEY (`country_id`)
 _sql
 
-); 
+//Remove custom data for locations that had been deleted in the past.
+); ze\dbAdm::revision(171
+, <<<_sql
+	DELETE lcd.*
+	FROM [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations_custom_data lcd
+	LEFT JOIN [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations l
+		ON l.id = lcd.location_id
+	WHERE l.id IS NULL;
+_sql
+
+);
+
+//Also delete images for deleted locations.
+if (ze\dbAdm::needRevision(172)) {
+	
+	if (ze\module::inc('zenario_location_manager')) {
+		$sql = '
+			SELECT location_id, image_id
+			FROM ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_images li
+			LEFT JOIN ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations l
+				ON l.id = li.location_id
+			WHERE l.id IS NULL';
+		$result = ze\sql::select($sql);
+
+		while ($row = ze\sql::fetchAssoc($result)) {
+			zenario_location_manager::deleteImage($row['location_id'], $row['image_id']);
+		}
+	}
+	
+	
+	ze\dbAdm::revision(172);
+}

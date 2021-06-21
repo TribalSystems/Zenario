@@ -4,113 +4,216 @@ site_settings:
     setting_group: external_programs
     title: Editing settings for other server programs
     tabs:
-        antivirus:
-            label: Antivirus
+        pdftotext:
+            label: PDF->text
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: true
                 on: false
                 format_on_edit: true
                 format_on_cancel_edit: true
-                format_on_revert: true
             fields:
                 desc:
                     full_width: true
                     snippet:
                         html: |
                             <p>
-                               Zenario can perform antivirus scanning for file uploads, and makes use of ClamAV. To install on Ubuntu, use the following (but adjust for your OS):
+                                When you upload a PDF file, Zenario will attempt to
+                                scan the file and create a plain-text extract.
+                                This extract is not directly visible to visitors,
+                                but plugins may use it to find documents that match a visitor's search.
                             </p><p>
-                                <code>&nbsp; &nbsp; sudo apt install clamav clamav-base clamav-daemon clamav-freshclam clamdscan libclamav7</code>
+                                To get an extract from a PDF file,
+                                Zenario needs the help of a program called pdftotext,
+                                which is part of an external library called Poppler.
                             </p><p>
-                                Then ensure ClamAV is not blocked by Apparmor, so edit <code>/etc/apparmor.d/local/usr.sbin.clamd</code> and add the lines:
+                                If Poppler is not installed on your server then your server administrator will need to install it;
+                                e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt-get install poppler-utils</code>
+                                <br/>
+                                on Ubuntu.
                             </p><p>
-                                <code>
-                                    &nbsp; &nbsp; /var/www/clients/ r,<br />
-                                    &nbsp; &nbsp; /var/www/clients/** r,<br />
-                                    &nbsp; &nbsp; /var/www/zenario-source/ r,<br />
-                                    &nbsp; &nbsp; /var/www/zenario-source/** r,<br />
-                                    &nbsp; &nbsp; /tmp/ r,<br />
-                                    &nbsp; &nbsp; /tmp/** r,<br />
-                                </code>
-                            </p><p>
-                                Edit <code>/etc/apparmor.d/usr.sbin.clamd</code> and uncomment the line:
-                            </p><p>
-                                <code>&nbsp; &nbsp; include &lt;local/usr.sbin.clamd&gt;</code>
-                            </p><p>
-                                Then restart Apparmor and ClamAV:
-                            </p><p>
-                                <code>
-                                    &nbsp; &nbsp; sudo service apparmor restart<br />
-                                    &nbsp; &nbsp; sudo service clamav-daemon start<br />
-                                    &nbsp; &nbsp; sudo service clamav-freshclam start<br />
-                                </code>
-                            </p><p>
-                                Finally, wait about 1 minute for ClamAV to boot before re-testing!
-                            </p><p>
-                                When you upload a file, Zenario will attempt to
-                                scan the document for viruses using the ClamAV antivirus scanner,
-                                if it is installed on your server
-                                and the <code>clamd</code> daemon is running.
-                            </p><p>
-                                Zenario can only use ClamAV if it is running on a Unix-based server;
+                                Zenario can only use pdftotext and Poppler if it is running on a Unix-based server;
                                 there is not support for this feature on a Windows server.
                             </p>
-                clamscan_tool_path:
-                    name: clamscan_tool_path
+                pdftotext_path:
                     site_setting:
-                        name: clamscan_tool_path
-                    label: 'ClamAV path:'
+                        name: pdftotext_path
+                        protect_from_database_restore: true
+                    label: 'pdftotext path:'
                     type: select
                     value: PATH
-                    empty_value: ' -- Do not use ClamAV -- '
+                    empty_value: ' -- Do not use pdftotext -- '
                     values:
                         'PATH':
                             label: "Use your server's PATH environment variable"
                         '/usr/bin/':
-                            label: '/usr/bin/clamdscan'
+                            label: '/usr/bin/pdftotext'
                         '/usr/local/bin/':
-                            label: '/usr/local/bin/clamdscan'
+                            label: '/usr/local/bin/pdftotext'
                     format_onchange: true
                     style: >
                         margin-right: 0.5em;
                 test:
                     same_row: true
                     visible_if:
-                        zenarioAB.value: clamscan_tool_path
+                        zenarioAB.value: pdftotext_path
                     type: submit
                     value: Test
                     class: submit
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
-                require_av_scan:
-                    site_setting:
-                        name: require_av_scan
-                    label: 'If the antivirus scanner is unavailable:'
-                    type: select
-                    empty_value: 'Allow file uploads without scanning'
-                    values:
-                        1: 'Block all file uploads while the scanner is unavailable'
             show_errors_after_field: desc
             notices:
                 success:
                     show: ""
                     type: success
-                    message: ClamAV is working successfully.
+                    message: pdftotext is working successfully.
                 error:
                     show: ""
                     type: error
-                    message: ClamAV is not correctly set up.
-                daemon:
+                    message: pdftotext is not correctly set up.
+                    
+        ghostscript:
+            label: PDF->image
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                When an administrator uploads a PDF, Zenario will attempt to scan the file and create a thumbnail from its first page, then make this a feature image for the document content item or other kind of document.
+                            </p><p>
+                                To do this, Zenario needs the help of a program called "gs" (ghostscript).
+                            </p><p>
+                                If ghostscript is not installed on your server then your server administrator will need to install it, e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt-get install ghostscript</code>
+                                <br/>
+                                on Ubuntu.
+                            </p><p>
+                                This only works on a Linux-based server; there is not support for this feature on Windows.
+                            </p>
+                ghostscript_dpi:
+                    name: ghostscript_dpi
+                    site_setting:
+                        name: ghostscript_dpi
+                    label: 'ghostscript output DPI:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a DPI number.
+                        numeric: The DPI must be a number.
+                    value: "72"
+                    style: 'width: 6em; margin-right: 0.5em;'
+                    note_below: |
+                        This setting define the image definition that will be produced (higher definition also creates big images).
+                        Recomended values can be any of 72, 150, 300, 600 (default 72).
+                ghostscript_path:
+                    site_setting:
+                        name: ghostscript_path
+                        protect_from_database_restore: true
+                    label: 'ghostscript path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Do not use ghostscript -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/gs'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/gs'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: ghostscript_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: ghostscript is working successfully.
+                error:
                     show: ""
                     type: error
-                    message: |
-                        ClamAV is installed and you have the path correctly set, but files cannot be scanned.
-                        Please check that the <code>clamd</code> daemon is running, and that AppArmor is not blocking ClamAV.
-                    html: true
-
+                    message: ghostscript is not correctly set up.
+        wkhtmltopdf:
+            label: HTML->PDF
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                wkhtmltopdf is a server-side program which converts HTML pages into PDFs.
+                            </p><p>
+                                It is not needed for Zenario to run but should be enabled if you run a module that needs to generate a PDF.
+                            </p><p>
+                                If wkhtmltopdf is not installed on your server then your server administrator will need to install it;
+                                e.g. by running:
+                                <br/>
+                                <code>&nbsp; &nbsp; sudo apt install wkhtmltopdf</code>
+                                <br/>
+                                on Ubuntu.
+                            </p>
+                wkhtmltopdf_path:
+                    site_setting:
+                        name: wkhtmltopdf_path
+                    label: 'wkhtmltopdf path:'
+                    type: select
+                    empty_value: ' -- Do not use wkhtmltopdf -- '
+                    value: PATH
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/wkhtmltopdf'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/wkhtmltopdf'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: wkhtmltopdf_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                    visible_if:
+                        zenarioAB.value: wkhtmltopdf_path
+            notices:
+                success:
+                    show: ""
+                    type: success
+                    message: wkhtmltopdf is working successfully.
+                error:
+                    show: ""
+                    type: error
+                    message: wkhtmltopdf is not correctly set up.
+                    
         antiword:
-            label: Antiword
+            label: Word->text
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: true
@@ -182,93 +285,8 @@ site_settings:
                     show: ""
                     type: error
                     message: Antiword is not correctly set up.
-
-        ghostscript:
-            label: Ghostscript
-            edit_mode:
-                priv: _PRIV_EDIT_SITE_SETTING
-                enabled: true
-                on: false
-                format_on_edit: true
-                format_on_cancel_edit: true
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <p>
-                                When you upload a PDF file, Zenario will attempt to
-                                scan the file and create a thumbnail of the first page that can be used as stick image.
-                            </p><p>
-                                To get a thumbnail from a PDF file,
-                                Zenario needs the help of a program called "gs" (ghostscript).
-                            </p><p>
-                                If ghostscript is not installed on your server then your server administrator will need to install it;
-                                e.g. by running:
-                                <br/>
-                                <code>&nbsp; &nbsp; sudo apt-get install ghostscript</code>
-                                <br/>
-                                on Ubuntu.
-                            </p><p>
-                                Zenario can only use ghostscript if it is running on a Unix-based server;
-                                there is not support for this feature on a Windows server.
-                            </p>
-                ghostscript_dpi:
-                    name: ghostscript_dpi
-                    site_setting:
-                        name: ghostscript_dpi
-                    label: 'ghostscript output DPI:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter a DPI number.
-                        numeric: The DPI must be a number.
-                    value: "72"
-                    style: 'width: 6em; margin-right: 0.5em;'
-                    note_below: |
-                        This setting define the image definition that will be produced (higher definition also creates big images).
-                        Recomended values can be any of 72, 150, 300, 600 (default 72).
-                ghostscript_path:
-                    site_setting:
-                        name: ghostscript_path
-                        protect_from_database_restore: true
-                    label: 'ghostscript path:'
-                    type: select
-                    value: PATH
-                    empty_value: ' -- Do not use ghostscript -- '
-                    values:
-                        'PATH':
-                            label: "Use your server's PATH environment variable"
-                        '/usr/bin/':
-                            label: '/usr/bin/gs'
-                        '/usr/local/bin/':
-                            label: '/usr/local/bin/gs'
-                    format_onchange: true
-                    style: >
-                        margin-right: 0.5em;
-                test:
-                    same_row: true
-                    visible_if:
-                        zenarioAB.value: ghostscript_path
-                    type: submit
-                    value: Test
-                    class: submit
-                    can_be_pressed_in_view_mode: true
-                    format_onchange: true
-            show_errors_after_field: desc
-            notices:
-                success:
-                    show: ""
-                    type: success
-                    message: ghostscript is working successfully.
-                error:
-                    show: ""
-                    type: error
-                    message: ghostscript is not correctly set up.
-        
-        
-
         jpeg:
-            label: JPEG Image Optimizers
+            label: Compress JPEGs
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: true
@@ -371,176 +389,9 @@ site_settings:
                 error_jpegtran:
                     show: false
                     type: error
-                    message: jpegtran is not correctly set up.
-
-        mysql:
-            label: Backup/restore
-            edit_mode:
-                priv: _PRIV_EDIT_SITE_SETTING
-                enabled: true
-                on: false
-                format_on_edit: true
-                format_on_cancel_edit: true
-                format_on_revert: true
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <p> These settings are specific to the backup and restore process.</p><p>
-                                If you wish to create or restore a database backup, it is much faster
-                                to call MySQL directly.
-                            </p><p>
-                                Zenario can only call MySQL directly if it is running on a Unix-based server;
-                                there is no support for this feature on a Windows server.
-                            </p>
-                mysql_path:
-                    site_setting:
-                        name: mysql_path
-                        protect_from_database_restore: true
-                    label: 'mysql path:'
-                    type: select
-                    value: PATH
-                    empty_value: ' -- Use PHP -- '
-                    values:
-                        'PATH':
-                            label: "Use your server's PATH environment variable"
-                        '/usr/bin/':
-                            label: '/usr/bin/mysql'
-                        '/usr/local/bin/':
-                            label: '/usr/local/bin/mysql'
-                    format_onchange: true
-                    style: >
-                        margin-right: 0.5em;
-                test:
-                    same_row: true
-                    visible_if:
-                        zenarioAB.value: mysql_path
-                    type: submit
-                    value: Test
-                    class: submit
-                    can_be_pressed_in_view_mode: true
-                    format_onchange: true
-                mysqldump_path:
-                    site_setting:
-                        name: mysqldump_path
-                        protect_from_database_restore: true
-                    label: 'mysqldump path:'
-                    type: select
-                    value: PATH
-                    empty_value: ' -- Use PHP -- '
-                    values:
-                        'PATH':
-                            label: "Use your server's PATH environment variable"
-                        '/usr/bin/':
-                            label: '/usr/bin/mysqldump'
-                        '/usr/local/bin/':
-                            label: '/usr/local/bin/mysqldump'
-                    format_onchange: true
-                    style: >
-                        margin-right: 0.5em;
-                test2:
-                    same_row: true
-                    visible_if:
-                        zenarioAB.value: mysqldump_path
-                    type: submit
-                    value: Test
-                    class: submit
-                    can_be_pressed_in_view_mode: true
-                    format_onchange: true
-            show_errors_after_field: desc
-            notices:
-                success:
-                    show: false
-                    type: success
-                    message: mysql is working successfully.
-                error:
-                    show: false
-                    type: error
-                    message: mysql is not correctly set up.
-                success2:
-                    show: false
-                    type: success
-                    message: mysqldump is working successfully.
-                error2:
-                    show: false
-                    type: error
-                    message: mysqldump is not correctly set up.
-        
-        
-        pdftotext:
-            label: PDF-to-Text
-            edit_mode:
-                priv: _PRIV_EDIT_SITE_SETTING
-                enabled: true
-                on: false
-                format_on_edit: true
-                format_on_cancel_edit: true
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <p>
-                                When you upload a PDF file, Zenario will attempt to
-                                scan the file and create a plain-text extract.
-                                This extract is not directly visible to visitors,
-                                but plugins may use it to find documents that match a visitor's search.
-                            </p><p>
-                                To get an extract from a PDF file,
-                                Zenario needs the help of a program called pdftotext,
-                                which is part of an external library called Poppler.
-                            </p><p>
-                                If Poppler is not installed on your server then your server administrator will need to install it;
-                                e.g. by running:
-                                <br/>
-                                <code>&nbsp; &nbsp; sudo apt-get install poppler-utils</code>
-                                <br/>
-                                on Ubuntu.
-                            </p><p>
-                                Zenario can only use pdftotext and Poppler if it is running on a Unix-based server;
-                                there is not support for this feature on a Windows server.
-                            </p>
-                pdftotext_path:
-                    site_setting:
-                        name: pdftotext_path
-                        protect_from_database_restore: true
-                    label: 'pdftotext path:'
-                    type: select
-                    value: PATH
-                    empty_value: ' -- Do not use pdftotext -- '
-                    values:
-                        'PATH':
-                            label: "Use your server's PATH environment variable"
-                        '/usr/bin/':
-                            label: '/usr/bin/pdftotext'
-                        '/usr/local/bin/':
-                            label: '/usr/local/bin/pdftotext'
-                    format_onchange: true
-                    style: >
-                        margin-right: 0.5em;
-                test:
-                    same_row: true
-                    visible_if:
-                        zenarioAB.value: pdftotext_path
-                    type: submit
-                    value: Test
-                    class: submit
-                    can_be_pressed_in_view_mode: true
-                    format_onchange: true
-            show_errors_after_field: desc
-            notices:
-                success:
-                    show: ""
-                    type: success
-                    message: pdftotext is working successfully.
-                error:
-                    show: ""
-                    type: error
-                    message: pdftotext is not correctly set up.
-        
+                    message: jpegtran is not correctly set up.   
         png:
-            label: PNG Image Optimizers
+            label: Compress PNGs
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: true
@@ -638,62 +489,199 @@ site_settings:
                     show: false
                     type: error
                     message: advpng is not correctly set up.
-        wkhtmltopdf:
-            label: wkhtmltopdf
+                    
+        mysql:
+            label: Backup/restore
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
             fields:
                 desc:
                     full_width: true
                     snippet:
                         html: |
-                            <p>
-                                wkhtmltopdf is a server-side program which converts HTML pages into PDFs.
-                            </p><p>
-                                It is not needed for Zenario to run but should be enabled if you run a module that needs to generate a PDF.
-                            </p><p>
-                                If wkhtmltopdf is not installed on your server then your server administrator will need to install it;
-                                e.g. by running:
-                                <br/>
-                                <code>&nbsp; &nbsp; sudo apt install wkhtmltopdf</code>
-                                <br/>
-                                on Ubuntu.
-                            </p>
-                wkhtmltopdf_path:
+                            <p>Zenario can create a backup of a site's database, and restore it, using mysqldump/mysql (recommended), or its in-built PHP programs (not recommended).</p>
+                            <p>The mysqldump/mysql methods use the MySQL client utilities of those names. They are fast and dump/restore whole databases (but note that you should avoid mixing multiple Zenario installations in the same database, or sharing a database with non-Zenario applications).</p>
+                            <p>The PHP-based methods are slower. (They only backup/restore tables with the table prefix specified in zenario_siteconfig.php).</p>
+                            <p>Zenario can only call mysqldump/mysql directly if it is running on a Unix/Linux-based server; there is no such support on a Windows server, and so the PHP-based methods will be used on Windows.</p>
+                mysqldump_path:
                     site_setting:
-                        name: wkhtmltopdf_path
-                    label: 'wkhtmltopdf path:'
+                        name: mysqldump_path
+                        protect_from_database_restore: true
+                    label: 'mysqldump path (for making a backup):'
                     type: select
-                    empty_value: ' -- Do not use wkhtmltopdf -- '
                     value: PATH
+                    empty_value: ' -- Use PHP (not recommended) -- '
                     values:
                         'PATH':
                             label: "Use your server's PATH environment variable"
                         '/usr/bin/':
-                            label: '/usr/bin/wkhtmltopdf'
+                            label: '/usr/bin/mysqldump'
                         '/usr/local/bin/':
-                            label: '/usr/local/bin/wkhtmltopdf'
+                            label: '/usr/local/bin/mysqldump'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test2:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: mysqldump_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                mysql_path:
+                    site_setting:
+                        name: mysql_path
+                        protect_from_database_restore: true
+                    label: 'mysql path (for restoring from a backup):'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Use PHP (not recommended) -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/mysql'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/mysql'
                     format_onchange: true
                     style: >
                         margin-right: 0.5em;
                 test:
                     same_row: true
                     visible_if:
-                        zenarioAB.value: wkhtmltopdf_path
+                        zenarioAB.value: mysql_path
                     type: submit
                     value: Test
                     class: submit
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
+            show_errors_after_field: desc
+            notices:
+                success:
+                    show: false
+                    type: success
+                    message: mysql is working successfully.
+                error:
+                    show: false
+                    type: error
+                    message: mysql is not correctly set up.
+                success2:
+                    show: false
+                    type: success
+                    message: mysqldump is working successfully.
+                error2:
+                    show: false
+                    type: error
+                    message: mysqldump is not correctly set up.
+        antivirus:
+            label: Antivirus
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                               Zenario can perform antivirus scanning for file uploads, and makes use of ClamAV. To install on Ubuntu, use the following (but adjust for your OS):
+                            </p><p>
+                                <code>&nbsp; &nbsp; sudo apt install clamav clamav-base clamav-daemon clamav-freshclam clamdscan libclamav7</code>
+                            </p><p>
+                                Then ensure ClamAV is not blocked by Apparmor, so edit <code>/etc/apparmor.d/local/usr.sbin.clamd</code> and add the lines:
+                            </p><p>
+                                <code>
+                                    &nbsp; &nbsp; /var/www/clients/ r,<br />
+                                    &nbsp; &nbsp; /var/www/clients/** r,<br />
+                                    &nbsp; &nbsp; /var/www/zenario-source/ r,<br />
+                                    &nbsp; &nbsp; /var/www/zenario-source/** r,<br />
+                                    &nbsp; &nbsp; /tmp/ r,<br />
+                                    &nbsp; &nbsp; /tmp/** r,<br />
+                                </code>
+                            </p><p>
+                                Edit <code>/etc/apparmor.d/usr.sbin.clamd</code> and uncomment the line:
+                            </p><p>
+                                <code>&nbsp; &nbsp; include &lt;local/usr.sbin.clamd&gt;</code>
+                            </p><p>
+                                Then restart Apparmor and ClamAV:
+                            </p><p>
+                                <code>
+                                    &nbsp; &nbsp; sudo service apparmor restart<br />
+                                    &nbsp; &nbsp; sudo service clamav-daemon start<br />
+                                    &nbsp; &nbsp; sudo service clamav-freshclam start<br />
+                                </code>
+                            </p><p>
+                                Finally, wait about 1 minute for ClamAV to boot before re-testing!
+                            </p><p>
+                                When you upload a file, Zenario will attempt to
+                                scan the document for viruses using the ClamAV antivirus scanner,
+                                if it is installed on your server
+                                and the <code>clamd</code> daemon is running.
+                            </p><p>
+                                Zenario can only use ClamAV if it is running on a Unix-based server;
+                                there is not support for this feature on a Windows server.
+                            </p>
+                clamscan_tool_path:
+                    name: clamscan_tool_path
+                    site_setting:
+                        name: clamscan_tool_path
+                    label: 'ClamAV path:'
+                    type: select
+                    value: PATH
+                    empty_value: ' -- Don't scan for viruses -- '
+                    values:
+                        'PATH':
+                            label: "Use your server's PATH environment variable"
+                        '/usr/bin/':
+                            label: '/usr/bin/clamdscan'
+                        '/usr/local/bin/':
+                            label: '/usr/local/bin/clamdscan'
+                    format_onchange: true
+                    style: >
+                        margin-right: 0.5em;
+                test:
+                    same_row: true
                     visible_if:
-                        zenarioAB.value: wkhtmltopdf_path
+                        zenarioAB.value: clamscan_tool_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
+                require_av_scan:
+                    site_setting:
+                        name: require_av_scan
+                    label: 'If the antivirus scanner is unavailable:'
+                    type: select
+                    empty_value: 'Allow file uploads without scanning'
+                    values:
+                        1: 'Block all file uploads while the scanner is unavailable'
+            show_errors_after_field: desc
             notices:
                 success:
                     show: ""
                     type: success
-                    message: wkhtmltopdf is working successfully.
+                    message: ClamAV is working successfully.
                 error:
                     show: ""
                     type: error
-                    message: wkhtmltopdf is not correctly set up.
+                    message: ClamAV is not correctly set up.
+                daemon:
+                    show: ""
+                    type: error
+                    message: |
+                        ClamAV is installed and you have the path correctly set, but files cannot be scanned.
+                        Please check that the <code>clamd</code> daemon is running, and that AppArmor is not blocking ClamAV.
+                    html: true
+

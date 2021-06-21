@@ -1,10 +1,9 @@
 <div class="calendar">
-
 	{% if Event_calendar_year_view %}
-		<div class="calendar_content">
+		<div class="calendar_content year_view">
 			{% if Calendar_year_view_title %}
 				<div class="calendar_title">
-					<h2>{{"_CALENDAR_TITLE"|trans}}</h2>
+					<h2>{{"Events Calendar"|trans}}</h2>
 				</div>
 			{% endif %}
 			
@@ -22,10 +21,40 @@
 						{% for row in Months_row_element %}
 							<tr class="monthrow" >
 								{% for item in row.Months_cell_element %}
-									<td class="monthcell {{item.Current_month}}">
-										<span>
-											<a class="{{item.Current_month}} {{item.Month_with_events}}" {{item.Anchor}} onmouseover="{{item.On_mouseover_script}}" >{{item.Month_label}} {{item.Month_event_span}}</a>
-										</span>
+									<td class="monthcell {{item.Current_month}} {% if item.Month_with_events %} has_events {% endif %}">
+										<div class="content_cell">
+											{% if Enable_popup and item.Anchor %}
+												<div class="content_month">
+													<a
+														class="{{item.Current_month}} {{item.Month_with_events}}"
+														{{item.Anchor}}
+														onmouseover="{{item.On_mouseover_script}}"
+														data-box-className="event_calendar"
+													>
+														<span class="month_label">{{item.Month_label}}</span>
+														<span class="see_events">{{"See events"|trans}}</span>
+													</a>
+												</div>
+											{% else %}
+												<div class="content_month {{item.Current_month}} {{item.Month_with_events}}"><span class="month_label">{{item.Month_label}}</span></div>
+											{% endif %}
+											
+											{% if Show_event_count and item.Num_events %}
+												<span class='event_count has_events has_eventsdesc'>{{item.Num_events}}</span>
+											{% endif %}
+
+											{% for EventId, Event in item.Month_events %}
+												<span class="event">
+													<a
+														class="{{item.Current_month}}"
+														href="{{Event.SUBDIR}}?cID={{Event.Event_id}}&cType={{Event.Content_type}}"
+														target="_blank"
+													>
+														{{Event.Title}}
+													</a>
+												</span>
+											{% endfor %}
+										</div>
 									</td>
 								{% endfor %}
 							</tr>
@@ -34,27 +63,36 @@
 				</table>
 				</div>
 			{% endif %}
+			
 			{% if Calendar_year_view_footer %}
 				<div class="calendar_bottom">
 					<div class="calendar_bottom_inner">
-						<div class="calendar_prev">
-							<a onclick="{{Previous_year_onclick}}return false;" href="#">{{Previous_year_name}}</a>
-						</div>
-						<div class="calendar_next">
-							<a onclick="{{Next_year_onclick}}return false;" href="#">{{Next_year_name}}</a>
-						</div>
+						{% if Show_next_and_previous_only %}
+							<div class="calendar_prev calendar_prev_next">
+								<a onclick="{{Previous_year_onclick}}return false;" href="#">{{Previous_year_name}}</a>
+							</div>
+							<div class="calendar_next calendar_prev_next">
+								<a onclick="{{Next_year_onclick}}return false;" href="#">{{Next_year_name}}</a>
+							</div>
+						{% elseif Show_year_range %}
+							<div class="calendar_year_navigation">
+								{% for Year in Year_range %}
+									<span {% if Year_number == Year.Label %} class="on" {% endif %}> 
+										<a onclick="{{Year.Onclick}}return false;" href="#">{{Year.Label}}</a>
+									</span>
+								{% endfor %}
+							</div>
+						{% endif %}
 					</div>
 				</div>
 			{% endif %}
-    	</div>
-	{% endif %}
-	
+    	</div>	
 
-	{% if Event_calendar_month_view %}
-		<div class="calendar_content">
+	{% elseif Event_calendar_month_view %}
+		<div class="calendar_content month_view">
 			{% if Calendar_month_view_title %}
 				<div class="calendar_title">
-					<h2>{{"_CALENDAR_TITLE"|trans}}</h2>
+					<h2>{{"Events Calendar"|trans}}</h2>
 				</div>
 			{% endif %}
 			{% if Calendar_month_view_header %}
@@ -83,10 +121,41 @@
 						{% for row in Days_row_element %}
 							<tr class="dayrow" >
 								{% for item in row.Days_cell_element %}
-									<td class="{{item.Td_day_class_name}}">
-										<span>
-											<a class="{{item.Day_class_name}}" {{item.Anchor}} onmouseover="{{item.On_mouseover_script}}" >{{item.Day_label}}  {{item.Day_event_span}}</a>
-										</span>
+									<td class="{{item.Td_day_class_name}} {% if item.Day_events %} has_events {% endif %}">
+										<div class="content_cell">
+											<span class="{{item.Day_class_name}}">
+												{% if Enable_popup and item.Anchor %}
+													<div class="{{item.Day_class_name}} day_number">
+														<a
+															class="{{item.Day_class_name}}"
+															{{item.Anchor}}
+															onmouseover="{{item.On_mouseover_script}}"
+															data-box-className="event_calendar"
+														>
+															<span class="day_label">{{item.Day_label}}</span>
+															<span class="see_events">{{"See events"|trans}}</span>
+														</a>
+													</div>
+												{% else %}
+													<div class="{{item.Day_class_name}} day_number"><span class="day_label">{{item.Day_label}}</span></div>
+												{% endif %}
+												
+												{% if Show_event_count and item.Num_events %}
+													<span class='event_count has_events has_eventscount'>{{item.Num_events}}</span>
+												{% endif %}
+											</span>
+											{% for EventId, Event in item.Day_events %}
+												<span class="event">
+													<a
+														class="{{item.Day_class_name}}"
+														href="{{Event.SUBDIR}}?cID={{Event.Event_id}}&cType={{Event.Content_type}}"
+														target="_blank"
+													>
+														{{Event.Title}}
+													</a>
+												</span>
+											{% endfor %}
+										</div>
 									</td>
 								{% endfor %}
 							</tr>
@@ -99,20 +168,18 @@
 			{% if Calendar_month_view_footer %}
 				<div class="calendar_bottom">
 					<div class="calendar_bottom_inner">
-						<div class="calendar_prev">
+						<div class="calendar_prev calendar_prev_next">
 							<a onclick="{{Previous_month_onclick}}return false;" href="#">{{Previous_month_name}}</a>
 						</div>
-						<div class="calendar_next">
+						<div class="calendar_next calendar_prev_next">
 							<a onclick="{{Next_month_onclick}}return false;" href="#">{{Next_month_name}}</a>
 						</div>
 					</div>
 				</div>
 			{% endif %}
-		</div>
-	{% endif %}
-	
+		</div>	
 
-	{% if EFrame %}
+	{% elseif EFrame %}
 		<div class="day_view">
             <div class="day_view_wrap">
    	    	     <div class="day_view_inner">
@@ -127,11 +194,14 @@
 								<li>
 									<div class="day_view_event">
 										{{event.StickyImage}}
-										<h3>
-											<a href="{{event.SUBDIR}}?cID={{event.Event_id}}&cType={{event.Content_type}}" target="_parent">{{event.Event_title}}</a>
-										</h3>
 										<p class="day_view_event_time"> {{event.Time_of_event}}</p>
-                                    	<p class="day_view_event_summary"> {{event.Event_summary}}</p>
+										{% if event.Event_title %}
+											<h3>
+												<a href="{{event.SUBDIR}}?cID={{event.Event_id}}&cType={{event.Content_type}}" target="_parent">{{event.Event_title}}</a>
+											</h3>
+										{% endif %}
+                                    	<div class="day_view_event_summary"> {{event.Event_summary}}</div>
+                                    	<div class="day_view_event_more"> <a href="{{event.SUBDIR}}?cID={{event.Event_id}}&cType={{event.Content_type}}" target="_parent">{{"View"|trans}}</a></div>
 									</div>
 								</li>
 							{% endfor %}

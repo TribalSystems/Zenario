@@ -83,21 +83,13 @@ class plugin {
 	public static function slotContents(
 		&$slotContents,
 		$cID, $cType, $cVersion,
-		$layoutId = false, $templateFamily = false, $templateFileBaseName = false,
+		$layoutId = false,
 		$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
 		$runPlugins = true, $exactMatch = false, $overrideSettings = false, $overrideFrameworkAndCSS = false
 	) {
 	
 		if ($layoutId === false) {
 			$layoutId = \ze\content::layoutId($cID, $cType, $cVersion);
-		}
-	
-		if ($templateFamily === false) {
-			$templateFamily = \ze\row::get('layouts', 'family_name', $layoutId);
-		}
-	
-		if ($templateFileBaseName === false) {
-			$templateFileBaseName = \ze\row::get('layouts', 'file_base_name', $layoutId);
 		}
 	
 	
@@ -123,8 +115,7 @@ class plugin {
 			FROM (
 				SELECT slot_name, module_id, instance_id, id, 'template' AS type, 2 AS level
 				FROM ". DB_PREFIX. "plugin_layout_link
-				WHERE family_name = '". \ze\escape::sql($templateFamily). "'
-				  AND layout_id = ". (int) $layoutId.
+				WHERE layout_id = ". (int) $layoutId.
 				  $whereSlotName;
 	
 		if ($cID) {
@@ -144,18 +135,15 @@ class plugin {
 		//Only show missing slots for Admins with the correct permissions
 		if (\ze::isAdmin() && (\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT'))) {
 			$sql .= "
-			LEFT JOIN ". DB_PREFIX. "template_slot_link AS tsl";
+			LEFT JOIN ". DB_PREFIX. "layout_slot_link AS tsl";
 		} else {
 			$sql .= "
-			INNER JOIN ". DB_PREFIX. "template_slot_link AS tsl";
+			INNER JOIN ". DB_PREFIX. "layout_slot_link AS tsl";
 		}
-	
+		
 		$sql .= "
-			   ON tsl.family_name = '". \ze\escape::sql($templateFamily). "'
-			  AND tsl.file_base_name = '". \ze\escape::sql($templateFileBaseName). "'
-			  AND tsl.slot_name = pi.slot_name";
-	
-		$sql .= "
+			   ON tsl.layout_id = '". \ze\escape::sql($layoutId). "'
+			  AND tsl.slot_name = pi.slot_name
 			LEFT JOIN ". DB_PREFIX. "plugin_instances AS vcpi
 			   ON vcpi.module_id = pi.module_id
 			  AND vcpi.content_id = ". (int) $cID. "
@@ -240,7 +228,7 @@ class plugin {
 				}
 			
 				$slotContents[$row['slot_name']] = ['instance_id' => 0, 'module_id' => 0];
-				$slotContents[$row['slot_name']]['error'] = \ze\admin::phrase('[Plugin hidden on this content item]');
+				$slotContents[$row['slot_name']]['error'] = \ze\admin::phrase('[Slot set to show nothing on this content item]');
 				$slotContents[$row['slot_name']]['level'] = $row['level'];
 				$slots[$row['slot_name']] = true;
 		
@@ -293,7 +281,7 @@ class plugin {
 					\ze\plugin::loadInstance(
 						$slotContents, $slotName,
 						$cID, $cType, $cVersion,
-						$layoutId, $templateFamily, $templateFileBaseName,
+						$layoutId,
 						$specificInstanceId, $specificSlotName, $ajaxReload,
 						$runPlugins, $thisSettings, $thisFrameworkAndCSS);
 		
@@ -307,7 +295,7 @@ class plugin {
 					 && $slotContents[$slotName]['level'] == 1
 					 && $layoutId
 					 && \ze\row::exists('plugin_layout_link', ['slot_name' => $slotName, 'layout_id' => $layoutId])) {
-						$slotContents[$slotName]['error'] = \ze\admin::phrase('[Plugin hidden on this content item]');
+						$slotContents[$slotName]['error'] = \ze\admin::phrase('[Slot set to show nothing on this content item]');
 					}
 				}
 			}
@@ -370,14 +358,14 @@ class plugin {
 	public static function loadInstance(
 			&$slotContents, $slotName,
 			$cID, $cType, $cVersion,
-			$layoutId, $templateFamily, $templateFileBaseName,
+			$layoutId,
 			$specificInstanceId, $specificSlotName, $ajaxReload,
 			$runPlugins, $overrideSettings = false, $overrideFrameworkAndCSS = false
 	) {
 	
 		if (!($_REQUEST['method_call'] ?? false)
 		&& isset(\ze::$cacheEnv) && isset(\ze::$allReq) && isset(\ze::$knownReq)
-		&& \ze::setting('caching_enabled') && \ze::setting('cache_plugins')) {
+		&& \ze::setting('caching_enabled') && \ze::setting('cache_web_pages')) {
 	
 			//Work out what cache-flags to use:
 				//u = extranet user logged in
@@ -673,7 +661,7 @@ class plugin {
 		if (\ze::$canCache
 		&& !($_REQUEST['method_call'] ?? false)
 		&& isset(\ze::$cacheEnv) && isset(\ze::$allReq) && isset(\ze::$knownReq)
-		&& \ze::setting('caching_enabled') && \ze::setting('cache_plugins')
+		&& \ze::setting('caching_enabled') && \ze::setting('cache_web_pages')
 		&& empty(\ze::$slotContents[$slotName]['served_from_cache'])) {
 				
 			if ($showPlaceholderMethod == 'addToPageHead') {
@@ -750,7 +738,7 @@ class plugin {
 		if (\ze::$canCache
 		&& !($_REQUEST['method_call'] ?? false)
 		&& isset(\ze::$cacheEnv) && isset(\ze::$allReq) && isset(\ze::$knownReq)
-		&& \ze::setting('caching_enabled') && \ze::setting('cache_plugins')
+		&& \ze::setting('caching_enabled') && \ze::setting('cache_web_pages')
 		&& empty(\ze::$slotContents[$slotName]['served_from_cache'])) {
 				
 			if ($showPlaceholderMethod == 'addToPageHead') {
@@ -1012,13 +1000,12 @@ class plugin {
 	}
 
 	//Formerly "getPluginInstanceInTemplateSlot()"
-	public static function idInLayoutSlot($slotName, $templateFamily, $layoutId, $getModuleId = false) {
+	public static function idInLayoutSlot($slotName, $layoutId, $getModuleId = false) {
 	
 		$sql = "
 			SELECT ". ($getModuleId? 'module_id' : 'instance_id'). "
 			FROM ". DB_PREFIX. "plugin_layout_link
 			WHERE slot_name = '". \ze\escape::sql($slotName). "'
-			  AND family_name = '". \ze\escape::sql($templateFamily). "'
 			  AND layout_id = ". (int) $layoutId;
 	
 		$result = \ze\sql::select($sql);

@@ -161,6 +161,18 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$box['tabs']['unsub_exclude']['fields']['delete_account_text']['post_field_html'] 
 				= '<div id="delete_account_info">Preview: ' . $values['unsub_exclude/delete_account_text'] . ' <span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'delete_account.php?t=XXXXXXXXXXXXXXX</span></div>';
 		
+		//If the newsletter consent policy has not been set, display a warning.
+		if (ze\ring::engToBoolean($box['tabs']['unsub_exclude']['edit_mode']['enabled'] ?? false)) {
+			if (!ze::setting('zenario_newsletter__newsletter_consent_policy')) {
+				$siteSettingSring = 'You have not yet selected a consent policy for users receiving newsletters. Please go to [[link_start]]<em>Email and Newsletter</em>[[link_end]] to change this.';
+				$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k{"id"%3A"email"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+
+				$box['tabs']['unsub_exclude']['notices']['newsletter_consent_policy_not_selected']['show'] = true;
+				$box['tabs']['unsub_exclude']['notices']['newsletter_consent_policy_not_selected']['message'] = ze\admin::phrase($siteSettingSring, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+			}
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -244,7 +256,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$values['unsub_exclude/unsubscribe_link'] = 'none';
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['show'] = true;
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['message'] =
-				ze\admin::phrase('You must select an Unsubscribe user flag in Configuration->Site Settings->Newsletters');
+				ze\admin::phrase('You must select an Unsubscribe user flag in Configuration->Site Settings->Email and Newsletter.');
 			if (isset($box['tabs']['unsub_exclude']['fields']['exclude_recipients_with_opt_out'])) {
 				unset($box['tabs']['unsub_exclude']['fields']['exclude_recipients_with_opt_out']);
 			}
@@ -340,7 +352,8 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		if (ze\ring::engToBoolean($box['tabs']['unsub_exclude']['edit_mode']['on'] ?? false)) {
 			//The consent flag must be chosen in the site-settings to proceed
 			if (!ze::setting('zenario_newsletter__newsletter_consent_policy')) {
-				$fields['unsub_exclude/exclude_recipients_with_no_consent']['error'] = ze\admin::phrase('You have not yet selected a consent policy for users receiving newsletters');
+				$fields['unsub_exclude/exclude_recipients_with_no_consent']['error'] =
+					ze\admin::phrase('You have not yet selected a consent policy for users receiving newsletters. Please follow the link at the top of the tab to change this.');
 			}
 		}
 	}

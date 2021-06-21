@@ -74,6 +74,28 @@ plugin_settings:
                     #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
                     value: true
                     side_note: 'This only has effect when you select "Enlarge image in a floating box" for an image.'
+                zip_archive_enabled:
+                    label: 'Offer to create zip of downloads'
+                    type: checkbox
+                    plugin_setting:
+                        name: zip_archive_enabled
+                    redraw_onchange: true
+                zip_archive_name:
+                    indent: 2
+                    #Indent is set to 2, because there is logic in the MIC formatAdminBox() method
+                    #which reduces it by 1.
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_value_isnt: 1
+                    label: 'Zip archive name:'
+                    placeholder: 'images'
+                    plugin_setting:
+                        name: zip_archive_name
+                    type: text
+                    side_note: >
+                        You can specify the name of the target zip archive. If you
+                        leave this field empty, the "images.zip" name is assumed.
+                    post_field_html: '.zip'
+                    note_below: ''
 
         links:
             ord: 4.5
@@ -119,16 +141,16 @@ plugin_settings:
                     plugin_setting:
                         name: link_type_znz
                     type: select
-                    value: _NO_LINK
+                    value: _ENLARGE_IMAGE
                     values:
-                        _NO_LINK:
-                            label: — Don't link/enlarge —
+                        _ENLARGE_IMAGE:
+                            label: Enlarge image in floating box
                         _CONTENT_ITEM:
                             label: Link to a content item
                         _EXTERNAL_URL:
                             label: Link to an external URL
-                        _ENLARGE_IMAGE:
-                            label: Enlarge image in floating box
+                        _NO_LINK:
+                            label: — Don't link/enlarge —
                     redraw_onchange: true
               
                 target_blank_znz:

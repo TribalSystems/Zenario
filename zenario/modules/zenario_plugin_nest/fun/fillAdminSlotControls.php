@@ -51,7 +51,7 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	
 	} else {
 		$buttonName = 'plugins_in_nest';
-		
+		$controls['actions']['settings']['ord'] = 63;
 		$controls['actions']['settings']['label'] = ze\admin::phrase('Nest settings');
 		
 		if ($existingPlugins) {
@@ -84,7 +84,14 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		$controls['actions']['edit_slide'] = $controls['actions']['settings'];
 		
 		$controls['actions']['edit_slide']['ord'] = 62;
-		$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]])', ['slideNum' => $this->slideNum]);
+
+		$staticMethodInfo = ze\row::get('nested_plugins', ['module_class_name', 'method_name'], ['instance_id' => $this->instanceId, 'is_slide' => 1, 'id' => (int) $this->slideId]);
+		if ($staticMethodInfo['module_class_name'] && $staticMethodInfo['method_name']) {
+			$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]]) [Static method used]', ['slideNum' => $this->slideNum]);
+		} else {
+			$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]])', ['slideNum' => $this->slideNum]);
+		}
+
 		$controls['actions']['edit_slide']['onclick'] = "
 			var isVersionControlled = ". ze\ring::engToBoolean($this->isVersionControlled). ";
 			if (!isVersionControlled || zenarioA.draft(this.id, true)) {

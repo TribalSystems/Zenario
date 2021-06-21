@@ -95,6 +95,7 @@
 			<span>Repeating section start</span>
 			
 		<% } else if (m.type == 'repeat_end') { %>
+			<span>Repeating section end</span>
 			<div class="border"></div>
 		
 		<% } else { %>
@@ -120,9 +121,6 @@
         </div>
     
         <div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m._is_current_field) { %> style="display:none;" <% } %>>
-        	<% if (!m._hide_drag_button) { %>
-            	<span class="drag_icon"></span>
-            <% } %>
             <% if (!m._hide_delete_button) { %>
            		<span class="delete_icon <% if (m.form_type == 'registration' && m.db_column == 'email') { %>disabled<% } else { %>enabled<% } %}" data-id="{{m.id|e}}">Delete</span>
            	<% } %>
@@ -133,6 +131,9 @@
            		<span class="update_repeat_field_icon" data-id="{{m.id|e}}">Update</span>
            	<% } %>
         </div>
+        <% if (!m._hide_drag_button) { %>
+            <span class="drag_icon"></span>
+        <% } %>
 	<% } %>
 </div>
 <% } %>

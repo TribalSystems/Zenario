@@ -31,11 +31,14 @@ window.zenarioCI = function() {};
 	undefined) {
 
 
-zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
+zenarioCI.box = function(slotName, type, cantCache) {
 	var css = '',
 		html = '',
 		cache_if = {u: 'User', g: 'GET', p: 'POST', s: 'SESSION', c: 'COOKIE'},
-		clear_cache_by = {};
+		clear_cache_by = {},
+		lType = type.toLowerCase(),
+		pluginDesc = '',
+		si, slot;
 	
 	for (var slotNameNestId in zenarioCD.slots) {
 		if (!slotName
@@ -43,19 +46,21 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 		 || slotNameNestId.substr(0, slotName.length + 1) == slotName + '-'
 		 || slotNameNestId == slotName.split('-')[0]) {
 			
-			if (cantCache || !zenarioCD.slots[slotNameNestId].cache_if || !zenarioCD.slots[slotNameNestId].cache_if.a || zenarioCD.slots[slotNameNestId].disallow_caching) {
+			slot = zenarioCD.slots[slotNameNestId];
+			
+			if (cantCache || !slot.cache_if || !slot.cache_if.a || slot.disallow_caching) {
 				cantCache = true;
 				break;
 			
 			} else {
-				for (var i in zenarioCD.slots[slotNameNestId].cache_if) {
-					if (!zenarioCD.slots[slotNameNestId].cache_if[i]) {
+				for (var i in slot.cache_if) {
+					if (!slot.cache_if[i]) {
 						delete cache_if[i];
 					}
 				}
-				if (zenarioCD.slots[slotNameNestId].clear_cache_by) {
-					for (var i in zenarioCD.slots[slotNameNestId].clear_cache_by) {
-						if (zenarioCD.slots[slotNameNestId].clear_cache_by[i]) {
+				if (slot.clear_cache_by) {
+					for (var i in slot.clear_cache_by) {
+						if (slot.clear_cache_by[i]) {
 							clear_cache_by[i] = true;
 						}
 					}
@@ -64,10 +69,32 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 		}
 	}
 	
+	if (slotName && (slot = zenario.slots[slotName])) {
+		
+		pluginDesc = ', ';
+		
+		if (slot.isVersionControlled) {
+			pluginDesc += slot.moduleClassName + ',';
+		} else {
+			switch (slot.moduleClassName) {
+				case 'zenario_plugin_nest':
+					pluginDesc += 'N';
+					break;
+				case 'zenario_slideshow':
+				case 'zenario_slideshow_simple':
+					pluginDesc += 'S';
+					break;
+				default:
+					pluginDesc += 'P';
+			}
+			pluginDesc += ('' + slot.instanceId).padStart(2, '0') + ' (' + slot.moduleClassName + '),';
+		}
+	}
+	
 	
 	if (cantCache) {
 		css = 'zenario_cache_disabled';
-		html += '<h1 class="' + css + '">This ' + type + ' does not support caching.</h1><h2>The developer did not enable support for caching for this ' + type + '.</h2>';
+		html += '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' does not support caching.</h1><h2>The developer did not enable support for caching for this ' + lType + '.</h2>';
 	
 	} else {
 		
@@ -80,18 +107,18 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 			load = {u: 'User', g: 'GET', p: 'POST', s: 'SESSION', c: 'COOKIE'},
 			by = {content: 'Content', menu: 'Menu', user: 'User', file: 'File', module: 'Module'},
 			
-			key = {u: 'An Extranet User is logged in', g: 'A non-canonical GET request', p: 'A POST request', s: 'A session variable', c: 'A cookie from this site',
+			key = {u: 'Extranet user logged in', g: 'GET request*', p: 'POST request', s: 'Session variable†', c: 'Cookie (from this site)‡',
 					l: 'Location dependant logic',
-					content: 'Other Content Items, any change to Categories', menu: 'Menu Nodes', user: "Users, their Characteristics, Groups and Group memberships",
-					file: 'Images, animations and documents stored in the CMS', module: 'Any data added by a Module'};
+					content: 'Other content items, any changes to categories', menu: 'Menu nodes', user: "Users, and their group memberships",
+					file: 'Images and documents stored in Zenario', module: 'Any data added by a module'};
 		
 		
 		if (type == 'Page') {
 			load.l = 'LOCATION';
 		}
 		
-		html += '<h2>The caching rules for this ' + type + ' are as follows:</h2>';
-		html += '<table><tr><td></td><th>Current</th><th>' + type + ' Req\'t</th><th>Conflicts</th></tr>';
+		html += '<h2>The caching rules for this ' + lType + ' are as follows:</h2>';
+		html += '<table><tr><th>&nbsp;</th><th>' + type + ' requires</th><th>This request</th><th>Result</th></tr>';
 		for (var i in load) {
 			ruleNotMet = zenarioCD.load[i] && !cache_if[i];
 			
@@ -100,10 +127,11 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 			}
 			
 			html += '<tr><th>' + zenario.htmlspecialchars(key[i]) + '</th>';
-			html += 	'<td><span class="' + (zenarioCD.load[i]? 'zenario_cache_one' : 'zenario_cache_zero') + '">&nbsp;</span></td>';
-			html += 	'<td class="zenario_cache_req"><span class="zenario_cache_zero">&nbsp;</span>' + (cache_if[i]? ' or <span class="zenario_cache_one">&nbsp;</span>' : '') + '</td>';
-			html += 	'<td>' + (ruleNotMet? '<span class="zenario_cache_cross">&nbsp;</span>' : '&nbsp;') + '</td></tr>';
+			html += 	'<td class="zenario_cache_req">' + (cache_if[i]? 'Any' : '0') + '</td>';
+			html += 	'<td>' + (zenarioCD.load[i]? '1' : '0') + '</td>';
+			html += 	'<td>' + (ruleNotMet? 'Can\'t cache' : 'OK to cache') + '</td></tr>';
 		}
+		html += '<tr class="zenario_cache_table_last_row"><th>Result</th><td>&nbsp;</td><td>&nbsp;</td><td>' + (css == 'zenario_not_cached'? 'Can\'t cache' : 'OK to cache') +  '</td></tr>';
 		html += '</table>';
 		
 		
@@ -111,7 +139,7 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 		for (var i in by) {
 			if (clear_cache_by[i]) {
 				if (!found) {
-					html += '<h2>This ' + type + '\ will be cleared from the cache when any of the following change:</h2><ul>';
+					html += '<h2>This ' + lType + '\ will be cleared from the cache when any of the following change:</h2><ul>';
 					found = true;
 				}
 				html += '<li>' + zenario.htmlspecialchars(key[i]) + '</li>';
@@ -123,17 +151,18 @@ zenarioCI.box = function(slotName, type, cantCache, settingEnabled) {
 		
 		
 		if (css == 'zenario_not_cached') {
-			html = '<h1 class="' + css + '">This ' + type + ' can be cached, but not in the current situation due to a conflict.</h1>' + html;
+			html = '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' can be cached, but not in the current situation due to a conflict.</h1>' + html;
 		
 		} else if (css == 'zenario_from_cache') {
-			html = '<h1 class="' + css + '">This ' + type + ' can be cached and was just served from the cache.</h1>' + html;
-		
-		} else if (settingEnabled) {
-			html = '<h1 class="' + css + '">This ' + type + ' can be cached and was just written to the cache.</h1>' + html;
+			html = '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' can be cached and was just served from the cache.</h1>' + html;
 		
 		} else {
-			html = '<h1 class="' + css + '">This ' + type + ' could be cached if plugin caching was enabled in Configuration->Site Settings, Optimisation interface.</h1>' + html;
+			html = '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' can be cached and was just written to the cache.</h1>' + html;
 		}
+		
+		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(*)</span> <em>A page is considered unique for caching purposes according to its alias (or its <code>cID</code> and <code>cType</code>), and a &ldquo;<code>page</code>&rdquo; number when pagination is used, and any additional GET parameters such as <code>searchString</code>.</em></p>';
+		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(†)</span> <em>Some session variables do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlySessionVar()</code> function in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
+		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(‡)</span> <em>Some cookies do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlyCookieVar()</code> function in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
 	}
 	
 	return '<x-zenario-cache-info class="' + css + '" title="' + zenario.htmlspecialchars('<div class="zenario_cache_box">' + html + '</div>') + '"></x-zenario-cache-info>';
@@ -156,11 +185,11 @@ zenarioCI.init = function(canCache) {
 			
 			if (el.id && (slotName = el.id.replace('plgslt_', '')) && (zenarioCD.slots[slotName])) {
 				
-				$(el).prepend('<x-zenario-cache-info class="zenario_cache_info">' + zenarioCI.box(slotName, 'Plugin', false, zenarioCD.cache_plugins) + '</x-zenario-cache-info>');
+				$(el).prepend('<x-zenario-cache-info class="zenario_cache_info">' + zenarioCI.box(slotName, 'Plugin', false) + '</x-zenario-cache-info>');
 			}
 		});
 		
-		zenario.get('zenario_cache_info').innerHTML = zenarioCI.box('', 'Page', !canCache, true);
+		zenario.get('zenario_cache_info').innerHTML = zenarioCI.box('', 'Page', !canCache);
 		
 		zenario.tooltips('x-zenario-cache-info.zenario_cache_info *', options);
 		

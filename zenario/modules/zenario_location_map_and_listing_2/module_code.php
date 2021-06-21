@@ -319,14 +319,23 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			if (!empty($this->setting('show_map'))) {
 				echo '<div id="'. htmlspecialchars($this->containerId). '_map"></div>'. "\n";
 				echo '<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>';
-			
+				
+				if ($this->setting('initial_map_position') == 'auto_position_at_centre') {
+					$fixedPositionLat = $fixedPositionLng = false;
+				} elseif ($this->setting('initial_map_position') == 'fixed_position') {
+					$fixedPositionLat = (float) $this->setting('fixed_position_lat');
+					$fixedPositionLng = (float) $this->setting('fixed_position_lng');
+				}
+				
 				$this->callScript(
 					'zenario_location_map_and_listing_2',
 					'initMap',
 					$_GET['pageLoadNum'] ?? 0,
 					$this->containerId,
 					$this->setting('zoom_control'),
-					(int) ($this->setting('zoom_level') ?? 0)
+					(int) ($this->setting('zoom_level') ?? 0),
+					$fixedPositionLat,
+					$fixedPositionLng
 				);
 			}
 		}

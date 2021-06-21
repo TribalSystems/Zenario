@@ -54,6 +54,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				v.description,
 				v.file_id,
 				v.s3_file_id,
+				v.pinned,
 				c.alias,
 				c.equiv_id,
 				c.language_id,
@@ -290,69 +291,99 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		
 		//Release date section
-		
-		//Date range
-		$startDate = $this->setting('start_date');
-		$endDate = $this->setting('end_date');
-		
-		if ($this->setting('release_date')=='date_range'){
-			$sql .= "
-				AND DATE(v.release_date) >= '" . ze\escape::sql($startDate) . "'
-				";
+		if ($this->setting('release_date') != 'ignore') {
+			$andStatementBeforeDateQuery = $dateQuery = $orStatementAfterDateQuery = '';
 			
+			$andStatementBeforeDateQuery .= "
+				AND ";
+			
+			//Check if pinning is enabled - display pinned items even if they don't match the date.
+			if ($this->setting('pinned_content_items') != 'ignore_pinned') {
+				$andStatementBeforeDateQuery .= "(";
+			}
+
+			//Date range
+			$startDate = $this->setting('start_date');
+			$endDate = $this->setting('end_date');
+			
+			if ($this->setting('release_date')=='date_range'){
+				$dateQuery .= "
+					DATE(v.release_date) >= '" . ze\escape::sql($startDate) . "'
+					";
+				
+				$dateQuery .= "
+					AND DATE(v.release_date) <=  '" . ze\escape::sql($endDate) . "'
+					";
+			}
+
+			//Relative date range
+			if ($this->setting('release_date')=='relative_date_range' && $this->setting('relative_operator')
+				&& ((int)$this->setting('relative_value')) >0 && $this->setting('relative_units')
+			) {
+				if ($this->setting('relative_operator')=='older'){
+					$sqlOperator = " < ";
+				} else {
+					$sqlOperator = " >= ";
+				}
+				
+				switch ($this->setting('relative_units')) {
+					case 'days':
+						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " DAY)  ";
+						break;
+					case 'months':
+						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " MONTH)  ";
+						break;
+					case 'years':
+						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " YEAR)  ";
+						break;
+				}
+			}
+			
+			//prior_to_date
+			if ($this->setting('release_date')=='prior_to_date'){
+				$priorToDate = $this->setting('prior_to_date');
+				
+				$dateQuery .= "
+					DATE(v.release_date) <  '".ze\escape::sql($priorToDate)."'
+					";
+			}
+			//on_date
+			if ($this->setting('release_date')=='on_date'){
+				$onDate = $this->setting('on_date');
+
+				
+				$dateQuery .= "
+					DATE(v.release_date) =  '" . ze\escape::sql($onDate) . "'
+					";
+			}
+			//after_date
+			if ($this->setting('release_date')=='after_date'){
+				$afterDate = $this->setting('after_date');
+				
+				$dateQuery .= "
+					DATE(v.release_date) >  '" . ze\escape::sql($afterDate) . "'
+					";
+			}
+
+			//If pinning is enabled, close off the OR logic now.
+			if ($this->setting('pinned_content_items') != 'ignore_pinned' && $dateQuery) {
+				$orStatementAfterDateQuery .= "
+					OR v.pinned = 1)
+					";
+			}
+
+			if ($dateQuery) {
+				$sql .= "
+					" . $andStatementBeforeDateQuery . $dateQuery . $orStatementAfterDateQuery;
+			}
+		}
+
+		if ($this->setting('pinned_content_items') == 'only_show_pinned') {
 			$sql .= "
-				AND DATE(v.release_date) <=  '" . ze\escape::sql($endDate) . "'
+				AND v.pinned = 1
 				";
 		}
 
-		//Relative date range
-		if ($this->setting('release_date')=='relative_date_range' && $this->setting('relative_operator')
-					&& ((int)$this->setting('relative_value'))>0 && $this->setting('relative_units')) {
-			if ($this->setting('relative_operator')=='older'){
-				$sqlOperator = " < ";
-			} else {
-				$sqlOperator = " >= ";
-			}
-			
-			switch ($this->setting('relative_units')){
-				case 'days':
-					$sql .= " AND release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " DAY)  ";
-					break;
-				case 'months':
-					$sql .= " AND release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " MONTH)  ";
-					break;
-				case 'years':
-					$sql .= " AND release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " YEAR)  ";
-					break;
-			}
-		}
-		
-		//prior_to_date
-		if ($this->setting('release_date')=='prior_to_date'){
-			$priorToDate = $this->setting('prior_to_date');
-			
-			$sql .= "
-				AND DATE(v.release_date) <  '".ze\escape::sql($priorToDate)."'
-				";
-		}
-		//on_date
-		if ($this->setting('release_date')=='on_date'){
-			$onDate = $this->setting('on_date');
-
-			
-			$sql .= "
-				AND DATE(v.release_date) =  '" . ze\escape::sql($onDate) . "'
-				";
-		}
-		//after_date
-		if ($this->setting('release_date')=='after_date'){
-			$afterDate = $this->setting('after_date');
-			
-			$sql .= "
-				AND DATE(v.release_date) >  '" . ze\escape::sql($afterDate) . "'
-				";
-		}
-		
 		return $sql;
 	}
 	
@@ -360,27 +391,30 @@ class zenario_content_list extends ze\moduleBaseClass {
 	//Sort the Content
 	//Intended to be easily overwritten
 	protected function orderContentBy() {
+		$orderBy = "ORDER BY ";
+
+		if ($this->setting('pinned_content_items') == 'prioritise_pinned') {
+			$orderBy .= "v.pinned DESC, ";
+		}
+
 		if ($this->setting('only_show_child_items') && $this->setting('order') == 'Menu') {
 			if ($this->setting('child_item_levels') == 1) {
-				return "
-				ORDER BY mi2.ordinal";
+				$orderBy .= "mi2.ordinal";
 			} else {
-				return "
-				ORDER BY mh.separation, mi2.ordinal";
+				$orderBy .= "mh.separation, mi2.ordinal";
 			}
 		
 		} elseif ($this->setting('order') == 'Alphabetically') {
-			return "
-			ORDER BY v.title";
+			$orderBy .= "v.title";
 		
 		} elseif ($this->setting('order') == 'Most_Recent_First') {
-			return "
-			ORDER BY `content_table_date` DESC, c.id DESC";
+			$orderBy .= "`content_table_date` DESC, c.id DESC";
 		
 		} else {
-			return "
-			ORDER BY `content_table_date`, c.id";
+			$orderBy .= "`content_table_date`, c.id";
 		}
+
+		return $orderBy;
 	}
 	
 	
@@ -432,7 +466,17 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		//To add Zip settings
 		if (($this->zipArchiveName = $this->setting('zip_archive_name'))==''){
-			$this->zipArchiveName = "documents.zip";
+			switch ($this->setting('content_type')) {
+				case 'document':
+					$this->zipArchiveName = "documents.zip";
+					break;
+				case 'picture':
+					$this->zipArchiveName = "images.zip";
+					break;
+				default:
+					$this->zipArchiveName = "downloads.zip";
+					break;
+			}
 		} else {
 			$arr = explode(".",$this->zipArchiveName);
 			if ((count($arr)<2) || ($arr[count($arr)-1]!="zip") ){
@@ -719,6 +763,29 @@ class zenario_content_list extends ze\moduleBaseClass {
 						$item['Full_Link'] = $this->escapeIfRSS($this->linkToItem($cID, $cType, true, "rci=".$item['Id']));
 					}
 				}
+
+				if ($this->setting('pinned_content_items') != 'ignore_pinned') {
+					//Pinned icon
+					if (
+						$this->setting('show_pinned_icon') == 'to_admins_and_visitors'
+						|| ($this->setting('show_pinned_icon') == 'to_admins_only' && ze\admin::id())
+					) {
+						$item['Pinned'] = $row['pinned'];
+					} else {
+						$item['Pinned'] = false;
+					}
+
+					//Pinned text
+					$item['Pinned_Text'] = '';
+					if (
+						$this->setting('show_pinned_text') == 'to_admins_and_visitors'
+						|| ($this->setting('show_pinned_text') == 'to_admins_only' && ze\admin::id())
+					) {
+						if ($row['pinned']) {
+							$item['Pinned_Text'] = $this->setting('pinned_text');
+						}
+					}
+				}
 				
 				if (!$dontAddItem) {
 					$this->addExtraMergeFields($row, $item);
@@ -949,92 +1016,97 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$mainLinkArr = [];
 		$Link_To_Download_Page = false;
 		$allIdsValue = '';
-		if (isset($_GET['build']) && $_GET['build'] == 1 && $_GET['slotName'] == $this->slotName){
-			$getIds = $_GET['ids'];
+		if ( isset($_POST['prepareDownloadData']) && ($_POST['prepareDownloadData'] ?? false) && $_POST['slotName'] == $this->slotName) {
+			
+			$getIds = $_POST['documentIds'];
 			$zipFiles = [];
 			$zipFile = [];
 			$zipFileSize = 0;
-			if (($maxUnpackedSize = (int)ze::setting('max_unpacked_size'))<=0){
-				$maxUnpackedSize = 64;
-			} 
-			$maxUnpackedSize*=1048576;
-			if ($documentIDs = explode(",",$getIds)){
-				foreach ($documentIDs as $dID){
-					
-					if ($zipFileSize + $this->getUnpackedFilesSize($dID) > $maxUnpackedSize) {
-						$zipFiles[] = $zipFile;
-						$zipFile = [];
-						$zipFileSize = 0;
-					}
-					
-					$zipFile[] = $dID;
-					$zipFileSize += $this->getUnpackedFilesSize($dID);
-					
-				}
-					if (!empty($zipFile)) {
-						$zipFiles[] = $zipFile;
-					}
-			}
-			$fileCtr = 0;
-			$fileDocCtr = 0;
-			foreach ($zipFiles as $zipFileids){
-				if($zipFileids){
-				$zipFileValue = implode(",",$zipFileids);
-				$fileNameArr = [];
-				$fileCtr++;
-				if (sizeof($zipFiles) > 1) {
-					$linkResult = $this->build($zipFileValue,$fileCtr);
-				} else {
-					$linkResult = $this->build($zipFileValue,0);
-				}
-				if ($linkResult[0]){
-					if ($linkResult[1]){
-						
-						$downLoadpage = true;
-						
-						$fileNameArr['fileName'] = $linkResult[2];
-						$fileNameArr['linkName'] = $linkResult[1];
-						if (sizeof($zipFiles) > 1){
-							$fileDocCtrValue = '';
-							$fileCtrVal = 0;
-							foreach($zipFileids as $filevaluectr)
-							{
-								$fileDocCtr++;
-								$fileCtrVal++;
-								if(sizeof($zipFileids) == $fileCtrVal)
-									$fileDocCtrValue .= $fileDocCtr;
-								else
-									$fileDocCtrValue .= $fileDocCtr.', ';
-								
-							}
-							$fileNameArr['labelName'] = $this->phrase('Download volume '.$fileCtr.' of zip archive (contains docs '.$fileDocCtrValue.'):');
-						}
-						else{
-							$fileNameArr['labelName'] = $this->phrase('Download zip archive:');
-						}
-						
-						
-					} else {
-						$noContent = true;
-						
-					}
-				} else {
-					if ((int)($_SESSION['admin_userid'] ?? false)){
-						$downLoadpage = true;
-						$fileDocCtr++;
-						$filename='';
-						if($zipFileids[0])
-						{
-							$latestVersion = ze\content::latestVersion($zipFileids[0], 'document');
-							$fileID = (int)ze\row::get('content_item_versions','file_id',['id'=>$zipFileids[0],'type'=>'document', 'version'=>$latestVersion]);
-							$filename = ze\row::get('files','filename',['id'=>$fileID]);
-						}
 
-						$fileNameArr['errorMsg'] = 'Error: '.$fileDocCtr.' document(s) could not be archived. '.nl2br($linkResult[1]);
+			$cType = $this->setting('content_type');
+
+			if (ze::in($cType, 'document', 'picture')) {
+				if (($maxUnpackedSize = (int)ze::setting('max_unpacked_size'))<=0){
+					$maxUnpackedSize = 64;
+				} 
+				$maxUnpackedSize*=1048576;
+
+				//As of 04 Jun 2021, the .zip download feature is also available
+				//for picture content items, in addition to documents.
+				if ($documentIDs = explode(",",$getIds)){
+					foreach ($documentIDs as $dID){
+						
+						if ($zipFileSize + $this->getUnpackedFilesSize($dID) > $maxUnpackedSize) {
+							$zipFiles[] = $zipFile;
+							$zipFile = [];
+							$zipFileSize = 0;
+						}
+						
+						$zipFile[] = $dID;
+						$zipFileSize += $this->getUnpackedFilesSize($dID);
+						
 					}
+						if (!empty($zipFile)) {
+							$zipFiles[] = $zipFile;
+						}
 				}
-				
-					$mainLinkArr[] = $fileNameArr;
+				$fileCtr = 0;
+				$fileDocCtr = 0;
+				foreach ($zipFiles as $zipFileids){
+					if($zipFileids){
+						$zipFileValue = implode(",", $zipFileids);
+						$fileNameArr = [];
+						$fileCtr++;
+						if (sizeof($zipFiles) > 1) {
+							$linkResult = $this->build($zipFileValue, $fileCtr);
+						} else {
+							$linkResult = $this->build($zipFileValue, 0);
+						}
+						if ($linkResult[0]){
+							if ($linkResult[1]){
+								
+								$downLoadpage = true;
+								
+								$fileNameArr['fileName'] = $linkResult[2];
+								$fileNameArr['linkName'] = $linkResult[1];
+								if (sizeof($zipFiles) > 1){
+									$fileDocCtrValue = '';
+									$fileCtrVal = 0;
+									foreach($zipFileids as $filevaluectr) {
+										$fileDocCtr++;
+										$fileCtrVal++;
+										if(sizeof($zipFileids) == $fileCtrVal)
+											$fileDocCtrValue .= $fileDocCtr;
+										else
+											$fileDocCtrValue .= $fileDocCtr.', ';
+										
+									}
+									$fileNameArr['labelName'] = $this->phrase('Download volume ' . $fileCtr . ' of zip archive (contains docs ' . $fileDocCtrValue . '):');
+								} else {
+									$fileNameArr['labelName'] = $this->phrase('Download zip archive:');
+								}
+
+								$fileNameArr['fileSize'] = $linkResult[3];
+							} else {
+								$noContent = true;
+							}
+						} else {
+							if ((int)($_SESSION['admin_userid'] ?? false)){
+								$downLoadpage = true;
+								$fileDocCtr++;
+								$filename='';
+								if($zipFileids[0]) {
+									$latestVersion = ze\content::latestVersion($zipFileids[0], $cType);
+									$fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $zipFileids[0], 'type'=> $cType, 'version' => $latestVersion]);
+									$filename = ze\row::get('files', 'filename', ['id' => $fileID]);
+								}
+
+								$fileNameArr['errorMsg'] = 'Error: document ' . $fileDocCtr . ' could not be archived. ' . nl2br($linkResult[1]);
+							}
+						}
+						
+						$mainLinkArr[] = $fileNameArr;
+					}
 				}
 			}
 		} else {
@@ -1052,7 +1124,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$Link_To_Download_Page = true;
 			}
 			ksort($allIds);
-			$allIdsValue = implode(",",$allIds);
+			$allIdsValue = implode(",", $allIds);
 			
 		}
 		
@@ -1101,15 +1173,27 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'FilenameArr' => ($fileNameArr ?? []),
 			'Empty_Archive' => $noContent,
 			'ARCHIVE_READY_FOR_DOWNLOAD' => $this->phrase('Download zip:'),
-			'NO_CONTENT_ITEMS' => $this->phrase('No documents to download.'),
+			'NO_CONTENT_ITEMS' => $this->phrase('No content items to download.'),
 			'PREPARING_DOCUMENTS' => $this->phrase('Preparing your zip file...'),
-			'DOWNLOAD_PREPARE_LABEL' => $this->phrase('Download all documents as a zip file'),
 			'Download_Page' => $downLoadpage,
 			'Main_Link_Array' => $mainLinkArr,
 			'Show_Permalink' => $this->setting('show_permalink'),
 			'module_loc' => ze::moduleDir('zenario_content_list'),
+			'openForm' => $this->openForm(),
+			'closeForm' => $this->closeForm(),
+			'Request_Docids' => $allIdsValue,
+			'Request_slotName' => $this->slotName,
 			'DownloadRequest' => '&build=1&slotName='.$this->slotName.'&ids=' . $allIdsValue
 		];
+
+		switch ($this->setting('content_type')) {
+			case 'document':
+				$inner['DOWNLOAD_PREPARE_LABEL'] = $this->phrase('Download all documents as a zip file');
+				break;
+			case 'picture':
+				$inner['DOWNLOAD_PREPARE_LABEL'] = $this->phrase('Download all images as a zip file');
+				break;
+		}
 		
 		//If the plugin is set to only show content in specific categories,
 		//get a list of them.
@@ -1242,10 +1326,18 @@ class zenario_content_list extends ze\moduleBaseClass {
 							break;
 					}
 				}
-				$siteSettingsLink = "<a href='zenario/admin/organizer.php?fromCID=190&fromCType=html#zenario__administration/panels/site_settings//external_programs~.site_settings~tzip~k{%22id%22%3A%22external_programs%22}' target='_blank'>site settings</a>";
-				$fields['zip_archive_name']['note_below'] = ze\admin::phrase(
-						"Files up to a limit of 64 MB will be made available to visitor, value set in [[site_settings_link]]. Where total of file sizes exceeds this, multiple volumes will be offered.",
-						['site_settings_link' => $siteSettingsLink]
+				
+				$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tzip~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				
+				$fields['overall_list/zip_archive_name']['note_below'] = ze\admin::phrase(
+					"Files up to a limit of [[max_unpacked_size]] MB will be made available to visitor, value set in [[link_start]]site settings[[link_end]]. Where total of file sizes exceeds this, multiple volumes will be offered.",
+					[
+						'link_start' => $linkStart,
+						'link_end' => $linkEnd,
+						'max_unpacked_size' => ze::setting('max_unpacked_size')
+					]
 				);
 				
 				$categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
@@ -1271,11 +1363,11 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 	}
 	
-	function getArchiveNameNoExtension($archiveName){
-		$arr = explode(".",$archiveName);
-		if (count($arr)>1){
-			unset($arr[count($arr)-1]);
-			return implode(".",$arr);
+	function getArchiveNameNoExtension($archiveName) {
+		$arr = explode(".", $archiveName);
+		if (count($arr) > 1) {
+			unset($arr[count($arr) - 1]);
+			return implode(".", $arr);
 		} else {
 			return $archiveName;
 		}
@@ -1288,123 +1380,137 @@ class zenario_content_list extends ze\moduleBaseClass {
 		exec(escapeshellarg($this->getZIPExecutable()) .' -v',$arr,$rv);
 		return ! (bool)$rv;
 	}
-	function getZIPExecutable(){
+	function getZIPExecutable() {
 		return ze\server::programPathForExec(ze::setting('zip_path'), 'zip');
 	}
 
-	function build($cIds,$fileCtr){
+	function build($cIds, $fileCtr) {
 		$archiveEmpty = true;
 		$oldDir = getcwd();
 		
-		if (($maxUnpackedSize = (int)ze::setting('max_unpacked_size'))<=0){
+		if (($maxUnpackedSize = (int)ze::setting('max_unpacked_size')) <= 0) {
 			$maxUnpackedSize = 64;
 		} 
-		$maxUnpackedSize*=1048576;
+		$maxUnpackedSize *= 1048576;
 		
-		if ($this->canZIP()){
-			if ($this->getUnpackedFilesSize($cIds ?? false)<=$maxUnpackedSize){
-				if ($documentIDs = explode(",",($cIds ?? false))){
-					$zipArchive = $this->getZipArchiveName();
-					if($fileCtr>0)
-					{
-						$explodeZip = explode(".",$zipArchive);
-						$zipArchive = $explodeZip[0].$fileCtr.'.'.$explodeZip[1];
-					}
-					
-					if ($this->getArchiveNameNoExtension($zipArchive)){
-						ze\cache::cleanDirs();
-						$randomDir = ze\cache::createRandomDir(15, 'downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip'));
-						$contentSubdirectory = $this->getArchiveNameNoExtension($zipArchive);
-						if (mkdir($randomDir . '/' . $contentSubdirectory)){
-							foreach ($documentIDs as $ID){
-								$version = ze\content::showableVersion($ID,'document',false,($_SESSION['admin_username'] ?? false),($_SESSION['extranetUserID'] ?? false));
-								
-								
-								
-								if ($filename=$this->getItemFilename($ID)){
-									chdir($randomDir);
+		if ($this->canZIP()) {
+			if ($this->getUnpackedFilesSize($cIds ?? false) <= $maxUnpackedSize) {
+				if ($documentIDs = explode(",", ($cIds ?? false))) {
+					$cType = $this->setting('content_type');
+
+					if (ze::in($cType, 'document', 'picture')) {
+						$zipArchive = $this->getZipArchiveName();
+						if($fileCtr > 0) {
+							$explodeZip = explode(".", $zipArchive);
+							$zipArchive = $explodeZip[0] . $fileCtr . '.' . $explodeZip[1];
+						}
+						
+						if ($this->getArchiveNameNoExtension($zipArchive)) {
+							ze\cache::cleanDirs();
+							$randomDir = ze\cache::createRandomDir(15, 'downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip'));
+							$contentSubdirectory = $this->getArchiveNameNoExtension($zipArchive);
+							if (mkdir($randomDir . '/' . $contentSubdirectory)) {
+								foreach ($documentIDs as $ID){
+									$version = ze\content::showableVersion($ID, $cType, false, ($_SESSION['admin_username'] ?? false), ($_SESSION['extranetUserID'] ?? false));
 									
-									$nextFileName = $this->getNextFileName($contentSubdirectory . '/' . $filename);
-									$latestVersion = ze\content::latestVersion($ID, 'document');
-									if ($fileID = (int)ze\row::get('content_item_versions','file_id',['id'=>$ID,'type'=>'document', 'version'=>$latestVersion])){
-										if (($path = ze\row::get('files','path',['id'=>$fileID]))
-											&& ($filename = ze\row::get('files','filename',['id'=>$fileID]))){
-												copy(ze::setting("docstore_dir") . "/" . $path . "/" . $filename,$nextFileName);
-											if (($err=$this->addToZipArchive($zipArchive,$nextFileName))=="") {
-												$archiveEmpty = false;
-												if ((int)($_SESSION['extranetUserID'] ?? false)) {
-													if (ze\module::inc('zenario_probusiness_features')) {
-														zenario_probusiness_features::logUserAccess($_SESSION['extranetUserID'] ?? false,$ID,'document',$version );
+									if ($filename = $this->getItemFilename($ID, $cType)) {
+										
+										chdir($randomDir);
+										
+										$nextFileName = $this->getNextFileName($contentSubdirectory . '/' . $filename);
+										$latestVersion = ze\content::latestVersion($ID, $cType);
+										if ($fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
+											$filePathAndFilename = ze\row::get('files', ['path', 'filename'], ['id' => $fileID]);
+											if (!empty($filePathAndFilename) && $filePathAndFilename['path'] && $filePathAndFilename['filename']) {
+												copy(ze::setting("docstore_dir") . "/" . $filePathAndFilename['path'] . "/" . $filePathAndFilename['filename'], $nextFileName);
+												if (($err = $this->addToZipArchive($zipArchive, $nextFileName)) == "") {
+													$archiveEmpty = false;
+													if ((int)($_SESSION['extranetUserID'] ?? false)) {
+														if (ze\module::inc('zenario_probusiness_features')) {
+															zenario_probusiness_features::logUserAccess($_SESSION['extranetUserID'] ?? false, $ID, $cType, $version );
+														}
 													}
+												} else {
+													$errors[] = $err;
 												}
-											} else {
-												$errors[] = $err;
+												
+												unlink($nextFileName);
 											}
-											unlink($nextFileName);
 										}
+										
+										chdir($oldDir);
 									}
-									chdir($oldDir);
 								}
-							}
-							rmdir($randomDir . '/' . $contentSubdirectory);
-							if (isset($errors)){
-								return [false,implode('\n',$errors)];
-							}elseif($archiveEmpty){
-								return [true,[]];
+								
+								rmdir($randomDir . '/' . $contentSubdirectory);
+								if (isset($errors)) {
+									return [false, implode('\n', $errors)];
+								} elseif ($archiveEmpty) {
+									return [true, []];
+								} else {
+									return [true, $randomDir . $zipArchive, $zipArchive, ze\file::formatSizeUnits(filesize($randomDir . $zipArchive))];
+								}
 							} else {
-								return [true, $randomDir . $zipArchive,$zipArchive];
+								return [false, 'Error. Cannot create the documents subdirectory. This can be caused by either: <br/> 1) Incorrect downloads folder write permissions.<br/> 2) Incorrect archive name.'];
 							}
-						} else {
-							return [false,'Error. Cannot create the documents subdirectory. This can be caused by either: <br/> 1) Incorrect downloads folder write permissions.<br/> 2) Incorrect archive name.'];
 						}
 					} else {
-						return [false,'Error. Archive filename was not specified.'];
+						return [false, 'Error. Archive filename was not specified.'];
 					}
 				} else {
-					return [true,[]];
+					return [true, []];
 				}
 			} else {
-				return [false,'the size of the file exceeds the '.(int)ze::setting('max_unpacked_size'). 'MB per volume limit.'];
+				return [false, 'The size of the file exceeds the ' . (int)ze::setting('max_unpacked_size') . 'MB per volume limit.'];
 			}
 		} else {
-			return [false,'Error. Cannot create ZIP archives using ' . $this->getZIPExecutable() . '.'];
+			return [false, 'Error. Cannot create ZIP archives using ' . $this->getZIPExecutable() . '.'];
 		}
 	}
-	function getNextFileName($fileName){
+	
+	function getNextFileName($fileName) {
 		return $fileName;
 	}
-	function addToZipArchive($archiveName,$filenameToAdd){
-		exec(escapeshellarg($this->getZIPExecutable()) . ' -r '. escapeshellarg($archiveName) . ' ' . escapeshellarg($filenameToAdd),$arr,$rv);
+	
+	function addToZipArchive($archiveName, $filenameToAdd) {
+		exec(escapeshellarg($this->getZIPExecutable()) . ' -r '. escapeshellarg($archiveName) . ' ' . escapeshellarg($filenameToAdd), $arr, $rv);
 		if ($rv) {
 			return 'Failure when adding the file ' . basename($filenameToAdd) . ' to the archive ' . basename($archiveName) . '.';
 		}
+		
 		return "";
 	}
 
-
-	function getUnpackedFilesSize($ids=''){
+	function getUnpackedFilesSize($ids = '') {
 		$filesize = 0;
-		if ($documentIDs = explode(",",$ids)){
-			foreach ($documentIDs as $ID){
-				$version = ze\content::showableVersion($ID,'document',false,($_SESSION['admin_username'] ?? false),($_SESSION['extranetUserID'] ?? false));
-				if ($filename=$this->getItemFilename($ID)){
-					$latestVersion = ze\content::latestVersion($ID, 'document');
-					if ($fileID = (int)ze\row::get('content_item_versions','file_id',['id'=>$ID,'type'=>'document', 'version'=>$latestVersion])){
-						if (($path = ze\row::get('files','path',['id'=>$fileID]))
-							&& ($filename = ze\row::get('files','filename',['id'=>$fileID]))){
-							$filesize+=filesize(ze::setting("docstore_dir") . "/" . $path . "/" . $filename);
+		if ($documentIDs = explode(",", $ids)) {
+			$cType = $this->setting('content_type');
+
+			if (ze::in($cType, 'document', 'picture')) {
+				foreach ($documentIDs as $ID) {
+					$version = ze\content::showableVersion($ID, $cType, false, ($_SESSION['admin_username'] ?? false), ($_SESSION['extranetUserID'] ?? false));
+					if ($filename = $this->getItemFilename($ID, $cType)) {
+						$latestVersion = ze\content::latestVersion($ID, $cType);
+						if ($fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
+							$fileDetails = ze\row::get('files', ['path', 'filename'], ['id' => $fileID]);
+							if (!empty($fileDetails) && $fileDetails['path'] && $fileDetails['filename']) {
+								$filesize += filesize(ze::setting("docstore_dir") . "/" . $fileDetails['path'] . "/" . $fileDetails['filename']);
+							}
 						}
 					}
 				}
 			}
 		}
+		
 		return $filesize;
 	}
-	function getItemFilename($cID) {
-		$latestVersion = ze\content::latestVersion($cID, 'document');
-		return ze\row::get('content_item_versions', 'filename', ['id' => $cID, 'type'=>'document', 'version'=>$latestVersion]);
+	
+	function getItemFilename($cID, $cType) {
+		$latestVersion = ze\content::latestVersion($cID, $cType);
+		return ze\row::get('content_item_versions', 'filename', ['id' => $cID, 'type' => $cType, 'version' => $latestVersion]);
 	}
-	function getZipArchiveName(){
+	
+	function getZipArchiveName() {
 		return $this->zipArchiveName;
 	}
 	
@@ -1449,7 +1555,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 
 	public function getDocumentIDs() {
 		
-		if ($this->setting('content_type') != 'document') {
+		if (!ze::in($this->setting('content_type'), 'document', 'picture')) {
 			return false;
 		}
 		
@@ -1473,17 +1579,16 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		return $documentIDs;
 	}
+	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'site_settings':
-			if ($box['setting_group'] == 'external_programs'){
-				if (!$values['zip/max_unpacked_size']) {
-					$values['zip/max_unpacked_size'] = 64;
+				if ($box['setting_group'] == 'external_programs') {
+					if (!$values['zip/max_unpacked_size']) {
+						$values['zip/max_unpacked_size'] = 64;
+					}
 				}
-			}
 				break;
-			
 		}
-		
 	}
 }

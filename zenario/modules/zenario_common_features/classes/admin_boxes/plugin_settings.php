@@ -38,8 +38,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			return false;
 		
 		} elseif (!empty($box['key']['skinId'])) {
-			$skin = ze\row::get('skins', ['id', 'family_name', 'name'], $box['key']['skinId']);
-			$this->skinWritableDir = ze\content::skinPath($skin['family_name'], $skin['name']). 'editable_css/';
+			$skin = ze\row::get('skins', ['id', 'name'], $box['key']['skinId']);
+			$this->skinWritableDir = ze\content::skinPath($skin['name']). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		
 		//If we possibly can, try to get the Skin that this plugin is being shown on
@@ -62,24 +62,35 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		//If we don't know where this plugin will be used, check to see if there's only
 		//one skin on this site. If so, show the CSS options anyway as we know what skin
 		//will be used!
-		$skins = ze\row::getAssocs('skins', ['id', 'family_name', 'name'], ['missing' => 0]);
+		$skins = ze\row::getAssocs('skins', ['id', 'name'], ['missing' => 0]);
 		
 		if (count($skins) == 1) {
 			$skin = array_pop($skins);
 			$box['key']['skinId'] = $skin['id'];
-			$this->skinWritableDir = ze\content::skinPath($skin['family_name'], $skin['name']). 'editable_css/';
+			$this->skinWritableDir = ze\content::skinPath($skin['name']). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		}
 		
-		//Otherwise try and use the default skin for the grid_templates directory
-		$skinId = ze\row::get('template_families', 'skin_id', ['family_name' => 'grid_templates']);
-		if ($skinId && !empty($skins[$skinId])) {
-			$skin = $skins[$skinId];
+		//If that didn't work, check how many layouts are marked as "active",
+		//and how many different skins they use. If it's only one, use the same
+		//logic as above
+		$sql = "
+			SELECT DISTINCT skin_id
+			FROM ". DB_PREFIX. "layouts
+			WHERE `status` = 'active'";
+		
+		$result = ze\sql::select($sql);
+		
+		if ((ze\sql::numRows($result) == 1)
+		 && ($skinId = ze\sql::fetchValue($result))
+		 && ($skin = $skins[$skinId] ?? false)) {
 			$box['key']['skinId'] = $skin['id'];
-			$this->skinWritableDir = ze\content::skinPath($skin['family_name'], $skin['name']). 'editable_css/';
+			$this->skinWritableDir = ze\content::skinPath($skin['name']). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		}
 		
+		//Otherwise, this site uses multiple skins, and we can't determine that
+		//a specific one will be used
 		return false;
 	}
 	
@@ -914,7 +925,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							break;
 					
 						case 'layout':
-							ze\pluginAdm::updateLayoutSlot($box['key']['instanceId'], $box['key']['slotName'], false, ze\content::layoutId($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']));
+							ze\pluginAdm::updateLayoutSlot($box['key']['instanceId'], $box['key']['slotName'], ze\content::layoutId($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']));
 							break;
 					}
 			

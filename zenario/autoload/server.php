@@ -43,6 +43,14 @@ class server {
 		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false
 	) {
 	
+		$debug = \ze::setting('debug_override_enable');
+		if ($debug) {
+			$sendToDebugAddressOrDontSentAtAll = \ze::setting('send_to_debug_address_or_dont_send_at_all');
+			if ($sendToDebugAddressOrDontSentAtAll == 'dont_send_at_all' && $ignoreDebugMode == false) {
+				return false;
+			}
+		}
+		
 		// If this is a warning email only send it as oftern as the site setting "warning_email_frequency" allows
 		if ($warningEmailCode && \ze::setting('warning_email_frequency') && (\ze::setting('warning_email_frequency') != 'no_limit')) {
 			// If no record is set create one
@@ -104,7 +112,10 @@ class server {
 			$mail->AddReplyTo($mail->From, $mail->FromName);
 		}
 	
-		if ($debug = \ze::setting('debug_override_enable') && \ze::setting('debug_override_email_address') && $ignoreDebugMode == false) {
+		if ($debug
+		 && ($sendToDebugAddressOrDontSentAtAll == 'send_to_debug_email_address')
+		 && ($overrideEmailAddress = \ze::setting('debug_override_email_address'))
+		 && $ignoreDebugMode == false) {
 		
 			if ($isHTML) {
 				$mail->Body .= '<br/><br/>';
@@ -116,8 +127,8 @@ class server {
 			
 			$mail->Subject .= ' | DEBUG MODE';
 			
-			$mail->AddAddress(\ze::setting('debug_override_email_address'));
-			$addressToOverriddenBy = \ze::setting('debug_override_email_address');
+			$mail->AddAddress($overrideEmailAddress);
+			$addressToOverriddenBy = $overrideEmailAddress;
 	
 		} elseif ($nameTo === false) {
 			$mail->AddAddress($addressTo);

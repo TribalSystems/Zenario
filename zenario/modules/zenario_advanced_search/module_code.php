@@ -53,7 +53,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$_REQUEST['ctab'] = $_POST['ctab'] = $defaultTab;
 		}
 		
-		$defaultTab = $this->setting('search_document')? 'document' : ($this->setting('search_html')? 'html' : 'news');
+		$defaultTab = $this->setting('search_html')? 'html' : ($this->setting('search_document')? 'document' : 'news');
 		$this->cTypeToSearch = (($_REQUEST['ctab'] ?? false) ?: $defaultTab);
 		
 		$this->allowCaching(
@@ -164,12 +164,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 		$this->fields = [];
 		
-		if ($this->setting('search_document')) {
-			$this->fields['document'] = $fields;
-		}
-		
 		if ($this->setting('search_html')) {
 			$this->fields['html'] = $fields;
+		}
+		
+		if ($this->setting('search_document')) {
+			$this->fields['document'] = $fields;
 		}
 		
 		if ($this->setting('search_news')) {
@@ -248,7 +248,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$this->sections['Search_Result_Tabs'] = true;
 		}
 		
-		$this->sections['HasCategory00'] = true;
+		if ($this->setting('enable_categories')) {
+			$this->sections['HasCategory00'] = true;
+		}
 		//$this->sections['HasCategory01'] = true;
 		$languages = ze\lang::getLanguages();
 		if (count($languages) > 1) {
@@ -301,6 +303,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$this->sections['Placeholder'] = true;
 			$this->sections['Placeholder_Phrase'] = $this->setting('search_placeholder_phrase');
 		}
+
+		$this->mergeFields['Show_scores'] = ($this->setting('show_scores') && ze\admin::id());
 		
 		$this->drawCategories();
 			
@@ -324,6 +328,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		//Launch a search on each Content Type in turn
 		$this->results = [];
+
+		$this->releaseDateSetting = ze\row::getAssocs('content_types', 'release_date_field', ['content_type_id' => ['html', 'document', 'news']]);
 		foreach($this->fields as $cType => $fields) {
 			$this->results[$cType] = $this->searchContent($cType, $fields);
 		}
@@ -341,7 +347,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				$result['description']	= htmlspecialchars($result['description']);
 				$result['language_id']	= htmlspecialchars($result['language_id']);
 				$result['language_name']	= $this->setting('show_language_next_to_results') ? '<span>('.htmlspecialchars(ze\lang::name($result['language_id'], false)).')</span>': false;
-				
+				$result['score']	= htmlspecialchars($result['score']);
+
 				if ($this->setting('data_field') == 'description') {
 					$result['content_bodymain'] = $result['description'];
 				} elseif ($this->setting('data_field') == 'content_summary') {
@@ -435,93 +442,151 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			return false;
 		}
 		
+		//Create a first temporary table for the search results. It will be dropped at the end of the search.
+		$sessionId = session_id();
+		$randomNumber = rand(1, 9999);
+		
+		$tempTableName1 = 'search_flat_table_' . $sessionId . "_" . $randomNumber;
+		$tempTableName1WithPrefix = DB_PREFIX . $tempTableName1;
+
+		$tempTableS1ql = "
+			CREATE TEMPORARY TABLE " . ze\escape::sql($tempTableName1WithPrefix) . " (
+				`id` INT(10) UNSIGNED,
+				`type` VARCHAR(20),
+				`published_datetime` DATETIME,
+				`release_date` DATETIME,
+				`score` DECIMAL(8,2)
+			)";
+		
+		ze\sql::update($tempTableS1ql);
+
+		//Create a second temporary table for the search results. It will be dropped at the end of the search.
+		$tempTableName2 = 'search_aggr_table_' . $sessionId . "_" . $randomNumber;
+		$tempTableName2WithPrefix = DB_PREFIX . $tempTableName2;
+
+		$tempTable2Sql = "
+			CREATE TEMPORARY TABLE " . ze\escape::sql($tempTableName2WithPrefix) . " (
+				`id` INT(10) UNSIGNED,
+				`type` VARCHAR(20),
+				`published_datetime` DATETIME,
+				`release_date` DATETIME,
+				`score` DECIMAL(8,2)
+			)";
+		
+		ze\sql::update($tempTable2Sql);
 		
 		//Add fields to the query
-		$sqlF = "SELECT v.id, v.type";
-		foreach ($fields as $field) {
-			if (substr($field['name'], 0, 3) != 'cc.') {
-				$sqlF .= ", ". $field['name'];
-			}
-		}
+		$sqlFields = "
+			SELECT v.id, v.type, v.published_datetime, v.release_date";
 		
 		
 		
-		//Calculate the SQL needed for matching rows against the search terms
+		//Step 1: Calculate the SQL needed for matching rows against the search terms.
+		//Use the "flat table".
 		$useCC = false;
-		$sqlR = ", (";
-		$sqlW = "";
+		$sqlScore = "";
+		$sqlWhere = "";
+		$scoreStatementFirstLine = $whereStatementFirstLine = true;
 		
-		if($this->searchString) {
+		if ($this->searchString) {
 			//Calculate the search terms
 			$searchTerms = ze\content::searchtermParts($this->searchString);
-			foreach ($searchTerms as $searchTerm => $searchTermType) {
-				
-				$wildcard = "";
-				$booleanSearch = "";
-				if ($searchTermType == 'word') {
+
+			if ($searchTerms && count($searchTerms) > 0) {
+				$sqlScore = ", (";
+
+				foreach ($searchTerms as $searchTerm => $searchTermType) {
+					
 					$wildcard = "*";
-					$searchTermTypeWeighting = 1;
-				} else {
-					$booleanSearch = " IN BOOLEAN MODE";
-					$searchTermTypeWeighting = 2;
-				}
-				
-				foreach ($fields as $field) {
-					if ($field['weighting']) {
-						if (substr($field['name'], 0, 3) == 'cc.') {
-							$useCC = true;
-						}
-						
-						if ($sqlW) {
-							$sqlR .= " + ";
-							$sqlW .= " OR ";
-						}
+
+					if ($whereStatementFirstLine) {
+						$sqlWhere .= "
+							( ";
+					} else {
+						$sqlWhere .= "
+							AND (";
+					}
+
+					$whereStatementFirstLine = true;
+					
+					foreach ($fields as $field) {
+						if ($field['weighting']) {
+							if (substr($field['name'], 0, 3) == 'cc.') {
+								$useCC = true;
+							}
 							
-						if ($field['name'] == 'c.alias' || $field['name'] == 'v.filename') {
-							$sqlW .= "\n (". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%')";
-							$sqlR .= "\n (". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%') * ". $searchTermTypeWeighting. " * ". $field['weighting'];
-						} else {
-							$sqlW .= "\n IF (l.search_type = 'simple', ". $field['name']. " LIKE '%". ze\escape::sql($this->searchString). "%', MATCH (". $field['name']. ") AGAINST ('". ze\escape::sql($searchTerm) .      $wildcard. "' IN BOOLEAN MODE) )";
-							$sqlR .= "\n IF (l.search_type = 'simple', ". $field['name']. " LIKE '%". ze\escape::sql($this->searchString). "%', MATCH (". $field['name']. ") AGAINST ('". ze\escape::sql($searchTerm) . "'". $booleanSearch . ") ) * ". $searchTermTypeWeighting. " * ". $field['weighting'];
+							if ($sqlWhere) {
+								if (!$scoreStatementFirstLine) {
+									$sqlScore .= " + ";
+								}
+								$scoreStatementFirstLine = false;
+
+								if (!$whereStatementFirstLine) {
+									$sqlWhere .= " OR ";
+								}
+							}
+
+							$whereStatementFirstLine = false;
+								
+							if ($field['name'] == 'v.filename') {
+								$sqlWhere .= "
+									(". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%')";
+								$sqlScore .= "
+									((". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%') OR  (" . $field['name']." RLIKE '[\-_ ]+" . ze\escape::sql($searchTerm) . "')) * ". $field['weighting'];
+							} elseif ($field['name'] == 'c.alias') {
+								$sqlWhere .= "
+									(". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%' OR " . $field['name']." RLIKE '[\-_]+" . ze\escape::sql($searchTerm) . "')";
+								$sqlScore .= "
+									((". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%') OR (" . $field['name']." RLIKE '[\-_]+" . ze\escape::sql($searchTerm) . "')) * ". $field['weighting'];
+							} else {
+								$sqlWhere .= "
+									MATCH (". $field['name']. ") AGAINST ('". ze\escape::sql($searchTerm) . $wildcard. "' IN BOOLEAN MODE)";
+								$sqlScore .= "
+									MATCH (". $field['name']. ") AGAINST ('". ze\escape::sql($searchTerm) . $wildcard . "' IN BOOLEAN MODE) * ". $field['weighting'];
+							}
 						}
 					}
+					
+					$sqlWhere .= ")";
 				}
+				
+				$sqlScore .= "
+					) AS score";
+			} else {
+				$sqlScore = ", 0";
 			}
-			
-			$sqlR .= "
-				) AS relevance";
 		} else {
-			$sqlR = "";
+			$sqlScore = ", 0";
 		}
 		
-		
-		$joinSQL = "INNER JOIN 
-						" . DB_PREFIX . "languages l
-					ON
-						c.language_id = l.id ";
+		$joinSQL = "
+			INNER JOIN " . DB_PREFIX . "languages l
+				ON c.language_id = l.id ";
 		
 		if ($useCC) {
 			$joinSQL .= "
 				INNER JOIN ". DB_PREFIX. "content_cache AS cc
-				   ON cc.content_id = v.id
-				  AND cc.content_type = v.type
-				  AND cc.content_version = v.version";
+					ON cc.content_id = v.id
+					AND cc.content_type = v.type
+					AND cc.content_version = v.version";
 		}
 		
 		$joinSQL .= $this->getCategoriesSQLFilter();
 		
 		
 		if ($this->setting('show_private_items')) {
-			$sql = ze\content::sqlToSearchContentTable($this->setting('hide_private_items'), '', $joinSQL);
+			$sqlFrom = ze\content::sqlToSearchContentTable($this->setting('hide_private_items'), '', $joinSQL);
 		} else {
-			$sql = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
+			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
 		}
 		
+		$sql = $sqlFrom;
 		
 		//Only select rows in the Visitor's language, and that match the search terms
 		$sql .= $this->getLanguagesSQLFilter();
-		if($sqlW) {
-			$sql .= " AND (". $sqlW. ")";
+		if($sqlWhere) {
+			$sql .= "
+				AND (". $sqlWhere. ")";
 		}
 			  
 		if ($cType != '%all%') {
@@ -541,12 +606,6 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			
 			if ($recordCount > 0 && $cType == $this->cTypeToSearch) {
 				
-				$sql .= " ORDER BY ";
-				if($this->searchString) {
-					$sql .= " relevance DESC,";
-				}
-				$sql .= " c.id, c.type";
-				
 				if ($this->setting('use_pagination')) {
 					$pageSize = (int) $this->setting('maximum_results_number') ?:999999;
 					$numberOfPages = ceil($recordCount/$pageSize);
@@ -560,20 +619,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					} else {
 						$record_number = (($this->page - 1) * $pageSize) + 1;
 					}
-					
-					$sql .= ze\sql::limit($this->page, $pageSize);
 				
 				} else {
 					$pagination = false;
-				}
-				$result = ze\sql::select($sqlF. $sqlR. $sql);
-			
-				while ($row = ze\sql::fetchAssoc($result)) {
-					if (!$searchresults) {
-						$searchresults = [];
-					}
-					
-					$searchresults[] = $row;
 				}
 			}
 		
@@ -583,29 +631,278 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			
 			if ($cType == $this->cTypeToSearch) {
 
-				$sql .= " ORDER BY ";
-				if($this->searchString) {
-					$sql .= " relevance DESC,";
-				}
-				$sql .= " c.id, c.type";
-				
-				if ($pageSize = $this->setting('maximum_results_number') ?:999999) {
-					$sql .= "
-						LIMIT ". (int)$pageSize;
-				}
-				
-				$result = ze\sql::select($sqlF. $sqlR. $sql);
-			
-				while ($row = ze\sql::fetchAssoc($result)) {
-					if (!$searchresults) {
-						$searchresults = [];
-					}
-					
-					$searchresults[] = $row;
-					++$recordCount;
-				}
+				$result = ze\sql::select($sqlFields. $sqlScore. $sql);
 			}
 		}
+
+		$tempTableInsertSql = "
+			INSERT INTO " . ze\escape::sql($tempTableName1WithPrefix) . "
+			(id, type, published_datetime, release_date, score)
+			" . $sqlFields. $sqlScore. $sql;
+		ze\sql::update($tempTableInsertSql);
+
+		$tempResult1 = "
+			SELECT id, type, published_datetime, release_date, score
+			FROM " . ze\escape::sql($tempTableName1WithPrefix);
+		$result1 = ze\sql::select($tempResult1);
+		$result1 = ze\sql::fetchAssocs($result1);
+		
+		//Debug code for testing
+		// if (!empty($result1)) {
+		// 	echo '<table>';
+		// 		echo '<tr>
+		// 			<th>Id</th>
+		// 			<th>Type</th>
+		// 			<th>Published date</th>
+		// 			<th>Release date</th>
+		// 			<th>Score</th>
+		// 			</tr>';
+		// 		foreach ($result1 as $row) {
+		// 			echo '<tr>';
+		// 			foreach ($row as $rowKey => $rowValue) {
+		// 				echo '<td>' . htmlspecialchars($rowValue) . '</td>';
+		// 			}
+		// 			echo '</tr>';
+		// 		}
+		// 	echo '</table>';
+		// }
+
+		//Step 2: Check if there are exact matches for multi-word searches.
+		//Still use the "flat table".
+		$numResults = ze\row::count($tempTableName1);
+		if ($numResults > 0) {
+			if ($this->searchString && count($searchTerms) > 1) {
+				if (!function_exists('mb_ereg_replace')
+				|| !$fullSearchTerm = mb_ereg_replace('[^\w\s_\'"]', ' ', $this->searchString)) {
+					//Fall back to traditional pattern matching if that fails
+					$fullSearchTerm = preg_replace('/[^\w\s_\'"]/', ' ', $this->searchString);
+				}
+			
+				//Limit the search results to 100 chars
+				$fullSearchTerm = substr($fullSearchTerm, 0, 100);
+
+				$sqlScore = ", (";
+				$sqlWhere = "";
+
+				$scoreStatementFirstLine = $whereStatementFirstLine = true;
+				$sqlWhere .= "
+					AND (";
+				
+				foreach ($fields as $field) {
+					if ($field['name'] == 'c.alias') {
+						//Alias can never be a multi word phrase. Skip that field.
+						continue;
+					}
+					
+					if ($field['weighting']) {
+						if (substr($field['name'], 0, 3) == 'cc.') {
+							$useCC = true;
+						}
+						
+						if ($sqlWhere) {
+							if (!$scoreStatementFirstLine) {
+								$sqlScore .= " + ";
+							}
+							$scoreStatementFirstLine = false;
+
+							if (!$whereStatementFirstLine) {
+								$sqlWhere .= " OR ";
+							}
+						}
+
+						$whereStatementFirstLine = false;
+							
+						if ($field['name'] == 'v.filename') {
+							$sqlWhere .= "
+								((". $field['name']. " LIKE '". ze\escape::sql($fullSearchTerm). "%') OR  (" . $field['name']." RLIKE '[\-_ ]+" . ze\escape::sql($fullSearchTerm) . "'))";
+							$sqlScore .= "
+								((". $field['name']. " LIKE '". ze\escape::sql($fullSearchTerm). "%') OR  (" . $field['name']." RLIKE '[\-_ ]+" . ze\escape::sql($fullSearchTerm) . "')) * ". $field['weighting'];
+						} else {
+							$sqlWhere .= "
+								MATCH (". $field['name']. ") AGAINST ('\"" . ze\escape::sql($fullSearchTerm) . "\"' IN BOOLEAN MODE)";
+							$sqlScore .= "
+								MATCH (". $field['name']. ") AGAINST ('\"" . ze\escape::sql($fullSearchTerm) . "\"' IN BOOLEAN MODE) * ". $field['weighting'];
+						}
+					}
+				}
+				
+				$sqlScore .= "
+					) AS score";
+
+				$sqlWhere .= ")";
+
+				if ($cType != '%all%') {
+					$sqlWhere .= "
+					  AND v.type = '". ze\escape::sql($cType). "'";
+				}
+
+				$exactPhraseMatchSql = "
+					INSERT INTO " . ze\escape::sql($tempTableName1WithPrefix) . "
+					(id, type, published_datetime, release_date, score)
+					" . $sqlFields . $sqlScore . $sqlFrom . $sqlWhere;
+				
+				ze\sql::update($exactPhraseMatchSql);
+
+				//Debug code for testing
+				// $tempResult2 = "
+				// 	SELECT id, type, published_datetime, release_date, score
+				// 	FROM " . ze\escape::sql($tempTableName1WithPrefix);
+
+				// $result2 = ze\sql::select($tempResult2);
+				// $result2 = ze\sql::fetchAssocs($result2);
+
+				// if (!empty($result2)) {
+				// 	echo '<table>';
+				// 		echo '<tr>
+				// 			<th>Id</th>
+				// 			<th>Type</th>
+				// 			<th>Published date</th>
+				// 			<th>Release date</th>
+				// 			<th>Score</th>
+				// 			</tr>';
+				// 		foreach ($result2 as $row) {
+				// 			echo '<tr>';
+				// 			foreach ($row as $rowKey => $rowValue) {
+				// 				echo '<td>' . htmlspecialchars($rowValue) . '</td>';
+				// 			}
+				// 			echo '</tr>';
+				// 		}
+				// 	echo '</table>';
+				// }
+				
+				$tempResult2 = "
+					INSERT INTO " . ze\escape::sql($tempTableName2WithPrefix) . "
+					(id, type, published_datetime, release_date, score)
+					SELECT id, type, published_datetime, release_date, SUM(score)
+					FROM " . ze\escape::sql($tempTableName1WithPrefix) . "
+					GROUP BY id, type";
+
+				ze\sql::update($tempResult2);
+			} else {
+				//If that's a single-word search, just copy the results into the aggregated table.
+				$tempResult2 = "
+					INSERT INTO " . ze\escape::sql($tempTableName2WithPrefix) . "
+					(id, type, published_datetime, release_date, score)
+					SELECT id, type, published_datetime, release_date, score
+					FROM " . ze\escape::sql($tempTableName1WithPrefix);
+
+				ze\sql::update($tempResult2);
+			}
+		}
+
+		//Step 3: Add extra points to more recent content items.
+		if (isset($this->releaseDateSetting[$cType]) && ze::in($this->releaseDateSetting[$cType], 'mandatory', 'optional')) {
+			$releaseDateSql = "
+				UPDATE " . ze\escape::sql($tempTableName2WithPrefix) . "
+				SET score = 
+					CASE
+						WHEN (release_date IS NOT NULL AND DATEDIFF(NOW(), release_date) < 30) THEN score * 10
+						WHEN (release_date IS NOT NULL AND DATEDIFF(NOW(), release_date) < 90) THEN score * 6
+						WHEN (release_date IS NOT NULL AND DATEDIFF(NOW(), release_date) < 365) THEN score * 3
+						ELSE score
+					END";
+			ze\sql::update($releaseDateSql);
+		} else {
+			$releaseDateSql = "
+				UPDATE " . ze\escape::sql($tempTableName2WithPrefix) . "
+				SET score = 
+					CASE
+						WHEN DATEDIFF(NOW(), published_datetime) < 30 THEN score * 10
+						WHEN DATEDIFF(NOW(), published_datetime) < 90 THEN score * 6
+						WHEN DATEDIFF(NOW(), published_datetime) < 365 THEN score * 3
+						ELSE score
+					END";
+			ze\sql::update($releaseDateSql);
+		}
+
+		$tempResult3 = "
+			SELECT id, type, published_datetime, release_date, score
+			FROM " . ze\escape::sql($tempTableName2WithPrefix);
+
+		$result3 = ze\sql::select($tempResult3);
+		$result3 = ze\sql::fetchAssocs($result3);
+
+		//Debug code for testing
+		// if (!empty($result3)) {
+		// 	echo '<table>';
+		// 		echo '<tr>
+		// 			<th>Id</th>
+		// 			<th>Type</th>
+		// 			<th>Published date</th>
+		// 			<th>Release date</th>
+		// 			<th>Score</th>
+		// 			</tr>';
+		// 		foreach ($result3 as $row) {
+		// 			echo '<tr>';
+		// 			foreach ($row as $rowKey => $rowValue) {
+		// 				echo '<td>' . htmlspecialchars($rowValue) . '</td>';
+		// 			}
+		// 			echo '</tr>';
+		// 		}
+		// 	echo '</table>';
+		// }
+
+		//Step 4: Load the results and pass them to the framework.
+		//Add fields to the query
+		$resultsSql = "
+			SELECT v.id, v.type, score";
+		foreach ($fields as $field) {
+			if (substr($field['name'], 0, 3) != 'cc.') {
+				$resultsSql .= ", ". $field['name'];
+			}
+		}
+
+		//The $joinSQL variable was created earlier. Add the join to the temporary results table now.
+		$joinSQL .= "
+			INNER JOIN " . ze\escape::sql($tempTableName2WithPrefix) . " results
+				ON results.id = v.id
+				AND results.type = v.type";
+		
+		if ($this->setting('show_private_items')) {
+			$sqlFrom = ze\content::sqlToSearchContentTable($this->setting('hide_private_items'), '', $joinSQL);
+		} else {
+			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
+		}
+
+		$resultsSql .= $sqlFrom;
+
+		$resultsSql .= "
+			ORDER BY ";
+
+		if ($this->searchString) {
+			$resultsSql .= "score DESC, ";
+		}
+
+		$resultsSql .= "c.id, c.type";
+
+		$pageSize = $this->setting('maximum_results_number') ?:999999;
+		if (!$onlyShowFirstPage) {
+			$resultsSql .= ze\sql::limit($this->page, $pageSize);
+		} else {
+			$resultsSql .= "
+				LIMIT ". (int)$pageSize;
+		}
+
+		$result = ze\sql::select($resultsSql);
+		
+		while ($row = ze\sql::fetchAssoc($result)) {
+			if (!$searchresults) {
+				$searchresults = [];
+			}
+			
+			$searchresults[] = $row;
+			
+			if ($onlyShowFirstPage) {
+				++$recordCount;
+			}
+		}
+		
+		//Drop the temporary tables after use.
+		$dropTempTable1Sql = "DROP TEMPORARY TABLE " . ze\escape::sql($tempTableName1WithPrefix);
+		ze\sql::update($dropTempTable1Sql);
+
+		$dropTempTable2Sql = "DROP TEMPORARY TABLE " . ze\escape::sql($tempTableName2WithPrefix);
+		ze\sql::update($dropTempTable2Sql);
 		
 		return [
 			"Record_Count" => $recordCount,
@@ -615,8 +912,6 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			"Tab_On" => $cType == $this->cTypeToSearch? '_on' :null,
 			"Tab_Onclick" => $this->refreshPluginSlotAnchor('&ctab='. rawurlencode($cType). $this->getSearchRequestParameters() . '&searchString='. rawurlencode($this->searchString))
 		];
-		
-		
 	}
 	
 	

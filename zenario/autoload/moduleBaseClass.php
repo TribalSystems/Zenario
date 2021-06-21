@@ -1319,6 +1319,39 @@ class moduleAPI {
 		echo $this->endInner();
 	}
 	
+	public function returnWhatThisEggIs() {
+		return \ze\admin::phrase('This is a plugin in a nest');
+	}
+	
+	public function returnWhatThisIs() {
+		
+		$slot = &\ze::$slotContents[$this->slotNameNestId];
+		
+		if (empty($slot['init'])) {
+			if (empty($slot['error'])) {
+				if (empty($slot['module_id'])) {
+					return \ze\admin::phrase('This is an empty slot');
+				} else {
+					return \ze\admin::phrase('This is a plugin (its current settings result in no output)');
+				}
+			} else {
+				return \ze\admin::phrase('This slot is set to show nothing on this content item');
+			}
+		
+		} elseif (isset($this->parentNest)) {
+			return $this->parentNest->returnWhatThisEggIs();
+			
+		} elseif ($this->isVersionControlled) {
+			return \ze\admin::phrase('This is a version-controlled editable area on the content item');
+		
+		} elseif ($this->slotLevel == 2) {
+			return \ze\admin::phrase('This is a plugin on the layout');
+		
+		} else {
+			return \ze\admin::phrase('This is a plugin on the content item');
+		}
+	}
+	
 	//Display the starting wrapper of a slot
 	public final function start($awClass = 'zenario_slotOuter') {
 		if (\ze::$isTwig) return;
@@ -1329,56 +1362,9 @@ class moduleAPI {
 			
 			$tuixSnippetId = $this->zAPISettings['~tuix_snippet~'] ?? null;
 			$em = self::$zAPIExtendingModules[$this->containerId] ?? null;
-
-			$tooltip = '';	
-			$displayName = '';
-			if (isset(\ze::$slotContents[$this->slotName]['display_name']) && \ze::$slotContents[$this->slotName]['display_name']) {
-			$displaySlotName = \ze::$slotContents[$this->slotName]['display_name'];
-				
-				if ($displaySlotName && $displaySlotName == 'Nest'){
-					$displayName = 'nest';
-				} elseif ($displaySlotName && $displaySlotName == 'Slideshow (simple)') {
-					$displayName = 'slideshow';
-				} else {
-					$displayName = 'plugin';
-				}
-			}
-				
-			
-			if (isset(\ze::$slotContents[$this->slotName]['level']) && \ze::$slotContents[$this->slotName]['level'] && \ze::$slotContents[$this->slotName]['level'] == 1) {
-				
-				if($displayName == 'nest' && $awClass == 'zenario_nestSlot'){
-					$tooltip = \ze\admin::phrase('This is a plugin in a [[displayname]]', ['displayname' => $displayName]);
-				}
-				else{
-				$tooltip = \ze\admin::phrase('This is a [[displayname]] on the content item', ['displayname' => $displayName]);
-				}
-				
-			} elseif (isset(\ze::$slotContents[$this->slotName]['level']) && \ze::$slotContents[$this->slotName]['level'] == 2 && !\ze::$slotContents[$this->slotName]['can_be_version_controlled'] ) {
-				if($displayName == 'nest' && $awClass == 'zenario_nestSlot'){
-					$tooltip = \ze\admin::phrase('This is a plugin in a [[displayname]]', ['displayname' => $displayName]);
-				}
-				else
-				{
-					$tooltip = \ze\admin::phrase('This is a [[displayname]] on the layout', ['displayname' => $displayName]);
-				}
-				
-			} elseif (isset(\ze::$slotContents[$this->slotName]['level']) && \ze::$slotContents[$this->slotName]['level'] == 2 && isset(\ze::$slotContents[$this->slotName]['can_be_version_controlled']) && \ze::$slotContents[$this->slotName]['can_be_version_controlled'] ==1 && !isset(\ze::$slotContents[$this->slotName]['content_id'])) {
-				if($displayName == 'nest' && $awClass == 'zenario_nestSlot'){
-					$tooltip = \ze\admin::phrase('This is a plugin in a [[displayname]]', ['displayname' => $displayName]);
-				}
-				else
-				{
-					$tooltip = \ze\admin::phrase('This is a [[displayname]] on the layout', ['displayname' => $displayName]);
-				}
-				
-			} elseif (isset(\ze::$slotContents[$this->slotName]['can_be_version_controlled']) && \ze::$slotContents[$this->slotName]['can_be_version_controlled'] && \ze::$slotContents[$this->slotName]['can_be_version_controlled'] == 1){
-				
-				$tooltip = \ze\admin::phrase('This is a version-controlled editable area on the content item');
-			}
 			
 			echo '
-				<x-zenario-admin-slot-wrapper id="', $this->containerId, '-wrap" data-tooltip-options = "{\'tooltipClass\': \'zenario_whatsInSlotTooltip zenario_admin_tooltip\'}" title = "'.$tooltip.'"  class="',
+				<x-zenario-admin-slot-wrapper id="', $this->containerId, '-wrap" data-tooltip-options = "{\'tooltipClass\': \'zenario_whatsInSlotTooltip zenario_admin_tooltip\'}" title = "'. htmlspecialchars($this->returnWhatThisIs()). '"  class="',
 					$awClass,
 					$this->instanceId? ' zenario_slotWithContents' : ' zenario_slotWithNoContents',
 					$tuixSnippetId? ' zenario_slot_with_tuix_snippet' : '',
@@ -1558,22 +1544,8 @@ class moduleAPI {
 			return $this->subClass->getClassInfo();
 		}
 		
-		$subClassName = get_class($this);
-		$rc = new \ReflectionClass($subClassName);
-		$path = $rc->getFileName();
-		
-		if ($fileLocation = \ze\ring::chopPrefix(CMS_ROOT, $path)) {
-		} elseif ($fileLocation = \ze\ring::chopPrefix(dirname(realpath(CMS_ROOT. 'zenario')). '/', $path)) {
-		} else {
-			$fileLocation = $path;
-		}
-		
 		return [
-			'mode' => $this->getMode(),
-			'fileLocation' => $fileLocation,
-			'containerId' => $this->containerId,
-			'moduleClassName' => $this->moduleClassName,
-			'subClassName' => $subClassName
+			'mode' => $this->getMode()
 		];
 	}
 

@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: optimisation
-    title: Editing site optimisation settings
+    title: Editing Zenario cache settings
     tabs:
         caching:
             label: Caching and file wrappers
@@ -17,7 +17,7 @@ site_settings:
                     snippet:
                         html: |
                             This tab contains settings for caching the output of Zenario into static files,
-                            to reduce the load on your server and make your web pages load more quickly for visitors.
+                            to reduce server on your server and make web pages load more quickly.
                             
                             Visitors' browsers may cache files, even if Zenario's caching in disabled.
                             You may prevent this by enabling development mode,
@@ -33,7 +33,7 @@ site_settings:
                     ord: 997
                     site_setting:
                         name: fab_use_cache_dir
-                    label: 'Cache floating admin boxes'
+                    label: 'Cache floating admin boxes (recommended)'
                     type: checkbox
                     value: 1
                     note_below: |
@@ -53,7 +53,7 @@ site_settings:
                         on:
                             label: Always on
                         visitors_only:
-                            label: On for visitors only
+                            label: On for visitors only (recommended)
                         off:
                             label: Always off
                     value: on

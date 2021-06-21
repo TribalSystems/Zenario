@@ -322,8 +322,6 @@ if (!$xml) {
 			FROM ". DB_PREFIX. "layouts
 			WHERE content_type = '". ze\escape::sql($cType). "'
 			ORDER BY
-				family_name = '". ze\escape::sql($xml->template->attributes()->family_name). "' DESC,
-				file_base_name = '". ze\escape::sql($xml->template->attributes()->file_base_name). "' DESC,
 				name = '". ze\escape::sql($xml->template->attributes()->name). "' DESC,
 				layout_id ASC
 			LIMIT 1";
@@ -333,20 +331,27 @@ if (!$xml) {
 		}
 	}
 	
-	ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version, true);
+	ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version);
 	
 	
 	//Get information on the template we're using
 	if (isset($version['layout_id'])) {
-		$template = ze\row::get('layouts', ['family_name', 'file_base_name', 'name'], $version['layout_id']);
+		$template = ze\row::get('layouts', ['name', 'layout_id'], $version['layout_id']);
 	} else {
-		$template = ze\row::get('layouts', ['family_name', 'file_base_name', 'name'], ze\content::layoutId($cID, $cType, $cVersion));
+		$template = ze\row::get('layouts', ['layout_id', 'name'], ze\content::layoutId($cID, $cType, $cVersion));
 	}
 	
 	//Loop through the slots on the template, seeing what Modules are placed where
 	$slotContents = [];
-	ze\plugin::slotContents($slotContents, $cID, $cType, $cVersion, false, false, false, false, false, false, false, $runPlugins = false);
-	$slotsOnTemplate = zenario_pro_features::getSlotsOnTemplate($template['family_name'], $template['file_base_name']);
+	ze\plugin::slotContents(
+		$slotContents,
+		$cID, $cType, $cVersion,
+		$layoutId = false,
+		$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
+		$runPlugins = false);
+	
+	
+	$slotsOnTemplate = zenario_pro_features::getSlotsOnTemplate($template['layout_id']);
 	
 	$pluginsToRemoveInTemplate = [];
 	foreach ($slotsOnTemplate as $slotName) {

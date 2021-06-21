@@ -4,5 +4,5 @@ zenario__organizer:
     panels:
         start_page:
             panel_type: start_page
-            title: Welcome to the Organizer start page
+            title: ''
             disable_periodic_refresh: true

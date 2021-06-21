@@ -139,7 +139,7 @@ class dbAdm {
 
 		//This can also be used as a work-around for Modules that want to insert data in other Modules tables;
 		//The tables will be created in the first loop, then the data can be inserted in the second loop in a run-every-update file
-		for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
+		for ($sweep = 1; $sweep <= ($andDoUpdates? 2 : 1); ++$sweep) {
 			$revisionsNeeded = false;
 			$currentRevisionOut = false;
 			$modules = [];
@@ -310,7 +310,7 @@ class dbAdm {
 							if ($andDoUpdates) {
 								//The zenario/admin/db_updates/step_3_populate_certain_tables path should be run on the first sweep.
 								//(But the "run_every_update" directories for modules should be run on the second sweep)
-								if ($path == 'zenario/admin/db_updates/step_3_populate_certain_tables' XOR $i == 1) {
+								if ($path == 'zenario/admin/db_updates/step_3_populate_certain_tables' XOR $sweep == 2) {
 									\ze\dbAdm::performUpdate($actualPath, $update, $uninstallPluginOnFail);
 								}
 							}
@@ -999,13 +999,15 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		
 		//Make sure to load the values of site_disabled_title and site_disabled_message,
 		//which aren't usually loaded into memory, so we can restore them later.
-		//Also save the values of email_address_admin, email_address_from and email_name_from
-		//which \ze\dbAdm::restoreLocationalSiteSettings() doesn't cover.
 		$site_disabled_title = \ze::setting('site_disabled_title');
 		$site_disabled_message = \ze::setting('site_disabled_message');
+		//Also save the values of email_address_admin, email_address_from and email_name_from
+		//which \ze\dbAdm::restoreLocationalSiteSettings() doesn't cover.
 		$email_address_admin = \ze::setting('email_address_admin');
 		$email_address_from = \ze::setting('email_address_from');
 		$email_name_from = \ze::setting('email_name_from');
+		//Don't change a site's default timezone when doing a site reset
+		$zenario_timezones__default_timezone = \ze::setting('zenario_timezones__default_timezone');
 	
 		//Delete all module tables
 		foreach (\ze\dbAdm::lookupExistingCMSTables() as $table) {
@@ -1055,6 +1057,7 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		\ze\site::setSetting('email_address_admin', $email_address_admin);
 		\ze\site::setSetting('email_address_from', $email_address_from);
 		\ze\site::setSetting('email_name_from', $email_name_from);
+		\ze\site::setSetting('zenario_timezones__default_timezone', $zenario_timezones__default_timezone);
 	
 		if ($error) {
 			echo $error;

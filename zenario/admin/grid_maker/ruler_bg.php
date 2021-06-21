@@ -2,13 +2,12 @@
 
 require '../../adminheader.inc.php';
 
-require_once CMS_ROOT. 'zenario/libs/manually_maintained/lgpl/wideimage/WideImage.php';
 
 
 $width = 2001;
 $height = 18;
 
-$img = WideImage::createTrueColorImage($width, $height);
+$img = WideImage\WideImage::createTrueColorImage($width, $height);
 imagefilledrectangle($img->getHandle(), 0, 0, $width, $height, $img->getExactColor(0xff, 0xff, 0xff));
 
 imagefilledrectangle($img->getHandle(), 0, 0, $width-1, 0, $img->getExactColor(0x92, 0x92, 0x92));

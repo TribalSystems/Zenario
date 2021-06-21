@@ -388,10 +388,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		if (isset($fields['debug/debug_override_email_address'])) {
-			$fields['debug/debug_override_email_address']['hidden'] = !$values['debug/debug_override_enable'];
-		}
-
 		if (isset($fields['errors/show_notices'])) {
 			$fields['errors/show_notices']['value'] =
 			$fields['errors/show_notices']['current_value'] = (error_reporting() & E_NOTICE) == E_NOTICE;

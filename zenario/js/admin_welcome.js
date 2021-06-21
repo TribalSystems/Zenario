@@ -112,6 +112,8 @@ zenarioAW.draw2 = function() {
 	var cb = new zenario.callback,
 		html = zenarioAW.drawFields(cb);
 	
+	//Set a CSS class name around the outer box, depending on what mode this is
+	get('welcome_outer').className = 'admin_welcome_' + zenarioAW.tuix.path;
 	
 	//On the Admin Login screen, drop in the tab if this is the first time we're showing the box
 	if (zenarioAW.shownTab === false) {

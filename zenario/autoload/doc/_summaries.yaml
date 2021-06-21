@@ -39,7 +39,7 @@ file: |
 fileAdm: |
     Functions for administrating files in the CMS.
 gridAdm: |
-    Grid Maker's functions - these create template files for layouts.
+    Gridmaker's functions - these create layouts.
 layoutAdm: |
     Functions for administrating layouts.
 link: |

@@ -31,7 +31,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__setup_language extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
 		if (!$box['key']['id']) {
 			exit;
 	
@@ -229,7 +228,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
+		 
 		ze\priv::exitIfNot('_PRIV_MANAGE_LANGUAGE_CONFIG');
 
 		if (!$langId = $box['key']['id']) {

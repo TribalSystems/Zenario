@@ -113,13 +113,13 @@ directionality	ltr rtl
 			file: {title: 'File', items: ''},
 			edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall'},
 			insert: {title: 'Insert', items: 'link image | anchor hr charmap'},
-			view: {title: 'View', items: 'visualblocks preview'},
+			view: {title: 'Elements', items: 'visualblocks'},
 			format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' blockquote | removeformat'},
 			table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
 			tools: {title: 'Tools', items: 'searchreplace | code'}
 		},
 		
-		toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
+		toolbar: 'undo redo | image link unlink | bold italic underline strikethrough superscript subscript forecolor backcolor removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
 		statusbar: false,
 		
 		

@@ -25,7 +25,7 @@ body.webkit input {
 }
 
 .welcome .zenario_version p.version {
-	width:620px;
+	max-width:680px;
 	margin:auto;
 	text-align:right;
 	color:#0298C3;
@@ -33,7 +33,7 @@ body.webkit input {
 }
 
 .welcome .welcome_wrap {
-	width:650px;
+	max-width:700px;
 	margin:auto;
 	position:relative;
 	background:#F6F6F6;
@@ -45,8 +45,16 @@ body.webkit input {
 	border-radius: 1px;
 }
 
+.admin_welcome_diagnostics .welcome .welcome_wrap {
+	max-width:940px;
+}
+
+.admin_welcome_diagnostics .welcome .zenario_version p.version {
+	max-width:920px;
+}
+
 .welcome .welcome_inner {
-	width:590px;
+	width:calc(100% - 60px);
 	padding:15px 30px 20px 30px;
 }
 
@@ -118,6 +126,32 @@ body.webkit input {
 
 .welcome .zenario_ab_row__skip {
 	margin-top:20px;
+}
+
+/* Security Code Screen */
+
+.admin_welcome_security_code form {
+	text-align:center;
+}
+
+.admin_welcome_security_code form .zenario_ab_row:not(.zenario_ab_row__code) {
+	text-align:left;
+}
+
+.admin_welcome_security_code .welcome #row__code {
+	display:inline-block;
+}
+
+.admin_welcome_security_code .welcome #row__code > div {
+	float:left;
+}
+
+.admin_welcome_security_code .welcome #row__code > div.title {
+	padding:12px 10px 0 0;
+}
+
+.admin_welcome_security_code .welcome #row__code > div .zenario_field_tooltip {
+	margin-top:10px;
 }
 
 /* Sys Requirements Screen */
@@ -305,7 +339,7 @@ body.webkit input {
 
 .welcome div.zenario_ab_tab__login,
 .welcome div.problem {
-	width:445px;
+	max-width:445px;
 	margin:auto;
 	overflow:visible;
 }
@@ -320,7 +354,7 @@ body.webkit input {
 .welcome div.thickbox_table input.input_password,
 .welcome div.thickbox_table .row_form textarea
 {
-	width:420px;
+	width:calc(100% - 40px);
 	height:40px;
 	line-height:40px;
 	padding:0 10px;
@@ -364,6 +398,10 @@ body.webkit input {
 .welcome .zenario_ab_row__multi_db_host #multi_db_port {
 	width: 80px;
 	margin-left: 12px;
+}
+
+.welcome div.zenario_ab_tab__forgot  input.input_text {
+	width:calc(100% - 24px);
 }
 
 /*.welcome div.thickbox_table input.input_text:focus,
@@ -1002,8 +1040,11 @@ body.webkit input {
 	float: none;
 }
 .welcome #row__license pre{
-	font-family: verdana;
-	font-size: 0.95em;
+	font-family: Menlo, Monaco, "andale mono", "Courier", monospace;
+	font-size: 1em;
+	line-height:1.45em;
+	white-space: pre-wrap;
+	padding-right:15px !important;
 }
 /* Reset password */
 .welcome #row__current_password title,

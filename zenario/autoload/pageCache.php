@@ -29,13 +29,7 @@
 namespace ze;
 
 class pageCache {
-
-
-
-
-
-
-
+	
 	// Functionality for Page/Plugin Caching
 	
 	
@@ -220,7 +214,7 @@ class pageCache {
 					case 'skins':
 					case 'spare_domain_names':
 					case 'spare_aliases':
-					case 'template_slot_link':
+					case 'layout_slot_link':
 					case 'custom_datasets':
 					case 'custom_dataset_tabs':
 					case 'user_content_accesslog':
@@ -396,8 +390,6 @@ class pageCache {
 					//Completely empty the cache if something changes on the Layout Layer
 					case 'plugin_layout_link':
 					case 'layouts':
-					case 'template_families':
-					
 					//Completely clear the cache if any of these change, as there's no better way to handle things
 					case 'content_types':
 					case 'custom_dataset_fields':

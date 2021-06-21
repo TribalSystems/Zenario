@@ -160,8 +160,17 @@ switch ($path) {
 		
 		//Show a warning if the email template is in debug mode
 		if (ze::setting('debug_override_enable')) {
+			$sendToDebugAddressOrDontSentAtAll = ze::setting('send_to_debug_address_or_dont_send_at_all');
 			$box['tabs']['meta_data']['notices']['debug_mode']['show'] = true;
-			$box['tabs']['meta_data']['notices']['debug_mode']['message'] = ze\admin::phrase('This site is in email debug mode. Emails sent by this site will be redirected to "[[email]]".', ['email' => trim(ze::setting('debug_override_email_address'))]);
+
+			if ($sendToDebugAddressOrDontSentAtAll == 'send_to_debug_email_address') {
+				$box['tabs']['meta_data']['notices']['debug_mode']['message'] =
+					ze\admin::phrase('This site is in email debug mode. Emails sent by this site will be redirected to "[[email]]".',
+					['email' => trim(ze::setting('debug_override_email_address'))]);
+			} elseif ($sendToDebugAddressOrDontSentAtAll == 'dont_send_at_all') {
+				$box['tabs']['meta_data']['notices']['debug_mode']['message'] =
+					ze\admin::phrase('Email debug mode is enabled, emails will not be sent at all.');
+			}
 		} elseif ($values['meta_data/mode'] == 'debug') {
 			$box['tabs']['meta_data']['notices']['debug_mode']['show'] = true;
 			$box['tabs']['meta_data']['notices']['debug_mode']['message'] = ze\admin::phrase('This email template is in debug mode. Emails sent with this template will be redirected to the specified email address.');

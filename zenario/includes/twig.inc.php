@@ -160,15 +160,13 @@ class Zenario_Phi_Twig_Cache extends Zenario_Twig_Cache {
 	    	$content = preg_replace('@\btwig_get_attribute\(\$this\-\>env, \$this\-\>getSourceContext\(\), \(?\$context([\[\]\'"\w-]+) \?\? null\)?, ([\'"]?[\w-]+[\'"]?), array\(\)(, [\'"]array[\'"]|)\)@', '(\$context$1[$2] ?? null)', $content, -1, $count);
 	    } while ($count > 0);
     	
-		//Implement the ability to set the value of array elements
-		//Twig doesn't support setting array keys, so we'll need to use a hack to work around this
+		//Implement the ability to set the value of array elements.
+		//Twig doesn't support setting array keys, so we'll need to use a hack to work around this.
+		//Most of the work is done in the Phi Parser function, however we need a preg_replace here just to make sure
+		//that the first arguement to the _zPhiSAK_() function can be passed by reference.
     	do {
     		$count = 0;
-	    	$content = preg_replace('@\bze\\\\phi\:\:_zPhiSAK_\(\(?\$context([\[\]\'"\w-]+)( \?\? null|)\)?, (.*?), \\\\?ze\\\\phi\:\:_zPhiSAKEnd_\(\)\)\;@', '$context$1 = $3;', $content, -1, $count);
-	    } while ($count > 0);
-    	do {
-    		$count = 0;
-	    	$content = preg_replace('@\bze\\\\phi\:\:_zPhiSNAK_\(\(?\$context([\[\]\'"\w-]+)( \?\? null|)\)?, (.*?), \\\\?ze\\\\phi\:\:_zPhiSAKEnd_\(\)\)\;@', '$context$1[] = $3;', $content, -1, $count);
+	    	$content = preg_replace('@\bze\\\\phi\:\:_zPhiSAK_\(\(?\$context([\[\]\'"\w-]+)( \?\? null)\)?@', 'ze\\\\phi::_zPhiSAK_(\$context$1', $content, -1, $count);
 	    } while ($count > 0);
 	    
     	parent::write($key, $content);

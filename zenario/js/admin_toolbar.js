@@ -50,7 +50,8 @@ zenario.lib(function(
 
 
 
-zenarioA.toolbar = 'preview';
+zenarioA.toolbar =
+zenarioA.toolbarTabGrouping = 'preview';
 
 
 zenarioAT.setURL = function() {
@@ -117,14 +118,19 @@ zenarioAT.init2 = function(tuix) {
 
 zenarioAT.clickTab = function(toolbar) {
 	if (zenarioA.checkForEdits()) {
-		if (zenarioAT.tuix && zenarioAT.tuix.toolbars && zenarioAT.tuix.toolbars[toolbar]) {
+		
+		var oldToolbar = zenarioAT.tuix.toolbars[zenarioA.toolbar],
+			newToolbar;
+		
+		if (newToolbar = zenarioAT.tuix && zenarioAT.tuix.toolbars && zenarioAT.tuix.toolbars[toolbar]) {
 			zenarioA.closeSlotControls();
 			zenarioA.cancelMovePlugin();
 			
-			zenarioAT.action(zenarioAT.tuix.toolbars[toolbar]);
+			zenarioAT.action(newToolbar);
 			
-			var oldPageMode = zenarioAT.tuix.toolbars[zenarioA.toolbar] && zenarioAT.tuix.toolbars[zenarioA.toolbar].page_mode || zenarioA.toolbar,
-				newPageMode = zenarioAT.tuix.toolbars[toolbar].page_mode || toolbar,
+			var oldPageMode = oldToolbar && oldToolbar.page_mode || zenarioA.toolbar,
+				newPageMode = newToolbar.page_mode || toolbar,
+				newToolbarTabGrouping = newToolbar.toolbar_tab_grouping || 'edit',
 				toolbarSubstr = toolbar.substr(0, 4),
 				sbcFun = zenarioL.set,
 				testPageMode,
@@ -154,20 +160,7 @@ zenarioAT.clickTab = function(toolbar) {
 			} else {
 				$('body').addClass('zenario_slotWand_off').removeClass('zenario_slotWand_on');
 			}
-			
-			//If switching to edit mode, look for an editable plugin and scroll the admin's view to that plugin
-			if (newPageMode == 'edit' ) {
-				
-				var $vcp = $(".zenario_versionControlledPlugin");
-				
-				if ($vcp.length) {
-					zenario.scrollTop($vcp.offset().top - 150, 2000);
-					setTimeout(function() {
-						$('.zenario_admin_tooltip').hide();
-					}, 0);
-				}
-			}
-						
+					
 			//Toggle the Grid on the item/layout tabs
 			if ((newPageMode == 'item' || newPageMode == 'layout') && zenarioA.showGridOn) {
 				zenarioAT.showGridOnOff(true);
@@ -177,6 +170,7 @@ zenarioAT.clickTab = function(toolbar) {
 			
 			zenarioA.toolbar = toolbar;
 			zenarioA.pageMode = newPageMode;
+			zenarioA.toolbarTabGrouping = newToolbarTabGrouping;
 			zenarioA.savePageMode(true);
 			
 			//zenarioAT.drawToolbarTabs();
@@ -224,7 +218,6 @@ zenarioAT.showGridOnOff = function(modeOn) {
 	
 				myroot.style.position = 'relative';
 				myroot.appendChild(overlay_div);
-				myroot.offsetHeight = overlay_div.offsetHeight + 'px';
 				zenarioAT.gridOverlayDiv = overlay_div;
 			}
 		}
@@ -444,7 +437,8 @@ zenarioAT.draw = function() {
 				warning_icon: tab.warning_icon,
 				tooltip: tab.tooltip,
 				toolbar_microtemplate: tab.toolbar_microtemplate,
-				selected: id == zenarioA.toolbar
+				selected: id == zenarioA.toolbar,
+				groupingActive: (tab.toolbar_tab_grouping || 'edit') == zenarioA.toolbarTabGrouping
 			};
 			
 			if (id == zenarioA.toolbar) {

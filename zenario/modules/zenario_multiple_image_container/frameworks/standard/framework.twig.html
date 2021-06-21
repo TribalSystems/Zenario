@@ -9,6 +9,9 @@
 	
 {# If images have been set then show the images. #}
 {% if Images %}
+	{# Include the zip download feature. #}
+	{% include this.frameworkBaseDir() ~ 'includes/footer.twig.html' %}
+	
 	<div class="banner_images"> 
 		{% for Image in Images %}
 			<div class="banner_image"> 

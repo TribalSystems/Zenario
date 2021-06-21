@@ -494,7 +494,7 @@ plugin_settings:
                     label: 'Privacy:'
                     type: select
                     #note_below: controlled in formatAdminBox
-                    value: __ALWAYS_SHOW
+                    value: _ALWAYS_SHOW
                     values:
                         _ALWAYS_SHOW:
                             ord: "1"

@@ -217,6 +217,9 @@ methods.addExtraMergeFields = function(data) {
 	if (engToBoolean(thus.tuix.use_tall_rows)) {
 		data.useTallRows = true;
 	}
+	if (engToBoolean(thus.tuix.two_line_list)) {
+		data.useTwoLine = true;
+	}
 };
 
 

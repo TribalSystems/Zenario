@@ -1391,7 +1391,7 @@ toggleShowGrid:
         <p>
             This function toggles on/off the "grid" display viewing the Edit or the Layout tab on the Admin Toolbar.
         </p><p>
-            This only works for layouts created by Grid Maker; if a layout was not created using Grid Maker, you won't see anything.
+            This only works for layouts created by Gridmaker; if a layout was not created using Gridmaker, you won't see anything.
         </p>
         <h2>Return Value</h2>
         <p>

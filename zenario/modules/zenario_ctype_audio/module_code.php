@@ -111,7 +111,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 						
 						} elseif ($path = ze\file::getPathOfUploadInCacheDir($values['file/file'])) {
 							if (ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit')) < filesize($path)) {
-								$box['tabs']['file']['errors'][] = ze\admin::phrase('This file is larger than the Maximum Content File Size as set in the Site Settings.');
+								$box['tabs']['file']['errors'][] = ze\admin::phrase('This file is larger than the Maximum Content File Size. Please go to Configuration->Site Settings and open the Documents, Images and File Handling panel to check this.');
 						
 							} elseif (!$this->isFileTypeAllowed($path)) {
 								$box['tabs']['file']['errors'][] = ze\admin::phrase('Please select an MP3 file.');
@@ -175,7 +175,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 							} elseif (ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit')) < filesize($_FILES['Filedata']['tmp_name'])) {
 								echo
 									ze\admin::phrase(
-										'The [[file]] is larger than the Maximum Content File Size as set in the Site Settings.',
+										'The [[file]] is larger than the Maximum Content File Size. Please go to Configuration->Site Settings and open the Documents, Images and File Handling panel to check this.',
 										['file' => htmlspecialchars($_FILES['Filedata']['name'])]);
 							
 							} else {

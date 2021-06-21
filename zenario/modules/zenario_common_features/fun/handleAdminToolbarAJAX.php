@@ -89,6 +89,21 @@ if (($_REQUEST['mID'] ?? false) && ($_POST['menu_item'] ?? false)) {
 		}
 	}
 
+} elseif (ze::post('add_existing_translation_to_chain')) {
+	if (ze\priv::check('_PRIV_CREATE_TRANSLATION_FIRST_DRAFT')) {
+		
+		$cID = $cType = false;
+		if ((ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids))
+		 && ($cID2 = (int) ($_POST['cID'] ?? 0))) {
+			ze\contentAdm::recordEquivalence($cID, $cID2, $cType);
+		}
+	}
+
+} elseif (ze::post('rescan_extract')) {
+	if (ze\module::inc('zenario_ctype_document')) {
+		zenario_ctype_document::rescanExtract($ids, true);
+	}
+
 } else {
 	//Most of the logic for Content is already included for Storekeeper, so include those functions
 	$this->handleOrganizerPanelAJAX('zenario__content/panels/content', $cType. '_'. $cID, $ids, false, false);

@@ -32,13 +32,18 @@ namespace ze;
 class date {
 
 
-
+	private static $timeNow = null;
+	
 	const nowFromTwig = true;
 	//Formerly "NOW()"
 	//Formerly "now()"
-	public static function now() {
-		$row = \ze\sql::fetchRow('SELECT NOW()');
-		return $row[0];
+	public static function now($cache = false) {
+		
+		if ($cache && self::$timeNow !== null) {
+			return self::$timeNow;
+		}
+		
+		return self::$timeNow = \ze\sql::fetchValue('SELECT NOW()');
 	}
 
 	const ymdFromTwig = true;

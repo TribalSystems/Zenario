@@ -208,7 +208,7 @@ div.zenario_grid_cell_show_hide_first span {
 
 div.zenario_grid_object_properties {
 	float:left;
-	margin-right: 22px;
+	/*margin-right: 22px;*/
 }
 
 div.zenario_grid_cell_size {
@@ -219,15 +219,24 @@ div.zenario_grid_cell_size {
 div.zenario_grid_object_properties {
 	width: 100%;
 }
-div.zenario_grid_object_properties div {
+
+div.zenario_grid_name_area {
+	max-width:100%;
+}
+
+/*div.zenario_grid_object_properties div {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	width: 70%;
-}
+}*/
 
 div.zenario_grid_object_properties span {
-	padding-right: 20px;
+	display:inline-block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	padding-right:22px;
+	max-width:calc(100% - 30px);
 }
 
 div.zenario_grid_object_properties span,
@@ -252,7 +261,8 @@ div.zenario_grid_cell_show_hide_first span {
 div.zenario_grid_object_properties:hover span,
 div.zenario_grid_border:hover div.zenario_grid_object_properties span {
 	cursor:pointer;
-	background: right center no-repeat url('../admin/images/grid_maker/rename-icon.png');
+	background: right center no-repeat url('../admin/images/icon-pencil.svg');
+	background-size:auto 18px;
 }
 
 div.zenario_grid_cell_resp_options select,
@@ -648,8 +658,12 @@ body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
 	overflow-y: auto;
 }
 
+.grid_panel_wrap #grid.zenario_grid_slot_view {
+	overflow-x:auto;
+}
+
 .grid_panel_wrap #grid.zenario_grid_slot_view .zenario_overflow_wrap {
-	width:100% !important;
+	min-width:100%;
 }
 
 body.iframe .zenario_grid_bg_preview,

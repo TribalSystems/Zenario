@@ -2000,7 +2000,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function deleteLocation($locationId) {
+		foreach (self::locationsImages($locationId) as $image_id) {
+			self::deleteImage($locationId, $image_id);
+		}
+		
 		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', $locationId);
+		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data', $locationId);
+
 		ze\module::sendSignal('eventLocationDeleted', ["locationId" => $locationId]);
 	}
 

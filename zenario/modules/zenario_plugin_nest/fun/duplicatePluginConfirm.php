@@ -32,7 +32,7 @@ $egg = ze\row::get('nested_plugins', ['instance_id', 'name_or_title'], $eggId);
 
 //Display a confirmation box, asking the admin if they want to delete the plugin
 $message =
-	'<p>'. ze\admin::phrase('Are you sure you wish to duplicate the &quot;[[name_or_title|escape]]&quot; Plugin?', $egg). '</p>';
+	'<p>'. ze\admin::phrase('Are you sure you wish to duplicate the plugin &quot;[[name_or_title|escape]]&quot;?', $egg). '</p>';
 
 $usage = ze\pluginAdm::usage($egg['instance_id'], false);
 $usagePublished = ze\pluginAdm::usage($egg['instance_id'], true);
@@ -40,7 +40,7 @@ $usagePublished = ze\pluginAdm::usage($egg['instance_id'], true);
 if ($usage > 1 || $usagePublished > 0) {
 	$message .=
 		'<p>'. ze\admin::phrase(
-			'This will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] Content Item(s) in total</a>).</span>',
+			'This will affect <span class="zenario_x_published_items">[[published]] published content item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] content item(s) in total</a>).</span>',
 			[
 				'pages' => (int) $usage,
 				'published' => (int) $usagePublished,

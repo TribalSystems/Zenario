@@ -390,6 +390,32 @@ site_settings:
                     type: select
                     empty_value: ' -- Select -- '
                     value: ""
+        activation_email_template:
+            label: "Activation email template"
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                Select the default email template for the activation of new users.
+                            </p>
+                default_activation_email_template:
+                    site_setting:
+                        name: default_activation_email_template
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: Yes
+                    value: zenario_users__to_user_account_activated
         filesizes:
             label: File Sizes
             edit_mode:

@@ -34,12 +34,21 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 		if ($path != 'zenario__administration/panels/site_settings') return;
 		
 		//Either show the "site disabled" icon or the "site enabled" icon,
-		//depending on whether the site is enabled or not
-		if (ze::setting('site_enabled')) {
-			unset($panel['items']['site_disabled']);
-		} else {
+		//depending on whether a language has been enabled,
+		//and whether the site is enabled or not.
+		if (!ze::setting('default_language')) {
 			unset($panel['items']['site_enabled']);
+			unset($panel['items']['site_disabled']);
+		
+		} elseif (!ze::setting('site_enabled')) {
+			unset($panel['items']['site_enabled']);
+			unset($panel['items']['site_offline']);
+		
+		} else {
+			unset($panel['items']['site_disabled']);
+			unset($panel['items']['site_offline']);
 		}
+		
 		
 		//If a branding logo is set, change the icon of "Logos and branding" to that logo
 		if (ze::setting('brand_logo') == 'custom' && ze::setting('custom_logo')) {

@@ -234,39 +234,89 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 
 		
 		if ($panel['key']['moduleId']) {
-			$mrg = ['name' => ze\module::displayName($panel['key']['moduleId'])];
+			
+			//If we're show plugins from a specific module, check the module is there and running.
+			$module = ze\module::details($panel['key']['moduleId']);
+			
+			if (!$module) {
+				echo \ze\admin::phrase('This module could not be found.');
+				exit;
+			}
+			
+			$moduleNotRunning =	$module['status'] == 'module_suspended'
+							 || $module['status'] == 'module_not_initialized';
+			
+			$moduleMissing = !ze::moduleDir($module['class_name'], 'module_code.php', true);
+			
+			
+			if ($moduleNotRunning || $moduleMissing) {
+				
+				if ($moduleNotRunning) {
+					$panel['notice'] = [
+						'show' => true,
+						'message' => ze\admin::phrase('Warning: the module [[display_name]] ([[class_name]]) is not running.', $module),
+						'type' => 'warning'
+					];
+				
+				} else {
+					$panel['notice'] = [
+						'show' => true,
+						'message' => ze\admin::phrase('Warning: the module [[display_name]] ([[class_name]]) is missing from the file system, so it cannot run.', $module),
+						'type' => 'error'
+					];
+				}
+				
+				foreach (['collection_buttons', 'item_buttons', 'inline_buttons'] as $bType) {
+					if (!empty($panel[$bType])
+					 && is_array($panel[$bType])) {
+						foreach ($panel[$bType] as &$button) {
+							$button['disabled'] = true;
+						}
+					}
+				}
+			}
+			
+			$mrg = ['name' => $module['display_name']];
 			
 			switch ($panel['key']['moduleId']) {
 				case $nestModuleId:
-					$panel['title'] =
-					$panel['select_mode_title'] =
-						ze\admin::phrase('Nests', $mrg);
-					$panel['no_items_message'] =
-						ze\admin::phrase('There are no nests. Click the "Create" button to create one.', $mrg);
+					$panel['select_mode_title'] = ze\admin::phrase('Nests', $mrg);
+
+					//Do not override the title when viewing nests using a form or image.
+					if (!ze::in($refinerName, 'nests_using_form', 'nests_using_image')) {
+						$panel['title'] = $panel['select_mode_title'];
+					}
+
+					$panel['no_items_message'] = ze\admin::phrase('There are no nests. Click the "Create" button to create one.', $mrg);
 					break;
 				
 				case $slideshowModuleId:
-					$panel['title'] =
-					$panel['select_mode_title'] =
-						ze\admin::phrase('Slideshows (advanced)', $mrg);
-					$panel['no_items_message'] =
-						ze\admin::phrase('There are no advanced slideshows. Click the "Create" button to create one.', $mrg);
+					$panel['select_mode_title'] = ze\admin::phrase('Slideshows (advanced)', $mrg);
+
+					//Do not override the title when viewing slideshows using a form or image.
+					if (!ze::in($refinerName, 'slideshows_using_form', 'slideshows_using_image')) {
+						$panel['title'] = $panel['select_mode_title'];
+					}
+
+					$panel['no_items_message'] = ze\admin::phrase('There are no advanced slideshows. Click the "Create" button to create one.', $mrg);
 					break;
 				
 				case $slideshow2ModuleId:
-					$panel['title'] =
-					$panel['select_mode_title'] =
-						ze\admin::phrase('Slideshows (simple)', $mrg);
-					$panel['no_items_message'] =
-						ze\admin::phrase('There are no slideshows. Click the "Create" button to create one.', $mrg);
+					$panel['select_mode_title'] = ze\admin::phrase('Slideshows (simple)', $mrg);
+
+					//Do not override the title when viewing slideshows using a form or image.
+					if (!ze::in($refinerName, 'slideshows_using_form', 'slideshows_using_image')) {
+						$panel['title'] = $panel['select_mode_title'];
+					}
+
+					$panel['no_items_message'] = ze\admin::phrase('There are no slideshows. Click the "Create" button to create one.', $mrg);
 					break;
 				
 				default:
 					$panel['title'] =
 					$panel['select_mode_title'] =
 						ze\admin::phrase('"[[name]]" plugins in the library', $mrg);
-					$panel['no_items_message'] =
-						ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', $mrg);
+					$panel['no_items_message'] = ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', $mrg);
 			}
 		
 		//By default, don't show nests and slideshows with other library plugins

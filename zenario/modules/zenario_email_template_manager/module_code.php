@@ -47,23 +47,6 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		return ze\row::get('email_templates', true, ['code' => $code]);
 	}
 
-	public static function getTemplatesByNameIndexedByCode($name, $strict = true){
-		
-		if ($strict) {
-			$where = ['template_name' => $name];
-		} else {
-			$where = ['template_name' => ['LIKE' => '%'. $name. '%']];
-		}
-		
-		$result = ze\row::query('email_templates', true, $where);
-		
-		$rv = [];
-		while ($row = ze\sql::fetchAssoc($result)){
-			$rv[$row['code']] = $row;
-		}
-		return $rv;
-	}
-	
 	public static function getLogRecordById($id) {
 		return ze\row::get(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', true, ['id' => $id]);
 	}

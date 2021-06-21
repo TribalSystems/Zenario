@@ -8,45 +8,34 @@ zenario__layouts:
             db_items:
                 table: >
                     [[DB_PREFIX]]skins AS s
-                    INNER JOIN [[DB_PREFIX]]template_families AS tf
-                    ON s.family_name = tf.family_name
                 id_column: s.id
             no_items_message: There are no Skins.
             view_mode: list
-            disable_close_up_view: Yes
-            disable_grid_view: Yes
-            disable_summary_view: Yes
+            disable_close_up_view: true
+            disable_grid_view: true
+            disable_summary_view: true
             default_sort_column: path
             label_format_for_grid_view: '[[display_name]]'
             columns:
                 name:
                     title: Directory Name
                     db_column: s.name
-                    searchable: Yes
+                    searchable: true
                 display_name:
                     title: Display Name
                     db_column: s.display_name
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                 path:
                     title: Path
-                    db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/templates/', s.family_name, '/skins/', s.name, '/')"
-                    show_by_default: Yes
-                default:
-                    title: Default
-                    db_column: s.id = tf.skin_id    
-                    format: yes_or_no
-                    show_by_default: Yes
+                    db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/skins/', s.name, '/')"
+                    show_by_default: true
                 missing:
                     title: Missing
                     db_column: s.missing
                     format: yes_or_no
-                    show_by_default: Yes
-                family_name:
-                    title: Template Family
-                    db_column: s.family_name
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                
                 usage_layouts:
                     title: Usage in Layouts
                     db_column: |
@@ -55,11 +44,11 @@ zenario__layouts:
                             FROM [[DB_PREFIX]]layouts AS stc
                             WHERE stc.skin_id = s.id
                         )
-                    align_right: Yes
-                    show_by_default: Yes
+                    align_right: true
+                    show_by_default: true
                 status:
                     title: Status
-                    show_by_default: Yes
+                    show_by_default: true
                     width: xlarge
                 extension_of_skin:
                     db_column: s.extension_of_skin
@@ -68,9 +57,8 @@ zenario__layouts:
                     db_column: s2.display_name
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]skins AS s2
-                                                     ON s.family_name = s2.family_name
-                                                    AND s.extension_of_skin = s2.name
-                    show_by_default: Yes
+                                                     ON s.extension_of_skin = s2.name
+                    show_by_default: true
                 extended_by_skins:
                     title: Extended by Skins
                     db_column: |
@@ -80,17 +68,9 @@ zenario__layouts:
                                                             ORDER BY s3.display_name DESC
                                                             SEPARATOR ', ')
                                                         FROM [[DB_PREFIX]]skins AS s3
-                                                        WHERE s.family_name = s3.family_name
-                                                          AND s.name = s3.extension_of_skin
+                                                        WHERE s.name = s3.extension_of_skin
                                                     )
-            refiners:
-                template_family:
-                    sql: 's.family_name = [[REFINER__TEMPLATE_FAMILY]]'
-                usable_in_template_family:
-                    sql: |
-                        s.family_name = [[REFINER__USABLE_IN_TEMPLATE_FAMILY]]
-                template_family__panel_above:
-                    sql: 's.family_name = [[REFINER__TEMPLATE_FAMILY]]'
+            
             item:
                 name: Skin
                 names: Skins
@@ -98,7 +78,7 @@ zenario__layouts:
                 tooltip_when_link_is_active: 'View files in Skin &quot;[[name]]&quot;'
                 link:
                     path: zenario__layouts/panels/skin_files
-                    branch: Yes
+                    branch: true
                     refiner: skin
             inline_buttons:
                 missing_skin:
@@ -108,26 +88,7 @@ zenario__layouts:
                     visible_if: >
                         item.missing
             item_buttons:
-                make_default:
-                    priv: _PRIV_EDIT_TEMPLATE
-                    label: Make default
-                    hide_in_select_mode: true
-                    without_columns_set:
-                        default: true
-                    ajax:
-                        confirm:
-                            message: |
-                                You are about to change the default skin for the "[[display_name]]" layout.
-                                
-                                When you do this, any content items that use this layout will immediately change their appearance to use the new default skin.
-                                
-                                Are you sure you wish to proceed?
-                            button_message: Make default
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            make_default: 1
                 action_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true

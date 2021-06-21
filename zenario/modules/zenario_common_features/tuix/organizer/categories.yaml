@@ -100,7 +100,7 @@ zenario__content:
 
                             Content summary lists are plugins; make sure the Content Summary List module is running, and then put one of its plugins on page, in order to see it.
 
-                            Categories must be enabled on a content type by content type basis. If you cannot categorise a content item, check in Site Settings whether its content type is enabled for using categories.
+                            Categories must be enabled on a per-content type basis. If you cannot categorise a content item, go to Configuration->Content Types and open the interface for this content type, to check whether it is enabled to use categories.
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_CATEGORY

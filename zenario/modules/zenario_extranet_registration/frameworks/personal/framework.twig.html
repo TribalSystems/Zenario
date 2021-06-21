@@ -37,13 +37,6 @@
 						<div class="extranet_error">{{item.Error}}</div>
 					{% endfor %}
 					
-					{% if Choose_Screen_Name %}
-						<div class="extranet_field">
-							<div class="label"><label for="screen_name">{{"_SCREEN_NAME:"|trans}}</label></div>
-							{{this.frameworkField({'type': "text", 'name': "screen_name", 'id': "screen_name", 'pattern': "new_screen_name", 'required': "true", 'class': "extranet_text"})}}
-						</div>
-					{% endif %}
-					
 					<div class="extranet_field">
 						<div class="label"><label for="email">{{"_EMAIL:"|trans}}</label></div>
 						{{this.frameworkField({'type': "email", 'name': "email", 'id': "email", 'pattern': "new_email", 'required': "true", 'class': "extranet_text"})}}
@@ -71,6 +64,13 @@
 						<div class="label"><label for="last_name">{{"_LAST_NAME:"|trans}}</label></div>
 						{{this.frameworkField({'type': "text", 'name': "last_name", 'id': "last_name", 'maxlength': "100", 'required': "true"})}}
 					</div>
+					
+					{% if Choose_Screen_Name %}
+						<div class="extranet_field">
+							<div class="label"><label for="screen_name">{{"_SCREEN_NAME:"|trans}}</label></div>
+							{{this.frameworkField({'type': "text", 'name': "screen_name", 'id': "screen_name", 'pattern': "new_screen_name", 'required': "true", 'class': "extranet_text"})}}
+						</div>
+					{% endif %}
 					
 					{% if Custom_Fields %}
 						    {% for val in Custom_Fields_Values %}

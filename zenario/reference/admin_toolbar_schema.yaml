@@ -58,7 +58,7 @@ common_definitions:
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
             
-            See http://zenar.io/visibility-in-tuix for examples.
+            See https://zenar.io/visibility-in-tuix for examples.
 
 $schema: 'http://json-schema.org/draft-04/schema#'
 title: Admin Toolbar Schema
@@ -124,6 +124,21 @@ properties:
                 
                         Different Slots and Actions appear in the front-end of the site
                         depending on the current page mode.
+                
+                toolbar_tab_grouping:
+                    type: string
+                    description: >
+                        This property can be used to give a visual indicator
+                        that a tab on the admin toolbar is related to other tabs.
+                        
+                        When one tab in a grouping is the current tab, all of the tabs
+                        will have the zenario_toolbar_tab_grouping_active CSS class.
+                        Otherwise they will have the zenario_toolbar_tab_grouping_inactive
+                        CSS class.
+                        
+                        Default to "edit" if not set.
+                        
+                        This works from version 9.0 onwards.
 
 
     sections:

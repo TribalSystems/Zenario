@@ -239,11 +239,25 @@ body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .
 	outline-width: 0;
 }
 
-body.zenario_pageMode_edit .zenario_slotWithNoContents > div.zenario_slot,
-body.zenario_pageMode_item .zenario_slotWithNoContents > div.zenario_slot,
-body.zenario_pageMode_layout .zenario_slotWithNoContents > div.zenario_slot,
-.zenario_slotWithNoPermission > div.zenario_slot {
-	/*opacity: 0.4;*/
+/*  When you get a not accesible slot, and hover, show border  */
+body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover .zenario_slot,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover .zenario_slot {
+	outline-width: 1px;
+}
+
+body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover .zenario_slot,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover .zenario_slot {
+	outline-style:dashed;
+}
+
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover {
+	outline-style: double;
+	outline-width: medium;
 }
 
 .zenario_slotWithNoPermission > div em {
@@ -368,25 +382,38 @@ body.zenario_pageMode_layout .container .responsive_only {
 body.zenario_pageMode_item .zenario_versionControlledPlugin,
 body.zenario_pageMode_menu .zenario_versionControlledPlugin,
 body.zenario_pageMode_template .zenario_versionControlledPlugin {
-	background-color:rgba(0, 128, 0, 0.1); /* green */
+	/*background-color:rgba(0, 128, 0, 0.1);*/ /* green */
+
+}
+
+body.zenario_pageMode_item .zenario_versionControlledPlugin:hover {
+	background-color:transparent;
+
 }
 
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1:not(.zenario_showSlotInMenuMode),
 body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1 {
-	background-color:rgba(255, 0, 0, 0.1); /* red */
-	-webkit-border-radius:8px;
-	-moz-border-radius:8px;
-	border-radius:8px;
+	/*background-color:rgba(255, 0, 0, 0.1);*/ /* red */
+
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	border-radius:5px;
+}
+
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1:hover {
+	background-color:transparent;
+
 }
 
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2,
 body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_showSlotInMenuMode) {
-	background-color:rgba(128, 0, 128, 0.1); /* purple */
-	-webkit-border-radius:8px;
-	-moz-border-radius:8px;
-	border-radius:8px;
+	/*background-color:rgba(128, 0, 128, 0.1);*/ /* purple */
+
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	border-radius:5px;
 }
 
 body.zenario_pageMode_item .zenario_versionControlledPlugin > .zenario_slot,
@@ -398,7 +425,20 @@ body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1 > .zenario_
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2 > .zenario_slot,
 body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2 > .zenario_slot,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_showSlotInMenuMode) > .zenario_slot {
-	mix-blend-mode:luminosity;
+	/*mix-blend-mode:luminosity;*/
+	/*filter: grayscale(50%);*/
+}
+
+body.zenario_pageMode_item .zenario_versionControlledPlugin:hover,
+body.zenario_pageMode_menu .zenario_versionControlledPlugin:hover,
+body.zenario_pageMode_template .zenario_versionControlledPlugin:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1:hover,
+body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1:hover,
+body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2:hover,
+body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2:hover,
+body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:hover {
+	
 }
 
 body.zenario_pageMode_item .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
@@ -536,7 +576,7 @@ body.zenario_pageMode_item .zenario_slotWithNoContents div.zenario_slotAdminCont
 }
 
 .zenario_wireframe div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
-	background: url('../admin/images/slots/icon-modules-version-controlled.svg') no-repeat center 2px / auto 18px;
+	background: url('../admin/images/slots/icon-modules-version-controlled-black-arrows.svg') no-repeat center 4px / 17px auto;
 }
 
 body.zenario_pageMode_edit .zenario_wireframe div.zenario_slotAdminControlBox a.zenario_openSlotControls span,
@@ -565,7 +605,7 @@ body.zenario_pageMode_edit_disabled .zenario_reusable.zenario_showSlotInEditMode
 }
 
 div.zenario_fbAdminSlotControls {
-	z-index: 3000;
+	z-index: 1000000; /* Old value 3000 */
 }
 
 .zenario_plugin_info_tooltip,
@@ -597,7 +637,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
-	border-top: 2px dashed #000;
+	border-top: 1px solid #747474;
 	padding-top: 3px;
 }
 
@@ -608,6 +648,16 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_
 	margin:6px 0 0;
 	color:#43d4f4;
 	padding:2px 24px;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_title {
+	margin: 0;
+	padding: 5px 0 8px 0;
+	font-size: 12px;
+	text-align: center;
+	font-weight:bold;
+	color: white;
+	background:rgba(255,255,255,0.08);
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc:first-child {
@@ -637,7 +687,6 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_inThisSlot,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_slotControl_inThisSlot {
-	padding: 0;
 	color: #70ddf7;
 	font-weight: bold;
 	font-size: 9px;
@@ -649,6 +698,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_
 	padding-top: 0;
 	color: #c0c0c0;
 	font-size: 9px;
+	font-style: italic;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_locked,
@@ -659,11 +709,19 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_
 	font-size: 10px;
 }
 
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_onlyMobile,
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_onlyDesktop {
-	color: #e08080;
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyMobile,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyDesktop {
 	font-weight: bold;
 	font-size: 10px;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyMobile,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyDesktop,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyMobile,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyDesktop,
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyMobile,
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyDesktop {
+	color: #ffea00;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions,
@@ -679,7 +737,18 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
 	cursor: pointer;
 	padding:5px 10px 7px 30px;
 	color:#FFF;
-	background:url('../admin/images/slots/actions-arrow.png') no-repeat 10px 7px;
+	position:relative;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc:before,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place .zenario_sc:before,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenario_sc:before {
+	font-family:"FontAwesome";
+	content:"\f0da";
+	font-size:8px;
+	position:absolute;
+	left:12px;
+	top:6px;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc:hover,
@@ -706,7 +775,7 @@ div.zenario_slotControlsWrap .zenario_slotControl_empty {
 }
 
 .zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview {
-	width: 200px;
+	width: 100%;
 	background-color: #353535;
 	border: 0;
 	color: #B7B7B7;
@@ -935,4 +1004,49 @@ body.zenario_pageMode_edit_disabled div.zenario_slotAdminControlBox a.zenario_sl
 body.zenario_pageMode_item.zenario_pageLocked div.zenario_slotAdminControlBox a.zenario_slotButton {
 	border-top:4px solid #888;
 	background-color:#888;
+}
+
+/* Control button and dropdown background colors depending on modes */
+
+/* Edit mode / green */
+
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap,
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotAdminControlBox a.zenario_slotButton,
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_info, 
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
+	background-color:#008000; /* green */
+}
+
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap,
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotAdminControlBox a.zenario_slotButton {
+	border-color:#008000;
+}
+
+.zenario_plugin_info_tooltip > div span, div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_slotName span, 
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span, 
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_copyEmbedLink span,
+body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc {
+	color:#FFF;
+}
+
+/* Layout mode / purple */
+
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotAdminControlBox a.zenario_slotButton,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview, 
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
+	background-color:#451d8b; /* purple */
+}
+
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotAdminControlBox a.zenario_slotButton {
+	border-color:#451d8b; /* purple */
+}
+
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_sc,
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_inThisSlot, 
+body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_slotControl_inThisSlot {
+	color:#FFF;
 }

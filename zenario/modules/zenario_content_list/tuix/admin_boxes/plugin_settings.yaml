@@ -13,6 +13,11 @@ plugin_settings:
                     snippet:
                         label: Category filters
                         label_class: subheading
+                date_based_filters:
+                    type: grouping
+                    snippet:
+                        label: Date-based filters
+                        label_class: subheading
                 
                 general_info_snippet:
                     type: snippet
@@ -70,7 +75,7 @@ plugin_settings:
                         required_if_not_hidden: Please select a language.
                     indent: 1
                 release_date:
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     label: 'Filter by release date:'
                     plugin_setting:
                         name: release_date
@@ -90,10 +95,11 @@ plugin_settings:
                                     label: Later than...
                     #value: ignore
                     format_onchange: Yes
+                    side_note: "If using these filters, any pinned content items will appear irrespective of their release date."
                 start_date:
                     plugin_setting:
                         name: start_date
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     label: "Date range start:"
                     type: date
                     change_month_and_year: "1"
@@ -102,7 +108,7 @@ plugin_settings:
                 end_date:
                     plugin_setting:
                         name: end_date
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     label: "Date range end:"
                     type: date
                     change_month_and_year: "1"
@@ -110,7 +116,7 @@ plugin_settings:
                     indent: 1
                 relative_operator:
                     label: 'Relative date range:'
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     plugin_setting:
                         name: relative_operator
                     type: select
@@ -123,7 +129,7 @@ plugin_settings:
                     side_note: "Content items must have been published and they must have the release date defined."
                     indent: 1
                 relative_value:
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     plugin_setting:
                         name: relative_value
                     type: text
@@ -137,7 +143,7 @@ plugin_settings:
                 relative_units:
                     plugin_setting:
                         name: relative_units
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     type: select
                     values:
                         days: day(s)
@@ -150,7 +156,7 @@ plugin_settings:
                 prior_to_date:
                     plugin_setting:
                         name: prior_to_date
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     label: "Prior to the date:"
                     type: date
                     change_month_and_year: "1"
@@ -159,7 +165,7 @@ plugin_settings:
                 on_date:
                     plugin_setting:
                         name: on_date
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     label: "On the date:"
                     type: date
                     change_month_and_year: "1"
@@ -168,7 +174,7 @@ plugin_settings:
                 after_date:
                     plugin_setting:
                         name: after_date
-                    grouping: content_item_filters
+                    grouping: date_based_filters
                     label: "After the date:"
                     type: date
                     change_month_and_year: "1"
@@ -226,6 +232,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_category_name
                     label: 'Show category names'
+                    grouping: category_filters
                     type: checkbox
                     value: ""
                     redraw_onchange: true
@@ -292,11 +299,13 @@ plugin_settings:
                     plugin_setting:
                         name: enable_omit_category
                     label: 'Omit categories'
+                    grouping: category_filters
                     type: checkbox
                     value: ""
                     redraw_onchange: true
                 omit_category:
                     indent: 1
+                    grouping: category_filters
                     visible_if: |
                         zenarioAB.value('enable_omit_category')
                     plugin_setting:
@@ -392,6 +401,72 @@ plugin_settings:
                     side_note: |
                         If a content item has a release date, you can order by this (the item's creation date will be used instead, for items lacking a release date).
                         You can order by menu position, but you must enable &quot;Filter by relative menu position&quot; on the first tab.
+                pinned_content_items:
+                    plugin_setting:
+                        name: pinned_content_items
+                    type: select
+                    label: "Pinned content items:"
+                    value: prioritise_pinned
+                    values:
+                        prioritise_pinned:
+                            ord: 1
+                            label: 'Show pinned items first'
+                        only_show_pinned:
+                            ord: 2
+                            label: 'Show only pinned items'
+                        ignore_pinned:
+                            ord: 3
+                            label: 'Don\'t give priority'
+                    redraw_onchange: true
+                show_pinned_icon:
+                    plugin_setting:
+                        name: show_pinned_icon
+                    indent: 1
+                    type: select
+                    label: 'Show a "pinned" icon:'
+                    value: to_admins_and_visitors
+                    values:
+                        to_admins_and_visitors:
+                            ord: 1
+                            label: 'Show a "pinned" icon'
+                        to_admins_only:
+                            ord: 2
+                            label: 'Show a "pinned" icon to administrators only'
+                        do_not_show:
+                            ord: 3
+                            label: 'Don\'t show an icon'
+                    visible_if: lib.value('pinned_content_items') != 'ignore_pinned'
+                show_pinned_text:
+                    plugin_setting:
+                        name: show_pinned_text
+                    indent: 1
+                    type: select
+                    label: 'Show "pinned" text:'
+                    value: to_admins_and_visitors
+                    values:
+                        to_admins_and_visitors:
+                            ord: 1
+                            label: 'Show text'
+                        to_admins_only:
+                            ord: 2
+                            label: 'Show text to administrators only'
+                        do_not_show:
+                            ord: 3
+                            label: 'Don\'t show any text'
+                    visible_if: lib.value('pinned_content_items') != 'ignore_pinned'
+                    redraw_onchange: true
+                pinned_text:
+                    plugin_setting:
+                        name: pinned_text
+                    hide_with_previous_outdented_field: true
+                    type: text
+                    show_phrase_icon: true
+                    indent: 2
+                    label: '"Pinned" text:'
+                    value: "Pinned"
+                    visible_if: lib.value('show_pinned_text') != 'do_not_show'
+                    validation:
+                        required_if_not_hidden: 'Please enter the "pinned" text'
                 show_more_link:
                     plugin_setting:
                         name: show_more_link
@@ -438,13 +513,13 @@ plugin_settings:
                     value: "0"
                 zip_archive_enabled:
                     visible_if: |
-                        zenarioAB.value('content_type', 'first_tab') == 'document'
+                        (zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture')
                     label: 'Offer to create zip of downloads'
                     type: checkbox
                     plugin_setting:
                         name: zip_archive_enabled
                     redraw_onchange: true
-                    side_note: Only applies to Document content items.
+                    side_note: Only applies to Document and Picture content items.
                 zip_archive_name:
                     indent: 1
                     hide_with_previous_outdented_field: true
@@ -454,9 +529,10 @@ plugin_settings:
                     plugin_setting:
                         name: zip_archive_name
                     type: text
-                    side_note: >
-                        You can specify the name of the target zip archive. If you
-                        leave this field empty, the "documents.zip" name is assumed.
+                    # The side note is created in formatAdminBox method.
+                    # side_note: >
+                    #     You can specify the name of the target zip archive. If you
+                    #     leave this field empty, the "documents.zip" name is assumed.
                     post_field_html: '.zip'
                     note_below: ''
                 

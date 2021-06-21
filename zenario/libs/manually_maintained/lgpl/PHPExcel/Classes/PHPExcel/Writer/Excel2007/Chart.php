@@ -1259,7 +1259,7 @@ class PHPExcel_Writer_Excel2007_Chart extends
           $objWriter->startElement('c:cat');
         }
 
-        $this->_writePlotSeriesValues($plotSeriesCategory, $objWriter, $groupType, 'str', $pSheet);
+        $this->_writePlotSeriesValues($plotSeriesCategory, $objWriter, $groupType, $pSheet, 'str');
         $objWriter->endElement();
       }
 
@@ -1275,7 +1275,7 @@ class PHPExcel_Writer_Excel2007_Chart extends
           $objWriter->startElement('c:val');
         }
 
-        $this->_writePlotSeriesValues($plotSeriesValues, $objWriter, $groupType, 'num', $pSheet);
+        $this->_writePlotSeriesValues($plotSeriesValues, $objWriter, $groupType, $pSheet, 'num');
         $objWriter->endElement();
       }
 
@@ -1339,8 +1339,8 @@ class PHPExcel_Writer_Excel2007_Chart extends
   private function _writePlotSeriesValues($plotSeriesValues,
       $objWriter,
       $groupType,
-      $dataType = 'str',
-      PHPExcel_Worksheet $pSheet
+      PHPExcel_Worksheet $pSheet,
+      $dataType = 'str'
   ) {
     if (is_null($plotSeriesValues)) {
       return;

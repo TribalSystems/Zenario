@@ -12,7 +12,7 @@ canSet:
     <p>Some sites may have no restrictions, and will always allow this if cookies are enabled. Some sites may not allow cookies to be placed until they accept a prompt (which is provided by the CMS).</p>
     <p>If you wish to place a cookie in your Module, you should first call this function to check to see if this is allowed.</p>
     <h2>Return Value</h2>
-    <p>This function will return true if a visitor has given their consent to cookies, or if the cookie consent feature is not enabled in the Site Settings.</p>
+    <p>This function will return true if a visitor has given their consent to cookies, or if the cookie consent feature is not enabled in Configuration->Site Settings.</p>
     <p>This function will return false if a visitor has not yet accepted the prompt, or if they rejected the prompt.</p>
 hideConsent:
   summary: |

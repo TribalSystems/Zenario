@@ -749,7 +749,7 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 				parent: {
 					schema: {},
 					path: ''},
-				url: devTools.schemaName? 'http://zenar.io/ref-' + devTools.schemaName + '-' + devTools.schema.top_level_page : false
+				url: devTools.schemaName? 'https://zenar.io/ref-' + devTools.schemaName + '-' + devTools.schema.top_level_page : false
 			},
 			path: ''
 		};
@@ -803,10 +803,10 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 					
 					if (devTools.schemaName) {
 						if (devTools.pages[tag]) {
-							sche.object.url = 'http://zenar.io/ref-' + devTools.schemaName + '-' + tag;
+							sche.object.url = 'https://zenar.io/ref-' + devTools.schemaName + '-' + tag;
 						} else
 						if (lastTag && devTools.pages[lastTag]) {
-							sche.object.url = 'http://zenar.io/ref-' + devTools.schemaName + '-' + lastTag;
+							sche.object.url = 'https://zenar.io/ref-' + devTools.schemaName + '-' + lastTag;
 						}
 					}
 				}

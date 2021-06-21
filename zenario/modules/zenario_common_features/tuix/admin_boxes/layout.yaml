@@ -4,11 +4,8 @@ zenario_layout:
     priv: _PRIV_VIEW_TEMPLATE
     key:
         id: ''
-        family_name: ''
-        file_base_name: ''
         current_name: ''
         duplicate: ''
-        create_layout_from_template_file: ''
     identifier:
         css_class: template
         label: Layout
@@ -31,6 +28,7 @@ zenario_layout:
                     label: 'Template file:'
                     type: text
                     readonly: true
+                    hidden: true
                 name:
                     label: 'Layout description:'
                     type: text

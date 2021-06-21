@@ -3,36 +3,11 @@
 plugin_settings:
     tabs:
         first_tab:
-            label: Filter
-            fields:
-                hide_private_items:
-                    label: 'Hide private Events from public view'
-                    plugin_setting:
-                        name: hide_private_items
-                    type: checkbox
-                    value: "1"
-                language_selection:
-                    label: 'Show Events only in:'
-                    plugin_setting:
-                        name: language_selection
-                    type: radios
-                    values:
-                        visitor: "Visitor's Language"
-                        all: All enabled Languages
-                    value: visitor
-                category:
-                    label: 'Show Events only from Category:'
-                    plugin_setting:
-                        name: category
-                    pick_items:
-                        path: zenario__content/panels/categories
-                        min_path: zenario__content/panels/categories
-                        max_path: zenario__content/panels/categories
-                        target_path: zenario__content/panels/categories
-                        select_phrase: Select Category...
-        calendar:
             label: Display
             fields:
+                info:
+                    snippet:
+                        html: "This plugin displays Event content items, either the current month with a day-per-block, or the current year with a month-per-block."
                 view_mode:
                     label: 'View mode:'
                     plugin_setting:
@@ -64,26 +39,166 @@ plugin_settings:
                         Monday: Monday
                     value: Monday
                     indent: 1
-                event_count:
-                    label: 'Show event count:'
+                show_other_periods:
+                    indent: 1
+                    label: 'Display other years:'
                     plugin_setting:
-                        name: event_count
+                        name: show_other_periods
                     type: radios
                     values:
-                        event_count_on: 
-                            ord: "1"
-                            label: "Yes"
-                        event_count_off: 
-                            ord: "2"
-                            label: "No"
-                    value: event_count_off
-                first_event:
-                    label: 'Show first event name in each month/day of calendar:'
+                        previous_and_next:
+                            label: 'Show buttons for previous/next year'
+                        current_future_and_previous:
+                            label: 'Show buttons for current year, future years, and previous years'
+                    value: previous_and_next
+                    visible_if:
+                        lib.valueIs: view_mode, year_view
+                    format_onchange: true
+                past_periods_limit:
+                    indent: 2
+                    label: 'Previous year limit:'
                     plugin_setting:
-                        name: first_event
+                        name: past_periods_limit
+                    type: select
+                    values:
+                        0:
+                            label: 'Don't show previous years'
+                            ord: 1
+                        1:
+                            label: 'Up to 1'
+                            ord: 2
+                        2:
+                            label: 'Up to 2'
+                            ord: 3
+                        3:
+                            label: 'Up to 3'
+                            ord: 4
+                        4:
+                            label: 'Up to 4'
+                            ord: 5
+                        5:
+                            label: 'Up to 5'
+                            ord: 6
+                        6:
+                            label: 'Up to 6'
+                            ord: 7
+                        7:
+                            label: 'Up to 7'
+                            ord: 8
+                        8:
+                            label: 'Up to 8'
+                            ord: 9
+                        9:
+                            label: 'Up to 9'
+                            ord: 10
+                        10:
+                            label: 'Up to 10'
+                            ord: 11
+                        11:
+                            label: 'Up to 11'
+                            ord: 12
+                        12:
+                            label: 'Up to 12'
+                            ord: 13
+                    value: 0
+                    side_note: "You can specify how many previous years to display, as far back as there are events. The current year, and future years which have events, will always be shown."
+                    visible_if: "lib.valueIs('view_mode', 'year_view') && lib.valueIs('show_other_periods', 'current_future_and_previous')"
+                show_event_titles:
+                    label: 'In each day/month, show:'
+                    plugin_setting:
+                        name: show_event_titles
+                    type: select
+                    values:
+                        nothing:
+                            label: 'Nothing'
+                        first_event:
+                            label: 'Title of first event'
+                        all_events:
+                            label: 'Titles of all events'
+                    value: first_event
+                event_count:
+                    label: 'Show number of events'
+                    plugin_setting:
+                        name: event_count
                     type: checkbox
-                    value: ""
+                    value: false
+                hide_private_items:
+                    label: 'Hide private events from public view'
+                    plugin_setting:
+                        name: hide_private_items
+                    type: checkbox
+                    value: "1"
+                language_selection:
+                    label: 'Show events only in:'
+                    plugin_setting:
+                        name: language_selection
+                    type: radios
+                    values:
+                        visitor: "Visitor's language"
+                        all: All enabled languages
+                    value: visitor
+                category:
+                    label: 'Show events only from category:'
+                    plugin_setting:
+                        name: category
+                    pick_items:
+                        path: zenario__content/panels/categories
+                        min_path: zenario__content/panels/categories
+                        max_path: zenario__content/panels/categories
+                        target_path: zenario__content/panels/categories
+                        select_phrase: Select category...
+        popout:
+            label: Popup
+            fields:
+                info:
+                    snippet:
+                        html: "When a visitor clicks on a day/month, a popup (modal window) appears, listing the events. Define what is shown in the popup."
+                enable_popup:
+                    label: 'Enable popup'
+                    plugin_setting:
+                        name: enable_popup
+                    type: checkbox
+                    format_onchange: true
+                show_title:
+                    label: 'Show title'
+                    indent: 1
+                    type: checkbox
+                    value: "1"
+                    read_only: true
+                    visible_if:
+                        lib.value: enable_popup
+                show_summary:
+                    label: 'Show summary'
+                    indent: 1
+                    plugin_setting:
+                        name: show_summary
+                    type: checkbox
+                    value: "1"
+                    visible_if:
+                        lib.value: enable_popup
+                date_format:
+                    label: 'Date format:'
+                    indent: 1
+                    plugin_setting:
+                        name: date_format
+                    type: radios
+                    values:
+                        _SHORT:
+                            ord: "1"
+                            label: Short
+                        _MEDIUM:
+                            ord: "2"
+                            label: Medium
+                        _LONG:
+                            ord: "3"
+                            label: Long
+                    value: _SHORT
+                    visible_if:
+                        lib.value: enable_popup
+                    validation:
+                        required_if_not_hidden: Please select the date format.
                 show_sticky_images:
+                    indent: 1
                     plugin_setting:
                         name: show_sticky_images
                     label: "Show feature image"
@@ -91,7 +206,9 @@ plugin_settings:
                     value: ""
                     format_onchange: Yes
                     side_note: |
-                        The feature image for the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no feature image exists.
+                        The feature image for the content item will be shown if it exists.
+                    visible_if:
+                        lib.value: enable_popup
                 canvas:
                     plugin_setting:
                         name: canvas
@@ -115,7 +232,7 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: Yes
-                    indent: 1
+                    indent: 2
                 width:
                     plugin_setting:
                         name: width
@@ -128,7 +245,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 2
+                    indent: 3
                 height:
                     plugin_setting:
                         name: height
@@ -141,36 +258,5 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 2
-        popout:
-            label: Popup
-            fields:
-                show_title:
-                    label: 'Show title'
-                    plugin_setting:
-                        name: show_title
-                    type: checkbox
-                    value: "1"
-                show_summary:
-                    label: 'Show summary'
-                    plugin_setting:
-                        name: show_summary
-                    type: checkbox
-                    value: "1"
-                date_format:
-                    label: 'Date format:'
-                    plugin_setting:
-                        name: date_format
-                    type: radios
-                    values:
-                        _SHORT:
-                            ord: "1"
-                            label: Short
-                        _MEDIUM:
-                            ord: "2"
-                            label: Medium
-                        _LONG:
-                            ord: "3"
-                            label: Long
-                    value: _SHORT
+                    indent: 3
     module_class_name: zenario_event_calendar

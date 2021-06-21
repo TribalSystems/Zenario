@@ -2,19 +2,26 @@
 ---
 site_settings:
     setting_group: head_and_foot
-    title: Site-wide <head> and <body>
+    title: Site-wide <head> and <body> HTML/Javascript
     tabs:
         head:
-            label: <head>
+            label: <head> HTML/JS
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
+            notices:
+                always:
+                    type: warning
+                    show: true
+                    html: true
+                    message: |
+                        If this code may set cookies, and if you wish to control this, you need to place it in the Cookie-creating HTML/JS tab.
             fields:
                 description:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML within the <code>&lt;head&gt;</code> tag of all pages (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):
+                            Add HTML/Javascript to go within the <code>&lt;head&gt;</code> tag of all content items:
                 sitewide_head:
                     site_setting:
                         name: sitewide_head
@@ -28,18 +35,27 @@ site_settings:
                         height: 25em;
                         width: 99%;
                     note_below: >
-                        HTML entered here will take effect across the entire site. Use the Layout tab in the admin toolbar, or the Edit Plugins tab, to enter additional HTML that is applied to pages with a given layout, or a specific content item.
+                        HTML or Javascript entered here will take effect across the entire site. Use the Layout tab in the admin toolbar to enter HTML/JS to be applied to all content items with that layout; or the Slots/Plugins tab to enter additional HTML/JS for a specific content item.
+                        Typically used for <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags.
         body:
-            label: Start of <body>
+            label: Start of <body> HTML/JS
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
+            notices:
+                always:
+                    type: warning
+                    show: true
+                    html: true
+                    message: |
+                        If this code may set cookies, and if you wish to control this, you need to place it in the Cookie-creating HTML/JS tab.
             fields:
                 description:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML immediately after the <code>&lt;body&gt;</code> tag of all pages:
+                            Add HTML/Javascript immediately after the <code>&lt;body&gt;</code> tag of all content items:
+
                 sitewide_body:
                     site_setting:
                         name: sitewide_body
@@ -53,16 +69,23 @@ site_settings:
                         height: 25em;
                         width: 99%;
         foot:
-            label: HTML before </body>
+            label: End of </body> HTML/JS
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
+            notices:
+                always:
+                    type: warning
+                    show: true
+                    html: true
+                    message: |
+                        If this code may set cookies, and if you wish to control this, you need to place it in the Cookie-creating HTML/JS tab.
             fields:
                 description:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML immediately before the <code>&lt;/body&gt;</code> tag of all pages:
+                            Add HTML/Javascript immediately before the <code>&lt;/body&gt;</code> tag of all content items:
                 sitewide_foot:
                     site_setting:
                         name: sitewide_foot
@@ -85,7 +108,7 @@ site_settings:
                             <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a></li>
                         </ul>
         cookie_content:
-            label: Cookie-creating content (Analytics and social media)
+            label: Cookie-creating HTML/JS
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -98,12 +121,8 @@ site_settings:
                         !zenarioA.siteSettings.cookie_require_consent
                     message: |
                         This site has
-                        <a
-                            target="_blank"
-                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
-                        >
-                        cookie consent</a>
-                        set to "don't inform or require", any Javascript here will always be run.
+                        <a target="_blank" href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}' >
+                        cookie consent</a> set to "don't inform or require", any Javascript here will always be run.
                 
                 implied:
                     type: warning
@@ -113,12 +132,8 @@ site_settings:
                         zenarioA.siteSettings.cookie_require_consent == 'implied'
                     message: |
                         This site has
-                        <a
-                            target="_blank"
-                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
-                        >
-                        cookie consent</a>
-                        set to "implied consent", any Javascript here will always be run.
+                        <a target="_blank" href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}' >
+                        cookie consent</a> set to "implied consent", any Javascript here will always be run.
                 
                 explicit:
                     type: warning
@@ -129,12 +144,8 @@ site_settings:
                         !zenarioA.siteSettings.individual_cookie_consent
                     message: |
                         This site has
-                        <a
-                            target="_blank"
-                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
-                        >
-                        cookie consent</a>
-                        set to "explicit consent", add Javascipt here that will only be run when a visitor clicks Accept for cookies.
+                        <a target="_blank" href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}' >
+                        cookie consent</a> set to "explicit consent", add Javascipt here that will only be run when a visitor clicks Accept for cookies.
                 
                 individual:
                     type: warning
@@ -145,18 +156,14 @@ site_settings:
                         !!zenarioA.siteSettings.individual_cookie_consent
                     message: |
                         This site has
-                        <a
-                            target="_blank"
-                            href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}'
-                        >
-                        cookie consent</a>
-                        set to "explicit consent" / "individual cookies", add Javascipt to each box that will only be run when each option is enabled.
+                        <a target="_blank" href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}' >
+                        cookie consent</a> set to "explicit consent" / "individual cookies", add Javascipt to each box that will only be run when each option is enabled.
             fields:
                 sitewide_analytics_html_location:
                     site_setting:
                         name: sitewide_analytics_html_location
                     type: select
-                    pre_field_html: 'Add <b>Analytics</b> HTML&nbsp;'
+                    pre_field_html: 'Add <b>web analytics</b> HTML/JS&nbsp;'
                     values:
                         head:
                             label: within the <head> tag
@@ -181,7 +188,7 @@ site_settings:
                     site_setting:
                         name: sitewide_social_media_html_location
                     type: select
-                    pre_field_html: 'Add <b>Social Media</b> HTML&nbsp;'
+                    pre_field_html: 'Add <b>social media</b> HTML&nbsp;'
                     values:
                         head:
                             label: within the <head> tag
@@ -203,9 +210,11 @@ site_settings:
                         width: 99%;
     confirm:
         show: true
-        message: |
-            You are changing HTML that is used across the entire site.
-            The change will be <strong>immediate</strong> and cannot be undone.
+        message: >
+            <p>You are changing HTML that is used across the entire site.</p>
+
+            <p>The change will be <strong>immediate</strong> and cannot be undone.</p>
+
         html: true
         button_message: Save
         cancel_button_message: Cancel

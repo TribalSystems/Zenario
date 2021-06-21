@@ -42,7 +42,7 @@ class zenario_slideshow_simple extends zenario_slideshow {
 					zenario_slideshow_simple.AJAXLink({id: ' . (int)$this->instanceId . '})
 				);'
 			];
-			
+			$controls['actions']['slideshow_settings']['ord'] = 1.0;
 			$existingPlugins = ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 0]);
 			if ($existingPlugins) {
 				$controls['actions']['slideshow_settings']['label'] = ze\admin::phrase('Add/edit slides in slideshow');

@@ -79,7 +79,7 @@ zenario_email_template:
                             ord: 2
                     validation:
                         required: Please select "From" details option.
-                    side_note: You can set or change the standard sender email address and name in Site Settings.
+                    side_note: To change the sender email address and name, go to Configuration->Site Settings and open the Email interface.
                 email_address_from:
                     visible_if: |
                         zenarioAB.value('from_details') == 'custom_details'

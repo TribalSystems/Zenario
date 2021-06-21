@@ -56,6 +56,9 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		} else {
 			$this->showMonthView();
 		}
+
+		$this->data['Enable_popup'] = $this->setting('enable_popup');
+		$this->data['Show_event_count'] = $this->setting('event_count');
 		$this->twigFramework($this->data);
 	}
 
@@ -128,13 +131,13 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		
 		$this->data['Calendar_month_view_content'] = true;
 		$this->data['Table_header'] = true;
-		$this->data['Cal_day_1'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek  ) % 7, [], false), 0,1,'utf8');
-		$this->data['Cal_day_2'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+1) % 7, [], false), 0,1,'utf8');
-		$this->data['Cal_day_3'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+2) % 7, [], false), 0,1,'utf8');
-		$this->data['Cal_day_4'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+3) % 7, [], false), 0,1,'utf8');
-		$this->data['Cal_day_5'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+4) % 7, [], false), 0,1,'utf8');
-		$this->data['Cal_day_6'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+5) % 7, [], false), 0,1,'utf8');
-		$this->data['Cal_day_7'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+6) % 7, [], false), 0,1,'utf8');
+		$this->data['Cal_day_1'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek  ) % 7, []), 0,1,'utf8');
+		$this->data['Cal_day_2'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+1) % 7, []), 0,1,'utf8');
+		$this->data['Cal_day_3'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+2) % 7, []), 0,1,'utf8');
+		$this->data['Cal_day_4'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+3) % 7, []), 0,1,'utf8');
+		$this->data['Cal_day_5'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+4) % 7, []), 0,1,'utf8');
+		$this->data['Cal_day_6'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+5) % 7, []), 0,1,'utf8');
+		$this->data['Cal_day_7'] = mb_substr(ze\lang::phrase('_WEEKDAY_' . (string) ($calendarStartDayOfWeek+6) % 7, []), 0,1,'utf8');
 		
 		$this->data['Days_row_element'] = [];
 		
@@ -144,51 +147,50 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$j=1;
 		for ($i; ($i<=7*6) && ($j<=$currentMonthLength); $i++){
 			
-			$numberOfEvents = $this->getEventDay($year,$month,$j,$langIDs);
-			//To display event title in Event calender.
-			$currentMonthEventsTitle = $this->getMonthEventDesc($year,$month,$langIDs);
-			$currentMonthEventsOneLess = $numberOfEvents-1;
+			$numberOfEvents = $this->getEventDay($year, $month, $j, $langIDs);
 			
-			if ($numberOfEvents > 1) {
-				$currentMonthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$currentMonthEventsTitle[0]['title']."</span><span class = 'event_count has_events  more_event'>+".$currentMonthEventsOneLess." ".$this->phrase('more')."</span>";
-			} else {
-				if (!empty($currentMonthEventsTitle)) {
-					$title = $currentMonthEventsTitle[0]['title'];
-				} else {
-					$title = '';
-				}
-				
-				$currentMonthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$title."</span>";
-			}
-			
-			if ($this->isEventDay($year,$month,$j,$langIDs)){
-				if (($j==date('j',time())) && ($month==date('n',time())) && ($year==date('Y',time()))){ 
+			if ($this->isEventDay($year, $month, $j, $langIDs)) {
+				$events = $this->getEventsDesc($year, $month, $j, $langIDs);
+
+				if (($j == date('j', time())) && ($month == date('n', time())) && ($year == date('Y', time()))){ 
 					$day_class_name_var = 'today';
 				} else {
 					$day_class_name_var = 'day';
 				}
-				$firstEventsHtml='';
-				$countEventsHtml='';
 				
-				if ($this->setting('first_event') == "1" || $this->setting('event_count') == "event_count_on"){
-					if ($this->setting('first_event') == "1")
-						$firstEventsHtml = $currentMonthEventsCounter;
-					if ($this->setting('event_count') == "event_count_on")
-						$countEventsHtml = "<span class='event_count has_events has_eventscount'>".$numberOfEvents."</span>";
+				if (ze::in($this->setting('show_event_titles'), "first_event", "all_events") || $this->setting('event_count')) {
+					$dayEvents = [];
+					foreach ($events as $event) {
+						if ($this->setting('show_event_titles') != "nothing") {
+							$dayEvents[] = [
+								'Title' => $event['title'],
+								'SUBDIR' => SUBDIRECTORY . DIRECTORY_INDEX_FILENAME, 
+								'Event_id' => (int) $event['id'], 
+								'Content_type' => 'event',
+							];
+						}
+						
+						if ($this->setting('show_event_titles') == "first_event") {
+							break;
+						}
+					}
+					
 					$mergeFields[] = [
-						'Anchor'=> ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
-						'Day_class_name'=>$day_class_name_var,
-						'Td_day_class_name'=>'event',
-						'Day_label'=> (string)(int)($j++),
-						'Day_event_span' => $countEventsHtml.' '.$firstEventsHtml
+						'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
+						'Day_class_name' => $day_class_name_var,
+						'Td_day_class_name' => 'event',
+						'Day_label' => (string)(int)($j++),
+						'Num_events' => $numberOfEvents,
+						'Day_events' => $dayEvents
 					];
-				} elseif ($this->setting('first_event') == "0" || $this->setting('event_count') == "event_count_off"){
+				} elseif ($this->setting('show_event_titles') == "nothing" || !$this->setting('event_count')) {
 					$mergeFields[] = [
-						'Anchor'=> ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
-						'Day_class_name'=>$day_class_name_var,
-						'Td_day_class_name'=>'event',
-						'Day_label'=> (string)(int)($j++),
-						'Day_event_span' => ""
+						'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
+						'Day_class_name' => $day_class_name_var,
+						'Td_day_class_name' => 'event',
+						'Day_label' => (string)(int)($j++),
+						'Day_event_span' => "",
+						'Num_events' => $numberOfEvents
 					];
 				}
 			} else {
@@ -237,78 +239,72 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$this->data['Calendar_year_view_content'] = true;
 		$this->data['Months_row_element'] = [];
 		
-		for ($i=0;$i<3;$i++){
+		for ($i = 0; $i < 3; $i++){
 			$mergeFields = [];
-			for ($j=0;$j<4;$j++){
-				$month=$i*4+$j + 1;
+			for ($j = 0; $j < 4; $j++){
+				$month = $i * 4 + $j + 1;
 				$lang = $this->getAllowedLanguages();
-				$monthEvents=$this->getMonthEvent($year,$month,$lang);
-				//To display event title in Event calender.
-				$monthEventsTitle = $this->getMonthEventDesc($year,$month,$lang);
-				$monthEventsOneLess = $monthEvents-1;
-				
-				if ($monthEvents > 1) {
-					$monthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$monthEventsTitle[0]['title']."</span><span class = 'event_count has_events  more_event'>+".$monthEventsOneLess." ".$this->phrase('more')."</span>";
-				} else {
-					if (!empty($monthEventsTitle)) {
-						$title = $monthEventsTitle[0]['title'];
-					} else {
-						$title = '';
-					}
-					
-					$monthEventsCounter = "<span class='event_count has_events has_eventsdesc'>".$title."</span>";
-				}
-				
-				if ($this->isEventMonth($year,$month,$langIDs)){
-					if (($month==date('n',time())) && ($year==date('Y',time()))){ 
+				$numberOfEvents = $this->getMonthEvent($year, $month, $lang);
+				if ($this->isEventMonth($year, $month, $langIDs)) {
+					$events = $this->getEventsDesc($year, $month, false, $langIDs);
+					if (($month == date('n', time())) && ($year == date('Y', time()))) { 
 						$currentMonthClass = 'current_month';
 					} else {
 						$currentMonthClass = '';
 					}
 					
-
 					$monthShort = ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_SHORT_%m]] ",false,false);
 					$monthLong = ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_LONG_%m]] ",false,false);
 					
 					if ($monthFormat == "months_short_name"){
 						$monthLabel = $monthShort;
-					}elseif($monthFormat == "months_long_name"){
+					} elseif ($monthFormat == "months_long_name") {
 						$monthLabel = $monthLong;
 					}
 					
 							
-					$firstEventsHtml='';
-					$countEventsHtml='';
-				
-				if ($this->setting('first_event') == "1" || $this->setting('event_count') == "event_count_on"){
-					if ($this->setting('first_event') == "1")
-						$firstEventsHtml = $monthEventsCounter;
-					if ($this->setting('event_count') == "event_count_on")
-						$countEventsHtml = "<span class='event_count has_events has_eventscount'>".$monthEvents."</span>";
+					if (ze::in($this->setting('show_event_titles'), "first_event", "all_events") || $this->setting('event_count')) {
+						$monthEvents = [];
+						foreach ($events as $event) {
+							if ($this->setting('show_event_titles') != "nothing") {
+								$monthEvents[] = [
+									'Title' => $event['title'],
+									'SUBDIR' => SUBDIRECTORY . DIRECTORY_INDEX_FILENAME, 
+									'Event_id' => (int) $event['id'], 
+									'Content_type' => 'event',
+								];
+							}
+
+							if ($this->setting('show_event_titles') == "first_event") {
+								break;
+							}
+						}
+					
 						$mergeFields[] = [	
 							'Anchor' =>' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
-							'Month_event_span' => $countEventsHtml.' '.$firstEventsHtml
+							'Num_events' => $numberOfEvents,
+							'Month_events' => $monthEvents
 						];		
-					} elseif ($this->setting('first_event') == "0" || $this->setting('event_count') == "event_count_off"){
-						$mergeFields[]= [	
+					} elseif ($this->setting('show_event_titles') == "nothing" || !$this->setting('event_count')) {
+						$mergeFields[] = [	
 							'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
-							'Month_event_span' => ""
+							'Num_events' => $numberOfEvents
 						];
-					}		
+					}
 				} else {
-					if (($month==date('n',time())) && ($year==date('Y',time()))){ 
+					if (($month==date('n',time())) && ($year==date('Y',time()))) { 
 						$monthShort = ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_SHORT_%m]] ",false,false);
 						$monthLong = ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_LONG_%m]] ",false,false);
 						
-						if ($monthFormat == "months_short_name"){
+						if ($monthFormat == "months_short_name") {
 							$monthLabel = $monthShort;
-						}elseif($monthFormat == "months_long_name"){
+						}elseif($monthFormat == "months_long_name") {
 							$monthLabel = $monthLong;
 						}
 						
@@ -317,13 +313,13 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 						$monthShort = ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_SHORT_%m]] ",false,false);
 						$monthLong =  ze\date::format(date("Y-m-d",mktime(0,0,0,$month,1,$year)),"[[_MONTH_LONG_%m]] ",false,false);
 						
-						if ($monthFormat == "months_short_name"){
+						if ($monthFormat == "months_short_name") {
 							$monthLabel = $monthShort;
-						}elseif($monthFormat == "months_long_name"){
+						} elseif ($monthFormat == "months_long_name") {
 							$monthLabel = $monthLong;
 						}
 						//No events
-						$mergeFields[]=['Current_month'=>'','Month_label'=> $monthLabel,'Month_event_span' => ""];
+						$mergeFields[] = ['Current_month'=>'', 'Month_label' => $monthLabel, 'Month_event_span' => ""];
 					}
 				}
 			}
@@ -331,47 +327,66 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		}
 		
 		$this->data['Calendar_year_view_footer'] = true;
-		$this->data['Previous_year_onclick'] = ($previousYear>1969&&$previousYear<2038)?$this->refreshPluginSlotJS('&year=' . (string)(int)$previousYear):"";
-		$this->data['Previous_year_name'] = ($previousYear>1969&&$previousYear<2038)?(string) $previousYear:"";
-		$this->data['Next_year_onclick'] = ($nextYear>1969&&$nextYear<2038)?$this->refreshPluginSlotJS('&year=' . (string)(int)$nextYear):"";
-		$this->data['Next_year_name'] = ($nextYear>1969&&$nextYear<2038)?(string)$nextYear:"";
+
+		if ($this->setting('show_other_periods') == 'current_future_and_previous') {
+			$minAndMaxYear = $this->getMinAndMaxYear();
+
+			if ($minAndMaxYear['min_year'] && $minAndMaxYear['max_year']) {
+				$years = [];
+				for ($i = $minAndMaxYear['max_year']; $i >= $minAndMaxYear['min_year']; $i--) {
+					$years[$i] = ['Label' => (int) $i, 'Onclick' => ($i > 1969 && $i < 2038) ? $this->refreshPluginSlotJS('&year=' . (string)(int)$i) : ""];
+				}
+
+				$this->data['Min_year'] = $minAndMaxYear['min_year'];
+				$this->data['Max_year'] = $minAndMaxYear['max_year'];
+				$this->data['Year_range'] = $years;
+				$this->data['Show_year_range'] = true;
+			}
+		} else {
+			$this->data['Previous_year_onclick'] = ($previousYear>1969&&$previousYear<2038)?$this->refreshPluginSlotJS('&year=' . (string)(int)$previousYear):"";
+			$this->data['Previous_year_name'] = ($previousYear>1969&&$previousYear<2038)?(string) $previousYear:"";
+			$this->data['Next_year_onclick'] = ($nextYear>1969&&$nextYear<2038)?$this->refreshPluginSlotJS('&year=' . (string)(int)$nextYear):"";
+			$this->data['Next_year_name'] = ($nextYear>1969&&$nextYear<2038)?(string)$nextYear:"";
+			$this->data['Show_next_and_previous_only'] = true;
+		}
 	}
 		
 
-	function isEventMonth($year,$month,$langs){
+	function isEventMonth($year,$month,$langs) {
 		$year = (int)$year;
 		$month = (int)$month;
-		$sql = "SELECT DISTINCT 
-					c.id
-				";
+		$sql = "
+			SELECT DISTINCT c.id";
 		$sqlJoin = "
-				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
-					ON v.id = ce.id
-					AND v.version = ce.version
-					AND v.type = 'event'
-				LEFT JOIN "
-					. DB_PREFIX . "category_item_link as cil 
-				ON 
-						c.equiv_id = cil.equiv_id
-					AND c.type = cil.content_type";
+			INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				ON v.id = ce.id
+				AND v.version = ce.version
+				AND v.type = 'event'
+			LEFT JOIN " . DB_PREFIX . "category_item_link as cil 
+				ON c.equiv_id = cil.equiv_id
+				AND c.type = cil.content_type";
 				
 		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'),false,$sqlJoin);
 
 		if ($this->setting('category')){
-			$sql .= " AND  cil.category_id=" .(int) $this->setting('category') ;
+			$sql .= "
+				AND  cil.category_id = " . (int) $this->setting('category') ;
 		}
 		
-		$sql .=  ' AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")';
-		$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
+		$sql .= '
+			AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")
+			AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
 	
-		if (count($langs)>0){
-				$sql .=" AND (FALSE ";
+		if (count($langs) > 0) {
+				$sql .="
+					AND (FALSE ";
 				foreach ($langs as $lang){
 					$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
 				}
-				$sql .=") ";
+				$sql .= ") ";
 		 	}
-		$sql .= " LIMIT 1";
+		$sql .= "
+			LIMIT 1";
  
  		if (ze\sql::numRows($result=ze\sql::select($sql))>0 ){
 			return true;
@@ -381,91 +396,90 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 	}
 
 	//num of events for the month
-	function getMonthEvent($year,$month,$langs){
+	function getMonthEvent($year,$month,$langs) {
 		$year = (int)$year;
 		$month = (int)$month;
-		$sql = "SELECT DISTINCT 
-					c.id
-				";
+		$sql = "
+			SELECT DISTINCT c.id";
 		$sqlJoin = "
-				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
-					ON v.id = ce.id
-					AND v.version = ce.version
-					AND v.type = 'event'
-				LEFT JOIN "
-					. DB_PREFIX . "category_item_link as cil 
-				ON 
-						c.equiv_id = cil.equiv_id
-					AND c.type = cil.content_type";
+			INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				ON v.id = ce.id
+				AND v.version = ce.version
+				AND v.type = 'event'
+			LEFT JOIN " . DB_PREFIX . "category_item_link as cil 
+				ON c.equiv_id = cil.equiv_id
+				AND c.type = cil.content_type";
 				
 		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'),false,$sqlJoin);
 
 		if ($this->setting('category')){
-			$sql .= " AND  cil.category_id=" .(int) $this->setting('category') ;
+			$sql .= "
+				AND  cil.category_id = " . (int) $this->setting('category') ;
 		}
 		
-		$sql .=  ' AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")';
-		$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
+		$sql .= '
+			AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")
+			AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
 	
 		if (count($langs)>0){
-			$sql .=" AND (FALSE ";
+			$sql .= "
+				AND (FALSE ";
 			foreach ($langs as $lang){
 				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
 			}
-			$sql .=") ";
+			$sql .= ") ";
 		}
-		//$sql .= " LIMIT 1";
  
  		$result = ze\sql::select($sql);
 		$events = [];
-		while($row = ze\sql::fetchAssoc($result)) {
+		while ($row = ze\sql::fetchAssoc($result)) {
 			$events[] = $row;
 		}
 		
-		if ($events){
-			$numerOfEvents=count($events);
+		if ($events) {
+			$numerOfEvents = count($events);
 			return $numerOfEvents;
-		}else{
+		} else {
 			return 0;
 		}
 	}
 	
 	//num of events for the month
-	function getMonthEventDesc($year,$month,$langs){
+	function getMonthEventDesc($year,$month,$langs) {
 		$year = (int)$year;
 		$month = (int)$month;
-		$sql = "SELECT DISTINCT 
-					c.id,
-					v.title
-				";
+		$sql = "
+			SELECT DISTINCT c.id, v.title";
 		$sqlJoin = "
-				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
-					ON v.id = ce.id
-					AND v.version = ce.version
-					AND v.type = 'event'
-				LEFT JOIN "
-					. DB_PREFIX . "category_item_link as cil 
-				ON 
-						c.equiv_id = cil.equiv_id
-					AND c.type = cil.content_type";
+			INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				ON v.id = ce.id
+				AND v.version = ce.version
+				AND v.type = 'event'
+			LEFT JOIN " . DB_PREFIX . "category_item_link as cil 
+				ON c.equiv_id = cil.equiv_id
+				AND c.type = cil.content_type";
 				
 		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'),false,$sqlJoin);
 
 		if ($this->setting('category')){
-			$sql .= " AND  cil.category_id=" .(int) $this->setting('category') ;
+			$sql .= "
+				AND  cil.category_id=" .(int) $this->setting('category') ;
 		}
 		
-		$sql .=  ' AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")';
-		$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
+		$sql .= '
+			AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")
+			AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
 	
 		if (count($langs)>0){
-			$sql .=" AND (FALSE ";
+			$sql .= "
+				AND (FALSE ";
 			foreach ($langs as $lang){
 				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
 			}
-			$sql .=") ";
+			$sql .= ") ";
 		}
-		$sql .= " LIMIT 1";
+		$sql .= "
+			LIMIT 1";
  
  		$result = ze\sql::select($sql);
 		$events = [];
@@ -476,66 +490,67 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		return $events;
 	}
 
-	function isEventDay($year,$month,$day,$langs){
-		$sql = "SELECT DISTINCT 
-					c.id
-				";
+	function isEventDay($year,$month,$day,$langs) {
+		$sql = "
+			SELECT DISTINCT c.id";
 		$sqlJoin = "
-				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
-					ON v.id = ce.id
-					AND v.version = ce.version
-					AND v.type = 'event'
-				LEFT JOIN "
-					. DB_PREFIX . "category_item_link as cil 
-				ON 
-						c.equiv_id = cil.equiv_id
-					AND c.type = cil.content_type";
+			INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				ON v.id = ce.id
+				AND v.version = ce.version
+				AND v.type = 'event'
+			LEFT JOIN " . DB_PREFIX . "category_item_link as cil 
+				ON c.equiv_id = cil.equiv_id
+				AND c.type = cil.content_type";
 				
 		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'),false,$sqlJoin);
 		
 		if ($this->setting('category')){
-			$sql .= " AND  cil.category_id=" . (int)$this->setting('category') ;
+			$sql .= "
+				AND  cil.category_id=" . (int)$this->setting('category') ;
 		}
 		
-		$sql .=  ' AND start_date <= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
-		$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
+		$sql .=  '
+			AND start_date <= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"
+			AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
 	
 		if (ze\module::inc('event_days_and_dates')){
 			switch (date('N',mktime(0,0,0,$month,$day,$year))){
 				case '1':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_mon_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_mon_on ";
 					break;
 				case '2':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_tue_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_tue_on ";
 					break;
 				case '3':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_wed_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_wed_on ";
 					break;
 				case '4':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_thu_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_thu_on ";
 					break;
 				case '5':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_fri_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_fri_on ";
 					break;
 				case '6':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sat_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sat_on ";
 					break;
 				case '7':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sun_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sun_on ";
 					break;
 			}
 		}
 	
-		if (count($langs)>0){
-			$sql .=" AND (FALSE ";
+		if (count($langs) > 0) {
+			$sql .= "
+				AND (FALSE ";
 			foreach ($langs as $lang){
 				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
 			}
-			$sql .=") ";
+			$sql .= ") ";
 		}
-		$sql .= " LIMIT 1";
+		$sql .= "
+			LIMIT 1";
  
- 		if (ze\sql::numRows($result=ze\sql::select($sql))>0 ){
+ 		if (ze\sql::numRows($result = ze\sql::select($sql)) >0 ) {
 			return true;
 		} else {
 			return false;
@@ -543,184 +558,185 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 	}
 	
 	//num of events for the day
-	function getEventDay($year,$month,$day,$langs){
+	function getEventDay($year, $month, $day, $langs) {
 		// Sanitize input
 		$year = (int)$year;
 		$month = (int)$month;
 		$day = (int)$day;
 		
-		$sql = "SELECT DISTINCT 
-					c.id
-				";
+		$sql = "
+			SELECT DISTINCT c.id";
 		$sqlJoin = "
-				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
-					ON v.id = ce.id
-					AND v.version = ce.version
-					AND v.type = 'event'
-				LEFT JOIN "
-					. DB_PREFIX . "category_item_link as cil 
-				ON 
-						c.equiv_id = cil.equiv_id
-					AND c.type = cil.content_type";
+			INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				ON v.id = ce.id
+				AND v.version = ce.version
+				AND v.type = 'event'
+			LEFT JOIN " . DB_PREFIX . "category_item_link as cil 
+				ON c.equiv_id = cil.equiv_id
+				AND c.type = cil.content_type";
 				
 		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'),false,$sqlJoin);
 		
 		if ($this->setting('category')){
-			$sql .= " AND  cil.category_id=" . (int)$this->setting('category') ;
+			$sql .= "
+				AND  cil.category_id=" . (int)$this->setting('category') ;
 		}
-		$sql .=  ' AND start_date <= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
-		$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
+		$sql .=  '
+			AND start_date <= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"
+			AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
 	
 		if (ze\module::inc('event_days_and_dates')){
 			switch (date('N',mktime(0,0,0,$month,$day,$year))){
 				case '1':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_mon_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_mon_on ";
 					break;
 				case '2':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_tue_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_tue_on ";
 					break;
 				case '3':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_wed_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_wed_on ";
 					break;
 				case '4':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_thu_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_thu_on ";
 					break;
 				case '5':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_fri_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_fri_on ";
 					break;
 				case '6':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sat_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sat_on ";
 					break;
 				case '7':
-					$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sun_on ";
+					$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sun_on ";
 					break;
 			}
 		}
 	
-		if (count($langs)>0){
-			$sql .=" AND (FALSE ";
-			foreach ($langs as $lang){
+		if (count($langs) > 0) {
+			$sql .= "
+				AND (FALSE ";
+			foreach ($langs as $lang) {
 				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
 			}
-			$sql .=") ";
+			$sql .= ") ";
 		}
-		//$sql .= " LIMIT 1";
 		
 		$result = ze\sql::select($sql);
 		$events = [];
 		while($row = ze\sql::fetchAssoc($result)) {
 			$events[] = $row;
 		}
-		if ($events){
-			$numerOfEvents=count($events);
+		if ($events) {
+			$numerOfEvents = count($events);
 			return $numerOfEvents;
-		}else{
+		} else {
 			return 0;
 		}
 	}
 
 
-	function getEventsDesc($year,$month,$day,$langs){
+	function getEventsDesc($year, $month, $day, $langs) {
 		// Sanitize input
 		$year = (int)$year;
 		$month = (int)$month;
 		$day = (int)$day;
 		
-		$sql = "SELECT DISTINCT 
-					ce.id,
-					ce.version,
-					v.title,
-					v.content_summary,
-					c.status,
-					c.language_id,
-					ce.start_date,
-					ce.start_time,
-					ce.specify_time,
-					ce.next_day_finish,
-					ce.end_date,
-					ce.end_time,
-					cil.content_type,
-					description
-				";
+		$sql = "
+			SELECT DISTINCT 
+				ce.id,
+				ce.version,
+				v.title,
+				v.content_summary,
+				c.status,
+				c.language_id,
+				ce.start_date,
+				ce.start_time,
+				ce.specify_time,
+				ce.next_day_finish,
+				ce.end_date,
+				ce.end_time,
+				cil.content_type,
+				description";
 		$sqlJoin = "
-				INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
-					ON v.id = ce.id
-					AND v.version = ce.version
-					AND v.type = 'event'
-				LEFT JOIN "
-					. DB_PREFIX . "category_item_link as cil 
-				ON 
-						c.equiv_id = cil.equiv_id
-					AND c.type = cil.content_type
-				";
+			INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				ON v.id = ce.id
+				AND v.version = ce.version
+				AND v.type = 'event'
+			LEFT JOIN " . DB_PREFIX . "category_item_link as cil 
+				ON  c.equiv_id = cil.equiv_id
+				AND c.type = cil.content_type";
 
-		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'),false,$sqlJoin);
+		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'), false, $sqlJoin);
 
 		if ($this->setting('category')){
-			$sql .= " AND  cil.category_id=" . (int) $this->setting('category') ;
+			$sql .= "
+				AND  cil.category_id=" . (int) $this->setting('category') ;
 		}
 		
 		if ($day){
 			//month view
-			$sql .=  ' AND start_date <= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
-			$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
-			if (ze\module::inc('event_days_and_dates')){
-				switch (date('N',mktime(0,0,0,$month,$day,$year))){
+			$sql .=  '
+				AND start_date <= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"
+				AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-' . $day) .'"';
+			if (ze\module::inc('event_days_and_dates')) {
+				switch (date('N',mktime(0,0,0,$month,$day,$year))) {
 					case '1':
-						$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_mon_on ";
+						$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_mon_on ";
 						break;
 					case '2':
-						$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_tue_on ";
+						$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_tue_on ";
 						break;
 					case '3':
-						$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_wed_on ";
+						$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_wed_on ";
 						break;
 					case '4':
-						$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_thu_on ";
+						$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_thu_on ";
 						break;
 					case '5':
-						$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_fri_on ";
+						$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_fri_on ";
 						break;
 					case '6':
-						$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sat_on ";
+						$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sat_on ";
 						break;
 					case '7':
-						$sql .= " AND IFNULL(stop_dates,'') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sun_on ";
+						$sql .= " AND IFNULL(stop_dates, '') not like '%" . ze\escape::sql($year . '-' . $month . '-' . $day) . "%' AND day_sun_on ";
 						break;
 				}
 			}
 		} else {
 			//year view
-			$sql .=  ' AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")';
-			$sql .=  ' AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
+			$sql .=  '
+				AND start_date <= LAST_DAY("'. ze\escape::sql($year . '-' . $month . '-01') . '")
+				AND end_date >= "'. ze\escape::sql($year . '-' . $month . '-01') . '"';
 		}
 	
-		if (count($langs)>0){
-			$sql .=" AND (FALSE ";
+		if (count($langs) > 0) {
+			$sql .= "
+				AND (FALSE ";
 			foreach ($langs as $lang){
 				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
 			}
-			$sql .=") ";
+			$sql .= ") ";
 		}
-		$sql .= " ORDER BY end_date,end_time ";
+		$sql .= "
+			ORDER BY end_date,end_time ";
 		 
  		$retVal = [];
- 		if (ze\sql::numRows($result=ze\sql::select($sql))>0 ){
+ 		if (ze\sql::numRows($result=ze\sql::select($sql)) > 0 ) {
 			while($row=ze\sql::fetchAssoc($result)){
-				if ((!($this->setting('hide_private_items'))) || ze\content::checkPerm($row['id'],'event',$row['version'])){
-					$retVal[]=[
-						'id'=>$row['id'],
-						'version'=>$row['version'],
-						'title'=>$row['title'],
-						'language_id'=>$row['language_id'],
-						'specify_time'=>$row['specify_time'],
-						'next_day_finish'=>$row['next_day_finish'],
-						'start_date'=>$row['start_date'],
-						'start_time'=>$row['start_time'],
-						'end_date'=>$row['end_date'],
-						'end_time'=>$row['end_time'],
-						'description'=>$row['description'],
-						'content_summary'=>$row['content_summary']
+				if ((!($this->setting('hide_private_items'))) || ze\content::checkPerm($row['id'], 'event', $row['version'])) {
+					$retVal[] = [
+						'id' => $row['id'],
+						'version' => $row['version'],
+						'title' => $row['title'],
+						'language_id' => $row['language_id'],
+						'specify_time' => $row['specify_time'],
+						'next_day_finish' => $row['next_day_finish'],
+						'start_date' => $row['start_date'],
+						'start_time' => $row['start_time'],
+						'end_date' => $row['end_date'],
+						'end_time' => $row['end_time'],
+						'description' => $row['description'],
+						'content_summary' => $row['content_summary']
 					];
 				}
 			}
@@ -728,153 +744,180 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		return $retVal;
 	}
 	
-
-	function getInstalledLangIDs(){
-		$arr=ze\lang::getLanguages();
-		foreach ($arr as $a){
-			$retVal[]=$a['id'];
+	function getInstalledLangIDs() {
+		$arr = ze\lang::getLanguages();
+		foreach ($arr as $a) {
+			$retVal[] = $a['id'];
 		}
 		return $retVal;
 	}
 
-	function formatTimePeriod($timeFrom='', $timeTo='',$separator=' - ' ){
+	function formatTimePeriod($timeFrom='', $timeTo='', $separator = ' - ' ) {
 		$rv = '';
-		if ($timeFrom){
-			$rv = ze\date::formatTime($timeFrom,ze::setting('vis_time_format'),'');
-			if ($timeTo){
-				$rv .=  $separator . ze\date::formatTime($timeTo,ze::setting('vis_time_format'),'');
+		if ($timeFrom) {
+			$rv = ze\date::formatTime($timeFrom, ze::setting('vis_time_format'), '');
+			if ($timeTo) {
+				$rv .=  $separator . ze\date::formatTime($timeTo, ze::setting('vis_time_format'), '');
 			} 
 		} 
 		return $rv;
 	}
 
-	function showFloatingBox(){
+	function getMinAndMaxYear() {
+		$sql = "
+			SELECT 
+				MIN(YEAR (ce.start_date)) AS min_year,
+				MAX(YEAR (ce.end_date)) AS max_year";
+		$sqlJoin = "
+			INNER JOIN " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event AS ce
+				ON v.id = ce.id
+				AND v.version = ce.version
+				AND v.type = 'event'
+			LEFT JOIN " . DB_PREFIX . "category_item_link as cil 
+				ON  c.equiv_id = cil.equiv_id
+				AND c.type = cil.content_type";
+
+		$sql .= ze\content::sqlToSearchContentTable($this->setting('hide_private_items'), false, $sqlJoin);
+
+		if ($this->setting('category')){
+			$sql .= "
+				AND  cil.category_id=" . (int) $this->setting('category') ;
+		}
+
+		//Limit previous periods
+		$limit = $this->setting('past_periods_limit') ?: 0;
+
+		$sql .= "
+			AND (
+				YEAR(ce.start_date) >= YEAR(DATE_ADD(NOW(), INTERVAL -" . (int) $limit . " YEAR))
+				AND YEAR(ce.end_date) >= YEAR(DATE_ADD(NOW(), INTERVAL -" . (int) $limit . " YEAR))
+			)";
+
+		$result = ze\sql::select($sql);
+		return ze\sql::fetchAssoc($result);
+	}
+
+	function showFloatingBox() {
 		$langIDs = $this->getAllowedLanguages();
-		$events = $this->getEventsDesc($_GET['year'] ?? false,($_GET['month'] ?? false),($_GET['day'] ?? false),$langIDs);
+		$events = $this->getEventsDesc($_GET['year'] ?? false, ($_GET['month'] ?? false), ($_GET['day'] ?? false), $langIDs);
 		
 		$this->data['EFrame'] = true;
 		$this->data['Single_event'] = [];
 		
-		if (count($events)>0){
-			foreach ($events as $event){
+		if (count($events) > 0) {
+			foreach ($events as $event) {
 				/* Sticky image */
-				$stickyImageEnabled=$this->setting('show_sticky_images');
+				$htmlStickyImage = "";
+				$stickyImageEnabled = $this->setting('show_sticky_images');
 				if ($stickyImageEnabled) {
-					$stickyImageUrl = self::getStickyImage($event['id'],'event',$event['version']);
-					if ($stickyImageUrl){
-						$htmlStickyImage="<div class='sticky_image'><img src=".$stickyImageUrl."></div>";
-					}else{
-						$htmlStickyImage="";
+					$stickyImageUrl = self::getStickyImage($event['id'], 'event', $event['version']);
+					if ($stickyImageUrl) {
+						$htmlStickyImage = "<div class='sticky_image'><img src=".$stickyImageUrl."></div>";
 					}
-				}else{
-					$htmlStickyImage="";
 				}
 			
 				$arr = [	
-					'Event_title'=> ($this->setting('show_title')?htmlspecialchars($event['title']):''),
-					'Event_summary'=> ($this->setting('show_summary')?$event['content_summary']:''),
-					'SUBDIR' => SUBDIRECTORY. DIRECTORY_INDEX_FILENAME, 
-					'Event_id'=>(int)$event['id'], 
-					'Content_type'=>'event',
-					'StickyImage'=>$htmlStickyImage
+					'Event_title' => (htmlspecialchars($event['title']) ?: ''),
+					'Event_summary'=> ($this->setting('show_summary') ? $event['content_summary'] :''),
+					'SUBDIR' => SUBDIRECTORY . DIRECTORY_INDEX_FILENAME, 
+					'Event_id' => (int) $event['id'], 
+					'Content_type' => 'event',
+					'StickyImage' => $htmlStickyImage
 				];
 
 				if (($event['start_date'] ?? false)==($event['end_date'] ?? false)){
-					$arr['Time_of_event'] = $this->phrase('_SINGLE_DAY_DATE_RANGE',['date'=>ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)]);
+					$arr['Time_of_event'] = $this->phrase('[[date]]', ['date'=>ze\date::format($event['start_date'] ?? false, $this->setting('date_format'), false, false)]);
 				} else {
-					$arr['Time_of_event'] = $this->phrase('_MULTIPLE_DAYS_DATE_RANGE',['start_date'=>ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)
+					$arr['Time_of_event'] = $this->phrase('[[start_date]] to [[end_date]]',['start_date'=>ze\date::format($event['start_date'] ?? false,$this->setting('date_format'),false,false)
 																								,'end_date'=>ze\date::format($event['end_date'] ?? false,$this->setting('date_format'),false,false)]);
 				}
-				if ($event['specify_time'] && !empty($event['start_time']) && (($event['start_time'] ?? false)!='00:00:00')){
+				if ($event['specify_time'] && !empty($event['start_time']) && (($event['start_time'] ?? false)!='00:00:00')) {
 					if ( $event['end_time'] && ($event['end_time']!='00:00:00' || $event['next_day_finish']) && (($event['start_time'] ?? false)!=($event['end_time'] ?? false))){
-						$arr['Time_of_event'] .= " " . $this->phrase('_MULTIPLE_HOURS_EVENT_RANGE',['start_time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),''),
+						$arr['Time_of_event'] .= " " . $this->phrase('[[start_time]] to [[end_time]]',['start_time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),''),
 																									'end_time'=>ze\date::formatTime($event['end_time'],ze::setting('vis_time_format'),'')]);
 					} else {
-						$arr['Time_of_event'] .= " " .  $this->phrase('_SINGLE_HOUR_EVENT_RANGE',['time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),'')]);
+						$arr['Time_of_event'] .= " " .  $this->phrase('[[time]]',['time'=>ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),'')]);
 					}
 				}
 				
 				$this->data['Single_event'][] = $arr;
 			}
 		} else {
-			$this->data['Single_event'][] = ['Event_title'=>htmlspecialchars($this->phrase('_NO_EVENTS_ON', ['date' => ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false)  ,  $this->setting('date_format'),false,false)]))];
+			$this->data['Single_event'][] = ['Event_title'=>htmlspecialchars($this->phrase('No Events on [[date]]', ['date' => ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false)  ,  $this->setting('date_format'),false,false)]))];
 		}
 		
-		if ($_GET['day'] ?? false){
-			$numerOfEvents=$this->getEventDay($_GET['year'] ?? false,($_GET['month'] ?? false),($_GET['day'] ?? false),$langIDs);
-			if ($numerOfEvents>1){
-				$counter = $numerOfEvents." ".$this->phrase('Events');
-			}else{
-				$counter = $numerOfEvents." ".$this->phrase('Event');
+		if ($_GET['day'] ?? false) {
+			$numerOfEvents = $this->getEventDay($_GET['year'] ?? false, ($_GET['month'] ?? false), ($_GET['day'] ?? false), $langIDs);
+			if ($numerOfEvents > 1) {
+				$counter = $numerOfEvents." ".$this->phrase('events');
+			} else {
+				$counter = $numerOfEvents." ".$this->phrase('event');
 			}
 			
 			
-			if ($this->setting('event_count') == "event_count_on"){
+			if ($this->setting('event_count')) {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
 				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false),  $this->setting('date_format'), false, false);
-				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>(".$counter.")</p>";
-			}elseif($this->setting('event_count') == "event_count_off"){
+				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>".$counter."</p>";
+			} else {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
 				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false), $this->setting('date_format'), false, false);
 				$this->data['Event_counter_class_in_window'] = "";
 			}
 		} else {
-			$numerOfEvents=$this->getMonthEvent($_GET['year'] ?? false,($_GET['month'] ?? false),$langIDs);
-			if ($numerOfEvents>1){
-				$counter = $numerOfEvents." ".$this->phrase('Events');
-			}else{
-				$counter = $numerOfEvents." ".$this->phrase('Event');
+			$numerOfEvents = $this->getMonthEvent($_GET['year'] ?? false, ($_GET['month'] ?? false), $langIDs);
+			if ($numerOfEvents > 1) {
+				$counter = $numerOfEvents . " " . $this->phrase('events');
+			} else {
+				$counter = $numerOfEvents . " " . $this->phrase('event');
 			}
 			
-			if ($this->setting('event_count') == "event_count_on"){
+			if ($this->setting('event_count')) {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
 				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
-				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>(".$counter.")</p>";
-			}elseif($this->setting('event_count') == "event_count_off"){
+				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>".$counter."</p>";
+			} else {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
 				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
 				$this->data['Event_counter_class_in_window'] = "";
 			}
 		}
+		
 		$this->twigFramework($this->data);
 	}
 		
-	function getAllowedLanguages(){
-		if ($this->setting('language_selection')=='visitor'){
+	function getAllowedLanguages() {
+		if ($this->setting('language_selection') == 'visitor') {
 			return [ze::$langId];
 		} else {
 			return $this->getInstalledLangIDs();
 		}
 	}
 	
-	public function getStickyImage($id,$type,$version){
+	public function getStickyImage($id, $type, $version) {
 		$width = $height = $url = false;
 		ze\file::itemStickyImageLink($width, $height, $url, $id, $type, $version, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
-		if($url){
+		if ($url) {
 			return htmlspecialchars($url);
-		}else{
+		} else {
 			return false;
 		}
 	}
 	
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path){
+		switch ($path) {
 			case 'plugin_settings':
-				$fields['calendar/first_day_of_week']['hidden'] = ($values['calendar/view_mode'] ?? false) != 'month_view';
-				$fields['calendar/months_format']['hidden'] = ($values['calendar/view_mode'] ?? false) == 'month_view';
+				$fields['first_tab/first_day_of_week']['hidden'] = ($values['first_tab/view_mode'] ?? false) != 'month_view';
+				$fields['first_tab/months_format']['hidden'] = ($values['first_tab/view_mode'] ?? false) == 'month_view';
 				
-				if ($values['calendar/view_mode'] == 'year_view' && empty($values['calendar/months_format'])) {
-					$values['calendar/months_format'] = 'months_short_name';
+				if ($values['first_tab/view_mode'] == 'year_view' && empty($values['first_tab/months_format'])) {
+					$values['first_tab/months_format'] = 'months_short_name';
 				}
 				
-				$hidden = !$values['calendar/show_sticky_images'];
-				$this->showHideImageOptions($fields, $values, 'calendar', $hidden);
+				$hidden = !($values['popout/enable_popup'] && $values['popout/show_sticky_images']);
+				$this->showHideImageOptions($fields, $values, 'popout', $hidden);
 				break;
 		}
 	}
-	
-	
-	
 }
-?>

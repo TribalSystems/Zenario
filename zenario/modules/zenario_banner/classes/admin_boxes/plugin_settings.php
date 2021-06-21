@@ -278,11 +278,11 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			
 			$fields['first_tab/title']['side_note'] = 
 			$fields['first_tab/more_link_text']['side_note'] = 
-				ze\admin::phrase('
-					To make a phrase, put [[def_lang_name]] text inside [[double square brackes]].<br />
-					<a href="[[phrases_panel]]" target="_blank">Edit/translate phrases</a>.',
-						['def_lang_name' => $mrg['def_lang_name'], 'double square brackes' => '[[double square brackes]]', 'phrases_panel' => $mrg['phrases_panel']]
-				);
+                                ze\admin::phrase('
+                                        To make a phrase that gets managed by the translation system, check the checkbox to make this plugin multilingual, and enter text in [[def_lang_name]] between double square brackets, [[Like this]], wherever you see the speech bubbles icon.<br />
+                                        <a href="[[phrases_panel]]" target="_blank">View phrases</a>.',
+                                                ['def_lang_name' => $mrg['def_lang_name'], 'Like this' => '[[Like this]]', 'phrases_panel' => $mrg['phrases_panel']]
+                                );
 		}
 		
 

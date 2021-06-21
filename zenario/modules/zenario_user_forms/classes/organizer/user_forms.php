@@ -34,10 +34,15 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			$panel['db_items']['where_statement'] = 'WHERE TRUE';
 			$panel['no_items_message'] = ze\admin::phrase('No forms have been archived.');
 		}
+
 		if (!ze\module::inc('zenario_extranet_profile_edit')) {
 			$panel['db_items']['where_statement'] .= '
 				AND f.type != "profile"';
 			$panel['collection_buttons']['create_profile_form']['hidden'] = true;
+		}
+
+		if (!ze\module::inc('zenario_crm_form_integration')) {
+			unset($panel['columns']['crm']);
 		}
 	}
 	
@@ -134,6 +139,36 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			}
 			
 			$item['type'] = zenario_user_forms::getFormTypeEnglish($item['type']);
+
+			if (ze\module::inc('zenario_crm_form_integration')) {
+				$formEnabledCRM = [];
+				$formEnabledCRMFormattedNicely = [];
+
+				$formCRMQuery = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_link', 'crm_id', ['enable' => true, 'form_id' => (int) $id]);
+				while ($CRMId = ze\sql::fetchValue($formCRMQuery)) {
+					$formEnabledCRM[] = $CRMId;
+				}
+
+				if ($formEnabledCRM) {
+					if (in_array('salesforce', $formEnabledCRM)) {
+						$formEnabledCRMFormattedNicely[] = ze\admin::phrase('Salesforce');
+					}
+
+					if (in_array('mailchimp', $formEnabledCRM)) {
+						$formEnabledCRMFormattedNicely[] = ze\admin::phrase('MailChimp');
+					}
+
+					if (in_array('360lifecycle', $formEnabledCRM)) {
+						$formEnabledCRMFormattedNicely[] = ze\admin::phrase('360Lifecycle');
+					}
+
+					if (in_array('generic', $formEnabledCRM)) {
+						$formEnabledCRMFormattedNicely[] = ze\admin::phrase('Other CRM');
+					}
+
+					$item['crm'] = implode(', ', $formEnabledCRMFormattedNicely);
+				}
+			}
 		}
 	}
 	

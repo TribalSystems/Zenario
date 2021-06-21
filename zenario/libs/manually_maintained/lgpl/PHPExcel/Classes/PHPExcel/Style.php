@@ -573,7 +573,7 @@ class PHPExcel_Style extends PHPExcel_Style_Supervisor implements PHPExcel_IComp
     public function setConditionalStyles($pValue = null)
     {
         if (is_array($pValue)) {
-            $this->getActiveSheet()->setConditionalStyles($this->getSelectedCells(), $pValue);
+            $this->getActiveSheet()->setConditionalStyles($pValue, $this->getSelectedCells());
         }
         return $this;
     }

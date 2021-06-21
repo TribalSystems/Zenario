@@ -144,6 +144,14 @@ zenario__modules:
                            ON img_f.id = img_ps.foreign_key_id
                           AND `usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                module_class_name:
+                    db_column: p.module_class_name
+                method_name:
+                    db_column: p.method_name
+                uses_static_method:
+                    show_by_default: true
+                    title: "Static method"
+                    #Values for columns like this one are set in the PHP class file.
             default_sort_column: name_or_title
             item:
                 name: Nested slide/plugin

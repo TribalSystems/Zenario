@@ -281,60 +281,6 @@
 			};
 			this.$id = "ace/mode/phi";
 		
-
-			this.getCompletions = function(state, session, pos, prefix) {
-				
-				var keywords = this.$keywordList || this.$createKeywordList();
-				
-				if (zenario.phiVariables !== undefined) {
-					keywords = keywords.concat(zenario.phiVariables);
-				}
-				
-				return keywords.map(function(word) {
-				
-					var details,
-						meta,
-						name = word,
-						value = word,
-						caption = word;
-					
-					if (phiConstants[word]) {
-						meta = 'constant';
-					
-					} else if (phiOperators[word]) {
-						meta = 'operator';
-					
-					} else if (phiKeywords[word]) {
-						meta = 'keyword';
-					
-					} else if (details = phiFunctions[word]) {
-						if (details.returns) {
-							meta = 'returns ' + details.returns;
-						} else {
-							meta = 'function';
-						}
-						
-						if (details.input) {
-							caption = word + '(' + details.input + ')';
-						} else {
-							caption = word + '()';
-						}
-						value = word + '(';
-					
-					} else {
-						meta = 'variable';
-					}
-				
-					return {
-						name: name,
-						value: value,
-						caption: caption,
-						score: 0,
-						meta: meta
-					};
-				});
-			};
-		
 		
 		}).call(Mode.prototype);
 	

@@ -18,7 +18,7 @@ zenario__user_forms:
             ord: 2
             css_class: zenario_user_forms_archive
             label: Archive
-            tooltip: 'View archived forms and their responses'
+            tooltip: 'Archived forms and their responses'
             link:
                 path: zenario__user_forms/panels/user_forms
                 refiner: archived

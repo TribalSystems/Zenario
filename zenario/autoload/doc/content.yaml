@@ -16,36 +16,36 @@ checkPerm:
     <p>Returns whether the specified item can be seen by the current Visitor.</p>
 getCIDAndCTypeFromTagId:
   summary: |
-    This function takes a tag id and splits it up into a Content Id and a Content Type.
+    This function takes a tag id and splits it up into a ontent item ID and a content type.
   desc: |
     <h2>Description</h2>
-    <p>This function takes a tag id and splits it up into a Content Id and a Content Type.</p>
+    <p>This function takes a tag id and splits it up into a content item ID and a content type.</p>
     <h2>Parameters</h2>
     <h3><code>&amp;$cID</code></h3>
-    <p style="margin-left: 40px;">The Content Id (i.e. the number) that was in the tag id.</p>
+    <p style="margin-left: 40px;">The content item ID (i.e. the number) that was in the tag id.</p>
     <h3><code>&amp;$cType</code></h3>
-    <p style="margin-left: 40px;">The Content Type (i.e. the word part) that was in the tag id.</p>
+    <p style="margin-left: 40px;">The Content type (i.e. the word part) that was in the tag id.</p>
     <h3><code>$tagId</code></h3>
     <p style="margin-left: 40px;">A tag id, e.g. "html_1" or "picture_17".</p>
     <h2>Return Value</h2>
     <p>This function will return true if passed a tag id in the correct format, otherwise it will return false.</p>
 isDraft:
   summary: |
-    This function allows you to check whether a Content Item has a draft.
+    This function allows you to check whether a content item has a draft.
   desc: |
     <h2>Description</h2>
-    <p>This function allows you to check whether a Content Item has a draft.</p>
+    <p>This function allows you to check whether a content item has a draft.</p>
     <h2>Examples</h2>
     <p>There are three different ways of calling this function:</p>
     <h3>&nbsp;By status text</h3>
     <pre>$content = getRow('content', array('status'), array('id' =&gt; 1, 'type' =&gt; 'html'));<br />isDraft($content['status']);</pre>
-    <p>You can pass in the status a Content Item in to check whether that status indicates that a draft exists.</p>
+    <p>You can pass in the status a content item in to check whether that status indicates that a draft exists.</p>
     <h3>&nbsp;By Content Item</h3>
     <pre>isDraft(1, 'html');</pre>
     <p>You can pass in a <span class="code">$cID</span> and <span class="code">$cType</span> to check if that Content Item has a draft.</p>
     <h3>&nbsp;By Content version</h3>
     <pre>isDraft(1, 'html', 2);</pre>
-    <p>From Zenario 7.0.0 onwards, you can pass in a <span class="code">$cID</span>, <span class="code">$cType</span> and a <span class="code">$cVersion</span> to check if a specific version of a Content Item is a draft.</p>
+    <p>From Zenario 7.0.0 onwards, you can pass in a <span class="code">$cID</span>, <span class="code">$cType</span> and a <span class="code">$cVersion</span> to check if a specific version of a content item is a draft.</p>
 isPublished:
   summary: |
     This function allows you to check whether a Content Item is published.
@@ -65,10 +65,10 @@ isPublished:
     <p>From Zenario 7.0.0 onwards, you can pass in a <span class="code">$cID</span>, <span class="code">$cType</span> and a <span class="code">$cVersion</span> to check if a specific version of a Content Item is the published version.</p>
 isSpecialPage:
   summary: |
-    This checks whether a given Content Item is a Special Page.
+    This checks whether a given content item is a special page.
   desc: |
     <h2>Description</h2>
-    <p>This checks whether a given Content Item is a Special Page.</p>
+    <p>This checks whether a given content item is a special page.</p>
     <h2>Where You Can Use It</h2>
     <p>From Zenario 7.0.0 onwards.</p>
     <h2>Return Value</h2>

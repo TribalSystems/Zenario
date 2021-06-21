@@ -9,7 +9,7 @@ sections:
                 priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Edit permissions
+                label: Change permissions
                 multiple_select: true
                 admin_box:
                     path: zenario_content_privacy

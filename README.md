@@ -1,6 +1,6 @@
 <p align="center"><img
   alt="Zenario" width="284" height="114"
-  src="http://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@4x.png"
+  src="https://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@4x.png"
 /></p>
 
 What is Zenario?
@@ -10,7 +10,7 @@ Zenario is a web-based **content management system** or CMS. It can be used for 
 sites, with many "wysiwyg" features, but is really designed to run **extranet** sites,
 such as customer portals. It also has **multilingual** features built in from the core.
 
-* Zenario's [Official website](http://zenar.io)
+* Zenario's [Official website](https://zenar.io)
 
 What are the main features?
 ------------------------------
@@ -50,19 +50,19 @@ Documents, Countries etc.)
 Learn Zenario
 --------------------------------------
 
-* Read our [User Guides](http://zenar.io/user-guides) to learn the basic functions
+* Read our [User Guides](https://zenar.io/user-guides) to learn the basic functions
 
 * Watch our [videos](https://www.youtube.com/channel/UCjzvrpRHM_sUBpZn08BiXmg/videos)
   to see Zenario in action
 
-* Access the [Zenario documentation area](http://zenar.io/documentation-area) to get
+* Access the [Zenario documentation area](https://zenar.io/documentation-area) to get
   technical help on the workings of the CMS 
 
-* Can't find what you're looking for? Ask us in the [forum](http://zenar.io/forums).
+* Can't find what you're looking for? Ask us in the [forum](https://zenar.io/forums).
 
 Download Zenario
 ---------------------
 * You can download a packaged version of Zenario in either zip, gzip or 7zip format at
-  [zenar.io/download-zenario](http://zenar.io/download-zenario)
+  [zenar.io/download-zenario](https://zenar.io/download-zenario)
 
 

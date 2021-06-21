@@ -35,7 +35,14 @@ class zenario_common_features__organizer__start_page extends ze\moduleBaseClass 
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		//...
+		
+		if (ze::setting('site_disabled_title') && !ze::setting('site_enabled')) {
+			$panel['title'] = ze\admin::phrase('Welcome to the Organizer start page (this site is disabled)');
+		} elseif (ze::setting('site_in_dev_mode')) {
+			$panel['title'] = ze\admin::phrase('Welcome to the Organizer start page (this site is in development mode)');
+		} else {
+			$panel['title'] = ze\admin::phrase('Welcome to the Organizer start page');
+		}
 		
 		$links = [];
 		

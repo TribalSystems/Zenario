@@ -35,11 +35,18 @@ zenario_pro_features_spare_alias:
                     type: text
                     maxlength: 255
                     style: 'width:350px'
-                    onkeyup: |
+                    oninput: |
                         var $preview = $('#spare_alias_preview');
-                        var alias = $(this).val();
+                        var alias = $(this).val().split('/').pop();
+
+                        if (zenarioA.siteSettings.mod_rewrite_enabled && $preview.data('suffix')) {
+                            alias = alias.replace($preview.data('suffix'), '');
+                        }
+                        $(this).val(alias);
+                        
                         var preview = $preview.data('base') + alias;
                         var target = false;
+
                         if (zenarioAB.value("target_loc") == "int") {
                             target = zenarioAB.value("redirect_target_url")
                         } else {
@@ -49,9 +56,11 @@ zenario_pro_features_spare_alias:
                                 target = 'http://' + target;
                             }
                         }
+
                         if (alias !== "") {
                             preview += $preview.data('suffix');
                         }
+                        
                         $preview.text(preview).prop('href', target);
                     post_field_html: |
                         &nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size:30px;position:absolute;">⟶</span>

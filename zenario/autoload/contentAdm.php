@@ -62,16 +62,19 @@ class contentAdm {
 		} else {
 			$details = \ze\row::get('content_types', true, \ze\escape::ascii($cType));
 		}
+		
+		if ($details) {
+		
+			if (!$details['content_type_plural_en']) {
+				$details['content_type_plural_en'] == $details['content_type_name_en'];
+			}
 	
-		if (!$details['content_type_plural_en']) {
-			$details['content_type_plural_en'] == $details['content_type_name_en'];
-		}
-	
-		$char2 = substr($details['content_type_plural_en'], 1, 1);
-		if ($char2 === strtolower($char2)) {
-			$details['content_type_plural_lower_en'] = strtolower(substr($details['content_type_plural_en'], 0, 1)). substr($details['content_type_plural_en'], 1);
-		} else {
-			$details['content_type_plural_lower_en'] = $details['content_type_plural_en'];
+			$char2 = substr($details['content_type_plural_en'], 1, 1);
+			if ($char2 === strtolower($char2)) {
+				$details['content_type_plural_lower_en'] = strtolower(substr($details['content_type_plural_en'], 0, 1)). substr($details['content_type_plural_en'], 1);
+			} else {
+				$details['content_type_plural_lower_en'] = $details['content_type_plural_en'];
+			}
 		}
 	
 		return $details;
@@ -141,16 +144,8 @@ class contentAdm {
 	}
 
 	//Formerly "updateVersion()"
-	public static function updateVersion($cID, $cType, $cVersion, $version = [], $forceMarkAsEditsMade = false) {
-	
-		if ($forceMarkAsEditsMade) {
-			//A Content Item is counted as have been edited if the last modified date time is more than the date created date time.
-			//In a few rare cases the same request may create a new draft and apply some changes.
-			//In that case we'll up the last modified date time by one second, as a hack to mark it as edited
-			$version['last_modified_datetime'] = \ze\sql::fetchValue("SELECT DATE_ADD(NOW(), INTERVAL 1 SECOND)");
-		} else {
-			$version['last_modified_datetime'] = \ze\date::now();
-		}
+	public static function updateVersion($cID, $cType, $cVersion, $version = []) {
+		$version['last_modified_datetime'] = \ze\date::now(true);
 	
 		$version['last_author_id'] = $_SESSION['admin_userid'] ?? false;
 		\ze\row::update('content_item_versions', $version, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
@@ -1333,6 +1328,7 @@ class contentAdm {
 				$equivId = \ze\content::equivId($cID, $cType);
 			}
 		
+			//Check other content item aliases...
 			$sql = "
 				SELECT id, type
 				FROM ". DB_PREFIX. "content_items
@@ -1346,10 +1342,29 @@ class contentAdm {
 			$sql .= "
 				LIMIT 1";
 		
+			$aliasIsUniqueError = false;
 			if (($result = \ze\sql::select($sql))
 			 && ($row = \ze\sql::fetchAssoc($result))) {
 				$tag = \ze\content::formatTag($row['id'], $row['type']);
 				$error[] = \ze\admin::phrase('Please choose an alias that is unique. "[[alias]]" is already the alias for "[[tag]]".', ['alias' => $alias, 'tag' => $tag]);
+
+				//If the alias is not unique, avoid potential dupllicate errors.
+				$aliasIsUniqueError = true;
+			}
+
+			//... as well as spare aliases.
+			$sql = "
+				SELECT content_id, content_type
+				FROM ". DB_PREFIX. "spare_aliases
+				WHERE alias = '". \ze\escape::sql($alias). "'
+				LIMIT 1";
+			
+			if (($result = \ze\sql::select($sql))
+			 && ($row = \ze\sql::fetchAssoc($result))) {
+				if (!$aliasIsUniqueError) {
+					$tag = \ze\content::formatTag($row['content_id'], $row['content_type']);
+					$error[] = \ze\admin::phrase('Please choose an alias that is unique. "[[alias]]" is already a spare alias which redirects to "[[tag]]".', ['alias' => $alias, 'tag' => $tag]);
+				}
 			}
 		}
 	
@@ -1588,6 +1603,55 @@ class contentAdm {
 					\ze\contentAdm::tidyTranslationsTable($currentEquivId, $cType);
 				}
 			}
+
+			//If the "Alias rules on a multi-language site" site setting is set to
+			//"Keep aliases of content items in a translation chain the same",
+			//consolidate them.
+			$translationsDifferentAliasesSetting = \ze::setting('translations_different_aliases');
+			$proFeaturesModuleIsRunning = \ze\module::inc('zenario_pro_features');
+
+			if (!$translationsDifferentAliasesSetting) {
+				$defaultLangContentItemAlias = \ze\row::get('content_items', 'alias', ['equiv_id' => $newEquivId, 'type' => $cType, 'language_id' => \ze::$defaultLang]);
+				
+				if ($defaultLangContentItemAlias) {
+					$contentItemsToUpdate = [];
+					$currentAliasesQuery = \ze\row::query('content_items', ['id', 'alias'], ['equiv_id' => $newEquivId, 'type' => $cType]);
+					while ($row = \ze\sql::fetchAssoc($currentAliasesQuery)) {
+						if ($row['alias'] != $defaultLangContentItemAlias) {
+							$contentItemsToUpdate[] = ['id' => $row['id'], 'old_alias' => $row['alias']];
+						}
+					}
+
+					if (count($contentItemsToUpdate) > 0) {
+						$idsArray = [];
+						foreach ($contentItemsToUpdate as $contentItem) {
+							$idsArray[] = $contentItem['id'];
+
+							if ($proFeaturesModuleIsRunning && !\ze\row::exists('spare_aliases', ['content_id' => $contentItem['id'], 'content_type' => $cType, 'alias' => $contentItem['old_alias']])) {
+								\ze\row::insert(
+									'spare_aliases',
+									[
+										'content_id' => $contentItem['id'],
+										'content_type' => $cType,
+										'target_loc' => 'int',
+										'alias' => $contentItem['old_alias'],
+										'ext_url' => '',
+										'created_datetime' => \ze\date::now()
+									]
+								);
+							}
+						}
+						
+						$contentItemsToUpdateCsl = implode(',', $idsArray);
+						$sql = '
+							UPDATE ' . DB_PREFIX . 'content_items
+							SET alias = "' . \ze\escape::sql($defaultLangContentItemAlias) . '"
+							WHERE id IN (' . \ze\escape::in($contentItemsToUpdateCsl) . ')
+							AND type = "' . \ze\escape::sql($cType) . '"';
+						\ze\sql::update($sql);
+					}
+				}
+			}
 		
 			return $newEquivId;
 		}
@@ -1780,9 +1844,8 @@ class contentAdm {
 			FROM ". DB_PREFIX. "content_item_versions AS v
 			INNER JOIN ". DB_PREFIX. "layouts AS t
 			   ON t.layout_id = ". ((int) $forceLayoutId? (int) $forceLayoutId : "v.layout_id"). "
-			INNER JOIN ". DB_PREFIX. "template_slot_link AS tsl
-			   ON tsl.family_name = t.family_name
-			  AND tsl.file_base_name = t.file_base_name
+			INNER JOIN ". DB_PREFIX. "layout_slot_link AS tsl
+			   ON tsl.layout_id = t.layout_id
 			LEFT JOIN ". DB_PREFIX. "plugin_item_link AS piil
 			   ON piil.content_id = v.id
 			  AND piil.content_type = v.type

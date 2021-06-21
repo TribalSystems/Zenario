@@ -275,7 +275,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Get page
-		$this->pages = static::getFormPages($formId);
+		$this->pages = zenario_user_forms::getFormPages($formId);
 		if ($this->form['enable_summary_page']) {
 			$summaryPageId = 'summary';
 			$this->pages[$summaryPageId] = [
@@ -358,6 +358,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 						$html = '<div class="success">' . $successMessage . '</div>';
 						$html .= $this->getCloseButtonHTML();
+						$html .= $this->getPartialSaveResumeFormHTML();
 						$this->cssClass .= ' no_title';
 						$this->data['form_HTML'] = $html;
 						return true;
@@ -1517,6 +1518,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if (is_array($repeatStartField['rows']) && count($repeatStartField['rows']) < $repeatStartField['max_rows']) {
 						$addRowLabel = $repeatStartField['add_row_label'] ? $repeatStartField['add_row_label'] : 'Add +';
 						$html .= '<div class="repeat_block_buttons"><div class="add">' . htmlspecialchars(static::fPhrase($addRowLabel, [], $t)) . '</div></div>';
+					}
+
+					if (is_array($repeatStartField['rows']) && count($repeatStartField['rows']) == $repeatStartField['max_rows']) {
+						$html .= '<div class="max_rows_note">' . ze\lang::phrase("Maximum number of [[max_rows]] reached, you can't add more", ['max_rows' => $repeatStartField['max_rows']]) . '</div>';
 					}
 					//End start and repeat_rows divs
 					$html .= '</div></div>';

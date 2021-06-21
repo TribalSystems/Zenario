@@ -15,6 +15,22 @@
 {% endmacro %}
 
 <ul class="slimmenu" id="{{containerId}}_slimmenu" style="visibility:hidden;">
+	{% if Registration_Link or Login_Link or Home_Link%}
+		<div {% if Registration_Link and Login_Link and Home_Link %}class="both_buttons_enabled"{% endif %}>
+			{% if Registration_Link %}
+				<li class="level1 zenario_menu_node sign_up"><a {{Registration_Link}}>{{"Sign up"|trans}}</a></li>
+			{% endif %}
+
+			{% if Login_Link %}
+				<li class="level1 zenario_menu_node log_in"><a {{Login_Link}}>{{"Log in"|trans}}</a></li>
+			{% endif %}
+			
+			{% if Home_Link %}
+				<li class="level1 zenario_menu_node home"><a {{Home_Link}}>{{"Home"|trans}}</a></li>
+			{% endif %}
+		</div>
+	{% endif %}
+
 	{% for node in nodes %}
 		<li class="{{node.Class}}">
 			{{node.Hyperlink}}
@@ -24,4 +40,19 @@
 			{% endif %}
 		</li>
 	{% endfor %}
+
+	{% if Search_Box %}
+		<li class="level1 zenario_menu_node search_box">
+			<form class="search_entry_box" onsubmit="{{Search_Submit}}" action="{{Search_Target}}" method="get">
+				<input type="hidden" name="cID" value="{{Search_Page_Alias}}" />
+				<input type="hidden" name="cType" value="{{Search_Page_cType}}" />
+				<input type="text" class="search_entry_input_box" id="{{Search_Field_ID}}" name="searchString" value="{{Search_String}}"
+					{% if Placeholder %}
+						placeholder="{{Placeholder_Phrase|trans}}"
+					{% endif %}
+				/>
+				<input type="submit" class="search_entry_button" value="{{'Search'|trans}}" />
+			</form>
+		</li>
+	{% endif %}
 </ul>

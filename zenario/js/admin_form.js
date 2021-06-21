@@ -81,7 +81,9 @@ methods.start = function(path, key, tab, values) {
 		function(data) {
 			if (thus.load(data)) {
 				if (thus.tab) {
-					thus.tuix.tab = thus.tab;
+					if (!thus.tuix.disable_selecting_tab_from_url) {
+						thus.tuix.tab = thus.tab;
+					}
 				}
 			
 				delete thus.key;

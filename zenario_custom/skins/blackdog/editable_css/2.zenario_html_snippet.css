@@ -1,0 +1,107 @@
+.zenario_html_snippet .zenario_wysiwyg:before,
+.zenario_html_snippet .zenario_wysiwyg:after {
+	content: '.';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.zenario_html_snippet .zenario_wysiwyg:after {
+	clear: both;
+}
+
+.zenario_html_snippet a {
+	color:#2a98ce;
+}
+
+.zenario_html_snippet img {
+	max-width:100% !important;
+	height:auto !important;
+	padding:20px;
+}
+
+.zenario_html_snippet img.image_no_padding {
+	padding:0;
+}
+
+/* Top, phone
+--------------------------------------------------------------------------------------------------*/
+
+.Slot_Top .zenario_html_snippet p.phone {
+	padding:5px 0;
+	margin:0;
+	font-size:0.813em;
+}
+
+.Slot_Top .zenario_html_snippet p.phone:before {
+	font-size:16px;
+	position:relative;
+	top:2px;
+	padding-right:2px;
+}
+
+/* Footer address
+--------------------------------------------------------------------------------------------------*/
+
+.slot_address .zenario_html_snippet,
+.slot_address .zenario_html_snippet * {
+	color:#fff;
+}
+
+.slot_address .zenario_html_snippet h3 {
+	font-size:1.4em;
+	margin:0 0 5px;
+}
+
+/* Footer social
+--------------------------------------------------------------------------------------------------*/
+
+.slot_social .zenario_html_snippet {
+	padding-bottom:10px;
+}
+
+.slot_social .zenario_html_snippet a {
+	display: inline-block;
+	font-size:30px;
+	padding-left:10px;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.slot_social .zenario_html_snippet a:hover i {
+	opacity:0.85;
+}
+
+/* Tip
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_html_snippet p.tip_info {
+	position:relative;
+	padding:15px 15px 15px 55px;
+	background:#DEBC31;
+}
+
+.zenario_html_snippet p.tip_info,
+.zenario_html_snippet p.tip_info a {
+	color:#FFF;
+}
+
+.zenario_html_snippet p.tip_info a {
+	text-decoration:underline;
+}
+
+.zenario_html_snippet p.tip_info:before {    
+	font-family: "FontAwesome";
+    content: "\f05a";
+    padding-right: 10px;
+    font-size: 30px;
+    position: absolute;
+    left: 15px;
+    top: 15px;
+}

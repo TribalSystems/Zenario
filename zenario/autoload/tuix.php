@@ -1643,6 +1643,9 @@ class tuix {
 				} elseif (($msg = $field['validation']['no_special_characters'] ?? false) && !\ze\ring::validateScreenName(str_replace(',', '', $fieldValue), true)) {
 					$field['error'] = $msg;
 			
+				} elseif (($msg = $field['validation']['ascii_only'] ?? false) && ($fieldValue !== \ze\escape::ascii($fieldValue))) {
+					$field['error'] = $msg;
+			
 				} elseif (($msg = $field['validation']['mobile_number'] ?? false) && !preg_match('/^\(?\+?([0-9]{1,4})\)?[-\. ]?(\d{3})[-\. ]?([0-9]{7})$/', trim($fieldValue))) {
 					$field['error'] = $msg;
 			
@@ -2687,9 +2690,13 @@ class tuix {
 		if (($eggId = (int) \ze::get('eggId'))
 		 || ($isInNest && ($eggId = (int) \ze::get('id')))) {
 			
-			$egg = \ze\pluginAdm::getNestDetails($eggId);
-			$instance = \ze\plugin::details($egg['instance_id']);
-			$module = \ze\module::details($egg['module_id']);
+			if (($egg = \ze\pluginAdm::getNestDetails($eggId))
+			 && ($instance = \ze\plugin::details($egg['instance_id']))
+			 && ($module = \ze\module::details($egg['module_id']))) {
+			} else {
+				echo \ze\admin::phrase('This plugin could not be found.');
+				exit;
+			}
 			
 			$key['moduleId'] = $egg['module_id'];
 			$key['instanceId'] = $egg['instance_id'];
@@ -2710,6 +2717,11 @@ class tuix {
 			if ($instanceId) {
 				$module = $instance = \ze\plugin::details($instanceId);
 				$egg = [];
+				
+				if (!$instance) {
+					echo \ze\admin::phrase('This plugin could not be found.');
+					exit;
+				}
 			
 				$key['moduleId'] = $instance['module_id'];
 				$key['instanceId'] = $instanceId;
@@ -2721,6 +2733,12 @@ class tuix {
 			//Creating a new plugin
 			} else {
 				$module = \ze\module::details($moduleId);
+				
+				if (!$module) {
+					echo \ze\admin::phrase('This module could not be found.');
+					exit;
+				}
+				
 				$instance = ['framework' => $module['default_framework'], 'css_class' => ''];
 				$egg = [];
 			
@@ -2731,6 +2749,12 @@ class tuix {
 				$key['isNest'] = $key['isSlideshow'] || $module['class_name'] == 'zenario_plugin_nest';
 				$key['framework'] = $module['default_framework'];
 			}
+		}
+		
+		if ($module['status'] == 'module_suspended'
+		 || $module['status'] == 'module_not_initialized') {
+			echo \ze\admin::phrase('This module is not running.');
+			exit;
 		}
 		
 		$key['moduleClassName'] = $module['class_name'];

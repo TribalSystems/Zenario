@@ -7,7 +7,7 @@ sections:
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Edit metadata and content
+                label: Edit metadata
                 tooltip: ""
                 admin_box:
                     path: zenario_content
@@ -40,7 +40,7 @@ sections:
             categories:
                 parent: property_dropdown
                 priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
-                label: Add to/remove from categories
+                label: Change categories
                 appears_in_toolbars:
                     edit: true
                 admin_box:
@@ -136,6 +136,29 @@ sections:
                         message_type: warning
                     request:
                         delete_archives: 1
+            rescan_extract:
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPerms(id)
+                parent: action_dropdown
+                label: Rescan text/image extract
+                with_columns_set:
+                    traits.is_document: true
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to rescan and update the text extract for the document "[[tag]]"?
+                            
+                            This action will read the contents of a Microsoft Word or PDF document
+                            (subject to external server programs being available).
+                            
+                            If the file is a PDF document also a screenshot of the first page will be extracted and attached as a feature image.
+                        button_message: Rescan text extract
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        rescan_extract: 1
+
             
             #Placeholders for buttons copied from the right-area
             hide_content_pos: {}

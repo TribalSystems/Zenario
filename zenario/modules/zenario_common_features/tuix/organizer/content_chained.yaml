@@ -237,6 +237,7 @@ zenario__content:
             default_sort_column: language_id
             collection_buttons:
                 categories:
+                    hidden: true
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     label: Change categories
                     admin_box:
@@ -262,30 +263,31 @@ zenario__content:
                     admin_box:
                         path: zenario_content
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 view_dropdown:
                     label: View
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 view_image:
                     parent: view_dropdown
-                    label: 'XXX - View Picture'
+                    label: View picture
                     tooltip: View Picture
                     popout:
                         href: 'zenario/file.php?usage=content&popout=1'
                         options:
                             type: image
                     with_columns_set:
-                        traits.has_picture: true
+                        has_picture: true
                     without_columns_set:
-                        traits.ghost: true
-                export_dropdown:
-                    label: Actions
-                    multiple_select: true
-                    hide_when_children_are_not_visible: true
+                        ghost: true
                 download:
-                    parent: export_dropdown
+                    parent: view_dropdown
                     label: Download
+                    hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: 'Download the file "[[filename]]"?'
@@ -296,13 +298,12 @@ zenario__content:
                         request:
                             download: 1
                     with_columns_set:
-                        traits.has_file: true
+                        has_file: true
                     without_columns_set:
-                        traits.ghost: true
-                action_dropdown:
-                    label: Actions
-                    multiple_select: true
-                    hide_when_children_are_not_visible: true
+                        ghost: true
+                s3_download:
+                    parent: view_dropdown
+                    hidden: true
                 layout:
                     priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
                     visible_if: |
@@ -313,7 +314,7 @@ zenario__content:
                     admin_box:
                         path: zenario_content_layout
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 alias:
                     parent: action_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
@@ -321,7 +322,7 @@ zenario__content:
                     admin_box:
                         path: zenario_alias
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 create_translation:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
@@ -334,8 +335,78 @@ zenario__content:
                         key:
                             translate: 1
                     with_columns_set:
-                        traits.zenario_trans__can_link: true
-                        traits.ghost: true
+                        zenario_trans__can_link: true
+                        ghost: true
+                add_existing_translation_to_chain:
+                    parent: action_dropdown
+                    priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    with_columns_set:
+                        zenario_trans__can_link: true
+                        ghost: true
+                    label: Add an existing content item in [[lang_name]] to this chain
+                    combine_items:
+                        path: zenario__content/panels/content/refiners/add_translation_to_chain////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Add to chain
+                        disabled_if_for_all_selected_items: |
+                            item.is_collision
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to add this content item to the chain?
+                                button_message: Add
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                add_existing_translation_to_chain: 1
+                remove_translation_from_chain__identical_alias:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    with_columns_set:
+                        has_identical_alias_to_other_items: true
+                    without_columns_set:
+                        ghost: true
+                    label: Remove from translation chain
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to remove this content item from this translation chain?
+                                
+                                It shares its alias with other content items, and the alias needs to be unique. So this action will also remove its alias.
+
+                                Warning: after this action, you will see the translation chain of the content item in [[default_lang]], which will appear to be empty.
+                            button_message: Remove
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove_translation_from_chain: 1
+                remove_translation_from_chain__non_identical_alias:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    without_columns_set:
+                        ghost: true
+                        has_identical_alias_to_other_items: true
+                    label: Remove from translation chain
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to remove this content item from this translation chain?
+
+                                Warning: after this action, you will see the translation chain of the content item in [[default_lang]], which will appear to be empty.
+                            button_message: Remove
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove_translation_from_chain: 1
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
@@ -345,9 +416,9 @@ zenario__content:
                     label: Hide
                     multiple_select: true
                     with_columns_set:
-                        traits.hideable: true
+                        hideable: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -376,10 +447,10 @@ zenario__content:
                     label: Publish
                     multiple_select: true
                     visible_if_for_all_selected_items: |
-                        item.traits.not_locked &&
-                        (item.traits.draft || item.status == 'hidden')
+                        item.not_locked &&
+                        (item.draft || item.status == 'hidden')
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     admin_box:
                         path: zenario_publish
                 delete:
@@ -392,11 +463,11 @@ zenario__content:
                     multiple_select: true
                     multiple_select_label: Delete drafts
                     with_columns_set:
-                        traits.draft: true
-                        traits.deletable: true
-                        traits.not_locked: true
+                        draft: true
+                        deletable: true
+                        not_locked: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     admin_box:
                         path: zenario_delete_draft
                 trash:
@@ -408,9 +479,9 @@ zenario__content:
                     label: Trash
                     multiple_select: true
                     with_columns_set:
-                        traits.trashable: true
+                        trashable: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     admin_box:
                         path: zenario_trash
                 delete_archives:
@@ -438,3 +509,5 @@ zenario__content:
                             delete_archives: 1
                     visible_if_for_any_selected_items: |
                         item.archives_exist
+                    without_columns_set:
+                        ghost: true

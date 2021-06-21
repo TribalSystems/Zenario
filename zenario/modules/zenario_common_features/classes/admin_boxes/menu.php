@@ -259,7 +259,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		foreach (ze\row::getAssocs('content_types', ['content_type_plural_en'], [], 'content_type_plural_en') as $cType => $cTypeDetails) {
 			if ($cType == 'html') {
 				$fields['advanced/restrict_child_content_types']['empty_value'] = 
-					ze\admin::phrase('Suggest only [[content_type_plural_en]] be created under here', $cTypeDetails);
+					ze\admin::phrase("Don't restrict");
 			} else {
 				$fields['advanced/restrict_child_content_types']['values'][$cType] = 
 					ze\admin::phrase('Suggest [[content_type_plural_en]] be created under here', $cTypeDetails);
@@ -525,7 +525,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$submission['content_type'] = $cType;
 			$submission['hide_private_item'] = $values['text/hide_private_item'];
 			$submission['use_download_page'] = $values['text/use_download_page'];
-			//$submission['ext_url'] = $values['destination/ext_url'];
 			$submission['open_in_new_window'] = $values['text/open_in_new_window'];
 			$submission['anchor'] = ($values['text/target_loc'] == 'int' && $values['text/link_to_anchor']) ? $values['text/hyperlink_anchor'] : '';
 		}
@@ -548,13 +547,10 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$submission['custom_get_requests'] = $customGetRequests;
 			}
 			
-			//Save the restrict_child_content_types value.
-			//Not that as it's an indexed column, to keep the index tidy, I'm saving a NULL value rather than an empty string
-			//if nothing is chosen.
 			if ($values['advanced/restrict_child_content_types']) {
 				$submission['restrict_child_content_types'] = $values['advanced/restrict_child_content_types'];
 			} else {
-				$submission['restrict_child_content_types'] = null;
+				$submission['restrict_child_content_types'] = '';
 			}
 		}
 

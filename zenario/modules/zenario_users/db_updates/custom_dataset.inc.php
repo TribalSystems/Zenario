@@ -174,3 +174,24 @@ if (ze\dbAdm::needRevision(81)) {
 	
 	ze\dbAdm::revision(81);
 }
+
+if (ze\dbAdm::needRevision(93)) {
+	//Rename the user status labels:
+	//Pending --> Pending extranet user
+	//Active --> Active extranet user
+	//Suspended --> Suspended extranet user
+
+	//Get dataset ID
+	$datasetId = ze\datasetAdm::register(
+		'Users/Contacts',
+		'users_custom_data',
+		'users',
+		'zenario_user__details',
+		'zenario__users/panels/users',
+		'_PRIV_VIEW_USER',
+		'_PRIV_EDIT_USER');
+	
+	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true);
+	
+	ze\dbAdm::revision(93);
+}

@@ -159,7 +159,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			if (!$refinerName) {
 				$ord = 1000;
 	
-				$tags = ze\row::getValues('image_tags', 'name', [], 'name');
+				$tags = ze\row::getValues('image_tags', ['name', 'color'], [], 'name');
 	
 				$panel['quick_filter_buttons']['tags']['hidden'] = false;
 	
@@ -174,7 +174,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 					];
 	
 				} else {
-					foreach ($tags as $tagId => $tagName) {
+					foreach ($tags as $tagId => $tagDetails) {
 						++$ord;
 						$codeName = 'tag_'. (int) $tagId;
 		
@@ -193,8 +193,28 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						$panel['quick_filter_buttons'][$codeName] = [
 							'ord' => $ord,
 							'parent' => 'tags',
-							'label' => $tagName,
-							'column' => $codeName
+							'clear_all' => true,
+							'label' => $tagDetails['name'],
+							'column' => $codeName,
+							'css_class' => 'quick_filter_color_'. $tagDetails['color']
+							
+							/*
+							values:
+								blue:
+									label: Blue
+								green:
+									label: Green
+								grey:
+									label: Grey
+								orange:
+									label: Orange
+								red:
+									label: Red
+								violet:
+									label: Violet
+								yellow:
+									label: Yellow
+							*/
 						];
 					}
 				}

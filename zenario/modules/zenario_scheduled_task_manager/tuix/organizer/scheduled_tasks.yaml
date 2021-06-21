@@ -4,8 +4,8 @@ zenario__administration:
     nav:
         zenario_scheduled_task_manager__scheduled_tasks:
             priv: _PRIV_VIEW_SCHEDULED_TASK
-            name: Scheduled Tasks
-            tooltip: View and manage Scheduled Tasks
+            name: Scheduled tasks
+            tooltip: View and manage tasks that run by themselves, e.g. overnight processes
             link:
                 path: zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks
         
@@ -18,15 +18,16 @@ zenario__administration:
             notice_master_switch_off:
                 show: true
                 type: warning
-                message: The Master Switch is off.
+                message: The master switch is Off.
             notice_master_switch_on:
                 show: true
                 type: information
-                message: The Master Switch is on.
+                message: The master switch is On.
             notice_crontab:
                 show: true
                 type: error
-                message: The Scheduled Task Manager is not correctly configured in your crontab. Please ask your systems administrator to add the job to your crontab, wait a minute and try again.
+                message: |
+                        crontab isn't invoking Scheduled Task Manager. A server administrator should copy code from below, paste into crontab, wait 1 minute and reload page.
             
             db_items:
                 table: '[[DB_PREFIX]]jobs AS j'
@@ -37,18 +38,17 @@ zenario__administration:
                     title: Method name
                     db_column: j.job_name
                     searchable: true
-                    show_by_default: true
+                    always_show: true
                     width: large
                 module:
                     title: Module name
                     db_column: j.module_class_name
-                    show_by_default: true
+                    always_show: true
                     width: medium
                 job_type:
                     title: Type
                     db_column: j.job_type
-                    searchable: true
-                    show_by_default: true
+                    show_by_default: false
                     format: enum
                     values:
                         scheduled: Scheduled task
@@ -59,7 +59,7 @@ zenario__administration:
                     format: true_or_false
                     true_phrase: Enabled
                     false_phrase: Disabled
-                    show_by_default: true
+                    always_show: true
                     width: xsmall
                     disallow_sorting: true
                 script_restart_time:
@@ -68,36 +68,36 @@ zenario__administration:
                     title: Status
                     db_column: j.status
                     show_by_default: true
-                    width: xsmall
+                    width: small
                     disallow_sorting: true
                 months:
                     title: Months
                     db_column: j.months
                     disallow_sorting: true
                 first_n_days_of_month:
-                    title: Month Days
+                    title: Month days
                     db_column: j.first_n_days_of_month
                     disallow_sorting: true
                 email_address_on_error:
-                    title: Email Address (Errors)
+                    title: Email address (errors)
                     db_column: j.email_address_on_error
                     disallow_sorting: true
                 email_on_action:
-                    title: Email on Action
+                    title: Email on action
                     db_column: j.email_on_action
                     format: yes_or_no
                     disallow_sorting: true
                 email_address_on_action:
-                    title: Email Address (on Action)
+                    title: Email address (on action)
                     db_column: j.email_address_on_action
                     disallow_sorting: true
                 email_on_no_action:
-                    title: Email on no Action
+                    title: Email on no action
                     db_column: j.email_on_no_action
                     format: yes_or_no
                     disallow_sorting: true
                 email_address_on_no_action:
-                    title: Email Address (on no Action)
+                    title: Email address (on no action)
                     db_column: j.email_address_on_no_action
                     disallow_sorting: true
                 last_run_started:
@@ -133,7 +133,7 @@ zenario__administration:
                 css_class: zenario_scheduled_task_manager__task
             no_items_message: |
                 No Scheduled Tasks exist.
-                If you install and run a Module that has a Scheduled Task, it will appear here.
+                If you install and run a module that has a Scheduled Task, it will appear here.
             collection_buttons:
                 setup_crontab_dropdown:
                     hide_on_refiner: true
@@ -161,7 +161,7 @@ zenario__administration:
                     ajax:
                         confirm:
                             message: >
-                                Are you sure that you wish to enable scheduled tasks?
+                                Are you sure that you wish to turn on the master switch?
                             button_message: Enable
                             cancel_button_message: Cancel
                             message_type: question
@@ -174,7 +174,7 @@ zenario__administration:
                     ajax:
                         confirm:
                             message: >
-                                Are you sure that you wish to stop scheduled tasks?
+                                Are you sure that you wish to turn off the master switch? This will stop all scheduled tasks.
                             button_message: Stop
                             cancel_button_message: Cancel
                             message_type: warning
@@ -182,28 +182,30 @@ zenario__administration:
                             suspend_all: 1
             item_buttons:
                 enable:
+                    ord: 20
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
                     css_class: run
-                    label: Enable Task
+                    label: Enable task
                     multiple_select: true
-                    multiple_select_label: Enable Tasks
+                    multiple_select_label: Enable selected tasks
                     ajax:
                         request:
                             enable: 1
                     with_columns_set:
                         traits.can_enable: true
                 suspend:
+                    ord: 20
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
                     css_class: suspend
-                    label: Suspend Task
+                    label: Suspend task
                     multiple_select: true
-                    multiple_select_label: Suspend Tasks
+                    multiple_select_label: Suspend selected tasks
                     ajax:
                         confirm:
                             message: |
                                 Are you sure you wish to suspend the task with the name "[[job_name]]"?
                             multiple_select_message: |
-                                Are you sure you wish to suspend these [[item_count]] tasks?
+                                Are you sure you wish to suspend these [[item_count]] scheduled tasks?
                             button_message: "Suspend"
                             message_type: warning
                             cancel_button_message: Cancel
@@ -216,7 +218,8 @@ zenario__administration:
                     visible_if: |
                         item.job_type == 'scheduled'
                     css_class: settings
-                    label: Run times and reporting
+                    label: Edit scheduled task
+                    ord: 10
                     admin_box:
                         path: zenario_job
                 view_log:
@@ -231,7 +234,7 @@ zenario__administration:
                         branch: true
                         refiner: job
                 rerun:
-                    ord: 51
+                    ord: 40
                     visible_if: |
                         item.job_type == 'scheduled'
                     css_class: run_now
@@ -282,18 +285,18 @@ zenario__administration:
                                 db_column: jl.note
                                 width: xxlarge
                                 disallow_sorting: true
+                                html: true
                         default_sort_column: finished
                         item:
                             css_class: log scheduled_task_log
                         collection_buttons:
                             truncate:
                                 css_class: delete
-                                label: Delete all Log Entries
+                                label: Delete all log entries
                                 ajax:
                                     confirm:
                                         message: >
-                                            Are you sure you wish to delete every Log Entry for this
-                                            Task?
+                                            Are you sure you wish to delete all log entries for this scheduled task?
                                         button_message: Delete
                                         cancel_button_message: Cancel
                                         message_type: warning
@@ -302,9 +305,9 @@ zenario__administration:
                         item_buttons:
                             delete:
                                 css_class: delete
-                                label: Delete this Log Entry
+                                label: Delete this log entry
                                 multiple_select: true
-                                multiple_select_tooltip: Delete these Log Entries
+                                multiple_select_tooltip: Delete selected log entries
                                 ajax:
                                     request:
                                         delete: 1

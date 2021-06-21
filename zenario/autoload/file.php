@@ -65,9 +65,14 @@ class file {
 		}
 	}
 	
+	private static function genericCheckError($filepath) {
+		$filename = basename($filepath);
+		return new \ze\error('INVALID', \ze\admin::phrase('The contents of the file "[[filename]]" are corrupted and/or invalid.', ['filename' => $filename]));
+	}
+	
 	
 	//Attempt to check if the contents of a file match the file
-	public static function check($filepath, $mimeType = null) {
+	public static function check($filepath, $mimeType = null, $allowPasswordProtectedOfficeDocs = false) {
 		
 		if ($mimeType === null) {
 			$mimeType = \ze\file::mimeType($filepath);
@@ -80,7 +85,7 @@ class file {
 			//Note that our check using ze\file::mimeType() just checks the file extension and nothing else.
 			//The file program is a little more sophisticated and does some basic checks on the file's contents as well.
 			if (!$scannedMimeType = exec('file --mime-type --brief '. escapeshellarg($filepath))) {
-				return false;
+				return self::genericCheckError($filepath);
 			}
 			
 			//Ignore the "x-" prefix as this is inconsistently applied in different versions of file.
@@ -99,7 +104,7 @@ class file {
 				if (substr($mimeType, 0, 22) == 'application/postscript' && $scannedMimeType == 'image/eps') {
 					//Do nothing, allow these files
 				} else {
-					return false;
+					return self::genericCheckError($filepath);
 				}
 			}
 			
@@ -107,7 +112,17 @@ class file {
 			if (substr($mimeType, 0, 15) == 'application/vnd'
 			 && $scannedMimeType != 'application/octet-stream'
 			 && substr($scannedMimeType, 0, 15) != 'application/vnd') {
-				return false;
+				
+				if ($scannedMimeType == 'application/encrypted') {
+					if ($allowPasswordProtectedOfficeDocs) {
+						//Do nothing, allow these files
+					} else {
+						$filename = basename($filepath);
+						return new \ze\error('PASSWORD_PROTECTED', \ze\admin::phrase('The file "[[filename]]" is password-protected. Password protection needs to be removed before you can upload it to Zenario.', ['filename' => $filename]));
+					}
+				} else {
+					return self::genericCheckError($filepath);
+				}
 			}
 			
 			switch ($mimeType) {
@@ -119,7 +134,7 @@ class file {
 				case 'application/gzip':
 				case 'application/7z-compressed':
 					if ($mimeType !== $scannedMimeType) {
-						return false;
+						return self::genericCheckError($filepath);
 					}
 					break;
 				
@@ -127,7 +142,7 @@ class file {
 				case 'application/dosexec':
 				case 'application/executable':
 				case 'application/mach-binary':
-					return false;
+					return self::genericCheckError($filepath);
 			}
 		}
 		
@@ -156,7 +171,11 @@ class file {
 			}
 		\ze::noteErrors();
 		
-		return $check;
+		if ($check) {
+			return true;
+		} else {
+			return self::genericCheckError($filepath);
+		}
 	}
 
 	//Formerly "addFileToDatabase()"

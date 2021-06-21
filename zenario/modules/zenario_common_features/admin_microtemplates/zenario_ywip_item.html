@@ -1,1 +1,7 @@
-<li><a href="{{zenarioO.parseReturnLink(m.frontend_link)|escape}}">{{m.tag|escape}}</a><span>{{m.unpublished_content_info|escape}}</span></li>
+<li class="zenario_ywip_dropdown_item">
+	<a href="{{zenarioO.parseReturnLink(m.frontend_link)|escape}}">
+		<span class="organizer_item_image {{m.css_class|escape}}"></span>
+		{{m.tag|escape}}
+	</a>
+	<span>{{m.unpublished_content_info|escape}}</span>
+</li>

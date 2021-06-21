@@ -23,9 +23,9 @@ login:
                 description:
                     full_width: true
                     snippet:
-                        html: "<h1>Please login</h1>"
+                        html: "<h1>Log in as a site administrator</h1>"
                 username:
-                    label: "Administrator username or registered email:"
+                    label: "Administrator username, or email address:"
                     type: text
                     row_class: row_form
                     class: username

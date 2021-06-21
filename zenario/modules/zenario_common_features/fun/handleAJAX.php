@@ -37,7 +37,7 @@ if (ze\priv::check()) {
 	
 	
 	
-	$layoutId = $templateFamily = $slotKey = false;
+	$layoutId = $slotKey = false;
 	if ($cID && $cType && $cVersion
 	 && $cID != -1) {
 		$layoutId = ze\content::layoutId($cID, $cType, $cVersion);
@@ -50,11 +50,6 @@ if (ze\priv::check()) {
 	} elseif (ze::request('layoutId')) {
 		$layoutId = (int) ze::request('layoutId');
 	}
-	
-	if ($layoutId) {
-		$templateFamily = ze\row::get('layouts', 'family_name', $layoutId);
-	}
-	
 	
 	if ($tagId = ze::request('slidedown_content_item_req')) {
 		
@@ -284,8 +279,8 @@ if (ze\priv::check()) {
 		if (ze::post('addPluginInstance') && $level == 1 && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion)) {
 			ze\pluginAdm::updateItemSlot(ze::post('addPluginInstance'), $slotName, $cID, $cType, $cVersion);
 	
-		} elseif (ze::post('addPluginInstance') && $level == 2 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
-			ze\pluginAdm::updateLayoutSlot(ze::post('addPluginInstance'), $slotName, $templateFamily, $layoutId);
+		} elseif (ze::post('addPluginInstance') && $level == 2 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId) {
+			ze\pluginAdm::updateLayoutSlot(ze::post('addPluginInstance'), $slotName, $layoutId);
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
@@ -295,14 +290,14 @@ if (ze\priv::check()) {
 		//Insert a version-controlled plugin into a slot
 		} elseif (ze::get('addPlugin')) {
 			
-			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false, false),
-							'published' => ze\layoutAdm::usage($layoutId, false, true),
-							'display_name' => htmlspecialchars(ze\module::displayName(ze::get('addPlugin'))),
+			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false),
+							'published' => ze\layoutAdm::usage($layoutId, true),
+							'displayName' => htmlspecialchars(ze\module::displayName(ze::get('addPlugin'))),
 							'slotName' => htmlspecialchars(ze::get('slotName'))];
 			
 			if ($mrg['pages'] == 1) {
 				echo ze\admin::phrase(
-					'Insert a version-controlled [[display_name]] into slot [[slotName]] on this layout?
+					'Insert a version-controlled [[displayName]] into slot [[slotName]] on this layout?
 					<br/><br/>
 					The content or settings of this plugin will then be editable via the Edit tab.
 					<br/><br/>
@@ -310,7 +305,7 @@ if (ze\priv::check()) {
 				, $mrg);
 			} else {
 				echo ze\admin::phrase(
-					'Insert a version-controlled [[display_name]] into slot [[slotName]] on this layout?
+					'Insert a version-controlled [[displayName]] into slot [[slotName]] on this layout?
 					<br/><br/>
 					The content or settings of this plugin will then be editable via the Edit tab.
 					<br/><br/>
@@ -318,8 +313,8 @@ if (ze\priv::check()) {
 				, $mrg);
 			}
 	
-		} elseif (ze::post('addPlugin') && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
-			ze\pluginAdm::updateLayoutSlot(0, $slotName, $templateFamily, $layoutId, ze::post('addPlugin'));
+		} elseif (ze::post('addPlugin') && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId) {
+			ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, ze::post('addPlugin'));
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
@@ -354,7 +349,7 @@ if (ze\priv::check()) {
 				exit;
 			
 			} elseif (!isset($_SESSION['admin_copied_contents']['allowed'][$oldContent['class_name']])) {
-				echo ze\admin::phrase('Content copied from a [[display_name]] cannot be used here', ['display_name' => ze\module::getModuleDisplayNameByClassName($oldContent['class_name'])]);
+				echo ze\admin::phrase('Content copied from a [[displayName]] cannot be used here', ['displayName' => ze\module::getModuleDisplayNameByClassName($oldContent['class_name'])]);
 				exit;
 			
 			} else {
@@ -378,34 +373,37 @@ if (ze\priv::check()) {
 		//(Get the number of Content Items that use this template/template family)
 		} elseif ((ze::get('removePlugin') || ze::get('movePlugin')) && $level == 2) {
 			
-			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false, false), 'published' => ze\layoutAdm::usage($layoutId, false, true)];
+			$mrg = [
+				'codeName' => ze\layoutAdm::codeName($layoutId),
+				'pages' => ze\layoutAdm::usage($layoutId, false),
+				'published' => ze\layoutAdm::usage($layoutId, true),
+				'slotName' => $slotName
+			];
 			
 			//Show how many items use a specific to slotName, and display links if possible.
 			$usageContentItems = ze\layoutAdm::slotUsage($layoutId, $slotName);	
-				$usage = [
-					'content_item' => $usageContentItems[0] ?? null,
-					'content_items' => count($usageContentItems)
-				];
-		
-				$usageLinks = [
-					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layoutId. '//'
-				];
-				$usedPages = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks, true));
-				
-				$usagePluginItems = ze\layoutAdm::usage($layoutId, false, false, false, $countItems = false);
+			$usage = [
+				'content_item' => $usageContentItems[0] ?? null,
+				'content_items' => count($usageContentItems)
+			];
 	
-				$pluginusage = [
-					'content_item' => $usagePluginItems[0] ?? null,
-					'content_items' => count($usagePluginItems)
-				];
-		
-				$pluginusageLinks = [
-					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layoutId. '//'
-				];
-				$pluginusedPages = implode('; ', ze\miscAdm::getUsageText($pluginusage, $pluginusageLinks, true));
-				
-				$ahrfeLink = 'zenario/admin/organizer.php?fromCID='.$cID.'&fromCType='.$cType.'#zenario__layouts/panels/layouts/item_buttons/view_slots//'.$layoutId.'//';
-				$alink = "<a href = ".$ahrfeLink." target = 'blank'>view list of content items using this layout</a>.";
+			$mrg['usedPages'] = implode('; ', ze\miscAdm::getUsageText($usage, true));
+			
+			$usagePluginItems = ze\layoutAdm::usage($layoutId, false, false, $countItems = false);
+
+			$pluginusage = [
+				'content_item' => $usagePluginItems[0] ?? null,
+				'content_items' => count($usagePluginItems)
+			];
+	
+			$pluginusageLinks = [
+				'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layoutId. '//'
+			];
+			$mrg['pluginusedPages'] = implode('; ', ze\miscAdm::getUsageText($pluginusage, true));
+			
+			$organizerPath = 'zenario/admin/organizer.php#zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layoutId. '//';
+			$mrg['organizerLink'] = '<a href="'. htmlspecialchars($organizerPath). '" target="blank">'. ze\admin::phrase('view the content items using this layout'). '</a>';
+			
 				
 
 			$placement = ze\row::get(
@@ -413,28 +411,27 @@ if (ze\priv::check()) {
 				['module_id', 'instance_id'],
 				[
 					'slot_name' => $slotName,
-					'family_name' => $templateFamily,
 					'layout_id' => $layoutId]);
-			
+					
 			if (!empty($placement['module_id']) && !$placement['instance_id']) {
-				$mrg['display_name'] = htmlspecialchars(ze\module::displayName($placement['module_id']));
+				$mrg['displayName'] = htmlspecialchars(ze\module::displayName($placement['module_id']));
 				
 				if (ze::get('movePlugin')) {
-					echo ze\admin::phrase('Are you sure you wish to move the [[display_name]]?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
+					echo ze\admin::phrase('Are you sure you wish to move the [[displayName]]?<br/><br/>This will affect [[pages]] content item(s), <b>[[published]] of them is published</b>.', $mrg);
 				} else {
-					if(isset($usageContentItems[0]) && !$usageContentItems[0])
-					{
-						echo ze\admin::phrase('Are you sure you wish to remove the plugin [[display_name]] from the layout '.$layoutId.'?  <br/><br/>No content items have version-controlled content in this slot.', $mrg);
-					}
-					else{
-						echo ze\admin::phrase('Are you sure you wish to remove the plugin [[display_name]] from the layout '.$layoutId.'?  <br/><br/>This slot contains content on '.$usedPages.', '.$alink.'<br/><br/>You should review, edit and remove the content before removing the plugin from the layout, or else the content will be lost!', $mrg);
+					if (isset($usageContentItems[0]) && !$usageContentItems[0]) {
+						echo ze\admin::phrase('Are you sure you wish to remove the plugin [[displayName]] from the layout [[codeName]]? <br/><br/>No content items have version-controlled content in this slot.', $mrg);
+					} else {
+						echo ze\admin::phrase('Are you sure you wish to remove the plugin [[displayName]] from the layout [[codeName]]? <br/><br/>This slot contains content on [[usedPages]], [[organizerLink]].<br/><br/>You should review, edit and remove the content before removing the plugin from the layout, or else the content will be lost!', $mrg);
 					}
 				}
 			} else {
 				if (ze::get('movePlugin')) {
-					echo ze\admin::phrase('Are you sure you wish to move this plugin?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.', $mrg);
+					echo ze\admin::phrase('Are you sure you wish to move this plugin?<br/><br/>This will affect [[pages]] content item(s), <b>[[published]] of them is published</b>.', $mrg);
 				} else {
-					echo ze\admin::phrase('Are you sure you wish to remove this plugin from the layout?<br/><br/>This slot contains plugin on '.$pluginusedPages.', '.$alink, $mrg);
+					$mrg['pluginName'] = htmlspecialchars(ze\plugin::name($placement['instance_id']));
+					$mrg['displayName'] = htmlspecialchars(ze\module::displayName($placement['module_id']));
+					echo ze\admin::phrase('Plugin [[pluginName]] ("[[displayName]]") is in slot [[slotName]] on layout [[codeName]], used on [[pluginusedPages]]. [[organizerLink]]<br/><br/> Are you sure you wish to remove this plugin from the layout?', $mrg);
 				}
 			}
 	
@@ -447,7 +444,7 @@ if (ze\priv::check()) {
 		} elseif (ze::post('removePlugin') && $level == 2 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			ze\pluginAdm::updateLayoutSlot(
 				'',
-				$slotName, $templateFamily, $layoutId);
+				$slotName, $layoutId);
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
@@ -471,7 +468,7 @@ if (ze\priv::check()) {
 		
 			//For layouts, we need to check which Content Items use the selected Layout
 			} elseif ($level == 2 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
-				$tables['plugin_layout_link'] = [['layout_id' => $layoutId, 'family_name' => $templateFamily]];
+				$tables['plugin_layout_link'] = [['layout_id' => $layoutId]];
 				$tables['plugin_instances'] = [];
 				if ($result = ze\row::query('content_item_versions', ['id', 'type', 'version'], ['layout_id' => $layoutId])) {
 					while ($row = ze\sql::fetchAssoc($result)) {

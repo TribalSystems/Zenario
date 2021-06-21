@@ -374,7 +374,7 @@ methods.createPage = function() {
 	page.ord = ord;
 	page._just_added = true;
 	page.fields = {};
-	page.name = 'Page ' + (pages.length + 1);
+	page.name = 'Step ' + (pages.length + 1);
 	
 	//Load default values for fields
 	foreach (thus.tuix.form_page_details.tabs as var tuixTabName => var tuixTab) {
@@ -526,6 +526,32 @@ methods.clickPage = function(pageId, isNewPage) {
 		thus.editingThingId = pageId;
 		thus.editingThingTUIXTabId = false;
 		
+		thus.tuix.form_page_details.tabs['details'].label = 'Step details';
+		
+		//Get a count of elements of the tuix pages object...
+		var lastElementOrd = 0;
+		Object.keys(thus.tuix.pages).forEach(function (item) {
+			lastElementOrd++;
+		});
+
+		//... and find the last page.
+		var lastPageId = 0;
+		if (lastElementOrd > 0) {
+			Object.values(thus.tuix.pages).forEach(function (item) {
+				if (item.ord == lastElementOrd) {
+					lastPageId = item.id;
+				}
+			});
+		}
+
+		//If this is the last page, check if it's always visible.
+		//If it's not, and there is no summary page, show a visibility setting error.
+		if (thus.currentPageId == lastPageId) {
+			thus.tuix.form_page_details.tabs['details'].fields.visibility.note_below = "Please ensure the form settings are set to 'Enable summary step', in case this step is not visible.";
+		} else {
+			delete thus.tuix.form_page_details.tabs['details'].fields.visibility.note_below;
+		}
+		
 		thus.openPageEdit(pageId);
 	}
 };
@@ -547,6 +573,12 @@ methods.clickField = function(fieldId, justAdded) {
 	thus.editingThing = 'field';
 	thus.editingThingId = fieldId;
 	thus.editingThingTUIXTabId = false;
+
+	if (thus.tuix.items[fieldId].type == 'repeat_start') {
+		thus.tuix.form_field_details.tabs['details'].label = 'Section details';
+	} else {
+		thus.tuix.form_field_details.tabs['details'].label = 'Field details';
+	}
 	
 	thus.loadFieldsList(thus.currentPageId);
 	thus.openFieldEdit(fieldId);
@@ -747,7 +779,7 @@ methods.addTUIXTabEvents = function(itemType, itemId, tuixTabId) {
 	
 	if (itemType == 'page') {
 		$('#organizer_remove_form_page').on('click', function(e) {
-			var message = '<p>Are you sure you want to delete this page?</p>';
+			var message = '<p>Are you sure you want to delete this step?</p>';
 			if (item.fields.length) {
 				message += '<p>All fields on this page will be moved onto the previous page.</p>';
 			}
@@ -1266,9 +1298,6 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 							tags.tabs[tab].fields.previous_button_text.hidden = true;
 						} else if (i == (pages.length - 1) && !thus.tuix.form_enable_summary_page) {
 							tags.tabs[tab].fields.next_button_text.hidden = true;
-							tags.tabs[tab].fields.visibility.readonly = true;
-							tags.tabs[tab].fields.visibility.value = 'visible';
-							tags.tabs[tab].fields.visibility.note_below = 'This is the last page, it is always visible.';
 						}
 						break;
 					}
@@ -1956,7 +1985,7 @@ methods.getFieldReadableType = function(item) {
 		case 'attachment':
 			return 'Attachment';
 		case 'page_break':
-			return 'Page';
+			return 'Step';
 		case 'section_description':
 			return 'Subheading';
 		case 'calculated':

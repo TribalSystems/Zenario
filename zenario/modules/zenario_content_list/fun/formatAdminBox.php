@@ -190,6 +190,20 @@ switch ($path) {
 			$box['tabs']['pagination']['notices']['using_static_method']['show'] = 
 				$values['each_item/hide_private_items'] == 3;
 		}
-		
+
+		//Zip archive placeholder
+		if (ze::in($values['first_tab/content_type'], 'document', 'picture')) {
+			$sideNote = 'You can specify the name of the target zip archive. If you leave this field empty, the "[[placeholder]].zip" name is assumed.';
+			
+			if ($values['first_tab/content_type'] == 'document') {
+				$placeholder = 'documents';
+			} elseif ($values['first_tab/content_type'] == 'picture') {
+				$placeholder = 'images';
+			}
+
+			$fields['overall_list/zip_archive_name']['placeholder'] = $placeholder;
+			$fields['overall_list/zip_archive_name']['side_note'] = $this->phrase($sideNote, ['placeholder' => $placeholder]);
+		}
+
 		break;
 }

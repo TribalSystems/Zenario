@@ -178,6 +178,15 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
+                
+                show_scores:
+                    plugin_setting:
+                        name: show_scores
+                    label: 'Show scores'
+                    type: checkbox
+                    value: false
+                    side_note: "Search result scores will be shown in admin mode."
+
                 keyboard_delay_before_submit:
                     plugin_setting:
                         name: keyboard_delay_before_submit
@@ -236,123 +245,76 @@ plugin_settings:
             ord: "3"
             label: Weightings
             fields:
+                published_datetime_info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">    
+                                Recently published content items get higher scores:<br />
+                                Items published in the last 30 days have their scores multiplied by 10.<br />
+                                Items published in the last 90 days have their scores multiplied by 6.<br />
+                                Items published in the last 365 days have their scores multiplied by 3.<br />
+                            </div>
                 alias_weighting:
                     plugin_setting:
                         name: alias_weighting
                     label: 'Alias weighting:'
-                    type: radios
-                    values:
+                    type: select
+                    values: &weightings_values
                         _NONE:
-                            label: None
+                            label: None (score of 0)
                         _LOW:
-                            label: Low
+                            label: Low (score of 1)
                         _MEDIUM:
-                            label: Medium
+                            label: Medium (score of 3)
                         _HIGH:
-                            label: High
+                            label: High (score of 12)
                     value: _LOW
                 title_weighting:
                     plugin_setting:
                         name: title_weighting
                     label: 'Title weighting:'
-                    type: radios
-                    values:
-                        _NONE:
-                            label: None
-                        _LOW:
-                            label: Low
-                        _MEDIUM:
-                            label: Medium
-                        _HIGH:
-                            label: High
+                    type: select
+                    values: *weightings_values
                     value: _HIGH
                 keywords_weighting:
                     plugin_setting:
                         name: keywords_weighting
                     label: 'Keywords weighting:'
-                    type: radios
-                    values:
-                        _NONE:
-                            label: None
-                        _LOW:
-                            label: Low
-                        _MEDIUM:
-                            label: Medium
-                        _HIGH:
-                            label: High
+                    type: select
+                    values: *weightings_values
                     value: _MEDIUM
                 description_weighting:
                     plugin_setting:
                         name: description_weighting
                     label: 'Description weighting:'
-                    type: radios
-                    values:
-                        _NONE:
-                            label: None
-                        _LOW:
-                            label: Low
-                        _MEDIUM:
-                            label: Medium
-                        _HIGH:
-                            label: High
+                    type: select
+                    values: *weightings_values
                     value: _LOW
                 content_summary_weighting:
                     plugin_setting:
                         name: content_summary_weighting
                     label: 'Content Summary weighting:'
-                    type: radios
-                    values:
-                        _NONE:
-                            label: None
-                        _LOW:
-                            label: Low
-                        _MEDIUM:
-                            label: Medium
-                        _HIGH:
-                            label: High
+                    type: select
+                    values: *weightings_values
                     value: _LOW
                 content_weighting:
                     plugin_setting:
                         name: content_weighting
                     label: 'Content weighting:'
-                    type: radios
-                    values:
-                        _NONE:
-                            label: None
-                        _LOW:
-                            label: Low
-                        _MEDIUM:
-                            label: Medium
-                        _HIGH:
-                            label: High
+                    type: select
+                    values: *weightings_values
                     value: _LOW
                 filename_weighting:
                     plugin_setting:
                         name: filename_weighting
                     label: 'Filename weighting:'
-                    type: radios
-                    values:
-                        _NONE:
-                            label: None
-                        _LOW:
-                            label: Low
-                        _MEDIUM:
-                            label: Medium
-                        _HIGH:
-                            label: High
+                    type: select
+                    values: *weightings_values
                     value: _LOW
                 extract_weighting:
                     plugin_setting:
                         name: extract_weighting
                     label: 'File extract weighting:'
-                    type: radios
-                    values:
-                        _NONE:
-                            label: None
-                        _LOW:
-                            label: Low
-                        _MEDIUM:
-                            label: Medium
-                        _HIGH:
-                            label: High
+                    type: select
+                    values: *weightings_values
                     value: _LOW

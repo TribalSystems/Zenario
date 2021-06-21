@@ -82,15 +82,29 @@ class phi {
 	}
 	
 	
-	//Dummy functions; these won't actually be called but are reserved words used as a flag for a
-	//preg_replace() in the Zenario_Phi_Twig_Cache class
-	public static function _zPhiSNAK_(&$array, $value) {
-		$array[] = $value;
-	}
-	public static function _zPhiSAK_(&$arrayElement, $value) {
-		$arrayElement = $value;
-	}
-	public static function _zPhiSAKEnd_() {
+	//This function is used as part of a work-around to allow changing object properties,
+	//and to allow inserting elements into arrays.
+	//Twig doesn't allow this but we wish Phi to support it, therefore we need a workaround.
+	public static function _zPhiSAK_(&$arrayIn, ...$keys) {
+		
+		$array = &$arrayIn;
+		
+		$value = array_pop($keys);
+		$finalKey = array_pop($keys);
+		
+		foreach ($keys as $key) {
+			if (!isset($array[$key])) {
+				$array[$key] = [];
+			}
+			
+			$array = &$array[$key];
+		}
+		
+		if ($finalKey === null) {
+			$array[] = $value;
+		} else {
+			$array[$finalKey] = $value;
+		}
 	}
 	
 	
@@ -170,12 +184,7 @@ class phi {
 			'var_dump' => 'ze\\phi::varDump',
 			'setValue' => 'ze\\phi::setValue',
 			'fireTrigger' => 'ze\\phi::fireTrigger',
-			'_zPhiGetRV_' => 'ze\\phi::getReturnValue',
-			'_zPhiRV_' => 'ze\\phi::returnValue',
-			'_zPhiR_' => 'return',
-			'_zPhiSNAK_' => 'ze\\phi::_zPhiSNAK_',
 			'_zPhiSAK_' => 'ze\\phi::_zPhiSAK_',
-			'_zPhiSAKEnd_' => 'ze\\phi::_zPhiSAKEnd_',
 			'ceiling' => 'ceil',
 			'count' => 'count',
 			'c' => 'array',
@@ -221,8 +230,10 @@ class phi {
 			$whitelist['getInheritedMetadata'] = 'ze\\assetwolf::getInheritedMetadataFromPhi';
 			$whitelist['getLocationMetadata'] = 'ze\\assetwolf::getLocationMetadataFromPhi';
 			$whitelist['getParentNodeId'] = 'ze\\assetwolf::getParentNodeId';
-			$whitelist['getMetadata'] = 'ze\\assetwolf::getMetadata';
 			$whitelist['query'] = 'ze\\assetwolf::query';
+			
+			//Deprecated
+			$whitelist['getMetadata'] = 'ze\\assetwolf::getInheritedMetadataFromPhi';
 		}
 
 		foreach ($whitelist as $twigName => $phpName) {
@@ -438,25 +449,25 @@ class phi {
 	public static function carefullyRunTwig($twigCode, &$outputs, $vars = []) {
 		try {
 			return self::runTwig($twigCode, $outputs, $vars);
-		} catch (\Exception $e) {
+		} catch (\DivisionByZeroError | \Exception $e) {
 			return null;
 		}
 	}
 	
-	public static function runPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
-		return \ze\phiParser::runPhi($phiCode, $outputs, $vars, $allowFunctions);
+	public static function runPhi($phiCode, &$outputs, $vars = []) {
+		return \ze\phiParser::runPhi($phiCode, $outputs, $vars);
 	}
 	
-	public static function carefullyRunPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
-		return \ze\phiParser::carefullyRunPhi($phiCode, $outputs, $vars, $allowFunctions);
+	public static function carefullyRunPhi($phiCode, &$outputs, $vars = []) {
+		return \ze\phiParser::carefullyRunPhi($phiCode, $outputs, $vars);
 	}
 	
-	public static function testPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
-		return \ze\phiParser::testPhi($phiCode, $outputs, $vars, $allowFunctions);
+	public static function testPhi($phiCode, &$outputs, $vars = []) {
+		return \ze\phiParser::testPhi($phiCode, $outputs, $vars);
 	}
 	
-	public static function phiToTwig($phiCode, $allowFunctions = false, $preserveLineBreaks = false) {
-		return \ze\phiParser::phiToTwig($phiCode, $allowFunctions, $preserveLineBreaks);
+	public static function phiToTwig($phiCode) {
+		return \ze\phiParser::phiToTwig($phiCode);
 	}
 }
 \ze\phi::init();

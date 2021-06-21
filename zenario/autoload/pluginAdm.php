@@ -88,12 +88,14 @@ class pluginAdm {
 	public static function fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, &$info, &$actions, &$re_move_place) {
 
 
-		$pnsType = $isVersionControlled? 99 : ($isSlideshow? 2 : ($isNest? 1 : 0));
+		$pluginType = $isVersionControlled? 99 : ($isSlideshow? 2 : ($isNest? 1 : 0));
 		
 		foreach ([
-			'replace_reusable_on_item_layer' => 0, 'replace_nest_on_item_layer' => 1, 'replace_slideshow_on_item_layer' => 2,
-			'replace_reusable_on_layout_layer' => 0, 'replace_nest_on_layout_layer' => 1, 'replace_slideshow_on_layout_layer' => 2
-		] as $buttonName => $buttonPnsType) {
+			'replace_reusable_on_item_layer' => [1, 0], 'replace_nest_on_item_layer' => [1, 1], 'replace_slideshow_on_item_layer' => [1, 2],
+			'replace_reusable_on_layout_layer' => [2, 0], 'replace_nest_on_layout_layer' => [2, 1], 'replace_slideshow_on_layout_layer' => [2, 2]
+		] as $buttonName => $details) {
+			$buttonLevel = $details[0];
+			$buttonPluginType = $details[1];
 			
 			if (isset($actions[$buttonName])) {
 				$button = &$actions[$buttonName];
@@ -105,15 +107,29 @@ class pluginAdm {
 				continue;
 			}
 			
+			$isLikeForLikeSwitch = $pluginType === $buttonPluginType;
+			$isOverride = $buttonLevel == 1 && $level == 2;
+			$isReplace = !$isOverride;
+			
 			//If this has a different label for replacing like with like, switch to that if we are replacing like with like.
-			if (isset($button['label_different'])) {
-				if ($pnsType === $buttonPnsType) {
-					$button['label'] = $button['label_different'];
-				}
-				unset($button['label_different']);
+			//Also some options have a different option for replacing (on the same level) vs overriding (on the level below)
+			if ($isReplace && $isLikeForLikeSwitch && isset($button['label_replace_like4like'])) {
+				$button['label'] = $button['label_replace_like4like'];
+			
+			} elseif ($isReplace && isset($button['label_replace'])) {
+				$button['label'] = $button['label_replace'];
+			
+			} elseif ($isLikeForLikeSwitch && isset($button['label_like4like'])) {
+				$button['label'] = $button['label_like4like'];
 			}
+			
+			unset(
+				$button['label_like4like'],
+				$button['label_replace'],
+				$button['label_replace_like4like']
+			);
 	
-			if ($pnsType === $buttonPnsType) {
+			if ($pluginType === $buttonPluginType) {
 				$preselectCurrentChoice = 'true';
 			} else {
 				$preselectCurrentChoice = 'false';
@@ -364,7 +380,12 @@ class pluginAdm {
 	//Formerly "removeUnusedVersionControlledPluginSettings()"
 	public static function removeUnusedVCs($cID, $cType, $cVersion) {
 		$slotContents = [];
-		\ze\plugin::slotContents($slotContents, $cID, $cType, $cVersion, false, false, false, false, false, false, $runPlugins = false);
+		\ze\plugin::slotContents(
+			$slotContents,
+			$cID, $cType, $cVersion,
+			$layoutId = false,
+			$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
+			$runPlugins = false);
 	
 		$result = \ze\row::query('plugin_instances', ['id', 'slot_name'], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 		while ($instance = \ze\sql::fetchAssoc($result)) {
@@ -383,7 +404,12 @@ class pluginAdm {
 			$cTypeFrom = $cType;
 		}
 		$slotContents = [];
-		\ze\plugin::slotContents($slotContents, $cIDFrom, $cTypeFrom, $cVersionFrom, false, false, false, false, false, false, $runPlugins = false);
+		\ze\plugin::slotContents(
+			$slotContents,
+			$cIDFrom, $cTypeFrom, $cVersionFrom,
+			$layoutId = false,
+			$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
+			$runPlugins = false);
 	
 		$result = \ze\row::query('plugin_instances', ['id', 'slot_name'], ['content_id' => $cIDFrom, 'content_type' => $cTypeFrom, 'content_version' => $cVersionFrom]);
 		while ($instance = \ze\sql::fetchAssoc($result)) {
@@ -684,9 +710,8 @@ class pluginAdm {
 			FROM ". DB_PREFIX. "plugin_layout_link AS pll
 			INNER JOIN ". DB_PREFIX. "layouts AS l
 			   ON l.layout_id = pll.layout_id
-			INNER JOIN ". DB_PREFIX. "template_slot_link AS s
-			   ON s.family_name = l.family_name
-			  AND s.file_base_name = l.file_base_name
+			INNER JOIN ". DB_PREFIX. "layout_slot_link AS s
+			   ON s.layout_id = l.layout_id
 			  AND s.slot_name = pll.slot_name
 			WHERE pll.instance_id IN (". \ze\escape::in($instanceIds, 'numeric'). ")
 			GROUP BY l.status";
@@ -718,9 +743,8 @@ class pluginAdm {
 				FROM ". DB_PREFIX. "plugin_layout_link AS pll
 				INNER JOIN ". DB_PREFIX. "layouts AS l
 				   ON l.layout_id = pll.layout_id
-				INNER JOIN ". DB_PREFIX. "template_slot_link AS s
-				   ON s.family_name = l.family_name
-				  AND s.file_base_name = l.file_base_name
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS s
+				   ON s.layout_id = l.layout_id
 				  AND s.slot_name = pll.slot_name
 				WHERE pll.instance_id IN (". \ze\escape::in($instanceIds, 'numeric'). ")";
 		
@@ -781,15 +805,14 @@ class pluginAdm {
 	
 		if ($itemLayerOnly) {
 			$sql .= "
-				INNER JOIN ". DB_PREFIX. "template_slot_link as t";
+				INNER JOIN ". DB_PREFIX. "layout_slot_link as t";
 		} else {
 			$sql .= "
-				LEFT JOIN ". DB_PREFIX. "template_slot_link as t";
+				LEFT JOIN ". DB_PREFIX. "layout_slot_link as t";
 		}
 	
 		$sql .= "
-			   ON t.family_name = l.family_name
-			  AND t.file_base_name = l.file_base_name
+			   ON t.layout_id = l.layout_id
 			  AND t.slot_name = pil.slot_name";
 	
 		if ($publishedOnly) {
@@ -869,9 +892,8 @@ class pluginAdm {
 					AND viil.version = pil.content_version
 				INNER JOIN " . DB_PREFIX . "layouts AS liil
 					ON liil.layout_id = viil.layout_id
-				INNER JOIN " . DB_PREFIX . "template_slot_link AS tiil
-					ON tiil.family_name = liil.family_name
-					AND tiil.file_base_name = liil.file_base_name
+				INNER JOIN " . DB_PREFIX . "layout_slot_link AS tiil
+					ON tiil.layout_id = liil.layout_id
 					AND tiil.slot_name = pil.slot_name
 				WHERE pil.instance_id " . $instanceIdSQL;
 			$result = \ze\sql::select($sql);
@@ -908,10 +930,9 @@ class pluginAdm {
 		//Remove the item level placement if needed
 		if ($cID && $cType && $cVersion && $slotName) {
 			$layoutId = \ze\content::layoutId($cID, $cType, $cVersion);
-			$templateFamily = \ze\row::get('layouts', 'family_name', $layoutId);
 		
-			$templateLevelInstanceId = \ze\plugin::idInLayoutSlot($slotName, $templateFamily, $layoutId);
-			$templateLevelmoduleId = \ze\module::idInLayoutSlot($slotName, $templateFamily, $layoutId);
+			$templateLevelInstanceId = \ze\plugin::idInLayoutSlot($slotName, $layoutId, false);
+			$templateLevelmoduleId = \ze\module::idInLayoutSlot($slotName, $layoutId);
 		
 			if ($templateLevelmoduleId == $newmoduleId && $templateLevelInstanceId == $newInstanceId) {
 				\ze\pluginAdm::updateItemSlot('', $slotName, $cID, $cType, $cVersion);
@@ -949,10 +970,10 @@ class pluginAdm {
 		$oldFilename = '2.'. $oldFilename. '.css';
 		$newFilename = '2.'. $newFilename. '.css';
 	
-		$skins = \ze\row::getAssocs('skins', ['id', 'family_name', 'name'], ['missing' => 0]);
+		$skins = \ze\row::getAssocs('skins', ['id', 'name'], ['missing' => 0]);
 	
 		foreach ($skins as $skin) {
-			$skinWritableDir = CMS_ROOT. \ze\content::skinPath($skin['family_name'], $skin['name']). 'editable_css/';
+			$skinWritableDir = CMS_ROOT. 'zenario_custom/skins/'. $skin['name']. '/editable_css/';
 		
 			if (file_exists($skinWritableDir. $oldFilename)) {
 				switch ($action) {
@@ -1061,7 +1082,7 @@ class pluginAdm {
 	
 
 	//Formerly "updatePluginInstanceInTemplateSlot()"
-	public static function updateLayoutSlot($instanceId, $slotName, $templateFamily, $layoutId, $moduleId = false, $cID = false, $cType = false, $cVersion = false, $copySwatchUp = false, $copySwatchDown = false) {
+	public static function updateLayoutSlot($instanceId, $slotName, $layoutId, $moduleId = false, $cID = false, $cType = false, $cVersion = false, $copySwatchUp = false, $copySwatchDown = false) {
 	
 		if ($cID && $cType && !$cVersion) {
 			$cVersion = \ze\content::latestVersion($cID, $cType);
@@ -1072,10 +1093,6 @@ class pluginAdm {
 			$moduleId = $details['module_id'];
 		}
 		
-		if (!$templateFamily) {
-			$templateFamily = \ze\row::get('layouts', 'family_name', $layoutId);
-		}
-	
 		if ($moduleId) {
 			$placementId = \ze\row::set(
 				'plugin_layout_link',
@@ -1084,7 +1101,6 @@ class pluginAdm {
 					'instance_id' => $instanceId],
 				[
 					'slot_name' => $slotName,
-					'family_name' => $templateFamily,
 					'layout_id' => $layoutId]);
 		
 		} else {
@@ -1092,7 +1108,6 @@ class pluginAdm {
 				'plugin_layout_link',
 				[
 					'slot_name' => $slotName,
-					'family_name' => $templateFamily,
 					'layout_id' => $layoutId]);
 		}
 	}

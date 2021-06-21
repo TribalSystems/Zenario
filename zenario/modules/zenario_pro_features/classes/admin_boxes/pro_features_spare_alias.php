@@ -106,9 +106,11 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		$alias = $values['spare_alias/alias'];
 		$suffix = ze::setting('mod_rewrite_suffix');
 		if ($alias !== "") {
-			$alias .= $suffix;
+			if ($suffix && strpos($alias, $suffix) === false) {
+				$alias .= $suffix;
+			}
 		}
-		$fields['spare_alias/preview']['snippet']['html'] = '<a id="spare_alias_preview" data-base="' . ze\link::absolute() . '" data-suffix="' . $alias . '" href="' . ze\link::absolute() . $alias . '" target="spare_alias_preview">' . ze\link::absolute() . $alias . '</a>';
+		$fields['spare_alias/preview']['snippet']['html'] = '<a id="spare_alias_preview" data-base="' . ze\link::absolute() . '" data-suffix="' . $suffix . '" href="' . ze\link::absolute() . $alias . '" target="spare_alias_preview">' . ze\link::absolute() . $alias . '</a>';
 
 		
 			

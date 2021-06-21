@@ -4,7 +4,7 @@ zenario__content:
     panels:
         mic_image_library:
             title: Multiple Image Container plugins image library
-            no_items_message: There are no images in the library.
+            no_items_message: There are no images in the MIC image library.
             
             
             db_items:
@@ -158,14 +158,15 @@ zenario__content:
                 copy_to_image_library:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Copy to image library
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     multiple_select: true
                     ajax:
                         confirm:
                             message: >
-                                Are you sure you wish to copy the selected image "[[filename]]" to image library?
+                                Are you sure you wish to copy the selected image "[[filename]]" to the image library?
                             multiple_select_message: >
-                                Are you sure you wish to copy the selected images to image library?
+                                Are you sure you wish to copy the selected images to the image library?
                             button_message: Copy to image library
                             cancel_button_message: Cancel
                             message_type: warning

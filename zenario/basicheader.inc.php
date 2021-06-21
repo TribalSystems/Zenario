@@ -61,6 +61,7 @@ define('THIS_FILE_IS_BEING_DIRECTLY_ACCESSED', false);
 //Try to include the siteconfig file
 if (file_exists(CMS_ROOT. 'zenario_siteconfig.php') && filesize(CMS_ROOT. 'zenario_siteconfig.php') > 19) {
 	require CMS_ROOT. 'zenario_siteconfig.php';
+	
 }
 
 //Attempt to calculate the SUBDIRECTORY, if not set already
@@ -135,10 +136,6 @@ class ze {
 	public static $maxWidth = false;
 	public static $fluid = false;
 	public static $responsive = false;
-	public static $templatePath = '';
-	public static $templateFamily = '';
-	public static $templateFilename = '';
-	public static $templateFileBaseName = '';
 	public static $siteDesc = [];
 	public static $adminSettings = [];
 	public static $siteConfig = [];
@@ -478,6 +475,20 @@ class ze {
 	//Limit a value to a specific list. The first value in the list is returned if the value does not match.
 	public static function oneOf($needle, ...$haystack) {
 		return in_array($needle, $haystack)? $needle : $haystack[0];
+	}
+	
+	//Returns true if a $_COOKIE variable does not affect caching (or is already covered by another existing category)
+	public static function cacheFriendlyCookieVar($var) {
+		return substr($var, 0, 2) == '__'
+			|| substr($var, 0, 9) == 'PHPSESSID'
+			|| substr($var, 0, 11) == 'can_cache__'
+			|| in_array($var, ['cookies_accepted', '_ga', '_gat', 'is_returning']);
+	}
+	
+	//Returns true if a $_SESSION variable does not affect caching (or is already covered by another existing category)
+	public static function cacheFriendlySessionVar($var) {
+		return substr($var, 0, 11) == 'can_cache__'
+			|| in_array($var, ['cookies_rejected', 'extranetUserID', 'extranetUser_firstname', 'user_lang', 'destCID', 'destCType', 'destURL', 'destTitle']);
 	}
 	
 	

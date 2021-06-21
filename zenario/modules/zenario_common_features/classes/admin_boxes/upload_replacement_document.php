@@ -32,32 +32,42 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$documentId = $box['key']['id'];
-		$document = ze\row::get('documents', ['thumbnail_id', 'extract_wordcount'], $documentId);
-		if (!$document['thumbnail_id']) {
-			$fields['file/keep_thumbnail_image']['hidden'] = true;
-		}
-		if (!$document['extract_wordcount']) {
-			$fields['file/keep_extract_text']['hidden'] = true;
-		}
 		
-		if($documentId){
-			$filename = ze\row::get('documents', 'filename', $documentId);
-			if($filename){
-				$sql="
+		if ($documentId) {
+			$document = ze\row::get('documents', ['filename', 'thumbnail_id', 'extract_wordcount', 'privacy'], $documentId);
+			if (!$document['thumbnail_id']) {
+				$fields['file/keep_thumbnail_image']['hidden'] = true;
+			}
+			if (!$document['extract_wordcount']) {
+				$fields['file/keep_extract_text']['hidden'] = true;
+			}
+
+			$filename = $document['filename'];
+			if ($filename) {
+				$box['title'] = ze\admin::phrase("Uploading a replacement for [[filename]]", ['filename' => $filename]);
+
+				if ($document['privacy'] == 'public') {
+					$fields['file/link_info']['hidden'] = false;
+				}
+				
+				$sql = "
 					SELECT COUNT(filename) as number_of_files
 					FROM ".DB_PREFIX."documents
 					WHERE filename = '".ze\escape::sql($filename)."'";
 				$result = ze\sql::select($sql);
 				$row = ze\sql::fetchAssoc($result);
-				if($row['number_of_files'] > 1){
+
+				if ($row['number_of_files'] > 1) {
 					$numberOfFiles = (int)$row['number_of_files'] - 1;
 					
 					$fields['file/desc']['hidden'] = false;
-					if($numberOfFiles == 1){
-						$fields['file/desc']['snippet']['html'] = ze\admin::phrase('A replacement document cannot be uploaded because there is 1 more document with the name "[[filename]]".',['filename'=>$filename]);
-					}else{
-						$fields['file/desc']['snippet']['html'] = ze\admin::phrase('A replacement document cannot be uploadeded because there are [[number_of_files]] more documents with the name "[[filename]]".',['number_of_files'=>$numberOfFiles,'filename'=>$filename]);
-					}
+
+					$fields['file/desc']['snippet']['html'] = ze\admin::nPhrase(
+						'A replacement document cannot be uploaded because there is 1 more document with the name "[[filename]]".',
+						'A replacement document cannot be uploadeded because there are [[number_of_files]] more documents with the name "[[filename]]".',
+						$numberOfFiles,
+						['number_of_files' => $numberOfFiles, 'filename' => $filename]
+					);
 					
 					$box['tabs']['file']['edit_mode']['enabled'] = 0;
 				}
@@ -75,9 +85,9 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			 && ($file['checksum'] = ze::base16To64($file['checksum']))
 		) {
 			
-			if (!ze\file::check($location)) {
-				$filename = basename($location);
-				$fields['file/upload']['error'] = ze\admin::phrase('The contents of the file "[[filename]]" are corrupted and/or invalid.', ['filename' => $filename]);
+			$fileCheck = ze\file::check($location);
+			if (ze::isError($fileCheck)) {
+				$fields['file/upload']['error'] = $fileCheck->__toString();
 				
 			} else {
 				$documentId = $box['key']['id'];
@@ -102,7 +112,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 		
 		if ($replacementDocumentPath && $replacementDocumentName) {
 			//Find if old file has public link
-			$oldFile = ze\row::get('files', ['id', 'filename', 'short_checksum'], $document['file_id']);
+			$oldFile = ze\row::get('files', ['id', 'filename', 'short_checksum', 'path'], $document['file_id']);
 			$oldFilePath = CMS_ROOT . 'public/downloads/' . $oldFile['short_checksum'];
 			$publicLink = is_link($oldFilePath . '/' . $document['filename']);
 			
@@ -171,8 +181,25 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 						ze\document::generatePublicLink($docWithOldName);
 					}
 				}
+
+				//Check if the old file was used by any other documents and/or document content items. If not, remove it.
+				$documentDuplicatesExist = ze\row::exists('documents', ['file_id' => $document['file_id'], 'id' => ['!' => $documentId]]);
+				$docContentItemsExist = ze\row::exists('content_item_versions', ['file_id' => $document['file_id']]);
+				if (!$documentDuplicatesExist && !$docContentItemsExist) {
+					ze\row::delete('files', ['id' => $oldFile['id']]);
+
+					$oldFileDir = \ze::setting('docstore_dir') . '/'. $oldFile['path'];
+					$oldFileFullPath = $oldFileDir . '/' . $oldFile['filename'];
+
+					if (is_file($oldFileFullPath)){
+						unlink($oldFileFullPath);
+					}
+
+					if (is_dir($oldFileDir) && ze\document::isDirEmpty($oldFileDir)) {
+						rmdir($oldFileDir);
+					}
+				}
 			}
 		}
 	}
-	
 }

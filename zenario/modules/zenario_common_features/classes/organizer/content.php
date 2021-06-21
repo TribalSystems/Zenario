@@ -38,6 +38,65 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__not_trashed'];
 		}
 		
+		//Handle the case where an admin is picking a content item to join into a chain
+		if ($refinerName == 'add_translation_to_chain') {
+			
+			//Note: The requests will be slightly different, depending on whether this was opened from
+			//Organizer or the admin toolbar.
+			//Try and get the parameters we need from the URL, no matter which format
+			$equivId = (int) ($_REQUEST['parent__equivId'] ?? 0);
+			$equivCID = (int) ($_REQUEST['parent__cID'] ?? 0);
+			$equivType = $_REQUEST['parent__cType'] ?? '';
+			$requestedLangId = $refinerId ?: ($_REQUEST['parent__id'] ?? '');
+			
+			if (!$equivId && $equivCID && $equivType) {
+				$equivId = ze\content::equivId($equivCID, $equivType);
+			}
+			
+			if ($equivId && $equivType && $requestedLangId) {
+				
+				//Flag that we're only showing content items of a specific type and language
+				$panel['key']['cType'] = $equivType;
+				$panel['key']['language'] = $requestedLangId;
+
+				//Set the refiner SQL to show content items of the requested
+				//type and language.
+				$panel['refiners']['add_translation_to_chain']['sql'] = '
+					  AND c.type = "'. ze\escape::sql($equivType). '"
+					  AND c.language_id = "'. ze\escape::sql($requestedLangId). '"
+					  AND c.equiv_id != '. (int) $equivId;
+				
+				//Add a column to display which might be collisions
+				$panel['columns']['is_collision'] = [
+					'db_column' => 'collisions.equiv_id IS NOT NULL'
+				];
+				
+				$panel['refiners']['add_translation_to_chain']['table_join'] = '
+					LEFT JOIN '. DB_PREFIX. 'content_items AS collisions
+					   ON collisions.equiv_id = tc.equiv_id
+					  AND collisions.type = tc.type
+					  AND collisions.language_id IN (
+						SELECT language_id
+						FROM '. DB_PREFIX. 'content_items AS existing_translations
+						WHERE existing_translations.equiv_id = '. (int) $equivId. '
+						  AND existing_translations.type = "'. ze\escape::sql($equivType). '"
+					  )';
+			}
+		}
+
+		if ($refinerName == 'content_type') {
+			$requestedContentType = $refinerId ?: ($_REQUEST['parent__id'] ?? '');
+
+			if ($requestedContentType) {
+				$pinningEnabled = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => ze\escape::sql($requestedContentType)]);
+
+				if (!$pinningEnabled) {
+					unset($panel['inline_buttons']['pinned']);
+					unset($panel['inline_buttons']['not_pinned']);
+				}
+			}
+		}
+
 		//Have a refiner that enforces the language filter be set.
 		if ($mode != 'typeahead_search'
 		 && (isset($_GET['refiner__filter_by_lang']) || isset($_GET['refiner__filter_exclude_documents']))
@@ -234,7 +293,6 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		//If this panel is for a specific language, don't show the language filter
 		//and also set the language id in the key so any FABs that open default to that language.
 		if ($panel['key']['language']) {
-			$panel['key']['language'] = $panel['key']['language'];
 			unset($panel['quick_filter_buttons']['language']);
 			unset($panel['quick_filter_buttons']['all_languages']);
 		
@@ -399,31 +457,34 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			}
 
 		} elseif ($panel['key']['layoutId'] && $panel['key']['language']) {
-			$template = ze\row::get('layouts', ['layout_id', 'name'], $panel['key']['layoutId']);
+			$layout = ze\row::get('layouts', ['layout_id', 'name'], $panel['key']['layoutId']);
 			$mrg = [
-				'layout_id' => str_pad($template['layout_id'], 2, '0', STR_PAD_LEFT),
-				'template' => $template['name'],
-				'language' => ze\lang::name($panel['key']['language'])];
+				'codeName' => ze\layoutAdm::codeName($layout['layout_id']),
+				'name' => $layout['name'],
+				'language' => ze\lang::name($panel['key']['language'])
+			];
 			$panel['label_format_for_grid_view'] = '[[tag]]';
-			$panel['title'] = ze\admin::phrase('Content items using the layout "L[[layout_id]] [[template]]" in [[language]]', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "L[[layout_id]] [[template]]" in [[language]].', $mrg);
+			$panel['title'] = ze\admin::phrase('Content items using the layout "[[codeName]] [[name]]" in [[language]]', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "[[codeName]] [[name]]" in [[language]].', $mrg);
 
 		} elseif ($panel['key']['cType'] && $panel['key']['language']) {
 			$mrg = [
 				'ctype' => ze\content::getContentTypeName($panel['key']['cType']),
-				'language' => ze\lang::name($panel['key']['language'])];
+				'language' => ze\lang::name($panel['key']['language'])
+			];
 			$panel['title'] = ze\admin::phrase('[[ctype]] content items in [[language]]', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no [[ctype]] content items in [[language]].', $mrg);
 			$panel['columns']['language_id']['hidden'] = true;
 			unset($panel['columns']['type']);
 
 		} elseif ($panel['key']['layoutId']) {
-			$template = ze\row::get('layouts', ['layout_id', 'name'], $panel['key']['layoutId']);
+			$layout = ze\row::get('layouts', ['layout_id', 'name'], $panel['key']['layoutId']);
 			$mrg = [
-				'layout_id' => str_pad($template['layout_id'], 2, '0', STR_PAD_LEFT),
-				'template' => $template['name']];
-			$panel['title'] = ze\admin::phrase('Content items using the layout "L[[layout_id]] [[template]]"', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "L[[layout_id]] [[template]]".', $mrg);
+				'codeName' => ze\layoutAdm::codeName($layout['layout_id']),
+				'name' => $layout['name']
+			];
+			$panel['title'] = ze\admin::phrase('Content items using the layout "[[codeName]] [[name]]"', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "[[codeName]] [[name]]".', $mrg);
 
 		} elseif ($panel['key']['cType']) {
 			$panel['item']['css_class'] = 'content_type_'. $panel['key']['cType'];
@@ -609,10 +670,9 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 				
 				//
-				$item['traits'] = [];
 				switch ($item['status']) {
 					case 'first_draft':
-						$item['traits']['draft'] = true;
+						$item['draft'] = true;
 					break;
 			
 					case 'published':
@@ -620,7 +680,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					break;
 			
 					case 'published_with_draft':
-						$item['traits']['draft'] = true;
+						$item['draft'] = true;
 					break;
 			
 					case 'hidden':
@@ -628,7 +688,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					break;
 			
 					case 'hidden_with_draft':
-						$item['traits']['draft'] = true;
+						$item['draft'] = true;
 					break;
 			
 					case 'trashed':
@@ -636,28 +696,28 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					break;
 			
 					case 'trashed_with_draft':
-						$item['traits']['draft'] = true;
+						$item['draft'] = true;
 					break;
 				}
 		
 				if (!$item['lock_owner_id'] || $item['lock_owner_id'] == ($_SESSION['admin_userid'] ?? false)) {
-					$item['traits']['not_locked'] = true;
+					$item['not_locked'] = true;
 				}
 		
 				if ($item['status'] == 'published') {
-					$item['traits']['published'] = true;
+					$item['published'] = true;
 				}
 				if ($item['status'] == 'hidden') {
-					$item['traits']['hidden'] = true;
+					$item['hidden'] = true;
 				}
 				if (ze\contentAdm::allowDelete($item['id'], $item['type'], $item['status'])) {
-					$item['traits']['deletable'] = true;
+					$item['deletable'] = true;
 				}
 				if (ze\contentAdm::allowTrash($item['id'], $item['type'], $item['status'], $item['last_author_id'])) {
-					$item['traits']['trashable'] = true;
+					$item['trashable'] = true;
 				}
 				if (ze\contentAdm::allowHide($item['id'], $item['type'], $item['status'])) {
-					$item['traits']['hideable'] = true;
+					$item['hideable'] = true;
 				}
 				//To show blue icon in Content items Organizer panels for unique and primary menu node
 				$menuItems = ze\menu::getFromContentItem($item['id'], $item['type'], true, false, true, true);
@@ -692,13 +752,13 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					if ($path == 'zenario__content/panels/chained' && $item['menu'] === null) {
 						$item['menu'] = ze\admin::phrase('[Menu Text missing]');
 					} else {
-						$item['traits']['linked'] = true;
+						$item['linked'] = true;
 						$item['menu'] = $item['menu_id'];
 					}
 					unset($item['menu_id']);
 		
 				} elseif ($item['status'] != 'trashed') {
-					$item['traits']['unlinked'] = true;
+					$item['unlinked'] = true;
 					$item['menu'] = ze\admin::phrase('Orphaned');
 					$item['cell_css_classes']['menu'] = 'orange';
 				}
@@ -708,15 +768,15 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 						$item['filename'] .= ' (File is missing)';
 						$item['cell_css_classes']['filename'] = "warning";
 					} else {
-						$item['traits']['has_file'] = true;
+						$item['has_file'] = true;
 				
 						if (ze\file::isImageOrSVG($item['mime_type'])) {
-							$item['traits']['has_picture'] = true;
+							$item['has_picture'] = true;
 						}
 					}
 				}
 				if (!empty($item['s3_file_id'])) {
-					$item['traits']['has_s3file'] = true;
+					$item['has_s3file'] = true;
 					
 				}
 
@@ -768,6 +828,18 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 
 		if ($path == 'zenario__content/panels/chained') {
 			$numEquivs = 0;
+			
+			$aliasesArray = [];
+			$aliasesQuery = ze\row::query('content_items', ['id', 'alias'], ['equiv_id' => $panel['key']['equivId'], 'type' => $panel['key']['cType']]);
+			while ($aliasRow = ze\sql::fetchAssoc($aliasesQuery)) {
+				$aliasesArray[$aliasRow['alias']][] = $aliasRow['id'];
+			}
+
+			$existingItemCount = 0;
+
+			ze\lang::applyMergeFields($panel['item_buttons']['remove_translation_from_chain__non_identical_alias']['ajax']['confirm']['message'], ['default_lang' => $langs[ze::$defaultLang]['english_name']]);
+			ze\lang::applyMergeFields($panel['item_buttons']['remove_translation_from_chain__identical_alias']['ajax']['confirm']['message'], ['default_lang' => $langs[ze::$defaultLang]['english_name']]);
+			
 			foreach ($panel['items'] as &$item) {
 				$item['cell_css_classes']['tag'] = 'lang_flag_'. $item['language_id'];
 		
@@ -777,23 +849,36 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$item['cell_css_classes']['language_id'] = 'ghost';
 					$item['lang_name'] = ze\lang::name($item['language_id'], false, false);
 					$item['tag'] = ze\admin::phrase('MISSING [[lang_name]] ([[language_id]])', $item);
-					$item['traits']['ghost'] = true;
+					$item['ghost'] = true;
 	
 					if ($checkSpecificPerms && ze\priv::onLanguage(false, $item['language_id'])) {
 						$item['_specific_perms'] = true;
 					}
 				} else {
 					++$numEquivs;
+					$existingItemCount++;
 
 					if ($item['id'] == $cID && $item['type'] == $panel['key']['cType']) {
-						$item['traits']['deletable'] = false;
+						$item['deletable'] = false;
+					}
+
+					if (isset($aliasesArray[$item['alias']])) {
+						if (count($aliasesArray[$item['alias']]) > 1) {
+							$item['has_identical_alias_to_other_items'] = true;
+						} else {
+							$item['has_identical_alias_to_other_items'] = false;
+						}
 					}
 				}
+			}
+
+			if ($existingItemCount <= 1) {
+				$panel['item_buttons']['remove_translation_from_chain__identical_alias']['hidden'] = $panel['item_buttons']['remove_translation_from_chain__non_identical_alias']['hidden'] = true;
 			}
 	
 			if ($numEquivs < $numLanguages) {
 				foreach ($panel['items'] as &$item) {
-					$item['traits']['zenario_trans__can_link'] = true;
+					$item['zenario_trans__can_link'] = true;
 				}
 			} else {
 				unset($panel['collection_buttons']['zenario_trans__link_to_chain']);
@@ -801,7 +886,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
 			if ($numEquivs > 1) {
 				foreach ($panel['items'] as &$item) {
-					$item['traits']['zenario_trans__linked'] = true;
+					$item['zenario_trans__linked'] = true;
 				}
 			}
 
@@ -832,7 +917,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			foreach ($panel['items'] as $id => &$item) {
 				$cID = $cType = false;
 				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id);
-				$isGhost = !empty($item['traits']['ghost']);
+				$isGhost = !empty($item['ghost']);
 				$item['zenario_trans__links'] = 1;
 				
 				if (!$isGhost || $mode == 'select') {
@@ -854,10 +939,10 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 		
 				if (!$isGhost && $item['zenario_trans__links'] < $numLanguages) {
-					$item['traits']['zenario_trans__can_link'] = true;
+					$item['zenario_trans__can_link'] = true;
 				}
 				if ($isGhost || $item['zenario_trans__links'] > 1) {
-					$item['traits']['zenario_trans__linked'] = true;
+					$item['zenario_trans__linked'] = true;
 				}
 		
 				if (!$isGhost || $mode == 'select') {
@@ -891,7 +976,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		        $panel['collection_buttons']['new_node_dropdown']['hidden'] = true;
 		    } 
 		   
-		}else {//All content items
+		} else {//All content items
 		    $panel['collection_buttons']['create']['hidden'] = true;
 		    $j=0;  
                     
@@ -908,11 +993,14 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
             }    
    
 		}
-		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
-			$panel['item_buttons']['download']['label'] = 'Download local file';
+		
+		if (ze::setting('aws_s3_support')
+		 && $path != 'zenario__content/panels/chained'
+		 && ze\module::inc('zenario_ctype_document')) {
+			$panel['item_buttons']['download']['label'] = ze\admin::phrase('Download local file');
 			$panel['item_buttons']['s3_download']['hidden'] = false;
 		} else {
-			$panel['item_buttons']['download']['label'] = 'Download';
+			$panel['item_buttons']['download']['label'] = ze\admin::phrase('Download');
 		}
 	}
 	
@@ -966,7 +1054,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					)) {
 						$mrg = $adminDetails;
 						$mrg['publicationTime'] = ze\admin::formatDateTime($date, 'vis_date_format_long');
-						echo ze\admin::phrase('It is scheduled to be published by [[first_name]] [[last_name]] on [[publicationTime]].', $mrg);
+						echo ze\admin::phrase('It has been scheduled by [[first_name]] [[last_name]] to be published on [[publicationTime]].', $mrg);
 					} else {
 						echo ze\admin::phrase('Any administrator who has authoring permission will be able to make changes to it.');
 					}
@@ -1037,6 +1125,21 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				 && (ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType))) {
 					ze\contentAdm::deleteArchive($cID, $cType);
 				}
+			}
+			
+		} elseif (ze::post('add_existing_translation_to_chain') && ze\priv::check('_PRIV_CREATE_TRANSLATION_FIRST_DRAFT')) {
+			
+			$cID = $cType = false;
+			if ((ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids2))
+			 && ($equivId = (int) ($_POST['equivId'] ?? 0))) {
+				ze\contentAdm::recordEquivalence($equivId, $cID, $cType);
+			}
+		} elseif (ze::post('remove_translation_from_chain') && ze\priv::check('_PRIV_DELETE_DRAFT')) {
+			
+			$cID = $cType = false;
+			if ((ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids))
+			 && ($equivId = (int) ($_POST['equivId'] ?? 0))) {
+				ze\contentAdm::removeEquivalence($cID, $cType);
 			}
 		}
 		

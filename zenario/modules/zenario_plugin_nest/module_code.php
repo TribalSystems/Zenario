@@ -1062,11 +1062,10 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					
 						//Look up how many columns the current slot has, or just guess 12 if we can't find out
 						$this->maxColumns = 
-							(int) ze\row::get('template_slot_link',
+							(int) ze\row::get('layout_slot_link',
 								'cols',
 								[
-									'family_name' => ze::$templateFamily,
-									'file_base_name' => ze::$templateFileBaseName,
+									'layout_id' => ze::$layoutId,
 									'slot_name' => $this->slotName]
 							) ?: 12;
 					}
@@ -1732,4 +1731,28 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		
 	}
 	
+	
+	
+	
+
+	
+	public function returnWhatThisEggIs() {
+		return \ze\admin::phrase('This is a plugin in a nest');
+	}
+	
+	public function returnWhatThisIs() {
+		if (isset($this->parentNest)) {
+			return $this->parentNest->returnWhatThisEggIs();
+		
+		//Don't show a description for the nest if there are already plugins in it
+		} elseif (!empty($this->modules[$this->slideNum])) {
+			return '';
+		
+		} elseif ($this->slotLevel == 2) {
+			return \ze\admin::phrase('This is a nest on the layout');
+		
+		} else {
+			return \ze\admin::phrase('This is a nest on the content item');
+		}
+	}
 }

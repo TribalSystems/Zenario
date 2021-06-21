@@ -260,6 +260,49 @@ plugin_settings:
                     note_below: |
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
+                initial_map_position:
+                    plugin_setting:
+                        name: initial_map_position
+                    label: 'Initial map position:'
+                    type: radios
+                    values:
+                        auto_position_at_centre:
+                            ord: 1
+                            label: 'Auto-position at centre'
+                        fixed_position:
+                            ord: 2
+                            label: 'Fixed position'
+                    value: 'auto_position_at_centre'
+                    redraw_onchange: true
+                    note_below: |
+                        To ascertain latitude and longitude, go to Google Maps and read off the numbers in the URL.
+                        e.g. <a href="https://www.google.co.uk/maps/@51.4570534,-0.9786634,14.74z" target="_blank">https://www.google.co.uk/maps/@51.4570534,-0.9786634,14.74z</a>
+                fixed_position_lat:
+                    plugin_setting:
+                        name: fixed_position_lat
+                    indent: 1
+                    label: 'Latitude:'
+                    visible_if: lib.value('initial_map_position') == 'fixed_position'
+                    type: text
+                    maxlength: "15"
+                    style: 'width: 10em;'
+                    validation:
+                        required_if_not_hidden: "This field is required."
+                        numeric: "Please enter a number."
+                    side_note: 'Note: the plugin preview may not accurately reflect a change in camera position left. Please save and reload if changing camera position.'
+                fixed_position_lng:
+                    plugin_setting:
+                        name: fixed_position_lng
+                    indent: 1
+                    label: 'Longitude:'
+                    visible_if: lib.value('initial_map_position') == 'fixed_position'
+                    type: text
+                    maxlength: "15"
+                    style: 'width: 10em;'
+                    validation:
+                        required_if_not_hidden: "This field is required."
+                        numeric: "Please enter a number."
+                    side_note: 'Note: the plugin preview may not accurately reflect a change in camera position left. Please save and reload if changing camera position.'
                 zoom_control:
                     plugin_setting:
                         name: zoom_control

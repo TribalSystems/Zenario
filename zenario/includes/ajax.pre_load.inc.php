@@ -92,21 +92,16 @@ if (!isset($_SESSION['admin_logged_into_site'])
 		}
 	}
 	
-	foreach ($_SESSION as $request => &$value) {
-		if (substr($request, 0, 11) != 'can_cache__'
-		 && !ze::in($request, 'cookies_rejected', 'extranetUserID', 'extranetUser_firstname', 'user_lang', 'destCID', 'destCType', 'destURL', 'destTitle', 'tinymcePasteText')) {
-			ze::$cacheEnv['s'] = 's';
+	foreach ($_COOKIE as $request => &$value) {
+		if (!ze::cacheFriendlyCookieVar($request)) {
+			ze::$cacheEnv['c'] = 'c';
 			break;
 		}
 	}
 	
-	foreach ($_COOKIE as $request => &$value) {
-		if (substr($request, 0, 2) != '__'
-		 && substr($request, 0, 9) != 'PHPSESSID'
-		 && substr($request, 0, 11) != 'can_cache__'
-		 && substr($request, 0, 2) != '__'
-		 && !ze::in($request, 'cookies_accepted', '_ga', '_gat', 'is_returning', 'tinymcePasteText')) {
-			ze::$cacheEnv['c'] = 'c';
+	foreach ($_SESSION as $request => &$value) {
+		if (!ze::cacheFriendlySessionVar($request)) {
+			ze::$cacheEnv['s'] = 's';
 			break;
 		}
 	}

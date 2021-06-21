@@ -40,9 +40,9 @@ class zenario_common_features extends ze\moduleBaseClass {
 				return ['can_filter' => false];
 			case ze\dataset::LIST_MODE_LIST:
 				return [
-					'pending' => 'Pending', 
-					'active' => 'Active', 
-					'suspended' => 'Suspended', 
+					'pending' => 'Pending extranet user', 
+					'active' => 'Active extranet user', 
+					'suspended' => 'Suspended extranet user', 
 					'contact' => 'Contact'
 				];
 		}

@@ -33,19 +33,18 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 		$userIds = explode(',', $box['key']['id']);
 		if (count($userIds) == 1) {
 			$userDetails = ze\user::details($userIds[0]);
-			$box['title'] = "Sending welcome email to the user \"" . $userDetails["identifier"] . "\"";
+			$box['title'] = "Sending activation email to the user \"" . $userDetails["identifier"] . "\"";
 		} else {
-			$box['title'] = "Sending welcome emails to " . count($userIds) . " users";
+			$box['title'] = "Sending activation emails to " . count($userIds) . " users";
 		}
 		
-		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
-		if (count($layouts)==0) {
-			$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('Account Activated',false);
-		}
-		if (count($layouts)){
-			$template = current($layouts);
-			$fields['details/email_to_send']['value'] = $template['code'] ?? false;
-		}
+		$fields['details/email_to_send']['value'] = ze::setting('default_activation_email_template');
+
+		$siteSettingsLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
+		$fields['details/email_to_send']['note_below'] = ze\admin::phrase(
+			'The default activation email template can be changed in the [[site_settings_link]].',
+			['site_settings_link' => $siteSettingsLink]
+		);
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -57,7 +56,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 		foreach ($userIds as $userId) {
 			$user = ze\row::get('users', ['identifier', 'email'], $userId);
 			if (!$user['email']) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('The user "[[identifier]]" must have an email address to send a welcome email.', $user);
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('The user "[[identifier]]" must have an email address to send a activation email.', $user);
 			}
 		}
 	}

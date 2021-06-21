@@ -20,7 +20,8 @@ zenario_import:
         update_key_field: ''
         header_list: ''
     title: Dataset Import Wizard - Step 1 of 4
-    hide_tab_bar: Yes
+    hide_tab_bar: true
+    disable_selecting_tab_from_url: true
     save_button_message: Import now
     tab: file
     tabs:
@@ -232,11 +233,11 @@ zenario_import:
                     type: checkbox
                 
                 send_welcome_email:
-                    label: 'Send welcome email'
+                    label: 'Send activation email'
                     type: checkbox
                     redraw_onchange: true
                     side_note: |
-                        Send a welcome email to any newly created active users.
+                        Send a activation email to any newly created active users.
                     hidden: true
                 email_to_send:
                     hide_with_previous_field: true
@@ -248,8 +249,8 @@ zenario_import:
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
-                        hide_remove_button: Yes
+                        select_phrase: Select email template...
+                        hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select an email template
                     side_note: >

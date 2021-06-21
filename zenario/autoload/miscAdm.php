@@ -913,7 +913,7 @@ class miscAdm {
 			   && filemtime(CMS_ROOT. 'zenario_custom/site_description.yaml') > $lastChanged) {
 			
 			//Do a full rescan of everything.
-			\ze\skinAdm::clearCache(true);
+			\ze\skinAdm::clearCache();
 			
 			//N.b. the \ze\skinAdm::clearCache() function includes a call to this one,
 			//with $forceScan set to true, so we can stop running the current call.

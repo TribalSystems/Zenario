@@ -182,7 +182,6 @@ echo '
 zenarioA.init(
 	', (int) \ze::$cVersion, ',
 	', (int) ($_SESSION['admin_userid'] ?? false), ',
-	"', \ze\escape::js(\ze::$templateFamily), '",
 	"', \ze\escape::js((($_SESSION['page_toolbar'] ?? false) ?: 'preview')), '",
 	"', \ze\escape::js((($_SESSION['page_mode'] ?? false) ?: 'preview')), '",
 	', \ze\ring::engToBoolean($_SESSION['admin_show_grid'] ?? false), ',

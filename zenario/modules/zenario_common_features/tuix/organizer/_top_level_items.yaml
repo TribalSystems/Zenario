@@ -168,13 +168,13 @@ zenario__layouts:
                 refiner: archived
             empty: false
             css_class: archived_layout
-        template_families:
+        skins:
             css_class: skin
             label: Skins
             tooltip: Skins, the styling and appearance of your site
             keywords: "CSS, layout, font, style"
             link:
-                path: zenario__layouts/panels/template_families
+                path: zenario__layouts/panels/skins
 zenario__modules:
     ord: 9200
     css_class: zenario_cms_core_plugins

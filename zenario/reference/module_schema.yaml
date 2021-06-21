@@ -382,7 +382,7 @@ properties:
                     description: >
                         If set to true, this job will be running by default without an admin needing to press the "Enable Task" button.
                         
-                        (Note: the crontab still needs to be set and the Master Switch still needs to be enabled.)
+                        (Note: the crontab still needs to be set and the master switch still needs to be enabled.)
                         
                         This works from version 8.6 onwards.
     

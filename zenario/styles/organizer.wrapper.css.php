@@ -42,6 +42,7 @@ if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php'
 ze\cache::incCSS('zenario/libs/manually_maintained/mit/jquery/css/nestable');
 ze\cache::incCSS('zenario/libs/manually_maintained/mit/jpaginator/jPaginator');
 ze\cache::incCSS('zenario/styles/admin_organizer');
+ze\cache::incCSS('zenario/styles/toggles');
 ze\cache::incCSS('zenario/libs/manually_maintained/mit/jssor/skin');
 
 

@@ -2,15 +2,15 @@
 #
 #    This file contains a TUIX description of the tabs and fields in an Admin Box.
 #    You can find out more about how to define Admin Boxes at:
-#        http://zenar.io/ref-tag-admin_boxes.html
+#        https://zenar.io/ref-tag-admin_boxes.html
 #    
 #    This file contains TUIX definitions, which behave slightly differently than
 #    regular XML tags. You can find out more about the differences on the following
 #    pages:
-#        http://zenar.io/creating-numeric-tuix-tags.html
-#        http://zenar.io/merging-tuix-tags.html
-#        http://zenar.io/reserved-tuix-tags.html
-#        http://zenar.io/universal-tuix-tags.html
+#        https://zenar.io/creating-numeric-tuix-tags.html
+#        https://zenar.io/merging-tuix-tags.html
+#        https://zenar.io/reserved-tuix-tags.html
+#        https://zenar.io/universal-tuix-tags.html
 #
 #    To define your Plugin Settings, you must use the "plugin_settings" path, and
 #    your first tag must have an attribute called "module_class_name" set to your

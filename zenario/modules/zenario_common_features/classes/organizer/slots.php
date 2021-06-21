@@ -45,16 +45,16 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 			case 'content_item':
 				if (!($content = ze\row::get('content_items', true, ['tag_id' => $refinerId]))
 				 || !($version = ze\row::get('content_item_versions', true, ['id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version']]))
-				 || !($template = ze\row::get('layouts', true, $version['layout_id']))) {
+				 || !($layout = ze\row::get('layouts', true, $version['layout_id']))) {
 					exit;
 				}
-		
-				$lookForSlots = ['family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']];
+				
+				$lookForSlots = ['layout_id' => $version['layout_id']];
 		
 				$panel['title'] = ze\admin::phrase('Slots on the Content Item "[[tag]]"', ['tag' => ze\content::formatTagFromTagId($refinerId)]);
 				$panel['no_items_message'] = ze\admin::phrase('There are no slots on the chosen Layout.'); 
 		
-				$layers = [1 => 'content_item', 2 => 'template'];
+				$layers = [1 => 'content_item', 2 => 'layout'];
 		
 		
 				//Check that there is a draft and the admin has permissions to make changes.
@@ -78,18 +78,17 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 		
 				break;
 	
-			case 'template':
-				if (!($template = ze\row::get('layouts', true, $refinerId))) {
+			case 'layout':
+				if (!($layout = ze\row::get('layouts', true, $refinerId))) {
 					exit;
 				}
-		
-				$lookForSlots = ['family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']];
+				$lookForSlots = ['layout_id' => $refinerId];
 		
 				$panel['title'] =
-					ze\admin::phrase('Slots on the Layout "L[[layout_id]] [[template]]"',
-						[
-							'template' => $template['name'],
-							'layout_id' => str_pad($template['layout_id'], 2, '0', STR_PAD_LEFT)]);
+					ze\admin::phrase('Slots on the Layout "[[codeName]] [[name]]"', [
+						'name' => $layout['name'],
+						'codeName' => ze\layoutAdm::codeName($layout['layout_id'])
+					]);
 		
 				$panel['no_items_message'] = ze\admin::phrase('There are no slots on the chosen Layout.');
 		
@@ -99,7 +98,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 				unset($panel['columns']['content_item']);
 				unset($panel['item_buttons']['edit_wireframe']);
 		
-				$layers = [2 => 'template'];
+				$layers = [2 => 'layout'];
 	
 				//On the Layout Layer, add an option to insert a Wireframe version of each Plugin
 				//that is flagged as uses wireframe.
@@ -133,36 +132,34 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 		$panel['key']['cID'] = $content['id'];
 		$panel['key']['cType'] = $content['type'];
 		$panel['key']['cVersion'] = $version['version'];
-		$panel['key']['layoutId'] = $template['layout_id'];
-		$panel['key']['templateFamily'] = $template['family_name'];
+		$panel['key']['layoutId'] = $layout['layout_id'];
 
 
 		//Get the slots on this Layout, and calculate their contents
 		$ord = 0;
-		foreach(ze\row::getAssocs('template_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
+		foreach(ze\row::getAssocs('layout_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
 			$panel['items'][$slot['slot_name']] =
 				[
 					'ord' => $slot['ord']? $slot['ord'] : ++$ord,
 					'slotname' => $slot['slot_name'],
 					'visitor_sees' => ze\admin::phrase('Nothing'),
 					'content_item' => ze\admin::phrase('Transparent'),
-					'template' => ze\admin::phrase('Empty'),
+					'layout' => ze\admin::phrase('Empty'),
 					'traits' => ['empty' => true]];
 		}
 
 
 		foreach ($layers as $level => $layer) {
 	
-			if ($layer == 'template') {
+			if ($layer == 'layout') {
 				$content = $dummyContentItem;
 				$version = $dummyVersion;
 			}
-			
 			$slotContents = [];
 			ze\plugin::slotContents(
 				$slotContents,
 				$content['id'], $content['type'], $content['admin_version'],
-				$template['layout_id'], $template['family_name'], $template['file_base_name'],
+				$layout['layout_id'],
 				$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
 				$runPlugins = false);
 	
@@ -171,7 +168,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 					if ($layer == $refinerName) {
 		
 				$usageLinks = [
-					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $template['layout_id']. '//'
+					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layout['layout_id']. '//'
 				];
 						unset($panel['items'][$slotName]['traits']['empty']);
 				
@@ -194,7 +191,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 								$panel['items'][$slotName]['traits']['wireframe'] = true;
 								
 								//Show how many items use a specific to slotName, and display links if possible.
-								$usageContentItems = ze\layoutAdm::slotUsage($template['layout_id'], $slotName);
+								$usageContentItems = ze\layoutAdm::slotUsage($layout['layout_id'], $slotName);
 								$usage = [
 									'content_item' => $usageContentItems[0] ?? null,
 									'content_items' => count($usageContentItems)

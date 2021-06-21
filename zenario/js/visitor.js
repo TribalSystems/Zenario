@@ -1609,6 +1609,11 @@ zenario.linkToItem = function(cID, cType, request, adminlogin) {
 			cType = split[0];
 		}
 	}
+	
+	//Catch the case where a string was entered instead of a number for the cID, but it's still numeric
+	if (cID == 1*cID) {
+		cID = 1*cID;
+	}
 
 	if (!cType) {
 		cType = 'html';
@@ -2000,9 +2005,9 @@ zenario.formSubmit = function(el, scrollToTopOfSlot, fadeOutAndIn, slotName) {
 		}
 		
 		if (fadeOutAndIn && !zenario.colorboxOpen) {
-			//Fade the slot out to give a graphical hint that something is happening
+			//Fade the slot out, and show a spinner, to give a graphical hint that something is happening
 			var fadeOutAndInSelector = (fadeOutAndIn === 1 || fadeOutAndIn === true) ? ('#' + plgslt_ + slotName) : fadeOutAndIn;
-			$(fadeOutAndInSelector).stop(true, true).animate({opacity: .5}, 200);
+			$(fadeOutAndInSelector).stop(true, true).addClass('zenario_loading_spinner').animate({opacity: .5}, 200);
 		}
 		
 		if ($el.attr('method') == 'post') {

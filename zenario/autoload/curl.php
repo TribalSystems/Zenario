@@ -100,5 +100,16 @@ class curl {
 		}
 		return $headers;
 	}
+	
+	//Given an associate array of headers, convert it into the format needed by CURL
+	public static function convertHeadersFromAssociativeToIndexed($in) {
+		$out = [];
+	
+		foreach ($in as $key => $value) {
+			$out[] = $key. ': '. $value;
+		}
+	
+		return $out;
+	}
 
 }

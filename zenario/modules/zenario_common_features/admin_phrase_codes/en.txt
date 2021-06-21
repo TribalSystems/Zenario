@@ -56,7 +56,6 @@ _FIX_DROPBOX_DIR_TO_USE_DROPBOX|You must fix the Dropbox directory before attemp
 _GBYTES|[[size]] GB
 _GROUPS|Groups
 _GROUPS:|Groups:
-_INVALID_IMAGE_TYPE|The uploaded file is not a valid image.
 _JAN|January
 _JOB_TITLE:|Job Title:
 _JUL|July
@@ -123,9 +122,9 @@ _VLP_IMPORT_FOR_WRONG_LANGUAGE|The Language Pack you are trying to import is for
 _WEAK|Too weak
 _WEBSITE:|Website:
 _YES|Yes
-_ZENARIO_GRID_MAKER_ERROR_001|Your zenario_custom/templates/grid_templates/ directory is not writable. The files needed cannot be written to the filesystem.
-_ZENARIO_GRID_MAKER_ERROR_002|A subdirectory in your zenario_custom/templates/ directory is not writable. Some of the files needed could not be written to the filesystem.
-_ZENARIO_GRID_MAKER_ERROR_003|Could not write an essential file to your zenario_custom/templates/ directory.
+_ZENARIO_GRID_MAKER_ERROR_001|Your zenario_custom/skins directory is not writable. The files needed cannot be written to the filesystem.
+_ZENARIO_GRID_MAKER_ERROR_002|A subdirectory in your zenario_custom/skins directory is not writable. Some of the files needed could not be written to the filesystem.
+_ZENARIO_GRID_MAKER_ERROR_003|Could not write an essential file to your zenario_custom/skins directory.
 _ZENARIO_GRID_MAKER_ERROR_004|The PHP Zip extension is not installed. Please enable it if you wish to create a ZIP file.
 _ZENARIO_GRID_MAKER_ERROR_005|Could not write to your private/downloads/ directory.
 _ZENARIO_GRID_MAKER_ERROR_006|Could not find the sample theme Skin.

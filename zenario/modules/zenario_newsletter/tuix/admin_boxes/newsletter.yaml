@@ -165,6 +165,10 @@ zenario_newsletter:
                 no_opt_out_group:
                     type: warning
                     show: false
+                newsletter_consent_policy_not_selected:
+                    type: warning
+                    show: false
+                    html: true
             fields:
                 recipients:
                     label: 'Recipients:'

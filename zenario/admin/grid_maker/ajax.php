@@ -35,7 +35,6 @@ if (!empty($_REQUEST['compress']) && !empty($_REQUEST['data'])) {
 $html = $css = '';
 $layoutId = 0;
 $data = false;
-
 if (!empty($_REQUEST['data'])) {
 	$data = json_decode($_REQUEST['data'], true);
 
@@ -48,24 +47,23 @@ if (!empty($_REQUEST['data'])) {
 
 } elseif (!empty($_REQUEST['loadDataFromLayout'])) {
 	if (!empty($_REQUEST['id'])) {
-		$data = ze\gridAdm::readLayoutCode($_REQUEST['id']);
+		$data = ze\gridAdm::getLayoutData($_REQUEST['id']);
 	} else {
-		$data = ze\gridAdm::readLayoutCode($_REQUEST['loadDataFromLayout']);
+		$data = ze\gridAdm::getLayoutData($_REQUEST['loadDataFromLayout']);
 	}
 }
 
 if (is_array($data) && ze\gridAdm::validateData($data)) {
- 	
+
  	//Save a Skin or a Template file to the filesystem
 	if (($_POST['save'] ?? false) && ($_POST['saveas'] ?? false)) {
 		exit;
 	}
-	if (($_POST['save'] ?? false) || ($_POST['saveas'] ?? false)) {
+	if (!empty($_POST['save']) || !empty($_POST['saveas'])) {
 		header('Content-Type: text/javascript; charset=UTF-8');
 		$a = [];
-		$preview = !($_POST['confirm'] ?? false);
+		$preview = empty($_POST['confirm']);
 		$layoutName = false;
-		$fileBaseName = false; 
 		
 		//Do some validation on the Template file before trying to save
 		if ($_POST['saveas'] ?? false) {
@@ -77,20 +75,19 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 			
 			} else {
 				$layoutName = $_POST['layoutName'] ?? false;
-				$fileBaseName = ze\layoutAdm::generateFileBaseName($layoutName);
 			}
 			
 			$layoutId = $_REQUEST['layoutId'] ?? false;
 			
 		} else {
 			if ((!$layoutId = $_REQUEST['layoutId'] ?? false)
-			 || (!$layout = ze\content::layoutDetails($layoutId))
-			 || (!$fileBaseName = $layout['file_base_name'])) {
+			 || (!$layout = ze\content::layoutDetails($layoutId))) {
 				echo ze\admin::phrase('Could not save layout.');
 				exit;
 			}
-		}			
-		$fileName = $fileBaseName. '.tpl.php';
+		}
+
+		$fileName = ze\layoutAdm::codeName($layoutId);
 		
 		//Not all of the validation above is relevant when previewing what will happen
 		if ($preview) {
@@ -101,85 +98,27 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 			
 			//Attempt to save, and report on what happened
 			$slots = [];
-			$status =
-				ze\gridAdm::generateDirectory($data, $slots, $writeToFS = true, $preview, $fileBaseName);
-			
-			if (ze::isError($status)) {
-				echo ze\admin::phrase($status);
-				exit;
-			}
-			
-			if (($_POST['save'] ?? false) && !$status['template_file_exists']) {
-				echo ze\admin::phrase('The template file you were trying to save has been deleted from the system. You may use "Save As" to save it as a new template file.');
-				exit;
-			
-			} elseif (($_POST['save'] ?? false) && $status['template_file_identical'] && $status['template_css_file_identical']) {
-				$a['success'] = ze\admin::phrase('Your template file has previously been saved to the filesystem.');
-			
-			} elseif (($_POST['saveas'] ?? false) && $status['template_file_exists']) {
-				$a['error'] = ze\admin::phrase('A template file "[[fileName]]" already exists. Please enter a different name.', ['fileName' => $fileName]);
-			}
 			
 			if (empty($a)) {
 				$a['layoutId'] = (int) $layoutId;
 				
 				if ($preview) {
-					
+					$a['message'] = ze\admin::phrase('Are you sure you wish to modify layout [[layout]]?',['layout' => $fileName]);
 					if ($_REQUEST['layoutId'] ?? false) {
 						$a['oldLayoutName'] = ze\row::get('layouts', 'name', ($_REQUEST['layoutId'] ?? false));
-					}
-					
-					$a['message'] = ze\admin::phrase('You are about to write files to your filesystem:');
-					
-					if (!$status['template_file_exists']) {
-						$a['message'] .= "\n\n". ze\admin::phrase('The template file "[[template_file_path]]" will be created.', $status);
-					
-					} elseif ($status['template_file_modified']) {
-						$a['message'] .= "\n\n". ze\admin::phrase('The template file "[[template_file_path]]" has been manually modified. If you continue, it will be overwritten and the modifications will be lost.', $status);
-					
-					} elseif ($status['template_file_smaller']) {
-						$a['message'] .= "\n\n". ze\admin::phrase('The template file "[[template_file_path]]" will be overwritten, adding extra slots.', $status);
-					
-					} elseif ($status['template_file_larger']) {
-						$a['message'] .= "\n\n". ze\admin::phrase('The template file "[[template_file_path]]" will be overwritten, removing slots.', $status);
-						
-						if (ze\row::exists('layouts', ['family_name' => $status['family_name'], 'file_base_name' => $status['file_base_name']])
-						 && ze\row::exists('template_slot_link', ['family_name' => $status['family_name'], 'file_base_name' => $status['file_base_name']])) {
-							$a['message'] .= "\n\n". ze\admin::phrase('This will affect your site, as any slots that are removed will no longer be visible.');
-						}
-					
-					} elseif (!$status['template_file_identical']) {
-						$a['message'] .= "\n\n". ze\admin::phrase('The template file "[[template_file_path]]" will be overwritten.', $status);
-					}
-					
-					if (!$status['template_css_file_exists']) {
-						$a['message'] .= "\n\n". ze\admin::phrase('The CSS file "[[template_css_file_path]]" will be created.', $status);
-					
-					} elseif (!$status['template_css_file_identical']) {
-						$a['message'] .= "\n\n". ze\admin::phrase('The CSS file "[[template_css_file_path]]" will be overwritten.', $status);
-					}
-					
-					$a['message'] .= "\n\n". ze\admin::phrase('(Path: [[CMS_ROOT]]).', ['CMS_ROOT' => CMS_ROOT]);
-				
+					} 
 				} else {
 					$a['success'] = '';
-					
-					if (!$status['template_file_exists']) {
-						$a['success'] = ze\admin::phrase('The template file "[[template_file_path]]" has been created.', $status);
-					
-					} elseif (!$status['template_file_identical']) {
-						$a['success'] = ze\admin::phrase('The template file "[[template_file_path]]" has been overwritten.', $status);
-					}
-					
-					if (!$status['template_css_file_exists']) {
-						$a['success'] .= "\n\n". ze\admin::phrase('The CSS file "[[template_css_file_path]]" has been created.', $status);
-					
-					} elseif (!$status['template_css_file_identical']) {
-						$a['success'] .= "\n\n". ze\admin::phrase('The CSS file "[[template_css_file_path]]" has been overwritten.', $status);
+					if ($_POST['save'] ?? false) {
+						
+						$dataDetails['json_data'] = $data;
+						$dataDetails['json_data_hash'] = ze::hash64(json_encode($data), 8);
+						
+						ze\row::update('layouts', $dataDetails, $layoutId);
+						$a['success'] .= ze\admin::phrase('Your layout has been saved.');
 					}
 					
 					$renameSlotsInDatabase = true;
-					
 					//If using the "Save As" option, create a new layout
 					if ($_POST['saveas'] ?? false) {
 						
@@ -190,24 +129,29 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 							$submission['content_type'] = 'html';
 							
 							//Get the default Skin for this Template Family
-							$submission['skin_id'] = ze\row::get('template_families', 'skin_id', $status['family_name']);
+							$submission['skin_id'] = 1;
 							
 							//If we're making a layout from scratch and are not copying a layout,
 							//there's no need to check for renamed slots
 							$renameSlotsInDatabase = false;
 						}
+						if ($layoutId) {
+							//If using "Save a copy" from grid maker remember the old id
+							$oldLayoutId = $layoutId;
+						}
 						
 						
 						$submission['name'] = $layoutName;
 						
-						$submission['file_base_name'] = $status['file_base_name'];
-						$submission['family_name'] = $status['family_name'];
-						
+						$submission['json_data'] = $data;
+						$submission['json_data_hash'] = ze::hash64(json_encode($data), 8);
+				
 						$a['layoutId'] = false;
-						ze\layoutAdm::save($submission, $a['layoutId'], $layoutId);
+						ze\layoutAdm::save($submission, $a['layoutId']);
+
 						$layout = ze\content::layoutDetails($a['layoutId']);
-						
-						$a['success'] .= ' '. ze\admin::phrase('Your layout has been created.');
+
+						$a['success'] .= ze\admin::phrase('Your layout has been created.');
 					}
 						
 					
@@ -226,10 +170,9 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 								//Don't change the data in the database if this has happened.
 								if (empty($oldToNewNames[$newName])
 								 && !ze\row::exists(
-										'template_slot_link',
+										'layout_slot_link',
 										[
-											'family_name' => $layout['family_name'],
-											'file_base_name' => $layout['file_base_name'],
+											'layout_id' => $layout['layout_id'],
 											'slot_name' => $newName]
 								)) {
 									//Switch the slot names in the system
@@ -241,11 +184,10 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 									ze\sql::update($sql);
 								
 									$sql = "
-										UPDATE IGNORE ".  DB_PREFIX. "template_slot_link
+										UPDATE IGNORE ".  DB_PREFIX. "layout_slot_link
 										SET slot_name = '". ze\escape::sql($newName). "'
 										WHERE slot_name = '". ze\escape::sql($oldName). "'
-										  AND family_name = '". ze\escape::sql($layout['family_name']). "'
-										  AND file_base_name = '". ze\escape::sql($layout['file_base_name']). "'";
+										  AND layout_id = ". (int) $layout['layout_id'];
 									ze\sql::update($sql);
 								
 									$sql = "
@@ -274,14 +216,18 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 						}
 					
 						//Update the new slots in the DB
-						ze\gridAdm::updateMetaInfoInDB($data, $slots, $layout);
+						ze\gridAdm::updateMetaInfoInDB($data, $layout);
 					}
 				}
 			}
 		}
 		
 		ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
-		
+		//If saving a copy keep the old Id selected in Organizer panel
+		if (isset($oldLayoutId)){
+			$a['layoutId'] = $oldLayoutId;
+			
+		}
 		echo json_encode($a);
 		exit;
 	

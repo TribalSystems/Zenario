@@ -127,9 +127,9 @@ if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 					You should replace your <code>'. CMS_ROOT. 'zenario/</code> directory with the
 					<code>zenario/</code> directory from the new copy of Zenario.
 				</p><p>
-					Please see the <a href="http://zenar.io/quick-upgrade.html">zenar.io/quick-upgrade.html</a> guide
-					or the <a href="http://zenar.io/cautious-upgrade.html">zenar.io/cautious-upgrade.html</a> guide
-					on <a href="http://zenar.io">zenar.io</a> for more information.
+					Please see the <a href="https://zenar.io/quick-upgrade.html">zenar.io/quick-upgrade.html</a> guide
+					or the <a href="https://zenar.io/cautious-upgrade.html">zenar.io/cautious-upgrade.html</a> guide
+					on <a href="https://zenar.io">zenar.io</a> for more information.
 				</p>';
 			exit;
 		}
@@ -161,21 +161,21 @@ if ($installed) {
 		FROM ". DB_PREFIX. "local_revision_numbers
 		WHERE path IN ('admin/db_updates/step_1_update_the_updater_itself', 'admin/db_updates/step_2_update_the_database_schema', 'admin/db_updates/step_4_migrate_the_data')
 		  AND patchfile IN ('updater_tables.inc.php', 'admin_tables.inc.php', 'content_tables.inc.php', 'user_tables.inc.php')
-		  AND revision_no < ". (38660). "
+		  AND revision_no < ". (int) EARLIEST_SUPPORTED_MIGRATION. "
 		LIMIT 1";
 
 	if (ze\sql::fetchRow(ze\sql::select($sql))) {
-		//If this looks like a very old version of Zenario, direct people to update to at least 7.5 first
+		//If this looks like a very old version of Zenario, direct people to update to at least 8.2 first
 		echo '
 			<p>
 				You are seeing this message because your database contains an installation
-				of Zenario running from before version 7.5.
+				of Zenario running from before version 8.2.
 			</p><p>
-				To use version 8 of Zenario, you must first update your database
-				to at least version 7.5.
+				To update to version 9 of Zenario, you must first update your database
+				to at least version 8.2.
 			</p><p>
-				Please download the latest package for the 7.x branch from our website at
-				<a href="http://zenar.io">http://zenar.io</a>, and update to that version first.
+				Please download the latest package for the 8.x branch from our website at
+				<a href="https://zenar.io">https://zenar.io</a>, and update to that version first.
 			</p>';
 		exit;
 	}
@@ -200,7 +200,6 @@ if ($installed) {
 		$dbVer = ze\sql::fetchRow(ze\sql::select($sql));
 		
 		
-		//If this looks like a very old version of Zenario, direct people to update to at least 7.5 first
 		echo '
 			<p>
 				You are seeing this message because your database contains an installation of Zenario from a later version.

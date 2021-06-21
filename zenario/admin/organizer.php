@@ -105,7 +105,7 @@ if (!empty($_GET['openedInIframe'])) {
 				title="'. ze\admin::phrase('Logout'). '"></a>
 		</div>
 		<div id="organizer_top_right_buttons"></div>
-		<div id="organizer_top_right_newicons"></div>';
+		<div id="organizer_topRightIcons"></div>';
 }
 
 

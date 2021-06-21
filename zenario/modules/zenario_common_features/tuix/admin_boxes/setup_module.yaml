@@ -5,56 +5,59 @@ zenario_setup_module:
     title: ""
     key:
         id: ""
-    hide_tab_bar: Yes
+    hide_tab_bar: true
     tabs:
         problems:
-            hidden: Yes
+            hidden: true
             edit_mode:
-                enabled: Yes
-                always_on: Yes
-                enable_revert: No
+                enabled: true
+                always_on: true
+                enable_revert: false
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: ""
         confirm:
-            hidden: Yes
+            hidden: true
             edit_mode:
-                enabled: Yes
-                always_on: Yes
-                enable_revert: No
+                enabled: true
+                always_on: true
+                enable_revert: false
             fields:
                 module_start_desc:
-                    ord: "9000"
-                    full_width: Yes
-                    hidden: Yes
+                    ord: 9000
+                    hidden: true
                     type: hidden
                     snippet:
                         html: 'Start the module'
                 grant_perms_desc:
-                    ord: "10000"
-                    full_width: Yes
-                    hidden: Yes
+                    ord: 10000
+                    hidden: true
                     type: select
                     snippet:
-                        html: 'This module uses its own set of permissions: &nbsp;'
+                        html: ''
                 grant_perms:
-                    ord: "10001"
-                    same_row: Yes
-                    hidden: Yes
+                    ord: 10001
+                    hidden: true
                     type: select
+                    label: 'Which administrators should be granted these permissions:'
                     empty_value: -- Select --
                     values:
                         myself:
-                            label: Grant myself the permissions needed to use this module
+                            label: Just grant myself the permissions
                         site_admins:
                             label: >
-                                Grant all site administrators the permissions needed to use this
-                                module
+                                Grant all current administrators the permissions
                         no:
-                            label: Do not grant any permissions
+                            label: Don't grant permissions
                     validation:
                         required_if_not_hidden: Please select an action.
+                grant_perms_desc_2:
+                    ord: 10002
+                    hide_with_previous_field: true
+                    type: select
+                    snippet:
+                        html: ''
     save_button_message: ""
     cancel_button_message: Cancel

@@ -125,7 +125,7 @@ if (ze::$canCache
 				}
 			"></x-zenario-cache-info></x-zenario-cache-info>
 			<script type="text/javascript">
-				window.zenarioCD = {load:', json_encode(ze::$cacheEnv), ', slots: ', json_encode($chSlots), ', cache_plugins: ', (int) ze::setting('cache_plugins'), '};
+				window.zenarioCD = {load:', json_encode(ze::$cacheEnv), ', slots: ', json_encode($chSlots), '};
 				zenario.tooltips(\'#zenario_cache_info *\');
 			</script>';
 	}

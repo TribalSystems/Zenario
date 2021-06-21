@@ -40,7 +40,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		if (ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
 			$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Google reCaptcha 2.0)';
-			$fields['anti_spam/captcha_type']['note_below'] = 'Captcha settings can be found in  <a href="' . $link. '" target="_blank">Site Settings</a>';
+			$fields['anti_spam/captcha_type']['note_below'] = 'Captcha settings can be found in <a href="' . $link. '" target="_blank">Configuration->Site Settings</a>, in the API Keys interface';
 		} else {
 			$fields['anti_spam/captcha_type']['note_below'] = 'To enable more kinds of captcha, please check your <a href="' . $link. '" target="_blank">API key details</a> and ensure all keys are completed.';
 		}
@@ -347,7 +347,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			
 		} else {
 			unset($box['tabs']['translations']);
-			$box['title'] = ze\admin::phrase('Creating a Form');
+			$box['title'] = ze\admin::phrase('Creating a form (enter basic settings, add fields after saving)');
 			if (!$box['key']['type']) {
 				$values['data/save_record'] = true;
 				$values['details/submit_button_text'] = 'Submit';
@@ -429,6 +429,16 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				if ($record['send_email_to_admin_condition'] == 'send_on_condition') {
 					//Note: the module select list uses the plural (fields), but the DB table uses the singular (field).
 					$fields['data/send_email_to_admin_condition_fields']['value'] = $record['send_email_to_admin_condition_field'];
+				}
+			}
+
+			//If "Enable summary page" is selected, check that the last page is visible.
+			//Display a warning if not.
+			if (ze\module::inc('zenario_user_forms')) {
+				$formPages = zenario_user_forms::getFormPages($formId);
+				if (!empty($formPages)) {
+					$lastPage = end($formPages);
+					$values['details/last_page_visibility'] = $lastPage['visibility'];
 				}
 			}
 		}
@@ -667,6 +677,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			)
 		) {
 			$fields['data_deletion/period_to_delete_response_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
+		}
+
+		if (!$values['details/enable_summary_page'] && $values['details/last_page_visibility'] && $values['details/last_page_visibility'] != 'visible') {
+			$fields['details/enable_summary_page']['error'] = $this->phrase('The final step of the form is not always visible. Please make sure it is always visible before turning this off.');
 		}
 	}
 	

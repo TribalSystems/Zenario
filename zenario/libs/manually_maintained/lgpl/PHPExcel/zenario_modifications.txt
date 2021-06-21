@@ -1,0 +1,28 @@
+Modified files and revisions:
+
+52203:
+    ./Classes/PHPExcel/Shared/String.php
+53354:
+    ./Classes/PHPExcel/Calculation.php
+    ./Classes/PHPExcel/Calculation/Functions.php
+    ./Classes/PHPExcel/Cell.php
+    ./Classes/PHPExcel/Cell/DefaultValueBinder.php
+    ./Classes/PHPExcel/Shared/OLE.php
+    ./Classes/PHPExcel/Worksheet/AutoFilter.php
+    ./Classes/PHPExcel/Writer/Excel5/Parser.php
+    ./Classes/PHPExcel/Writer/Excel5/Workbook.php
+    ./Classes/PHPExcel/Writer/Excel5/Worksheet.php
+53764:
+    ./Classes/PHPExcel/Cell/DefaultValueBinder.php
+    ./Classes/PHPExcel/Reader/Excel2003XML.php
+    ./Classes/PHPExcel/Reader/Excel5.php
+    ./Classes/PHPExcel/Reader/SYLK.php
+    ./Classes/PHPExcel/ReferenceHelper.php
+    ./Classes/PHPExcel/Style.php
+    ./Classes/PHPExcel/Worksheet.php
+53814:
+    ./Classes/PHPExcel/Settings.php
+    ./Classes/PHPExcel/Shared/OLE.
+53831:
+    ./PHPExcel/Writer/Excel2007/Chart.php
+    ./PHPExcel/Writer/Excel5/Workbook.php

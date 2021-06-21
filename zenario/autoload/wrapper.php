@@ -38,7 +38,7 @@ class wrapper {
 		if (!$pathURL) {
 			$pathURL = $path;
 		}
-	
+		
 		//Check if there's a stylesheet there
 		if (is_file(CMS_ROOT. $path. $file)) {
 		
@@ -73,10 +73,19 @@ class wrapper {
 		//If a layout has been specified, and it has a grid CSS, output that grid CSS
 		if (empty($req['print'])
 		 && !empty($req['layoutId'])
-		 && ($layout = \ze\content::layoutDetails($req['layoutId']))
-		 && ($path = \ze\content::templatePath($layout['family_name']))
-		 && (file_exists($file = (CMS_ROOT. \ze\content::templatePath($layout['family_name'], $layout['file_base_name'], true))))) {
-			\ze\wrapper::includeCSSFile($linkV, $overrideCSS, $path, basename($file));
+		 && ($cssFile = \ze\content::layoutCssPath($req['layoutId']))) {
+		 	
+		 	if ($linkV !== false) {
+		 		//The cache/layouts/ directory is blocked using the .htaccess file. This usually
+				//isn't a problem as normally all of the CSS is displayed using a wrapping script anyway.
+				//However if a designer turns off the wrappers for debugging reasons, we need to use an
+				//intermediary to show the file.
+				echo '
+<link rel="stylesheet" type="text/css" media="screen" href="zenario/styles/layout.css.php?id='. (int) $req['layoutId']. '&amp;'. $linkV. '"/>';
+		 		
+		 	} else {
+				\ze\wrapper::includeCSSFile($linkV, $overrideCSS, dirname($cssFile). '/', basename($cssFile));
+			}
 		}
 	
 	
@@ -86,7 +95,6 @@ class wrapper {
 			return;
 		}
 	
-		$templateFamily = $skin['family_name'];
 		$skins = [$skin['name']];
 	
 		$limit = 10;
@@ -94,7 +102,7 @@ class wrapper {
 			$addedSkin = false;
 		
 			if (!empty($skin['extension_of_skin'])
-			 && ($skin = \ze\content::skinName($skin['family_name'], $skin['extension_of_skin']))
+			 && ($skin = \ze\content::skinName(false, $skin['extension_of_skin']))
 			 && (!in_array($skin['name'], $skins))) {
 				array_unshift($skins, $skin['name']);
 				$addedSkin = true;
@@ -103,11 +111,14 @@ class wrapper {
 	
 	
 		foreach ($skins as $skinName) {
-			$skinPath = \ze\content::skinPath($templateFamily, $skinName);
-			$skinPathURL = \ze\content::skinURL($templateFamily, $skinName);
+			$skinPath = \ze\content::skinPath($skinName);
+			$skinPathURL = \ze\content::skinURL($skinName);
 		
 			if (!is_dir(CMS_ROOT. $skinPath)) {
-				echo "\n\n". \ze\admin::phrase('This page cannot be displayed, skin not found: '). $templateFamily. '/skins/'. $skinName;
+				echo "\n\n". \ze\admin::phrase('This page cannot be displayed, skin not found: '). 'skins/'. $skinName;
+				echo '<br /><br />If you have upgraded to Zenario 9 from Zenario 8, you should move skins directories from under zenario_custom/templates/grid_templates/skins to zenario_custom/skins.';
+                                echo '<br /><br />Layouts are now in the database! You can delete layouts from under zenario_custom/templates/grid_templates.';
+
 				echo '<br /><br /><a href="zenario/admin/organizer.php">Go to Organizer</a>';
 				exit;
 			}

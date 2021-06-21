@@ -30,12 +30,6 @@
 namespace ze;
 
 class skinAdm {
-
-
-
-	
-	
-	
 	
 	//Formerly "skinDescriptionFilePath()"
 	public static function descriptionFilePath($familyName, $name) {
@@ -46,7 +40,7 @@ class skinAdm {
 			'skin.xml'
 		] as $file) {
 			if (file_exists(CMS_ROOT. (
-				$path = \ze\content::skinPath($familyName, $name). $file
+				$path = 'zenario_custom/skins/'. $name. '/'. $file
 			))) {
 				return $path;
 			}
@@ -67,13 +61,12 @@ class skinAdm {
 		if ($skin) {
 			$limit = 20;
 			$skinsWeHaveRead = [];
-			$familyName = $skin['family_name'];
 			$name = $skin['name'];
 	
 			while (--$limit
 			 && empty($skinsWeHaveRead[$name])
 			 && ($skinsWeHaveRead[$name] = true)
-			 && ($path = \ze\skinAdm::descriptionFilePath($familyName, $name))) {
+			 && ($path = \ze\skinAdm::descriptionFilePath(false, $name))) {
 		
 				if (!$tagsToParse = \ze\tuix::readFile(CMS_ROOT. $path)) {
 					echo \ze\admin::phrase('[[path]] appears to be in the wrong format or invalid.', ['path' => CMS_ROOT. $path]);
@@ -166,33 +159,9 @@ class skinAdm {
 		return $values;
 	}
 
-
-	//Get a list of all skins in the filesystem, but not in the database
-	//Formerly "getAllNewSkins()"
-	public static function getAllNewSkins($templateFamily) {
-		clearstatcache();
-		$newSkins = [];
-	
-		foreach (scandir($dir = CMS_ROOT. \ze\content::templatePath($templateFamily). 'skins/') as $file) {
-			if ($file != '.' && $file != '..' && $file != '.svn' && file_exists($dir. $file. '/skin.xml')) {
-				if (!\ze\row::exists('skins', ['family_name' => $templateFamily, 'name' => $file])) {
-					$newSkins[] = $file;
-				}
-			}
-		}
-	
-		return $newSkins;
-	}
-
-	//Formerly "checkSkinInFS()"
-	public static function inFS($template_family, $skinName) {
-		return $template_family && $skinName && is_dir(CMS_ROOT. \ze\content::skinPath($template_family, $skinName));
-	}
-
 	//Formerly "deleteSkinAndClearForeignKeys()"
 	public static function delete($skinId) {
 		\ze\row::update('layouts', ['skin_id' => 0], ['skin_id' => $skinId]);
-		\ze\row::update('template_families', ['skin_id' => 0], ['skin_id' => $skinId]);
 		\ze\row::delete('skins', $skinId);
 	}
 
@@ -202,6 +171,7 @@ class skinAdm {
 		foreach ([
 			CMS_ROOT. 'cache/frameworks/',
 			CMS_ROOT. 'cache/pages/',
+			CMS_ROOT. 'cache/layouts/',
 			CMS_ROOT. 'cache/tuix/'
 		] as $cacheDir) {
 			if (is_dir($cacheDir)) {
@@ -221,7 +191,7 @@ class skinAdm {
 
 	//This function clears as many cached/stored things as possible!
 	//Formerly "zenarioClearCache()"
-	public static function clearCache($checkForGridChanges = false) {
+	public static function clearCache() {
 	
 		//Update the data-revision number in the database to clear anything stored in Organizer's local storage
 		\ze\db::updateDataRevisionNumber();
@@ -232,37 +202,13 @@ class skinAdm {
 		//Check for changes in TUIX, Layout and Skin files
 		\ze\miscAdm::checkForChangesInYamlFiles($forceScan = true);
 		\ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
-		
-		if ($checkForGridChanges) {
-			//Rescan grid template for slots
-			foreach (\ze\row::getAssocs(
-				'layouts',
-				['layout_id', 'family_name', 'file_base_name'],
-				['family_name' => 'grid_templates']
-			) as $layout) {
-		
-				//Attempt to read the grid data from the template file
-				if (($data = \ze\gridAdm::readLayoutCode($layout['layout_id']))
-				 && (!empty($data['cells']))
-				 && (\ze\gridAdm::validateData($data))) {
-				
-					//Get meta info on all of the slots
-					$html = '';
-					$slots = [];
-					\ze\gridAdm::generateHTML($html, $data, $slots);
-				
-					//Update the slot information in the database
-					\ze\gridAdm::updateMetaInfoInDB($data, $slots, $layout);
-				}
-			}
-		}
 	}
 
 	//Include a checksum calculated from the modificaiton dates of any css/js/html files
 	//Note that this is only calculated for admins, and cached for visitors
 	//Formerly "checkForChangesInCssJsAndHtmlFiles()"
 	public static function checkForChangesInFiles($runInProductionMode = false, $forceScan = false) {
-	
+		
 		//Do not try to do anything if there is no database connection!
 		if (!\ze::$dbL) {
 			return false;
@@ -271,7 +217,7 @@ class skinAdm {
 	
 		$time = time();
 		$changed = false;
-		$templateChanges = false;
+		$skinChanges = false;
 		$zenario_version = \ze\site::versionNumber();
 	
 		//Catch the case where someone just updated to a different version of the CMS
@@ -280,17 +226,17 @@ class skinAdm {
 			\ze\site::setSetting('yaml_files_last_changed', '');
 			\ze\site::setSetting('yaml_version', '');
 			$changed = true;
-			$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
+			$skinChanges = is_dir(CMS_ROOT. 'zenario_custom/skins/');
 	
 		//Get the date of the last time we ran this check and there was a change.
 		} elseif (!($lastChanged = (int) \ze::setting('css_js_html_files_last_changed'))) {
 			//If this has never been run before then it must be run now!
 			$changed = true;
-			$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
+			$skinChanges = is_dir(CMS_ROOT. 'zenario_custom/skins/');
 	
 		} elseif ($forceScan) {
 			$changed = true;
-			$templateChanges = is_dir(CMS_ROOT. 'zenario_custom/templates/');
+			$skinChanges = is_dir(CMS_ROOT. 'zenario_custom/skins/');
 	
 		//Don't run this in production mode unless $forceScan or $runInProductionMode is set
 		} elseif (!$runInProductionMode && !\ze\site::inDevMode()) {
@@ -305,7 +251,7 @@ class skinAdm {
 			//a template file change is the change that's triggering this
 			$dirs = [];
 			foreach ([
-				'zenario_custom/templates',
+				'zenario_custom/skins',
 				'zenario/js',
 				'zenario/reference',
 				'zenario/styles',
@@ -322,7 +268,7 @@ class skinAdm {
 				return false;
 			}
 		
-			//Check to see if there are any .css, .js or .html files that have changed on the system
+			//Check to see if there are any .css, .js, .html, .php or .yaml files that have changed on the system
 			$useFallback = true;
 		
 			if (defined('PHP_OS') && \ze\server::execEnabled()) {
@@ -330,13 +276,13 @@ class skinAdm {
 				chdir(CMS_ROOT);
 			
 				try {
-					//Look for any .css, .js or .html files that have been created or modified since this was last run.
+					//Look for any .css, .js, .html, .php or .yaml files that have been created or modified since this was last run.
 					//(Unfortunately this won't catch the case where the files are deleted.)
-					//We'll also look for any changes to *anything* in the zenario_custom/templates directory.
+					//We'll also look for any changes to *anything* in the zenario_custom/skins directory.
 					//(This will catch the case where files are deleted, as the modification times of directories are included.)
 					$find =
 						' -not -path "*/.*"'.
-						' \\( -name "*.css*" -o -name "*.js*" -o -name "*.html" -o -name "*.php" \\)'.
+						' \\( -name "*.css*" -o -name "*.js*" -o -name "*.html" -o -name "*.php" -o -name "*.yaml" \\)'.
 						' -print'.
 						' | sed 1q';
 			
@@ -367,13 +313,13 @@ class skinAdm {
 						$useFallback = false;
 					}
 				
-					$templateChanges = $changed && \ze\ring::chopPrefix('zenario_custom/templates/', $changed);
+					$skinChanges = $changed && \ze\ring::chopPrefix('zenario_custom/skins/', $changed);
 	
 				} catch (\Exception $e) {
 					$useFallback = true;
 				}
 			}
-		
+			
 			//If we couldn't use the command line, we'll do the same logic using a RecursiveDirectoryIterator
 			if ($useFallback) {
 				foreach ($dirs as $dir) {
@@ -384,7 +330,7 @@ class skinAdm {
 						if ($file->isFile()
 						 && $file->getMTime() > $lastChanged) {
 							$changed = true;
-							$templateChanges = $dir == 'zenario_custom/templates/';
+							$skinChanges = $dir == 'zenario_custom/skins/';
 							break 2;
 						}
 					}
@@ -394,7 +340,7 @@ class skinAdm {
 	
 	
 		if ($changed) {
-			if ($templateChanges) {
+			if ($skinChanges) {
 				//Clear the page cache completely if a Skin or a Template Family has changed
 				$sql = '';
 				$ids = $values = [];
@@ -402,68 +348,34 @@ class skinAdm {
 		
 		
 				//Mark all current Template Families/Template Files/Skins as missing
-				\ze\row::update('template_families', ['missing' => 1], []);
-				\ze\row::update('template_files', ['missing' => 1], []);
 				\ze\row::update('skins', ['missing' => 1], []);
 		
-				//Ensure that there is always a Template File and Family in the database to cover
-				//any Layouts and Skins that are also in the database, even if they would be missing.
-				foreach (\ze\row::getDistinctAssocs('layouts', ['family_name']) as $row) {
-					\ze\row::set('template_families', ['missing' => 1], $row);
-				}
-				foreach (\ze\row::getDistinctAssocs('layouts', ['family_name', 'file_base_name']) as $row) {
-					\ze\row::set('template_files', ['missing' => 1], $row);
-				}
-				foreach (\ze\row::getDistinctAssocs('skins', ['family_name']) as $row) {
-					\ze\row::set('template_families', ['missing' => 1], $row);
-				}
-		
+				
 				//Check that all of the template-families, files and skins in the filesystem are
 				//registered in the database, and add any newly found files/directories.
-				if (is_dir($dir = CMS_ROOT. \ze\content::templatePath())) {
-					foreach (scandir($dir) as $family) {
-						if ($family && substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
-							\ze\row::set('template_families', ['missing' => 0], ['family_name' => $family]);
+				if (is_dir($skinsDir = CMS_ROOT. 'zenario_custom/skins/')) {
+					foreach (scandir($skinsDir) as $skin) {
+						if (substr($skin, 0, 1) != '.' && is_dir($skinsDir. $skin)) {
+							$row = ['name' => $skin];
+							$exists = \ze\row::exists('skins', $row);
 					
-							foreach (scandir($dir2) as $templateFile) {
-								if (substr($templateFile, 0, 1) != '.'
-								 && substr($templateFile, -8) == '.tpl.php'
-								 && is_file($dir2. '/'. $templateFile)) {
-									\ze\row::set(
-										'template_files',
-										['missing' => 0],
-										[
-											'family_name' => $family,
-											'file_base_name' => substr($templateFile, 0, -8)]);
+							$details = ['missing' => 0];
+					
+							//Also update the Skin's description
+							$desc = false;
+							if (\ze\skinAdm::loadDescription($row, $desc)) {
+								$details['display_name'] = (($desc['display_name'] ?? false) ?: $row['name']);
+								$details['extension_of_skin'] = $desc['extension_of_skin'] ?? false;
+								$details['css_class'] = $desc['css_class'] ?? false;
+								$details['background_selector'] = (($desc['background_selector'] ?? false) ?: 'body');
+								$details['enable_editable_css'] = !\ze\ring::engToBoolean($desc['disable_editable_css'] ?? false);
+								$details['import'] = $desc['import'] ?? false;
+							
+								if (is_array($details['import'])) {
+									$details['import'] = implode("\n", $details['import']);
 								}
 							}
-					
-							if (is_dir($dir3 = $dir2. '/skins/')) {
-								foreach (scandir($dir3) as $skin) {
-									if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
-										$row = ['family_name' => $family, 'name' => $skin];
-										$exists = \ze\row::exists('skins', $row);
-								
-										$details = ['missing' => 0];
-								
-										//Also update the Skin's description
-										$desc = false;
-										if (\ze\skinAdm::loadDescription($row, $desc)) {
-											$details['display_name'] = (($desc['display_name'] ?? false) ?: $row['name']);
-											$details['extension_of_skin'] = $desc['extension_of_skin'] ?? false;
-											$details['css_class'] = $desc['css_class'] ?? false;
-											$details['background_selector'] = (($desc['background_selector'] ?? false) ?: 'body');
-											$details['enable_editable_css'] = !\ze\ring::engToBoolean($desc['disable_editable_css'] ?? false);
-											$details['import'] = $desc['import'] ?? false;
-										
-											if (is_array($details['import'])) {
-												$details['import'] = implode("\n", $details['import']);
-											}
-										}
-										\ze\row::set('skins', $details, $row);
-									}
-								}
-							}
+							\ze\row::set('skins', $details, $row);
 						}
 					}
 				}
@@ -474,16 +386,7 @@ class skinAdm {
 						\ze\skinAdm::delete($skinId);
 					}
 				}
-				foreach(\ze\row::getAssocs('template_files', ['family_name', 'file_base_name'], ['missing' => 1]) as $tf) {
-					if (!\ze\row::exists('layouts', $tf)) {
-						\ze\row::delete('template_files', $tf);
-					}
-				}
-				foreach(\ze\row::getValues('template_families', 'family_name', ['missing' => 1]) as $familyName) {
-					if (!\ze\layoutAdm::familyInUse($familyName)) {
-						\ze\row::delete('template_families', $familyName);
-					}
-				}
+				
 			}
 		
 			\ze\site::setSetting('css_js_html_files_last_changed', $time);

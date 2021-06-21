@@ -323,7 +323,7 @@ _help
 	'gridResp_hide' => 'Show on desktop only',
 	'gridResp_only' => 'Show on mobile only',
 	'gridSave' => 'Save',
-	'gridSaveAs' => 'Save as...',
+	'gridSaveAs' => 'Save a copy',
 	'gridSaveTemplate' => '',
 	'gridSaveCSS' => 'Save your CSS (grid)',
 	'gridSaveTemplateFile' => 'Save your layout',

@@ -56,6 +56,7 @@
 #zenario_fbAdminMessage td,
 #zenario_fbAdminMessage th,
 #zenario_fbAdminMessage p,
+#zenario_fbAdminMessage ul,
 #zenario_fbAdminInfoBox p,
 #zenario_fbAdminFloatingBox td,
 #zenario_fbAdminFloatingBox th,
@@ -108,6 +109,15 @@
 #zenario_fbAdminFloatingBox a,
 #zenario_fbAdminImageManager a {
 	border: none;
+}
+
+#zenario_fbAdminMessage ul {
+	list-style:disc;
+	padding-left:20px;
+}
+
+#zenario_fbAdminMessage ul li {
+	padding-bottom:3px;
 }
 
 
@@ -2695,7 +2705,8 @@ body.ie9 #zenario_fbAdminInner .div_table .zfab_row:hover .zenario_side_note_wra
 	top:25px;
 }
 
-#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zenario_side_note_wrap {
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note {
 	top:55px;
 }
 
@@ -2717,10 +2728,6 @@ body.ie9 #zenario_fbAdminInner .div_table .zfab_row:hover .zenario_side_note_wra
 }
 
 /* END Tooltips bottom */
-
-#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap {
-	top:0;
-}
 
 #zenario_fbAdminInner .zenario_note_below .zenario_note_content p,
 #zenario_fbAdminInner .div_table .zenario_side_note_wrap .zenario_side_note .zenario_note_content p,
@@ -3791,7 +3798,7 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 #zenario_fbAdminFloatingBox.zenario_wireframe_plugin_settings .zenario_fabHead #zenario_fabTitleWrap {
 	line-height:17px;
 	padding-left:25px;
-	background:url('../admin/images/slots/icon-modules-version-controlled.svg') no-repeat left center / auto 17px;
+	background:url('../admin/images/slots/icon-modules-version-controlled-black-arrows.svg') no-repeat left center / auto 17px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_wireframe_plugin_settings .zenario_fabHead #zenario_fabTitleWrap {

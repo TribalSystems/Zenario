@@ -74,20 +74,61 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 		$box['tabs']['confirm']['hidden'] = false;
 		$box['tabs']['confirm']['fields']['module_start_desc']['hidden'] = false;
 		$box['tabs']['confirm']['fields']['module_start_desc']['snippet']['html'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
-
+		
+		
+		$perms = $labels = [];
 		if ($module['status'] == 'module_not_initialized'
-		 && ($perms = ze\moduleAdm::scanPermissionsFromDescription($module['class_name']))) {
-			$box['tabs']['confirm']['fields']['grant_perms']['hidden'] = false;
+		 && (ze\moduleAdm::scanPermissionsFromDescription($module['class_name'], $perms, $labels))) {
 			$box['tabs']['confirm']['fields']['grant_perms_desc']['hidden'] = false;
 	
 			if (isset($box['max_height'])) {
-				$box['max_height'] = 170;
+				$box['max_height'] = 300;
 			}
-	
+			
+			$desc = '';
+			
+			if (count($perms) == 1) {
+				$desc = ze\admin::phrase('This module defines a new administrator permission:');
+			} else {
+				$desc = ze\admin::phrase('This module defines new administrator permissions:');
+			}
+			
+			$desc .= '<ul>';
+			foreach ($labels as $perm => $label) {
+				$desc .= '<li>'. htmlspecialchars($label). '</li>';
+			}
+			$desc .= '</ul>';
+			
+			$fields['confirm/grant_perms_desc']['snippet']['html'] = $desc;
+			
+			$countOfAdminsWithSpecificPerms =
+				ze\row::count('admins',
+					['authtype' => 'local', 'status' => 'active', 'permissions' => 'specific_actions']
+				);
+			$countOfAdminsWithAllPerms =
+				ze\row::count('admins',
+					['authtype' => 'local', 'status' => 'active', 'permissions' => 'all_permissions']
+				);
+			
+			if ($countOfAdminsWithSpecificPerms) {
+				$box['tabs']['confirm']['fields']['grant_perms']['hidden'] = false;
+			
+				$fields['confirm/grant_perms']['values']['site_admins']['label'] =
+					ze\admin::phrase('All current administrators ([[n]])',
+						['n' => $countOfAdminsWithSpecificPerms]
+					);
+			
+				$fields['confirm/grant_perms_desc_2']['snippet']['html'] =
+					ze\admin::phrase('Administrators with &ldquo;every possible permission&rdquo; ([[n]]) will be able to use the module. For granular control over individual administrators, please go to the <a href="[[link]]" target="blank">Administrators panel</a>.',
+						[
+							'n' => $countOfAdminsWithAllPerms,
+							'link' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__users/panels/administrators')
+						]
+					);
+			}
+			
 			if (($_SESSION['admin_global_id'] ?? false) || ($_SESSION['admin_permissions'] == 'all_permissions')) {
 				unset($box['tabs']['confirm']['fields']['grant_perms']['values']['myself']);
-				$box['tabs']['confirm']['fields']['grant_perms']['values']['site_admins']['label'] =
-					ze\admin::phrase('Grant all administrators the permissions added by this module');
 			}
 		}
 	}
@@ -168,16 +209,18 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 			}
 	
 	
-	
+			$perms = $labels = [];
 			if (!ze\ring::engToBoolean($box['tabs']['confirm']['fields']['grant_perms']['hidden'])
 			 && (($values['confirm/grant_perms'] == 'myself' && !($_SESSION['admin_global_id'] ?? false)) || $values['confirm/grant_perms'] == 'site_admins')
-			 && ($perms = ze\moduleAdm::scanPermissionsFromDescription($module['class_name']))) {
+			 && (ze\moduleAdm::scanPermissionsFromDescription($module['class_name'], $perms, $labels))) {
 		
 				if ($values['confirm/grant_perms'] == 'myself') {
 					ze\adminAdm::savePerms(ze\admin::id(), $perms);
 				} else {
-					$result = ze\row::query('admins', 'id', ['authtype' => 'local', 'status' => 'active']);
-					while ($admin = ze\sql::fetchAssoc($result)) {
+					foreach (ze\row::query('admins',
+						'id',
+						['authtype' => 'local', 'status' => 'active', 'permissions' => 'specific_actions']
+					) as $admin) {
 						ze\adminAdm::savePerms($admin['id'], $perms);
 					}
 				}

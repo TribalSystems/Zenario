@@ -1199,7 +1199,7 @@ class content {
 		//and then html type Layouts in that order
 		$sql = "
 			SELECT
-				family_name, layout_id, file_base_name, skin_id, css_class,
+				layout_id, skin_id, css_class,
 				cols, min_width, max_width, fluid, responsive
 			FROM ". DB_PREFIX. "layouts
 			ORDER BY
@@ -1215,7 +1215,8 @@ class content {
 	
 		$result = \ze\sql::select($sql);
 		$template = \ze\sql::fetchAssoc($result);
-	
+		$layoutIdentifier = \ze\layoutAdm::codeName($template['layout_id']);
+		
 		\ze::$layoutId = $template['layout_id'];
 		\ze::$cols = (int) $template['cols'];
 		\ze::$minWidth = (int) $template['min_width'];
@@ -1223,13 +1224,6 @@ class content {
 		\ze::$fluid = (bool) $template['fluid'];
 		\ze::$responsive = (bool) $template['responsive'];
 		\ze::$templateCSS = $template['css_class'];
-		\ze::$templateFamily = $template['family_name'];
-		\ze::$templateFileBaseName = $template['file_base_name'];
-		\ze::$templateFilename = $template['file_base_name']. '.tpl.php';
-		\ze::$templatePath = \ze\content::templatePath(\ze::$templateFamily);
-	
-		//This constant was used in some old Template Files.
-		define('TEMPLATE_PATH', \ze::$templateFamily);
 	
 		if ((\ze::$skinId = \ze\content::layoutSkinId($template, true))
 		 && ($skin = \ze\content::skinDetails(\ze::$skinId))) {
@@ -1282,18 +1276,15 @@ class content {
 	public static function layoutSkinId($template, $fallback = false) {
 	
 		if (!is_array($template)) {
-			$template = \ze\row::get('layouts', ['family_name', 'skin_id'], $template);
+			$template = \ze\row::get('layouts', ['skin_id'], $template);
 		}
 	
 		if ($template) {
 			if ($template['skin_id']) {
 				return $template['skin_id'];
 		
-			} elseif ($skinId = \ze\row::get('template_families', 'skin_id', ['family_name' => $template['family_name']])) {
-				return $skinId;
-		
 			} elseif ($fallback) {
-				return \ze\row::get('skins', 'id', ['family_name' => $template['family_name'], 'missing' => 0]);
+				return \ze\row::get('skins', 'id', ['missing' => 0]);
 			}
 		}
 		return false;
@@ -1431,7 +1422,7 @@ class content {
 
 
 	//Formerly "getSearchtermParts()"
-	public static function searchtermParts($searchString) {
+	public static function searchtermParts($searchString, $allowMultilingualChars = true) {
 		//Remove everything from the search terms except for word characters, single quotes (which can be part of words) and double quotes
 		//Attempt to validate allowing UTF-8 characters through
 		if (!function_exists('mb_ereg_replace')
@@ -1444,8 +1435,19 @@ class content {
 		$searchString = substr($searchString, 0, 100);
 	
 		//Break the search string up into tokens.
-		//Normally we break by spaces, but you can use a pattern in double quotes to override this
-		preg_match_all('/"([^"]*\w[^"]*)"|(\S*\w\S*)/', trim($searchString), $searchStrings, PREG_SET_ORDER);
+		//Normally we break by spaces, but you can use a pattern in double quotes to override this.
+
+		//Attempt to validate allowing UTF-8 characters through
+		$invalid = 0;
+		if ($allowMultilingualChars) {
+			$invalid = preg_match_all('/"([^"]*[\p{L}\p{M}\d\_][^"]*)"|(\S*[\p{L}\p{M}\d\_]\S*)/u', trim($searchString), $searchStrings, PREG_SET_ORDER);
+		}
+		
+		//Fall back to traditional pattern matching if that fails
+		if ($invalid !== 0 && $invalid !== 1) {
+			preg_match_all('/"([^"]*\w[^"]*)"|(\S*\w\S*)/', trim($searchString), $searchStrings, PREG_SET_ORDER);
+		}
+
 	
 		$quotesUsed = false;
 		$searchWordsAndPhrases = [];
@@ -1470,10 +1472,13 @@ class content {
 		//Just in case the user doesn't know about the "using quotes to group words together" feature,
 		//add the whole phrase in as a search term.
 		//Also do this as a fallback in case nothing was matched
-		if (empty($searchWordsAndPhrases)
-		 || (!$quotesUsed && count($searchStrings) > 1)) {
-			$searchWordsAndPhrases[$searchString] = 'whole phrase';
-		}
+
+		//As of 13 Jan 2020, this feature is disabled. --Marcin
+		
+		// if (empty($searchWordsAndPhrases)
+		//  || (!$quotesUsed && count($searchStrings) > 1)) {
+		// 	$searchWordsAndPhrases[$searchString] = 'whole phrase';
+		// }
 	
 		return $searchWordsAndPhrases;
 	}
@@ -1508,14 +1513,11 @@ class content {
 	//	Layouts  //
 
 	//Formerly "getTemplateDetails()"
-	public static function layoutDetails($layoutId, $showContentItemCount = false) {
+	public static function layoutDetails($layoutId, $showUsage = true, $checkIfDefault = false) {
 		$sql = "
 			SELECT
 				l.layout_id,
-				l.family_name,
-				l.file_base_name,
-				CONCAT(l.file_base_name, '.tpl.php') AS filename,
-				CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR)), ' ', l.name) AS id_and_name,
+				CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR))) AS code_name,
 				l.name,
 				l.content_type,
 				l.status,
@@ -1525,47 +1527,135 @@ class content {
 				l.bg_color,
 				l.bg_position,
 				l.bg_repeat,
-				ct.content_type_name_en AS default_layout_for_ctype,
+				l.json_data_hash";
+		
+		if ($checkIfDefault) {
+			$sql .= ",
+				ct.content_type_name_en AS default_layout_for_ctype";
+		}
+		
+		if ($showUsage) {
+			$sql .= ",
 				(	SELECT
 						count( DISTINCT id)
 					FROM " . DB_PREFIX . "content_item_versions
 					WHERE layout_id = " . (int) $layoutId . "
 				) AS content_item_count
-			FROM ". DB_PREFIX. "layouts l
+			";
+		}
+		
+		$sql .= "
+			FROM ". DB_PREFIX. "layouts l";
+		
+		if ($checkIfDefault) {
+			$sql .= "
 			LEFT JOIN " . DB_PREFIX . "content_types ct
-				ON ct.default_layout_id = l.layout_id
+			   ON ct.default_layout_id = l.layout_id";
+		}
+		
+		$sql .= "
 			WHERE l.layout_id = ". (int) $layoutId;
-		$result = \ze\sql::select($sql);
-		return \ze\sql::fetchAssoc($result);
+		
+		if ($layout = \ze\sql::fetchAssoc($sql)) {
+			$layout['id_and_name'] = $layout['code_name']. ' '. $layout['name'];
+		}
+		
+		return $layout;
 	}
 
-	//Formerly "zenarioTemplatePath()"
-	public static function templatePath($templateFamily = false, $fileBaseName = false, $css = false) {
-		return 'zenario_custom/templates/'. ($templateFamily? $templateFamily. '/'. ($fileBaseName? $fileBaseName. ($css? '.css' : '.tpl.php') : '') : '');
+
+	
+	public static function layoutHtmlPath($layoutId) {
+		return self::generateLayoutFiles($layoutId, true, false);
+	}
+	public static function layoutCssPath($layoutId) {
+		return self::generateLayoutFiles($layoutId, false, true);
 	}
 	
+	private static function generateLayoutFiles($layoutId, $generateHTML, $generateCSS) {
+		if ($layout = \ze\content::layoutDetails($layoutId, $showUsage = false, $checkIfDefault = false)) {
+			$codeName = $layout['code_name'];
+			if ($layoutDir = \ze\cache::createDir($codeName. '_'. $layout['json_data_hash'], 'cache/layouts')) {
+				
+				$data = null;
+				$tplFile = $layoutDir. $codeName. '.tpl.php';
+				$cssFile = $layoutDir. $codeName. '.css';
+				
+				if ($generateHTML && !file_exists(CMS_ROOT. $tplFile)) {
+					if (!is_writable(CMS_ROOT. $layoutDir)) {
+						return false;
+					}
+					
+					$html = '';
+					$slots = [];
+					$data = \ze\row::get('layouts', 'json_data', $layoutId);
+					
+					\ze\gridAdm::generateHTML($html, $data, $slots);
+					
+					if (file_put_contents(CMS_ROOT. $tplFile, $html)) {
+						\ze\cache::chmod(CMS_ROOT. $tplFile);
+					} else {
+						return false;
+					}
+				}
+				
+				if ($generateCSS && !file_exists(CMS_ROOT. $cssFile)) {
+					if (!is_writable(CMS_ROOT. $layoutDir)) {
+						return false;
+					}
+					
+					$html = '';
+					if ($data === null) {
+						$data = \ze\row::get('layouts', 'json_data', $layoutId);
+					}
+					
+					\ze\gridAdm::generateCSS($css, $data);
+					
+					if (file_put_contents(CMS_ROOT. $cssFile, $css)) {
+						\ze\cache::chmod(CMS_ROOT. $cssFile);
+					} else {
+						return false;
+					}
+				}
+				
+				if ($generateHTML) {
+					if ($generateCSS) {
+						return [$tplFile, $cssFile];
+					} else {
+						return $tplFile;
+					}
+				} else {
+					if ($generateCSS) {
+						return $cssFile;
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
 	
 	
 	//	Skins  //
 
 	//Formerly "getSkinFromId()"
 	public static function skinDetails($skinId) {
-		return \ze\row::get('skins', ['id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['id' => $skinId]);
+		return \ze\row::get('skins', ['id', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['id' => $skinId]);
 	}
 
 	//Formerly "getSkinFromName()"
 	public static function skinName($familyName, $skinName) {
-		return \ze\row::get('skins', ['id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['family_name' => $familyName, 'name' => $skinName]);
+		return \ze\row::get('skins', ['id', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['name' => $skinName]);
 	}
 
 	//Formerly "getSkinPath()"
-	public static function skinPath($templateFamily = false, $skinName = false) {
-		return \ze\content::templatePath(($templateFamily ?: \ze::$templateFamily)). 'skins/'. ($skinName ?: \ze::$skinName). '/';
+	public static function skinPath($skinName = false) {
+		return 'zenario_custom/skins/'. ($skinName ?: \ze::$skinName). '/';
 	}
 
 	//Formerly "getSkinPathURL()"
-	public static function skinURL($templateFamily = false, $skinName = false) {
-		return \ze\content::templatePath(($templateFamily ?: \ze::$templateFamily)). 'skins/'. rawurlencode(($skinName ?: \ze::$skinName)). '/';
+	public static function skinURL($skinName = false) {
+		return 'zenario_custom/skins/'. rawurlencode(($skinName ?: \ze::$skinName)). '/';
 	}
 	
 

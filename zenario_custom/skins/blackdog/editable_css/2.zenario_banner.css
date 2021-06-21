@@ -1,0 +1,221 @@
+.zenario_banner .banner_image img {
+	max-width:100% !important;
+	height:auto !important;
+}
+
+/* Logo
+--------------------------------------------------------------------------------------------------*/
+
+.slot_logo .zenario_banner .banner_image {
+  	padding-top:15px;
+}
+
+.slot_logo .zenario_banner .banner_image a {
+	display:inline-block;
+}
+
+/* Masthead
+--------------------------------------------------------------------------------------------------*/
+
+.slot_masthead .zenario_banner {
+	position:relative;
+}
+
+.slot_masthead .zenario_banner .banner_image {
+	text-align:center;
+}
+
+.slot_masthead .zenario_banner .banner_image img {
+	margin:auto;
+}
+
+.slot_masthead .zenario_banner .banner_content {
+	position:absolute;
+	left:0;
+	right:0;
+	bottom:15px;
+	margin:auto;
+	max-width:1250px;
+	padding:20px;
+	background:rgba(0,0,0,0.5);
+}
+
+.slot_masthead .zenario_banner .banner_content * {
+	color:#FFF;
+}
+
+.slot_masthead .zenario_banner .banner_content .banner_title h2 {
+	font-size:2em;
+}
+
+/* Masthead background image
+--------------------------------------------------------------------------------------------------*/
+
+.slot_masthead .zenario_banner .banner_wrap_inner > a {
+	width:100% !important;
+	height:350px !important;
+	background-size:cover !important;
+	background-position:center !important;
+}
+
+/* Standard
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_banner.banner_standard > div {
+	padding:30px 0 0;
+}
+
+.zenario_banner.banner_standard .banner_title h2 {
+	font-size:1em;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	text-transform:uppercase;
+	margin-bottom:10px;
+}
+
+.zenario_banner.banner_standard .banner_title h2,
+.zenario_banner.banner_standard .banner_title h2 a {
+	color:#525151;
+}
+
+.zenario_banner.banner_standard .banner_title h2 a:hover {
+	text-decoration:none;
+}
+
+.zenario_banner.banner_standard .banner_text h2 {
+	margin-bottom:40px;
+}
+
+.zenario_banner.banner_standard .banner_more {
+	padding-top:30px;
+}
+
+/* Full banner
+--------------------------------------------------------------------------------------------------*/
+
+.slot_full_banner .zenario_banner {
+	overflow:hidden;
+	text-align:center;
+}
+
+.slot_full_banner .zenario_banner .banner_wrap {
+	display:inline-block;
+	margin:auto;
+	position:relative;
+}
+
+.slot_full_banner .zenario_banner .banner_wrap .banner_content {
+  	position: absolute;
+  	top: 50%;
+  	transform: translateY(-50%);
+  	padding:0 20px;
+  	width:calc(100% - 40px);
+  	left:0;
+  	right:0;
+  	margin:auto;
+}
+
+.slot_full_banner .zenario_banner .banner_wrap .banner_content h2 a:hover {
+	text-decoration:none;
+}
+
+.slot_full_banner .zenario_banner .banner_wrap .banner_content p {
+	font-size:2em;
+	color:#000;
+}
+
+.slot_full_banner .zenario_banner .banner_wrap .banner_more {
+	padding-top:30px;
+}
+
+/* Link back
+--------------------------------------------------------------------------------------------------*/
+
+.banner_link_back .banner_title a:before {
+	font-family: 'FontAwesome';
+	content: "\f137"; /* fa-angle-left */
+	padding-right:5px;
+}
+
+/* Animated ghost button
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_banner.banner_ghost_button *:before,
+.zenario_banner.banner_ghost_button *:after {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+.zenario_banner.banner_ghost_button .banner_more {
+	display:flex;
+	align-items:center;
+	justify-content:center;
+}
+
+.zenario_banner.banner_ghost_button .banner_more a {
+	display:inline-block;
+  	width:200px;
+  	padding:15px 0px;
+  	position:relative;
+  	box-shadow: 0 2px 10px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.1);
+	-webkit-transition:0.3s all ease;
+  	transition:0.3s ease all;
+  	text-transform:uppercase;
+  	text-align:center;
+  	color:#00698C;
+  	border:3px solid #00698C;
+}
+
+.zenario_banner.banner_ghost_button .banner_more a:hover,
+.zenario_banner.banner_ghost_button .banner_more a:focus {
+	color:#FFF;
+	text-decoration:none;
+}
+
+.zenario_banner.banner_ghost_button .banner_more a:before {
+    -webkit-transition:0.5s all ease;
+    transition:0.5s all ease;
+    position:absolute;
+    top:0;
+    left:50%;
+    right:50%;
+    bottom:0;
+    opacity:0;
+    content:'';
+    background-color:#00698C;
+    z-index:-2;
+}
+
+.zenario_banner.banner_ghost_button .banner_more a:hover:before {
+	-webkit-transition:0.5s all ease;
+    transition:0.5s all ease;
+    left:0;
+    right:0;
+    opacity:1;
+}
+
+.zenario_banner.banner_ghost_button .banner_more a:focus:before {
+	transition:0.5s all ease;
+    left:0;
+    right:0;
+    opacity:1;
+}
+
+/* Anchor
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_banner a.anchor {
+	display: block;
+    position: relative;
+    visibility: hidden;
+	top:-110px;
+}
+
+.zenario_adminLoggedIn .zenario_banner a.anchor {
+	top:-150px;
+}
+
+body.mobile .zenario_banner a.anchor,
+body.zenario_adminLoggedIn.mobile .zenario_banner a.anchor {
+	top:-80px;
+}

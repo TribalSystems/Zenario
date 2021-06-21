@@ -27,7 +27,7 @@ email_templates:
                 
                 <p>To administer your site, please go to <a href = "[[URL]][[SUBDIRECTORY]]zenario/admin">[[URL]][[SUBDIRECTORY]]zenario/admin</a> and log in with your admin username, [[USERNAME]].</p>
                 
-                <p>You can get free support and documentation at <a href = "http://zenar.io">http://zenar.io</a>.</p>
+                <p>You can get free support and documentation at <a href = "https://zenar.io">https://zenar.io</a>.</p>
                 
                 <p>For commercial support, hosting, design and development services, please visit <a href = "http://tribalsystems.uk" >http://tribalsystems.uk</a>.</p>
                 
@@ -136,7 +136,7 @@ email_templates:
             
             To confirm your login, please click the following button:
             
-            <p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[URL]][[SUBDIRECTORY]]admin.php?verification_code=[[CODE]]">AUTHENTICATE</a></p>
+            <p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[VERIFICATION_LINK]]">AUTHENTICATE</a></p>
             
             If the above link doesn't work, copy the following code (all UPPER CASE letters) and paste it into your browser:
             

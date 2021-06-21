@@ -757,8 +757,6 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 				}
 			}
 		}
-		
-		thus.setPhiVariables();
 	}
 	
 	
@@ -1102,10 +1100,6 @@ methods.focusField = function(field, selectionStart, selectionEnd) {
 
 methods.$getPickItemsInput = function(id) {
 	return $(thus.get('name_for_' + id)).find('.TokenSearch input');
-};
-
-methods.setPhiVariables = function() {
-	zenario.phiVariables = undefined;
 };
 
 methods.errorOnBox = function() {
@@ -1754,7 +1748,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			}
 		}
 		
-		html += _$html(tag, 'id', tag + '__' + id, 'class', field.css_class, displayVal);
+		html += _$html(tag, 'id', tag + '__' + id, 'class', field.css_class, 'style', field.style, displayVal);
 	
 	//Draw HTML snippets
 	} else if (snippet = field.snippet) {
@@ -2191,12 +2185,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								oninit: undefined
 							}),
 						optionsWithImagesAndLinks = _.extend({}, normalOptions, {
-                                                                menubar: true,
-                                                                menu: {
-                                                                        insert: {title: 'Insert', items: 'link | anchor hr charmap'},
-                                                                        table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
-                                                                        tools: {title: 'Tools', items: 'searchreplace | code'}
-                                                                },
+								menubar: true,
+								menu: {
+									insert: {title: 'Insert', items: 'link | anchor hr charmap'},
+									table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
+									tools: {title: 'Tools', items: 'searchreplace | code'}
+								},
 								toolbar: 'undo redo | image link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | code fullscreen',
 		
 								file_browser_callback: zenarioA.fileBrowser,
@@ -2215,7 +2209,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								toolbar: 'undo redo | image | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen'
 							}),
 						optionsWithLinks = _.extend({}, optionsWithImages, {
-								toolbar: 'undo redo | link unlink | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | code fullscreen'
+								toolbar: 'undo redo | link unlink | bold italic underline strikethrough superscript subscript forecolor backcolor removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | code fullscreen'
 							});
 				
 					if (readOnly) {
@@ -2379,7 +2373,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						html += '<span class="zenario_textbox_with_autocomplete">';
 						isTextFieldWithAutocomplete = true;
 					}
-			
+					
+					if (fieldType == 'checkbox' && field.onoff) {
+						extraAtt['class'] = 'onoffswitch-checkbox';
+						html += '<div class="onoffswitch">';
+					}
+					
 					html += '<input';
 					extraAtt.type = fieldType;
 				}
@@ -2491,6 +2490,16 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		
 		} else {
 			html += '/>';
+		}
+		
+
+		if (fieldType == 'checkbox' && field.onoff) {
+			html +=
+				_$label('class', 'onoffswitch-label', 'for', id,
+					_$span('class', 'onoffswitch-inner') +
+					_$span('class', 'onoffswitch-switch')
+				) +
+			'</div>';
 		}
 		
 		if (fieldType == 'select') {
@@ -4407,14 +4416,85 @@ methods.setCodeEditorPosition = function(codeEditor, editingPositions) {
 	}
 };
 
-methods.appendCodeEditorValue = function(editorId, value) {
+//Given a snippet of text, try to add that into the editor
+methods.appendCodeEditorValue = function(editorId, snippetToInsert, atCursor) {
 	
+	//Get the editor, the current cursor position (or the current selection position,
+	//if text is selected), and what the current value of the text in the editor is.
 	var codeEditor = ace.edit(editorId),
-		pos = thus.getCodeEditorPosition(codeEditor);
+		pos = thus.getCodeEditorPosition(codeEditor),
+		text = codeEditor.getValue();
 	
-	codeEditor.setValue(codeEditor.getValue() + value);
 	
+	//Have an option to insert the snippet of text at the cursor.
+	if (atCursor && pos.range) {
+		
+		//To deal with this as simply as possible, we'll try and split the current value
+		//into three pieces:
+			//The text before the selection
+			//Any text inside the selection (which will be thrown away and replaced)
+			//The text after the selection
+		
+		//The information we have on where the cursor is comes in the form of a 2D
+		//co-ordinate, but the value of the editor's contents is a 1D text string
+		//with line breaks.
+		//We'll need to convert the contents into a 2D array of lines.
+		var li,
+			lines = text.split(/\r?\n\r?/g),
+			selectionStartX = pos.range.start.column,
+			selectionStartY = pos.range.start.row,
+			selectionEndX = pos.range.end.column,
+			selectionEndY = pos.range.end.row;
+		
+		text = '';
+		
+		
+		//Loop through the lines before the cursor/selection.
+		//We can just add them back into the output.
+		for (li = 0; li < selectionStartY; ++li) {
+			text += lines[li] + '\n';
+		}
+		
+		//On the line that the cursor is in (or that the selection starts in),
+		//just add the contents of the line before the cursor (or before the selection starts).
+		text += lines[li].substr(0, selectionStartX);
+		
+		//Add the new snippet of text
+		text += snippetToInsert;
+		
+		//For selections, if the selection ends on a lower line than it starts, move
+		//down to that line.
+		li = selectionEndY;
+		
+		//Add the remaining text to the right of the cursor on the line it was on
+		//(or after the selection ends).
+		text += lines[li].substr(selectionEndX);
+		
+		//Loop through the lines after the cursor/selection.
+		//We can just add them back into the output.
+		for (li = selectionEndY + 1; defined(lines[li]); ++li) {
+			text += '\n' + lines[li];
+		}
+		
+		
+		//Move the cursor to the end of the inserted text.
+		//Also, if it was a selection, de-select it.
+		pos.range.start.column =
+		pos.range.end.column = selectionStartX + snippetToInsert.length;
+		pos.range.start.row =
+		pos.range.end.row = selectionStartY;
+		
+	
+	//Have an option to insert text at the end of the editor
+	} else {
+		//This is way more simple! We can just add the text onto the end!
+		text += snippetToInsert;
+	}
+	
+	//Update the value of the editor
+	codeEditor.setValue(text);
 	thus.setCodeEditorPosition(codeEditor, pos);
+	
 };
 
 

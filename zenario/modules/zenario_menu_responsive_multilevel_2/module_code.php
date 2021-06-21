@@ -30,8 +30,54 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_menu_responsive_multilevel_2 extends zenario_menu {
 	
 	public function init(){
-		
 		if (parent::init()) {
+			if ($this->setting('show_link_to_home_page')) {
+				if ($tagId = $this->setting('home_page')) {
+					$cID = $cType = false;
+					ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+					$this->mergeFields['Home_Link'] = $this->linkToItemAnchor($cID, $cType);
+				}
+			}
+
+			if ($this->setting('show_search_box')) {
+				$this->mergeFields['Search_Box'] = true;
+			
+				//Get cID and cType if "Use a specific Search Results Page" was selected.
+				$cID = $cType = $state = false;
+				if ($this->setting('show_search_box') && $this->getCIDAndCTypeFromSetting($cID, $cType, 'specific_search_results_page')) {
+					
+				} else {
+					ze\content::pluginPage($cID, $cType, $state, 'zenario_search_results');
+				}
+			
+				if ($cID == $this->cID && $cType == $this->cType) {
+					$cID = $cType = false;
+				}
+				
+				if ($this->setting('search_placeholder') && $this->setting('search_placeholder_phrase')) {
+					$this->mergeFields['Placeholder'] = true;
+					$this->mergeFields['Placeholder_Phrase'] = $this->setting('search_placeholder_phrase');
+				}
+				
+				$this->mergeFields['Search_Page_Alias'] = $cID;
+				$this->mergeFields['Search_Page_cType'] = $cType;
+			}
+
+			if ($this->setting('show_link_to_registration_page')) {
+				if ($tagId = $this->setting('registration_page')) {
+					$cID = $cType = false;
+					ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+					$this->mergeFields['Registration_Link'] = $this->linkToItemAnchor($cID, $cType);
+				}
+			}
+
+			if ($this->setting('show_link_to_login_page')) {
+				if ($tagId = $this->setting('login_page')) {
+					$cID = $cType = false;
+					ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+					$this->mergeFields['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
+				}
+			}
 			
 			$this->callScript(
 				'zenario_menu_responsive_multilevel_2', 'init',
@@ -41,6 +87,16 @@ class zenario_menu_responsive_multilevel_2 extends zenario_menu {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		parent::fillAdminBox($path, $settingGroup, $box, $fields, $values);
+
+		if (!$box['key']['id']) {
+			if(isset($values['links/home_page']) && !$values['links/home_page']){
+				$values['links/home_page'] = "html_1";
+			}
 		}
 	}
 }

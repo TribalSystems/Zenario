@@ -134,23 +134,21 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 								
 								if (!isset($data[$tagId][$slotCode])) {
 									$data[$tagId][$slotCode] = false;
-								
-									if ($layout = ze\row::get('layouts', ['family_name', 'file_base_name'], $data[$tagId]['version']['layout_id'])) {
-										$slotContents = [];
-										ze\plugin::slotContents(
-											$slotContents,
-											$cID, $cType, $data[$tagId]['version']['version'],
-											$data[$tagId]['version']['layout_id'], $layout['family_name'], $layout['file_base_name'],
-											false, $slotName, $ajaxReload = false, $runPlugins = false);
+									$slotContents = [];
+									ze\plugin::slotContents(
+										$slotContents,
+										$cID, $cType, $data[$tagId]['version']['version'],
+										$data[$tagId]['version']['layout_id'],
+										$specificInstanceId = false, $slotName, $ajaxReload = false,
+										$runPlugins = false);
 									
-										foreach ($slotContents as $slot) {
-											if (!empty($slot['instance_id'])
-											 && !empty($slot['class_name'])
-											 && ($slot['class_name'] == 'zenario_plugin_nest'
-											  || $slot['class_name'] == 'zenario_slideshow')) {
-												$data[$tagId][$slotCode] = $slot['instance_id'];
-												break;
-											}
+									foreach ($slotContents as $slot) {
+										if (!empty($slot['instance_id'])
+										 && !empty($slot['class_name'])
+										 && ($slot['class_name'] == 'zenario_plugin_nest'
+										  || $slot['class_name'] == 'zenario_slideshow')) {
+											$data[$tagId][$slotCode] = $slot['instance_id'];
+											break;
 										}
 									}
 								}

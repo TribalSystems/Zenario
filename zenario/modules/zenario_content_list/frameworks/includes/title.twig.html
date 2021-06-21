@@ -1,4 +1,7 @@
 {% if Show_Item_Title %}
+	{% if item.Pinned or item.Pinned_Text %}
+		<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
+	{% endif %}
 	{% if Aws_Link and item.s3_File_Id %}
 		<{{Item_Title_Tags}}
 			class="
@@ -7,6 +10,7 @@
 				{% if item.Disabled %}
 					disabled_link
 				{% endif %}
+				
 			"
 			{% if Show_Permalink and item.Local_File_Id %}
 				{% set itemElId = containerId ~ item.cID ~ '_' ~ item.cType %}
@@ -60,6 +64,7 @@
 				"
 			{% endif %}
 		>
+
 			{% if LINKS_IN_INCLUDES %}
 				<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
 			{% else %}

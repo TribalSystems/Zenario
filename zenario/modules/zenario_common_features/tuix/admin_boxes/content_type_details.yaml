@@ -215,4 +215,13 @@ zenario_content_type_details:
                     type: checkbox
                     visible_if: "zenarioAB.value('summary_field') != 'hidden'"
                     indent: 1
-                
+                allow_pinned_content:
+                    label: 'Allow content items to be pinned'
+                    type: radios
+                    cols: 3
+                    values:
+                        0:
+                            label: "Disabled"
+                        1:
+                            label: "Enabled"
+                    side_note: 'Pinned content items always appear first on content summary lists.'

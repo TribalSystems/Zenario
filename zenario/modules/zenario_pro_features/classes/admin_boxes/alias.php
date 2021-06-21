@@ -36,6 +36,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 			SELECT sa.alias AS spare_alias
 			FROM ". DB_PREFIX. "spare_aliases AS sa
 			WHERE sa.content_id = ". (int) $box['key']['cID']. "
+			AND sa.content_type = '". ze\escape::sql($box['key']['cType']). "'
 			ORDER BY sa.alias";
 		$result = ze\sql::select($sql);
 		
@@ -154,15 +155,27 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 			//Create any new spare aliases that have just been added
 			foreach (ze\ray::explodeAndTrim($values['spare_aliases']) as $alias) {
 				$row = $key;
-				$row['alias'] = $alias;
+
+				//Handle the case where a user has pasted a URL.
+				//Get the last element after a slash, and also
+				//remove the rewrite suffix if one is set.
+				$aliasExploded = explode('/', $alias);
+				$row['alias'] = array_pop($aliasExploded);
+
+				if (ze::setting('mod_rewrite_enabled')) {
+					$suffix = ze::setting('mod_rewrite_suffix');
+					if ($suffix) {
+						$row['alias'] = str_replace($suffix, '', $row['alias']);
+					}
+				}
 				
 				if (!ze\row::exists('spare_aliases', $row)) {
 					$row['ext_url'] = '';
 					$row['created_datetime'] = ze\date::now();
-					ze\row::set('spare_aliases', $row, ['alias' => $alias]);
+					ze\row::set('spare_aliases', $row, ['alias' => $row['alias']]);
 				}
 				
-				$spareAliases[] = $alias;
+				$spareAliases[] = $row['alias'];
 			}
 			
 			//Delete any spare aliases for this content item that were not in this list

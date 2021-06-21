@@ -357,8 +357,8 @@ class module {
 	}
 
 	//Formerly "getPluginInTemplateSlot()"
-	public static function idInLayoutSlot($slotName, $templateFamily, $layoutId) {
-		return \ze\plugin::idInLayoutSlot($slotName, $templateFamily, $layoutId, true);
+	public static function idInLayoutSlot($slotName, $layoutId) {
+		return \ze\plugin::idInLayoutSlot($slotName, $layoutId, true);
 	}
 
 

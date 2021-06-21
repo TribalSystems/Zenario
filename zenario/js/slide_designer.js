@@ -63,7 +63,7 @@ zenarioSD.gridId = 'grid';
 zenarioSD.load = function() {
 	var data = JSON.parse($('#data').val());
 	
-	zenarioSD.init(data, 'grid', data.layout_id, data.file_base_name);
+	zenarioSD.init(data, 'grid', data.layout_id, 'L'+data.layout_id);
 	
 	zenarioSD.drawOptions();
 };

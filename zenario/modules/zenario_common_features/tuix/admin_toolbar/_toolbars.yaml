@@ -1,18 +1,12 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 toolbars:
-    preview:
-        ord: 10
-        label: Browse
-        tooltip: Browse your site
-        page_mode: preview
-        toolbar_microtemplate: zenario_toolbar_preview_tab
     create:
         ord: 20
         priv: _PRIV_CREATE_FIRST_DRAFT
         label: New...
-        tooltip: Create new content items
         page_mode: preview
+        toolbar_tab_grouping: create
         toolbar_microtemplate: zenario_toolbar_create_tab
     edit_disabled:
         ord: 30
@@ -20,13 +14,15 @@ toolbars:
         label: Edit
         tooltip: ''
         page_mode: edit_disabled
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_edit_tab
     edit:
         ord: 31
         priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
         label: Edit
-        tooltip: Do version-controlled editing of this content item
+        tooltip: ''
         page_mode: edit
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_edit_tab
     rollback:
         ord: 32
@@ -34,6 +30,7 @@ toolbars:
         label: Edit
         tooltip: You are viewing a previous version of this content item
         page_mode: rollback
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_edit_tab
     restricted_editing:
         ord: 33
@@ -41,23 +38,27 @@ toolbars:
         label: Restricted editing
         tooltip: Editing this content item is restricted
         page_mode: preview
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_restricted_editing_tab
+        
     item:
         ord: 40
         priv: _PRIV_MANAGE_ITEM_SLOT
-        label: Edit plugins
-        tooltip: Edit or configure plugins in this content item's slots
+        label: Edit slots
         page_mode: item
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_item_tab
+        visible_if: zenarioA.toolbar != 'preview' && zenarioA.toolbar != 'create'
     menu1:
         ord: 50
         priv: _PRIV_EDIT_MENU_TEXT
         label: Edit menu
-        tooltip: >
-            Edit menu node text, and the site map
         css_class: zenario_at_menu_tab zenario_at_menu_tab_primary
         page_mode: menu
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_menu_tab
+        tooltip: ''
+        visible_if: zenarioA.toolbar != 'preview' && zenarioA.toolbar != 'create'
     menu_secondary:
         ord: 51
         priv: _PRIV_EDIT_MENU_TEXT
@@ -65,17 +66,23 @@ toolbars:
         label: 
         css_class: zenario_at_menu_tab zenario_at_menu_tab_secondary
         page_mode: menu
-        tooltip: Secondary menu node|Make changes to the navigation hierarchy
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_menu_tab
     layout:
         ord: 60
         priv: _PRIV_MANAGE_TEMPLATE_SLOT
-        label: Layout
-        tooltip: |
-            <p>Configure plugins in the slots of this item's layout.</p>
-            <p>Any changes made on the layout will affect all content items using this layout!</p>
+        label: Edit layout
         page_mode: layout
+        toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_layout_tab
+        visible_if: zenarioA.toolbar != 'preview' && zenarioA.toolbar != 'create'
+    preview:
+        ord: 70
+        label: Browse
+        page_mode: preview
+        toolbar_tab_grouping: preview
+        css_class: zenario_toolbar_tab_back
+        toolbar_microtemplate: zenario_toolbar_preview_tab
 sections:
     layout:
         appears_in_toolbars:
@@ -90,14 +97,13 @@ sections:
             settings:
                 priv: _PRIV_VIEW_TEMPLATE
                 hide_in_select_mode: true
-                label: Layout properties
+                label: Layout settings
                 admin_box:
                     path: zenario_layout
             edit_grid:
                 priv: _PRIV_EDIT_TEMPLATE
                 hide_in_select_mode: true
                 label: Edit layout with Gridmaker
-                tooltip: Edit the slots on this layout. Change their size, CSS classes and mobile device options.
                 popout:
                     href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
                     width: 100%
@@ -114,18 +120,39 @@ sections:
                     traits.grid: true
                 without_columns_set:
                     missing: true
+            edit_css:
+                priv: _PRIV_EDIT_CSS
+                label: CSS
             edit_skin:
                 priv: _PRIV_EDIT_CSS
                 label: Edit skin
+                parent: edit_css
                 #admin_box: 
                 #    key:
                 #        skinId: 0
                 #    path: zenario_skin_editor
                 onclick: |
                     zenarioSE.open();
+            body_classes:
+                appears_in_toolbars:
+                    layout: true
+                parent: edit_css
+                label: CSS classes that appear on the <body> tag
+                popout:
+                    href: zenario/admin/help/help.php?topic=body_classes
+                    #width: 100%
+                    #height: 100%
+                    #maxWidth: 100%
+                    #maxHeight: 100%
+                    #initialWidth: 100%
+                    #initialHeight: 100%
+                    iframe: true
+                    fixed: true
+                    transition: none
+                    css_class: zenario_help_window
+
             skq:
                 label: Organize layouts
-                tooltip: View this layout among other layouts
                 organizer_quick:
                     path: 
                     target_path: zenario__layouts/panels/layouts

@@ -3,15 +3,27 @@
 sections:
     icons:
         buttons:
-            item_categories_some:
+            pinned:
                 ord: 10
+                css_class: pinned
+                tooltip: "This content item is pinned"
+                admin_box:
+                    path: zenario_content
+            not_pinned:
+                ord: 10.1
+                css_class: not_pinned
+                tooltip: "This content item is not pinned"
+                admin_box:
+                    path: zenario_content
+            item_categories_some:
+                ord: 11
                 css_class: zenario_at_icon_categories_some
                 tooltip: Content Item Categories|
                 admin_box:
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     path: zenario_content_categories
             item_categories_none:
-                ord: 11
+                ord: 11.2
                 css_class: zenario_at_icon_categories_none
                 tooltip: Content Item Categories|None
                 admin_box:
@@ -30,7 +42,6 @@ sections:
             alias_dropdown:
                 ord: 20
                 css_class: zenario_at_icon_alias
-                #css_class: zenario_at_icon_alias zenario_at_icon_no_alias
             copy_url:
                 ord: 21
                 visible_if: zenario.canCopy()

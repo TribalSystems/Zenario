@@ -4,7 +4,6 @@ zenario_user__convert_to_user:
     priv: _PRIV_EDIT_USER
     key:
         id: ""
-    max_height: "550"
     tabs:
         details:
             label: Convert to user
@@ -104,22 +103,21 @@ zenario_user__convert_to_user:
                     type: checkbox
                     side_note: "Send an activation email to the user with there login details on."
                     format_onchange: Yes
-                    visible_if: |
-                        zenarioAB.value('email', 'details')
+                    hidden: false
                 email_to_send:
-                    label: 'Email Template:'
+                    label: 'Email template:'
+                    indent: 1
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
                         required_if_not_hidden: Please select an email template
                     visible_if: |
                         zenarioAB.value('send_activation_email_to_user', 'details')
-                        && zenarioAB.value('email', 'details')
                     side_note: >
                         An email based on the selected Email Template will be sent
                         to the User.

@@ -38,10 +38,12 @@ class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBa
 			case 'layout':
 				
 				if ($layout = ze\content::layoutDetails($box['key']['id'])) {
-					//ze\content::templatePath($templateFamily = false, $fileBaseName = false, $css = false)
-					$file = ze\content::templatePath($layout['family_name'], $layout['file_base_name']);
 					
-					$box['title'] = ze\admin::phrase('Viewing the template file file for the Layout "[[name]]"', $layout);
+					if ($file = ze\content::layoutHtmlPath($box['key']['id'])) {
+						$file = CMS_ROOT. $file;
+					}
+					
+					$box['title'] = ze\admin::phrase('Viewing the Layout for "[[name]]"', $layout);
 				}
 				
 				break;
@@ -70,7 +72,7 @@ class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBa
 				if (strpos($subpath, './') === false
 				 && strpos($subpath, '.\\') === false
 				 && ($skin = ze\content::skinDetails($skinId))) {
-					$file = CMS_ROOT. ze\content::skinPath($skin['family_name'], $skin['name']). $subpath;
+					$file = CMS_ROOT. ze\content::skinPath($skin['name']). $subpath;
 					
 					$skin['filename'] = $filename;
 					$box['title'] = ze\admin::phrase('Viewing the "[[filename]]" file in the Skin "[[display_name]]"', $skin);

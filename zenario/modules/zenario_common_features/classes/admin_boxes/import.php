@@ -31,15 +31,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		//Load welcome email templates for new users
-		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated', false);
-		if (count($layouts) == 0) {
-			$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('Account Activated', false);
-		}
-		if (count($layouts)) {
-			$template = current($layouts);
-			$fields['actions/email_to_send']['value'] = $template['code'] ?? false;
-		}
+		//Load activation email templates for new users
+		$fields['actions/email_to_send']['value'] = ze::setting('default_activation_email_template');
+
+		$siteSettingsLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
+		$fields['actions/email_to_send']['note_below'] = ze\admin::phrase(
+			'The default activation email template can be changed in the [[site_settings_link]].',
+			['site_settings_link' => $siteSettingsLink]
+		);
 		
 		//Load list of dataset fields
 		$datasetId = $box['key']['dataset'];
@@ -249,6 +248,8 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				
 				//Get headers
 				$headers = [];
+				$previewString = '';
+				$currentLineHeaders = [];
 				$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
 				if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
 					ini_set('auto_detect_line_endings', true);
@@ -256,24 +257,40 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					if ($file) {
 						$lineNumber = 0;
 						while ($line = fgets($file)) {
-							if (++$lineNumber == $values['headers/key_line']) {
-								$headers = str_getcsv($line);
-								
-								//Try and automatically find the headers if the first few lines are blank
-								if ($box['key']['guess_key_line']
-									&& count($headers) == 1
-									&& trim($headers[0]) == false 
-									&& isset($fields['headers/key_line']['values'][$values['headers/key_line'] + 1])
-								) {
-									$values['headers/key_line']++;
-									continue;
-								}
-								
+							++$lineNumber;
+
+							if ($lineNumber > 5) {
 								break;
 							}
+							
+							$previewString .= $line;
+							$headers = str_getcsv($line);
+
+							//If this line has headers, remember them now using a temporary variable...
+							if ($lineNumber == $values['headers/key_line']) {
+								$currentLineHeaders = $headers;
+							}
+
+							//Try and automatically find the headers if the first few lines are blank
+							if ($box['key']['guess_key_line']
+								&& $lineNumber == $values['headers/key_line']
+								&& count($headers) == 1
+								&& trim($headers[0]) == false 
+								&& isset($fields['headers/key_line']['values'][$values['headers/key_line'] + 1])
+							) {
+								$values['headers/key_line']++;
+							}
+
+							$headers = [];
 						}
+
+						//... and use the temporary variable to restore them here.
+						//The $headers variable will be looped through a few lines below.
+						$headers = $currentLineHeaders;
 					}
 				} else {
+					$csv = fopen('php://temp/', 'r+');
+					
 					require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
 					//Get file type
 					$inputFileType = PHPExcel_IOFactory::identify($path);
@@ -287,34 +304,52 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					$lineNumber = 0;
 					$blankLimit = 5;
 					$blankCount = 0;
+					$currentLineHeaders = [];
 					foreach ($worksheet->getRowIterator() as $row) {
-						if (++$lineNumber == $values['headers/key_line']) {
-							$cellIterator = $row->getCellIterator();
-							foreach ($cellIterator as $cell) {
-								$cellValue = trim($cell->getCalculatedValue());
-								$headers[] = $cellValue;
-								$blankCount = ($cellValue == false) ? $blankCount + 1 : 0;
-								if ($blankCount >= $blankLimit) {
-									break;
-								}
-							}
-							if ($blankCount) {
-								$headers = array_splice($headers, 0, -$blankCount);
-								$blankCount = 0;
-							}
-							//Try and automatically find the headers if the first few lines are blank
-							if ($box['key']['guess_key_line']
-								&& empty($headers)
-								&& isset($fields['headers/key_line']['values'][$values['headers/key_line'] + 1])
-							) {
-								$values['headers/key_line']++;
-								continue;
-							}
-							
+						++$lineNumber;
+						if ($lineNumber > 5) {
 							break;
 						}
+						$cellIterator = $row->getCellIterator();
+						foreach ($cellIterator as $cell) {
+							$cellValue = trim($cell->getCalculatedValue());
+							$headers[] = $cellValue;
+							$blankCount = ($cellValue == false) ? $blankCount + 1 : 0;
+							if ($blankCount >= $blankLimit) {
+								break;
+							}
+						}
+						if ($blankCount) {
+							$headers = array_splice($headers, 0, -$blankCount);
+							$blankCount = 0;
+						}
+
+						fputcsv($csv, $headers);
+
+						//If this line has headers, remember them now using a temporary variable...
+						if ($lineNumber == $values['headers/key_line']) {
+							$currentLineHeaders = $headers;
+						}
+
+						//Try and automatically find the headers if the first few lines are blank
+						if ($box['key']['guess_key_line']
+							&& $lineNumber == $values['headers/key_line']
+							&& empty($headers)
+							&& isset($fields['headers/key_line']['values'][$values['headers/key_line'] + 1])
+						) {
+							$values['headers/key_line']++;
+						}
+
+						$headers = [];
 					}
+					rewind($csv);
+					$previewString = stream_get_contents($csv);
+
+					//... and use the temporary variable to restore them here.
+					//The $headers variable will be looped through a few lines below.
+					$headers = $currentLineHeaders;
 				}
+				$values['headers/key_lines_preview'] = $previewString;
 				$box['key']['guess_key_line'] = 0;
 				$box['old_values']['key_line'] = $values['headers/key_line'];
 				
@@ -441,7 +476,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								
 				$previewLinesLimit = 200;
 				$previewString = '';
-				$totalReadableLines = 0;
+				$totalReadableLinesWithoutErrors = 0;
 				$totalUpdateCount = 0;
 				$totalErrorCount = 0;
 				$values['preview/problems'] = '';
@@ -476,7 +511,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								
 								$totalErrorCount += $errorCount;
 								if (!$errorCount) {
-									++$totalReadableLines;
+									++$totalReadableLinesWithoutErrors;
 								} else {
 									$linesToSkip[] = $lineNumber;
 								}
@@ -514,7 +549,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 							$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount);
 							$totalErrorCount += $errorCount;
 							if (!$errorCount) {
-								++$totalReadableLines;
+								++$totalReadableLinesWithoutErrors;
 							} else {
 								$linesToSkip[] = $lineNumber;
 							}
@@ -523,6 +558,8 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					rewind($csv);
 					$previewString = stream_get_contents($csv);
 				}
+
+				$totalReadableLines = $totalReadableLinesWithoutErrors + count($linesToSkip);
 				$values['preview/csv_preview'] = $previewString;
 				$fields['preview/problems']['label'] = ze\admin::nphrase('Problems (1 error)', 'Problems ([[n]] errors):', $totalErrorCount, ['n' => $totalErrorCount]);
 				$fields['preview/total_readable_lines']['snippet']['html'] = '<b>' . ze\admin::phrase('Total readable lines:') . '</b> '. $totalReadableLines;
@@ -532,14 +569,14 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				//Update record statement on actions tab
 				$html = '';
 				if ($values['file/type'] == 'insert_data') {
-					$created = $totalReadableLines - $totalUpdateCount;
+					$created = $totalReadableLinesWithoutErrors - $totalUpdateCount;
 					$box['key']['new_records'] = $created;
-					$html = ze\admin::nphrase('<b>1</b> new record will be created.', '<b>[[n]]</b> new records will be created.', $created, ['n' => $created]);
+					$html = ze\admin::nphrase('<b>1</b> new record will be inserted.', '<b>[[n]]</b> new records will be inserted.', $created, ['n' => $created]);
 					if ($totalUpdateCount) {
 						$html .= ' ' . ze\admin::nphrase('<b>1</b> record will be updated.', '<b>[[n]]</b> record will be updated.', $totalUpdateCount, ['n' => $totalUpdateCount]);
 					}
 				} else {
-					$html = ze\admin::nphrase('<b>1</b> record will be updated.', '<b>[[n]]</b> records will be updated.', $totalReadableLines, ['n' => $totalReadableLines]);
+					$html = ze\admin::nphrase('<b>1</b> record will be updated.', '<b>[[n]]</b> records will be updated.', $totalReadableLinesWithoutErrors, ['n' => $totalReadableLinesWithoutErrors]);
 				}
 				$fields['actions/records_statement']['snippet']['html'] = $html;
 			}
@@ -587,7 +624,10 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					}
 				}
 				
-				$ord = 500;	
+				//Ordinals 500 and 501 are reserved for the status field label and value, respectively.
+				//This will make the status field appear at the top.
+				$ord = 502;
+				$statusDatasetField = ze\dataset::fieldDetails('status', $dataset);
 				foreach ($datasetFields as $datasetFieldId => $datasetField) {	
 					if (empty($datasetField['db_column']) || empty($datasetField['tab_name'])) {
 						continue;
@@ -604,10 +644,21 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						$fieldName = $name . '_' . $datasetFieldId;
 						
 						if ($name == 'dataset_field_name') {
-							$field['ord'] = $ord - 1;
+							if ($datasetFieldId == $statusDatasetField['id']) {
+								//Status field should be at the top: logic for the label
+								$field['ord'] = 500;
+								$field['css_class'] = 'bold';
+							} else {
+								$field['ord'] = $ord - 1;
+							}
 							$field['value'] = $datasetField['db_column'];
 						} elseif ($name == 'dataset_field_value') {
-							$field['ord'] = $ord += 2;
+							if ($datasetFieldId == $statusDatasetField['id']) {
+								//Status field should be at the top: logic for the field value
+								$field['ord'] = 501;
+							} else {
+								$field['ord'] = $ord += 2;
+							}
 							$field['value'] = $values['actions/' . $fieldName] ?? false;
 							switch ($datasetField['type']) {
 								case 'group':
@@ -638,6 +689,17 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 									if ($dataset['system_table'] == 'users' && $datasetField['db_column'] == 'status') {
 										$field['empty_value'] = '-- Select --';
 										$field['format_onchange'] = true;
+
+										//Never allow setting suspended status when importing users.
+										unset($field['values']['suspended']);
+
+										//In addition to never allowing suspended status,
+										//if Extranet Base Module is not running,
+										//only allow setting "Contact" status.
+										if (!ze\module::inc('zenario_extranet')) {
+											unset($field['values']['pending']);
+											unset($field['values']['active']);
+										}
 									} else {
 										$field['empty_value'] = "-- Don't import --";
 									}

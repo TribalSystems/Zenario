@@ -49,6 +49,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 		}
 		
 		if (file_exists($dirpath = ze::setting('backup_dir'))) {
+			$panel['no_items_message'] = ze\admin::phrase('No backup files found in [[backup_dir]]', ['backup_dir' => $dirpath]);
 			$panel['items'] = [];
 			foreach (scandir($dirpath) as $i => $file) {
 				if (is_file($dirpath. '/'. $file) && substr($file, 0, 1) != '.') {

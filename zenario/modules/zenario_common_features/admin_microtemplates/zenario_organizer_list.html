@@ -4,9 +4,13 @@
 		organizer_list_view
 		
 		<% if (m.useTallRows) { %>
-			organizer_list_view_with_tall_rows
-			<% zenarioO.firstColWidth = 65 + (20 * m.maxNumberOfInlineButtons); %>
-		
+			<% if (m.useTwoLine) { %>
+				organizer_list_view_with_tall_rows
+				<% zenarioO.firstColWidth = 35 + (20 * m.maxNumberOfInlineButtons); %>
+			<% } else { %>
+				organizer_list_view_with_tall_rows
+				<% zenarioO.firstColWidth = 65 + (20 * m.maxNumberOfInlineButtons); %>
+			<% } %>
 		<% } else { %>
 			organizer_list_view_with_short_rows
 			<% zenarioO.firstColWidth = 30 + 20 * m.maxNumberOfInlineButtons + (m.canClickThrough? 9 : 0); %>

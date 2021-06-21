@@ -100,6 +100,9 @@ zenario__content:
                     sql: 'c.language_id = [[REFINER__LANGUAGE]]'
                 template:
                     sql: 'v.layout_id = [[REFINER__TEMPLATE]]'
+                add_translation_to_chain:
+                    sql: ''
+                    add_translation_to_chain: ''
                 
                 category:
                     table_join: |
@@ -130,59 +133,55 @@ zenario__content:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]layouts AS l
                            ON l.layout_id = v.layout_id
-                        INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = l.family_name
-                          AND tsl.file_base_name = l.file_base_name
+                        INNER JOIN [[DB_PREFIX]]layout_slot_link AS lsl
+                           ON lsl.layout_id = l.layout_id
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND piil.content_version = v.version
-                          AND piil.slot_name = tsl.slot_name
+                          AND piil.slot_name = lsl.slot_name
                     sql: 'piil.module_id = [[REFINER__MODULE_USAGE]]'
                 module_effective_usage:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]layouts AS l
                            ON l.layout_id = v.layout_id
-                        INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = l.family_name
-                          AND tsl.file_base_name = l.file_base_name
+                        INNER JOIN [[DB_PREFIX]]layout_slot_link AS lsl
+                           ON lsl.layout_id = l.layout_id
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND piil.content_version = v.version
-                          AND piil.slot_name = tsl.slot_name
+                          AND piil.slot_name = lsl.slot_name
                         LEFT JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
                            ON pitl.layout_id = l.layout_id
-                          AND pitl.slot_name = tsl.slot_name
+                          AND pitl.slot_name = lsl.slot_name
                     sql: 'IFNULL(piil.module_id, pitl.module_id) = [[REFINER__MODULE_EFFECTIVE_USAGE]]'
                 plugin_instance_usage:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]layouts AS l
                            ON l.layout_id = v.layout_id
-                        INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = l.family_name
-                          AND tsl.file_base_name = l.file_base_name
+                        INNER JOIN [[DB_PREFIX]]layout_slot_link AS lsl
+                           ON lsl.layout_id = l.layout_id
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND (piil.content_version = c.admin_version OR piil.content_version = c.visitor_version)
-                          AND piil.slot_name = tsl.slot_name
+                          AND piil.slot_name = lsl.slot_name
                     sql: 'piil.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]'
                 plugin_instance_effective_usage:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]layouts AS l
                            ON l.layout_id = v.layout_id
-                        INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = l.family_name
-                          AND tsl.file_base_name = l.file_base_name
+                        INNER JOIN [[DB_PREFIX]]layout_slot_link AS lsl
+                           ON lsl.layout_id = l.layout_id
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND (piil.content_version = c.admin_version OR piil.content_version = c.visitor_version)
-                          AND piil.slot_name = tsl.slot_name
+                          AND piil.slot_name = lsl.slot_name
                         LEFT JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
                            ON pitl.layout_id = l.layout_id
-                          AND pitl.slot_name = tsl.slot_name
+                          AND pitl.slot_name = lsl.slot_name
                     sql: 'IFNULL(piil.instance_id, pitl.instance_id) = [[REFINER__PLUGIN_INSTANCE_EFFECTIVE_USAGE]]'
                 content_items_using_form:
                     table_join: |
@@ -191,17 +190,16 @@ zenario__content:
                           AND ps.foreign_key_id = [[REFINER_ID]]
                         INNER JOIN [[DB_PREFIX]]layouts AS l
                            ON l.layout_id = v.layout_id
-                        INNER JOIN [[DB_PREFIX]]template_slot_link AS tsl
-                           ON tsl.family_name = l.family_name
-                          AND tsl.file_base_name = l.file_base_name
+                        INNER JOIN [[DB_PREFIX]]layout_slot_link AS lsl
+                           ON lsl.layout_id = l.layout_id
                         LEFT JOIN [[DB_PREFIX]]plugin_item_link AS piil
                            ON piil.content_id = v.id
                           AND piil.content_type = v.type
                           AND (piil.content_version = c.admin_version OR piil.content_version = c.visitor_version)
-                          AND piil.slot_name = tsl.slot_name
+                          AND piil.slot_name = lsl.slot_name
                         LEFT JOIN [[DB_PREFIX]]plugin_layout_link AS pitl
                            ON pitl.layout_id = l.layout_id
-                          AND pitl.slot_name = tsl.slot_name
+                          AND pitl.slot_name = lsl.slot_name
                     sql: 'IFNULL(piil.instance_id, pitl.instance_id) = ps.instance_id'
                 trash:
                     sql: |
@@ -553,6 +551,10 @@ zenario__content:
                     title: 'Scheduled publish date/time'
                     db_column: v.scheduled_publish_datetime
                     format: datetime
+                pinned:
+                    ord: 36
+                    db_column: v.pinned
+                    hidden: true
                 
                     
             default_sort_column: tag
@@ -697,7 +699,7 @@ zenario__content:
             inline_buttons:
                 no_menu_linked:
                     css_class: zenario_not_at_menu
-                    tooltip: "This content item is not in the menu"
+                    tooltip: "This content item is not in the menu (an orphan)"
                     visible_if: >
                         (item.menunodecounter == 0)
                 one_menu_linked:
@@ -729,6 +731,18 @@ zenario__content:
                 privacy:
                     css_class: privacy_inline_button
                     tooltip: "[[privacy]]"
+                pinned:
+                    css_class: pinned
+                    tooltip: "This content item is pinned"
+                    admin_box:
+                        path: zenario_content
+                    visible_if: item.pinned == 1
+                not_pinned:
+                    css_class: not_pinned
+                    tooltip: "This content item is not pinned"
+                    admin_box:
+                        path: zenario_content
+                    visible_if: item.pinned == 0
                 no_categories:
                     css_class: no_categories
                     tooltip: "Content item is not in any categories"
@@ -764,7 +778,7 @@ zenario__content:
                     admin_box:
                         path: zenario_content
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
 
                 property_dropdown:
                     label: More properties
@@ -778,7 +792,7 @@ zenario__content:
                     admin_box:
                         path: zenario_alias
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                         
                 head:
                     parent: property_dropdown
@@ -800,13 +814,20 @@ zenario__content:
                     priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
+                        && ((window.__selectedType = undefined) || true)
+                    visible_if_for_all_selected_items: |
+                        (window.__selectedType === item.type || window.__selectedType === undefined)
+                        && (window.__selectedType = item.type)
+                    # Note - a little bit of hacky code here, as we don't have proper support for a feature.
+                    # What I'm trying to do is make sure that the button is only shown when the content type
+                    # of all of the selected items is the same.
                     parent: property_dropdown
                     label: Change layout
                     multiple_select: true
                     admin_box:
                         path: zenario_content_layout
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     
                 publish:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
@@ -816,10 +837,10 @@ zenario__content:
                     label: Publish...
                     multiple_select: true
                     visible_if_for_all_selected_items: |
-                        item.traits.not_locked &&
-                        (item.traits.draft || item.status == 'hidden')
+                        item.not_locked &&
+                        (item.draft || item.status == 'hidden')
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     admin_box:
                         path: zenario_publish
                 action_dropdown:
@@ -837,9 +858,22 @@ zenario__content:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 
+                view_frontend:
+                    parent: view_dropdown
+                    label: Go to content item in front-end window
+                    frontend_link: true
+                inspect:
+                    parent: view_dropdown
+                    label: Quick-view in floating box
+                    popout:
+                        iframe: true
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
+                
                 download:
                     parent: view_dropdown
                     label: Download
+                    hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: 'Download the file "[[filename]]"?'
@@ -850,12 +884,13 @@ zenario__content:
                         request:
                             download: 1
                     with_columns_set:
-                        traits.has_file: true
+                        has_file: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 s3_download:
                     parent: view_dropdown
                     label: Download S3 file
+                    hide_in_select_mode: true
                     hidden: true
                     ajax:
                         confirm:
@@ -867,9 +902,9 @@ zenario__content:
                         request:
                             s3_download: 1
                     with_columns_set:
-                        traits.has_s3file: true
+                        has_s3file: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 view_image:
                     parent: view_dropdown
                     label: View picture
@@ -879,9 +914,9 @@ zenario__content:
                         options:
                             type: image
                     with_columns_set:
-                        traits.has_picture: true
+                        has_picture: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 images:
                     parent: view_dropdown
                     label: Attached images
@@ -890,8 +925,8 @@ zenario__content:
                         branch: true
                         refiner: images_for_content_item
                     without_columns_set:
-                        traits.no_images: true
-                        traits.ghost: true
+                        no_images: true
+                        ghost: true
                 zenario_trans__view:
                     parent: view_dropdown
                     hide_in_select_mode: true
@@ -1020,19 +1055,19 @@ zenario__content:
                     admin_box:
                         path: zenario_content_categories_add
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     disabled_if_for_any_selected_items: |
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
                 categories:
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     parent: category_dropdown
-                    label: Add to/remove from categories
+                    label: Change categories
                     
                     admin_box:
                         path: zenario_content_categories
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     disabled_if_for_any_selected_items: |
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
@@ -1045,7 +1080,7 @@ zenario__content:
                     admin_box:
                         path: zenario_content_categories_remove
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     disabled_if_for_any_selected_items: |
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
@@ -1068,10 +1103,10 @@ zenario__content:
                         request:
                             mass_add_to_menu: 1
                     with_columns_set:
-                        traits.unlinked: true
+                        unlinked: true
                     without_columns_set:
-                        traits.ghost: true
-                        traits.hidden: true
+                        ghost: true
+                        hidden: true
                 mass_add_to_menu:
                     parent: action_dropdown
                     priv: _PRIV_ADD_MENU_ITEM
@@ -1090,10 +1125,10 @@ zenario__content:
                         request:
                             mass_add_to_menu: 1
                     with_columns_set:
-                        traits.unlinked: true
+                        unlinked: true
                     without_columns_set:
-                        traits.ghost: true
-                        traits.hidden: true
+                        ghost: true
+                        hidden: true
                 duplicate:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_FIRST_DRAFT
@@ -1105,7 +1140,7 @@ zenario__content:
                     with_columns_set:
                         has_duplicate: true        
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                 
                 
                 create_draft_by_copying:
@@ -1114,10 +1149,10 @@ zenario__content:
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
-                        traits.not_locked: true
+                        not_locked: true
                         has_document: true
                     without_columns_set:
-                        traits.draft: true
+                        draft: true
                     label: Copy from other...
                     combine_items:
                         path: zenario__content/panels/content/refiners/filter_exclude_documents////
@@ -1142,8 +1177,8 @@ zenario__content:
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
-                        traits.draft: true
-                        traits.not_locked: true
+                        draft: true
+                        not_locked: true
                         has_document: true
                     label: Copy from other...
                     combine_items:
@@ -1199,11 +1234,11 @@ zenario__content:
                     multiple_select: true
                     multiple_select_label: Delete drafts
                     with_columns_set:
-                        traits.draft: true
-                        traits.deletable: true
-                        traits.not_locked: true
+                        draft: true
+                        deletable: true
+                        not_locked: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     admin_box:
                         path: zenario_delete_draft
                 delete_media_content_item:
@@ -1218,10 +1253,10 @@ zenario__content:
                     multiple_select: true
                     multiple_select_label: Delete content items
                     with_columns_set:
-                        traits.deletable: true
-                        traits.not_locked: true
+                        deletable: true
+                        not_locked: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     admin_box:
                         path: zenario_delete_media_content_item
                 hide:
@@ -1233,9 +1268,9 @@ zenario__content:
                     label: Hide
                     multiple_select: true
                     with_columns_set:
-                        traits.hideable: true
+                        hideable: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -1265,9 +1300,9 @@ zenario__content:
                     multiple_select_label: Trash these content items
                     multiple_select: true
                     with_columns_set:
-                        traits.trashable: true
+                        trashable: true
                     without_columns_set:
-                        traits.ghost: true
+                        ghost: true
                     admin_box:
                         path: zenario_trash
                 redraft:

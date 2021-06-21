@@ -5,6 +5,7 @@ zenario__content:
         chained:
             collection_buttons:
                 privacy:
+                    hidden: true
                     priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
                     label: Change permissions
                     admin_box:

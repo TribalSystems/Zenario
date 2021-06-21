@@ -39,6 +39,11 @@ class zenario_common_features__organizer__sections extends ze\moduleBaseClass {
 		
 		if ($_GET['refiner__language'] ?? false) {
 			$panel['title'] = ze\admin::phrase('Menu sections (language [[lang]])', ['lang' => ze\lang::name($_GET['refiner__language'] ?? false)]);
+			if ($_GET['refiner__language'] != ze::$defaultLang) {
+
+				$panel['notice']['show'] = false;
+				
+			}
 			$panel['message'] = ze\admin::phrase('Advanced', ['lang' => ze\lang::name($_GET['refiner__language'] ?? false)]);
 		}
 		

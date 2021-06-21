@@ -108,7 +108,10 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			}
 		}
 		
-		
+		if (ze\module::inc('zenario_crm_form_integration')) {
+			$panel['columns']['crm_response']['show_by_default'] = true;
+		}
+
 		if (!zenario_user_forms::isFormCRMEnabled($refinerId, false)) {
 			unset($panel['columns']['crm_response']);
 		}
@@ -134,7 +137,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		//Get user and email from form response details if they cannot be found from the recorded user Id
 		foreach ($panel['items'] as $responseId => $response) {
 			if (!$response['user']) {
-				$panel['items'][$responseId]['user'] = ze\admin::phrase('[Anonymous visitor]');
+				$panel['items'][$responseId]['user'] = ze\admin::phrase('Visitor, view response for details');
 			}
 		}
 		

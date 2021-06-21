@@ -33,8 +33,6 @@ zenario__user_forms:
                                 empty_value: -- Select --
                                 values: conditional_fields
                                 format_onchange: true
-                                note_below: |
-                                    Select a field that this fields visibility will rely on from the current form (the following types of field are allowed: checkbox, checkboxes, radios, select, centralised radios and centralised select)
                             visible_condition_field_type: &visible_condition_field_type
                                 indent: 2
                                 hide_with_previous_outdented_field: true

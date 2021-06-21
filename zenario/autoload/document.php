@@ -291,12 +291,19 @@ class document {
 			$safeFilename = \ze\file::safeName($document['filename']);
 			$symPath = $symFolder . $safeFilename;
 			$frontLink = $dirPath . $safeFilename;
+			$publicLinkHtAccessFile = $symFolder . '.htaccess';
 			
 			if (!\ze\server::isWindows() && ($path = \ze\file::docstorePath($file['id'], false))) {
 				if (!file_exists($symPath)) {
 					if(!file_exists($symFolder)) {
 						mkdir($symFolder);
 					}
+
+					//If the folder exists, and there is a .htaccess file in there, delete it to prevent a redirect loop.
+					if (file_exists($publicLinkHtAccessFile)) {
+						unlink($publicLinkHtAccessFile);
+					}
+
 					symlink($path, $symPath);
 				} 
 				
@@ -364,7 +371,7 @@ class document {
 		$content .= "	RewriteEngine On "."\n";
 		$redirectFromFileName = str_replace(' ', '\ ', $redirectFromFileName );
 		$redirectToFileName = str_replace(' ', '\ ', \ze\file::safeName($redirectToFileName));
-		$content .= "	RewriteRule ^".$redirectFromFileName."$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/". $redirectToFileName ." [R=301] "."\n";
+		$content .= "	RewriteRule ^.*$ " . SUBDIRECTORY . "public/downloads/".$redirectToChecksum."/". $redirectToFileName ." [R=301] "."\n";
 		$content .= "</IfModule>";
 		fwrite($f, $content);
 		fclose($f);

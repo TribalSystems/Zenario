@@ -130,7 +130,7 @@ zenario_slide:
                 
                 apply_slide_specific_permissions:
                     label: 'Apply slide-specific permissions'
-                    note_below: Use this to determine which kinds of user or anonymous visitor can see this slide. In a conductor-driven nest you should use User Permissions (in Organizer->Site Settings->User Permissions) and leave this unchecked.
+                    note_below: Use this to determine which kinds of user or anonymous visitor can see this slide. In a conductor-driven nest you should use User Permissions (in Organizer->Site Settings, User Permissions interface) and leave this unchecked.
                     type: checkbox
                     redraw_onchange: true
                 

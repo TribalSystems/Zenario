@@ -10,18 +10,17 @@ zenario_job:
         label: Scheduled Task ID
     tabs:
         time_and_day:
-            ord: "10"
+            ord: "20"
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_SCHEDULED_TASK
-            label: Time and Day
+            label: Time and Days
             fields:
                 desc:
                     full_width: true
                     snippet:
                         html: |
-                            Use this tab to set on which time each day and on which days of the week this task will run.
-                                                            Every condition set must be met for the task to run.
+                            Use this tab to determine when the task will run.
                 
                 old_format_warning:
                     pre_field_html: <div class="zenario_fbWarning">
@@ -32,10 +31,10 @@ zenario_job:
                     post_field_html: </div>
                     hidden: true
                 frequency:
-                    label: 'Frequency:'
+                    label: 'Run once every:'
                     type: select
                 start_at_hours:
-                    label: 'Starting at:'
+                    label: 'At (time):'
                     type: select
                     post_field_html: ':'
                 start_at_minutes:
@@ -45,7 +44,7 @@ zenario_job:
                 days_desc:
                     full_width: true
                     snippet:
-                        html: '<b>On:</b>'
+                        html: '<b>On (days):</b>'
                 mon:
                     label: 'Monday'
                     type: checkbox
@@ -69,18 +68,17 @@ zenario_job:
                     type: checkbox
             show_errors_after_field: desc
         month:
-            ord: "20"
+            ord: "30"
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_SCHEDULED_TASK
-            label: Month
+            label: Months
             fields:
                 desc:
                     full_width: true
                     snippet:
                         html: |
-                            Use this tab to set on which months of the year, and on which days of those months, this task will run.
-                                                            Every condition set must be met for the task to run.
+                            Use this tab to set on which months of the year, and on which days of those months, this task will run. The task will run.
                 jan:
                     label: 'January'
                     type: checkbox
@@ -121,11 +119,10 @@ zenario_job:
                     label: 'Days of the month:'
                     type: select
                     note_below: |
-                        You may use this option in combination with the Time and Day option on the previous tab;
-                                                    for example to run a task on the first Monday of a month.
+                        Combine this with time and days on the previous tab; for example you can run a task on the first Monday of every month.
             show_errors_after_field: desc
         reporting:
-            ord: "30"
+            ord: "10"
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_SCHEDULED_TASK
@@ -134,29 +131,8 @@ zenario_job:
                 desc:
                     full_width: true
                     snippet:
-                        html: >
-                            Use this tab to control when log entries are made and when
-                            emails are sent.
-                log_on_error:
-                    label: 'On error write log entry'
-                    type: checkbox
-                    readonly: true
-                    value: "1"
-                email_on_error:
-                    label: 'On error send email'
-                    type: checkbox
-                    readonly: true
-                    value: "1"
-                email_address_on_error:
-                    indent: 1
-                    label: 'Email address:'
-                    type: text
-                    maxlength: "200"
-                    note_below: |
-                        Error notifications will always be sent to the support email address for the site
-                                                        ([[email]], as specified in your zenario_siteconfig.php file).
-                                                        <br/>
-                                                        If a different email address is entered above, error notifications will be sent to both addresses.
+                        html: |
+                            When the scheduled task runs, it may: run successfully and perform some action; fail with an error; or run but find nothing to do.
                 log_on_action:
                     label: 'On action write log entry'
                     type: checkbox
@@ -170,11 +146,28 @@ zenario_job:
                     label: 'Email address:'
                     type: text
                     maxlength: "200"
+                log_on_error:
+                    label: 'If task fails with an error, write log entry'
+                    type: checkbox
+                    readonly: true
+                    value: "1"
+                email_on_error:
+                    label: 'If task fails with an error, send email'
+                    type: checkbox
+                    readonly: true
+                    value: "1"
+                email_address_on_error:
+                    indent: 1
+                    label: 'Additional email address:'
+                    type: text
+                    maxlength: "200"
+                    note_below: |
+                        Error notifications will always be sent to the support email address ([[email]], as specified in your zenario_siteconfig.php file). Enter an email address above if additional people should be informed.
                 log_on_no_action:
-                    label: 'If no action write log entry'
+                    label: 'On successful run with no action, write log entry'
                     type: checkbox
                 email_on_no_action:
-                    label: 'If no action send email'
+                    label: 'On successful run with no action, send email'
                     type: checkbox
                     redraw_onchange: true
                 email_address_on_no_action:
@@ -192,18 +185,22 @@ zenario_job:
             label: Last run
             fields:
                 last_run_started:
-                    label: Last run started
+                    label: |
+                        Last run started:
                     type: datetime
                     readonly: true
                 last_run_finished:
-                    label: Last run finished
+                    label: |
+                        Last run finished:
                     type: datetime
                     readonly: true
                 last_successful_run:
-                    label: Last successful run
+                    label: |
+                        Last run without an error:
                     type: datetime
                     readonly: true
-                last_action:
-                    label: Last action
+                last_action: 
+                    label: |
+                        Last run with an action:
                     type: datetime
                     readonly: true

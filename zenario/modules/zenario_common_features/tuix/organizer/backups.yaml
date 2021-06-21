@@ -7,7 +7,7 @@ zenario__administration:
             title: Database backups
             view_mode: list
             disable_grid_view: true
-            no_items_message: No database backups have been taken.
+            #no_items_message is set in the PHP class file.
             disable_periodic_refresh: true
             columns:
                 filename:
@@ -61,6 +61,21 @@ zenario__administration:
                         fileDesc: Database backup files
                         request:
                             upload: 1
+                settings_dropdown:
+                    css_class: organizer_settings_dropdown
+                    ord: 999999
+                    hide_when_children_are_not_visible: true
+                    label: ⚙
+                
+                settings:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    label: Settings for Backups
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: site_settings
+                        key:
+                            id: dirs
                             
                             
             item_buttons:

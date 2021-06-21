@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+1.10.0 (2021-02-09)
+-------------------
+
+* When using the pure PHP reader, unsigned integers up to PHP_MAX_INT
+  will now be integers in PHP rather than strings. Previously integers
+  greater than 2^24 on 32-bit platforms and 2^56 on 64-bit platforms
+  would be strings due to the use of `gmp` or `bcmath` to decode them.
+  Reported by Alejandro Celaya. GitHub #119.
+
+1.9.0 (2021-01-07)
+------------------
+
+* The `maxminddb` extension is now buildable on Windows. Pull request
+  by Jan Ehrhardt. GitHub #115.
+
 1.8.0 (2020-10-01)
 ------------------
 

@@ -11,30 +11,30 @@ class zenario_slideshow__admin_boxes__plugin_settings extends ze\moduleBaseClass
 		
 		//Make sure "effect" is not set to false (applies to both Cycle2 and Cycle1).
 		//Fixes the bug: "[cycle] unknown transition:  ; slideshow terminating"
-		if (($values['first_tab/mode'] == 'cycle' || $values['first_tab/mode'] == 'cycle2') && !$values['cycle_effects/fx']) {
+		if (($values['first_tab/animation_library'] == 'cycle' || $values['first_tab/animation_library'] == 'cycle2') && !$values['cycle_effects/fx']) {
 			$values['cycle_effects/fx'] = 'fade';
 		}
 		
 		//Cycle2 doesn't support as many effects as Cycle1.
 		//Make sure an unsupported effect isn't selected.
-		if ($values['first_tab/mode'] == 'cycle2'
+		if ($values['first_tab/animation_library'] == 'cycle2'
 			&& ($values['cycle_effects/fx'] != 'none' && $values['cycle_effects/fx'] != 'fade' && $values['cycle_effects/fx'] != 'fadeout' && $values['cycle_effects/fx'] != 'scrollHorz')) {
 			$values['cycle_effects/fx'] = 'fade';
 		}
 		
-		//Hide all of the mode-dependant tabs if that mode is not selected
-		foreach ($fields['first_tab/mode']['values'] as $key => $label) {
+		//Hide all of the animation library-dependant tabs when not selected
+		foreach ($fields['first_tab/animation_library']['values'] as $key => $label) {
 			if ($key && isset($box['tabs'][$key. '_effects'])) {
-				$box['tabs'][$key. '_effects']['hidden'] = $values['first_tab/mode'] != $key;
+				$box['tabs'][$key. '_effects']['hidden'] = $values['first_tab/animation_library'] != $key;
 			}
 		}
 		
 		//Make sure the "animation duration" always has a value
-		if ($values['first_tab/mode'] == 'cycle') {
+		if ($values['first_tab/animation_library'] == 'cycle') {
 			$values['cycle_effects/speed'] = (bool) $values['cycle_effects/speed'] ? $values['cycle_effects/speed'] : 1000;
-		} elseif ($values['first_tab/mode'] == 'cycle2') {
+		} elseif ($values['first_tab/animation_library'] == 'cycle2') {
 			$values['cycle2_effects/speed'] = (bool) $values['cycle2_effects/speed'] ? $values['cycle2_effects/speed'] : 1000;
-		} elseif ($values['first_tab/mode'] == 'roundabout') {
+		} elseif ($values['first_tab/animation_library'] == 'roundabout') {
 			$values['roundabout_effects/speed'] = (bool) $values['roundabout_effects/speed'] ? $values['roundabout_effects/speed'] : 1000;
 		}
 		

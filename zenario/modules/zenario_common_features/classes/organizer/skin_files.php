@@ -51,17 +51,17 @@ class zenario_common_features__organizer__skin_files extends ze\moduleBaseClass 
 		
 		if ($skin = ze\content::skinDetails($_GET['refiner__skin'] ?? false)) {
 			
-			$dir = ze\content::skinPath($skin['family_name'], $skin['name']);
+			$dir = ze\content::skinPath($skin['name']);
 			$skin['subpath'] = '';
 			
 			if (($skin['subpath'] = $_GET['refiner__subpath'] ?? false) && ($skin['subpath'] = ze\ring::decodeIdForOrganizer($skin['subpath'])) && (strpos($skin['subpath'], '..') === false)) {
-				$panel['title'] = ze\admin::phrase('Files for the skin "[[display_name]]" in the template directory "[[family_name]]" in the sub-directory "[[subpath]]"', $skin);
+				$panel['title'] = ze\admin::phrase('Files for the skin "[[display_name]]" in the sub-directory "[[subpath]]"', $skin);
 				$skin['subpath'] .= '/';
 				$dir .= $skin['subpath'];
 			
 			} else {
 				$skin['subpath'] = '';
-				$panel['title'] = ze\admin::phrase('Files for the skin "[[display_name]]" in the template directory "[[family_name]]"', $skin);
+				$panel['title'] = ze\admin::phrase('Files for the skin "[[display_name]]"', $skin);
 			}
 			
 			

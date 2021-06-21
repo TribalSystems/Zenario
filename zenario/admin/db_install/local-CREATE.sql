@@ -14,10 +14,12 @@ CREATE TABLE `[[DB_PREFIX]]categories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `name` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
+  `code_name` varchar(255) CHARACTER SET ascii DEFAULT NULL,
   `public` tinyint(1) NOT NULL DEFAULT '0',
   `landing_page_equiv_id` int(10) unsigned NOT NULL DEFAULT '0',
   `landing_page_content_type` varchar(20) CHARACTER SET ascii NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `code_name` (`code_name`),
   KEY `name` (`name`,`parent_id`),
   KEY `public` (`public`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
@@ -56,6 +58,22 @@ CREATE TABLE `[[DB_PREFIX]]characteristic_user_link` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `[[DB_PREFIX]]consents`;
+CREATE TABLE `[[DB_PREFIX]]consents` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `source_name` varchar(255) NOT NULL DEFAULT '',
+  `source_id` varchar(255) NOT NULL DEFAULT '',
+  `datetime` datetime DEFAULT NULL,
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `ip_address` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `email` varchar(255) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
+  `first_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
+  `last_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
+  `label` varchar(250) CHARACTER SET utf8mb4 DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_cache`;
 CREATE TABLE `[[DB_PREFIX]]content_cache` (
   `content_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -84,13 +102,15 @@ CREATE TABLE `[[DB_PREFIX]]content_item_versions` (
   `content_summary` mediumtext CHARACTER SET utf8mb4,
   `lock_summary` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `file_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `s3_file_id` int(10) unsigned NOT NULL DEFAULT '0',
   `filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
+  `s3_filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `feature_image_id` int(10) unsigned NOT NULL DEFAULT '0',
   `layout_id` int(10) unsigned NOT NULL DEFAULT '0',
   `skin_id` int(10) unsigned NOT NULL DEFAULT '0',
   `css_class` varchar(100) NOT NULL DEFAULT '',
   `bg_image_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `bg_color` varchar(64) NOT NULL DEFAULT '',
+  `bg_color` varchar(64) CHARACTER SET ascii NOT NULL DEFAULT '',
   `bg_position` enum('left top','center top','right top','left center','center center','right center','left bottom','center bottom','right bottom') DEFAULT NULL,
   `bg_repeat` enum('repeat','repeat-x','repeat-y','no-repeat') DEFAULT NULL,
   `head_html` mediumtext CHARACTER SET utf8mb4,
@@ -109,25 +129,28 @@ CREATE TABLE `[[DB_PREFIX]]content_item_versions` (
   `published_datetime` datetime DEFAULT NULL,
   `concealer_id` int(10) unsigned NOT NULL DEFAULT '0',
   `concealed_datetime` datetime DEFAULT NULL,
-  `publication_date` datetime DEFAULT NULL,
+  `release_date` datetime DEFAULT NULL,
   `rss_slot_name` varchar(100) CHARACTER SET ascii NOT NULL DEFAULT '',
   `rss_nest` int(10) unsigned NOT NULL DEFAULT '0',
   `writer_id` int(10) unsigned NOT NULL DEFAULT '0',
   `writer_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `scheduled_publish_datetime` datetime DEFAULT NULL,
+  `in_sitemap` tinyint(1) NOT NULL DEFAULT '1',
+  `sensitive_content_message` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`,`type`,`version`),
   UNIQUE KEY `tag_id` (`tag_id`,`version`),
   KEY `type` (`type`),
   KEY `version` (`version`),
   KEY `created_datetime` (`created_datetime`),
   KEY `published_datetime` (`published_datetime`),
-  KEY `publication_date` (`publication_date`),
+  KEY `publication_date` (`release_date`),
   KEY `file_id` (`file_id`),
   KEY `filename` (`filename`),
   KEY `last_modified_datetime` (`last_modified_datetime`),
   KEY `title_2` (`title`),
   KEY `layout_id` (`layout_id`),
   KEY `feature_image_id` (`feature_image_id`),
+  KEY `in_sitemap` (`in_sitemap`),
   FULLTEXT KEY `title` (`title`),
   FULLTEXT KEY `description` (`description`),
   FULLTEXT KEY `keywords` (`keywords`),
@@ -171,6 +194,7 @@ CREATE TABLE `[[DB_PREFIX]]content_types` (
   `content_type_plural_en` varchar(255) NOT NULL DEFAULT '',
   `writer_field` enum('optional','mandatory','hidden') NOT NULL DEFAULT 'optional',
   `description_field` enum('optional','mandatory','hidden') NOT NULL DEFAULT 'optional',
+  `tooltip_text` varchar(255) NOT NULL DEFAULT '',
   `keywords_field` enum('optional','mandatory','hidden') NOT NULL DEFAULT 'optional',
   `summary_field` enum('optional','mandatory','hidden') NOT NULL DEFAULT 'optional',
   `release_date_field` enum('optional','mandatory','hidden') NOT NULL DEFAULT 'optional',
@@ -180,9 +204,8 @@ CREATE TABLE `[[DB_PREFIX]]content_types` (
   `is_creatable` tinyint(1) NOT NULL DEFAULT '1',
   `default_layout_id` int(10) unsigned NOT NULL DEFAULT '0',
   `module_id` int(10) unsigned NOT NULL,
-  `default_parent_menu_node` int(10) NOT NULL DEFAULT '0',
-  `menu_node_position` enum('start','end') DEFAULT NULL,
-  `menu_node_position_edit` enum('force','suggest') DEFAULT NULL,
+  `prompt_to_create_a_menu_node` tinyint(1) NOT NULL DEFAULT '1',
+  `menu_node_position_edit` enum('force','suggest') NOT NULL,
   `hide_menu_node` tinyint(1) NOT NULL DEFAULT '0',
   `default_permissions` enum('public','logged_in') NOT NULL DEFAULT 'public',
   `hide_private_item` tinyint(1) NOT NULL DEFAULT '0',
@@ -219,7 +242,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_fields` (
   `ord` int(10) unsigned NOT NULL DEFAULT '0',
   `label` varchar(64) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `default_label` varchar(64) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
-  `type` enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker','repeat_start','repeat_end') NOT NULL DEFAULT 'other_system_field',
+  `type` enum('group','checkbox','consent','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker','repeat_start','repeat_end') NOT NULL DEFAULT 'other_system_field',
   `width` smallint(5) unsigned NOT NULL DEFAULT '0',
   `height` smallint(5) unsigned NOT NULL DEFAULT '0',
   `values_source` varchar(255) NOT NULL DEFAULT '',
@@ -235,11 +258,14 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_fields` (
   `note_below` text CHARACTER SET utf8mb4,
   `side_note` text CHARACTER SET utf8mb4,
   `db_column` varchar(255) NOT NULL DEFAULT '',
+  `db_update_running` tinyint(1) NOT NULL DEFAULT '0',
   `admin_box_visibility` enum('show','show_on_condition','hide') NOT NULL DEFAULT 'show',
   `organizer_visibility` enum('none','hide','show_by_default','always_show') NOT NULL DEFAULT 'none',
   `create_index` tinyint(1) NOT NULL DEFAULT '0',
   `searchable` tinyint(1) NOT NULL DEFAULT '0',
+  `filterable` tinyint(1) NOT NULL DEFAULT '0',
   `sortable` tinyint(1) NOT NULL DEFAULT '0',
+  `readonly` tinyint(1) NOT NULL DEFAULT '0',
   `include_in_export` tinyint(1) NOT NULL DEFAULT '0',
   `autocomplete` tinyint(1) NOT NULL DEFAULT '0',
   `indent` int(10) unsigned NOT NULL DEFAULT '0',
@@ -310,7 +336,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_datasets` (
   `label_field_id` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `table` (`table`),
-  UNIQUE KEY `label` (`label`)
+  KEY `label` (`label`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -369,6 +395,7 @@ CREATE TABLE `[[DB_PREFIX]]document_types` (
   `type` varchar(10) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `mime_type` varchar(128) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `custom` tinyint(1) NOT NULL DEFAULT '1',
+  `is_allowed` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`type`),
   KEY `custom` (`custom`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
@@ -382,7 +409,7 @@ CREATE TABLE `[[DB_PREFIX]]documents` (
   `file_id` int(10) unsigned DEFAULT NULL,
   `folder_id` int(10) NOT NULL DEFAULT '0',
   `folder_name` varchar(250) CHARACTER SET utf8mb4 DEFAULT NULL,
-  `privacy` enum('auto','public','private') NOT NULL DEFAULT 'auto',
+  `privacy` enum('public','private','offline') NOT NULL DEFAULT 'offline',
   `document_datetime` datetime DEFAULT NULL,
   `thumbnail_id` int(10) DEFAULT NULL,
   `extract` mediumtext CHARACTER SET utf8mb4,
@@ -412,7 +439,7 @@ CREATE TABLE `[[DB_PREFIX]]email_templates` (
   `code` varchar(255) NOT NULL,
   `template_name` varchar(255) NOT NULL DEFAULT '',
   `subject` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
-  `from_details` enum('site_settings','custom_details') NOT NULL DEFAULT 'custom_details',
+  `from_details` enum('site_settings','custom_details') NOT NULL DEFAULT 'site_settings',
   `email_address_from` varchar(100) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `email_name_from` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `head` mediumtext CHARACTER SET utf8mb4,
@@ -429,6 +456,13 @@ CREATE TABLE `[[DB_PREFIX]]email_templates` (
   `modified_by_id` int(10) unsigned NOT NULL DEFAULT '0',
   `last_sent` datetime DEFAULT NULL,
   `allow_attachments` tinyint(1) DEFAULT '0',
+  `use_standard_email_template` tinyint(1) NOT NULL DEFAULT '0',
+  `period_to_delete_log_headers` varchar(255) NOT NULL DEFAULT '',
+  `period_to_delete_log_content` varchar(255) NOT NULL DEFAULT '',
+  `include_a_fixed_attachment` tinyint(1) NOT NULL DEFAULT '0',
+  `selected_attachment` int(10) unsigned DEFAULT NULL,
+  `allow_visitor_uploaded_attachments` tinyint(1) NOT NULL DEFAULT '0',
+  `when_sending_attachments` enum('send_organizer_link','send_actual_file') DEFAULT 'send_organizer_link',
   PRIMARY KEY (`id`),
   UNIQUE KEY `template_name` (`template_name`),
   UNIQUE KEY `code` (`code`),
@@ -453,24 +487,18 @@ CREATE TABLE `[[DB_PREFIX]]files` (
   `title` text CHARACTER SET utf8mb4,
   `floating_box_title` text CHARACTER SET utf8mb4,
   `size` int(10) unsigned NOT NULL,
-  `location` enum('db','docstore') NOT NULL,
+  `location` enum('db','docstore','s3') NOT NULL,
   `data` longblob,
   `path` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `thumbnail_180x130_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `thumbnail_180x130_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `thumbnail_180x130_data` mediumblob,
-  `thumbnail_64x64_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `thumbnail_64x64_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `thumbnail_64x64_data` mediumblob,
-  `thumbnail_24x23_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `thumbnail_24x23_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `thumbnail_24x23_data` mediumblob,
-  `working_copy_width` smallint(5) unsigned DEFAULT NULL,
-  `working_copy_height` smallint(5) unsigned DEFAULT NULL,
-  `working_copy_data` mediumblob,
-  `working_copy_2_width` smallint(5) unsigned DEFAULT NULL,
-  `working_copy_2_height` smallint(5) unsigned DEFAULT NULL,
-  `working_copy_2_data` mediumblob,
+  `custom_thumbnail_1_width` smallint(5) unsigned DEFAULT NULL,
+  `custom_thumbnail_1_height` smallint(5) unsigned DEFAULT NULL,
+  `custom_thumbnail_1_data` mediumblob,
+  `custom_thumbnail_2_width` smallint(5) unsigned DEFAULT NULL,
+  `custom_thumbnail_2_height` smallint(5) unsigned DEFAULT NULL,
+  `custom_thumbnail_2_data` mediumblob,
   PRIMARY KEY (`id`),
   UNIQUE KEY `checksum` (`checksum`,`usage`),
   UNIQUE KEY `short_checksum` (`short_checksum`,`usage`),
@@ -484,16 +512,16 @@ CREATE TABLE `[[DB_PREFIX]]files` (
   KEY `archived` (`archived`),
   KEY `thumbnail_180x130_width` (`thumbnail_180x130_width`),
   KEY `thumbnail_180x130_height` (`thumbnail_180x130_height`),
-  KEY `thumbnail_64x64_width` (`thumbnail_64x64_width`),
-  KEY `thumbnail_64x64_height` (`thumbnail_64x64_height`),
-  KEY `thumbnail_24x23_width` (`thumbnail_24x23_width`),
-  KEY `thumbnail_24x23_height` (`thumbnail_24x23_height`)
+  KEY `custom_thumbnail_1_width` (`custom_thumbnail_1_width`),
+  KEY `custom_thumbnail_1_height` (`custom_thumbnail_1_height`),
+  KEY `custom_thumbnail_2_width` (`custom_thumbnail_2_width`),
+  KEY `custom_thumbnail_2_height` (`custom_thumbnail_2_height`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]group_link`;
 CREATE TABLE `[[DB_PREFIX]]group_link` (
-  `link_from` enum('chain','slide') NOT NULL,
+  `link_from` enum('chain','slide','slide_layout') NOT NULL,
   `link_from_id` int(10) unsigned NOT NULL,
   `link_from_char` char(20) CHARACTER SET ascii NOT NULL DEFAULT '',
   `link_to` enum('group','role') NOT NULL,
@@ -532,10 +560,14 @@ CREATE TABLE `[[DB_PREFIX]]inline_images` (
   `foreign_key_version` int(10) unsigned NOT NULL DEFAULT '0',
   `in_use` tinyint(1) NOT NULL DEFAULT '0',
   `archived` tinyint(1) NOT NULL DEFAULT '0',
+  `is_nest` tinyint(1) NOT NULL DEFAULT '0',
+  `is_slideshow` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`foreign_key_to`,`foreign_key_id`,`foreign_key_char`,`foreign_key_version`,`image_id`),
   KEY `file_id` (`image_id`),
   KEY `in_use` (`in_use`),
-  KEY `archived` (`archived`)
+  KEY `archived` (`archived`),
+  KEY `is_nest` (`is_nest`),
+  KEY `is_slideshow` (`is_slideshow`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -546,7 +578,7 @@ CREATE TABLE `[[DB_PREFIX]]job_logs` (
   `status` enum('action_taken','no_action_taken','error') NOT NULL,
   `started` datetime DEFAULT NULL,
   `finished` datetime DEFAULT NULL,
-  `note` text CHARACTER SET utf8mb4,
+  `note` mediumtext CHARACTER SET utf8mb4,
   PRIMARY KEY (`id`),
   KEY `job_id` (`job_id`),
   KEY `status` (`status`),
@@ -558,12 +590,16 @@ CREATE TABLE `[[DB_PREFIX]]job_logs` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]jobs`;
 CREATE TABLE `[[DB_PREFIX]]jobs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `job_type` enum('scheduled','background') NOT NULL DEFAULT 'scheduled',
   `manager_class_name` varchar(200) NOT NULL,
   `job_name` varchar(127) NOT NULL,
   `module_id` int(10) unsigned NOT NULL,
   `module_class_name` varchar(200) NOT NULL,
   `static_method` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `script_path` varchar(255) NOT NULL DEFAULT '',
+  `script_restart_time` bigint(14) unsigned NOT NULL DEFAULT '0',
   `enabled` tinyint(1) NOT NULL DEFAULT '0',
+  `paused` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `months` set('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec') NOT NULL DEFAULT 'jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec',
   `days` set('mon','tue','wed','thr','fri','sat','sun') NOT NULL DEFAULT 'mon,tue,wed,thr,fri,sat,sun',
   `hours` set('0h','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h') NOT NULL DEFAULT '0h',
@@ -586,7 +622,8 @@ CREATE TABLE `[[DB_PREFIX]]jobs` (
   UNIQUE KEY `job_name` (`job_name`,`module_class_name`),
   KEY `plugin_id` (`module_id`),
   KEY `first_n_days_of_month` (`first_n_days_of_month`),
-  KEY `manager_class_name` (`manager_class_name`)
+  KEY `manager_class_name` (`manager_class_name`),
+  KEY `job_type` (`job_type`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -599,6 +636,9 @@ CREATE TABLE `[[DB_PREFIX]]languages` (
   `show_untranslated_content_items` tinyint(1) NOT NULL DEFAULT '0',
   `sync_assist` tinyint(1) NOT NULL DEFAULT '0',
   `search_type` enum('full_text','simple') NOT NULL DEFAULT 'full_text',
+  `language_picker_logic` enum('visible_or_disabled','visible_or_hidden','always_hidden') NOT NULL DEFAULT 'visible_or_disabled',
+  `thousands_sep` varchar(1) CHARACTER SET utf8mb4 NOT NULL DEFAULT ',',
+  `dec_point` varchar(1) CHARACTER SET utf8mb4 NOT NULL DEFAULT '.',
   `domain` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `detect` (`detect`),
@@ -617,11 +657,20 @@ CREATE TABLE `[[DB_PREFIX]]last_sent_warning_emails` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `[[DB_PREFIX]]layout_slot_link`;
+CREATE TABLE `[[DB_PREFIX]]layout_slot_link` (
+  `layout_id` int(10) unsigned NOT NULL,
+  `slot_name` varchar(100) NOT NULL,
+  `ord` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `small_screens` enum('show','hide','only','first') DEFAULT 'show',
+  PRIMARY KEY (`layout_id`,`slot_name`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_PREFIX]]layouts`;
 CREATE TABLE `[[DB_PREFIX]]layouts` (
   `layout_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `family_name` varchar(50) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
-  `file_base_name` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL,
   `status` enum('active','suspended') NOT NULL DEFAULT 'active',
@@ -633,17 +682,19 @@ CREATE TABLE `[[DB_PREFIX]]layouts` (
   `skin_id` int(10) unsigned DEFAULT NULL,
   `css_class` varchar(100) NOT NULL DEFAULT '',
   `bg_image_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `bg_color` varchar(64) NOT NULL DEFAULT '',
+  `bg_color` varchar(64) CHARACTER SET ascii NOT NULL DEFAULT '',
   `bg_position` enum('left top','center top','right top','left center','center center','right center','left bottom','center bottom','right bottom') DEFAULT NULL,
   `bg_repeat` enum('repeat','repeat-x','repeat-y','no-repeat') DEFAULT NULL,
+  `json_data` json DEFAULT NULL,
+  `json_data_hash` varchar(8) CHARACTER SET ascii NOT NULL DEFAULT 'xxxxxxxx',
   `head_html` mediumtext CHARACTER SET utf8mb4,
   `head_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
   `head_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `foot_html` mediumtext CHARACTER SET utf8mb4,
   `foot_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
   `foot_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `sensitive_content_message` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`layout_id`),
-  KEY `family_name` (`family_name`,`file_base_name`),
   KEY `name` (`name`),
   KEY `content_type` (`content_type`),
   KEY `status` (`status`),
@@ -658,6 +709,21 @@ CREATE TABLE `[[DB_PREFIX]]local_revision_numbers` (
   `revision_no` int(10) unsigned NOT NULL,
   PRIMARY KEY (`path`,`patchfile`),
   KEY `revision_no` (`revision_no`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]lock__clean_dirs`;
+CREATE TABLE `[[DB_PREFIX]]lock__clean_dirs` (
+  `dummy` tinyint(1) unsigned NOT NULL
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=ascii;
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]lov_salutations`;
+CREATE TABLE `[[DB_PREFIX]]lov_salutations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -689,6 +755,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_nodes` (
   `ordinal` int(10) unsigned NOT NULL DEFAULT '0',
   `invisible` tinyint(1) NOT NULL DEFAULT '0',
   `hide_private_item` tinyint(1) NOT NULL DEFAULT '0',
+  `restrict_child_content_types` varchar(20) CHARACTER SET ascii DEFAULT NULL,
   `add_registered_get_requests` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `rel_tag` varchar(100) CHARACTER SET utf8mb4 DEFAULT NULL,
   `css_class` varchar(100) NOT NULL DEFAULT '',
@@ -699,6 +766,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_nodes` (
   `method_name` varchar(255) DEFAULT NULL,
   `param_1` varchar(255) DEFAULT NULL,
   `param_2` varchar(255) DEFAULT NULL,
+  `custom_get_requests` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ordinal` (`ordinal`),
   KEY `content_type` (`content_type`),
@@ -706,7 +774,8 @@ CREATE TABLE `[[DB_PREFIX]]menu_nodes` (
   KEY `content_id` (`equiv_id`),
   KEY `target_loc` (`target_loc`),
   KEY `invisible` (`invisible`),
-  KEY `section_id` (`section_id`)
+  KEY `section_id` (`section_id`),
+  KEY `restrict_child_content_types` (`restrict_child_content_types`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -768,6 +837,7 @@ CREATE TABLE `[[DB_PREFIX]]modules` (
   `default_framework` varchar(50) NOT NULL DEFAULT '',
   `css_class_name` varchar(200) NOT NULL DEFAULT '',
   `is_pluggable` tinyint(1) NOT NULL DEFAULT '0',
+  `must_be_on` enum('','public_page','private_page') NOT NULL DEFAULT '',
   `fill_organizer_nav` tinyint(1) NOT NULL DEFAULT '0',
   `can_be_version_controlled` tinyint(1) NOT NULL DEFAULT '0',
   `for_use_in_twig` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -785,11 +855,17 @@ CREATE TABLE `[[DB_PREFIX]]modules` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]nested_paths`;
 CREATE TABLE `[[DB_PREFIX]]nested_paths` (
   `instance_id` int(10) unsigned NOT NULL,
+  `slide_num` smallint(4) unsigned NOT NULL DEFAULT '0',
   `from_state` char(2) CHARACTER SET ascii NOT NULL,
   `to_state` char(2) CHARACTER SET ascii NOT NULL,
   `equiv_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL DEFAULT '',
-  `commands` text,
+  `command` varchar(255) CHARACTER SET ascii NOT NULL,
+  `is_custom` tinyint(1) NOT NULL DEFAULT '0',
+  `request_vars` varchar(250) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `hierarchical_var` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `descendants` set('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','aa','ab','ac','ad','ae','af','ag','ah','ai','aj','ak','al','am','an','ao','ap','aq','ar','as','at','au','av','aw','ax','ay','az','ba','bb','bc','bd','be','bf','bg','bh','bi','bj','bk','bl') NOT NULL DEFAULT '',
+  `is_forwards` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`instance_id`,`from_state`,`equiv_id`,`content_type`,`to_state`),
   KEY `instance_id` (`instance_id`,`to_state`,`from_state`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
@@ -806,18 +882,23 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `module_id` int(10) unsigned NOT NULL,
   `framework` varchar(50) NOT NULL DEFAULT '',
   `css_class` varchar(100) NOT NULL DEFAULT '',
+  `makes_breadcrumbs` tinyint(1) NOT NULL DEFAULT '0',
   `is_slide` tinyint(1) NOT NULL DEFAULT '0',
+  `use_slide_layout` enum('','asset_schema','datapool_schema') NOT NULL DEFAULT '',
   `invisible_in_nav` tinyint(1) NOT NULL DEFAULT '0',
   `show_back` tinyint(1) NOT NULL DEFAULT '0',
+  `no_choice_no_going_back` tinyint(1) NOT NULL DEFAULT '0',
   `show_embed` tinyint(1) NOT NULL DEFAULT '0',
   `show_refresh` tinyint(1) NOT NULL DEFAULT '0',
   `show_auto_refresh` tinyint(1) NOT NULL DEFAULT '0',
   `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT '60',
   `request_vars` varchar(250) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `hierarchical_var` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
   `global_command` varchar(100) NOT NULL DEFAULT '',
-  `states` set('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ','BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL') NOT NULL DEFAULT '',
+  `states` set('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','aa','ab','ac','ad','ae','af','ag','ah','ai','aj','ak','al','am','an','ao','ap','aq','ar','as','at','au','av','aw','ax','ay','az','ba','bb','bc','bd','be','bf','bg','bh','bi','bj','bk','bl') NOT NULL DEFAULT '',
   `name_or_title` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
-  `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','with_role') NOT NULL DEFAULT 'public',
+  `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','with_role','hidden') NOT NULL DEFAULT 'public',
+  `at_location` enum('any','in_url','detect') NOT NULL DEFAULT 'any',
   `smart_group_id` int(10) unsigned NOT NULL DEFAULT '0',
   `module_class_name` varchar(200) NOT NULL DEFAULT '',
   `method_name` varchar(127) NOT NULL DEFAULT '',
@@ -825,7 +906,9 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `param_2` varchar(200) NOT NULL DEFAULT '',
   `always_visible_to_admins` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `instance_id` (`instance_id`,`is_slide`,`slide_num`,`ord`)
+  KEY `instance_id` (`instance_id`,`is_slide`,`slide_num`,`ord`),
+  KEY `slide_num` (`instance_id`,`slide_num`,`ord`),
+  KEY `makes_breadcrumbs` (`instance_id`,`makes_breadcrumbs`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -843,13 +926,14 @@ CREATE TABLE `[[DB_PREFIX]]page_preview_sizes` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_instance_cache`;
-CREATE TABLE `[[DB_PREFIX]]plugin_instance_cache` (
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_instance_store`;
+CREATE TABLE `[[DB_PREFIX]]plugin_instance_store` (
   `instance_id` int(10) unsigned NOT NULL,
   `method_name` varchar(64) NOT NULL,
   `request` varchar(255) NOT NULL DEFAULT '',
   `last_updated` datetime NOT NULL,
-  `cache` mediumtext CHARACTER SET utf8mb4 NOT NULL,
+  `store` mediumtext CHARACTER SET utf8mb4 NOT NULL,
+  `is_cache` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`instance_id`,`method_name`,`request`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
@@ -865,10 +949,14 @@ CREATE TABLE `[[DB_PREFIX]]plugin_instances` (
   `slot_name` varchar(100) CHARACTER SET ascii NOT NULL DEFAULT '',
   `framework` varchar(50) NOT NULL DEFAULT '',
   `css_class` varchar(100) NOT NULL DEFAULT '',
+  `is_nest` tinyint(1) NOT NULL DEFAULT '0',
+  `is_slideshow` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `name` (`name`),
   KEY `wireframe_instance` (`content_id`,`content_type`,`content_version`,`slot_name`,`module_id`),
-  KEY `module_id` (`module_id`)
+  KEY `module_id` (`module_id`),
+  KEY `is_nest` (`is_nest`),
+  KEY `is_slideshow` (`is_slideshow`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -894,13 +982,24 @@ CREATE TABLE `[[DB_PREFIX]]plugin_layout_link` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `module_id` int(10) unsigned NOT NULL,
   `instance_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `family_name` varchar(50) NOT NULL,
   `layout_id` int(10) unsigned NOT NULL,
   `slot_name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `family_name` (`family_name`,`layout_id`,`slot_name`),
+  UNIQUE KEY `family_name` (`layout_id`,`slot_name`),
   KEY `slot_name` (`instance_id`,`slot_name`),
   KEY `layout_id` (`layout_id`,`slot_name`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_pages_by_mode`;
+CREATE TABLE `[[DB_PREFIX]]plugin_pages_by_mode` (
+  `equiv_id` int(10) unsigned NOT NULL,
+  `content_type` varchar(20) CHARACTER SET ascii NOT NULL,
+  `module_class_name` varchar(200) NOT NULL,
+  `mode` varchar(200) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `state` char(2) CHARACTER SET ascii NOT NULL DEFAULT '',
+  PRIMARY KEY (`module_class_name`,`mode`),
+  KEY `content_type` (`content_type`,`equiv_id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -934,7 +1033,8 @@ CREATE TABLE `[[DB_PREFIX]]plugin_settings` (
   KEY `dangling_cross_references` (`dangling_cross_references`),
   KEY `value` (`value`(64)),
   KEY `foreign_key_char` (`foreign_key_to`,`foreign_key_char`),
-  KEY `format` (`format`)
+  KEY `format` (`format`),
+  KEY `name` (`name`,`egg_id`,`instance_id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -953,10 +1053,12 @@ CREATE TABLE `[[DB_PREFIX]]signals` (
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]site_settings`;
 CREATE TABLE `[[DB_PREFIX]]site_settings` (
-  `name` varchar(255) NOT NULL,
+  `name` varchar(255) CHARACTER SET ascii NOT NULL,
   `value` mediumtext CHARACTER SET utf8mb4,
   `default_value` mediumtext,
   `encrypted` tinyint(1) NOT NULL DEFAULT '0',
+  `secret` tinyint(1) NOT NULL DEFAULT '0',
+  `protect_from_database_restore` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`name`),
   KEY `value` (`value`(64))
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
@@ -965,7 +1067,6 @@ CREATE TABLE `[[DB_PREFIX]]site_settings` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]skins`;
 CREATE TABLE `[[DB_PREFIX]]skins` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `family_name` varchar(50) NOT NULL,
   `name` varchar(255) NOT NULL,
   `display_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `extension_of_skin` varchar(255) NOT NULL DEFAULT '',
@@ -975,10 +1076,29 @@ CREATE TABLE `[[DB_PREFIX]]skins` (
   `enable_editable_css` tinyint(1) NOT NULL DEFAULT '1',
   `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `family_name` (`family_name`,`name`),
+  UNIQUE KEY `family_name` (`name`),
   KEY `name` (`name`),
   KEY `display_name` (`display_name`),
   KEY `extension_of_skin` (`extension_of_skin`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]slide_layouts`;
+CREATE TABLE `[[DB_PREFIX]]slide_layouts` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `layout_for` enum('schema') NOT NULL,
+  `layout_for_id` int(10) unsigned NOT NULL,
+  `ord` smallint(4) unsigned NOT NULL DEFAULT '1',
+  `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+  `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','with_role') NOT NULL DEFAULT 'public',
+  `at_location` enum('any','in_url','detect') NOT NULL DEFAULT 'in_url',
+  `data` mediumtext CHARACTER SET utf8mb4,
+  `created` datetime NOT NULL,
+  `last_edited` datetime DEFAULT NULL,
+  `last_edited_admin_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `last_edited_user_id` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `layout_for` (`layout_for`,`layout_for_id`,`ord`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -998,7 +1118,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_rules`;
 CREATE TABLE `[[DB_PREFIX]]smart_group_rules` (
   `smart_group_id` int(10) unsigned NOT NULL,
   `ord` int(10) unsigned NOT NULL,
-  `type_of_check` enum('user_field','role','activity_band') NOT NULL DEFAULT 'user_field',
+  `type_of_check` enum('user_field','role','activity_band','in_a_group','not_in_a_group') NOT NULL DEFAULT 'user_field',
   `field_id` int(10) unsigned NOT NULL DEFAULT '0',
   `field2_id` int(10) unsigned NOT NULL DEFAULT '0',
   `field3_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -1030,7 +1150,7 @@ CREATE TABLE `[[DB_PREFIX]]smart_groups` (
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_aliases`;
 CREATE TABLE `[[DB_PREFIX]]spare_aliases` (
-  `alias` varchar(75) CHARACTER SET utf8mb4 NOT NULL,
+  `alias` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
   `target_loc` enum('int','ext') NOT NULL DEFAULT 'int',
   `content_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL DEFAULT '',
@@ -1059,43 +1179,13 @@ CREATE TABLE `[[DB_PREFIX]]special_pages` (
   `equiv_id` int(10) unsigned DEFAULT NULL,
   `content_type` varchar(20) CHARACTER SET ascii DEFAULT NULL,
   `page_type` varchar(64) NOT NULL,
-  `logic` enum('create_and_maintain_in_default_language','create_and_maintain_in_all_languages','create_in_default_language_on_install') NOT NULL DEFAULT 'create_and_maintain_in_default_language',
+  `logic` enum('create_and_maintain_in_default_language','create_in_default_language_on_install') NOT NULL DEFAULT 'create_and_maintain_in_default_language',
+  `allow_hide` tinyint(1) NOT NULL DEFAULT '0',
   `publish` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `module_class_name` varchar(200) NOT NULL DEFAULT '',
   PRIMARY KEY (`page_type`),
   UNIQUE KEY `content_type` (`content_type`,`equiv_id`),
   KEY `module_class_name` (`module_class_name`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]template_families`;
-CREATE TABLE `[[DB_PREFIX]]template_families` (
-  `family_name` varchar(50) NOT NULL,
-  `skin_id` int(10) unsigned DEFAULT NULL,
-  `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`family_name`),
-  KEY `skin_id` (`skin_id`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]template_files`;
-CREATE TABLE `[[DB_PREFIX]]template_files` (
-  `family_name` varchar(50) NOT NULL,
-  `file_base_name` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
-  `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`family_name`,`file_base_name`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]template_slot_link`;
-CREATE TABLE `[[DB_PREFIX]]template_slot_link` (
-  `family_name` varchar(50) NOT NULL,
-  `file_base_name` varchar(255) CHARACTER SET ascii NOT NULL,
-  `slot_name` varchar(100) NOT NULL,
-  `ord` smallint(4) unsigned NOT NULL DEFAULT '0',
-  `cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
-  `small_screens` enum('show','hide','only','first') DEFAULT 'show',
-  PRIMARY KEY (`family_name`,`file_base_name`,`slot_name`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -1116,6 +1206,7 @@ CREATE TABLE `[[DB_PREFIX]]translation_chains` (
   `equiv_id` int(10) unsigned NOT NULL,
   `type` char(20) CHARACTER SET ascii NOT NULL,
   `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','send_signal','with_role') NOT NULL DEFAULT 'public',
+  `at_location` enum('any','in_url','detect') NOT NULL DEFAULT 'any',
   `smart_group_id` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`equiv_id`,`type`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
@@ -1132,7 +1223,27 @@ CREATE TABLE `[[DB_PREFIX]]tuix_file_contents` (
   `last_modified` int(10) unsigned NOT NULL DEFAULT '0',
   `checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
   PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
-  KEY `panel_type` (`panel_type`)
+  KEY `panel_type` (`panel_type`),
+  KEY `module_panel_types` (`type`,`module_class_name`,`panel_type`,`path`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]tuix_snippets`;
+CREATE TABLE `[[DB_PREFIX]]tuix_snippets` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+  `custom_yaml` mediumtext CHARACTER SET utf8mb4,
+  `custom_json` mediumtext CHARACTER SET utf8mb4,
+  `created` datetime DEFAULT NULL,
+  `created_admin_id` int(10) unsigned DEFAULT NULL,
+  `created_user_id` int(10) unsigned DEFAULT NULL,
+  `created_username` varchar(255) DEFAULT NULL,
+  `last_edited` datetime DEFAULT NULL,
+  `last_edited_admin_id` int(10) unsigned DEFAULT NULL,
+  `last_edited_user_id` int(10) unsigned DEFAULT NULL,
+  `last_edited_username` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -1165,7 +1276,6 @@ CREATE TABLE `[[DB_PREFIX]]user_content_accesslog` (
   `content_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL,
   `content_version` int(10) unsigned NOT NULL DEFAULT '0',
-  `ip` varchar(80) CHARACTER SET ascii NOT NULL DEFAULT '',
   PRIMARY KEY (`hit_datetime`,`user_id`,`content_id`,`content_type`),
   UNIQUE KEY `id` (`id`),
   KEY `user_id` (`user_id`),
@@ -1173,8 +1283,25 @@ CREATE TABLE `[[DB_PREFIX]]user_content_accesslog` (
   KEY `content_id` (`content_id`),
   KEY `user_id_2` (`user_id`),
   KEY `content_id_2` (`content_id`),
-  KEY `content_type_2` (`content_type`),
-  KEY `new_ip` (`ip`)
+  KEY `content_type_2` (`content_type`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_country_link`;
+CREATE TABLE `[[DB_PREFIX]]user_country_link` (
+  `user_id` int(10) unsigned NOT NULL,
+  `country_id` varchar(5) NOT NULL,
+  PRIMARY KEY (`user_id`,`country_id`),
+  UNIQUE KEY `country_id` (`country_id`,`user_id`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_perm_settings`;
+CREATE TABLE `[[DB_PREFIX]]user_perm_settings` (
+  `name` varchar(255) NOT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`name`),
+  KEY `value` (`value`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -1183,14 +1310,12 @@ CREATE TABLE `[[DB_PREFIX]]user_signin_log` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `login_datetime` datetime DEFAULT NULL,
-  `ip` varchar(80) CHARACTER SET ascii NOT NULL DEFAULT '',
   `browser` varchar(255) NOT NULL DEFAULT '',
   `browser_version` varchar(255) NOT NULL DEFAULT '',
   `platform` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
-  KEY `login_datetime` (`login_datetime`),
-  KEY `ip` (`ip`)
+  KEY `login_datetime` (`login_datetime`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8;
 
 
@@ -1206,10 +1331,8 @@ CREATE TABLE `[[DB_PREFIX]]user_sync_log` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]users`;
 CREATE TABLE `[[DB_PREFIX]]users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `global_id` int(10) unsigned NOT NULL DEFAULT '0',
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `last_login` datetime DEFAULT NULL,
-  `last_login_ip` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `identifier` varchar(50) CHARACTER SET utf8mb4 DEFAULT NULL,
   `screen_name` varchar(50) CHARACTER SET utf8mb4 DEFAULT '',
   `screen_name_confirmed` tinyint(1) NOT NULL DEFAULT '0',
@@ -1226,7 +1349,13 @@ CREATE TABLE `[[DB_PREFIX]]users` (
   `email` varchar(100) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `email_verified` tinyint(1) NOT NULL DEFAULT '0',
   `created_date` datetime DEFAULT NULL,
+  `created_admin_id` int(10) unsigned DEFAULT NULL,
+  `created_user_id` int(10) unsigned DEFAULT NULL,
+  `created_username` varchar(255) DEFAULT NULL,
   `modified_date` datetime DEFAULT NULL,
+  `last_edited_admin_id` int(10) unsigned DEFAULT NULL,
+  `last_edited_user_id` int(10) unsigned DEFAULT NULL,
+  `last_edited_username` varchar(255) DEFAULT NULL,
   `suspended_date` datetime DEFAULT NULL,
   `last_updated_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `send_delayed_registration_email` tinyint(1) NOT NULL DEFAULT '0',
@@ -1234,8 +1363,10 @@ CREATE TABLE `[[DB_PREFIX]]users` (
   `equiv_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL DEFAULT '',
   `hash` varchar(28) CHARACTER SET ascii NOT NULL DEFAULT '',
-  `creation_method` enum('visitor','admin') DEFAULT NULL,
+  `creation_method` enum('visitor','admin') NOT NULL DEFAULT 'visitor',
+  `creation_method_note` varchar(255) CHARACTER SET utf8mb4 NOT NULL DEFAULT '',
   `ordinal` int(10) NOT NULL DEFAULT '0',
+  `consent_hash` varchar(28) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `email` (`email`),
   KEY `parent_id` (`parent_id`),
@@ -1244,7 +1375,6 @@ CREATE TABLE `[[DB_PREFIX]]users` (
   KEY `last_profile_update_in_frontend` (`last_profile_update_in_frontend`),
   KEY `last_login` (`last_login`),
   KEY `identifier` (`identifier`),
-  KEY `global_id` (`global_id`),
   KEY `last_updated_timestamp` (`last_updated_timestamp`),
   KEY `status` (`status`),
   KEY `send_delayed_registration_email` (`send_delayed_registration_email`)
@@ -1284,3 +1414,4 @@ REPLACE INTO `[[DB_PREFIX]]local_revision_numbers` VALUES
  ('admin/db_updates/step_4_migrate_the_data','plugins.inc.php',[[INSTALLER_REVISION_NO]]),
  ('admin/db_updates/step_4_migrate_the_data','user_tables.inc.php',[[INSTALLER_REVISION_NO]]),
  ('admin/db_updates/step_1_update_the_updater_itself','updater_tables.inc.php',[[INSTALLER_REVISION_NO]]);
+ 

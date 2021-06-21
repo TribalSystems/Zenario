@@ -134,11 +134,11 @@ class zenario_slideshow extends zenario_plugin_nest {
 	
 	protected function startSlideshow() {
 		
-		if ($mode = $this->setting('mode')) {
+		if ($animationLibrary = $this->setting('animation_library')) {
 			
-			if ($mode == 'cycle') {
+			if ($animationLibrary == 'cycle') {
 				ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery.cycle.all.min.js');
-			} elseif ($mode == 'cycle2') {
+			} elseif ($animationLibrary == 'cycle2') {
 				ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery.cycle2.min.js');
 			}
 			
@@ -149,7 +149,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 				$this->editingTabNum !== false? $this->editingTabNum - 1 : 0
 			];
 			
-			switch ($mode) {
+			switch ($animationLibrary) {
 				case 'cycle':
 					$opt['fx'] = $this->setting('fx');
 					$opt['sync'] = (bool) $this->setting('sync');
@@ -170,7 +170,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 			
 				
 			$this->callScript('zenario_slideshow', 'show',
-				'zenario_'. $mode. '_interface',
+				'zenario_'. $animationLibrary. '_interface',
 				$this->containerId,
 				$opt,
 				$this->editingTabNum !== false? $this->editingTabNum - 1 : 0
@@ -209,7 +209,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 					$this->mergeFields['Tabs'][$slideNum]['Plugins'] = $this->modules[$slideNum];
 					$this->mergeFields['Tabs'][$slideNum]['Hidden'] = $hide;
 					
-					if ($mode = $this->setting('mode')) {
+					if ($this->setting('animation_library')) {
 						//Hide the slides after slide one, until the jQuery slideshow Plugin kicks in and overrides this.
 						$hide = true;
 					}
@@ -225,4 +225,28 @@ class zenario_slideshow extends zenario_plugin_nest {
 		zenario_plugin_nest::fillAdminSlotControls($controls);
 	}
 
+
+
+
+
+
+	public function returnWhatThisEggIs() {
+		return \ze\admin::phrase('This is a plugin in a slideshow');
+	}
+	
+	public function returnWhatThisIs() {
+		if (isset($this->parentNest)) {
+			return $this->parentNest->returnWhatThisEggIs();
+		
+		//Don't show a description for the slideshow if there are already plugins in it
+		} elseif (!empty($this->modules[$this->slideNum])) {
+			return '';
+		
+		} elseif ($this->slotLevel == 2) {
+			return \ze\admin::phrase('This is a slideshow on the layout');
+		
+		} else {
+			return \ze\admin::phrase('This is a slideshow on the content item');
+		}
+	}
 }

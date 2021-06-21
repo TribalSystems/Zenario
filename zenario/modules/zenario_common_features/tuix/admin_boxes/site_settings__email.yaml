@@ -363,17 +363,37 @@ site_settings:
                     type: checkbox
                     value: ""
                     format_onchange: true
-                    note_below: "Route all email to the debug email address rather than recipients' email addresses."
+                    note_below: "Route all email to the debug email address rather than recipients' email addresses, or not send at all."
+                    side_note: "The debug mode will not divert or stop emails to support an administator logging in."
+                send_to_debug_address_or_dont_send_at_all:
+                    site_setting:
+                        name: send_to_debug_address_or_dont_send_at_all
+                        protect_from_database_restore: true
+                    type: radios
+                    indent: 1
+                    label: "Debug behaviour:"
+                    values:
+                        dont_send_at_all:
+                            ord: 1
+                            label: "Don't send email at all"
+                        send_to_debug_email_address:
+                            ord: 2
+                            label: "Send all email to a debug email address"
+                    format_onchange: true
+                    visible_if: lib.value('debug_override_enable')
+                    value: send_to_debug_email_address
                 debug_override_email_address:
                     label: 'Debug email address:'
                     site_setting:
                         name: debug_override_email_address
                         protect_from_database_restore: true
                     type: text
+                    indent: 2
                     value: ""
                     validation:
                         required_if_not_hidden: Please enter an email address.
                         email: Please enter a valid email address.
+                    visible_if: lib.value('debug_override_enable') && (lib.value('send_to_debug_address_or_dont_send_at_all') == 'send_to_debug_email_address')
 
         styles:
             label: Pre-defined styles

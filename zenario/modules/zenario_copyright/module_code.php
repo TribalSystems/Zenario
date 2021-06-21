@@ -32,6 +32,11 @@ class zenario_copyright extends ze\moduleBaseClass {
 	private $data = [];
 	
 	public function init() {
+		$this->allowCaching(
+			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+		$this->clearCacheBy(
+			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = true);
+		
 		$companyName = $this->setting('company_name');
 		if($yearDisplay = $this->setting('year_display')){
 			switch($yearDisplay){
@@ -96,6 +101,19 @@ class zenario_copyright extends ze\moduleBaseClass {
 				
 				if (!$values['first_tab/end_year_type']) {
 					$values['first_tab/end_year_type'] = 'current_year';
+				}
+				break;
+		}
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				if (($values['first_tab/year_display'] == 'display_single_year' && $values['first_tab/display_single_year'] == 'current_year')
+				 || ($values['first_tab/year_display'] == 'display_year_range' && $values['first_tab/end_year_type'] == 'current_year')) {
+					 $box['tabs']['first_tab']['notices']['caching_note']['show'] = true;
+				} else {
+					$box['tabs']['first_tab']['notices']['caching_note']['show'] = false;
 				}
 				break;
 		}

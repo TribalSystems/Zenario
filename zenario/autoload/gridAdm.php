@@ -481,10 +481,6 @@ public static function generateHTML(&$html, &$data, &$slots) {
 <script type="text/javascript">
 	zenarioL.init('. json_encode($meta). ');
 </script>
-
-<'. '?php if (file_exists(CMS_ROOT. ze::$templatePath. \'/includes/header.inc.php\')) {
-	require CMS_ROOT. ze::$templatePath. \'/includes/header.inc.php\';
-}?'. '>
 ';
 	
 	if (!empty($data['cells']) && is_array($data['cells'])) {
@@ -496,19 +492,13 @@ public static function generateHTML(&$html, &$data, &$slots) {
 		
 	$html .= '
 
-<'. '?php if (file_exists(CMS_ROOT. ze::$templatePath. \'/includes/footer.inc.php\')) {
-	require CMS_ROOT. ze::$templatePath. \'/includes/footer.inc.php\';
-}?'. '>
-
 ';
 	
 	$trimmedData = $data;
 	self::trimData($trimmedData);
 	
 	
-	self::addCode($html, $trimmedData);
 	$html .= "\n";
-	self::addChecksum($html);
 }
 
 public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slots, &$ord, $gCols, $level) {
@@ -802,7 +792,18 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 	return $totalHeight;
 }
 
-public static function updateMetaInfoInDB(&$data, &$slots, &$layout) {
+private static function updateMetaInfoInDBR(&$data, &$slots) {
+	if (!empty($data['cells'])) {
+		foreach ($data['cells'] as &$cell) {
+			if (!empty($cell['slot'])) {
+				$slots[$cell['name']] = $cell;
+			}
+			self::updateMetaInfoInDBR($cell, $slots);
+		}
+	}
+}
+
+public static function updateMetaInfoInDB(&$data, &$layout) {
 					
 	//Update the information on the grid in the layouts table
 	\ze\row::update('layouts',
@@ -814,38 +815,41 @@ public static function updateMetaInfoInDB(&$data, &$slots, &$layout) {
 			'responsive' => ($data['responsive'] ?? false)
 		],
 		$layout['layout_id']);
-
+	
+	$slots = [];
+	self::updateMetaInfoInDBR($data, $slots);
+	
 	//Remove any deleted slots from the database
 	$sql = "
-		DELETE FROM ". DB_PREFIX. "template_slot_link
-		WHERE family_name = '". \ze\escape::sql($layout['family_name']). "'
-		  AND file_base_name = '". \ze\escape::sql($layout['file_base_name']). "'";
-	
+		DELETE FROM ". DB_PREFIX. "layout_slot_link
+		WHERE layout_id = '". \ze\escape::sql($layout['layout_id']). "'";
+
 	if (!empty($slots)) {
 		$sql .= "
 		  AND slot_name NOT IN (". \ze\escape::in(array_keys($slots)). ")";
 	}
+
 	\ze\sql::update($sql);
-	
-	//Make sure all of the slots are recorded in the database
-	foreach ($slots as $slotName => $slot) {
+	$ord = 0; 
+	foreach ($slots as &$cell) {
+		$ord++;
+		
 		\ze\row::set(
-			'template_slot_link',
-			[
-				'ord' => $slot['ord'],
-				'cols' => $slot['width'],
-				'small_screens' => (($slot['small'] ?? false) ?: 'show')
-			],
-			[
-				'family_name' => $layout['family_name'],
-				'file_base_name' => $layout['file_base_name'],
-				'slot_name' => $slotName]
+		'layout_slot_link',
+		[
+			'ord' => $ord,
+			'cols' => $cell['width'],
+			'small_screens' => (($cell['small'] ?? false) ?: 'show')
+		],
+		[
+			'layout_id' => $layout['layout_id'],
+			'slot_name' => $cell['name']]
 		);
 	}
+
 }
 
 public static function generateThumbnail(&$data, $highlightSlot, $requestedWidth, $requestedHeight) {
-	require_once CMS_ROOT. 'zenario/libs/manually_maintained/lgpl/wideimage/WideImage.php';
 	
 	$html = '';
 	$lines = [];
@@ -867,7 +871,7 @@ public static function generateThumbnail(&$data, $highlightSlot, $requestedWidth
 	$startX = $outerMarginSize;
 	$startY = $outerMarginSize;
 
-	$img = \WideImage::createTrueColorImage($width, $height);
+	$img = \WideImage\WideImage::createTrueColorImage($width, $height);
 	
 	$bgColour = $img->getExactColor(0xe4, 0xaa, 0xb0);
 	
@@ -971,6 +975,19 @@ public static function generateThumbnailR(
 
 
 
+
+public static function getLayoutData($layoutId) {
+	return \ze\row::get('layouts', 'json_data', $layoutId);
+}
+
+//
+//	Source Code and Checksums for Grid Layouts
+//
+//When writing layout files to the disk, we used to add their source-code and a checksum to them.
+//There's no point in doing this now we store them by ID in the database, however when migrating
+//from old versions you might still see files with these, and it's useful to be able to read
+//them for migration purposes.
+
 public static function addCode(&$html, &$data) {
 	$html .=
 		'<'. '?php //data:'.
@@ -978,18 +995,6 @@ public static function addCode(&$html, &$data) {
 				gzcompress(json_encode($data))
 			), ' +/=', '~-_,').
 		'//v2// ?'. '>';
-}
-
-public static function readLayoutCode($layoutId, $justCheck = false, $quickCheck = false) {
-
-	if (($layout = \ze\content::layoutDetails($layoutId))
-	 && (is_file($path = CMS_ROOT. \ze\content::templatePath($layout['family_name'], $layout['file_base_name'])))
-	 && ($html = @file_get_contents($path))
-	 && ($data = self::readCode($html, $justCheck, $quickCheck))) {
-		return $data;
-	}
-	
-	return false;
 }
 
 public static function readCode(&$html, $justCheck = false, $quickCheck = false) {
@@ -1025,12 +1030,6 @@ public static function readCode(&$html, $justCheck = false, $quickCheck = false)
 	return false;
 }
 
-//This old version of hash64, before we changed it.
-//I'm keeping it here because I don't want to break everyone's images.
-public static function oldHash64($text, $len = 28) {
-	return substr(strtr(base64_encode(sha1($text, true)), ' +/=', '~-_,'), 0, $len);
-}
-
 public static function addChecksum(&$html) {
 	$html .= '<?'. 'php //checksum:'. self::oldHash64(trim($html)). '// ?'. '>';
 }
@@ -1045,6 +1044,12 @@ public static function checkChecksum(&$html) {
 	$parts[1] = str_replace(['//', '?'. '>', ' '], '', $parts[1]);
 	
 	return self::oldHash64(trim($parts[0])) == $parts[1];
+}
+
+//This old version of hash64, before we changed it.
+//I'm keeping it here because I don't want to break everyone's images.
+public static function oldHash64($text, $len = 28) {
+	return substr(strtr(base64_encode(sha1($text, true)), ' +/=', '~-_,'), 0, $len);
 }
 
 
@@ -1093,6 +1098,7 @@ public static function compactedSize($html) {
 	return strlen(preg_replace('/\s+/', '', str_replace(' responsive ', ' ', strip_tags($html, '<div>'))));
 }
 
+
 public static function generateDirectory(&$data, &$slots, $writeToFS = false, $preview = false, $tFileBaseName = 'layout') {
 	$html = $css = '';
 	
@@ -1106,32 +1112,7 @@ public static function generateDirectory(&$data, &$slots, $writeToFS = false, $p
 	$status = [];
 	
 	
-	$tFamilyName = self::calcTemplateFamilyName($data);
-	$tFilePath = $tFamilyName. '/'. $tFileBaseName. '.tpl.php';
-	$cssFilePath = $tFamilyName. '/'. $tFileBaseName. '.css';
-	
-	if (self::$mode == 'fs') {
-		self::$tempDir = CMS_ROOT. \ze\content::templatePath();
-		self::$tempDirR = \ze\content::templatePath();
-		if (!is_writable(self::$tempDir. $tFamilyName)) {
-			return new \ze\error('_ZENARIO_GRID_MAKER_ERROR_001');
-		}
-		
-		$status['template_file_modified'] = false;
-		$status['template_file_smaller'] = false;
-		$status['template_file_larger'] = false;
-		$status['template_file_identical'] = false;
-		$status['template_file_path'] = self::$tempDirR. $tFilePath;
-		$status['template_file_exists'] = is_file($status['template_file_path']);
-		
-		$status['template_css_file_identical'] = false;
-		$status['template_css_file_path'] = self::$tempDirR. $cssFilePath;
-		$status['template_css_file_exists'] = is_file($status['template_css_file_path']);
-		
-		$status['family_name'] = $tFamilyName;
-		$status['file_base_name'] = $tFileBaseName;
-	
-	} elseif (self::$mode == 'zip') {
+	if (self::$mode == 'zip') {
 		if (!class_exists('ZipArchive')) {
 			return new \ze\error('_ZENARIO_GRID_MAKER_ERROR_004');
 		}
@@ -1150,79 +1131,12 @@ public static function generateDirectory(&$data, &$slots, $writeToFS = false, $p
 		return false;
 	}
 	
-	if (!empty($status['template_file_exists'])) {
-		self::generateHTML($html, $data, $slots);
-		$oldHtml = file_get_contents(self::$tempDir. $tFilePath);
-		
-		$status['template_file_identical'] = trim($html) == trim($oldHtml);
-		
-		$diff =
-			self::compactedSize($html)
-		  - self::compactedSize($oldHtml);
-		
-		$status['template_file_smaller'] = $diff > 35;
-		$status['template_file_larger'] = $diff < -35;
-		
-		if (!$status['template_file_identical']) {
-			$status['template_file_modified'] = !self::checkChecksum($oldHtml);
-		}
-		
-		self::generateCSS($css, $data);
-		$oldCSS = file_get_contents(self::$tempDir. $cssFilePath);
-		
-		$status['template_css_file_identical'] = trim($css) == trim($oldCSS);
-	}
 	
 	if (!$preview) {
 		
-		//If grid maker is writing to the directory first,
-		//check permissions and come up with a friendlier error
-		//message if they are not correct
-		if (self::$mode == 'fs') {
-			
-			$tFileIsWritable = 
-				!file_exists(self::$tempDir. $tFilePath)
-			 || is_writable(self::$tempDir. $tFilePath);
-			$cssFileIsWritable = 
-				!file_exists(self::$tempDir. $cssFilePath)
-			 || is_writable(self::$tempDir. $cssFilePath);
-			
-			if (!$tFileIsWritable || !$cssFileIsWritable) {
-				$tDir = dirname(self::$tempDir. $tFilePath);
-				$tFilename = basename(self::$tempDir. $tFilePath);
-				$cssFilename = basename(self::$tempDir. $cssFilePath);
-			
-				$msg = \ze\admin::phrase('Sorry, the CMS could not write to the following files in the [[dir]] directory:', ['dir' => htmlspecialchars($tDir)]);
-				
-				$msg .= '<br/><ul><li>'. htmlspecialchars($tFilename). '</li><li>'. htmlspecialchars($cssFilename). '</li></ul>';
-				
-				$msg .= \ze\admin::phrase('Please ensure that the files are writeable by the web server and try again.');
-				
-				return new \ze\error($msg);
-			}
-		}
-		
 		
 		try {
-			self::mkdir($tFamilyName);
 			
-			//Always add or overwrite the Template file, unless it was identical
-			if (empty($status['template_file_identical'])) {
-				if (!$html) {
-					self::generateHTML($html, $data, $slots);
-				}
-				
-				self::put($tFilePath, $html, true);
-			}
-			unset($html);
-			
-			//Always add or overwrite the Grid CSS, overwriting any changes
-			if (!$css) {
-				self::generateCSS($css, $data);
-			}
-			
-			self::put($cssFilePath, $css, false);
-			unset($css);
 		
 		} catch (\Exception $e) {
 			if (self::$mode == 'zip') {
@@ -1234,10 +1148,7 @@ public static function generateDirectory(&$data, &$slots, $writeToFS = false, $p
 	}
 	
 	
-	if (self::$mode == 'fs') {
-		return $status;
-	
-	} elseif (self::$mode == 'zip') {
+	if (self::$mode == 'zip') {
 		self::$out->close();
 		
 		//Return the path to the zip, so it can be offered for download
@@ -1280,6 +1191,7 @@ protected static $tempDirR;
 
 //Make a new directory in the target directory
 protected static function mkdir($path) {
+
 	if (self::$mode == 'fs') {
 		if (!is_dir($dir = self::$tempDir. $path)) {
 			if (!@mkdir($dir)) {

@@ -159,16 +159,14 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$fields['details/password_needs_changing']['label'] = "Ask user to change password when first logging in";
 			$fields['details/send_activation_email_to_user']['hidden'] = false;
 			$fields['details/email_to_send']['hidden'] = false;
-			$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
 	
-			if (count($layouts)==0) {
-				$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('Account Activated',false);
-			}
-	
-			if (count($layouts)){
-				$template = current($layouts);
-				$fields['details/email_to_send']['value'] = $template['code'] ?? false;
-			}
+			$fields['details/email_to_send']['value'] = ze::setting('default_activation_email_template');
+
+			$siteSettingsLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
+			$fields['details/email_to_send']['note_below'] = ze\admin::phrase(
+				'The default activation email template can be changed in the [[site_settings_link]].',
+				['site_settings_link' => $siteSettingsLink]
+			);
 		}
 		
 		if (ze\priv::check('_PRIV_EDIT_USER')) {
@@ -310,6 +308,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				if (!$fields['details/send_activation_email_to_user']['hidden'] && $values['details/send_activation_email_to_user']) {
 					if (!$values['details/email']) {
 						$fields['details/send_activation_email_to_user']['error'] = ze\admin::phrase('Please enter an email address in the "Email" field above.');
+						$fields['details/email']['error'] = ze\admin::phrase('Please enter an email address.');
 					} elseif (!empty($fields['details/email']['error'])) {
 						$fields['details/send_activation_email_to_user']['error'] = $fields['details/email']['error'];
 					}

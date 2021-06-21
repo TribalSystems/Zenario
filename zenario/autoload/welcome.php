@@ -305,7 +305,7 @@ class welcome {
 	//Formerly "listSampleThemes()"
 	public static function listSampleThemes() {
 		$themes = [];
-		$sDir = \ze\content::templatePath(). 'grid_templates/skins/';
+		$sDir = 'zenario_custom/skins/';
 	
 		if (is_dir($path = CMS_ROOT. $sDir)) {
 			foreach (scandir($path) as $dir) {
@@ -550,9 +550,9 @@ class welcome {
 			//Check if Antivirus (ClamAV) is set up
 			$mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tantivirus~k{"id"%3A"external_programs"}')];
 			if (!\ze::setting('clamscan_tool_path')) {
-				$osInvalid = true;
-				$fields['0/os_av']['row_class'] = $warning;
-				$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase('Antivirus<br><small>Antivirus is not enabled. Please go to <a href="[[link]]" target="_blank"><em>Other server programs</em></a> in Site Settings to change this.</small>', $mrg);
+				$osInvalid = false;
+				$fields['0/os_av']['row_class'] = $valid;
+				$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase('Antivirus<br><small>Antivirus scanning is not enabled. Please go to <a href="[[link]]" target="_blank"><em>Other server programs</em></a> in Configuration->Site Settings to change this.</small>', $mrg);
 		
 			} else {
 				$filepath = CMS_ROOT. \ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf');
@@ -563,7 +563,7 @@ class welcome {
 				if (!$programPath) {
 					$osInvalid = true;
 					$fields['0/os_av']['row_class'] = $invalid;
-					$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase('Antivirus<br><small>Antivirus is not correctly set up. Please go to <a href="[[link]]" target="_blank"><em>Other server programs</em></a> in Site Settings to change this.</small>', $mrg);
+					$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase('Antivirus<br><small>Antivirus scanning is not correctly set up. Please go to <a href="[[link]]" target="_blank"><em>Other server programs</em></a> in Configuration->Site Settings to change this.</small>', $mrg);
 			
 				} else {
 					$avScan = \ze\server::antiVirusScan($filepath);
@@ -580,7 +580,7 @@ class welcome {
 			if (!\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract)) {
 				$osWarning = true;
 				$fields['0/os_1']['row_class'] = $warning;
-				$fields['0/os_1']['snippet']['html'] = \ze\admin::phrase('Antiword<br><small>Antiword is not correctly set up.</small>');
+				$fields['0/os_1']['snippet']['html'] = \ze\admin::phrase('Antiword<br><small>The program antiword is not correctly set up. This is needed to read a text extract from Word documents that you upload.</small>');
 	
 			} else {
 				$fields['0/os_1']['row_class'] = $valid;
@@ -589,7 +589,7 @@ class welcome {
 			if (!\ze\file::createPpdfFirstPageScreenshotPng(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
 				$osWarning = true;
 				$fields['0/os_2']['row_class'] = $warning;
-				$fields['0/os_2']['snippet']['html'] = \ze\admin::phrase('Ghostscript<br><small>ghostscript is not correctly set up.</small>');
+				$fields['0/os_2']['snippet']['html'] = \ze\admin::phrase('Ghostscript<br><small>The program ghostscript is not correctly set up. This is needed to extract an image from PDFs that you upload.</small>');
 			} else {
 				$fields['0/os_2']['row_class'] = $valid;
 			}
@@ -597,16 +597,51 @@ class welcome {
 			$jpegtran=\ze\server::programPathForExec(\ze::setting('jpegtran_path'), 'jpegtran', true);
 			$jpegoptim= \ze\server::programPathForExec(\ze::setting('jpegoptim_path'), 'jpegoptim', true);
 			if ($jpegtran==NULL || $jpegoptim==NULL) {
-				$osWarning = true;
+				
 				$fields['0/os_3']['row_class'] = $warning;
-				if($jpegtran== NULL && $jpegoptim!= NULL){
-					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('JPEG Image Optimizers<br><small>jpegtran is not correctly set up.</small><br><small>jpegoptim is correctly set up.</small>');
-				} else if($jpegoptim== NULL && $jpegtran!= NULL) {
-			
-					 $fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('JPEG Image Optimizers<br><small>jpegtran is correctly set up.</small><br><small>jpegoptim is not are correctly set up.</small>');
+				if(\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegtran== NULL && $jpegoptim!= NULL){
+					$osWarning = true;
+					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('Compress JPEGs<br><small>jpegtran is not correctly set up.</small><br><small>jpegoptim is correctly set up.</small>');
+				} else if(\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegoptim== NULL && $jpegtran!= NULL) {
+					$osWarning = true;
+					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('Compress JPEGs<br><small>jpegtran is correctly set up.</small><br><small>jpegoptim is not correctly set up.</small>');
 				} else {
-					 $fields['0/os_3']['row_class'] = $warning;
-					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('JPEG Image Optimizers<br><small>jpegtran is not correctly set up.</small><br><small>jpegoptim is not correctly set up.</small>');
+					
+					if (\ze::setting('jpegtran_path') && $jpegtran == NULL) {
+						$warningFlag = true;
+						$jpegtranMsg = 'jpegtran is not correctly set up.';
+					} else if(!\ze::setting('jpegtran_path')) {
+						$warningFlag = false;
+						$jpegtranMsg = 'jpegtran is not enabled.';
+					}
+					else {
+						$warningFlag = false;
+						$jpegtranMsg = 'jpegtran is correctly set up.';
+					}
+					
+					if (\ze::setting('jpegoptim_path') && $jpegoptim == NULL) {
+						$warningoptionFlag = true;
+						$jpegoptimMsg = 'jpegoptim is not correctly set up.';
+					
+					}else if (!\ze::setting('jpegoptim_path')) {
+						$warningoptionFlag = false;
+						$jpegoptimMsg = 'jpegoptim is not enabled.';
+					
+					}
+					else {
+						$warningoptionFlag = false;
+						$jpegoptimMsg = 'jpegoptim is correctly set up.';
+					}
+					
+					if($warningFlag || $warningoptionFlag){
+						$osWarning = true;
+						$fields['0/os_3']['row_class'] = $warning;
+					}else{
+						$fields['0/os_3']['row_class'] = $valid;
+					}
+					
+						$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('Compress JPEGs<br><small>'.$jpegtranMsg.'</small><br><small>'.$jpegoptimMsg.'</small>');
+
 				}
 			} else {
 				$fields['0/os_3']['row_class'] = $valid;
@@ -633,7 +668,7 @@ class welcome {
 			if (!(\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))) {
 				$osWarning = true;
 				$fields['0/os_5']['row_class'] = $warning;
-				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase('PDF-To-Text<br><small>pdftotext is not correctly set up.</small>');
+				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase('PDF-To-Text<br><small>The program pdftotext is not correctly set up. This is needed to read a text extract from PDFs that you upload.</small>');
 
 			} else {
 				$fields['0/os_5']['row_class'] = $valid;
@@ -641,20 +676,54 @@ class welcome {
 			$optipng = \ze\server::programPathForExec(\ze::setting('optipng_path'), 'optipng', true);
 			$advpng = \ze\server::programPathForExec(\ze::setting('advpng_path'), 'advpng', true);
 			if ($optipng == NULL || $advpng ==NULL) {
-				$osWarning = true;
+				
 				$fields['0/os_6']['row_class'] = $warning;
-				if($optipng== NULL && $advpng!= NULL){
-					$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('PNG Image Optimizers<br><small>optipng is not correctly set up.</small><br><small>advpng is correctly set up.</small>');
-				} else if($advpng== NULL && $optipng!= NULL) {
-			
-					 $fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('PNG Image Optimizers<br><small>optipng is correctly set up.</small><br><small>advpng is not correctly set up.</small>');
+				if(\ze::setting('optipng_path') && \ze::setting('advpng_path') && $optipng== NULL && $advpng!= NULL){
+					$osWarning = true;
+					$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('Compress PNGs<br><small>optipng is not correctly set up.</small><br><small>advpng is correctly set up.</small>');
+				} else if(\ze::setting('optipng_path') && \ze::setting('advpng_path') && $advpng== NULL && $optipng!= NULL) {
+					$osWarning = true;
+					 $fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('Compress PNGs<br><small>optipng is correctly set up.</small><br><small>advpng is not correctly set up.</small>');
 				} else {
-					$fields['0/os_6']['row_class'] = $warning;
-					$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('PNG Image Optimizers<br><small>optipng is not correctly set up.</small><br><small>advpng is not correctly set up.</small>');
+					if (\ze::setting('optipng_path') && $optipng == NULL) {
+						$warningFlag = true;
+						$optipngMsg = 'optipng is not correctly set up.';
+					} else if(!\ze::setting('optipng_path')) {
+						$warningFlag = false;
+						$optipngMsg = 'optipng is not enabled.';
+					}
+					else {
+						$warningFlag = false;
+						$optipngMsg = 'optipng is correctly set up.';
+					}
+					
+					if (\ze::setting('advpng_path') && $advpng == NULL) {
+						$warningoptionFlag = true;
+						$advpngMsg = 'advpng is not correctly set up.';
+					
+					}else if (!\ze::setting('advpng_path')) {
+						$warningoptionFlag = false;
+						$advpngMsg = 'advpng is not enabled.';
+					
+					}
+					else {
+						$warningoptionFlag = false;
+						$advpngMsg = 'advpng is correctly set up.';
+					}
+							
+					if($warningFlag || $warningoptionFlag){
+						$osWarning = true;
+						$fields['0/os_6']['row_class'] = $warning;
+					}else{
+						$fields['0/os_6']['row_class'] = $valid;
+					}
+
+						$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('Compress PNGs<br><small>'.$optipngMsg.'</small><br><small>'.$advpngMsg.'</small>');
 				}
 			} else {
 				$fields['0/os_6']['row_class'] = $valid;
 			}
+		
 		
 			//wkhtmltopdf is an optional program.
 			//Enabled and set up correctly:
@@ -991,6 +1060,10 @@ class welcome {
 							\ze\admin::phrase('Cannot verify database privileges. Please ensure the MySQL user [[DBUSER]] has CREATE TABLE and DROP TABLE privileges. You may need to contact your MySQL administrator to have these privileges enabled.',
 								$merge['DBUSER']).
 							\ze\welcome::installerReportError();
+			
+					} elseif (@\ze\sql::numRows("SHOW TABLES") > 0) {
+						$tags['tabs'][3]['errors'][] = 
+							\ze\admin::phrase('Zenario can only be installed on an empty database, but it looks like the stated database already contains tables. Please specify another database that is empty.');
 			
 					} else {
 						while ($tables = \ze\sql::fetchRow($result)) {
@@ -1863,7 +1936,10 @@ class welcome {
 						$addressFrom = false,
 						$nameFrom = $source['email_templates'][$emailTemplate]['from'],
 						false, false, false,
-						$isHTML = true);
+						$isHTML = true,
+						false, false, false, false, '', '', 'To',
+						$ignoreDebugMode = true);	//Admin password reset emails should always be sent to the intended recipient,
+										  			//even if debug mode is on.
 			
 					$passwordReset = true;
 					$tags['tab'] = 'login';
@@ -1876,7 +1952,11 @@ class welcome {
 			if (!empty($_COOKIE['COOKIE_LAST_ADMIN_USER'])) {
 				$fields['login/username']['value'] = $_COOKIE['COOKIE_LAST_ADMIN_USER'];
 			}
-			$fields['login/remember_me']['value'] = empty($_COOKIE['COOKIE_DONT_REMEMBER_LAST_ADMIN_USER']);
+
+			//As of 10 Jun 2021, the "remember me" default value will always be true.
+			//Commented out the old logic.
+			//$fields['login/remember_me']['value'] = empty($_COOKIE['COOKIE_DONT_REMEMBER_LAST_ADMIN_USER']);
+			$fields['login/remember_me']['value'] = true;
 		
 			//Don't show the note about the admin login link if it is turned off in Site Settings
 			if (\ze\link::adminDomainIsPrivate()) {
@@ -2151,9 +2231,25 @@ class welcome {
 			$merge['URL'] = \ze\link::protocol(). $_SERVER['HTTP_HOST'];
 			$merge['SUBDIRECTORY'] = SUBDIRECTORY;
 			$merge['IP'] = preg_replace('[^W\.\:]', '', \ze\user::ip());
-			$merge['CODE'] = $_SESSION['COOKIE_ADMIN_SECURITY_CODE'];
 			$merge['2FA_TIMEOUT'] = (int) \ze\site::description('two_factor_authentication_timeout');
-		
+			
+			//2FA verification code:
+			//Display the plain text code to copy-paste into the box...
+			$merge['CODE'] = htmlspecialchars($_SESSION['COOKIE_ADMIN_SECURITY_CODE']);
+			
+			//... and also build a clickable link with the code.
+			$getRequestsMerged = '';
+			if (!empty($getRequest)) {
+				$getRequestsMerged = '&' . http_build_query($getRequest);
+			}
+			$merge['VERIFICATION_LINK'] = 
+				htmlspecialchars(
+					(\ze::setting('admin_use_ssl') ? 'https://' : \ze\link::protocol())
+					. \ze\link::adminDomain() . SUBDIRECTORY
+					. 'admin.php?verification_code=' . $_SESSION['COOKIE_ADMIN_SECURITY_CODE']
+					. $getRequestsMerged
+				);
+			
 			$emailTemplate = 'security_code';
 			$message = $source['email_templates'][$emailTemplate]['body'];
 		
@@ -2181,12 +2277,12 @@ class welcome {
 				false, false, false,
 				$isHTML = true,
 				false, false, false, false, '', '', 'To',
-				$ignoreDebugMode = true); //Security codes should always be sent to the intended recipient,
-										  //even if debug mode is on.
+				$ignoreDebugMode = true);	//Security codes should always be sent to the intended recipient,
+											//even if debug mode is on.
 		
 			if (!$emailSent) {
 				$tags['tabs']['security_code']['errors'][] =
-					\ze\admin::phrase('Warning! The system could not send an email. Please contact your server administrator.');
+					\ze\admin::phrase('Error! Zenario could not send an email. Please contact your server administrator. 2FA can be disabled if you have access to your zenario_custom/site_description.yaml file.');
 			
 			} elseif ($resend) {
 				$tags['tabs']['security_code']['notices']['email_resent']['show'] = true;
@@ -2403,9 +2499,8 @@ class welcome {
 			  AND `status` = \'active\'
 			ORDER BY last_login';
 		
+		$adminhtml = '';
 		if ($row = \ze\sql::fetchAssoc($sql)) {
-			$adminhtml = '';
-
 			if (\ze::request('task') == 'diagnostics' && $row['last_login']) {
 				$adminhtml .= '<h2>This login</h2>';
 				$adminhtml .= '<p>You logged in: '. htmlspecialchars(\ze\admin::formatDateTime($row['last_login'], '_MEDIUM')). '</p>';
@@ -2568,8 +2663,8 @@ class welcome {
 		$skinDirsValid = true;
 		foreach (\ze\row::getAssocs(
 			'skins',
-			['family_name', 'name', 'display_name'],
-			['missing' => 0, 'family_name' => 'grid_templates', 'enable_editable_css' => 1]
+			['name', 'display_name'],
+			['missing' => 0, 'enable_editable_css' => 1]
 		) as $skin) {
 			if ($i == $maxI) {
 				break;
@@ -2577,7 +2672,7 @@ class welcome {
 				++$i;
 			}
 		
-			$skinWritableDir = CMS_ROOT. \ze\content::skinPath($skin['family_name'], $skin['name']). 'editable_css/';
+			$skinWritableDir = CMS_ROOT. \ze\content::skinPath($skin['name']). 'editable_css/';
 		
 			$tags['tabs'][0]['fields']['skin_dir_'. $i]['value'] =
 			$tags['tabs'][0]['fields']['skin_dir_'. $i]['current_value'] = $skinWritableDir;
@@ -2643,6 +2738,10 @@ class welcome {
 		$fields['0/dir_4']['hidden'] =
 		$fields['0/show_dir_4']['hidden'] =
 		$fields['0/dir_4_blurb']['hidden'] = $i == 0;
+		
+		$fields['0/cache_dir']['hidden'] =
+		$fields['0/private_dir']['hidden'] =
+		$fields['0/public_dir']['hidden'] = false;
 	
 		for ($j = 0; $j <= $maxI; ++$j) {
 			$tags['tabs'][0]['fields']['skin_dir_'. $j]['hidden'] =
@@ -2838,7 +2937,7 @@ class welcome {
 				$show_warning = true;
 				$fields['0/site_disabled']['row_class'] = 'warning';
 				$fields['0/site_disabled']['snippet']['html'] =
-					\ze\admin::phrase('Your site is not enabled, so visitors will not be able to see it. Please go to <a href="[[link]]" target="_blank"><em>Site disabled</em></a> in Site Settings to change this.', $mrg);
+					\ze\admin::phrase('Your site is not enabled, so visitors will not be able to see it. To enable the site, go to Configuration->Site Settings and open the <a href="[[link]]" target="_blank"><em>Site status</em></a> interface.', $mrg);
 			} else {
 				$fields['0/site_disabled']['row_class'] = 'valid';
 				$fields['0/site_disabled']['snippet']['html'] = \ze\admin::phrase('Your site is enabled.');
@@ -2984,6 +3083,57 @@ class welcome {
 				//Note: only show this message if it's in the error state; hide it otherwise
 				$fields['0/forwarded_ip_misconfigured']['hidden'] = true;
 			}
+
+			//Check if the recommended caching settings are enabled.
+			$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//optimisation~.site_settings~tcaching~k{"id"%3A"optimisation"}';
+			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+			$linkEnd = '</a>';
+			$cacheSiteSettingString = 'Please go to [[link_start]]<em>Cache</em>[[link_end]] in Configuration->Site Settings to change this.';
+
+			if (\ze::setting('caching_enabled')) {
+				$fields['0/web_pages_not_cached']['hidden'] = true;
+			} else {
+				$show_warning = true;
+				$fields['0/web_pages_not_cached']['row_class'] = 'warning';
+				$fields['0/web_pages_not_cached']['snippet']['html'] =
+					\ze\admin::phrase(
+						'Web pages or other text files generated by Zenario are not being cached. This will cause pages to load more slowly. ' . $cacheSiteSettingString,
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+			}
+
+			if (\ze::setting('fab_use_cache_dir')) {
+				$fields['0/fabs_not_cached']['hidden'] = true;
+			} else {
+				$show_warning = true;
+				$fields['0/fabs_not_cached']['row_class'] = 'warning';
+				$fields['0/fabs_not_cached']['snippet']['html'] =
+					\ze\admin::phrase(
+						'Admin mode floating boxes are not being cached. This will cause the Zenario administrator interface to run more slowly. ' . $cacheSiteSettingString,
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+			}
+
+			$cssFileWrapperSetting = \ze::setting('css_wrappers');
+			if ($cssFileWrapperSetting == 'visitors_only') {
+				$fields['0/css_file_wrappers_not_on_for_visitors']['hidden'] = true;
+			} else {
+				$show_warning = true;
+				$fields['0/css_file_wrappers_not_on_for_visitors']['row_class'] = 'warning';
+
+				if ($cssFileWrapperSetting == 'on') {
+					$string = 'CSS file wrapper is always on. This will make the website load faster, but designers may want to turn this off for easier debugging.';
+				} elseif ($cssFileWrapperSetting == 'off') {
+					$string = 'CSS file wrapper is always off. This will cause the website to load more slowly.';
+				}
+				$string .= ' ' . $cacheSiteSettingString;
+
+				$fields['0/css_file_wrappers_not_on_for_visitors']['snippet']['html'] =
+					\ze\admin::phrase(
+						$string,
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+			}
 		
 			//Check to see if this is a developer installation...
 			$fields['0/notices_shown']['hidden'] = true;
@@ -3022,17 +3172,42 @@ class welcome {
 				}
 			
 			}
+
+			//Check to see if cache debug is enabled
+			if (\ze::setting('caching_debug_info')) {
+				$show_warning = true;
+				$fields['0/cache_debug_enabled']['row_class'] = 'warning';
+
+				$effectiveIP = \ze::setting('limit_caching_debug_info_by_ip');
+
+				$mrg = [
+					'link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//optimisation~.site_settings~tcaching~k{"id"%3A"optimisation"}'),
+					'effective_ip_address' => $effectiveIP
+				];
+				$cacheDebugString = 'This site is set to show caching debug information to <em>[[effective_ip_address]]</em> (you can see this by using an &ldquo;incognito&rdquo; browser session that has no administrator cookie). See Configuration->Site Settings, <a href="[[link]]" target="_blank"><em>Cache</em></a> panel.';
+				$fields['0/cache_debug_enabled']['snippet']['html'] = \ze\admin::phrase($cacheDebugString, $mrg);
+			} else {
+				$fields['0/cache_debug_enabled']['hidden'] = true;
+			}
 		
 			//Check to see if production sites have the debug_override_enable setting enabled
 			if (\ze::setting('debug_override_enable')) {
-				$mrg = [
-					'email' => htmlspecialchars(\ze::setting('debug_override_email_address')),
-					'link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tdebug~k{"id"%3A"email"}')];
-				
+				$sendToDebugAddressOrDontSentAtAll = \ze::setting('send_to_debug_address_or_dont_send_at_all');
 				$show_warning = true;
 				$fields['0/email_addresses_overridden']['row_class'] = 'warning';
-				$fields['0/email_addresses_overridden']['snippet']['html'] =
-					\ze\admin::phrase('You have &ldquo;Email debug mode&rdquo; enabled in <a href="[[link]]" target="_blank"><em>Email</em></a> in Site Settings. Email sent by this site will be redirected to &quot;[[email]]&quot;.', $mrg);
+
+				$mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tdebug~k{"id"%3A"email"}')];
+				
+				$emailDebugString = 'You have &ldquo;Email debug mode&rdquo; enabled in <a href="[[link]]" target="_blank"><em>Email</em></a> (see Configuration->Site Settings). ';
+				
+				if ($sendToDebugAddressOrDontSentAtAll == 'send_to_debug_email_address') {
+					$emailDebugString .= 'Email sent by this site will be redirected to &quot;[[email]]&quot;.';
+					$mrg['email'] = htmlspecialchars(\ze::setting('debug_override_email_address'));
+				} elseif ($sendToDebugAddressOrDontSentAtAll == 'dont_send_at_all') {
+					$emailDebugString .= 'Email sent by this site will not be sent at all.';
+				}
+
+				$fields['0/email_addresses_overridden']['snippet']['html'] = \ze\admin::phrase($emailDebugString, $mrg);
 			} else {
 				$fields['0/email_addresses_overridden']['hidden'] = true;
 			}
@@ -3057,6 +3232,9 @@ class welcome {
 		
 			$badSymlinks = [];
 			if (is_dir($dir = CMS_ROOT. 'zenario_extra_modules/')) {
+				
+				$currentInstall = rtrim(dirname(realpath(CMS_ROOT. 'zenario/')), '/');
+				
 				foreach (scandir($dir) as $mDir) {
 					if ($mDir != '.'
 					 && $mDir != '..'
@@ -3065,14 +3243,14 @@ class welcome {
 					 && ($rp = dirname($rp))
 					 && (is_dir($rp. '/zenario') || ($rp = dirname($rp)))
 					 && (is_dir($rp. '/zenario') || ($rp = dirname($rp)))
-					 && (is_dir($rp = $rp. '/zenario/admin/db_updates/copy_over_top_check/'))
-					 && (!file_exists($rp. ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION. '.txt'))) {
-					
-						$badSymlinks[] = $mDir;
+					 ) {
+						if ($rp != $currentInstall) {
+							$badSymlinks[] = $mDir;
+						}
 					}
 				}
 			}
-		
+			
 			if (!$fields['0/bad_extra_module_symlinks']['hidden'] = empty($badSymlinks)) {
 				$fields['0/bad_extra_module_symlinks']['row_class'] = 'invalid';
 				$show_error = true;
@@ -3080,9 +3258,11 @@ class welcome {
 			
 				$mrg = ['module' => array_pop($badSymlinks), 'version' => ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION];
 				if (empty($badSymlinks)) {
+					
 					$fields['0/bad_extra_module_symlinks']['snippet']['html'] =
 						\ze\admin::phrase('The <code>[[module]]</code> symlink in the <code>zenario_extra_modules/</code> directory is linked to the wrong version of Zenario. It should be linked to version [[version]].', $mrg);
 				} else {
+					
 					$mrg['modules'] = implode('</code>, <code>', $badSymlinks);
 					$fields['0/bad_extra_module_symlinks']['snippet']['html'] =
 						\ze\admin::phrase('The <code>[[modules]]</code> and <code>[[module]]</code> symlinks in the <code>zenario_extra_modules/</code> directory are linked to the wrong version of Zenario. They should be linked to version [[version]].', $mrg);
@@ -3424,6 +3604,7 @@ class welcome {
 			$fields['0/content_unpublished_5']['row_class'] =
 			$fields['0/content_more_unpublished']['row_class'] =
 			$fields['0/content_nothing_unpublished']['row_class'] = 'valid';
+			
 			$fields['0/content_unpublished_1']['hidden'] =
 			$fields['0/content_unpublished_2']['hidden'] =
 			$fields['0/content_unpublished_3']['hidden'] =
@@ -3592,7 +3773,7 @@ class welcome {
 				
 				    $show_warning = true; 
 				    $fields['0/default_timezone_not_set']['snippet']['html'] =
-					\ze\admin::phrase('The default timezone is not set in site settings. Please go to <a href="[[link]]" target="_blank"><em>Date and Time</em></a> in Site Settings to change this.', $mrg);
+					\ze\admin::phrase('The default timezone is not set. Please go to <a href="[[link]]" target="_blank"><em>Date and Time</em></a> in Configuration->Site Settings to set a timezone.', $mrg);
 			    }
 			}
 			
@@ -3832,7 +4013,7 @@ class welcome {
             $warnings['show_warning'] = true;
             $warnings['row_class'] = 'warning';
             $warnings['snippet']['html'] =
-                \ze\admin::phrase('Automated backup monitoring is not set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em></a> in Site Settings to change this. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>', $mrg);
+                \ze\admin::phrase('Automated backup monitoring is not set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em></a> in Configuration->Site Settings to change this. <a href="[[manageAutomatedBackupLink]]" target="_blank">Manage automated backups</a>', $mrg);
 
         } elseif (!is_file(\ze::setting('automated_backup_log_path'))) {
             $warnings['show_warning'] = true;

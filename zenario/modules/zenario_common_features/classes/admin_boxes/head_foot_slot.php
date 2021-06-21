@@ -165,9 +165,9 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			$box['confirm']['show'] = true;
 			$box['confirm']['message'] =
 				ze\admin::phrase(
-					'<p>You are making changes to a Slot on a Layout.</p><p>This change will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">([[pages]] Content Item(s) in total).</span></p><p>Are you sure you wish to continue?</p>',
-					['pages' => ze\layoutAdm::usage($box['key']['layoutId'], false, false),
-							'published' => ze\layoutAdm::usage($box['key']['layoutId'], false, true)]);
+					'<p>You are making changes to a slot on a layout.</p><p>This change will affect <span class="zenario_x_published_items">[[published]] published content item(s)</span> <span class="zenario_y_items">([[pages]] content item(s) in total).</span></p><p>Are you sure you wish to continue?</p>',
+					['pages' => ze\layoutAdm::usage($box['key']['layoutId'], false),
+							'published' => ze\layoutAdm::usage($box['key']['layoutId'], true)]);
 	
 			$box['confirm']['button_message'] = ze\admin::phrase('Save');
 		}

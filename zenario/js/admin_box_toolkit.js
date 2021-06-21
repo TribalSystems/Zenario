@@ -75,6 +75,14 @@ methods.open = function(path, key, tab, values, callBack, createAnotherObject, r
 	//Stop the page behind from scrolling
 	zenario.disableScrolling(thus.globalName);
 	
+	//Experimenting with a fix for positions in Firefox
+	//If the browser is firefox, override the page's scroll position, and move it back to the top
+	//while the box is open.
+	if (zenario.browserIsFirefox()) {
+		thus.ffScrollTop = zenario.scrollTop();
+		zenario.scrollTop(0);
+	}
+	
 	//Allow admin boxes to be opened in a simmilar format to Organizer panels; e.g. tag/path//id
 	if (!key) {
 		key = {};
@@ -281,6 +289,13 @@ methods.close = function(keepMessageWindowOpen) {
 	
 	//Allow the page behind to scroll again
 	zenario.enableScrolling(thus.globalName);
+	
+	//If this is firefox, and we changed the scroll position,
+	//change it back while closing.
+	if (zenario.browserIsFirefox() && defined(thus.ffScrollTop)) {
+		zenario.scrollTop(thus.ffScrollTop);
+		delete thus.ffScrollTop;
+	}
 	
 	delete thus.cb;
 	delete thus.tuix;

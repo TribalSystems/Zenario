@@ -593,6 +593,14 @@ class moduleAdm {
 		} else {
 			\ze\row::set('modules', ['status' => 'module_not_initialized'], $moduleId);
 		}
+		if ($module['class_name'] == 'zenario_geoip_lookup'){
+			$geoPath = CMS_ROOT . 'zenario_custom/GeoIP/GeoLite2-Country.mmdb';
+			if (file_exists(CMS_ROOT . 'zenario_custom/GeoIP/GeoLite2-Country.mmdb')) {
+				
+				unlink($geoPath);
+			}
+			
+		}
 
 	}
 
@@ -1018,8 +1026,9 @@ class moduleAdm {
 	}
 
 	//Formerly "scanModulePermissionsInTUIXDescription()"
-	public static function scanPermissionsFromDescription($moduleClassName) {
+	public static function scanPermissionsFromDescription($moduleClassName, &$perms, &$labels) {
 		$perms = [];
+		$labels = [];
 
 		//Loop through every module Setting that a module has in its Admin Box XML file(s)
 		if ($dir = \ze::moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
@@ -1037,15 +1046,17 @@ class moduleAdm {
 			if (!empty($tags)) {
 				if (isset($tags['admin_boxes']['zenario_admin']['tabs']['permissions']['fields'])
 				 && is_array($tags['admin_boxes']['zenario_admin']['tabs']['permissions']['fields'])) {
-					foreach ($tags['admin_boxes']['zenario_admin']['tabs']['permissions']['fields'] as $fieldName => &$field) {
+					foreach ($tags['admin_boxes']['zenario_admin']['tabs']['permissions']['fields'] as $fieldName => $field) {
 						if (is_array($field)) {
 				
 							if (!empty($field['type']) && $field['type'] == 'checkbox') {
 								$perms[$fieldName] = true;
+								$labels[$fieldName] = $field['label'] ?? $field['post_field_label'] ?? $fieldName;
 					
 							} elseif ((empty($field['type']) || $field['type'] == 'checkboxes') && !empty($field['values'])) {
-								foreach ($field['values'] as $perm => &$dummy) {
+								foreach ($field['values'] as $perm => $checkbox) {
 									$perms[$perm] = true;
+									$labels[$perm] = $checkbox['label'] ?? $checkbox['post_field_label'] ?? $perm;
 								}
 							}
 						}
@@ -1053,12 +1064,8 @@ class moduleAdm {
 				}
 			}
 		}
-
-		if (empty($perms)) {
-			return false;
-		} else {
-			return $perms;
-		}
+		
+		return !empty($perms);
 	}
 
 
@@ -1124,18 +1131,12 @@ class moduleAdm {
 				
 						if ($layout) {
 							//Work out a slot to put this Plugin into, favouring empty "Main" slots.
-							$slotName = \ze\layoutAdm::mainSlotByName($layout['family_name'], $layout['file_base_name']);
+							$slotName = \ze\layoutAdm::mainSlotByName($layout['layout_id']);
 					
 							//Make a copy of that Layout for the new Content Type
-							$layout['templateFamily'] = $layout['family_name'];
 							$layout['content_type'] = (string) $type['content_type_id'];
 							$layout['name'] = \ze::ifNull((string) ($type['default_template_name'] ?? false), (string) $type['content_type_name_en']);
-					
-							//T9858, When initialising a new content type, ensure it creates a layout and template file
-							$newname = \ze\layoutAdm::generateFileBaseName($layout['name']);
-							if (\ze\layoutAdm::copyFiles($layout, $newname)) {
-								$layout['file_base_name'] = $newname;
-							}
+							
 							\ze\layoutAdm::save($layout, $layoutId, $layout['layout_id']);
 					
 							//Put an instance of this Plugin on that template, if this module uses instances
@@ -1147,7 +1148,7 @@ class moduleAdm {
 								//Insert this Plugin onto the page
 								if ($addingEditor || \ze\ring::engToBoolean($desc['can_be_version_controlled'])) {
 									//Prefer a Wireframe Plugin if the Plugin allows it
-									\ze\pluginAdm::updateLayoutSlot(0, $slotName, $layout['family_name'], $layoutId, $addmoduleId);
+									\ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, $addmoduleId);
 						
 								} else {
 									//Otherwise set a Reusable Instance there
@@ -1161,7 +1162,7 @@ class moduleAdm {
 											$errors, $onlyValidate = false, $forceName = true);
 									}
 							
-									\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layout['family_name'], $layoutId, $addmoduleId);
+									\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layoutId, $addmoduleId);
 								}
 							}
 						}

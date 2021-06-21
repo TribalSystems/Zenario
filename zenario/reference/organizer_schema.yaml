@@ -95,7 +95,7 @@ common_definitions:
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
             
-            See http://zenar.io/visibility-in-tuix for examples.
+            See https://zenar.io/visibility-in-tuix for examples.
     disabled_if: &disabled_if
         type:
             - string
@@ -109,7 +109,7 @@ common_definitions:
             
             If the code provided evaluates to <code>true</code> the button will be disabled.
             
-            See http://zenar.io/visibility-in-tuix for examples.
+            See https://zenar.io/visibility-in-tuix for examples.
     table_join: &table_join
         type: string
         static: true
@@ -734,7 +734,7 @@ additionalProperties:
                                     description: >
                                         This lets you define the data-format of a column.
                                         
-                                        See http://zenar.io/ref-organizer_schema-format for more information.
+                                        See https://zenar.io/ref-organizer_schema-format for more information.
                                         
                                         
                                         This property must be written in your .yaml file,
@@ -1374,7 +1374,7 @@ additionalProperties:
                     
                             The message will not HTML escaped.
                     
-                            You can use all of the features from http://zenar.io/customising-popout-messages-in-admin-mode
+                            You can use all of the features from https://zenar.io/customising-popout-messages-in-admin-mode
                             in order to customise the message.
                     
                             Note: this will clash with the <code>popout_message</code> property for Admin Boxes;
@@ -2089,7 +2089,7 @@ additionalProperties:
                                         A snippet of JavaScript code to be evaluated for each selected item.
                                         Each item must match for the button to be shown.
                                         
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                        See https://zenar.io/visibility-in-tuix for examples.
                                 
                                 visible_if_for_any_selected_items:
                                     type: string
@@ -2097,7 +2097,7 @@ additionalProperties:
                                         A snippet of JavaScript code to be evaluated for each selected item.
                                         At least one item must match for the button to be shown.
                                         
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                        See https://zenar.io/visibility-in-tuix for examples.
                                 traits:
                                     type: object
                                     additionalProperties:
@@ -2164,7 +2164,7 @@ additionalProperties:
                                         A snippet of JavaScript code to be evaluated for each selected item.
                                         If at least one item matches, the button will be disabled.
                                         
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                        See https://zenar.io/visibility-in-tuix for examples.
                                 
                                 disabled_tooltip:
                                     type: string

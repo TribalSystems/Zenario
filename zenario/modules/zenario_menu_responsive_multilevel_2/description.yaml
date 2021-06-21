@@ -11,8 +11,8 @@ description: |
         viewed on a desktop computer. When viewed on a mobile device, the menu changes to a
         vertical &quot;hamburger&quot; menu.</p>
     
-    <p>If you use Grid Maker to make your layouts, this plugin will use the break-point width that you set
-        when creating your layout. If you did not use Grid Maker to make your layout, this plugin will
+    <p>If you use Gridmaker to make your layouts, this plugin will use the break-point width that you set
+        when creating your layout. If you did not use Gridmaker to make your layout, this plugin will
         instead use the break-point width that you entered under <em>Configuration -&gt; Site
         Settings -&gt; File and Image Handling</em>.</p>
     

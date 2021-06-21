@@ -355,19 +355,19 @@ if (empty($failures)) {
 		$failures[] = \ze\admin::phrase('This backup file contained table definitions but no data. It cannot be restored.');
 	
 	} else {
-		//From version 8 of Zenario, we'll only support updating from version 7.5 onwards.
-		//Check for versions of Tribiq CMS/Zenario before 7.5
+		//From version 8 of Zenario, we'll only support updating from version 8.2 onwards.
+		//Check for versions of Tribiq CMS/Zenario before 8.2
 		$sql = "
 			SELECT 1
 			FROM `". \ze\escape::sql($replacePrefix). "local_revision_numbers`
 			WHERE path IN ('admin/db_updates/step_1_update_the_updater_itself', 'admin/db_updates/step_2_update_the_database_schema', 'admin/db_updates/step_4_migrate_the_data')
 			  AND patchfile IN ('updater_tables.inc.php', 'admin_tables.inc.php', 'content_tables.inc.php', 'user_tables.inc.php')
-			  AND revision_no < ". (38660). "
+			  AND revision_no < ". (int) EARLIEST_SUPPORTED_MIGRATION. "
 			LIMIT 1";
 
 		if (\ze\sql::numRows($sql)) {
-			//If this looks like a very old version of Zenario, direct people to update to at least 7.5 first
-			$failures[] = \ze\admin::phrase('This backup file contains an installation of Zenario running from before version 7.5. Only backups created from version 7.5 or later can be restored here.');
+			//If this looks like a very old version of Zenario, direct people to update to at least 8.2 first
+			$failures[] = \ze\admin::phrase('This backup file contains an installation of Zenario running from before version 8.2. Only backups created from version 8.2 or later can be restored here.');
 		}
 	}
 }

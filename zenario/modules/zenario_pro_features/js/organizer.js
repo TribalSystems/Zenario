@@ -62,27 +62,12 @@ zenario_pro_features.serverTime = function() {
 zenario.on('', '', 'eventSetOrganizerIcons', function() {
 	var times = zenario.moduleNonAsyncAJAX('zenario_pro_features', 'getBottomLeftInfo=1', true).split('~'),
 		now = new Date(),
-		htmlPC = '',
 		htmlST = '',
 		htmlSC = '',
 		_$div = zenarioT.div,
 		
-		zenario_page_caching = 'zenario_page_caching',
 		zenario_scheduled_tasks_status = 'zenario_scheduled_tasks_status';
 	
-	
-	htmlPC = _$div(
-		'id', zenario_page_caching,
-		'class', times[0]? zenario_page_caching + '_on' : zenario_page_caching + '_off',
-		'onclick', "zenarioAB.openSiteSettings('optimisation', 'caching');"
-	);
-	
-	times[1] = times[1].replace(
-		'is_htaccess_working',
-		zenarioA.isHtaccessWorking()?
-			phrase.compressed
-		 :	phrase.notCompressed
-	);
 	
 	zenario_pro_features.serverTimeHoursOffset = 1*times[2] - now.getHours();
 	zenario_pro_features.serverTimeMinsOffset = 1*times[3] - now.getMinutes();
@@ -112,11 +97,6 @@ zenario.on('', '', 'eventSetOrganizerIcons', function() {
 		if (tooltipOptions.content = times[6]) {
 			zenarioA.tooltips('#' + zenario_scheduled_tasks_status, tooltipOptions);
 		}
-		
-		if (tooltipOptions.content = times[1]) {
-			tooltipOptions.position = {my: 'center top', at: 'center bottom', collision: 'flipfit'};
-			zenarioA.tooltips('#' + zenario_page_caching, tooltipOptions);
-		}
 	}, 200);
 	
 	if (zenario_pro_features.serverTimeInterval) {
@@ -125,7 +105,7 @@ zenario.on('', '', 'eventSetOrganizerIcons', function() {
 	zenario_pro_features.serverTimeInterval = setInterval(zenario_pro_features.serverTime, 250);
 	
 	
-	return {'↗': [[htmlPC, 20]], '↙': [[htmlST, 1], [htmlSC, 1.1]]};
+	return {'↙': [[htmlST, 1], [htmlSC, 1.1]]};
 });
 
 

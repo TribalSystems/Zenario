@@ -35,7 +35,7 @@ $usagePublished = ze\pluginAdm::usage($instanceId, true);
 if (!$copyingInstance) {
 	$message =
 		'<p>'. ze\admin::phrase(
-			'Are you sure you wish to add the &quot;[[name]]&quot; Plugin into this Nest?',
+			'Are you sure you wish to add the plugin &quot;[[name]]&quot; into this nest?',
 			['name' => htmlspecialchars(ze\module::displayName($addId))]
 		). '</p>';
 
@@ -43,13 +43,13 @@ if (!$copyingInstance) {
  && !ze\row::exists('plugin_item_link', ['instance_id' => $addId])) {
 	$message =
 		'<p>'. ze\admin::phrase(
-			'Are you sure you wish to move the &quot;[[name]]&quot; Plugin into this Nest?',
+			'Are you sure you wish to move the plugin &quot;[[name]]&quot; into this nest?',
 			['name' => htmlspecialchars(ze\plugin::name($addId))]
 		). '</p>';
 } else {
 	$message =
 		'<p>'. ze\admin::phrase(
-			'Are you sure you wish to copy the &quot;[[name]]&quot; Plugin into this Nest?',
+			'Are you sure you wish to copy the plugin &quot;[[name]]&quot; into this nest?',
 			['name' => htmlspecialchars(ze\plugin::name($addId))]
 		). '</p>';
 }
@@ -57,7 +57,7 @@ if (!$copyingInstance) {
 if ($usage > 0 || $usagePublished > 0) {
 	$message .=
 		'<p>'. ze\admin::phrase(
-			'This will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] Content Item(s) in total</a>).</span>',
+			'This will affect <span class="zenario_x_published_items">[[published]] published content item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] content item(s) in total</a>).</span>',
 			['pages' => (int) $usage,
 					'published' => (int) $usagePublished,
 					'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($instanceId))]

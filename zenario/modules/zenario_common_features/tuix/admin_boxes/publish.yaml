@@ -6,7 +6,7 @@ zenario_publish:
         id: ""
         cID: ""
         cType: ""
-    max_height: 280
+    max_height: 350
     hide_tab_bar: true
     save_button_message: Publish
     cancel_button_message: Cancel
@@ -33,6 +33,8 @@ zenario_publish:
                     values:
                         immediately:
                             label: 'Publish immediately'
+                        cancel:
+                            label: 'Cancel scheduled publishing'
                         schedule:
                             label: 'Schedule publishing at...'
                     value: immediately
@@ -41,6 +43,7 @@ zenario_publish:
                 publish_date:
                     label: 'Date & Time'
                     type: date
+                    indent: 1
                 publish_hours:
                     type: select
                     values:

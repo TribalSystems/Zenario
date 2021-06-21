@@ -85,8 +85,6 @@ class zenario_pro_features extends zenario_common_features {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		switch ($path) {
-			case 'zenario_pro_features__export':
-			case 'zenario_pro_features__import':
 			case 'zenario_pro_features__google_translate':
 		
 				//Set up the primary key from the requests given
@@ -94,22 +92,14 @@ class zenario_pro_features extends zenario_common_features {
 					ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
 				}
 		
-				if ($path == 'zenario_pro_features__export') {
-					if ($box['key']['cID'] && !$box['key']['cVersion']) {
-						$box['key']['cVersion'] = ze\content::latestVersion($box['key']['cID'], $box['key']['cType']);
-					}
-				} else {
-					if (!ze\priv::check('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType'])) {
-						echo ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
-						exit;
-					}
+				if (!ze\priv::check('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType'])) {
+					echo ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
+					exit;
 				}
 		
-				if ($path == 'zenario_pro_features__google_translate') {
-					ze\contentAdm::getLanguageSelectListOptions($box['tabs']['translate']['fields']['lang_from']);
-					$box['tabs']['translate']['fields']['lang_to']['value'] = ze\content::langId($box['key']['cID'], $box['key']['cType']);
-					unset($box['tabs']['translate']['fields']['lang_from']['values'][$box['tabs']['translate']['fields']['lang_to']['value']]);
-				}
+				ze\contentAdm::getLanguageSelectListOptions($box['tabs']['translate']['fields']['lang_from']);
+				$box['tabs']['translate']['fields']['lang_to']['value'] = ze\content::langId($box['key']['cID'], $box['key']['cType']);
+				unset($box['tabs']['translate']['fields']['lang_from']['values'][$box['tabs']['translate']['fields']['lang_to']['value']]);
 				
 				break;
 			
@@ -124,7 +114,7 @@ class zenario_pro_features extends zenario_common_features {
 		switch ($path) {
 			case 'zenario_pro_features__google_translate':
 				if (!ze::setting('google_translate_api_key')) {
-					$box['tabs']['translate']['errors'][] = ze\admin::phrase('Please enter your Google Translate API Key in the Site Settings.');
+					$box['tabs']['translate']['errors'][] = ze\admin::phrase('Please enter your Google Translate API Key in Configuration->Site Settings, API Keys interface.');
 					$box['tabs']['translate']['fields']['lang_from']['readonly'] = true;
 					$box['tabs']['translate']['fields']['lang_to']['readonly'] = true;
 				}
@@ -140,46 +130,6 @@ class zenario_pro_features extends zenario_common_features {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {
-			case 'zenario_pro_features__import':
-				
-				$box['tabs']['import']['notices']['okay']['show'] = false;
-				
-				if ($values['import/file']
-				 && ($importFile = ze\file::getPathOfUploadInCacheDir($values['import/file']))
-				 && (is_file($importFile))) {
-					$targetCID = $targetCType = $error = false;
-					$mimeType = ze\file::mimeType($importFile);
-					
-					if ($mimeType == 'text/html' || $mimeType == 'application/xhtml+xml') {
-						if (zenario_pro_features::importContentItem(file_get_contents($importFile), false, true, $targetCID, $targetCType, $error, $box['key']['cID'], $box['key']['cType'])) {
-							$box['tabs']['import']['notices']['okay']['show'] = true;
-						} else {
-							$box['tabs']['import']['errors'][] = $error;
-						}
-					
-					} elseif ($mimeType == 'text/xml') {
-						if (zenario_pro_features::importContentItem(file_get_contents($importFile), true, true, $targetCID, $targetCType, $error, $box['key']['cID'], $box['key']['cType'])) {
-							$box['tabs']['import']['notices']['okay']['show'] = true;
-						} else {
-							$box['tabs']['import']['errors'][] = $error;
-						}
-					
-					} else {
-						$box['tabs']['import']['errors'][] = ze\admin::phrase('Please select a HTML or a XML file to upload.');
-					}
-					
-				} else {
-					$box['tabs']['import']['errors'][] = ze\admin::phrase('Please select a file to upload.');
-				}
-				
-				if (empty($box['tabs']['import']['errors'])) {
-					$box['confirm']['show'] =
-						$targetCType != $box['key']['cType']
-					 || ze\row::get('content_items', 'equiv_id', ['id' => $targetCID, 'type' => $targetCType])
-					 	!= ze\row::get('content_items', 'equiv_id', ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
-				}
-			
-			
 			case 'zenario_pro_features__google_translate':
 				if (!ze\priv::check('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType'])) {
 					$box['tabs']['import']['errors'][] = ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
@@ -196,34 +146,6 @@ class zenario_pro_features extends zenario_common_features {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
-			case 'zenario_pro_features__import':
-				ze\priv::exitIfNot('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType']);
-				
-				if ($values['import/file']
-				 && ($importFile = ze\file::getPathOfUploadInCacheDir($values['import/file']))
-				 && (is_file($importFile))) {
-				
-					$targetCID = $targetCType = $error = false;
-					$mimeType = ze\file::mimeType($importFile);
-				
-					if ($mimeType == 'text/html' || $mimeType == 'application/xhtml+xml') {
-						if (zenario_pro_features::importContentItem(file_get_contents($importFile), false, false, $targetCID, $targetCType, $error, $box['key']['cID'], $box['key']['cType'])) {
-							unlink($importFile);
-						} else {
-							echo $error;
-						}
-				
-					} elseif ($mimeType == 'text/xml') {
-						if (zenario_pro_features::importContentItem(file_get_contents($importFile), true, false, $targetCID, $targetCType, $error, $box['key']['cID'], $box['key']['cType'])) {
-						} else {
-							echo $error;
-						}
-					}
-				}
-				
-				break;
-			
-			
 			case 'zenario_pro_features__google_translate':
 				ze\priv::exitIfNot('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType']);
 				
@@ -305,28 +227,6 @@ class zenario_pro_features extends zenario_common_features {
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		switch ($path) {
-			case 'zenario_pro_features__export':
-				ze\priv::exitIfNot('_PRIV_EXPORT_CONTENT_ITEM');
-				$f = false;
-				$isXML = $values['export/format'] == 'xml';
-				$encodeHTMLAtt = $values['export/format'] == 'html_settings_encoded';
-				if ($content = ze\row::get('content_items', ['alias', 'tag_id'], ['id' => $box['key']['cID'], 'type' => $box['key']['cType']])) {
-					if (zenario_pro_features::createExportFile($f, $isXML, $encodeHTMLAtt, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
-						if ($isXML) {
-							header('Content-Type: text/xml; charset=UTF-8');
-							header('Content-Disposition: attachment; filename="'. ($content['alias'] ?: $content['tag_id']). '.xml"');
-						} else {
-							header('Content-Type: text/html; charset=UTF-8');
-							header('Content-Disposition: attachment; filename="'. ($content['alias'] ?: $content['tag_id']). '.html"');
-						}
-						
-						header('Content-Length: '. strlen($f)); 
-						echo $f;
-					}
-				}
-				
-				break;
-			
 			default:
 				if ($c = $this->runSubClass(static::class, false, $path)) {
 					return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
@@ -426,79 +326,12 @@ class zenario_pro_features extends zenario_common_features {
 	function handleAJAX() {
 		
 		if ($_POST['getBottomLeftInfo'] ?? false) {
-		
-			$compressed = ze::setting('compress_web_pages')? ze\admin::phrase('Compressed') : ze\admin::phrase('Not Compressed');
-		
-			if (ze::setting('caching_enabled')
-			&& ze::setting('cache_css_js_wrappers')
-			&& ze::setting('css_wrappers')
-			&& (ze::setting('css_wrappers') == 'on' || ze::setting('css_wrappers') == 'visitors_only')) {
-				echo '1';
-			}
 			
+			//Note: this AJAX request used to return info about optimisation settings in positions 0 and 1.
+			//We're since removed this info, but I don't want to re-adjust the other indices,
+			//so I'm leaving positions 0 and 1 empty for now.
+			echo '~~';
 			
-			$wrappers = ze\admin::phrase('On');
-			switch (ze::setting('css_wrappers')) {
-				case 'visitors_only':
-					$wrappers = ze\admin::phrase('On for visitors only');
-				case 'on':
-					$wrappers .= ', ';
-					$wrappers .= $compressed;
-					$wrappers .= ', ';
-					$wrappers .= ze::setting('caching_enabled') && ze::setting('cache_css_js_wrappers')?
-									ze\admin::phrase('Cached') : ze\admin::phrase('Not Cached');
-					break;
-				
-				default:
-					$wrappers = ze\admin::phrase('Off');
-			}
-									
-		
-			echo
-			'~',
-			'<h3>',
-				ze\admin::phrase('Optimisation'),
-			'</h3>',
-			'<p>',
-				ze\admin::phrase('Web Pages:'),
-				' ',
-				$compressed,
-				', ',
-				ze::setting('caching_enabled') && ze::setting('cache_web_pages')? ze\admin::phrase('Cached') : ze\admin::phrase('Not Cached'),
-			'</p>',
-			'<p>',
-				ze\admin::phrase('Plugins:'),
-				' ',
-				$compressed,
-				', ',
-				ze::setting('caching_enabled') && ze::setting('cache_plugins')? ze\admin::phrase('Cached') : ze\admin::phrase('Not Cached'),
-			'</p>',
-			'<p>',
-				ze\admin::phrase('AJAX and RSS:'),
-				' ',
-				$compressed,
-				', ',
-				ze::setting('caching_enabled') && ze::setting('cache_ajax')? ze\admin::phrase('Cached') : ze\admin::phrase('Not Cached'),
-			'</p>',
-			'<p>',
-				ze\admin::phrase('CSS File Wrappers:'),
-				' ',
-				$wrappers,
-			'</p>',
-			'<p>',
-				ze\admin::phrase('Other Files:'),
-				' ',
-				'is_htaccess_working',
-			'</p>',
-			'<p>',
-				ze\admin::phrase('Cookie-free Domain:'),
-				' ',
-				ze::setting('use_cookie_free_domain') && ze::setting('cookie_free_domain')?
-				htmlspecialchars('http://'. ze::setting('cookie_free_domain'). SUBDIRECTORY)
-				:	ze\admin::phrase('Not Used'),
-			'</p>',
-			'~';
-		
 			//Get the current server time
 			if (ze\server::isWindows() || !ze\server::execEnabled()) {
 				echo date('H~i~s');
@@ -731,11 +564,11 @@ class zenario_pro_features extends zenario_common_features {
 		return ze\escape::xml(str_ireplace('&apos;', "'", html_entity_decode($html, ENT_QUOTES, 'UTF-8')));
 	}
 	
-	protected static function getSlotsOnTemplate($templateFamily, $fileBaseName) {
+	protected static function getSlotsOnTemplate($layoutId) {
 		$result = ze\row::query(
-			'template_slot_link',
+			'layout_slot_link',
 			'slot_name',
-			['family_name' => $templateFamily, 'file_base_name' => $fileBaseName],
+			['layout_id' => $layoutId],
 			['slot_name']);
 		
 		$slotsOnTemplate = [];

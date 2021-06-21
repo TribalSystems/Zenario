@@ -161,7 +161,7 @@ unset($version['concealed_datetime']);
 unset($version['admin_notes']);
 
 if ($newDraftCreated) {
-	$version['created_datetime'] = \ze\date::now();
+	$version['created_datetime'] = \ze\date::now(true);
 	$version['creating_author_id'] = $adminId;
 } else {
 	unset($version['created_datetime']);

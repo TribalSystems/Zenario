@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cType]))
  && ($version = ze\row::get('content_item_versions', true, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]))
- && ($template = ze\row::get('layouts', ['family_name', 'file_base_name', 'name'], $version['layout_id']))) {
+ && ($layout = ze\row::get('layouts', ['name'], $version['layout_id']))) {
 	
 	if ($isXML) {
 		$f =
@@ -90,15 +90,18 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 	}
 	
 	zenario_pro_features::openTagStart($isXML, $f, 'template');
-	zenario_pro_features::addAtt($isXML, $f, 'family_name', $template['family_name']);
-	zenario_pro_features::addAtt($isXML, $f, 'file_base_name', $template['file_base_name']);
-	zenario_pro_features::addAtt($isXML, $f, 'name', $template['name']);
+	zenario_pro_features::addAtt($isXML, $f, 'name', $layout['name']);
 	zenario_pro_features::openTagEnd($isXML, $encodeHTMLAtt, $f);
 	zenario_pro_features::closeTag($isXML, $f, 'template');
 	
 	$slotContents = [];
-	ze\plugin::slotContents($slotContents, $cID, $cType, $cVersion, false, false, false, false, false, false, $runPlugins = false);
-	$slotsOnTemplate = zenario_pro_features::getSlotsOnTemplate($template['family_name'], $template['file_base_name']);
+	ze\plugin::slotContents(
+		$slotContents,
+		$cID, $cType, $cVersion,
+		$version['layout_id'],
+		$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
+		$runPlugins = false);
+	$slotsOnTemplate = zenario_pro_features::getSlotsOnTemplate($version['layout_id']);
 	
 	foreach ($slotsOnTemplate as $slotName) {
 		if (!empty($slotContents[$slotName]['content_id'])

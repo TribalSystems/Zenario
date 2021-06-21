@@ -188,16 +188,6 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	
 	function showContent() {
 		
-		//Show an edit button above the content if this is an egg in a wireframe nest
-		if ($this->eggId && $this->isVersionControlled && empty($_REQUEST['content__edit_container']) && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType, ze::$cVersion)) {
-			echo '
-				<div class="zenario_hide_from_print" style="text-align: right; margin-right: 25px;">
-					<a '. $this->editInlineButton(). '>
-						<img src="zenario/admin/images/slots/edit_slot_section_icon.gif" class="pluginAdminEditButton" border="0" title="', ze\admin::phrase('Edit contents inline'), '" />
-					</a>
-				</div>';
-		}
-		
 		if (!$this->editing && ze\priv::check() && !trim($this->setting('html'))) {
 			if (ze::$isDraft) {
 				echo
@@ -267,7 +257,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				$controls['actions']['zenario_wysiwyg_editor__edit_inline'] = [
 					'ord' => 0,
 					'page_modes' => ['edit' => true],
-					'label' => ze\admin::phrase('Edit contents'),
+					'label' => ze\admin::phrase('Edit content inline'),
 					'onclick' => htmlspecialchars_decode($this->editInlineButtonOnClick())];
 				
 				//To avoid confusion, you sholudn't be able to edit the contents of a Wireframe WYSIWYG Editor inline AND in the settings box

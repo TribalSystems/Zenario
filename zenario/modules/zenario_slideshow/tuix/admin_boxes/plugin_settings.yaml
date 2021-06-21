@@ -51,9 +51,9 @@ plugin_settings:
                     label: 'Show next/previous buttons'
                     type: checkbox
                 
-                mode:
+                animation_library:
                     plugin_setting:
-                        name: mode
+                        name: animation_library
                     label:  'Animation library for slides:'
                     type: radios
                     value: cycle
@@ -82,7 +82,7 @@ plugin_settings:
                 use_timeout:
                     plugin_setting:
                         name: use_timeout
-                    visible_if: zenarioAB.value('mode')
+                    visible_if: zenarioAB.value('animation_library')
                     indent: 1
                     label: 'Auto-advance slides'
                     type: checkbox
@@ -91,7 +91,7 @@ plugin_settings:
                 timeout:
                     plugin_setting:
                         name: timeout
-                    visible_if: zenarioAB.value('mode') && zenarioAB.value('use_timeout')
+                    visible_if: zenarioAB.value('animation_library') && zenarioAB.value('use_timeout')
                     indent: 2
                     label: 'Display duration:'
                     type: text
@@ -111,7 +111,7 @@ plugin_settings:
                 pause:
                     plugin_setting:
                         name: pause
-                    visible_if: zenarioAB.value('mode') && zenarioAB.value('use_timeout')
+                    visible_if: zenarioAB.value('animation_library') && zenarioAB.value('use_timeout')
                     indent: 2
                     label: 'Hover to pause'
                     type: checkbox
@@ -122,7 +122,7 @@ plugin_settings:
                 next_prev_buttons_loop:
                     plugin_setting:
                         name: next_prev_buttons_loop
-                    visible_if: zenarioAB.value('mode') == 'cycle' || zenarioAB.value('mode') == 'cycle2'
+                    visible_if: zenarioAB.value('animation_library') == 'cycle' || zenarioAB.value('animation_library') == 'cycle2'
                     indent: 1
                     label: 'Loop slides'
                     type: checkbox
@@ -132,7 +132,7 @@ plugin_settings:
                 use_tab_hover:
                     plugin_setting:
                         name: use_tab_hover
-                    visible_if: zenarioAB.value('mode')
+                    visible_if: zenarioAB.value('animation_library')
                     indent: 1
                     label: 'Hover to change'
                     type: checkbox
@@ -143,7 +143,7 @@ plugin_settings:
                 use_tab_clicks:
                     plugin_setting:
                         name: use_tab_clicks
-                    visible_if: zenarioAB.value('mode')
+                    visible_if: zenarioAB.value('animation_library')
                     indent: 1
                     label: 'Click to change'
                     type: checkbox

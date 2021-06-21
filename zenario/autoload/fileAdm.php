@@ -318,7 +318,9 @@ To correct this, please ask your system administrator to perform a
 		} elseif ($alwaysAllowImages) {
 			if (!\ze\file::isImageOrSVG(\ze\file::mimeType($name))) {
 				echo
-					\ze\lang::phrase('The uploaded file is not an image.', false, $moduleClass);
+					\ze\lang::phrase('The uploaded image is not in a supported format.', false, $moduleClass),
+					"\n\n",
+					\ze\lang::phrase('Please upload an image in GIF, JPEG, PNG or SVG format. The file extension should be either .gif, .jpg, .jpeg, .png or .svg.', false, $moduleClass);
 				exit;
 			}
 		}
@@ -383,22 +385,30 @@ To correct this, please ask your system administrator to perform a
 		
 		//For file-types supported by the ze\file::check function, run a check to see if the extension looks correct
 		//(I.e. try to check that this isn't a different type of file where the extension has been altered.)
-		if (!\ze\file::check($path, $mimeType = \ze\file::mimeType($name))) {
-			$parts = explode('.', $name);
-			$extension = $parts[count($parts) - 1];
+		$fileCheck = \ze\file::check($path, $mimeType = \ze\file::mimeType($name));
+		if (\ze::isError($fileCheck)) {
 			
-			echo
-				\ze\lang::phrase('This file could not be uploaded.', [], $moduleClass),
-				"\n\n",
-				\ze\lang::phrase('According to its name, "[[name]]" should be an [[extension]] file, but on scanning its contents it failed to match "[[mimeType]]".', [
-					'name' => $name,
-					'mimeType' => $mimeType,
-					'extension' => $extension
-				], $moduleClass),
-				"\n\n",
-				\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass),
-				"\n\n",
-				\ze\lang::phrase('Developers: if this message constantly occurs, even on valid files, then this is probably a misclassification in the UNIX file utility. You can fix this by adding an exception/correction in the function check() in zenario/autoload/file.php.', [], $moduleClass);
+			if (isset($fileCheck->errors['PASSWORD_PROTECTED'])) {
+				echo \ze\lang::phrase('The file "[[filename]]" is password-protected. Password protection needs to be removed before you can upload it to Zenario.', ['filename' => $name], $moduleClass);
+			
+			} else {
+				$parts = explode('.', $name);
+				$extension = $parts[count($parts) - 1];
+			
+				echo
+					\ze\lang::phrase('This file could not be uploaded.', [], $moduleClass),
+					"\n\n",
+					\ze\lang::phrase('According to its name, "[[name]]" should be an [[extension]] file, but on scanning its contents it failed to match "[[mimeType]]".', [
+						'name' => $name,
+						'mimeType' => $mimeType,
+						'extension' => $extension
+					], $moduleClass),
+					"\n\n",
+					\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass),
+					"\n\n",
+					\ze\lang::phrase('Developers: if this message constantly occurs, even on valid files, then this is probably a misclassification in the UNIX file utility. You can fix this by adding an exception/correction in the function check() in zenario/autoload/file.php.', [], $moduleClass);
+			}
+			
 			exit;
 		}
 	}
@@ -523,4 +533,23 @@ To correct this, please ask your system administrator to perform a
 		}
 	}
 	
+	
+	//A drop-in replacement for PHP's readfile() function,
+	//without some of the bugs!
+	
+	//Inspired by
+	//https://serverfault.com/questions/115906/is-there-some-limit-on-a-size-of-a-file-when-force-downloading-it-with-php-on-ap
+	
+	//Note: was added for testing purposes, but didn't fix the problems I was trying to solve,
+	//so I've commented it back out!
+	#public static function readFile($path, $chunkSize = 0x1000000) {
+	#	if ($fh = fopen($path, 'rb')) {
+	#		while (!feof($fh)) { 
+	#			echo fread($fh, $chunkSize); 
+	#			flush();
+	#		}
+	#		$fh = fclose($fh);
+	#	}
+	#	return $fh;
+	#}
 }

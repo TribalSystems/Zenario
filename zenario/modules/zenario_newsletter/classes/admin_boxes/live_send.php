@@ -62,17 +62,15 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 			$allJobsEnabled = ze::setting('jobs_enabled');
 			$scheduledSendingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobSendNewsletters', 'module_class_name' => 'zenario_newsletter']);
 			if (!($allJobsEnabled && $scheduledSendingEnabled)) {
-				$scheduledTaskLink = ze\link::absolute() . 
-					'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
-				
-				
+				$scheduledTaskHref = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
+				$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
+				$linkEnd = "</a>";
+
+				$string = "Scheduled sending is not available. The Scheduled Task Manager is installed but the scheduled publishing task (jobSendNewsletters) is not enabled. [[link_start]]Click for more info.[[link_end]]";
+
 				$fields['send/send_time_options']['values']['schedule']['disabled'] = true;
-				$fields['send/send_time_options']['values']['schedule']['post_field_html'] = "
-					<br />
-					<br />
-					Scheduled sending is not available. The Scheduled Task Manager is installed 
-					but the Scheduled Publishing task is not enabled. 
-					<a href='".$scheduledTaskLink."'>Click for more info.</a>";
+				$fields['send/send_time_options']['values']['schedule']['post_field_html'] = "<br /><br />";
+				$fields['send/send_time_options']['values']['schedule']['post_field_html'] .= ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			} else {
 				$values['send/send_date'] = date('Y-m-d');
 				for ($i = 0; $i <= 23; $i++) {

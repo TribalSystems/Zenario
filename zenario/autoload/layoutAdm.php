@@ -35,16 +35,6 @@ class layoutAdm {
 		return 'L'. str_pad((string) $layoutId, 2, '0', STR_PAD_LEFT);
 	}
 
-
-	//Formerly "getSlotsOnTemplate()"
-	public static function slots($templateFamily, $templateFileBaseName) {
-		return \ze\row::getAssocs(
-			'template_slot_link',
-			'slot_name',
-			['family_name' => $templateFamily, 'file_base_name' => $templateFileBaseName],
-			['slot_name']);
-	}
-
 	//Formerly "getDefaultTemplateId()"
 	public static function defaultId($cType) {
 		if (!$layoutId = \ze\row::get('content_types', 'default_layout_id', ['content_type_id' => $cType])) {
@@ -57,7 +47,7 @@ class layoutAdm {
 
 	//Formerly "getTemplateFamilyDetails()"
 	public static function familyDetails($familyName) {
-		return \ze\row::get('template_families', ['family_name', 'skin_id', 'missing'], $familyName);
+		return NULL;
 	}
 
 	//Formerly "validateChangeSingleLayout()"
@@ -115,11 +105,26 @@ class layoutAdm {
 	}
 
 	//Formerly "saveTemplate()"
-	public static function save($submission, &$layoutId, $sourceTemplateId = false) {
-	
-		$duplicating = (bool) $sourceTemplateId;
+	public static function save($submission, &$layoutId, $sourceLayoutId = false) {
 	
 		$values = [];
+		$duplicating = (bool) $sourceLayoutId;
+		
+		if ($duplicating) {
+			$sourceDetails = \ze\row::get('layouts', [
+				'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_position', 'bg_repeat',
+				'json_data', 'json_data_hash',
+				'cols', 'min_width', 'max_width', 'fluid', 'responsive',
+				'head_html', 'head_cc', 'head_visitor_only', 'foot_html', 'foot_cc', 'foot_visitor_only'
+			], $sourceLayoutId);
+			
+			foreach ($sourceDetails as $col => $value) {
+				if (!isset($submission[$col])) {
+					$values[$col] = $value;
+				}
+			}
+		}
+		
 		foreach ([
 			'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_repeat', 'bg_position',
 			'name', 'cols', 'min_width', 'max_width', 'fluid', 'responsive'
@@ -143,73 +148,57 @@ class layoutAdm {
 			}
 		}
 	
-		if (isset($submission['file_base_name'])) {
-			$values['file_base_name'] = $submission['file_base_name'];
+		if (isset($submission['json_data'])) {
+			$values['json_data'] = $submission['json_data'];
+			if (is_string($submission['json_data'])) {
+				$values['json_data_hash'] = \ze::hash64($submission['json_data'], 8);
+			} else {
+				$values['json_data_hash'] = \ze::hash64(json_encode($submission['json_data']), 8);
+			}
 		}
 	
 		if ($layoutId && !$duplicating) {
 			\ze\row::update('layouts', $values, $layoutId);
 	
 		} else {
-			$values['family_name'] = \ze\ray::grabValue($submission, 'templateFamily', 'family_name');
-		
 			$layoutId = \ze\row::insert('layouts', $values);
 		}
 	
 		if ($duplicating) {
 		
-			$details = \ze\row::get(
-				'layouts',
-				['css_class', 'head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only', 'file_base_name'],
-				$sourceTemplateId);
-		
-			$sourceFileBaseName = $details['file_base_name'];
-			unset($details['file_base_name']);
-		
-			\ze\row::update('layouts', $details, $layoutId);
-		
 			// Copy slots to duplicated layout
-			if (isset($values['file_base_name'])) {
-				$slots = \ze\row::getAssocs('template_slot_link', 
-					['family_name', 'slot_name'], 
-					['family_name' => $values['family_name'], 'file_base_name' => $sourceFileBaseName]);
-				if ($slots) {
-					$sql = '
-						INSERT IGNORE INTO '.DB_PREFIX.'template_slot_link (
-							family_name,
-							file_base_name,
-							slot_name
-						) VALUES ';
-					foreach ($slots as $slot) {
-						$sql .= '("'. \ze\escape::sql($slot['family_name']). '","'. \ze\escape::sql($values['file_base_name']). '","'. \ze\escape::sql($slot['slot_name']). '"),';
-					}
-					$sql = trim($sql, ',');
-					\ze\sql::update($sql);
+			$slots = \ze\row::getAssocs('layout_slot_link', 
+				['slot_name'], 
+				['layout_id' => $sourceLayoutId]);
+			if ($slots) {
+				$sql = '
+					INSERT IGNORE INTO '.DB_PREFIX.'layout_slot_link (
+						layout_id,
+						slot_name
+					) VALUES ';
+				foreach ($slots as $slot) {
+					$sql .= '("'.(int) $layoutId. '","'. \ze\escape::sql($slot['slot_name']). '"),';
 				}
+				$sql = trim($sql, ',');
+				\ze\sql::update($sql);
 			}
 		
 			$sql = "
 				REPLACE INTO ". DB_PREFIX. "plugin_layout_link (
 					module_id,
 					instance_id,
-					family_name,
 					layout_id,
 					slot_name
 				) SELECT 
 					module_id,
 					instance_id,
-					'". \ze\escape::sql($values['family_name']). "',
 					". (int) $layoutId.  ",
 					slot_name
 				FROM ". DB_PREFIX. "plugin_layout_link
-				WHERE layout_id = ". (int) $sourceTemplateId;
+				WHERE layout_id = ". (int) $sourceLayoutId;
 			\ze\sql::update($sql);
 		}
 	
-		if (($family = \ze\ray::grabValue($submission, 'templateFamily', 'family_name'))
-		 && (!\ze\layoutAdm::familyDetails($family))) {
-			\ze\row::insert('template_families', ['family_name' => $family]);
-		}
 	}
 
 
@@ -240,7 +229,12 @@ class layoutAdm {
 		foreach (['old', 'new'] as $oon) {
 			//Loop through the slots on the templates, seeing what Modules are placed where
 			$layout[$oon] = \ze\content::layoutDetails($layoutId[$oon]);
-			\ze\plugin::slotContents($slotContents[$oon], $cID, $cType, $cVersion, $layoutId[$oon], $layout[$oon]['family_name'], $layout[$oon]['filename'], false, false, false, false, $runPlugins = false);
+			\ze\plugin::slotContents(
+				$slotContents[$oon],
+				$cID, $cType, $cVersion,
+				$layoutId[$oon],
+				$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
+				$runPlugins = false);
 		
 			foreach ($slotContents[$oon] as $slotName => $slot) {
 				if (!empty($slot['content_id']) && !empty($slot['module_id'])) {
@@ -361,7 +355,7 @@ class layoutAdm {
 		
 			//Change the Layout
 			$version = ['layout_id' => $newLayoutId];
-			\ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version, true);
+			\ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version);
 		
 			//Loop through all of the matched slots
 			foreach ($matches['old'] as $oSlotName => $nSlotName) {
@@ -391,164 +385,28 @@ class layoutAdm {
 		}
 	}
 
-	//Formerly "checkSiteHasMultipleTemplateFamilies()"
-	public static function siteHasMultipleFamilies() {
-		return ($result = \ze\row::query('template_families', ['family_name'], []))
-			&& (\ze\sql::fetchRow($result))
-			&& (\ze\sql::fetchRow($result));
-	}
-
-	//Formerly "checkTemplateFileInFS()"
-	public static function isInFS($template_family, $fileBaseName) {
-		return $template_family && $fileBaseName && is_file(CMS_ROOT. \ze\content::templatePath($template_family, $fileBaseName));
-	}
-
-	//Formerly "checkTemplateFamilyInFS()"
-	public static function isFamilyInFS($template_family) {
-		return $template_family && is_dir(CMS_ROOT. \ze\content::templatePath($template_family));
-	}
-
-	//Quick version of the above that just checks for missing template files
-	//Formerly "checkForMissingTemplateFiles()"
-	public static function checkForMissingFiles() {
-		foreach(\ze\row::getAssocs('template_files', ['family_name', 'file_base_name', 'missing']) as $tf) {
-			$missing = (int) !file_exists(CMS_ROOT. \ze\content::templatePath($tf['family_name'], $tf['file_base_name']));
-			if ($missing != $tf['missing']) {
-				\ze\row::update('template_files', ['missing' => $missing], $tf);
-			}
-		}
-	}
-
-
-	//Formerly "checkTemplateFamilyInUse()"
-	public static function familyInUse($template_family) {
-		return
-			\ze\row::exists('layouts', ['family_name' => $template_family])
-		 || \ze\row::exists('skins', ['family_name' => $template_family])
-		 || \ze\row::exists('template_files', ['family_name' => $template_family]);
-	}
-
 	//Formerly "checkSkinInUse()"
 	public static function skinInUse($skinId) {
 		return
-			\ze\row::exists('layouts', ['skin_id' => $skinId])
-		 || \ze\row::exists('template_families', ['skin_id' => $skinId]);
-	}
-
-	//Formerly "checkLayoutInUse()"
-	public static function inUse($layoutId) {
-		return
-			\ze\row::exists('content_item_versions', ['layout_id' => $layoutId]);
-	}
-
-	//Formerly "generateLayoutFileBaseName()"
-	public static function generateFileBaseName($layoutName, $layoutId = false) {
-	
-		if (!$layoutId) {
-			$layoutId = \ze\sql::getNextAutoIncrementId('layouts');
-		}
-	
-		//New logic, return the id
-		return 'L'. str_pad($layoutId, 2, '0', STR_PAD_LEFT);
-	
-		//Old logic, return the name escaped
-		//return substr(str_replace('~20', ' ', \ze\ring::encodeIdForOrganizer($layoutName, '')), 0, 255);
+			\ze\row::exists('layouts', ['skin_id' => $skinId]);
 	}
 
 	//Delete a Layout from the system
 	//Formerly "deleteLayout()"
-	public static function delete($layout, $deleteFromDB) {
+	public static function delete($layoutId) {
 	
-		if (is_numeric($layout)) {
-			$layout = \ze\row::get('layouts', ['layout_id', 'family_name', 'file_base_name'], $layout);
-		} elseif (!is_array($layout)) {
-			$parts = explode('/', \ze\ring::decodeIdForOrganizer($layout));
-			$layout = [];
-			$layout['family_name'] = $parts[0];
-			$layout['file_base_name'] = $parts[1];
-		}
-	
-		if ($deleteFromDB && $layout && !empty($layout['layout_id'])) {
-			//Delete the layout from the database
-			\ze\module::sendSignal('eventTemplateDeleted',['layoutId' => $layout['layout_id']]);
-	
-			\ze\row::delete('layouts', ['layout_id' => $layout['layout_id']]);
-			\ze\row::delete('plugin_layout_link', ['layout_id' => $layout['layout_id']]);
-		}
-	
-		//Check whether anything else uses this Template File
-		if (!\ze\row::exists(
-			'layouts',
-			[
-				'family_name' => $layout['family_name'],
-				'file_base_name' => $layout['file_base_name']]
-		)) {
-			//If not, attempt to delete the Layout's files
-			foreach ([
-				CMS_ROOT. \ze\content::templatePath($layout['family_name'], $layout['file_base_name']),
-				CMS_ROOT. \ze\content::templatePath($layout['family_name'], $layout['file_base_name'], true)
-			] as $filePath) {
-				if (file_exists($filePath)
-				 && is_writable($filePath)) {
-					@unlink($filePath);
-				}
-			}
-		}
+		//Delete the layout from the database
+		\ze\module::sendSignal('eventTemplateDeleted', ['layoutId' => $layoutId]);
+
+		\ze\row::delete('layouts', ['layout_id' => $layoutId]);
+		\ze\row::delete('plugin_layout_link', ['layout_id' => $layoutId]);
 	}
 
-	//Given a Layout that has just been renamed or duplicated from another Layout, try to copy its Template Files
-	//Formerly "copyLayoutFiles()"
-	public static function copyFiles($layout, $newName = false, $newFamilyName = false) {
 	
-		if (!is_array($layout)) {
-			$layout = \ze\row::get('layouts', ['family_name', 'file_base_name'], $layout);
-		}
-	
-		if (!$newName) {
-			$newName = \ze\layoutAdm::generateFileBaseName($layout['name']);
-		}
-		if (!$newFamilyName) {
-			$newFamilyName = $layout['family_name'];
-		}
-	
-		$copies = [
-			CMS_ROOT. \ze\content::templatePath($layout['family_name'], $layout['file_base_name'])
-		  => 
-			CMS_ROOT. \ze\content::templatePath($newFamilyName, $newName),
-		
-			CMS_ROOT. \ze\content::templatePath($layout['family_name'], $layout['file_base_name'], true)
-		  => 
-			CMS_ROOT. \ze\content::templatePath($newFamilyName, $newName, true)
-		];
-	
-		foreach ($copies as $filePath => $newFilePath) {
-			if (file_exists($filePath)) {
-				if (!is_readable($filePath)
-				 || file_exists($newFilePath)
-				 || !is_writable(dirname($newFilePath))) {
-					return false;
-				}
-			}
-		}
-	
-		foreach ($copies as $filePath => $newFilePath) {
-			if (file_exists($filePath)) {
-				copy($filePath, $newFilePath);
-			}
-		}
-	
-		return true;
-	}
-
-
-
-
-
-
 
 	//Check how many items use a Layout or a Template Family
 	//Formerly "checkTemplateUsage()"
-	public static function usage($layoutId, $templateFamily = false, $publishedOnly = false, $skinId = false, $countItems = true) {
+	public static function usage($layoutId, $publishedOnly = false, $skinId = false, $countItems = true) {
 		
 		if ($countItems) {
 			$sql = "
@@ -569,8 +427,6 @@ class layoutAdm {
 			  AND v.version = c.visitor_version
 			INNER JOIN ". DB_PREFIX. "layouts AS t
 			   ON t.layout_id = v.layout_id
-			INNER JOIN ". DB_PREFIX. "template_families AS f
-			   ON f.family_name = t.family_name
 			WHERE c.status IN ('published_with_draft', 'published')";
 	
 		} else {
@@ -578,18 +434,12 @@ class layoutAdm {
 			  AND v.version IN (c.admin_version, c.visitor_version)
 			INNER JOIN ". DB_PREFIX. "layouts AS t
 			   ON t.layout_id = v.layout_id
-			INNER JOIN ". DB_PREFIX. "template_families AS f
-			   ON f.family_name = t.family_name
 			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published')";
 		}
 	
-		if ($templateFamily) {
-			$sql .= "
-			  AND t.family_name = '". \ze\escape::sql($templateFamily). "'";
-		} else {
-			$sql .= "
-			  AND v.layout_id = ". (int) $layoutId;
-		}
+		
+		$sql .= "
+			AND v.layout_id = ". (int) $layoutId;
 	
 		if ($skinId) {
 			$sql .= "
@@ -606,25 +456,22 @@ class layoutAdm {
 
 	//Work out a slot to put this Plugin into, favouring empty "Main" slots. Default to Main_3.
 	//Formerly "getTemplateMainSlot()"
-	public static function mainSlotByName($templateFamilyName, $templateFileBaseName, $guess1 = 'Main_3', $guess2 = 'Main') {
+	public static function mainSlotByName($layoutId, $guess1 = 'Main_3', $guess2 = 'Main') {
 		$sql = "
-			SELECT tsl.slot_name
-			FROM ". DB_PREFIX. "template_slot_link AS tsl
+			SELECT lsl.slot_name
+			FROM ". DB_PREFIX. "layout_slot_link AS lsl
 			LEFT JOIN ". DB_PREFIX. "layouts AS t
-			   ON tsl.family_name = t.family_name
-			  AND tsl.file_base_name = t.file_base_name
+			   ON lsl.layout_id = t.layout_id
 			LEFT JOIN ". DB_PREFIX. "plugin_layout_link AS pitl
-			   ON tsl.family_name = pitl.family_name
-			  AND t.layout_id = pitl.layout_id
-			  AND tsl.slot_name = pitl.slot_name
-			WHERE tsl.family_name = '". \ze\escape::sql($templateFamilyName). "'
-			  AND tsl.file_base_name = '". \ze\escape::sql($templateFileBaseName). "'
-			GROUP BY tsl.slot_name
+			   ON t.layout_id = pitl.layout_id
+			  AND lsl.slot_name = pitl.slot_name
+			WHERE lsl.layout_id = '". \ze\escape::sql($layoutId). "'
+			GROUP BY lsl.slot_name
 			ORDER BY
 				pitl.slot_name IS NULL DESC,
-				tsl.slot_name LIKE '". \ze\escape::like($guess1). "%' DESC,
-				tsl.slot_name LIKE '". \ze\escape::like($guess2). "%' DESC,
-				tsl.slot_name
+				lsl.slot_name LIKE '". \ze\escape::like($guess1). "%' DESC,
+				lsl.slot_name LIKE '". \ze\escape::like($guess2). "%' DESC,
+				lsl.slot_name
 			LIMIT 1";
 	
 		if (($result = \ze\sql::select($sql)) && ($row = \ze\sql::fetchAssoc($result)) && ($row['slot_name'])) {
@@ -643,24 +490,23 @@ class layoutAdm {
 		}
 	
 		$sql = "
-			SELECT tsl.slot_name
+			SELECT lsl.slot_name
 			FROM ". DB_PREFIX. "layouts AS t
-			INNER JOIN ". DB_PREFIX. "template_slot_link AS tsl
-			   ON tsl.family_name = t.family_name
-			  AND tsl.file_base_name = t.file_base_name
+			INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+			   ON lsl.layout_id = t.layout_id
 			INNER JOIN ". DB_PREFIX. "plugin_layout_link AS pitl
 			   ON pitl.layout_id = t.layout_id
-			  AND pitl.slot_name = tsl.slot_name
+			  AND pitl.slot_name = lsl.slot_name
 			WHERE pitl.layout_id = ". (int) $layoutId. "
 			  AND pitl.module_id = ". (int) $moduleId. "
 			  AND pitl.instance_id = 0
-			GROUP BY tsl.slot_name
+			GROUP BY lsl.slot_name
 			ORDER BY
 				pitl.slot_name IS NOT NULL DESC,
-				tsl.slot_name IS NOT NULL DESC,
-				tsl.slot_name LIKE '%Main%' DESC,
-				tsl.ord,
-				tsl.slot_name";
+				lsl.slot_name IS NOT NULL DESC,
+				lsl.slot_name LIKE '%Main%' DESC,
+				lsl.ord,
+				lsl.slot_name";
 	
 		if ($limitToOne) {
 			$sql .= "
@@ -690,12 +536,6 @@ class layoutAdm {
 	public static function usageOrganizerLink($layoutId) {
 		return \ze\link::absolute(). 'zenario/admin/organizer.php#'.
 				'zenario__layouts/panels/layouts/view_content//'. (int) $layoutId.  '//';
-	}
-
-	//Formerly "getTemplateFamilyUsageStorekeeperDeepLink()"
-	public static function familyUsageOrganizerLink($templateFamily) {
-		return \ze\link::absolute(). 'zenario/admin/organizer.php#'.
-				'zenario__layouts/panels/template_families/view_content//'. \ze\ring::encodeIdForOrganizer($templateFamily).  '//';
 	}
 	
 	//Function to display content item attached with particular slotname

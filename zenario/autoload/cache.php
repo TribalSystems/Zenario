@@ -121,7 +121,17 @@ class cache {
 		}
 	
 		$fullPath = CMS_ROOT. $path;
-	
+		
+		//Catch the case where a sysadmin as deleted a subdirectory.
+		//Just try to restore that directory
+		if (!is_dir($fullPath) && !file_exists($fullPath)) {
+			\ze::ignoreErrors();
+				if (@mkdir($fullPath, 0777)) {
+					@chmod($fullPath, 0777);
+				}
+			\ze::noteErrors();
+		}
+		
 		if (!is_dir($fullPath) || !is_writable($fullPath)) {
 			return false;
 	

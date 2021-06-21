@@ -3,7 +3,6 @@
 //require '../../adminheader.inc.php';
 
 require '../../visitorheader.inc.php';
-require_once CMS_ROOT. 'zenario/libs/manually_maintained/lgpl/wideimage/WideImage.php';
 
 
 $fluid = (int) ($_GET['fluid'] ?? false);
@@ -39,7 +38,7 @@ function imageWithBars(&$img, $gCols, $gColWidth, $gGutter, $gGutterLeftEdge, $r
 	}
 }
 
-$img = WideImage::createTrueColorImage($width, $minHeight);
+$img = WideImage\WideImage::createTrueColorImage($width, $minHeight);
 imagefilledrectangle($img->getHandle(), 0, 0, $width, $minHeight, $img->getExactColorAlpha(0xfc, 0xac, 0xac, 0x40));
 
 if ($fluid) {

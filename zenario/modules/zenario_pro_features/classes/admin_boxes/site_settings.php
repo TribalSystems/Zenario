@@ -38,23 +38,23 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 			}
 		}
 		
+		$userIP = ze\user::ip();
+		$selectedIP = ze::setting('limit_caching_debug_info_by_ip');
+		$effectiveIP = $selectedIP ?: $userIP;
+		$mrg = ['ip' => $effectiveIP];
 		
-		$mrg = ['ip' => ze::setting('limit_caching_debug_info_by_ip') ?: ze\user::ip()];
+		if (!$selectedIP) {
+			$fields['caching/caching_debug_info']['note_below'] = 
+				ze\admin::phrase('Debug info will only be shown to your current IP address ([[ip]]).', $mrg);
 		
-		if (!$values['caching/limit_caching_debug_info_by_ip'] = (bool) ze::setting('limit_caching_debug_info_by_ip')) {
-			$fields['caching/limit_caching_debug_info_by_ip']['label'] = 
-				ze\admin::phrase('Only show debug info to my current IP address ([[ip]]).', $mrg);
-		
-		} elseif (ze::setting('limit_caching_debug_info_by_ip') == ze\user::ip()) {
-			$fields['caching/limit_caching_debug_info_by_ip']['label'] = 
-				ze\admin::phrase('Only show debug info to my current IP address ([[ip]]).', $mrg);
+		} elseif ($effectiveIP == $userIP) {
+			$fields['caching/caching_debug_info']['note_below'] = 
+				ze\admin::phrase('Debug info is only being shown to your current IP address ([[ip]]).', $mrg);
 		
 		} else {
-			$fields['caching/limit_caching_debug_info_by_ip']['label'] = 
-				ze\admin::phrase('Only show debug info to the IP address ([[ip]]).', $mrg);
+			$fields['caching/caching_debug_info']['note_below'] = 
+				ze\admin::phrase('Debug info is only being shown to the IP address that this setting was turned on from ([[ip]]).', $mrg);
 		}
-		
-		//var_dump(ze::setting('limit_caching_debug_info_by_ip'), $values['caching/limit_caching_debug_info_by_ip']);
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -125,7 +125,6 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 			
 			if ($values['caching/caching_enabled']) {
 				if (!$values['caching/cache_web_pages']
-				 && !$values['caching/cache_plugins']
 				 && !$values['caching/cache_css_js_wrappers']
 				 && !$values['caching/cache_ajax']) {
 					$box['tabs']['caching']['errors'][] =
@@ -137,18 +136,32 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
 		//Changes to the cache site settings..?
-		if (ze\priv::check('_PRIV_EDIT_SITE_SETTING') && ze\ring::engToBoolean($box['tabs']['caching']['edit_mode']['on'] ?? false)) {
+		if (ze\priv::check('_PRIV_EDIT_SITE_SETTING')
+		 && ze\ring::engToBoolean($box['tabs']['caching']['edit_mode']['on'] ?? false)) {
+			
 			//Empty the cache if so
 			ze\pageCache::clearOnShutdown($clearAll = true);
 			
-			// Save the current users IP address if option checked
-			if (!ze::setting('limit_caching_debug_info_by_ip') && $values['caching/limit_caching_debug_info_by_ip']) {
-				ze\site::setSetting('limit_caching_debug_info_by_ip', ze\user::ip());
+			//If the caching_debug_info site setting is enabled, make sure that the
+			//limit_caching_debug_info_by_ip setting is always checked, and set it to the
+			//current IP if it is not currently set to something.
+			if ($values['caching/caching_debug_info']) {
+				$userIP = ze\user::ip();
+				$selectedIP = ze::setting('limit_caching_debug_info_by_ip');
+				$effectiveIP = $selectedIP ?: $userIP;
+				
+				ze\site::setSetting('limit_caching_debug_info_by_ip', $effectiveIP);
 			
-			} elseif (ze::setting('limit_caching_debug_info_by_ip') && !$values['caching/limit_caching_debug_info_by_ip']) {
+			//If the caching_debug_info site setting is turned off, clear the value of the
+			//limit_caching_debug_info_by_ip setting.
+			} else {
 				ze\site::setSetting('limit_caching_debug_info_by_ip', '');
 			}
+			
+			//Note that the caching has the option to show debug info to everyone,
+			//however we currently do not enable this option to be set.
 		}
 	}
 }

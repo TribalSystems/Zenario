@@ -28,22 +28,304 @@
 
 namespace ze;
 
+
+
+
+class phiToken {
+	
+	public $type;
+	public $value;
+	public $line;
+	public $lSpace = true;
+	public $rSpace = true;
+	
+	public $numB = 0;
+	public $numC = 0;
+	public $numS = 0;
+	public $isOpen = false;
+	public $isClose = false;
+	public $inTuple = false;
+	public $ignore = false;
+	public $breaker = false;
+	
+	public $space = '';
+	public $pre = '';
+	public $suf = '';
+	public $brack = '';
+	public $outputValue = true;
+	
+	
+	public function __construct($gotToken, $lastLine = 0, $isFirstEntry = false, $overideLineNumber = false) {
+		
+		//Check if the token_get_all() function detected what type of token this is
+		if (is_array($gotToken)) {
+			$this->type = token_name($gotToken[0]);
+			$this->value = $gotToken[1];
+			
+			if ($overideLineNumber) {
+				$this->line = $lastLine;
+			} else {
+				$this->line = $gotToken[2];
+			}
+			
+			//The token_get_all() function detects specific operators, but for the most part
+			//we only need them to be a generic "OPERATOR" type.
+			switch ($this->type) {
+				case 'T_COALESCE':					#	??	comparison operators (available since PHP 7.0.0)
+				case 'T_IS_EQUAL':					#	==	comparison operators
+				case 'T_IS_GREATER_OR_EQUAL':		#	>=	comparison operators
+				case 'T_IS_IDENTICAL':				#	===	comparison operators
+				case 'T_IS_NOT_EQUAL':				#	!= or <>	comparison operators
+				case 'T_IS_NOT_IDENTICAL':			#	!==	comparison operators
+				case 'T_IS_SMALLER_OR_EQUAL':		#	<=	comparison operators
+				case 'T_LOGICAL_AND':				#	and	logical operators
+				case 'T_LOGICAL_OR':				#	or	logical operators
+				case 'T_POW':						#	**	arithmetic operators (available since PHP 5.6.0)
+					$this->type = 'OPERATOR';
+					break;
+				
+				//Some operators need to be translated for twig
+				case 'T_BOOLEAN_AND':				#	&&	logical operators
+					$this->type = 'OPERATOR';
+					$this->value = 'and';
+					break;
+				case 'T_BOOLEAN_OR':				#	||	logical operators
+					$this->type = 'OPERATOR';
+					$this->value = 'or';
+					break;
+				case 'T_LOGICAL_XOR':				#	xor	logical operators
+					$this->type = 'OPERATOR';
+					$this->value = 'b-xor';
+					break;
+				
+				case 'T_DNUMBER':					#	0.12, etc.	floating point numbers
+					//Catch missing zeros before decimal places as Twig doesn't like these
+					$matches = [];
+					if (preg_match('@^\.\d+$@', $this->value, $matches)) {
+						$this->value = '0'. $this->value;
+					}
+					
+					//Also convert numbers in exponent form as Twig doesn't support them either
+					$matches = [];
+					if (preg_match('@^(\d*\.?\d*)e([\+\-]?)(\d+)$@i', $this->value, $matches)) {
+						if ($matches[1][0] == '.') {
+							$matches[1] = '0'. $matches[1];
+						}
+				
+						$this->value = '('. $matches[1]. ' * (10 ** '. ($matches[2] === '-'? '-' : ''). $matches[3]. '))';
+					}
+					break;
+					
+				case 'T_LNUMBER':					#	123, 012, 0x1ac, etc.	integers
+					//Convert hex to decimal as Twig doesn't support hex
+					$matches = [];
+					if (preg_match('@^0x([0-9a-f]+)$@i', $this->value, $matches)) {
+						$this->value = (string) hexdec($matches[1]);
+					}
+					break;
+				
+				//Just treat a foreach as a for
+				case 'T_FOREACH':					#	foreach
+					$this->type = 'T_FOR';
+					$this->value = 'for';
+					break;
+				
+				//Also catch some misclassified things
+				case 'T_PRINT':
+					//"print" is a language construct in PHP, but is just a normal function in Phi
+					$this->type = 'T_STRING';
+					break;
+				case 'T_STRING':					#	parent, self, etc.	identifiers, e.g. keywords like parent and self, function names, class names and more are matched. See also T_CONSTANT_ENCAPSED_STRING.
+					switch (strtolower($this->value)) {
+						case 'not':
+							$this->type = 'OPERATOR';
+							$this->value = 'not';
+							break;
+					}
+			}
+
+		//Some things the token_get_all() function doesn't detect as specific types.
+		//Catch those here and assign types as needed.
+		} else {
+			$this->value = $gotToken;
+			$this->line = $lastLine;
+			
+			switch ($gotToken) {
+				case ';':
+					$this->lSpace = false;
+					$this->type = 'SEMICOLON';
+					break;
+				case '.':
+					$this->lSpace = false;
+					$this->rSpace = false;
+				case '-':
+				case '/':
+				case '*':
+				case '+':
+				case '~':
+				case '|':
+					$this->type = 'OPERATOR';
+					break;
+				case '!':
+					//Twig doesn't like using !s for nots. Write out the word specifically
+					$this->type = 'OPERATOR';
+					$this->value = 'not';
+					break;
+				case '^':
+					//Convert the ^ operator to **
+					$this->type = 'OPERATOR';
+					$this->value = '**';
+					break;
+				case '.':
+				case '(':
+				case '[':
+					$this->rSpace = false;
+					$this->lSpace = false;
+					$this->type = 'SYNTAX';
+					break;
+				case '}':
+				case ')':
+				case ']':
+				case ',':
+					$this->lSpace = false;
+					$this->type = 'SYNTAX';
+					break;
+				case '{':
+					$this->rSpace = false;
+					$this->type = 'SYNTAX';
+					break;
+				case '=':
+					$this->type = 'ASSIGN';
+					break;
+				default:
+					$this->type = 'SYNTAX';
+			}
+		}
+			
+			
+		//Only pay attention to certain types of token
+		switch ($this->type) {
+			//Handle
+			case 'ASSIGN':
+			case 'SYNTAX':
+			case 'OPERATOR':
+			case 'T_CONSTANT_ENCAPSED_STRING':	#	"foo" or 'bar'	string syntax
+			case 'T_DNUMBER':					#	0.12, etc.	floating point numbers
+			case 'T_LNUMBER':					#	123, 012, 0x1ac, etc.	integers
+			case 'T_STRING':					#	parent, self, etc.	identifiers, e.g. keywords like parent and self, function names, class names and more are matched. See also T_CONSTANT_ENCAPSED_STRING.
+				break;
+			
+			case 'T_BREAK':						#	break	break
+			case 'T_CONTINUE':					#	continue	continue
+			case 'T_ELSE':						#	else	else
+			case 'T_ELSEIF':					#	elseif	elseif
+			case 'T_FOR':						#	for	for
+			case 'T_IF':						#	if	if
+				//These things should trigger a statement break.
+				$this->breaker = true;
+				break;
+			
+			//Ignore any semicolons; the new version of Phi doesn't use or read them
+			case 'SEMICOLON':
+			
+			//Ignore
+			case 'T_COMMENT':					#	// or #, and /* */	comments
+			case 'T_DOC_COMMENT':				#	/** */	PHPDoc style comments
+			case 'T_WHITESPACE':				#	\t \r\n	 
+				$this->ignore = true;
+				break;
+			
+			//Ignore on the first entry only
+			case 'T_OPEN_TAG':					#	<?php, <? or <%	escaping from HTML
+				if ($isFirstEntry) {
+					$this->ignore = true;
+					break;
+				}
+			
+			//Allow a few operators. Twig doesn't support these so we'll need to rewrite them later.
+			case 'T_DEC':						#	--	incrementing/decrementing operators
+			case 'T_DIV_EQUAL':					#	/=	assignment operators
+			case 'T_INC':						#	++	incrementing/decrementing operators
+			case 'T_MINUS_EQUAL':				#	-=	assignment operators
+			case 'T_MOD_EQUAL':					#	%=	assignment operators
+			case 'T_MUL_EQUAL':					#	*=	assignment operators
+			case 'T_PLUS_EQUAL':				#	+=	assignment operators
+				break;
+			
+			//Maybe add at some point, but for now raise an error
+			case 'T_DEFAULT':					#	default	switch
+			case 'T_CONCAT_EQUAL':				#	.=	assignment operators
+			case 'T_OR_EQUAL':					#	|=	assignment operators
+			case 'T_AND_EQUAL':					#	&=	assignment operators
+			case 'T_POW_EQUAL':					#	**=	assignment operators (available since PHP 5.6.0)
+			case 'T_SL':						#	<<	bitwise operators
+			case 'T_SL_EQUAL':					#	<<=	assignment operators
+			case 'T_SPACESHIP':					#	<=>	comparison operators (available since PHP 7.0.0)
+			case 'T_SR':						#	>>	bitwise operators
+			case 'T_SR_EQUAL':					#	>>=	assignment operators
+			case 'T_XOR_EQUAL':					#	^=	assignment operators
+			
+			//Anything else, raise an error
+			default:
+				throw new \Twig\Error\Error('Unimplemented token '. $this->type. ' ('. $this->value. ')', $this->line + 1, $source = null);
+		}
+	}
+	
+	public function __toString() {
+		return $this->space. $this->pre. ($this->outputValue? $this->value : ''). $this->brack. $this->suf;
+	}
+	
+	public function level() {
+		return $this->numB. ','. $this->numC. ','. $this->numS;
+	}
+	
+	public function midBlockLevel() {
+		return $this->numB. ','. $this->numS;
+	}
+	
+	public function isCurly() {
+		return $this->type == 'SYNTAX' && ($this->value == '{' || $this->value == '}');
+	}
+	
+	public function isClosingCurly() {
+		return $this->type == 'SYNTAX' && $this->value == '}';
+	}
+	
+	public function isStartOfBlock() {
+		switch ($this->type) {
+			case 'T_FOR':
+			case 'T_IF':
+			case 'T_ELSEIF':
+			case 'T_ELSE':
+				return true;
+		}
+		
+		return false;
+	}
+}
+
+
+
+
+
+
+
 class phiParser {
 	
 	
 	
 	
-	public static function runPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
-		$twigCode = self::phiToTwig($phiCode, $allowFunctions);
+	public static function runPhi($phiCode, &$outputs, $vars = []) {
+		$twigCode = self::phiToTwig($phiCode);
 		return \ze\phi::runTwig($twigCode, $outputs, $vars);
 	}
 	
-	public static function carefullyRunPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
-		$twigCode = self::phiToTwig($phiCode, $allowFunctions);
+	public static function carefullyRunPhi($phiCode, &$outputs, $vars = []) {
+		$twigCode = self::phiToTwig($phiCode);
 		return \ze\phi::carefullyRunTwig($twigCode, $outputs, $vars);
 	}
 	
-	public static function testPhi($phiCode, &$outputs, $vars = [], $allowFunctions = false) {
+	public static function testPhi($phiCode, &$outputs, $vars = []) {
 	
 		//Attempt to run the code
 		$error = false;
@@ -52,11 +334,11 @@ class phiParser {
 		
 		try {
 			\ze::$ers = [];
-			$twigCode = self::phiToTwig($phiCode, $allowFunctions);
+			$twigCode = self::phiToTwig($phiCode);
 			$result = \ze\phi::runTwig($twigCode, $outputs, $vars, true);
 	
 		//Handle any errors
-		} catch (\Twig_Error $e) {
+		} catch (\Twig\Error\Error $e) {
 		
 			//Get the basic error message
 			$message = $e->getRawMessage();
@@ -64,17 +346,25 @@ class phiParser {
 		
 			//Restore the line breaks and run the code again, to get the actual line number of the error
 			try {
-				$twigCode = self::phiToTwig($phiCode, $allowFunctions, $preserveLineBreaks = true);
+				$twigCode = self::phiToTwig($phiCode);
 				\ze\phi::runTwig($twigCode, $outputs, $vars, true);
-			} catch (\Twig_Error $er) {
+			} catch (\Twig\Error\Error $er) {
 				$i = $er->getTemplateLine();
 			}
 			
-			if (is_numeric($i) && isset(self::$lines[$i-1])) {
-				\ze::$ers[] = 'Error at line '. (self::$lines[$i-1]->lineNumber + 1). ', "'. self::$originalLines[self::$lines[$i-1]->lineNumber]. '": '. $message;
+			if (is_numeric($i)) {
+				\ze::$ers[] = 'Error at line '. ($i - 1). ', '. $message;
 			} else {
 				\ze::$ers[] = $message;
 			}
+			$error = true;
+	
+		//Twig misses some errors, so need to add some fallbacks, just so they don't cause the UI to break!
+		} catch (\DivisionByZeroError | \Exception $e) {
+		
+			//Get the basic error message
+			$message = $e->getMessage();
+			\ze::$ers[] = $message;
 			$error = true;
 		}
 	
@@ -83,721 +373,621 @@ class phiParser {
 	
 	
 	
-	public static function phiToTwig($phiCode, $allowFunctions = false, $preserveLineBreaks = false) {
+	//Use PHP's token_get_all() function to scan the input code and turn it into tokens
+	private static function scanTokens($phiCode, $overideLineNumber = false, $lineNumber = 0) {
+		$tokens = [];
+		$lastLine = 0;
+		$lastToken = null;
+		foreach (token_get_all('<?php '. $phiCode) as $i => $phpToken) {
+			$token = new \ze\phiToken($phpToken, $overideLineNumber? $lineNumber : $lastLine, $i == 0, $overideLineNumber);
+			$lastLine = $token->line;
+			
+			//Watch out for a bug where the "?:" operator does not get parsed properly.
+			//It gets recorded as two SYNTAX tokens.
+			//Convert the first to an OPERATOR token, and throw the second one away.
+			if ($lastToken
+			 && $lastToken->type == 'SYNTAX'
+			 && $lastToken->value == '?'
+			 && $token->type == 'SYNTAX'
+			 && $token->value == ':') {
+			
+				$lastToken->type = 'OPERATOR';
+				$lastToken->value = '?:';
+				$token->ignore = true;
+			}
+			
+			if (!$token->ignore) {
+				$tokens[] = $token;
+				$lastToken = $token;
+			}
+		}
+		
+		return $tokens;
+	}
+	
+	
+	
+	public static function phiToTwig($phiCode, $debug = false) {
 		
 		if (!function_exists('token_get_all')) {
-			throw new \Twig_Error('Tokenizer functions are not enabled in PHP, please enable tokenizer.so in your php.ini file.', $line = null, $source = null);
-		}
-		
-		//Clear any variables from last time
-		self::$lines = [];
-		self::$openControls = [];
-		self::$knownFunctions = [];
-		self::$allowFunctions = $allowFunctions;
-		self::$final = false;
-		
-		//Convert the code to an array of lines
-		self::$originalLines = preg_split('/\R/', $phiCode);
-
-
-		//Strip any comments out
-		if (strpos($phiCode, '#') !== false
-		 || strpos($phiCode, '//') !== false
-		 || strpos($phiCode, '/*') !== false) {
-	
-			//Add some dummy text at the start of each line to stop php_strip_whitespace() from removing line breaks
-			$phiCode = implode("\n". '_zPhiFlagNewLine_();', self::$originalLines);
-			
-			//Call php_strip_whitespace()
-			$tempfile = tempnam(sys_get_temp_dir(), 'cod');
-			file_put_contents($tempfile, '<?php '. $phiCode. '/**/');
-			$phiCode = substr(php_strip_whitespace($tempfile), 6);
-			unlink(($tempfile));
-			
-			//Remove the dummy text and convert back to an array of lines
-			self::$originalLines = explode('_zPhiFlagNewLine_();', $phiCode);
+			throw new \Twig\Error\Error('Tokenizer functions are not enabled in PHP, please enable tokenizer.so in your php.ini file.', $line = null, $source = null);
 		}
 		
 		
-		foreach (self::$originalLines as $i => $originalLines) {
-			
-
-			//tokenize the line
-			$tokens = token_get_all('<?php '. $originalLines);
-			array_shift($tokens);
-			$start = 0;
-			$curleyBracketsOpen = 0;
-			$statementStarted = false;
+		$scannedTokens = self::scanTokens($phiCode);
 		
-			//Strip out any of the meta-data that token_get_all() gave us, we're only interested in the string-value
-			foreach ($tokens as $ti => &$token) {
-				if (!is_string($token)) {
-					$token = $token[1];
+		//Look through the tokens that were just scanned
+		//Do some basic rewriting on the tokens we have to fix a few issues and add a few features
+		$tokens = [];
+		$skipNext = false;
+		foreach ($scannedTokens as $i => $token) {
+			if ($skipNext) {
+				$skipNext = false;
+			} else {
+				$nextToken = $scannedTokens[$i+1] ?? false;
+				$replacements = null;
+				$addOpenBracket = false;
+				
+				if ($nextToken) {
+					
+					//Add some basic support for operators like ++, +=, and so on.
+					//Note: This code only adds support for them when used on variables, not object properties.
+					//However, the old Phi Parser never supported these either, so this won't cause any issues with existing code
+					//being migrated from the old version.
+					if ($replacements === null) {
+						switch ($token->type. '/'. $nextToken->type) {
+							case 'T_STRING/T_DEC':
+								$replacements = $token->value. ' = '. $token->value. ' - 1';
+								break;
+							case 'T_DEC/T_STRING':
+								$replacements = $nextToken->value. ' = '. $nextToken->value. ' - 1';
+								break;
+							case 'T_STRING/T_INC':
+								$replacements = $token->value. ' = '. $token->value. ' + 1';
+								break;
+							case 'T_INC/T_STRING':
+								$replacements = $nextToken->value. ' = '. $nextToken->value. ' + 1';
+								break;
+							case 'T_STRING/T_MINUS_EQUAL':
+								$replacements = $token->value. ' = '. $token->value. ' -';
+								$addOpenBracket = true;
+								break;
+							case 'T_MINUS_EQUAL/T_STRING':
+								$replacements = $nextToken->value. ' = '. $nextToken->value. ' -';
+								$addOpenBracket = true;
+								break;
+							case 'T_STRING/T_PLUS_EQUAL':
+								$replacements = $token->value. ' = '. $token->value. ' +';
+								$addOpenBracket = true;
+								break;
+							case 'T_PLUS_EQUAL/T_STRING':
+								$replacements = $nextToken->value. ' = '. $nextToken->value. ' +';
+								$addOpenBracket = true;
+								break;
+							case 'T_STRING/T_DIV_EQUAL':
+								$replacements = $token->value. ' = '. $token->value. ' /';
+								$addOpenBracket = true;
+								break;
+							case 'T_DIV_EQUAL/T_STRING':
+								$replacements = $nextToken->value. ' = '. $nextToken->value. ' /';
+								$addOpenBracket = true;
+								break;
+							case 'T_STRING/T_MOD_EQUAL':
+								$replacements = $token->value. ' = '. $token->value. ' %';
+								$addOpenBracket = true;
+								break;
+							case 'T_MOD_EQUAL/T_STRING':
+								$replacements = $nextToken->value. ' = '. $nextToken->value. ' %';
+								$addOpenBracket = true;
+								break;
+							case 'T_STRING/T_MUL_EQUAL':
+								$replacements = $token->value. ' = '. $token->value. ' *';
+								$addOpenBracket = true;
+								break;
+							case 'T_MUL_EQUAL/T_STRING':
+								$replacements = $nextToken->value. ' = '. $nextToken->value. ' *';
+								$addOpenBracket = true;
+								break;
+							
+							//Catch the case where we have "else if" instead of "elseif".
+							//This parser doesn't handle "else if" as two tokens, so fix that by
+							//just turning the two tokens into an "elseif"
+							case 'T_ELSE/T_IF':
+								$replacements = 'elseif';
+								break;
+						}
+					}
+				
+				
+					//Watch out for a mis-parse when someone enters ".." in a for-loop.
+					//Annoyingly, the token_get_all() function does not correctly detect the two-dot ellipsis that
+					//Phi and Twig use in for loops.
+					//To work around this, we'll look through all of the tokens that were entered, watch out for two dots next to each other,
+					//convert the two dots in a colon, then re-scan that bit of code.
+					if ($replacements === null) {
+						if (substr($token->value, -1) === '.') {
+							if (substr($nextToken->value, 0, 1) === '.') {
+								$replacements = substr($token->value, 0, -1). ' : '. substr($nextToken->value, 1);
+					
+							} elseif (substr($nextToken->value, 0, 2) === '0.') {
+								$replacements = substr($token->value, 0, -1). ' : '. substr($nextToken->value, 2);
+							}
+						}
+					}
+				}
+				
+				if ($replacements !== null) {
+					foreach (self::scanTokens($replacements, true, $token->line) as $replacmentToken) {
+						$tokens[] = $replacmentToken;
+					}
+					
+					//Some of these will need a bracket around them to ensure the correct logic.
+					//But store this bracket as a string property on the token, rather than something we'll
+					//feed through the parser.
+					//We'll add an open bracket here, and add the closing bracket in the right place later in the logic
+					//when we know when the statement is supposed to end.
+					if ($addOpenBracket) {
+						$replacmentToken->brack = '(';
+					}
+					$skipNext = true;
+				
+				} else {
+					$tokens[] = $token;
 				}
 			}
-			
-			//Attempt to split the line up into multiple lines if semi-colons or curlies that are not part of statements are used
-			foreach ($tokens as $ti => &$token) {
-				
-				switch (trim($token)) {
-					case '{':
-						if ($statementStarted) {
-							//If we're in a statement, keep track of the number of curlies open
-							++$curleyBracketsOpen;
-							break;
-						}
-					
+		}
+		
+		//echo '<textarea>', htmlspecialchars(print_r($tokens, true)), '</textarea>';		
+		
+		//Loop through the tokens, setting how deep they are inside various brackets.
+		//The bracket levels will be used to connect things together later.
+		$numB = 0;
+		$numC = 0;
+		$numS = 0;
+		foreach ($tokens as $i => $token) {
+			if ($token->type == 'SYNTAX') {
+				switch ($token->value) {
+					case ')':
+						$numB = max(0, $numB - 1);
+						$token->isClose = true;
+						break;
 					case '}':
-						if ($statementStarted && $curleyBracketsOpen > 0) {
-							//Keep track of how many curlies close
-							//They're still part of the statement while they match open curlies that were also part of the statement
-							--$curleyBracketsOpen;
-							break;
-						}
-					
-					case ';':
-						//Look for semi-colons, and curlies that are not part of statements, and add an artificial line-break if we see them
-						new \ze\phiParser($i, implode('', array_slice($tokens, $start, $ti - $start)));
-						$start = $ti;
-						$statementStarted = false;
+						$numC = max(0, $numC - 1);
+						$token->isClose = true;
+					case ']':
+						$numS = max(0, $numS - 1);
+						$token->isClose = true;
+						break;
+				}
+			}
+			$token->numB = $numB;
+			$token->numC = $numC;
+			$token->numS = $numS;
+			if ($token->type == 'SYNTAX') {
+				switch ($token->value) {
+					case '(':
+						++$numB;
+						$token->isOpen = true;
+						break;
+					case '{':
+						++$numC;
+						$token->isOpen = true;
+						break;
+					case '[':
+						++$numS;
+						$token->isOpen = true;
+						break;
+				}
+			}
+		}
+		
+		
+		
+		//Attempt to group the tokens into statements.
+		//For example, "a = 1 b = 2" should be parsed as two statements, "a = 1" and "b = 2".
+		$statements = [];
+		$statement = [];
+		$statementStart = 0;
+		$settingArrayKey = false;
+		foreach ($tokens as $i => $token) {
+			$prevToken = $tokens[$i-1] ?? false;
+			$nextToken = $tokens[$i+1] ?? false;
+			
+			//Check if this token is the start of a new statement
+			$isNewStatement = !$prevToken || empty($statement);
+			
+			//Keep adding tokens into each statement
+			$statement[] = $token;
+			
+			//Try to catch the start and end of statements
+			$isEndOfStatement = false;
+			
+			//The code at the end will always be the end of a statement by definition
+			if (!$nextToken) {
+				$isEndOfStatement = true;
+			}
+			
+			//Curly brackets being used to indicate code blocks should not be wrapped onto
+			//another statement, and kept separate
+			if ($isNewStatement && $token->isCurly()) {
+				$isEndOfStatement = true;
+			}
+			
+			//Tokens like if, for, else, continue and break should trigger a break in statements
+			if ($nextToken && $nextToken->breaker) {
+				$isEndOfStatement = true;
+			}
+			
+			//Some rules for starting a new statement.
+			if (!$isNewStatement
+			 && !$isEndOfStatement
+			 && $prevToken
+			 && $nextToken
+				//Statements must be at least 3 tokens long (except for a couple of exceptions as noted above and below).
+			 && $statementStart <= $i - 2
+				//Statements must start with a word-character, so we can't end a statement until we see one coming up next.
+				//One exception: statements should also be ended if a curly bracket is coming up.
+			 && ($nextToken->type == 'T_STRING' || $nextToken->isCurly())
+				//We can't break a statement on an operator.
+			 && $token->type != 'ASSIGN'
+			 && $token->type != 'OPERATOR'
+				//Don't end a statement if we're just about to open or close brackets.
+				//For example "a = b(c + d)" should not be parsed as "a = b" and "(c + d)".
+				//Statements can only end if this bit of the statement is on the same level as the next bit.
+			 && ($token->level() == $nextToken->level() || ($nextToken->isCurly() && $token->midBlockLevel() == $nextToken->midBlockLevel()))
+				//If some brackets are currently open, we can't end a statement.
+				//For example "a = b(c + d)" should not be parsed as "a = b(c".
+				//Only allow a statement to finish when the bracket level is equal to whatever
+				//the level was at the start of the statement for this code block.
+			 && $token->level() == $statement[0]->level()
+			 && ($nextToken->level() == $statement[0]->level() || ($nextToken->isCurly() && $token->midBlockLevel() == $nextToken->midBlockLevel()))
+			 ) {
+				$isEndOfStatement = true;
+			}
+		
+			if ($isNewStatement) {
+				//Add the Twig prefix needed for this statement, and handle some special logic for if, elseif and fors.
+				switch ($token->type) {
+					case 'T_FOR':
+						$token->pre .= '{% for ';
+						$token->outputValue = false;
+						break;
+					case 'T_IF':
+						$token->pre .= '{% if ';
+						$token->outputValue = false;
+						break;
+					case 'T_ELSEIF':
+						$token->pre .= '{% elseif ';
+						$token->outputValue = false;
+						break;
+					case 'T_ELSE':
+						$token->pre .= '{% else ';
+						$token->outputValue = false;
+						$isEndOfStatement = true;
+						break;
+			
+					//Add continue and break statements
+					case 'T_BREAK':
+						$token->pre .= '{% break ';
+						$token->outputValue = false;
+						$isEndOfStatement = true;
+						break;
+					case 'T_CONTINUE':
+						$token->pre .= '{% continue ';
+						$token->outputValue = false;
+						$isEndOfStatement = true;
 						break;
 					
-					//Ignore if/else/for loops should not be flagged as the start of a statement
-					case '':
-					case 'if':
-					case 'elseif':
-					case 'else':
-					case 'for':
-						break;
-					
-					//Look for things that are not line wrappers and flag that we've reached a statement
 					default:
-						$statementStarted = true;
-				}
-			}
-			
-			$lastBit = implode('', array_slice($tokens, $start));
-			if (trim($lastBit) != '') {
-				new \ze\phiParser($i, $lastBit);
-			}
-		}
-
-		
-
-		foreach (self::$lines as $i => &$line) {
-			$line->parseExpression();
-		}
-		foreach (self::$lines as $i => &$line) {
-			$line->parseExpression2();
-			self::$parsedLines[$i] = $line->parsed;
-		}
-		
-		return implode($preserveLineBreaks? "\n" : '', self::$parsedLines);
-	}
-	
-	
-	
-	
-	
-	private static $lines = [];
-	private static $originalLines = [];
-	private static $parsedLines = [];
-	private static $openControls = [];
-	private static $knownFunctions = [];
-	private static $allowFunctions = false;
-	private static $final = false;
-	
-	
-	
-	public $lineNumber = 0;
-	public $i = 0;
-	public $prev = false;
-	public $next = false;
-	
-	
-	public $isFun = false;
-	public $isFor = false;
-	public $isIf = false;
-	public $isElse = false;
-	public $isElseif = false;
-	public $isExpression = false;
-	public $isBreakOrContinue = false;
-	public $isEmpty = false;
-	
-	public $openedCurliesRight = 0;
-	public $closedCurliesRight = 0;
-	
-	public $parsed = '';
-	
-	public function isControlBlock() {
-		return $this->isIf || $this->isFor || $this->isFun;
-	}
-	public function controlName() {
-		return $this->isIf? 'if' : ($this->isFor? 'for' : ($this->isFun? 'macro' : ''));
-	}
-	
-	//new \ze\phiParser
-	protected function __construct($lineNumber, $line, $useBrackets = true) {
-		
-		$line = trim($line, $character_mask = " \t\n\r\0\x0B". ';');
-		$matches = [];
-		
-		
-		//Try to catch control statements with their next line of code immediately after them
-		if (preg_match('@^([\{\}\s]*for\s*\(.*?\s*in\s*.*?\s*\:\s*.*?\)|for\s*\(.*?\s*in\s*.*?\)|(if|elseif|else if)\s*\(.*?\)|else|continue|next|break|function\s*\w+\s*\(.*?\)|\w+\s*(=|\<-)\s*function\s*\(.*?\))(\s*[\{\}]+\s*[^\{\}\s\;]+.*)$@i', $line, $matches)) {
-			//Deal with this case by splitting the line into two lines
-			new \ze\phiParser($lineNumber, trim($matches[1]));
-			$line = trim($matches[4]);
-		}
-		
-		//Try to catch statements such as "x = y = 0"
-		if (preg_match('@^([\{\}\s]*)([\[\]"\'\.\w-]+)\s*(\=|\<\-)\s*([\[\]"\'\.\w-]+)\s*(\=|\<\-)(.*?)([\{\}\s]*)$@', $line, $matches)) {
-			//Split them into a two-line version of whatever we just had
-			new \ze\phiParser($lineNumber, ($useBrackets? '{' : ''). trim($matches[1]. $matches[4]. ' '. $matches[5]. $matches[6]), false);
-			$line = trim($matches[2]. ' '. $matches[3]. ' '. $matches[4]. $matches[7]). ($useBrackets? '}' : '');
-		}
-		
-		
-		$this->lineNumber = $lineNumber;
-		$this->i = $i = count(self::$lines);
-		
-		
-		//tokenize the line
-		$tokens = token_get_all('<?php '. $line);
-		array_shift($tokens);
-		$bracketsOpen = 0;
-		$curleyBracketsOpen = 0;
-		$functionOpenedAtBracket = [];
-		$statementStarted = false;
-		$fi = -1;
-		$li = count($tokens);
-		$code = '';
-		
-		//Strip out any of the meta-data that token_get_all() gave us, we're only interested in the string-value
-		foreach ($tokens as $ti => &$token) {
-			if (!is_string($token)) {
-				$token = $token[1];
-			}
-			
-			//Keep track of where the first and last non-empty tokens are on the line,
-			//that are not curley brackets or semi-colons
-			if (!\ze::in(trim($token), '', '{', '}', ';')) {
-				$li = $ti;
-				
-				if ($fi === -1) {
-					$fi = $ti;
-				}
-			}
-			
-			//Watch out for people trying to access _self or the _zPhi..._ functions
-			if ($token == '_self'
-			 || preg_match('@_zPhi\w+_@i', $token)) {
-				self::$lines[$i] = &$this;
-				throw new \Twig_Error('Reserved word "'. $token. '" was used.', $lineNumber = null, $source = null);
-					//N.b. the $lineNumber of the error doesn't seem to be working properly here, it's often wrong or missing,
-					//so I've removed it to not show something with the wrong value
-			
-			//Convert hex to decimal as Twig doesn't support hex
-			} elseif (preg_match('@^0x([0-9a-f]+)$@i', $token, $matches)) {
-				$token = (string) hexdec($matches[1]);
-			
-			//Catch missing zeros before decimal places as Twig doesn't like these
-			} elseif (preg_match('@^\.\d+$@', $token, $matches)) {
-				if (!isset($tokens[$ti-1]) || trim($tokens[$ti-1]) === '') {
-					$token = '0'. $token;
-				}
-			
-			//Also convert numbers in exponent form as Twig doesn't support them either
-			} elseif (preg_match('@^(\d*\.?\d*)e([\+\-]?)(\d+)$@i', $token, $matches)) {
-				if ($matches[1][0] == '.') {
-					$matches[1] = '0'. $matches[1];
-				}
-				
-				$token = '('. $matches[1]. ' * (10 ** '. ($matches[2] === '-'? '-' : ''). $matches[3]. '))';
-			}
-		}
-		
-		//loop through each token, checking it
-		foreach ($tokens as $ti => &$token) {
-			
-			$nextToken = false;
-			$nextNextToken = false;
-			$nextNonEmptyToken = false;
-			if (isset($tokens[$ti+1])) {
-				$nextToken = $tokens[$ti+1];
-			}
-			if (isset($tokens[$ti+2])) {
-				$nextNextToken = $tokens[$ti+2];
-			}
-			if ($nextToken !== false
-			 && trim($nextToken) !== '') {
-				$nextNonEmptyToken = $nextToken;
-			} else {
-				$nextNonEmptyToken = $nextNextToken;
-			}
-			
-			//Catch the case where someone copies something like 'array[1, 2, 3]' or 'object{"a": "b"}'
-			//from the debug window.
-			//Remove the label at the start to make this a valid input
-			if (($token == 'array' && $nextNonEmptyToken == '[')
-			 || ($token == 'object' && $nextNonEmptyToken == '{')) {
-				continue;
-			}
-			
-			//As soon as we see something that's not a line wrapper, flag that we're started a statement
-			if (!\ze::in(trim($token), '', '{', '}', ';')) {
-				$statementStarted = true;
-			}
-			
-			switch ($token) {
-				case 'block':
-				case 'constant':
-				case 'include':
-				case 'parent':
-				case 'source':
-				case 'template_from_string':
-					if ($nextNonEmptyToken == '(') {
-						self::$lines[$i] = &$this;
-						throw new \Twig_Error('Reserved function "'. $token. '" was used.', $lineNumber = 0, $source = null);
-							//N.b. the $lineNumber of the error doesn't seem to be working properly here, it's often wrong or missing,
-							//so I've removed it to not show something with the wrong value
-					}
-					break;
-					
-				case '=':
-					//$statementStarted = true;
-					break;
-
-				case '<':
-					//if ($nextToken == '-') {
-					//	$statementStarted = true;
-					//}
-					break;
-
-				//Convert && to and
-				case '&&':
-					$token = 'and';
-					break;
-
-				//Convert || to not
-				case '||':
-					$token = 'or';
-					break;
-
-				//Convert ! to not
-				case '!':
-					$token = 'not ';
-					break;
-
-				//Convert xor to b-xor
-				case 'xor':
-					$token = 'b-xor ';
-					break;
-
-				//Convert %% to %
-				case '%':
-					if ($nextToken == '%') {
-						$token = '';
-					}
-					break;
-
-				//Convert ^ to **
-				case '^':
-					$token = '**';
-					break;
-				
-				//If we see curley brackets after an assignment, e.g. something like "a = {b: 'c'}", that's an object definition,
-				//and we'll need to make sure we don't remove those.
-				//Count the number of curlies that are currently open
-				case '{':
-					if ($statementStarted) {
-						++$curleyBracketsOpen;
-						break;
-					}
-
-				case '}':
-					if ($statementStarted && $curleyBracketsOpen > 0) {
-						//Add some non-whitespace after object definitions to ensure we don't remove their closing curley bracket
-						$token .= '_zPhiFlagCurleyToKeep_';
-						--$curleyBracketsOpen;
-						break;
-					}
-				
-				case ';':
-					//Excluding for object definitions above, watch out for "{"s, "}"s and ";"s in the middle of a line
-					if ($fi != -1
-					 && $fi < $ti
-					 && 	  $ti < $li
-					) {
-						throw new \Twig_Error('Multiple statements found on the same line.', $i + 1, $source = null);
-					}
-					break;
-
-				//count the number of brackets that are currently open
-				case '(':
-					++$bracketsOpen;
-					break;
-
-				case ')':
-					--$bracketsOpen;
-				
-					//If we see a custom function being closed, add a second closing bracket to account for it being wrapped in a call to _zPhiGetRV_()
-					if (isset($functionOpenedAtBracket[$bracketsOpen])) {
-						$code .= ')';
-						unset($functionOpenedAtBracket[$bracketsOpen]);
-					}
-					break;
-				
-				default:
-					if ($nextNonEmptyToken == '(') {
-						if ($token == 'return' || $token == 'exit') {
-							$functionOpenedAtBracket[$bracketsOpen] = true;
-							$token = '_zPhiR_(_zPhiRV_';
+						if ($token->isCurly()) {
+							//Don't output curly brackets, they're npot valid Twig code.
+							//We'll need to convert them into something such as "{% endfor %}"
+							// or "{% endif %}" a bit later.
+							$token->outputValue = false;
 						
-						} elseif (!empty(self::$knownFunctions[$token])) {
-							$functionOpenedAtBracket[$bracketsOpen] = true;
-							$code .= '_zPhiGetRV_(_self.';
+						} else {
+							//If this looks like a function call, e.g. to setValue(), then use the "do" command in Twig.
+							//Otherwise assume it's a variable assignment and use "set".
+							if ($nextToken
+							 && $nextToken->type == 'SYNTAX'
+							 && $nextToken->value == '(') {
+			
+								$token->pre .= '{% do ';
+							} else {
+								$token->pre .= '{% set ';
+							}
 						}
-					}
-			}
-
-			$code .= $token;
-		}
-
-		$line = $code;
-		
-		
-		
-		
-		//Look for curley brackets opened or closed at the start or end of this line
-		$openedCurliesLeft =
-		$closedCurliesLeft =
-		$openedCurliesRight =
-		$closedCurliesRight = 0;
-		
-		while (preg_match('@^([\{\}])\s*(.*?)$@i', $line, $matches)) {
-			if ($matches[1] == '{') {
-				++$openedCurliesLeft;
-			} else {
-				++$closedCurliesLeft;
-			}
-			
-			$line = $matches[2];
-		}
-		
-		while (preg_match('@^(.*?)\s*([\{\}])$@i', $line, $matches)) {
-			$line = $matches[1];
-			
-			if ($matches[2] == '{') {
-				++$openedCurliesRight;
-			} else {
-				++$closedCurliesRight;
-			}
-		}
-		
-		//Remove the _zPhiFlagCurleyToKeep_ flag if it was set
-		$line = str_replace('_zPhiFlagCurleyToKeep_', '', $line);
-		
-		
-		if ($line == '') {
-			//empty lines
-			$this->isEmpty = true;
-		
-		//Examples of for-loops in Twig:
-			//{% for i in 0..10 %}
-			//{% for user in users %}
-			//{% for key, user in users %}
-		
-		//Look for for loops. Try to accept both Twig and PHP formats of loop
-		} elseif (preg_match('@^for\s*\((.*?)\s+in\s+(.*?)\s*\:\s*(.*?)\)$@i', $line, $matches)) {
-			$this->isFor = true;
-			$line = '{% for '. $matches[1]. ' in '. $matches[2]. '..'. $matches[3]. ' %}';
-	
-		} elseif (preg_match('@^for\s*\((.*?)\s+in\s+(.*?)\)$@i', $line, $matches)) {
-			$this->isFor = true;
-			$line = '{% for '. $matches[1]. ' in '. $matches[2]. ' %}';
-	
-		} elseif (preg_match('@^foreach\s*\((.*?)\s+as\s+(.*?)\s*=>\s*(.*?)\)$@i', $line, $matches)) {
-			$this->isFor = true;
-			$line = '{% for '. $matches[2]. ', '. $matches[3]. ' in '. $matches[1]. ' %}';
-	
-		} elseif (preg_match('@^foreach\s*\((.*?)\s+as\s+(.*?)\)$@i', $line, $matches)) {
-			$this->isFor = true;
-			$line = '{% for '. $matches[2]. ' in '. $matches[1]. ' %}';
-	
-		} elseif (preg_match('@^(if|elseif|else if)\s*\((.*?)\)$@i', $line, $matches)) {
-			$this->isIf = true;
-			$this->isElse =
-			$this->isElseif = $matches[1] !== 'if';
-			$line = '{% '. ($this->isElseif? 'elseif' : 'if'). ' '. $matches[2]. ' %}';
-	
-		} elseif (preg_match('@^else$@i', $line, $matches)) {
-			$this->isIf = true;
-			$this->isElse = true;
-			$line = '{% else %}';
-	
-		} elseif (preg_match('@^(continue|next)$@i', $line, $matches)) {
-			$this->isBreakOrContinue = true;
-			$line = '{% continue %}';
-	
-		} elseif (preg_match('@^break$@i', $line, $matches)) {
-			$this->isBreakOrContinue = true;
-			$line = '{% break %}';
-	
-		} else
-		if ((preg_match('@^function\s*(\w+)(\s*)\((.*?)\)$@i', $line, $matches))
-		 || (preg_match('@^(\w+)\s*(=|\<-)\s*function\s*\((.*?)\)$@i', $line, $matches))) {
-			if (self::$allowFunctions) {
-				$this->isFun = true;
-				self::$knownFunctions[$matches[1]] = true;
-				$line = '{% macro '. $matches[1]. ' ('. $matches[3]. ') %}';
-			} else {
-				throw new \Twig_Error('Function definitions are not allowed here.', $i + 1, $source = null);
-			}
-	
-		} else {
-			$this->isExpression = true;
-		}
-		
-		self::$lines[$i] = &$this;
-		
-		//Set up the next/prev/final pointers
-		//(N.b. these ignore non-empty lines)
-		$j = $i;
-		while (--$j >= 0) {
-			if (!$this->isEmpty) {
-				self::$lines[$j]->next = &$this;
-			}
-			if (!self::$lines[$j]->isEmpty) {
-				$this->prev = &self::$lines[$j];
-				break;
-			}
-		}
-		if (!$this->isEmpty) {
-			self::$final = &$this;
-		}
-		
-		
-		//Track curly brackets
-		//echo "\n". $line, "\n". $openedCurliesLeft, '-', $closedCurliesLeft, '-', $openedCurliesRight, '-', $closedCurliesRight;
-		$this->openedCurliesRight = $openedCurliesRight;
-		$this->closedCurliesRight = $closedCurliesRight;
-		
-		//Put any curlies on the left on the right of the previous line
-		if ($openedCurliesLeft) {
-			if ($this->prev) {
-				$this->prev->openedCurliesRight += $openedCurliesLeft;
-			//} else {
-			//	throw new \Twig_Error('Opening "{" found without any code before it.', $i + 1, $source = null);
-			}
-		}
-		if ($closedCurliesLeft) {
-			if ($this->prev) {
-				$this->prev->closedCurliesRight += $closedCurliesLeft;
-			} else {
-				throw new \Twig_Error('Closing "{" found without an opening "{" before it.', $i + 1, $source = null);
-			}
-		}
-		
-		//Catch the case where there are ifs/fors without curley brackets, then an expression immediately afterwards
-		//Deal with this by giving both them and the expression curlies
-		if ($this->isExpression || $this->isBreakOrContinue) {
-			$prev = &$this;
-			while ($prev->prev && $prev->prev->isControlBlock() && !$prev->prev->openedCurliesRight) {
-				$prev = &$prev->prev;
-				$prev->openedCurliesRight = 1;
-				++$this->closedCurliesRight;
-			}
-		}
-		
-		$this->parsed = $line;
-	}
-	
-	public $p_end = '';
-	public $p_isEndIf = false;
-	public $p_isEndIfOrFor = false;
-	public $p_inFunction = false;
-	public $p_isLastLineOfFunction = false;
-	public $p_set = false;
-	public $p_setArrayKey = false;
-	public $p_setNewArrayKey = false;
-	public $p_expression = false;
-	public $p_doReturn = false;
-	public $p_noteResultForReturn = false;
-	public static $p_firstLineOfFunction = false;
-	
-	public function parseExpression() {
-		
-		//Track how many curly brackets were just opened, and what opened them
-		//N.b. you don't need to write them out in Twig, but you do still need to track them
-		for ($c = 0; $c < $this->openedCurliesRight; ++$c) {
-			$control = $this->controlName();
-			
-			if ($control == 'macro') {
+				}
 				
-				if (!empty(self::$openControls)) {
-					foreach (self::$openControls as $otherControl) {
-						switch ($otherControl) {
-							case 'if':
-								throw new \Twig_Error('Function definition found inside an if statement.', $this->i + 1, $source = null);
-							case 'for':
-								throw new \Twig_Error('Function definition found inside a for statement.', $this->i + 1, $source = null);
-							case 'macro':
-								throw new \Twig_Error('Function definition found inside another function.', $this->i + 1, $source = null);
+				$statementStart = $i;
+			}
+			
+			
+			if ($isEndOfStatement) {
+				//Watch out for the end of if and for tuples, and add the closing tag that Twig needs.
+				if (!($isNewStatement && $token->isCurly())) {
+					$token->suf .= ' %}';
+				}
+				$statements[] = $statement;
+				$statement = [];
+			}
+		}
+		
+		if (!empty($statement)) {
+			$statements[] = $statement;
+			$statement = [];
+		}
+		
+		
+		//Watch out for people trying to assign array keys.
+		//This isn't possible in Twig, but we have a hack here to make it work.
+		$tokensNeedRebuilding = false;
+		foreach ($statements as $si => $statement) {
+			
+			//First, watch out for a statement that starts with something of the form "variable[".
+			if (isset($statement[2])
+			 && $statement[0]->type == 'T_STRING'
+			 && $statement[1]->type == 'SYNTAX'
+			 && $statement[1]->value == '[') {
+				
+				//Next, scan forward a bit.
+				//Pay special attention every time we see a "[", a "]", or a "=" at
+				//the same level as the opening bracket.
+				$cs = count($statement);
+				$brackStart = $statement[1];
+				
+				$key = null;
+				$keys = [];
+				
+				for ($ti = 2; $ti < $cs; ++$ti) {
+					$brackEnd = $statement[$ti - 1];
+					$assign = $statement[$ti];
+					
+					//We'll want to note down the fragments of code inbetween each square brackets.
+					//These are the object properties/array keys being referenced.
+					//If we see an empty set of square brackets (i.e. "[]"), then we'll store a null
+					//to represent that.
+					$isSquareOpen = 
+						$brackEnd->type == 'SYNTAX'
+					 && $brackEnd->value == '['
+					 && $brackEnd->numB == $brackStart->numB
+					 && $brackEnd->numC == $brackStart->numC
+					 && $brackEnd->numS == $brackStart->numS;
+					$isSquareClose = 
+						$brackEnd->type == 'SYNTAX'
+					 && $brackEnd->value == ']'
+					 && $brackEnd->numB == $brackStart->numB
+					 && $brackEnd->numC == $brackStart->numC
+					 && $brackEnd->numS == $brackStart->numS;
+					
+					if ($isSquareOpen) {
+						$key = '';
+					
+					} elseif ($isSquareClose) {
+						if ($key === '') {
+							$keys[] = 'null';
+						
+						} elseif ($key !== null) {
+							$keys[] = $key;
 						}
+						$key = null;
+					
+					} elseif ($key !== null) {
+						$key .= $brackEnd->value;
+					}
+					
+					//If we see a "] =" in the code, that's the trigger to start using this hack.
+					//Take the existing statement and rewrite it into a call to the _zPhiSAK_() function.
+					if ($isSquareClose && $assign->type == 'ASSIGN') {
+						
+						$replacements = '_zPhiSAK_('. $statement[0]->value. ', '. implode(', ', $keys). ', ';
+						
+						for ($j = $ti + 1; $j < $cs; ++$j) {
+							$replacements .= $statement[$j]->value;
+						}
+						$replacements .= ')';
+						
+						//Note that a little more than this will need to be done, as Twig doesn't support
+						//functions with arguements that are passed by reference.
+						//There is a preg_replace in the Zenario_Phi_Twig_Cache class to catch and fix this!
+						
+						//Replace the previous statement with this new one
+						$statements[$si] = self::scanTokens($replacements, true, $brackStart->line);
+						
+						//This hack involves calling a function to do the logic, so
+						//turn this into a "do" statement, rather than a "set" statement.
+						$statements[$si][0]->pre .= '{% do ';
+						$statements[$si][count($statements[$si]) - 1]->suf .= ' %}';
+						
+						$tokensNeedRebuilding = true;
+						continue 2;
+					}
+					//Note - if the trigger in the if() statement above is never met,
+					//then we don't actually have a match, so don't commit to any of the changes!
+				}
+			}
+		}
+		
+		//Rebuild the $tokens array, if needed due to changes above
+		if ($tokensNeedRebuilding) {
+			$tokens = [];
+			foreach ($statements as $statement) {
+				foreach ($statement as $token) {
+					$tokens[] = $token;
+				}
+			}
+		}
+		
+		
+		
+		
+		//Loop through the individual statements, looking for statements that needed surrounding in brackets
+		foreach ($statements as $statement) {
+			//We've already put the opening brackets on, so just watch out for those
+			$hadOpen = false;
+			foreach ($statement as $token) {
+				if ($token->brack === '(') {
+					$hadOpen = true;
+				}
+			}
+			//If we saw an open bracket, put a closing bracket on the end
+			if ($hadOpen) {
+				$token->brack .= ')';
+			}
+		}
+		
+		
+		//We'll need to do a bit or parsing, trying to work out how each statement fits into which blocks of code.
+		//Then we'll need to go around matching the start and ends of for/if/else/elseif code blocks up.
+		//Loop through all of the statements, paying special attention to the tokens at the start and the end.
+		$openLevels = [];
+		foreach ($statements as $i => $statement) {
+			$firstToken = $statement[0];
+			$secondToken = $statement[1] ?? false;
+			$lastToken = $statement[count($statement) - 1];
+			$nextFirstToken = $statements[$i+1][0] ?? false;
+			
+			if ($nextFirstToken) {
+				$nextEndToken = $statements[$i+1][count($statements[$i+1]) - 1];
+			} else {
+				$nextEndToken = false;
+			}
+			
+			
+			//Watch out for syntax such as "for (a in 1:10)"
+			//In Twig, the colon needs to be two dots. Convert the value of the token if we see a colon
+			//at the base level inside the tuple of a for-statement.
+			if ($firstToken->type == 'T_FOR') {
+				foreach ($statement as $token) {
+					if ($token->type == 'SYNTAX'
+					 && $token->value == ':'
+					 && $token->numB == $firstToken->numB + 1
+					 && $token->numC == $firstToken->numC
+					 && $token->numS == $firstToken->numS) {
+						$token->value = '..';
 					}
 				}
-				
-				self::$p_firstLineOfFunction = $this->i;
 			}
 			
-			self::$openControls[] = $control;
-			break;
-		}
-		
-		$this->p_inFunction = self::$allowFunctions && in_array('macro', self::$openControls);
-		
-		//Track how many curly brackets were just closed, and which ones were currently open
-		//Annoyingly in Twig we need to find the matching statement and check whether it's an if or a for.
-		for ($c = 1; $c <= $this->closedCurliesRight; ++$c) {
-			if ($control = array_pop(self::$openControls)) {
-				
-				if (!($control == 'if' && $c == $this->closedCurliesRight && $this->next && $this->next->isElse)) {
-					$this->p_end .= '{% end'. $control. '%}';
+			//In Twig, you don't show the round brackets in the tuple of the for/if conditions.
+			//Try to hide them so we don't get invalid syntax
+			if ($firstToken->isStartOfBlock()) {
+				if ($secondToken
+				 && $secondToken->type == 'SYNTAX'
+				 && $secondToken->value == '(') {
+					$secondToken->outputValue = false;
 				}
-				
-				if ($control == 'if') {
-					$this->p_isEndIf = true;
-					$this->p_isEndIfOrFor = true;
-				
-				} elseif ($control == 'for') {
-					$this->p_isEndIfOrFor = true;
-				
-				} elseif ($control == 'macro') {
-					$this->p_isEnd = true;
-					$this->p_isLastLineOfFunction = true;
+				if ($lastToken
+				 && $lastToken->type == 'SYNTAX'
+				 && $lastToken->value == ')') {
+					$lastToken->outputValue = false;
 				}
 			}
-		}
-		
-		
-		if ($this->isExpression) {
 			
-			//Operators such as +=, -=, and so on. Not supported in twig so we need to rewrite them as a = a + b;
-			if (preg_match('@^([\[\]"\'\.\w-]+)\s*(\+|\-|\*|\/|\%|\^|\*\*)=\s*(.*)$@', $this->parsed, $matches)) {
-				$this->p_set = $matches[1];
-				$this->p_expression = $matches[1]. ' '. ($matches[2] == '^'? '**' : $matches[2]). ' ('. $matches[3]. ')';
-		
-			//Operators such as ++ and -- are also not supported so we need to rewrite them as well
-			//(Note this means they will only work on one line, and not as part of another statement)
-			} elseif (preg_match('@^(\w+)(\+\+|\-\-)$@', $this->parsed, $matches)) {
-				$this->p_set = $matches[1];
-				$this->p_expression = $matches[1]. ' '. $matches[2][0]. ' 1';
-			
-			} elseif (preg_match('@^(\+\+|\-\-)(\w+)$@', $this->parsed, $matches)) {
-				$this->p_set = $matches[2];
-				$this->p_expression = $matches[2]. ' '. $matches[1][0]. ' 1';
-		
-			//Assignment statement, e.g. a = b;
-			} elseif (preg_match('@^([\[\]"\'\.\w-]+)\s*(=|\<-)\s*([^=].*)$@', $this->parsed, $matches)) {
-				
-				if (!preg_match('@^\w*$@', $matches[1])) {
-					//Twig doesn't support setting array keys, so we'll need to use a hack to work around this
-					if (substr($matches[1], -2) == '[]') {
-						$this->p_setNewArrayKey = substr($matches[1], 0, -2);
+			//Look for the opening statements of for/if/else/elseif code blocks
+			if ($nextFirstToken) {
+				if ($firstToken->isStartOfBlock()) {
+					if ($nextFirstToken->isCurly()) {
+						//For each we find, note down the bracket level,
+						//and what type of block this was when it started.
+						$openLevels[$firstToken->numC] = $firstToken->type;
+					
 					} else {
-						$this->p_setArrayKey = $matches[1];
+						//Catch the case where there is only one statement after a for/if/else/elseif.
+						//(I.e. no { and }s, just one line of code after the for/if/else/elseif).
+						//Handle this by cloasing them straight away, by adding an "{% endfor %}" or 
+						//an "{% endif %}" straight after the next statement.
+						//Note: I'm only supporting one level of nesting here. I've not implemented
+						//support for something like "if (a) if (b) c()" where someone attempts to
+						//chain these.
+						if ($firstToken->type == 'T_FOR') {
+							$nextEndToken->suf .= '{% endfor %}';
+						
+						//Note we shouldn't add an "{% endif %}" just before an "else"
+						} elseif (!($nextFirstToken->type == 'T_ELSE' || $nextFirstToken->type == 'T_ELSEIF')) {
+							$nextEndToken->suf .= '{% endif %}';
+						}
 					}
-				} else {
-					$this->p_set = $matches[1];
 				}
-				$this->p_expression = $matches[3];
-		
-			//Expression to evaluate without assigning it to anything (usually these are the return statements at the end)
-			} else {
-				$this->p_set = false;
-				$this->p_expression = $this->parsed;
+				
+				//Small optional fix. Catch the case where token_get_all() didn't give us the correct line number
+				//for the closing curly of a block
+				if ($nextFirstToken->isClosingCurly()
+				 && $nextFirstToken->line == $lastToken->line) {
+					++$nextFirstToken->line;
+				}
 			}
-		
-			//The very last line of the program should be the result that is returned
-			if (!$this->next) {
-				if (!$this->p_isEndIfOrFor) {
-					$this->p_set = false;
-					$this->p_doReturn = true;
-					$this->p_noteResultForReturn = true;
-				}
 			
-			//If functions are enabled, the very last line of a function the result that function returns
-			} elseif ($this->p_inFunction) {
-				if ($this->p_isLastLineOfFunction) {
-					$this->p_set = false;
-					$this->p_doReturn = true;
-					$this->p_noteResultForReturn = true;
+			//Look for the closing "}" of for/if/else/elseif code blocks.
+			if ($firstToken->isClosingCurly()) {
+				//Check it matches something that was just opened.
+				//(Maybe to do: raise an error if we don't find one..?)
+				if (isset($openLevels[$firstToken->numC])) {
+					$openingTokenType = $openLevels[$firstToken->numC];
+					
+					//Add the Twig tag to close the if or the for.
+					if ($openingTokenType == 'T_FOR') {
+						$lastToken->suf .= '{% endfor %}';
+					
+					//Note we shouldn't add an "{% endif %}" just before an "else"
+					} elseif (!($nextFirstToken && ($nextFirstToken->type == 'T_ELSE' || $nextFirstToken->type == 'T_ELSEIF'))) {
+						$lastToken->suf .= '{% endif %}';
+					}
+					
+					unset($openLevels[$firstToken->numC]);
 				}
-		
-			//Catch the case where the last line of the program is an end if and not an expression to return
-			} elseif (self::$final->closedCurliesRight && $this->p_isEndIf) {
-				//To handle this, note down the value of the expression at the end of each if-statement, and use the last one that is found as the return value
-				$this->p_noteResultForReturn = true;
 			}
 		}
 		
-		//Catch the case where the last line of a function is an end if and not an expression to return
-		if ($this->p_isLastLineOfFunction
-		 && $this->p_isEndIf
-		 && self::$p_firstLineOfFunction !== false
-		 && self::$p_firstLineOfFunction < $this->i) {
-			//To handle this, note down the value of all expressions in the function, and use the last one that is found as the return value
-			for ($j = self::$p_firstLineOfFunction; $j < $this->i; ++$j) {
-				self::$lines[$j]->p_noteResultForReturn = true;
+		
+		//Restore some of the whitespace
+		//Not all of this is technically needed, but it makes debugging much easier
+		//if the line numbers in the Twig code match up to the original numbers in
+		//the Phi code.
+		$line = 0;
+		foreach ($tokens as $i => $token) {
+			$prevToken = $tokens[$i-1] ?? false;
+			$nextToken = $tokens[$i+1] ?? false;
+			
+			//Keep the line number of the code we're writing in step with the output
+			while ($line < $token->line) {
+				$token->space = "\n". $token->space;
+				++$line;
+			}
+			
+			//Add a space between most tokens
+			if ($prevToken
+			 && $prevToken->rSpace
+			 && $token->lSpace
+			 && $token->space === '') {
+				$token->space .= ' ';
 			}
 		}
+		
+		
+		
+		
+		if ($debug) {
+			echo '<textarea>', htmlspecialchars(print_r($tokens, true)), '</textarea>';
+			echo '<textarea>', htmlspecialchars(print_r($statements, true)), '</textarea>';
+		}
+
+		
+		
+		$twig = '';
+		foreach ($tokens as $i => $token) {
+			$twig .= $token;
+		}
+		
+		if ($debug) {
+			echo '<textarea>', htmlspecialchars($twig), '</textarea>';
+		}
+		
+		return $twig;
 	}
 	
-	public function parseExpression2() {
-			
-		if ($this->isExpression) {
-			
-			if ($this->p_doReturn) {
-				$this->parsed = '{% do _zPhiR_(_zPhiRV_('. $this->p_expression. ')) %}';
-			
-			//Twig doesn't support setting array keys, so we'll need to use a hack to work around this
-			} elseif ($this->p_setNewArrayKey !== false) {
-				$this->parsed = '{% do _zPhiSNAK_('. $this->p_setNewArrayKey. ', '. $this->p_expression. ', _zPhiSAKEnd_()) %}';
-			
-			} elseif ($this->p_setArrayKey !== false) {
-				if ($this->p_noteResultForReturn) {
-					$this->parsed = '{% do _zPhiSAK_('. $this->p_setArrayKey. ', '. $this->p_expression. ', _zPhiSAKEnd_()) %}{% do _zPhiRV_('. $this->p_setArrayKey. ') %}';
-				} else {
-					$this->parsed = '{% do _zPhiSAK_('. $this->p_setArrayKey. ', '. $this->p_expression. ', _zPhiSAKEnd_()) %}';
-				}
-			
-			} elseif ($this->p_set !== false) {
-				if ($this->p_noteResultForReturn) {
-					$this->parsed = '{% set '. $this->p_set. ' = '. $this->p_expression. ' %}{% do _zPhiRV_('. $this->p_set. ') %}';
-				} else {
-					$this->parsed = '{% set '. $this->p_set. ' = '. $this->p_expression. ' %}';
-				}
-			
-			} else {
-				if ($this->p_noteResultForReturn) {
-					$this->parsed = '{% do _zPhiRV_('. $this->p_expression. ') %}';
-				} else {
-					$this->parsed = '{% do '. $this->p_expression. '%}';
-				}
-			}
-		}
-		
-		//Catch the case where a return-statement on the last line of a function can cause invalid syntax
-		if (substr($this->parsed, 0, 39) == '{% do _zPhiR_(_zPhiRV_(_zPhiR_(_zPhiRV_') {
-			$this->parsed = '{% do _zPhiR_(_zPhiRV_(('. substr($this->parsed, 39);
-		}
-		if (substr($this->parsed, 0, 31) == '{% do _zPhiRV_(_zPhiR_(_zPhiRV_') {
-			$this->parsed = '{% do _zPhiR_(_zPhiRV_('. substr($this->parsed, 31);
-		}
-		
-		
-		$this->parsed .= $this->p_end;
-	}
+	
+	
+	
 
 }

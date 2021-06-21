@@ -5,22 +5,22 @@ zenario__layouts:
         layouts: &panel
             title: Available layouts
             view_mode: list
+            panel_type: multi_line_list
+            css_class: two_line_list_panel
+            use_tall_rows: true
+            two_line_list: true
             no_items_message: No layouts have been created
             grid_view_microtemplate: zenario_grid_view_layout
             db_items:
                 table: >
-                    [[DB_PREFIX]]template_files AS tf
-                    LEFT JOIN [[DB_PREFIX]]layouts AS l
-                       ON l.family_name = tf.family_name
-                      AND l.file_base_name = tf.file_base_name
+                    [[DB_PREFIX]]layouts AS l
                     LEFT JOIN [[DB_PREFIX]]content_types AS ct
                        ON l.layout_id = ct.default_layout_id
                     LEFT JOIN [[DB_PREFIX]]skins AS s
                     ON s.id = l.skin_id
-                id_column: "IFNULL(l.layout_id, CONCAT(tf.family_name, '/', tf.file_base_name))"
+                id_column: l.layout_id
                 encode_id_column: true
                 where_statement: "WHERE (l.status IS NULL OR l.status = 'active')"
-                custom_where_statement__without_unregistered: WHERE l.status IS NOT NULL
                 custom_where_statement__archived: "WHERE l.status = 'suspended'"
                 custom_where_statement__typeahead_search: "WHERE l.status = 'active'"
             disable_summary_view: true
@@ -35,44 +35,38 @@ zenario__layouts:
                     chop_prefix_from_search: L
                     width: xxsmall
                 name:
-                    title: Layout description
+                    title: Details
                     show_by_default: true
                     db_column: l.name
                     searchable: true
-                    width: large
+                    width: xlarge
+                    html: true
+                    css_class: label_column
                 summary:
                     title: Summary
                     show_by_default: true
-                    width: xxlarge
+                    width: xlarge
+                    html: true
                 skin_name:
                     title: Skin
                     db_column: s.display_name
                     searchable: true
                     hidden: true
-                family_name:
-                    title: Template directory
-                    db_column: tf.family_name
-                template_filename:
-                    title: Template filename
-                    db_column: CONCAT(tf.file_base_name, '.tpl.php')
-                    searchable: true
-                    ascii_only: true
-                filesize:
-                    title: Template file size
-                    format: filesize
-                missing:
-                    title: File missing
-                    db_column: tf.missing
-                    format: yes_or_no
+                
                 default:
                     #title: Default layout for content type
                     db_column: ct.default_layout_id IS NOT NULL
                     format: yes_or_no
+                delete_disabled:
+                    title: Default disabled
+                    format: yes_or_no
+                    hidden: true
                 archived:
                     format: yes_or_no
                     db_column: >
                         l.status = 'suspended'
                 status:
+                    db_column: l.status
                     title: Status
                     hidden: true
                     format: enum
@@ -80,18 +74,21 @@ zenario__layouts:
                         active: Available
                         active_default: Available; default layout for content type
                         suspended: Archived
-                        unregistered: Unregistered
-                        missing: Template file missing
-                        missing_default: Template file missing; default layout for content type
-                    db_column: >
-                        CONCAT(
-                            IF (tf.missing = 1, 'missing', IFNULL(l.status, 'unregistered')),
-                            IF (ct.default_layout_id IS NULL, '', '_default'))
                     width: large
+                cols:
+                    db_column: l.cols
+                min_width:
+                    db_column: l.min_width
+                max_width:
+                    db_column: l.max_width
+                fluid:
+                    db_column: l.fluid
+                responsive:
+                    db_column: l.responsive
                 content_type:
                     title: Content Type
                     db_column: l.content_type
-                    show_by_default: true
+                    show_by_default: false
                     format: enum
                     searchable: true
                     ascii_only: true
@@ -101,6 +98,12 @@ zenario__layouts:
                     show_by_default: true
                     width: xlarge
                     html: true
+                default_used:
+                    title: Default Usage
+                    show_by_default: true
+                    width: xlarge
+                    html: true
+                    parent: name
                 grid_name:
                     exists: true
                 usage_status:
@@ -108,22 +111,13 @@ zenario__layouts:
                     values:
                         active: Available
                         suspended: Archived
-                        unregistered: Unregistered
-                        missing: Template file missing
-                path:
-                    title: Path to template file
-                    db_column: "CONCAT('zenario_custom/templates/', tf.family_name, '/', tf.file_base_name, '.tpl.php')"
-                    hidden: true
-                    searchable: true
-                    width: xxlarge
+                
             default_sort_column: name
             label_format_for_grid_view: '[[code]] [[name]]'
             label_format_for_popouts: '[[code]] [[name]]'
             label_format_for_picked_items: '[[code]] [[name]]'
             bold_columns_in_list_view: '[[code]]'
             refiners:
-                template_family:
-                    sql: 'tf.family_name = [[REFINER__TEMPLATE_FAMILY]]'
                 content_type:
                     sql: 'content_type = [[REFINER_ID]]'
                 module_usage:
@@ -186,23 +180,8 @@ zenario__layouts:
                     css_class: zenario_layout_inline_button
                     label: |
                         [[code]]
-                    admin_box:
-                        priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-                        path: zenario_content_layout
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
-                template_file_missing:
-                    css_class: zenario_ib_warning
-                    tooltip: |
-                        Template file is missing!
-                    visible_if: >
-                        item.missing
-                template_file_unregistered:
-                    css_class: zenario_ib_warning
-                    tooltip: |
-                        Template file is not registered!
-                    with_columns_set:
-                        traits.unregistered: true
                 active:
                     css_class: zenario_ib_active
                     tooltip: |
@@ -220,38 +199,14 @@ zenario__layouts:
                         Archived
                     visible_if: |
                         item.status == 'suspended'
-                grid_preview:
-                    css_class: inspect
-                    tooltip: View image
-                    popout:
-                        href: zenario/admin/grid_maker/ajax.php?thumbnail=1&width=800&height=500&loadDataFromLayout=1
-                        filename: dummy.png
-                        options:
-                            type: image
-                    with_columns_set:
-                        traits.grid: true
-                    without_columns_set:
-                        traits.unregistered: true
+                
             item_buttons:
-                create_layout_from_template_file:
-                    priv: _PRIV_VIEW_TEMPLATE
-                    label: Register layout
-                    admin_box:
-                        path: zenario_layout
-                        key:
-                            create_layout_from_template_file: true
-                    with_columns_set:
-                        traits.unregistered: true
-                    without_columns_set:
-                        missing: true
                 settings:
                     priv: _PRIV_VIEW_TEMPLATE
                     hide_in_select_mode: true
                     label: Edit layout settings
                     admin_box:
                         path: zenario_layout
-                    without_columns_set:
-                        traits.unregistered: true
                 edit_grid:
                     priv: _PRIV_EDIT_TEMPLATE
                     hide_in_select_mode: true
@@ -267,10 +222,6 @@ zenario__layouts:
                         iframe: true
                         transition: none
                         css_class: zenario_grid_maker
-                    with_columns_set:
-                        traits.grid: true
-                    without_columns_set:
-                        missing: true
                 view_dropdown:
                     label: View
                     multiple_select: true
@@ -278,8 +229,6 @@ zenario__layouts:
                 preview:
                     parent: view_dropdown
                     label: Preview
-                    without_columns_set:
-                        traits.unregistered: true
                     visible_if_for_all_selected_items: >
                         !zenario.engToBoolean(item.missing)
                     popout: 
@@ -306,18 +255,14 @@ zenario__layouts:
                         path: zenario__content/panels/content
                         branch: true
                         refiner: template
-                    without_columns_set:
-                        traits.unregistered: true
                 view_slots:
                     parent: view_dropdown
                     hide_in_select_mode: true
                     label: List of slots
                     link:
                         path: zenario__content/panels/slots
-                        refiner: template
+                        refiner: layout
                         branch: true
-                    without_columns_set:
-                        traits.unregistered: true
                 
                 head_slot_layers:
                     parent: view_dropdown
@@ -352,8 +297,6 @@ zenario__layouts:
                         path: zenario_layout
                         key:
                             duplicate: "1"
-                    without_columns_set:
-                        traits.unregistered: true
                 restore:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_TEMPLATE
@@ -395,8 +338,7 @@ zenario__layouts:
                         request:
                             archive: "1"
                     without_columns_set:
-                        traits.deletable: true
-                        traits.unregistered: true
+                        deletable: true
                     visible_if_for_all_selected_items: |
                         !zenario.engToBoolean(item.archived)
                     disabled_if_for_any_selected_items: |
@@ -418,6 +360,7 @@ zenario__layouts:
                         request:
                             delete: "1"
                     with_columns_set:
-                        traits.deletable: true
-                    without_columns_set:
-                        default: true
+                        deletable: false
+                    disabled_if_for_any_selected_items: |
+                        zenario.engToBoolean(item.delete_disabled)
+                    disabled_tooltip: 'You cannot delete a layout that is the default layout for a content type or if the layout is used by content items.'

@@ -463,11 +463,23 @@ methods.getTUIXFieldsHTML = function(tags, tuixTabId, item, itemType) {
 						
 						for (var i = 0; i < languages.length; i++) {
 							if (engToBoolean(languages[i].translate_phrases)) {
+								
+								if (item.translations
+									&& item.translations[tFieldId]
+									&& item.translations[tFieldId][languages[i].id]
+								) {
+									//Field has a value
+									var translationsPhrase = item.translations[tFieldId][languages[i].id];
+								} else {
+									//Field has no value: the user has not entered anything
+									var translationsPhrase = '';
+								}
+								
 								translationField.phrases.push({
 									field_column: tFieldId,
 									language_id: languages[i].id,
 									language_name: languages[i].english_name,
-									phrase: item.translations[tFieldId][languages[i].id],
+									phrase: translationsPhrase,
 									disabled: translationField.disabled
 								});
 							}
@@ -516,6 +528,13 @@ methods.saveTUIXField = function(tuixField, tuixFieldId, item) {
 		$('#organizer_field_translations input.translation').map(function(index, input) {
 			var languageId = $(this).data('language_id');
 			var column = $(this).data('field_column');
+
+			//If this is a newly added field, make sure the appropriate array is defined.
+			if (!item.translations) {
+				item.translations = {};
+				item.translations[column] = {};
+				item.translations[column][languageId] = '';
+			}
 			item.translations[column][languageId] = input.value;
 		});
 		item._changed = true;

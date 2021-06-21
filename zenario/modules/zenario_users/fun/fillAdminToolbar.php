@@ -96,20 +96,21 @@ if ($userId = ze\user::id()) {
 	}
 	
 	$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['label'] =
-			ze\admin::phrase('User [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
+		ze\admin::phrase('User [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
 
 	unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
-	unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate']);
 	unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']);
 	unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
+
+	$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['parent'] = 'logged_in';
+	$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['label'] = ze\admin::phrase('Other user...');
 
 } else {
 	$lCID = $lCType = false;
 	if (ze\content::langSpecialPage('zenario_login', $lCID, $lCType, ze::$langId)
 	 && ($lURL = ze\link::toItem($lCID, $lCType))) {
 	
-		$adminToolbar['sections']['extranet_user']['buttons']['log_in']['onclick'] =
-			'zenario.goToURL("'. ze\escape::js($lURL). '");';
+		$adminToolbar['sections']['extranet_user']['buttons']['log_in']['onclick'] = 'zenario.goToURL("'. ze\escape::js($lURL). '");';
 	} else {
 		unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
 	}
@@ -121,11 +122,9 @@ if ($userId = ze\user::id()) {
 		  && ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'screen_name' => $_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME']])))) {
 		
 			$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['admin_box']['key']['id'] = $user['id'];
-			$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['label'] =
-				ze\admin::phrase('Login as [[identifier]]', $user);
+			$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['label'] = ze\admin::phrase('Login as [[identifier]]', $user);
 			
-			$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['label'] =
-				ze\admin::phrase('Other user...');
+			$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['label'] = ze\admin::phrase('Other user...');
 		} else {
 			unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']);
 		}

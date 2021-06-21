@@ -57,7 +57,7 @@ class zenario_error_log extends ze\moduleBaseClass {
 	//Scheduled task to report yesterdays errors
 	public static function jobReportErrors() {
 		$yesterday = new DateTime();
-		$yesterday->sub(new DateInterval('P1D'));
+		$yesterday->sub(new DateInterval('P5D'));
 		
 		//Get all errors from yesterday
 		$sql = '
@@ -68,12 +68,45 @@ class zenario_error_log extends ze\moduleBaseClass {
 		$errors = ze\sql::select($sql);
 		//Send report
 		if (ze\sql::numRows($errors) > 0) {
-			echo ze\sql::numRows($errors) . " 404 Error(s):\n";
+			echo ze\admin::phrase('A visitor requested a page and saw a 404 Not Found error, here are the details:') . "\n";
+			echo ze\admin::phrase("[[num_errors]] 404 Error(s):", ['num_errors' => ze\sql::numRows($errors)]);
+			echo "\n";
+
+			$domain = ze\link::protocol() . ze\link::primaryDomain() . SUBDIRECTORY;
+
 			while ($error = ze\sql::fetchAssoc($errors)) {
+				$probableUrl = $domain . $error['page_alias'];
+				
 				echo "\n---------------\n";
 				echo ze\admin::phrase('Logged:') . ' ' . $error['logged'] . "\n";
-				echo ze\admin::phrase('Requested page alias:') . ' ' . $error['page_alias'] . "\n";
-				echo ze\admin::phrase('Referrer URL:') . ' ' . $error['referrer_url'] . "\n";
+				echo ze\admin::phrase('Visitor-requested page alias:') . ' ' . $error['page_alias'] . "\n";
+				echo ze\admin::phrase('Probable URL:') . ' ' . $probableUrl . "\n";
+				echo ze\admin::phrase('Referrer URL:') . ' ' . ($error['referrer_url'] ?: ze\admin::phrase("[no referrer]")) . "\n";
+
+				//Process the alias and break it into words
+				$pageAliasPartsFound = [];
+				if (!function_exists('mb_ereg_replace') || !$error['page_alias'] = mb_ereg_replace('[^\w\s_\'"]', ' ', $error['page_alias'])) {
+					//Fall back to traditional pattern matching if that fails
+					$error['page_alias'] = preg_replace('/[^\w\s_\'"]/', ' ', $error['page_alias']);
+				}
+
+				preg_match_all('/(\S*\w\S*)/', trim($error['page_alias']), $pageAliasPartsFound, PREG_PATTERN_ORDER);
+				$pageAliasPartsFound = array_filter($pageAliasPartsFound);
+
+				$pageAliasParts = [];
+				foreach ($pageAliasPartsFound as $set) {
+					foreach ($set as $value) {
+						$pageAliasParts[] = $value;
+					}
+				}
+
+				$pageAliasParts = array_unique($pageAliasParts);
+				$pageAliasString = '-' . implode('-', $pageAliasParts);
+				
+				$url = $domain . "zenario/admin/organizer.php#zenario__administration/panels/error_log~" . htmlspecialchars($pageAliasString);
+
+				echo ze\admin::phrase("To prevent further 404 errors at this URL, go to the site's 404 Error Log at [[url]] and select one item, then click \"Fix this error\" and select a content item. Zenario will create a spare alias to redirect future visitors to a more suitable page.", ['url' => $url]);
+				echo "\n";
 			}
 			return true;
 		//If last action is over 1 week old and no errors send a message

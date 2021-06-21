@@ -52,7 +52,7 @@ $data = ['cells' => []];
 
 //Pick a layout to use the basic grid information from. Preferably the default layout.
 $sql = "
-	SELECT layout_id, file_base_name, cols, min_width, max_width, fluid, responsive
+	SELECT layout_id, cols, min_width, max_width, fluid, responsive
 	FROM ". DB_PREFIX. "layouts AS l
 	ORDER BY
 		l.layout_id = (
@@ -66,7 +66,6 @@ $sql = "
 if ($layout = ze\sql::fetchAssoc($sql)) {
    
     $data['layout_id'] = $layout['layout_id'];
-    $data['file_base_name'] = $layout['file_base_name'];
 	$data['cols'] = $layout['cols'];
 	$data['minWidth'] = $layout['min_width'];
 	$data['maxWidth'] = $layout['max_width'];
@@ -197,7 +196,7 @@ $phrases = [
 	'gridResp_hide' => 'Show on desktop only',
 	'gridResp_only' => 'Show on mobile only',
 	'gridSave' => 'Save',
-	'gridSaveAs' => 'Save as...',
+	'gridSaveAs' => 'Save a copy',
 	'gridSaveConfirmMessage' => 'Are you sure you want to save changes to your slide layout?',
 	'gridSaveSuccessMessage' => 'This slide has been saved.',
 	'gridSaveTemplate' => '',

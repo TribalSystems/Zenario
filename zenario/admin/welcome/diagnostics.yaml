@@ -242,23 +242,15 @@ diagnostics:
                         html: Other server programs
                     visible_if: zenarioAW.togglePressed(field, 2)
                 show_os: *show_subsection
-                os_av:
+                
+                os_5:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: |
-                            Antivirus
-                            <br/><small>ClamAV is working successfully.</small>
-                    visible_if: zenarioAW.togglePressed(field)
-                os_1:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: |
-                            Antiword
-                            <br/><small>Antiword is working successfully.</small>
+                            PDF->text
+                            <br/><small>pdftotext is working successfully.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 os_2:
                     grouping: sub_table
@@ -266,8 +258,36 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: |
-                            Ghostscript
+                            PDF->image
                             <br/><small>ghostscript is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_7:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            HTML->PDF
+                            <br/><small>wkhtmltopdf is correctly set up.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_1:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Word->text
+                            <br/><small>Antiword is working successfully.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                os_6:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Compress PNGs
+                            <br/><small>optipng is correctly set up.</small>
+                            <br/><small>advpng is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 os_3:
                     grouping: sub_table
@@ -275,7 +295,7 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: | 
-                            JPEG Image Optimizers
+                            Compress JPEGs
                             <br/><small>jpegtran is working successfully.</small>
                             <br/><small>jpegoptim is working successfully.</small>
                     visible_if: zenarioAW.togglePressed(field)
@@ -289,38 +309,17 @@ diagnostics:
                             <br/><small>mysql is working successfully.</small>
                             <br/><small>mysqldump is working successfully.</small>
                     visible_if: zenarioAW.togglePressed(field)
-                os_5:
+
+                os_av:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: |
-                            PDF-To-Text
-                            <br/><small>pdftotext is working successfully.</small>
+                            Antivirus
+                            <br/><small>ClamAV is working successfully.</small>
                     visible_if: zenarioAW.togglePressed(field)
-                os_6:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: |
-                            PNG Image Optimizers
-                            <br/><small>optipng is correctly set up.</small>
-                            <br/><small>advpng is correctly set up.</small>
-                    visible_if: zenarioAW.togglePressed(field)
-                os_7:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: |
-                            wkhtmltopdf
-                            <br/><small>wkhtmltopdf is correctly set up.</small>
-                    visible_if: zenarioAW.togglePressed(field)
-                
-                
-                
-                
+
                 
                 dirs:
                     grouping: sub_table
@@ -395,28 +394,32 @@ diagnostics:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
+                    hidden: true
                     snippet:
                         html: Templates Directory
                     visible_if: zenarioAW.togglePressed(field, 2)
                 show_dir_3: *show_subsection
+                    hidden: true
                 dir_3_blurb:
                     grouping: sub_table
+                    hidden: true
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: |
                             Zenario uses template files to form the layout of web pages.
-                            These may be edited by an administrator, and Zenario writes them to the following directory.
-                            Please ensure it exists and is writable by the web server:
+                            These may be edited by an administrator.
                     visible_if: zenarioAW.togglePressed(field)
                 template_dir: &readonly_dir
                     grouping: sub_table
+                    hidden: true
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
                     visible_if: zenarioAW.togglePressed(field)
                 template_dir_status: *dir_status
+                    hidden: true
                 
                 dir_4:
                     grouping: sub_table
@@ -628,6 +631,14 @@ diagnostics:
                             in your <code>zenario_siteconfig.php</code> file.)
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
+                cache_debug_enabled:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: ''
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
                 email_addresses_overridden:
                     grouping: sub_table
                     full_width: true
@@ -723,8 +734,24 @@ diagnostics:
                     snippet:
                         html: |
                             The .htaccess file exists and is readable, but Friendly URLs are disabled.
-                            Please go to <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap" target="_blank"><em>URL format, aliases and XML sitemap</em></a> in Site Settings to change this.
+                            Please go to <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap" target="_blank"><em>URL format, aliases and XML sitemap</em></a> in Configuration->Site Settings to change this.
                     hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
+                
+                web_pages_not_cached:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    visible_if: zenarioAW.togglePressed(field)
+                fabs_not_cached:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    visible_if: zenarioAW.togglePressed(field)
+                css_file_wrappers_not_on_for_visitors:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
                     visible_if: zenarioAW.togglePressed(field)
                 
                 default_timezone_not_set:

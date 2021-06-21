@@ -24,12 +24,15 @@ zenario__user_forms:
                         AND f.status != 'archived'
                 type:
                     sql: f.type = [[REFINER__TYPE]]
+            
+            label_format_for_picked_items: '(ID: [[id]]) [[name]]'
+
             columns:
                 id:
                     title: ID
                     format: id
                     db_column: f.id
-                    searchable: false
+                    searchable: true
                     align_right: true
                     always_show: true
                     width: xxsmall
@@ -83,6 +86,9 @@ zenario__user_forms:
                     #format: datetime
                     show_by_default: true
                     width: small
+                crm:
+                    title: CRM
+                    show_by_default: true
                 where_used:
                     title: Usage
                     show_by_default: true
@@ -145,21 +151,21 @@ zenario__user_forms:
                     hide_on_refiner: archived
             
             item_buttons:
-                form_settings:
+                edit_form_fields_gui:
                     ord: 1
+                    priv: _PRIV_MANAGE_FORMS
+                    label: Edit form fields
+                    link:
+                        path: zenario__user_forms/panels/form_fields_gui
+                        branch: true
+                        refiner: user_form_id
+                form_settings:
+                    ord: 2
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Edit form settings
                     admin_box:
                         path: zenario_user_form
-                edit_form_fields_gui:
-                    ord: 2
-                    priv: _PRIV_MANAGE_FORMS
-                    label: Edit form
-                    link:
-                        path: zenario__user_forms/panels/form_fields_gui
-                        branch: true
-                        refiner: user_form_id
                 duplicate:
                     ord: 3
                     priv: _PRIV_MANAGE_FORMS
@@ -187,13 +193,14 @@ zenario__user_forms:
                     label: View
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
-#                view_content_items:
-#                    ord: 6
-#                    label: Content items this form is used on
-#                    parent: view_dropdown
-#                    link:
-#                        path: zenario__content/panels/content
-#                        refiner: form_id
+                view_content_items:
+                    ord: 6
+                    label: Content items this form is used on
+                    parent: view_dropdown
+                    link:
+                        path: zenario__content/panels/content
+                        refiner: form_id
+                    visible_if_for_all_selected_items: item.plugin_is_used
                 advanced_dropdown:
                     ord: 6.1
                     label: Advanced

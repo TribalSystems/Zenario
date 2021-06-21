@@ -42,8 +42,8 @@ require CMS_ROOT. 'zenario/basicheader.inc.php';
 
 
 clearstatcache();
-function removeUnwantedCode($path) {
-	$check = CMS_ROOT. 'zenario/libs/yarn/'. $path;
+function removeUnwantedCode($path, $packageManager = 'yarn') {
+	$check = CMS_ROOT. 'zenario/libs/'. $packageManager. '/'. $path;
 	if (file_exists($check)) {
 		exec('svn del --force '. escapeshellarg($check));
 		
@@ -55,6 +55,11 @@ function removeUnwantedCode($path) {
 			exec('rm '. escapeshellarg($check));
 		}
 	}
+}
+
+function removeUnwantedComposerCode($path) {
+	removeUnwantedCode($path, 'composer_dist');
+	removeUnwantedCode($path, 'composer_no_dist');
 }
 
 removeUnwantedCode('classlist-polyfill');
@@ -89,6 +94,19 @@ removeUnwantedCode('wowjs/spec');
 //Remove some optional dependancies that the yarn packages we've asked for installed, but I don't actuall think we need
 removeUnwantedCode('sprintf-js');
 removeUnwantedCode('util-deprecate');
+
+
+//Remove some clutter from composer libraries that we don't want
+removeUnwantedComposerCode('geoip2/geoip2/examples');
+removeUnwantedComposerCode('maxmind/web-service-common/dev-bin');
+removeUnwantedComposerCode('maxmind-db/reader/ext');
+removeUnwantedComposerCode('mustangostang/spyc/examples');
+removeUnwantedComposerCode('mustangostang/spyc/php4');
+removeUnwantedComposerCode('mustangostang/spyc/tests');
+removeUnwantedComposerCode('powder96/numbers.php/examples');
+removeUnwantedComposerCode('smottt/wideimage/demo');
+removeUnwantedComposerCode('smottt/wideimage/test');
+removeUnwantedComposerCode('twig/twig/doc');
 
 
 

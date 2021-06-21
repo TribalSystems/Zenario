@@ -28,6 +28,7 @@ zenario_content:
         target_alias: ''
         target_language_id: ''
         target_template_id: ''
+        target_menu: ''
         target_menu_parent: ''
         target_menu_section: ''
         target_menu_title: ''
@@ -106,22 +107,23 @@ zenario_content:
                     ord: 30
                     label: 'Language:'
                     type: select
-                release_date:
+                language_id_on_load:
+                    hidden: true
+                    type: text
+                content_item_translation_info:
                     ord: 31
+                    snippet:
+                        html: ''
+                    hidden: true
+                release_date:
+                    ord: 32
                     label: 'Release date:'
                     type: date
                     change_month_and_year: true
-                    same_row: true
-                    pre_field_html: |
-                        <label for="release_date" style="font-weight:bold;">
-                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                Release Date:
-                            </label>
                     side_note: |
                         The release date is the publicly-displayed date of this content item. It may be different from the date you edit or publish it.
-                
                 menu:
-                    ord: 32
+                    ord: 33
                     type: grouping
                     name: menu
                 create_menu_node:
@@ -294,9 +296,7 @@ zenario_content:
                         zenarioAB.tuix.___alias_changed = true;
                         $('#alias_changed').val(1);
                     note_below: |
-                        An alias for this content item, and part of its URL.
-                        The combination of the content item's alias and its language code is unique across the site.
-                        Lower case only, may not contain spaces or special characters.
+                        Content items in a translation chain may each have a different alias (see site settings). So you can make an alias in the language of this content item.
                 suggest_alias_from_title:
                     ord: alias.01
                     type: button
@@ -376,9 +376,7 @@ zenario_content:
                         <a
                             target="_blank"
                             href="{{URLBasePath|e}}{{link|e}}"
-                        >
-                            More
-                        </a>
+                        >View XML sitemap settings</a>
                 excluded_from_sitemap:
                     ord: sitemap.2
                     same_row: true
@@ -447,6 +445,11 @@ zenario_content:
                     note_below: >
                         You may edit this name to provide an alternative to that
                         stored against the Administrator.
+                pinned:
+                    label: 'Pin'
+                    ord: 135
+                    type: checkbox
+                    side_note: 'Pinned content items always appear first on content summary lists.'
                 content_summary:
                     label: 'Summary:'
                     ord: 130
@@ -873,7 +876,7 @@ zenario_content:
         plugins:
             ord: 90
             hidden: true
-            label: Plugins
+            label: Slots
             edit_mode:
                 enabled: false
                 priv: _PRIV_EDIT_DRAFT
@@ -931,8 +934,17 @@ zenario_content:
                 action__znz:
                     <td>:
                     type: select
-                    empty_value: ' -- Please choose what to do with this plugin -- '
-                    values: plugin_actions
+                    empty_value: ''
+                    values: 
+                        original:
+                            label: ''
+                            ord: 
+                        duplicate:
+                            label: ''
+                            ord: 
+                        empty:
+                            label: ''
+                            ord: 
                     validate_onchange: true
                     validation:
                         only_validate_when_saving: true
@@ -963,10 +975,9 @@ zenario_content:
                 label: Use same plugin
             duplicate:
                 label: Make a copy
-    
+            
     confirm:
         show: false
         html: true
         cancel_button_message: Cancel
         message_type: warning
-    

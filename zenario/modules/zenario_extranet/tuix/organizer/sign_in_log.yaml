@@ -82,7 +82,7 @@ zenario__users:
 				#		label: Export Sign-in Log in CSV format
 				#		do_csv_export: Yes
 				no_items_message: |
-					No user sign-ins have been logged. To log sign-ins, please ensure you have enabled sign-in logging in Site Settings.
+					No user sign-ins have been logged. To log sign-ins, please go to Configuration->Site Settings, open the Data Protection interface, and enable sign-in logging.
 		
 	panels:
 		users:

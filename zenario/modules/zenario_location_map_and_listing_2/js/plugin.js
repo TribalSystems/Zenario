@@ -187,7 +187,7 @@
 		}
 	}
 	
-	zenario_location_map_and_listing_2.initMap = function(pageLoadNum, containerId, zoomControl, zoomLevel) {
+	zenario_location_map_and_listing_2.initMap = function(pageLoadNum, containerId, zoomControl, zoomLevel, fixedPositionLat, fixedPositionLng) {
 		
 		var parent = (window.parent || window.opener);
 		
@@ -418,8 +418,12 @@
 		if (numL > 1) {
 			
 			//Find the centre first before setting the zoom.
-			map.setCenter(bounds.getCenter());
-			map.fitBounds(bounds);
+			if (fixedPositionLat && fixedPositionLng) {
+				map.setCenter({lat: fixedPositionLat, lng: fixedPositionLng});
+			} else {
+				map.setCenter(bounds.getCenter());
+				map.fitBounds(bounds);
+			}
 			
 			google.maps.event.addListenerOnce(map, 'bounds_changed', function() { 
 				minZoom = map.getZoom();

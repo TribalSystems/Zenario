@@ -118,21 +118,21 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		'55' => '55'];
 	
 	protected static $firstNOptions = [
-		0 => 'No Filter',
-		1 => 'First Day of the Month only',
-		7 => 'First 7 days of the Month only',
-		-7 => 'Last 7 days of the Month only',
-		-1 => 'Last Day of the Month only'];
+		0 => 'Every day of the month',
+		1 => 'First day of the month',
+		7 => 'First 7 days of the month',
+		-7 => 'Last 7 days of the month',
+		-1 => 'Last day of the month'];
 	
 	protected static $lastRunStatuses = [
-		'action_taken' => 'Action Taken',
+		'action_taken' => 'Action taken',
 		'crashed' => 'Crashed',
 		'error' => 'Error',
-		'in_progress' => 'In Progress',
-		'never_run' => 'Never Run',
-		'not_running' => 'Not Running',
-		'no_action_taken' => 'No Action Taken',
-		'rerun_scheduled' => 'Rerun Scheduled',
+		'in_progress' => 'In progress',
+		'never_run' => 'Never run',
+		'not_running' => 'Not running',
+		'no_action_taken' => 'No action taken',
+		'rerun_scheduled' => 'Rerun scheduled',
 		'restarted' => 'Restarted',
 		'restarting' => 'Restarting',
 		'running' => 'Running',

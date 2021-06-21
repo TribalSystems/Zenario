@@ -138,13 +138,14 @@
 	
 	
 	<div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m._is_current_field) { %> style="display:none;" <% } %>>
-		<% if (!m.grouping || (m.grouping && m.first_in_grouping)) { %>
-			<span class="drag_icon"></span>
-		<% } %>
 		<% if (!m.is_system_field) { %>
 			<span class="delete_icon" data-id="{{m.id|e}}">Delete</span>
 		<% } %>
 	</div>
+	
+	<% if (!m.grouping || (m.grouping && m.first_in_grouping)) { %>
+		<span class="drag_icon"></span>
+	<% } %>
 </div>
 
 <% } %>

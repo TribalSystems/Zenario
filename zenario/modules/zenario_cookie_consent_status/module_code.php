@@ -96,7 +96,7 @@ class zenario_cookie_consent_status extends ze\moduleBaseClass {
 	public function showSlot() {
 		if (ze::setting('cookie_require_consent') != 'explicit') {
 			if (ze\priv::check()) {
-				echo ze\admin::phrase('This Plugin will only be displayed if the Explicit consent policy is chosen in the Cookie Site Settings.');
+				echo ze\admin::phrase('This plugin will only be displayed if the Explicit consent policy is chosen in the Cookies panel (see Configuration->Site Settings).');
 			}
 		
 		} else {

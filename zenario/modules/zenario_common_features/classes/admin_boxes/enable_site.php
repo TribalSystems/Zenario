@@ -94,7 +94,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 		if (!empty($fields['site/clear_cache']['pressed'])) {
 			$box['tabs']['site']['notices']['checked']['show'] = true;
 			
-			ze\skinAdm::clearCache(true);
+			ze\skinAdm::clearCache();
 			
 			$box['tabs']['site']['show_errors_after_field'] = 'desc3';
 		} else {

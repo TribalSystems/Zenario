@@ -34,9 +34,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		if ($path != 'zenario__layouts/panels/layouts') return;
 		
 		if (ze::in($mode, 'full', 'quick', 'select')) {
-			if (!ze\skinAdm::checkForChangesInFiles($runInProductionMode = true)) {
-				ze\layoutAdm::checkForMissingFiles();
-			}
+			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true);
 		}
 		
 		if (isset($_GET['refiner__archived'])) {
@@ -66,22 +64,14 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__typeahead_search'];
 		
 		} elseif ($refinerName || ze::in($mode, 'get_item_name', 'get_item_links')) {
-			
-			if (isset($panel['db_items']['custom_where_statement__without_unregistered'])) {
-				$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__without_unregistered'];
-			} else {
-				unset($panel['db_items']['where_statement']);
-			}
-		
+			unset($panel['db_items']['where_statement']);
 		}
 		
 		if (isset($_GET['refiner__content_type'])) {
 			unset($panel['columns']['content_type']['title']);
 		}
 		
-		if (isset($_GET['refiner__template_family'])) {
-			unset($panel['columns']['family_name']['title']);
-		}
+		
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -118,115 +108,95 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		$templatePreview = '';
 		
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = [];
+			$summary = '';
 			
 			//Format the layout Id
 			if ($item['code']) {
 				$item['code'] = ze\layoutAdm::codeName($item['code']);
 			}
 			
-			//For each Template file that's not missing, check its size and check the contents
-			//to see if it has grid data saved inside it.
-			//Multiple layouts could use the same file, so store the results of this to avoid
-			//wasting time scanning the same file more than once.
-			if (empty($item['missing']) && !isset($foundPaths[$item['path']])) {
-				if ($fileContents = @file_get_contents($item['path'])) {
-					$foundPaths[$item['path']] = [
-						'filesize' => strlen($fileContents),
-						'checksum' => md5($fileContents),
-						'grid' => ze\gridAdm::readCode($fileContents, true, true)
-					];
-				} else {
-					$foundPaths[$item['path']] = false;
-				}
+			if ($item['status'] == 'active' && $item['default']) {
+				$item['status'] = 'active_default';
 			}
-			unset($fileContents);
 			
-			if (empty($item['missing']) && !empty($foundPaths[$item['path']])) {
-				$item['filesize'] = $foundPaths[$item['path']]['filesize'];
+			if (!empty($item['cols'])) {
+				if (!empty($item['fluid'])) {
+					$summary .= 'Fluid / '. $item['min_width']. ' - '. $item['max_width']. ' px ';
+				} else {
+					$summary .= 'Fixed width / '. $item['min_width']. ' px ';
+				}
+				if (!empty($item['responsive'])) {
+					$summary .= '/ Responsive ';
+				}
+				$summary .= '/ '. $item['cols']. ' columns';
+			}
+			
+			$summary .= ' <br/>' . htmlspecialchars($item['skin_name']). ' skin';
+			
+			$item['summary'] = $summary;
+			
+			if (!ze\row::exists('content_types', ['default_layout_id' => $id]) && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
+				$item['deletable'] = true;
+				$item['delete_disabled'] = false;
 				
-				if ($foundPaths[$item['path']]['grid']) {
-					$item['traits']['grid'] = true;
+			} else {
+				$item['delete_disabled'] = true;
+			}
+			
+			//Show how many items use a specific layout, and display links if possible.
+			$usageContentItems = ze\layoutAdm::usage($id, false, false, $countItems = false);
+			$usage = [
+				'content_item' => $usageContentItems[0] ?? null,
+				'content_items' => count($usageContentItems)
+			];
+	
+			$usageLinks = [
+				'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $id. '//'
+			];
+			
+			$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+			if (count($usageContentItems) > 0) {
+				$contentTypeEnname='';
+				foreach (ze\content::getContentTypes() as $cType) {
+					if($cType['content_type_id'] == $item['content_type'])
+					{
+						if($item['content_type'] == 'html')
+							$contentTypeEnname = $cType['content_type_name_en'].' content item(s)';
+						else
+							$contentTypeEnname = $cType['content_type_name_en'].'(s)';
+					}
+						
+				}
+				
+				if (ze\row::exists('content_types', ['default_layout_id' => $id])) {
+					$item['default_used'] = ze\admin::phrase('Used on [[typeCount]] [[contentTypes]] (default for this content type)', ['contentTypes' => $contentTypeEnname, 'typeCount' => count($usageContentItems)]);					
+				} else {
+					$item['default_used'] = ze\admin::phrase('Used on [[typeCount]] [[contentTypes]]', ['contentTypes' => $contentTypeEnname, 'typeCount' => count($usageContentItems)]);
 				}
 			} else {
-				$item['missing'] = 1;
-				$item['usage_status'] = 'missing';
+				
+				$item['default_used'] = ze\admin::phrase('Not used');
+				
 			}
 			
-			
-			//Numeric ids are Layouts
-			if (is_numeric($id)) {
-				
-				if ($item['family_name'] == 'grid_templates') {
-					$layoutDetails = ze\gridAdm::readLayoutCode($id);
-					$summary = 'Gridmaker layout / ';
-					if (!empty($layoutDetails['fluid'])) {
-						$summary .= 'Fluid ';
-					} else {
-						$summary .= 'Fixed width ';
-					}
-					if (!empty($layoutDetails['responsive'])) {
-						$summary .= '/ Responsive ';
-					}
-					if (!empty($layoutDetails['gCols'])) {
-						$summary .= '/ '. $layoutDetails['gCols']. ' columns';
-					}
-				} else {
-					$summary = 'Static';
-				}
-				
-				$summary .= ' / Skin: ' . $item['skin_name'];
-				
-				$item['summary'] = $summary;
-				
-				if (!ze\row::exists('content_types', ['default_layout_id' => $id]) && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
-					$item['traits']['deletable'] = true;
-				
-				}
-				
-				//Show how many items use a specific layout, and display links if possible.
-				$usageContentItems = ze\layoutAdm::usage($id, false, false, false, $countItems = false);
-				$usage = [
-					'content_item' => $usageContentItems[0] ?? null,
-					'content_items' => count($usageContentItems)
-				];
-		
-				$usageLinks = [
-					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $id. '//'
-				];
-				$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
-				
-				// Try to automatically add a thumbnail
-				if (!empty($foundPaths[$item['path']])) {
-					$item['image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=180&height=130&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
-				}
-				
-				$item['row_class'] = ' layout_status_' . $item['status'];
-				
-			//Non-numeric ids are the Family and Filenames of Template Files that have no layouts created
-			} else {
-				$item['name'] = str_replace('.tpl.php', '', $item['template_filename']);
-				$item['usage_status'] = $item['status'];
-				$item['traits']['unregistered'] = true;
-				$item['traits']['deletable'] = true;
-			}
+			$item['row_class'] = ' layout_status_' . $item['status'];
 		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__layouts/panels/layouts') return;
 		
-		//Delete a template if it is not in use
+		//Delete a layout if it is not in use
 		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (!ze\row::exists('content_types', ['default_layout_id' => $id])
 				 && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
-				 	ze\layoutAdm::delete($id, true);
+				 	ze\layoutAdm::delete($id);
 				}
 			}
 			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
 		
-		//Archive a template
+		//Archive a layout
 		} elseif (($_POST['archive'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (!ze\row::exists('content_types', ['default_layout_id' => $id])) {
@@ -234,7 +204,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				}
 			}
 		
-		//Restore a template
+		//Restore a layout
 		} elseif (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\row::update('layouts', ['status' => 'active'], $id);

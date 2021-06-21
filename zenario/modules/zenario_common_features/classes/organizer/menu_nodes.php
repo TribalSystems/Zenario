@@ -341,6 +341,11 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					$item['_specific_perms'] = true;
 				}
 			}
+
+			//If a menu node uses a static method, display the details.
+			if ($item['module_class_name'] && $item['method_name']) {
+				$item['uses_static_method'] = '[Static method used]';
+			}
 		}
 
 		if (!$isFlatView) {
@@ -352,12 +357,22 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
         foreach(ze\content::getContentTypes() as $content){
 
             $j++;
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node and ".$content['content_type_name_en']; 
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM'; 
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true; 
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_dropdown'; 
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['path'] = 'zenario_content'; 
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['target_cType'] = $content['content_type_id']; 
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node and ".$content['content_type_name_en'];
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM';
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true;
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_dropdown';
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['path'] = 'zenario_content';
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['target_cType'] = $content['content_type_id'];
+			$panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['id_is_parent_menu_node_id'] = 1;
+			$panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['id'] = $panel['key']['sectionId'];
+
+			$panel['item_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node and ".$content['content_type_name_en'];
+            $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM';
+            $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true;
+            $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_child_dropdown';
+            $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['path'] = 'zenario_content';
+            $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['target_cType'] = $content['content_type_id'];
+			$panel['item_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['id_is_menu_node_id'] = 1;
         }    
 
 	}

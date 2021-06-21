@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: urls_and_xml_sitemap
-    title: Editing settings for URLs and XML Sitemap
+    title: Editing settings for URL format and XML Sitemap
     tabs:
         urls:
             label: URLs
@@ -21,8 +21,8 @@ site_settings:
                     pre_field_html: "<div class=\"zenario_fbWarning\">"
                     snippet: 
                         html: |
-                            <p>For optimal SEO, we advise turning Friendly URLs on.</p>
-                            <p>Visitors will see easy to read URLs instead of numeric codes identifying pages.</p>
+                            <p>On a publicly viewable website, for best SEO, you should turn on friendly URLs.</p>
+                            <p>With friendly URLs, visitors see easy-to-read URLs (aliases), instead of numeric page codes.</p>
                     post_field_html: "</div>"
                     hidden: false
                 mod_rewrite_enabled:
@@ -36,7 +36,7 @@ site_settings:
                         Turn this on if your Apache installation has support for mod_rewrite and is configured with rewrite rules.
                         This may improve search engine optimization.
                         <br/>
-                        Please see <a href="http://zenar.io/search-engine-friendly-urls.html" target="_blank">zenar.io/search-engine-friendly-urls.html</a>
+                        Please see <a href="https://zenar.io/search-engine-friendly-urls.html" target="_blank">zenar.io/search-engine-friendly-urls.html</a>
                         for more information.
                 mod_rewrite_admin_mode:
                     indent: 1
@@ -80,16 +80,16 @@ site_settings:
                         zenarioA.multipleLanguagesEnabled()
                     site_setting:
                         name: translations_different_aliases
-                    label: 'Aliases:'
+                    label: 'Alias rules on a multi-language site:'
                     type: select
-                    empty_value: Content items in a translation chain have the same alias
+                    empty_value: Keep aliases of content items in a translation chain the same
                     values:
-                        1: Content items in a translation chain may have different aliases
+                        1: Allow aliases of content items in a translation chain to be set independently
                     value: "1"
                     note_below: |
-                        This setting is not retroactive;
-                        existing aliases will not be affected when you change it.
-                        
+                        When set to "same", a content item and all of its translations will have the same alias, e.g. in the default language, for easier management.
+                        When set to "set independently", items in a translation chain may be different, e.g. each  may be in the translation's language.
+                        Changing this setting will not change existing aliases.
                 translations_hide_language_code:
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
@@ -98,7 +98,7 @@ site_settings:
                         name: translations_hide_language_code
                     full_width: true
                     type: select
-                    empty_value: Always add the language code
+                    empty_value: Always show the language code
                     values:
                         1: Hide the language code if possible
                     value: "1"
@@ -110,8 +110,8 @@ site_settings:
                     snippet:
                         html: ''
                     note_below: >
-                        If shown, the language code will be added after the alias using a comma,
-                        e.g.: example.com/pagename,en
+                        If set to "always show", the language code will be added after the alias using a comma,
+                        e.g.: <u>example.com/pagename,en</u>. If set to "hide", the language code will not be shown unless there are translations of that content item.
                 note_b:
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
@@ -170,4 +170,4 @@ site_settings:
                         The XML Sitemap will have the above URL which is not editable.
                                                         You can copy and paste this URL into search engine tools
                                                         (such as <a href="https://www.google.com/webmasters/tools/" target="_blank">Google Webmaster Tools</a>).
-                                                        We recommend that you enable Friendly URLs in the Site Settings so that URLs contain Aliases where set, rather than content item IDs.
+                                                        We recommend that you go to Configuration->Site Settings and open the URL format, aliases and XML sitemap interface to enable Friendly URLs. When enabled, URLs will contain the more friendly alias-based format.

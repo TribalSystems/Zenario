@@ -57,7 +57,7 @@ echo '
 	together to reduce the number of downloads.
 	
 	To make debugging easier, turn this off by going to
-		Configuration -> Site Settings -> Optimization
+		Configuration -> Site Settings, Optimisation interface
 	in Organizer and set the "CSS File Wrappers" setting to "On for visitors only"
 	or "Always off".
 */

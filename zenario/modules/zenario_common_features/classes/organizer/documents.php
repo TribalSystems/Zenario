@@ -112,7 +112,6 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			if (mb_strlen($item['name']) > 50) {
 				$item['name'] = mb_substr($item['name'], 0, 25) . "..." .  mb_substr($item['name'], -25);
 			}
-			
 		}
 		
 		if (count($panel['items']) <= 0) {
@@ -443,7 +442,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		
 		if ($externalProgramError) {
 			echo
-				'<p>', ze\admin::phrase('Please go to <a href="[[href]]">Configuration->Site Settings->External</a> programs for help to remedy this.',
+				'<p>', ze\admin::phrase('Please go to <a href="[[href]]">Configuration->Site Settings</a> and open the Other server programs interface to fix this.',
 					['href' => '#zenario__administration/panels/site_settings//external_programs']
 				), '</p>';
 		}

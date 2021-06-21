@@ -3,72 +3,58 @@
 sections:
     help:
         buttons:
-            help_dropdown:
-                label: Help
-                hide_when_children_are_not_visible: true
-                        
             preview:
                 appears_in_toolbars:
                     preview: true
-                parent: help_dropdown
-                label: About Browse mode
+                label: You're browsing
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Browse Mode</strong>
+                            <strong>Browse mode</strong>
                         </p>
                         <p>
-                            Use this mode to browse your site. (In other modes, most navigation is disabled.)
+                            When you view a content item that's published, this mode shows you how this content item appears to site visitors.
                         </p>
                         <p>
-                            When a content item is published, this mode shows you how this content item appears to site visitors. If a draft exists, this mode shows you how the new version will appear when published.
+                            When you view a draft, this mode shows you how the new version will appear when published.
                         </p>
                         <p>
-                            If your site has an extranet area, and a content item's permissions define it as private, this mode bypasses the permissions system and shows you how it will appear to an authorized user.
+                            If your site has an extranet area, and a content item's permissions define it as private, this mode bypasses the permissions system and shows you how it will appear to an authorized user. Look out for coloured warning triangles over hyperlinks that indicate where something an administrator can see can't be seen by an anonymous visitor, or an extranet user.
                         </p>
             edit:
                 appears_in_toolbars:
                     edit: true
-                parent: help_dropdown
-                label: About Edit mode
+                label: You're in Edit mode
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Edit Mode</strong>
+                            <strong>Edit mode</strong>
                         </p>
                         <p>
-                            This mode shows you the editing controls for this content item.
+                            Pages are called "content items", and they are version-controlled. When you start editing, Zenario makes a draft that you can work on without your changes being seen by visitors.
                         </p>
                         <p>
-                            Click &quot;Start editing&quot; to create a draft that you can work on.
-                        </p>
-                        <p>
-                            If you have Author permissions, hover over a slot in the page, and click on a &quot;pencil&quot; icon to edit.
-                        </p>
-                        <p>
-                            If you have Designer permissions, you will be able to work with plugins that are in slots on this page. Click on a &quot;plugin&quot; icon in the page to make changes or view information.
-                        </p>
-                        <p>
-                            If you have Publisher permissions, you will be able to publish changes. Press the &quot;Publish&quot; button when you are ready to make the new page live.
+                            Content items have slots, which contain plugins. These are colour-coded:<ul>
+                            <li>Green slots are version-controlled, and any changes can be previewed before publishing</li>
+                            <li>Pink slots are plugins on this content item (but a plugin can be used in more than one place)</li>
+                            <li>Purple slots are plugins on the layout, so they appear on every content item using that layout.</li>
+                            </ul>
                         </p>
             edit_disabled:
                 appears_in_toolbars:
                     edit_disabled: true
                 parent: help_dropdown
-                label: About Edit mode
+                label: Edit mode is disabled
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Edit Mode</strong>
+                            <strong>Edit mode disabled</strong>
                         </p>
                         <p>
-                            This mode shows you the editing controls for this content item.
-                        </p>
-                        <p>
-                            You cannot make any changes if you do not have Author permission, or if a content item is locked by another administrator.
+                            You cannot make changes to this content item. This is either because do not have Author permissions, or because this content item is locked by another administrator.
                         </p>
             rollback:
                 appears_in_toolbars:
@@ -79,41 +65,55 @@ sections:
                     html: true
                     message: |
                         <p>
-                            <strong>History Mode</strong>
+                            <strong>History mode</strong>
                         </p>
                         <p>
                             This mode allows you to view details of a previous version of this content item.
                         </p>
-            layout:
+            item:
                 appears_in_toolbars:
-                    layout: true
-                parent: help_dropdown
-                label: About Layout mode
+                    item: true
+                label: You're in Slot mode
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Layout Mode</strong>
+                            <strong>Slot mode</strong>
                         </p>
                         <p>
-                            This mode shows you the slots that are occupied by plugins on the layout.
+                            The rectangular areas of a page are called "slots". A slot can a contain a plugin, a nests or a slideshow, or it can be empty.
                         </p>
                         <p>
-                            Where there is a plugin from the library in a slot on this layer, that same plugin will appear on every content item that uses this layout.
+                            Plugins are instances of a Zenario module that a visitor can see. They can have a range of uses, from simple Banners (that have an image, words and a link) to those with custom functionality.
                         </p>
                         <p>
-                            Where there is a version-controlled
-                            Banner, Content Summary List, Raw HTML Snippet or WYSIWYG editor,
-                            all content items using this layout will have a
-                            Banner, Content Summary List, Raw HTML Snippet or WYSIWYG editor
-                            in that slot,
-                            but the content will be different for each content item.
-                            Use Edit mode to edit version-controlled content.
+                            A nest is a combination of multiple plugins arranged together. A slideshow is a combination of several Banner plugins to show an animated display.
                         </p>
                         <p>
-                            In Layout mode, you may also click &quot;Edit layout&quot; to make changes to the layout itself, including the size and positions of slots.
+                            You can click the slot inspector in the top-right of a slot to access the settings of a plugin, nest or slideshow.
                         </p>
-            
+                        <p>
+                            The same plugin, nest or slideshow can be used in many places. So if you make changes, beware that the change may have effect on more than one content item.
+                        </p>
+            layout:
+                appears_in_toolbars:
+                    layout: true
+                label: You're in Layout mode
+                help:
+                    html: true
+                    message: |
+                        <p>
+                            <strong>Layout mode</strong>
+                        </p>
+                        <p>
+                            This powerful mode gives access to settings for the layout, so that you can control its design, CSS, and what plugins, nests are slideshows are in its slots.
+                        </p>
+                        <p>
+                            Any changes made here will have an effect on all items using the layout, so beware!
+                        </p>
+                        <p>
+                            Where there is a version-controlled WYSIWYG Editor or Raw HTML Snippet, use Edit mode to edit content on an individual content item.
+                        </p>
             
             body_classes:
                 appears_in_toolbars:
@@ -134,3 +134,31 @@ sections:
                     css_class: zenario_help_window
     menu_node_help:
         buttons:
+            menu1:
+                appears_in_toolbars:
+                    menu1: true
+                label: You're in Menu mode
+                help:
+                    html: true
+                    message: |
+                        <p>
+                            <strong>Menu mode</strong>
+                        </p>
+                        <p>
+                            Zenario's menu navigation is arranged into "menu sections", with "Main" being the name of the main one. There can be a footer menu, and others.
+                        </p>
+                        <p>
+                            On a simple site, each section may have a single "level", typically with a few menu nodes. But on larger sites each section can have a hierarchy with two or more levels of navigation.
+                        </p>
+                        <p>
+                            You can change the text of a menu node by just clicking on the text while in this mode. Changes take effect as soon as you save.
+                        </p>
+                        <p>
+                    Menu nodes can have further properties: for example, they can link to external websites, they can have CSS classes and images, and on extranet sites they can have controls over when and to whom they appear.
+                        </p>
+                        <p>
+                            Normally just one menu node links to each content item. But it's possible to have several menu nodes linking to a content item, and in that situation one menu node is designated as "primary" and the others as "secondary".
+                        </p>
+                        <p>
+                            The whole menu hierarchy, or tree, can be re-arranged, and to do this click "Organize menu".
+                        </p>

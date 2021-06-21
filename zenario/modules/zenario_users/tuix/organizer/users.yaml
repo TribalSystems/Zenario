@@ -473,7 +473,7 @@ zenario__users:
                     hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
-                    label: Send welcome email
+                    label: Send activation email
                     multiple_select: true
                     with_columns_set:
                         traits.active: true

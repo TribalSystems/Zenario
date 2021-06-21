@@ -1,7 +1,7 @@
 {
     "name": "symfony/process",
     "type": "library",
-    "description": "Symfony Process Component",
+    "description": "Executes commands in sub-processes",
     "keywords": [],
     "homepage": "https://symfony.com",
     "license": "MIT",
@@ -24,10 +24,5 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "dev",
-    "extra": {
-        "branch-alias": {
-            "dev-master": "4.4-dev"
-        }
-    }
+    "minimum-stability": "dev"
 }

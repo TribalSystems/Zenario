@@ -231,22 +231,22 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 					$box['confirm']['message'] .= '<p>'. ze\admin::phrase('This will create a new Draft for:'). '</p>';
 			
 					if ($mrg['published']) {
-						$box['confirm']['message'] .= '<p> &nbsp; &bull; '. ze\admin::phrase('[[published]] Published Content Item(s)', $mrg). '</p>';
+						$box['confirm']['message'] .= '<p> &nbsp; &bull; '. ze\admin::phrase('[[published]] published content item(s)', $mrg). '</p>';
 					}
 			
 					if ($mrg['hidden']) {
-						$box['confirm']['message'] .= '<p> &nbsp; &bull; '. ze\admin::phrase('[[hidden]] Hidden Content Item(s)', $mrg). '</p>';
+						$box['confirm']['message'] .= '<p> &nbsp; &bull; '. ze\admin::phrase('[[hidden]] hidden content item(s)', $mrg). '</p>';
 					}
 			
 					if ($mrg['trashed']) {
-						$box['confirm']['message'] .= '<p> &nbsp; &bull; '. ze\admin::phrase('[[trashed]] Archived Content Item(s)', $mrg). '</p>';
+						$box['confirm']['message'] .= '<p> &nbsp; &bull; '. ze\admin::phrase('[[trashed]] archived content item(s)', $mrg). '</p>';
 					}
 			
 					if ($mrg['draft']) {
-						$box['confirm']['message'] .= '<p>'. ze\admin::phrase('and will update [[draft]] Draft Content Item(s).', $mrg);
+						$box['confirm']['message'] .= '<p>'. ze\admin::phrase('and will update [[draft]] draft content item(s).', $mrg);
 					}
 				} else {
-					$box['confirm']['message'] .= '<p>'. ze\admin::phrase('This will update [[draft]] Draft Content Item(s).', $mrg);
+					$box['confirm']['message'] .= '<p>'. ze\admin::phrase('This will update [[draft]] draft content item(s).', $mrg);
 				}
 				
 				//print_r($box['confirm']);
@@ -275,7 +275,7 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 				ze\layoutAdm::changeContentItemLayout($cID, $cType, $cVersion, $values['layout_id']);
 				
 				//Mark this version as updated
-				ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version = [], $forceMarkAsEditsMade = true);
+				ze\contentAdm::updateVersion($cID, $cType, $cVersion, $version = []);
 			}
 		}
 		

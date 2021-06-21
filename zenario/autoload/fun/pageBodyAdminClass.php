@@ -63,12 +63,21 @@ if (\ze::$cVersion == \ze::$adminVersion) {
 	}
 }
 
+
 //Default to preview mode
 //If this Content Item is not the same Content Item as last time, default to Preview mode
 if (empty($_SESSION['page_mode'])
  || (!empty($_SESSION['last_item']) && $_SESSION['last_item'] != \ze::$cType. '_'. \ze::$cID)) {
 	$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 }
+
+//In 9.0, we're experiementing with disabling the feature that remembers the page mode/admin toolbar mode.
+//However we wish to test it out first, so rather than going to all of the effort to rip it out straight
+//away, I've added this line to try and counteract it, just so we can try it out.
+$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
+
+
+
 $_SESSION['last_item'] = \ze::$cType. '_'. \ze::$cID;
 
 //Check that we're about to use a toolbar that exists

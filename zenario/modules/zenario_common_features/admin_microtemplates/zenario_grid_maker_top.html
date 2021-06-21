@@ -1,7 +1,15 @@
 <form>
 	<div class="zenario_grid_options">
 		<div class="zenario_grid_type">
-			<span>Editing {{zenarioGM.layoutName}} with Grid Maker</span>
+			<span>
+				
+				Editing  
+
+					{{zenarioGM.layoutName}} 
+				
+				with Gridmaker
+				
+			</span>
 			<input type="radio" id="{{m.formId}}--setting_fixed" name="zenario_grid_type" class="zenario_grid_setting_fixed" {{(!zenarioGM.data.fluid? 'checked="checked"' : '')}}/> <label for="{{m.formId}}--setting_fixed">{{zenarioA.phrase.gridFixed}}</label> <span class="zenario_grid_i" title="{{zenarioA.phrase.gridFixedTooltip}}">i</span> 
 			<input type="radio" id="{{m.formId}}--setting_flu" name="zenario_grid_type" class="zenario_grid_setting_flu" {{(zenarioGM.data.fluid? 'checked="checked"' : '')}}/> <label for="{{m.formId}}--setting_flu">{{zenarioA.phrase.gridFluid}}</label> <span class="zenario_grid_i" title="{{zenarioA.phrase.gridFluidTooltip}}">i</span> 
 		</div>

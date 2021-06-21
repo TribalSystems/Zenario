@@ -42,12 +42,12 @@ foreach (explode(',', $eggIds) as $eggId) {
 //Display a confirmation box, asking the admin if they want to delete the plugin(s)
 if (!$pluginName) {
 	$message =
-		'<p>'. ze\admin::phrase('Are you sure you wish to remove the selected Plugins from the nest?'). '</p>'.
+		'<p>'. ze\admin::phrase('Are you sure you wish to remove the selected plugins from the nest?'). '</p>'.
 		'<p>'. ze\admin::phrase('Their settings will be deleted but any attached images will be left in the image library.'). '</p>';
 
 } else {
 	$message =
-		'<p>'. ze\admin::phrase('Are you sure you wish to remove the &quot;[[name]]&quot; Plugin from the nest?', ['name' => htmlspecialchars($pluginName)]). '</p>'.
+		'<p>'. ze\admin::phrase('Are you sure you wish to remove the plugin &quot;[[name]]&quot; from the nest?', ['name' => htmlspecialchars($pluginName)]). '</p>'.
 		'<p>'. ze\admin::phrase('Its settings will be deleted but any attached images will be left in the image library.'). '</p>';
 }
 
@@ -58,7 +58,7 @@ $usagePublished = ze\pluginAdm::usage($instanceId, true);
 if ($usage > 1 || $usagePublished > 0) {
 	$message .=
 		'<p>'. ze\admin::phrase(
-			'This will affect <span class="zenario_x_published_items">[[published]] Published Content Item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] Content Item(s) in total</a>).</span>',
+			'This will affect <span class="zenario_x_published_items">[[published]] published content item(s)</span> <span class="zenario_y_items">(<a href="[[link]]" target="_blank">[[pages]] content item(s) in total</a>).</span>',
 			[
 				'pages' => (int) $usage,
 				'published' => (int) $usagePublished,

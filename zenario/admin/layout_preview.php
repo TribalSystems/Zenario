@@ -78,7 +78,7 @@ ze\content::setShowableContent($content, $chain, $version, false);
 ze\plugin::slotContents(
 	ze::$slotContents,
 	ze::$cID, ze::$cType, ze::$cVersion,
-	ze::$layoutId, ze::$templateFamily, ze::$templateFileBaseName);
+	ze::$layoutId);
  
 
 
@@ -126,7 +126,10 @@ $skinDiv .= '">';
 ze\content::pageBody('zenario_layout_preview');
 echo $skinDiv, $templateDiv, $contentItemDiv;
 
-require CMS_ROOT. ze::$templatePath. ze::$templateFilename;
+if ($tplFile = ze\content::layoutHtmlPath($layout['layout_id'])) {
+	require CMS_ROOT. $tplFile;
+}
+
 
 echo "\n", '</div></div></div>';
 ze\content::pageFoot($prefix, $mode, $includeOrganizer = true, $includeAdminToolbar = false);

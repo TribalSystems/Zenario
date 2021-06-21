@@ -31,10 +31,17 @@ switch ($path) {
 	case 'zenario__email_template_manager/panels/email_templates':
 		
 		if (ze::setting('debug_override_enable')) {
+			$sendToDebugAddressOrDontSentAtAll = ze::setting('send_to_debug_address_or_dont_send_at_all');
 			$panel['notice']['show'] = true;
-			$panel['notice']['message'] =
-				ze\admin::phrase('Email debug mode is enabled, all emails will be sent to [[email]].',
-					['email' => ze::setting('debug_override_email_address')]);
+			
+			if ($sendToDebugAddressOrDontSentAtAll == 'send_to_debug_email_address') {
+				$panel['notice']['message'] =
+					ze\admin::phrase('Email debug mode is enabled, all emails will be sent to [[email]].',
+						['email' => ze::setting('debug_override_email_address')]);
+			} elseif ($sendToDebugAddressOrDontSentAtAll == 'dont_send_at_all') {
+				$panel['notice']['message'] =
+					ze\admin::phrase('Email debug mode is enabled, emails will not be sent at all.');
+			}
 		}
 		
 		if ($refinerName == 'email_templates_using_image') {

@@ -5,6 +5,7 @@ site_settings:
     tabs:
         zip:
             label: Zip
+            ord: 4
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: Yes

@@ -35,6 +35,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $directories = [
 	'cache' => [
+		'layouts' => 14 * 24 * 60 * 60,
 		'downloads' => -2,
 		'images' => -2,
 		'fabs' => 4 * 60 * 60,

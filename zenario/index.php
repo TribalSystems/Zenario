@@ -259,7 +259,7 @@ if (($methodCall == 'showSingleSlot' || $methodCall == 'showIframe')
 ze\plugin::slotContents(
 	ze::$slotContents,
 	ze::$cID, ze::$cType, ze::$cVersion,
-	ze::$layoutId, ze::$templateFamily, ze::$templateFileBaseName,
+	ze::$layoutId,
 	$specificInstance, $specificSlot,
 	false, true, false, $overrideSettings, $overrideFrameworkAndCSS);
 ze\cache::start();
@@ -565,7 +565,10 @@ if ($specificInstance || $specificSlot) {
 } elseif (!empty($_REQUEST['_show_page_preview'])) {
 	ze\content::pageBody('zenario_showing_preview', '', true);
 	echo $skinDiv, $templateDiv, $contentItemDiv;
-	require CMS_ROOT. ze::$templatePath. ze::$templateFilename;
+	
+	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId)) {
+		require CMS_ROOT. $tplFile;
+	}
 	
 	echo "\n", '</div></div></div>';
 	
@@ -603,18 +606,10 @@ if ($specificInstance || $specificSlot) {
 	
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
-	if (file_exists(CMS_ROOT. ($file = ze::$templatePath. ze::$templateFilename))) {
-		require CMS_ROOT. $file;
+
+	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId)) {
+		require CMS_ROOT. $tplFile;
 		ze\plugin::checkSlotsWereUsed();
-	
-	} else {
-		echo 
-			'<div style="padding:auto; margin:auto; text-align: center; position: absolute; top: 35%; width: 100%;">',
-				htmlspecialchars($msg = ze\admin::phrase('Layout file "[[file]]" is missing. ', ['file' => $file])),
-				'<a href="zenario/admin/organizer.php">Go to Organizer</a>',
-			'</div>';
-		
-		ze\db::reportError('Layout file missing at', $msg);
 	}
 	
 	echo "\n", '</div></div></div>';

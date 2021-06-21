@@ -15,11 +15,13 @@ zenario_user_form_response:
                 response_datetime:
                     label: 'Date/Time Responded:'
                     type: text
+                    show_as_a_span: true
                     readonly: true
                     style: "width:10em"
                 crm_response:
                     label: 'CRM response:'
                     type: textarea
+                    show_as_a_span: true
                     readonly: true
                 data:
                     snippet:
