@@ -31,7 +31,13 @@
 
 if (!defined('CMS_ROOT')) {
 	$dirname = dirname($cwd = $argv[0] ?? $_SERVER['SCRIPT_FILENAME'] ?? '.');
-	$cwd = $cwd[0] === '/'? $dirname. '/' : getcwd(). '/'. ($dirname === '.'? '' : $dirname. '/');
+	
+ 	//MacOS or Linux	//Windows
+	if ($cwd[0] === '/' || ($cwd[1] === ':' && $cwd[2] === '/')) {
+		$cwd = $dirname. '/';
+	} else {
+		$cwd = getcwd(). '/'. ($dirname === '.'? '' : $dirname. '/');
+	}
 	
 	for ($ci = 9; --$ci > 0 && !is_file($cwd. 'zenario/basicheader.inc.php');) {
 		$cwd = dirname($cwd). '/';
