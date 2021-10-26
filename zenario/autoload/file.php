@@ -612,6 +612,13 @@ class file {
 			case 'phtm':
 			case 'phtml':
 			case 'sh':
+			//As of 9.0, we now globally block users from uploading HTML files
+			case 'htm':
+			case 'html':
+			case 'htt':
+			case 'mhtml':
+			case 'stm':
+			case 'xhtml':
 				return true;
 			default:
 				return false;

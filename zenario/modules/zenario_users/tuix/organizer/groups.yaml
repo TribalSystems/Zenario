@@ -1,18 +1,9 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__users:
-    nav:
-        groups:
-            priv: _PRIV_VIEW_USER
-            ord: "1.1"
-            label: Groups
-            tooltip: >
-                Users can be arranged into groups, and permissions to view content can be arranged on a by-group basis.
-            link:
-                path: zenario__users/panels/groups
-    
     panels:
         groups:
+            priv: _PRIV_VIEW_USER
             title: Groups
             db_items:
                 table: '[[DB_PREFIX]]custom_dataset_fields cdf'

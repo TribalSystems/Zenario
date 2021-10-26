@@ -163,6 +163,7 @@ zenario__layouts:
                         initialWidth: 100%
                         initialHeight: 100%
                         iframe: true
+                        escKey: false
                         transition: none
                         css_class: zenario_grid_maker
                 help:
@@ -220,6 +221,7 @@ zenario__layouts:
                         initialWidth: 100%
                         initialHeight: 100%
                         iframe: true
+                        escKey: false
                         transition: none
                         css_class: zenario_grid_maker
                 view_dropdown:

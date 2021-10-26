@@ -424,6 +424,11 @@ class zenario_forum extends zenario_comments {
 	
 		if($this->allow_uploads){
 			if(!$location || !strlen($location)) return;
+			
+			if (!ze\file::isImage(ze\file::mimeType($file_name))) {
+				return;
+			}
+			
 			if ($fileId = ze\file::addToDatabase(self::$forum_post_upload_dbkey, $location, $file_name, false, false, true)) {
 				$using_ids = ['file_id' => (int)$fileId, 'post_id' => (int)$postId];
 				$using_values = $using_ids;

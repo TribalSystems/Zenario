@@ -4910,6 +4910,10 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 	overflow:hidden;
 }
 
+#organizer_rightColumn .organizer_hierarchy_view div.organizer_row.document div.organizer_cells_items.organizer_documents_items {
+	width:calc(100% - 120px - 50px);
+}
+
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items span.organizer_cell_items {
 	text-overflow: ellipsis;
 	max-width: 40%;

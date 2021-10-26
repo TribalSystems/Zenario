@@ -561,7 +561,8 @@ zenarioAB.svgSelected = function(fieldName) {
 //Change a child-checkbox
 zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c) {
 	var parentChecked = true,
-		parentClass;
+		parentClass,
+		fields = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields;
 	
 	//Count how many checkboxes are on the page, and how many of these are checked
 	if (!defined(n)) {
@@ -581,7 +582,7 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 	}
 	
 	get(parentName).checked =
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[parentName].current_value = parentChecked;
+	fields[parentName].current_value = parentChecked;
 	
 	$(get('row__' + parentName))
 		.removeClass('zenario_permgroup_empty')
@@ -589,10 +590,17 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 		.removeClass('zenario_permgroup_full')
 		.addClass(parentClass);
 	
+	fields[parentName].row_class =
+		fields[parentName].row_class
+			.replace(' zenario_permgroup_empty', '')
+			.replace(' zenario_permgroup_half_full', '')
+			.replace(' zenario_permgroup_full', '')
+			+ ' ' + parentClass;
+	
 	//Set the "X / Y" display on the toggle
 	get(toggleName).value =
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].value =
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].current_value = c + '/' + n;
+	fields[toggleName].value =
+	fields[toggleName].current_value = c + '/' + n;
 };
 
 //Change the parent checkbox
@@ -618,7 +626,7 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	if (visibleChildren) {
 		$children.each(function(i, el) {
 			el.checked = checked;
-			//$children.attr('checked', checked? 'checked' : false);
+			//$children.prop('checked', checked? 'checked' : false);
 		});
 	}
 	

@@ -196,6 +196,10 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			$cols[$t['overwrite']] = $values['slot/overwrite'];
 		}
 		
-		ze\row::update($t['table'], $cols, $t['key']);
+		if ($box['key']['level'] == 'item') {
+			ze\contentAdm::updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $cols);
+		} else {
+			ze\row::update($t['table'], $cols, $t['key']);
+		}
 	}
 }

@@ -3,6 +3,7 @@
 zenario__users:
     panels:
         administrators:
+            priv: _PRIV_VIEW_ADMIN
             panel_type: list_with_caching_disabled
             title: Administrators
             no_items_message: This site has no administrators. Click "Create" to create one.

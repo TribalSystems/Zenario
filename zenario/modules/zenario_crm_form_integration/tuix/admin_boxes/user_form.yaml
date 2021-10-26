@@ -187,6 +187,59 @@ zenario_user_form:
                     
                 name10: *name
                 value10: *value
+
+                send_tags:
+                    indent: 1
+                    label: Send Tags
+                    type: checkbox
+                    visible_if: zenarioAB.value('enable')
+                    format_onchange: true
+                
+                #For simplicity, these fields will have ordinals 11-20.
+                tag_name11: &tag_name
+                    indent: 2
+                    label: "Tag name / Status:"
+                    type: text
+                    maxlength: "255"
+                    style: "width: 200px"
+                    hide_with_previous_field: true
+                    visible_if: "zenarioAB.value('enable') && zenarioAB.value('send_tags');"
+                tag_value11: &tag_value
+                    same_row: true
+                    label: "Status:"
+                    type: text
+                    maxlength: "255"
+                    style: "width: 200px"
+                    side_note: Additional field in the form.
+                    hide_with_previous_field: true
+                    visible_if: "zenarioAB.value('enable') && zenarioAB.value('send_tags');"
+                
+                tag_name12: *tag_name
+                tag_value12: *tag_value
+
+                tag_name13: *tag_name
+                tag_value13: *tag_value
+
+                tag_name14: *tag_name
+                tag_value14: *tag_value
+
+                tag_name15: *tag_name
+                tag_value15: *tag_value
+
+                tag_name16: *tag_name
+                tag_value16: *tag_value
+
+                tag_name17: *tag_name
+                tag_value17: *tag_value
+
+                tag_name18: *tag_name
+                tag_value18: *tag_value
+
+                tag_name19: *tag_name
+                tag_value19: *tag_value
+
+                tag_name20: *tag_name
+                tag_value20: *tag_value
         
         360lifecycle_integration:
             ord: 12

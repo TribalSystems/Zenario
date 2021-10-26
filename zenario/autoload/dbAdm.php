@@ -953,9 +953,10 @@ class dbAdm {
 	public static function testMySQL($mysqldump) {
 		$result = \ze\dbAdm::callMySQL($mysqldump, ' --version');
 	
-		return $result
-			&& strpos($result, ($mysqldump? 'mysqldump' : 'mysql'). '  Ver') !== false
-			&& strpos($result, 'Distrib ') !== false;
+		return $result && (
+			strpos($result, ($mysqldump? 'mysqldump' : 'mysql'). '  Ver') !== false
+		 || strpos($result, 'Distrib ') !== false
+		);
 	}
 
 

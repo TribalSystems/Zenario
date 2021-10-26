@@ -1565,14 +1565,14 @@ class content {
 
 
 	
-	public static function layoutHtmlPath($layoutId) {
-		return self::generateLayoutFiles($layoutId, true, false);
+	public static function layoutHtmlPath($layoutId, $reportErrors = false) {
+		return self::generateLayoutFiles($layoutId, true, false, $reportErrors);
 	}
-	public static function layoutCssPath($layoutId) {
-		return self::generateLayoutFiles($layoutId, false, true);
+	public static function layoutCssPath($layoutId, $reportErrors = false) {
+		return self::generateLayoutFiles($layoutId, false, true, $reportErrors);
 	}
 	
-	private static function generateLayoutFiles($layoutId, $generateHTML, $generateCSS) {
+	private static function generateLayoutFiles($layoutId, $generateHTML, $generateCSS, $reportErrors = false) {
 		if ($layout = \ze\content::layoutDetails($layoutId, $showUsage = false, $checkIfDefault = false)) {
 			$codeName = $layout['code_name'];
 			if ($layoutDir = \ze\cache::createDir($codeName. '_'. $layout['json_data_hash'], 'cache/layouts')) {
@@ -1582,37 +1582,45 @@ class content {
 				$cssFile = $layoutDir. $codeName. '.css';
 				
 				if ($generateHTML && !file_exists(CMS_ROOT. $tplFile)) {
-					if (!is_writable(CMS_ROOT. $layoutDir)) {
-						return false;
-					}
+					if (is_writable(CMS_ROOT. $layoutDir)) {
+						$html = '';
+						$slots = [];
+						$data = \ze\row::get('layouts', 'json_data', $layoutId);
 					
-					$html = '';
-					$slots = [];
-					$data = \ze\row::get('layouts', 'json_data', $layoutId);
+						\ze\gridAdm::generateHTML($html, $data, $slots);
 					
-					\ze\gridAdm::generateHTML($html, $data, $slots);
-					
-					if (file_put_contents(CMS_ROOT. $tplFile, $html)) {
-						\ze\cache::chmod(CMS_ROOT. $tplFile);
+						if (file_put_contents(CMS_ROOT. $tplFile, $html)) {
+							\ze\cache::chmod(CMS_ROOT. $tplFile);
+						} elseif ($reportErrors) {
+							\ze\contentAdm::debugAndReportLayoutError($tplFile);
+						} else {
+							return false;
+						}
+					} elseif ($reportErrors) {
+						\ze\contentAdm::debugAndReportLayoutError($tplFile);
 					} else {
 						return false;
 					}
 				}
 				
 				if ($generateCSS && !file_exists(CMS_ROOT. $cssFile)) {
-					if (!is_writable(CMS_ROOT. $layoutDir)) {
-						return false;
-					}
+					if (is_writable(CMS_ROOT. $layoutDir)) {
+						$html = '';
+						if ($data === null) {
+							$data = \ze\row::get('layouts', 'json_data', $layoutId);
+						}
 					
-					$html = '';
-					if ($data === null) {
-						$data = \ze\row::get('layouts', 'json_data', $layoutId);
-					}
+						\ze\gridAdm::generateCSS($css, $data);
 					
-					\ze\gridAdm::generateCSS($css, $data);
-					
-					if (file_put_contents(CMS_ROOT. $cssFile, $css)) {
-						\ze\cache::chmod(CMS_ROOT. $cssFile);
+						if (file_put_contents(CMS_ROOT. $cssFile, $css)) {
+							\ze\cache::chmod(CMS_ROOT. $cssFile);
+						} elseif ($reportErrors) {
+							\ze\contentAdm::debugAndReportLayoutError($cssFile);
+						} else {
+							return false;
+						}
+					} elseif ($reportErrors) {
+						\ze\contentAdm::debugAndReportLayoutError($cssFile);
 					} else {
 						return false;
 					}
@@ -1629,6 +1637,9 @@ class content {
 						return $cssFile;
 					}
 				}
+			
+			} elseif ($reportErrors) {
+				\ze\contentAdm::debugAndReportLayoutError();
 			}
 		}
 		

@@ -3142,13 +3142,13 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
                 
                 if (!requestURI.match(/\/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)\//)
                  && !requestURI.match(/\/(admin|organizer)\.php/)) {
-                    if (match = requestURI.match(/^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html)$/)) {
+                    if (match = requestURI.match(/^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html|\.download|download=1)$/)) {
                         resolvedURL = '/?cID=' + match[1];
                     } else {
                         resolvedURL = relativePath;
                     }
                     
-                    //Store this link and a reference of it's jquery object
+                    //Store this link and a reference of its jquery object
                     if ((index = links.indexOf(resolvedURL)) === -1) {
                         links.push(resolvedURL);
                         $links.push([$el]);

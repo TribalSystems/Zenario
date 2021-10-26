@@ -813,10 +813,10 @@ zenario__content:
                 layout:
                     priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
                     visible_if: |
-                        zenarioA.checkSpecificPerms(id)
-                        && ((window.__selectedType = undefined) || true)
+                        ((window.__selectedType = undefined) || true)
                     visible_if_for_all_selected_items: |
-                        (window.__selectedType === item.type || window.__selectedType === undefined)
+                        zenarioA.checkSpecificPerms(id)
+                        && (window.__selectedType === item.type || window.__selectedType === undefined)
                         && (window.__selectedType = item.type)
                     # Note - a little bit of hacky code here, as we don't have proper support for a feature.
                     # What I'm trying to do is make sure that the button is only shown when the content type
@@ -831,12 +831,11 @@ zenario__content:
                     
                 publish:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    visible_if: |
-                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Publish...
                     multiple_select: true
                     visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id) &&
                         item.not_locked &&
                         (item.draft || item.status == 'hidden')
                     without_columns_set:
@@ -1024,12 +1023,12 @@ zenario__content:
                 
                 cancel_scheduled_publish:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    visible_if: |
-                        zenarioA.checkSpecificPerms(id)
+                    visible_if_for_all_selected_items: |
+                        item.scheduled_publish_datetime
+                        && zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Cancel scheduled publish
                     multiple_select: true
-                    visible_if_for_all_selected_items: "item.scheduled_publish_datetime"
                     ajax:
                         confirm:
                             message: |
@@ -1146,7 +1145,7 @@ zenario__content:
                 create_draft_by_copying:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
                         not_locked: true
@@ -1174,7 +1173,7 @@ zenario__content:
                 create_draft_by_overwriting:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
                         draft: true
@@ -1227,7 +1226,7 @@ zenario__content:
                 delete:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Delete draft
@@ -1262,7 +1261,7 @@ zenario__content:
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Hide
@@ -1293,7 +1292,7 @@ zenario__content:
                 trash:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Trash this content item
@@ -1308,13 +1307,12 @@ zenario__content:
                 redraft:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT
-                    visible_if: |
-                        zenarioA.checkSpecificPerms(id)
                     label: Re-draft
                     css_class: create label_to_the_left
                     multiple_select: true
                     visible_if_for_all_selected_items: |
-                        item.status == 'hidden' || item.status == 'trashed'
+                        zenarioA.checkSpecificPerms(id)
+                        && (item.status == 'hidden' || item.status == 'trashed')
                     tooltip: >
                         Re-draft this content item|This will create a new draft of
                         this content item, which will be available to visitors if

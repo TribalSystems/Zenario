@@ -38,6 +38,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			if (!$document['thumbnail_id']) {
 				$fields['file/keep_thumbnail_image']['hidden'] = true;
 			}
+
 			if (!$document['extract_wordcount']) {
 				$fields['file/keep_extract_text']['hidden'] = true;
 			}
@@ -130,7 +131,9 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				$documentProperties = [
 					'file_id' => $newFileId,
 					'filename' => $replacementDocumentName,
-					'file_datetime' => date("Y-m-d H:i:s")
+					'file_datetime' => date("Y-m-d H:i:s"),
+					'extract_wordcount' => 0,
+					'extract' => NULL
 				];
 			
 				//Copy privacy settings if a document with the same file already exists
@@ -149,11 +152,13 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 					if (!$values['file/keep_thumbnail_image']) {
 						$documentProperties['thumbnail_id'] = $extraProperties['thumbnail_id'] ?? 0;
 					}
+
 					if (!$values['file/keep_extract_text']) {
-						$documentProperties['extract'] = $extraProperties['extract'];
-						$documentProperties['extract_wordcount'] = $extraProperties['extract_wordcount'];
+						$documentProperties['extract'] = $extraProperties['extract'] ?? NULL;
+						$documentProperties['extract_wordcount'] = $extraProperties['extract_wordcount'] ?? 0;
 					}
 				}
+
 				ze\row::set('documents', $documentProperties, $documentId);
 				//If the old file had a public link, create a new public link for the new file and remake all redirects to point to it including the old file.
 				if ($publicLink && ze\cache::cleanDirs()) {

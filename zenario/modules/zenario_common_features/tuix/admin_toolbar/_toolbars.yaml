@@ -113,6 +113,7 @@ sections:
                     initialWidth: 100%
                     initialHeight: 100%
                     iframe: true
+                    escKey: false
                     fixed: true
                     transition: none
                     css_class: zenario_grid_maker

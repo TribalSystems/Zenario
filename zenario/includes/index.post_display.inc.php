@@ -152,7 +152,7 @@ if (ze::$canCache
 			}
 			
 			
-			$html = str_replace('<body class="no_js '. ze\cache::browserBodyClass(), '<body class="no_js [[%browser%]] ', ob_get_contents());
+			$html = str_replace('<body class="desktop no_js '. ze\cache::browserBodyClass(), '<body class="desktop no_js [[%browser%]] ', ob_get_contents());
 			
 			
 			//Note down any images from the cache directory that are in the page

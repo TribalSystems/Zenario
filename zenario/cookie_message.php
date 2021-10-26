@@ -35,7 +35,7 @@ header('Content-Type: text/javascript; charset=UTF-8');
 require 'basicheader.inc.php';
 
 //Ensure that the site name and subdirectory are part of the ETag, as modules can have different ids on different servers
-$ETag = 'zenario-cookie_message-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST"]. '-'. $_GET['type'];
+$ETag = 'zenario-cookie_message-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST"]. '-'. preg_replace('@[^\w\.-]@', '', $_GET['type']);
 
 //Cache this combination of running Plugin JavaScript
 ze\cache::useBrowserCache($ETag);

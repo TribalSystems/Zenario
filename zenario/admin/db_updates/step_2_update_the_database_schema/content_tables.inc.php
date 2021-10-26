@@ -1379,4 +1379,12 @@ ADD COLUMN `pinned` tinyint(1) NOT NULL default 0
 _sql
 
 
+//Remove any "HTML" files from the allowed file types table
+);	ze\dbAdm::revision( 53605
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]document_types`
+	WHERE `type` IN ('htm', 'html', 'htt', 'mhtml', 'stm', 'xhtml')
+_sql
+
+
 );

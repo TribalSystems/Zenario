@@ -328,6 +328,17 @@ To correct this, please ask your system administrator to perform a
 		if ($doVirusScan) {
 			\ze\fileAdm::exitIfVirusInFile($adminFacing, $path, $name, true);
 		}
+		
+		//Any SVGs that are uploaded should be sanitsed as a precaution against XSS attacks.
+		if (\ze\file::mimeType($name) == 'image/svg+xml') {
+			if (is_writable($path)) {
+				require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/SVG-Sanitizer/SvgSanitizer.php';
+				$SvgSanitizer = new \SvgSanitizer();
+				$SvgSanitizer->load($path);
+				$SvgSanitizer->sanitize();
+				$SvgSanitizer->save($path);
+			}
+		}
 	}
 	
 	public static function exitIfVirusInFile($adminFacing, $path, $name, $autoDelete = false) {

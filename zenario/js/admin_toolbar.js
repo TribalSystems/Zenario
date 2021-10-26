@@ -50,8 +50,7 @@ zenario.lib(function(
 
 
 
-zenarioA.toolbar =
-zenarioA.toolbarTabGrouping = 'preview';
+zenarioA.toolbar = 'preview';
 
 
 zenarioAT.setURL = function() {
@@ -130,7 +129,6 @@ zenarioAT.clickTab = function(toolbar) {
 			
 			var oldPageMode = oldToolbar && oldToolbar.page_mode || zenarioA.toolbar,
 				newPageMode = newToolbar.page_mode || toolbar,
-				newToolbarTabGrouping = newToolbar.toolbar_tab_grouping || 'edit',
 				toolbarSubstr = toolbar.substr(0, 4),
 				sbcFun = zenarioL.set,
 				testPageMode,
@@ -170,7 +168,6 @@ zenarioAT.clickTab = function(toolbar) {
 			
 			zenarioA.toolbar = toolbar;
 			zenarioA.pageMode = newPageMode;
-			zenarioA.toolbarTabGrouping = newToolbarTabGrouping;
 			zenarioA.savePageMode(true);
 			
 			//zenarioAT.drawToolbarTabs();
@@ -419,7 +416,12 @@ zenarioAT.draw = function() {
 		ti = -1,
 		tuix = zenarioAT.tuix,
 		sectionId,
-		section;
+		section,
+		
+		//Work out what the current toolbar group is
+		currentTab = ((zenarioA.toolbar && tuix.toolbars[zenarioA.toolbar]) || {}),
+		currentToolbarTabGrouping = (currentTab.toolbar_tab_grouping || 'edit');
+	
 	
 	//Loop through the toolbars, adding a tab for each
 	foreach (zenarioAT.sortedToolbars as var i) {
@@ -438,7 +440,7 @@ zenarioAT.draw = function() {
 				tooltip: tab.tooltip,
 				toolbar_microtemplate: tab.toolbar_microtemplate,
 				selected: id == zenarioA.toolbar,
-				groupingActive: (tab.toolbar_tab_grouping || 'edit') == zenarioA.toolbarTabGrouping
+				groupingActive: (tab.toolbar_tab_grouping || 'edit') == currentToolbarTabGrouping
 			};
 			
 			if (id == zenarioA.toolbar) {

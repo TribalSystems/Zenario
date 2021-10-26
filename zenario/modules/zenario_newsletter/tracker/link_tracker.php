@@ -35,10 +35,11 @@ if (file_exists('../../../zenario/visitorheader.inc.php')) {
 }
 
 $urlT = $urlNLink = $hyperlinkDetails = null;
-$urlT = isset($_GET['t'])? $_GET['t'] : null;
-$urlNLink = isset($_GET['nlink'])? $_GET['nlink'] : null;
+$urlT = $_GET['t'] ?? null;
+$urlNLink = $_GET['nlink'] ?? null;
 
 if ($urlNLink
+ && $urlT
  && $urlT != 'XXXXXXXXXXXXXXX'
  && $urlT != 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
  && ze\module::inc('zenario_newsletter')) {
@@ -50,7 +51,7 @@ if ($urlNLink
 		$sql = "
 			UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 				time_clicked_through = NOW(),
-				clicked_hyperlink_id = " . $hyperlinkDetails['id'] . "
+				clicked_hyperlink_id = ". (int) $hyperlinkDetails['id']. "
 			WHERE tracker_hash = '". ze\escape::sql($urlT). "'
 			  AND time_clicked_through IS NULL";
 		ze\sql::update($sql);
@@ -58,7 +59,7 @@ if ($urlNLink
 		$sql = "
 			UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 				time_received = NOW()
-			WHERE tracker_hash = '". ze\escape::sql($_GET['t']). "'";
+			WHERE tracker_hash = '". ze\escape::sql($urlT). "'";
 		ze\sql::update($sql);
 		
 	} else {

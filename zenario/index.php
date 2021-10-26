@@ -101,12 +101,6 @@ define('CHECK_IF_MAJOR_REVISION_IS_NEEDED', true);
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
 
 
-//Backwards compatability for template files from version 7
-function slot($slotName, $mode = false) {
-	return ze\plugin::slot($slotName, $mode);
-}
-
-
 if ($isAdmin = ze::isAdmin()) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	ze\skinAdm::checkForChangesInFiles();
@@ -156,14 +150,8 @@ $status = ze\content::getShowableContent($content, $chain, $version, $cID, $cTyp
 	//N.b. an empty string ('') is used for a private page, if a visitor is not logged in
 	//A 0 is used if a visitor is logged in and still can't see the page
 
-//If a page was requested but couldn't be shown...
-if ($status === ZENARIO_403_NO_PERMISSION) {
-	//Show the no-access if this page is not accessible
-	header('HTTP/1.0 403 Forbidden');
-	ze\content::langSpecialPage('zenario_no_access', $cID, $cType);
-	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
-
-} elseif ($status === ZENARIO_401_NOT_LOGGED_IN) {
+//Catch the case where someone who is not logged in is requesting a private page
+if ($status === ZENARIO_401_NOT_LOGGED_IN) {
 	//Set the destination so the Visitor can come back here when logged in
 	if ($content) {
 		$_SESSION['destCID'] = $content['id'];
@@ -180,6 +168,19 @@ if ($status === ZENARIO_403_NO_PERMISSION) {
 	//Show the login page
 	header('HTTP/1.0 401 Authentication Required');
 	ze\content::langSpecialPage('zenario_login', $cID, $cType);
+	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
+	
+	//If there's something wrong with the login page, show the "Access Permission Denied (401)" page as a fallback
+	if (!$status) {
+		$status = ZENARIO_403_NO_PERMISSION;
+	}
+}
+
+//If a page was requested but couldn't be shown...
+if ($status === ZENARIO_403_NO_PERMISSION) {
+	//Show the no-access if this page is not accessible
+	header('HTTP/1.0 403 Forbidden');
+	ze\content::langSpecialPage('zenario_no_access', $cID, $cType);
 	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
 
 } elseif (!$status) {
@@ -566,7 +567,7 @@ if ($specificInstance || $specificSlot) {
 	ze\content::pageBody('zenario_showing_preview', '', true);
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
-	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId)) {
+	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId, true)) {
 		require CMS_ROOT. $tplFile;
 	}
 	
@@ -607,7 +608,7 @@ if ($specificInstance || $specificSlot) {
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
 
-	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId)) {
+	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId, true)) {
 		require CMS_ROOT. $tplFile;
 		ze\plugin::checkSlotsWereUsed();
 	}

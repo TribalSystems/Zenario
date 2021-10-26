@@ -74,7 +74,10 @@ if (empty($_SESSION['page_mode'])
 //In 9.0, we're experiementing with disabling the feature that remembers the page mode/admin toolbar mode.
 //However we wish to test it out first, so rather than going to all of the effort to rip it out straight
 //away, I've added this line to try and counteract it, just so we can try it out.
-$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
+//$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
+	//This caused a few things to break, e.g. when making a draft from a published page.
+	//It's been removed on HEAD by Marcin, 12 Jul 2021.
+	//This removal has also been patched back by Chris, 21 Jul 2021.
 
 
 

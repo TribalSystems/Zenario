@@ -39,7 +39,17 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		
 		if ($_POST['extranet_add_image'] ?? false) {
 			
-			ze\fileAdm::exitIfUploadError(true, false, true, $fileVar = 'extranet_upload_image');
+		  
+		  if (empty($_FILES['extranet_upload_image']['name'])) {
+			$this->sections['Errors'] = true;
+			$this->sections['Error'] = ['Error' => $this->phrase('Please select an image.')]; 
+		  
+		  } elseif (!ze\file::isImage(ze\file::mimeType($_FILES['extranet_upload_image']['name']))) {
+			$this->sections['Errors'] = true;
+			$this->sections['Error'] = ['Error' => $this->phrase('The uploaded image is not in a supported format. Please upload an image in GIF, JPEG or PNG format. The file extension should be either .gif, .jpg, .jpeg or .png.')]; 
+		  
+		  } else {
+			ze\fileAdm::exitIfUploadError(false, false, true, $fileVar = 'extranet_upload_image');
 			
 			if (ze\file::fileSizeBasedOnUnit(ze::setting('max_content_image_filesize'),ze::setting('max_content_image_filesize_unit')) < $_FILES['extranet_upload_image']['size']) {
 				$this->sections['Errors'] = true;
@@ -74,6 +84,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 							
 
 			}
+		  }
 		
 		} elseif (($_POST['extranet_remove_image_confirm'] ?? false) && $this->setting('allow_remove')) {
 			$this->removeUserImage();

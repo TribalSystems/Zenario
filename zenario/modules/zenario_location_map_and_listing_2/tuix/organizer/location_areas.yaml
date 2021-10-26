@@ -6,7 +6,7 @@ zenario__locations:
                 title: Areas
                 view_mode: list
                 db_items:
-                    table: "[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]areas AS a"
+                    table: "[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]areas AS a"
                     id_column: a.id
                 columns:
                     id:

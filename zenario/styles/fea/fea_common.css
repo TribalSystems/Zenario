@@ -901,26 +901,26 @@ table.table_list tr th.zfea_col_sorted {
 }
 
 .zfea_zenario_list_papers .papers_wrap .paper {
-	width:calc(100% - 50px);
-	padding-left:50px;
 	padding-bottom:20px;
 	position:relative;
 }
 
 .zfea_zenario_list_papers .papers_wrap .paper p.ordinal {
 	display:inline-block;
-	position:absolute;
-	top:0;
-	left:0;
-	
 	width: 30px;
 	height: 30px;
+	float:left;
+	margin-right:15px;
 	text-align: center;
 	border-radius: 50%;
 	line-height: 30px;
 	background: rgba(0,0,0,0.2);
 	color:#333;
 	cursor:default;
+}
+
+.zfea_zenario_list_papers .papers_wrap .paper .paper_details {
+	overflow:hidden;
 }
 
 .zfea_zenario_list_papers .papers_wrap .paper p.ordinal span.tooltip {

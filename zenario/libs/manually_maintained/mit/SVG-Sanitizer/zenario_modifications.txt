@@ -1,0 +1,6 @@
+Usually we use these "zenario_modifications.txt" files to list small changes we've made.
+But in this case, we've pretty much had to rewrite the entire module!
+
+Fixed several PHP errors in the code.
+Rewrote the sanitize() function to fix an infinite loop when scanning attributes.
+Added a wrapper for the xmlDoc->save() method.

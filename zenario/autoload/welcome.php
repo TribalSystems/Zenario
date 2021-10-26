@@ -503,7 +503,13 @@ class welcome {
 				if (\ze::setting('mysql_path') && ($mysqlServerVersion = \ze\dbAdm::callMySQL(false, ' --version'))) {
 					$mysqlServerVersion = \ze\ring::chopPrefix(\ze::setting('mysql_path'), $mysqlServerVersion, true);
 					$matches = [];
-					if ($matches = preg_split('@Distrib ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE)) {
+					
+					if (
+						//Pre MySQL 8
+						($matches = preg_split('@Distrib ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE))
+						//MySQL 8+
+					 || ($matches = preg_split('@Ver ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE))
+					) {
 						if (!empty($matches[1])) {
 							if (!\ze\welcome::compareVersionNumber($mysqlVersion, $matches[1])) {
 								$mysqlVersion = $mysqlServerVersion;
@@ -1416,6 +1422,7 @@ class welcome {
 				//}
 			
 				if (empty($fields['4/theme']['values'])) {
+					$values['4/theme'] = INSTALLER_DEFAULT_THEME;
 					$fields['4/theme']['values'] = [];
 					foreach (\ze\welcome::listSampleThemes() as $dir => $imageSrc) {
 						$fields['4/theme']['values'][$dir] = [
@@ -2524,9 +2531,13 @@ class welcome {
 						}
 					}
 				}
+			}
+
+			if ($adminhtml) {
 				$adminhtml .= '</p>';
 			}
 		}
+
 		$fields['0/show_administrators_logins']['hidden'] = empty($adminhtml);
 		$fields['0/show_administrators_logins']['snippet']['html'] = $adminhtml;
 		$fields['0/show_administrators_logins']['row_class'] = 'section_valid';
@@ -2603,60 +2614,6 @@ class welcome {
 			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
 		}
 	
-	
-		//Check to see if the templates & grid templates directories exist,
-		//and that the grid templates directory and all of the files inside are writable.
-		//(A site setting can be set to stop this check.)
-		$mrg = [
-			'dir' => $dir = $tdir,
-			'basename' => $dir? htmlspecialchars(basename($dir)) : ''];
-	
-		if (!is_dir($tdir)) {
-			$fields['0/template_dir_status']['row_class'] = 'sub_invalid';
-			$fields['0/template_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> does not exist.', $mrg);
-	
-		} elseif (!\ze\welcome::directoryIsWritable($tdir)) {
-			$fields['0/template_dir_status']['row_class'] = 'sub_invalid';
-			$fields['0/template_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> is not writable.', $mrg);
-
-		} else {
-			$fileWritable = false;
-			$fileNotWritable = false;
-			foreach (scandir($tdir) as $sdir) {
-				if (is_file($tdir. '/'. $sdir)) {
-					if (is_writable($tdir. '/'. $sdir)) {
-						$fileWritable = true;
-					} else {
-						if ($fileNotWritable === false) {
-							$fileNotWritable = $sdir;
-						} else {
-							$fileNotWritable = true;
-						}
-					}
-				}
-			}
-		
-			if ($fileNotWritable === true) {
-				if ($fileWritable) {
-					$fields['0/template_dir_status']['row_class'] = 'sub_invalid';
-					$fields['0/template_dir_status']['snippet']['html'] = \ze\admin::phrase('Some of the files in the <code>[[basename]]</code> directory are not writable by the web server (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).', $mrg);
-				} else {
-					$fields['0/template_dir_status']['row_class'] = 'sub_invalid';
-					$fields['0/template_dir_status']['snippet']['html'] = \ze\admin::phrase('The files in the <code>[[basename]]</code> directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).', $mrg);
-				}
-		
-			} elseif ($fileNotWritable !== false) {
-				$fields['0/template_dir_status']['row_class'] = 'sub_invalid';
-				$fields['0/template_dir_status']['snippet']['html'] =
-					\ze\admin::phrase('<code>[[short_path]]</code> is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).',
-						['short_path' => htmlspecialchars('grid_templates/'. $fileNotWritable), 'file' => htmlspecialchars($fileNotWritable)]);
-		
-			} else {
-				$fields['0/template_dir_status']['row_class'] = 'sub_valid';
-				$fields['0/template_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
-			}
-		}
-	
 		//Loop through all of the skins in the system (max 9) and check their editable_css directories
 		$i = 0;
 		$maxI = 9;
@@ -2678,7 +2635,6 @@ class welcome {
 			$tags['tabs'][0]['fields']['skin_dir_'. $i]['current_value'] = $skinWritableDir;
 		
 			$mrg = [
-				'dir' => $dir = $tdir,
 				'basename' => $dir? htmlspecialchars(basename($skinWritableDir)) : '',
 				'2dir' => $dir? htmlspecialchars($skin['name']. '/editable_css') : ''
 			];
@@ -2839,16 +2795,6 @@ class welcome {
 			$fields['0/show_dir_2']['pressed'] = true;
 			$fields['0/dirs']['row_class'] = 'section_invalid';
 			$fields['0/dir_2']['row_class'] = 'sub_section_invalid';
-		}
-	
-		if ($fields['0/template_dir_status']['row_class'] == 'sub_invalid') {
-			$showCheckAgainButton =
-			$fields['0/show_dirs']['pressed'] =
-			$fields['0/show_dir_3']['pressed'] = true;
-			$fields['0/dirs']['row_class'] = 'section_invalid';
-			$fields['0/dir_3']['row_class'] = 'sub_section_invalid';
-		} else {
-			$fields['0/dir_3']['row_class'] = 'sub_section_valid';
 		}
 	
 		if ($fields['0/cache_dir_status']['row_class'] == 'sub_invalid') {

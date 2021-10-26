@@ -194,6 +194,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 		if ($box['key']['isVersionControlled'] || !$box['key']['instanceId']) {
 			unset($box['identifier']);
+		
+		} elseif ($box['key']['eggId']) {
+			$box['identifier']['label'] = ze\admin::phrase('Nested plugin');
+			$box['identifier']['value'] = ' ';
+			
 		} else {
 			$box['identifier']['value'] = ze\plugin::codeName($box['key']['instanceId'], $box['key']['moduleClassName']);
 			$box['identifier']['label'] = $ucPluginAdminName;

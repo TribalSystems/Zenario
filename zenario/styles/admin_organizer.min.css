@@ -464,6 +464,7 @@ body #colorbox.zenario_grid_maker #cboxClose{position:absolute;top:0;width:0;hei
 #organizer_rightColumn .organizer_hierarchy_view .organizer_cell_items{float:none;padding:0 2px 0 0}.zenario__menu__panels__menu_position #organizer_rightColumn .organizer_hierarchy_view ol>li .organizer_cells_items>.organizer_cell_items.firstcell{position:relative;top:4px}
 .zenario__menu__panels__menu_position #organizer_rightColumn .organizer_hierarchy_view ol ol li .organizer_cells_items>.organizer_cell_items.firstcell{position:relative;top:3px;left:5px}
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items{width:94%;width:calc(100% - 120px);line-height:28px;overflow:hidden}
+#organizer_rightColumn .organizer_hierarchy_view div.organizer_row.document div.organizer_cells_items.organizer_documents_items{width:calc(100% - 120px - 50px)}
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items span.organizer_cell_items{text-overflow:ellipsis;max-width:40%;white-space:nowrap;overflow:hidden}
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items span.organizer_cell_items.organizer_cell_comma{max-width:2%;padding-right:0;margin-left:-5px}
 .organizer_panel__menu_nodes .organizer_cell_comma,.organizer_panel__menu_position .organizer_cell_comma{display:none}#organizer_rightColumn .organizer_hierarchy_view #organizer_items_wrapper ol li div.organizer_row div.organizer_cells_items .organizer_column__type__cell{font-style:italic}

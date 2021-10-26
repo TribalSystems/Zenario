@@ -306,7 +306,7 @@ zenario__content:
                     hidden: true
                 layout:
                     priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
                     label: Change layout
@@ -326,7 +326,7 @@ zenario__content:
                 create_translation:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     label: |
                         Create a translation in [[lang_name]]
@@ -340,7 +340,7 @@ zenario__content:
                 add_existing_translation_to_chain:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
                         zenario_trans__can_link: true
@@ -367,7 +367,7 @@ zenario__content:
                 remove_translation_from_chain__identical_alias:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
                         has_identical_alias_to_other_items: true
@@ -390,7 +390,7 @@ zenario__content:
                 remove_translation_from_chain__non_identical_alias:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_DRAFT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     without_columns_set:
                         ghost: true
@@ -410,7 +410,7 @@ zenario__content:
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Hide
@@ -441,12 +441,11 @@ zenario__content:
                 publish:
                     parent: action_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    visible_if: |
-                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Publish
                     multiple_select: true
                     visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id) &&
                         item.not_locked &&
                         (item.draft || item.status == 'hidden')
                     without_columns_set:
@@ -486,8 +485,11 @@ zenario__content:
                         path: zenario_trash
                 delete_archives:
                     priv: _PRIV_HIDE_CONTENT_ITEM
-                    visible_if: |
+                    visible_if_for_any_selected_items: |
                         zenarioA.checkSpecificPerms(id)
+                        && item.archives_exist
+                    without_columns_set:
+                        ghost: true
                     parent: action_dropdown
                     hide_in_select_mode: true
                     label: Delete archived versions
@@ -507,7 +509,3 @@ zenario__content:
                             message_type: warning
                         request:
                             delete_archives: 1
-                    visible_if_for_any_selected_items: |
-                        item.archives_exist
-                    without_columns_set:
-                        ghost: true

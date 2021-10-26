@@ -210,7 +210,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$box['key']['from_cType'] = $box['key']['cType'];
 		}
 
-		$contentType = ze\row::get('content_types', true, $box['key']['cType']);
+		$contentType = ze\row::get('content_types', true, $box['key']['cType'] ?: $box['key']['target_cType']);
 
 		$content = $version = $status = $tag = false;
 	
@@ -229,6 +229,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 
+		$allowPinning = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $box['key']['cType']]);
+		$fields['meta_data/pinned']['hidden'] = !$allowPinning;
 
 		if ($content) {
 			//On the language selector, disable languages for which translations already exist,
@@ -414,7 +416,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['file/s3_file_id'] = $version['s3_file_id'];
 				$values['file/s3_file_name'] = $version['s3_filename'];
 
-				$fields['meta_data/pinned']['hidden'] = !ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $box['key']['cType']]);
 				$values['meta_data/pinned'] = $version['pinned'];
 				
 				if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {

@@ -76,13 +76,32 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$data = [];
 		
 		//Add static values
-		$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['name', 'value'], ['link_id' => $linkId], 'ord');
+		$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['name', 'value', 'ord'], ['link_id' => $linkId], 'ord');
+		$sendTags = false;
+		$tagsToSend = [];
 		while ($row = ze\sql::fetchAssoc($result)) {
-			//Allow responseId to be sent to CRM via merge field
-			if ($responseId) {
-				ze\lang::applyMergeFields($row['value'], ['responseId' => $responseId]);
+			if ($row['ord'] == 0) {
+				if ($row['value'] == 1) {
+					$sendTags = true;
+				}
+			} else {
+				if ($row['ord'] >= 1 && $row['ord'] <= 10) {
+					//Allow responseId to be sent to CRM via merge field
+					if ($responseId) {
+						ze\lang::applyMergeFields($row['value'], ['responseId' => $responseId]);
+					}
+					$data[$row['name']] = $row['value'];
+				} elseif ($row['ord'] >= 11 && $row['ord'] <= 20 ) {
+					if ($responseId) {
+						ze\lang::applyMergeFields($row['value'], ['responseId' => $responseId]);
+					}
+					$tagsToSend[] = ['name' => $row['name'], 'status' => $row['value']];
+				}
 			}
-			$data[$row['name']] = $row['value'];
+		}
+
+		if ($sendTags && !empty($tagsToSend)) {
+			$data['tags'] = $tagsToSend;
 		}
 		
 		//Add form field values
@@ -456,7 +475,6 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 	}
 	
 	
-	
 	protected static function sendDataToMailChimp($linkId, $data, $responseId) {
 		//Send even if there is no email address so we get an error back to record
 		if (!isset($data['EMAIL'])) {
@@ -473,6 +491,14 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 
 		//Request - Subscribe an address (PUT - create or update)
 		$url = $urlBase . '/lists/' . urlencode($crmData['mailchimp_list_id']) . '/members/' . urlencode($hash);
+
+		//If tags are present, pull them out and make a separate request later.
+		$tagsToSend = [];
+		if (!empty($data['tags'])) {
+			$tagsToSend = $data['tags'];
+			unset($data['tags']);
+		}
+
 		$data = [
 			'email_address' => $data['EMAIL'],
 			'status' => 'subscribed', 
@@ -497,6 +523,29 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		
 		if ($responseId) {
 			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
+		}
+
+		//If sending data to Mailchimp, and tags have been defined, send them now.
+		if (!empty($tagsToSend)) {
+			$url = $urlBase . '/lists/' . urlencode($crmData['mailchimp_list_id']) . '/members/' . urlencode($hash) . '/tags';
+			$data = [
+				'tags' => $tagsToSend
+			];
+			$dataJSON = json_encode($data);
+
+			static::recordLastFormCRMRequest($linkId, $url, $dataJSON);
+
+			$curl = curl_init($url);
+			curl_setopt($curl, CURLOPT_HEADER, false);
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curl, CURLOPT_USERPWD, $dc . ':' . $apiKey);
+
+			curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
+			curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+			curl_setopt($curl, CURLOPT_POSTFIELDS, $dataJSON);
+
+			$resultJSON = curl_exec($curl);
+			curl_close($curl);
 		}
 	}
 	
@@ -643,6 +692,4 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 	public static function eventFormFieldDeleted($fieldId) {
 		static::deleteFieldCRMData($fieldId);
 	}
-	
-	
 }

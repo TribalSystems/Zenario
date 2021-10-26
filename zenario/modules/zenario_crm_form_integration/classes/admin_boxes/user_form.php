@@ -132,8 +132,20 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 				
 				$result = ze\row::query(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['name', 'value', 'ord'], ['link_id' => $crmLink['id']], 'ord');
 				while ($row = ze\sql::fetchAssoc($result)) {
-					$values['mailchimp_integration/name' . $row['ord']] = $row['name'];
-					$values['mailchimp_integration/value' . $row['ord']] = $row['value'];
+					//Ord 0 will be used for the "Send Tags" checkbox...
+					if ($row['ord'] == 0) {
+						$values['mailchimp_integration/send_tags'] = $row['value'];
+					} else {
+						//... ord 1-10 for the CRM values...
+						if ($row['ord'] >= 1 && $row['ord'] <= 10) {
+							$values['mailchimp_integration/name' . $row['ord']] = $row['name'];
+							$values['mailchimp_integration/value' . $row['ord']] = $row['value'];
+						//... and ord 11-20 for the tags.
+						} elseif ($row['ord'] >= 11 && $row['ord'] <= 20) {
+							$values['mailchimp_integration/tag_name' . $row['ord']] = $row['name'];
+							$values['mailchimp_integration/tag_value' . $row['ord']] = $row['value'];
+						}
+					}
 				}
 				//populate consent fields
 				$fields['mailchimp_integration/consent_field']['values'] = $consentFields;
@@ -302,7 +314,10 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 					['form_id' => $formId]
 				);
 				
+				//Clear the CRM fields from the DB...
 				ze\row::delete(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', ['link_id' => $linkId]);
+				
+				//... then set the CRM values...
 				for ($i = 1; $i <= 10; $i++) {
 					if ($values['mailchimp_integration/name' . $i]) {
 						ze\row::insert(
@@ -314,6 +329,36 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 								'link_id' => $linkId
 							]
 						);
+					}
+				}
+
+				//... and then the tag data.
+
+				//Save the value of the "Send Tags" checkbox...
+				ze\row::insert(
+					ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', 
+					[
+						'name' => 'send_tags', 
+						'value' => (int) $values['mailchimp_integration/send_tags'], 
+						'ord' => 0, 
+						'link_id' => $linkId
+					]
+				);
+
+				if ($values['mailchimp_integration/send_tags']) {
+					//... and then the tag fields if enabled.
+					for ($i = 11; $i <= 20; $i++) {
+						if ($values['mailchimp_integration/tag_name' . $i]) {
+							ze\row::insert(
+								ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'static_crm_values', 
+								[
+									'name' => trim($values['mailchimp_integration/tag_name' . $i]), 
+									'value' => trim($values['mailchimp_integration/tag_value' . $i]), 
+									'ord' => $i, 
+									'link_id' => $linkId
+								]
+							);
+						}
 					}
 				}
 			}

@@ -390,26 +390,6 @@ diagnostics:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed(field)
                 
-                dir_3:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_level
-                    hidden: true
-                    snippet:
-                        html: Templates Directory
-                    visible_if: zenarioAW.togglePressed(field, 2)
-                show_dir_3: *show_subsection
-                    hidden: true
-                dir_3_blurb:
-                    grouping: sub_table
-                    hidden: true
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: |
-                            Zenario uses template files to form the layout of web pages.
-                            These may be edited by an administrator.
-                    visible_if: zenarioAW.togglePressed(field)
                 template_dir: &readonly_dir
                     grouping: sub_table
                     hidden: true
@@ -436,7 +416,14 @@ diagnostics:
                     snippet:
                         html: ''
                     visible_if: zenarioAW.togglePressed(field)
-                skin_dir_1: *readonly_dir
+                skin_dir_1: &readonly_dir
+                    grouping: sub_table
+                    hidden: true
+                    full_width: true
+                    row_class: sub_field
+                    type: text
+                    readonly: readonly
+                    visible_if: zenarioAW.togglePressed(field)
                 skin_dir_status_1: *dir_status
                 skin_dir_2: *readonly_dir
                 skin_dir_status_2: *dir_status

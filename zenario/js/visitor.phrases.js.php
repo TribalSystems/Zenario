@@ -32,7 +32,7 @@ require '../basicheader.inc.php';
 if (empty($_GET['langId'])) {
 	exit;
 }
-$langId = $_GET['langId'];
+$langId = preg_replace('@[^\w\.-]@', '', $_GET['langId']);
 
 $ETag = 'zenario-visitor-phrases-'. $langId. '-';
 ze\cache::useBrowserCache($ETag);

@@ -1938,4 +1938,39 @@ class contentAdm {
 			return false;
 		}
 	}
+	
+	
+	
+	public static function debugAndReportLayoutError($file = false) {
+		
+		if (!is_dir(CMS_ROOT. 'cache/')) {
+			\ze\contentAdm::reportLayoutError('The cache/ directory does not exist, please create it.');
+		
+		} elseif (!is_writable(CMS_ROOT. 'cache/')) {
+			\ze\contentAdm::reportLayoutError('The cache/ directory is not writable by the web server, please make it writable.');
+		
+		} elseif (!is_dir(CMS_ROOT. 'cache/layouts/')) {
+			\ze\contentAdm::reportLayoutError('The cache/layouts/ directory does not exist, please create it.');
+		
+		} elseif (!is_writable(CMS_ROOT. 'cache/layouts/')) {
+			\ze\contentAdm::reportLayoutError('The cache/layouts/ directory is not writable by the web server, please make it writable.');
+		
+		} elseif ($file && is_dir(dirname(CMS_ROOT. $file)) && !is_writable(dirname(CMS_ROOT. $file))) {
+			\ze\contentAdm::reportLayoutError('The sub-directories in the cache/layouts/ directory are not writable by the web server, please make them writable.');
+		
+		} elseif ($file && is_file(CMS_ROOT. $file) && !is_writable(CMS_ROOT. $file)) {
+			\ze\contentAdm::reportLayoutError('The files in the cache/layouts/ directory are not writable by the web server, please make them writable.');
+		}
+		
+		exit;
+	}
+	
+	public static function reportLayoutError($msg) {
+		echo 
+			'<div style="padding:auto; margin:auto; text-align: center; position: absolute; top: 35%; width: 100%;">',
+				htmlspecialchars($msg),
+			'</div>';
+		
+		\ze\db::reportError('Layouts not writable on ', $msg);
+	}
 }

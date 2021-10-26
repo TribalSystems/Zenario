@@ -5260,11 +5260,13 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 
 #zenario_fbAdminFloatingBox fieldset.zenario_grouping__left_column {
 	float: left;
+	clear:none;
 }
 
 #zenario_fbAdminFloatingBox fieldset.zenario_grouping__right_column {
 	float: right;
 	margin-right: 10px;
+	clear:none;
 }
 
 #zenario_fbAdminFloatingBox .zenario_grouping__left_column .input_textarea,

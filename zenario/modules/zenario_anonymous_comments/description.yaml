@@ -8,22 +8,22 @@ license_info: 'Modified BSD License'
 display_name: Comments (without login)
 description: |
     <p>This Module allows visitors, without needing to log in as an extranet user,
-to write comments on content items, thereby adding a useful
-                feedback feature to blogs and other content items.<p>
-            <p>The editor is a rich text editor, the features of which can be enabled
-                or disabled in the plugin's settings.</p>
-            <p>When a comment is added, an email notification can be sent to a specified
-                email address (typically a site administrator).
-                Template and this will be used to send the report.</p>
-            <p>Use the following fields in emails:</p>
-            <ul>
-                <li>[[cms_url]] - The URL to the website.</li>
-                <li>[[link]] - A link to the page.</li>
-                <li>[[message]] - The message that was just created or edited.</li>
-                <li>[[page_title]] - The title of the page.</li>
-                <li>[[poster_screen_name]] or [[poster_username]] - The name and/or email
-                    (If the option to display either the name and/or the email was enabled in the plugin settings.)</li>
-            </ul>
+        to write comments on content items, thereby adding a useful
+        feedback feature to blogs and other content items.<p>
+    <p>The editor is a rich text editor, the features of which can be enabled
+        or disabled in the plugin's settings.</p>
+    <p>When a comment is added, an email notification can be sent to a specified
+        email address (typically a site administrator).
+        Template and this will be used to send the report.</p>
+    <p>Use the following fields in emails:</p>
+    <ul>
+        <li>[[cms_url]] - The URL to the website.</li>
+        <li>[[link]] - A link to the page.</li>
+        <li>[[message]] - The message that was just created or edited.</li>
+        <li>[[page_title]] - The title of the page.</li>
+        <li>[[poster_screen_name]] or [[poster_username]] - The name and/or email
+            (If the option to display either the name and/or the email was enabled in the plugin settings.)</li>
+    </ul>
 category: management
 keywords: anonymous, comment, forum, post, chat, blog, message
 
