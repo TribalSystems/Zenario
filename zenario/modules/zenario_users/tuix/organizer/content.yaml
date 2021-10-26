@@ -25,6 +25,7 @@ zenario__content:
                         traits.ghost: true
                 
                 user_access_log:
+                    priv: _PRIV_VIEW_USER
                     parent: view_dropdown
                     hide_in_select_mode: Yes
                     css_class: log access_log

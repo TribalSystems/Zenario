@@ -1,19 +1,9 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__users:
-    nav:
-        smart_groups:
-            priv: _PRIV_VIEW_USER
-            ord: groups.1
-            label: Smart groups
-            tooltip: >
-                Smart groups are views of user/contacts, based on
-                filters that you define. Use smart groups to define newsletter mailing lists.
-            link:
-                path: zenario__users/panels/smart_groups
-    
     panels:
         smart_groups:
+            priv: _PRIV_VIEW_USER
             view_mode: list
             disable_grid_view: true
             

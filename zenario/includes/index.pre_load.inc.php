@@ -208,8 +208,8 @@ if (!isset($_SESSION['admin_logged_into_site'])
 												
 													ze\cache::start();
 													$page = file_get_contents($chPath. 'page.html');
-													if (false !== $pos = strpos($page, '<body class="no_js [[%browser%]]')) {
-														echo substr($page, 0, $pos), '<body class="no_js '. ze\cache::browserBodyClass(), substr($page, $pos + 32);
+													if (false !== $pos = strpos($page, '<body class="desktop no_js [[%browser%]]')) {
+														echo substr($page, 0, $pos), '<body class="desktop no_js '. ze\cache::browserBodyClass(), substr($page, $pos + 40);
 													} else {
 														echo $page;
 													}

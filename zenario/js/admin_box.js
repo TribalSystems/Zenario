@@ -618,7 +618,7 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	if (visibleChildren) {
 		$children.each(function(i, el) {
 			el.checked = checked;
-			//$children.attr('checked', checked? 'checked' : false);
+			//$children.prop('checked', checked? 'checked' : false);
 		});
 	}
 	

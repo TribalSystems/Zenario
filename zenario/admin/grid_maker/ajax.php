@@ -22,7 +22,7 @@ if (!empty($_REQUEST['compress']) && !empty($_REQUEST['data'])) {
 
 	//If a checksum was given, we can cache this file
 	if (!empty($_GET['checksum'])) {
-		$ETag = 'zenario-layout_thumbnail-'. $_SERVER['HTTP_HOST']. '-'. http_build_query($_GET);
+		$ETag = 'zenario-layout_thumbnail-'. $_SERVER['HTTP_HOST']. '-'. preg_replace('@[^\w\.-]@', '', http_build_query($_GET));
 		ze\cache::useBrowserCache($ETag);
 	}
  	

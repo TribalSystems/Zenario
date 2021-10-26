@@ -408,7 +408,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				ze\row::set('inline_images', [], $key);
 				
 				if (!$i) {
-					if (!$refinerName == 'images_for_content_item') {
+					if ($refinerName == 'images_for_content_item') {
 						self::setFirstUploadedImageAsFeatureImage($content, $id);
 					}
 				}

@@ -82,7 +82,7 @@ class site {
 					secret = ". (int) $secret;
 			}
 			
-			\ze\sql::update($sql, false, $clearCache);
+			\ze\sql::update($sql, $clearCache);
 		}
 	}
 

@@ -1258,26 +1258,9 @@ if (ze\dbAdm::needRevision(52219)) {
 }
 //For Maximum Content File Size settings we need to update value from bytes to MB
 if (ze\dbAdm::needRevision(52220)) {
+	$filesizevalue = ze::setting('content_max_filesize', false);
+	$filesizeUnit = ze::setting('content_max_filesize_unit', false);
 	
-	$filesizevalueArr = ze\row::get('site_settings', ['value','default_value'], ['name' => "content_max_filesize"]);
-	$filesizeUnit = ze\row::get('site_settings', 'value', ['name' => "content_max_filesize_unit"]);
-	$unitInsert = false;
-	if($filesizevalueArr['value']){
-		if(!$filesizeUnit){
-			if  (ze\row::exists('site_settings', ['name' => "content_max_filesize_unit"])) {
-				$unitInsert = false;
-			} else {
-				$unitInsert = true;
-			}
-		} else {
-			$unitInsert = false;
-		}
-		$filesizevalue = $filesizevalueArr['value'];
-	}
-	else{
-		$filesizevalue = $filesizevalueArr['default_value'];
-		$unitInsert = true;
-	}
 	if ($filesizevalue && !$filesizeUnit) {
 		
 		if ($filesizevalue < 1000000) {
@@ -1289,20 +1272,14 @@ if (ze\dbAdm::needRevision(52220)) {
 			$fileValue = $convertArray[0];
 			$fileUnit = $convertArray[1];
 		}
-		if ($fileValue) {
-			ze\row::update('site_settings', ['value' => round($fileValue)], ['name' => "content_max_filesize"]);
-		}
-		if ($fileUnit) {
-			if($unitInsert){
-				ze\row::insert(
-								'site_settings',
-								['name' => 'content_max_filesize_unit', 'default_value' => 'MB', 'encrypted' => 0, 'secret' => 0, 'protect_from_database_restore' => 0,'value' => $fileUnit]	
-								);
-			}
-			else{
-				ze\row::update('site_settings', ['value' => $fileUnit], ['name' => "content_max_filesize_unit"]);
-			}
-		}
+		
+		ze\site::setSetting('content_max_filesize', $filesizevalue);
+		ze\site::setSetting('content_max_filesize_unit', $filesizeUnit);
+	
+	} elseif (!$filesizevalue) {
+		ze\site::setSetting('content_max_filesize', 20);
+		ze\site::setSetting('content_max_filesize_unit', 'MB');
 	}
+	
 	ze\dbAdm::revision(52220);
 }

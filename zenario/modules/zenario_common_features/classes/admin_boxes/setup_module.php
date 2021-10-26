@@ -73,7 +73,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 
 		$box['tabs']['confirm']['hidden'] = false;
 		$box['tabs']['confirm']['fields']['module_start_desc']['hidden'] = false;
-		$box['tabs']['confirm']['fields']['module_start_desc']['snippet']['html'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
+		$box['tabs']['confirm']['fields']['module_start_desc']['snippet']['p'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
 
 		if ($module['status'] == 'module_not_initialized'
 		 && ($perms = ze\moduleAdm::scanPermissionsFromDescription($module['class_name']))) {

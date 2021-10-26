@@ -477,7 +477,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 					$isDeleteOrSubLink = false;
 					if ($i % 2) {
 						//Every odd element will be a href
-						$href = $str2;
+						$href = htmlspecialchars_decode($str2);
 						if($href == '#') {
 							$href = "not-found";
 						}

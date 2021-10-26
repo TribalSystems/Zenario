@@ -738,6 +738,13 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 	switch (thus.path) {
 		case 'zenario_skin_editor':
 			includeSlotInfo = false;
+			
+			if (loadValues) {
+				details.md5 = hex_md5(
+					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getValues1D(false, true, false, true, true)))
+				);
+			}
+			break;
 		
 		case 'plugin_settings':
 			if (loadValues) {

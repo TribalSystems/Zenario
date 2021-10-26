@@ -877,8 +877,26 @@ class tuix {
 			//Strip out any tags/sections that require a priv that the current admin does not have
 			foreach ($tags as $key => &$value) {
 				if ((string) $key == 'priv') {
-					if (!\ze\priv::check((string) $value)) {
-						return false;
+					
+					//Allow a list of permissions to be checked.
+					//The element should be shown if the current admin has rights on one of the checks given.
+					if (is_array($value)) {
+						$privCheckMet = false;
+						
+						foreach ($value as $privCheck) {
+							if (\ze\priv::check((string) $privCheck)) {
+								$privCheckMet = true;
+								break;
+							}
+						}
+						
+						if (!$privCheckMet) {
+							return false;
+						}
+					} else {
+						if (!\ze\priv::check((string) $value)) {
+							return false;
+						}
 					}
 			
 				} elseif ((string) $key == 'local_admins_only') {

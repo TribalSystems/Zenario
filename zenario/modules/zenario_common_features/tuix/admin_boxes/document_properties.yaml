@@ -18,8 +18,9 @@ zenario_document_properties:
                 document_extension:
                     label: 'Extension:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                     hidden: true
+                    readonly: true
                     hide_in_dataset_editor: true
                     
                 document_title:
@@ -35,6 +36,7 @@ zenario_document_properties:
                     type: text
                     maxlength: 5
                     hidden: true
+                    readonly: true
                 date_uploaded:
                     label: 'Date uploaded:'
                     type: datetime

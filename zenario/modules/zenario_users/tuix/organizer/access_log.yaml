@@ -1,14 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__users:
-    nav:
-        access_log:
-            ord: "98"
-            label: User access log
-            tooltip: Log of extranet users and the private content items they have accessed
-            link:
-                path: zenario__users/panels/access_log
-    
     panels:
         users:
             item_buttons:
@@ -22,6 +14,7 @@ zenario__users:
                         refiner: user
 
         access_log:
+            priv: _PRIV_VIEW_USER
             title: Extranet user content item access log
             
             notice:

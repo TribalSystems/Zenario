@@ -31,7 +31,7 @@ zenario_setup_module:
                     hidden: Yes
                     type: hidden
                     snippet:
-                        html: 'Start the module'
+                        p: 'Start the module'
                 grant_perms_desc:
                     ord: "10000"
                     full_width: Yes

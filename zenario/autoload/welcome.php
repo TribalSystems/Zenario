@@ -503,7 +503,13 @@ class welcome {
 				if (\ze::setting('mysql_path') && ($mysqlServerVersion = \ze\dbAdm::callMySQL(false, ' --version'))) {
 					$mysqlServerVersion = \ze\ring::chopPrefix(\ze::setting('mysql_path'), $mysqlServerVersion, true);
 					$matches = [];
-					if ($matches = preg_split('@Distrib ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE)) {
+					
+					if (
+						//Pre MySQL 8
+						($matches = preg_split('@Distrib ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE))
+						//MySQL 8+
+					 || ($matches = preg_split('@Ver ([\d\.]+)@', $mysqlServerVersion, 2, PREG_SPLIT_DELIM_CAPTURE))
+					) {
 						if (!empty($matches[1])) {
 							if (!\ze\welcome::compareVersionNumber($mysqlVersion, $matches[1])) {
 								$mysqlVersion = $mysqlServerVersion;

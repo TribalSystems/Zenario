@@ -42,6 +42,10 @@ class escape {
 		return mb_convert_encoding($text, 'UTF-8', 'UTF-8');
 	}
 	
+	public static function asciiInSQL($text) {
+		return \ze::$dbL->con->escape_string(preg_replace('@[^(\x20-\x7E)]*@', '', $text));
+	}
+	
 	
 
 	//This function is used in AJAX requests to send additional metadata and flags to the JavaScript running on the client.
@@ -206,6 +210,9 @@ class escape {
 		
 			} elseif ($escaping === 'sql') {
 				$sql .= "'". \ze\escape::sql($var). "'";
+		
+			} elseif ($escaping === 'asciiInSQL') {
+				$sql .= "'". \ze\escape::asciiInSQL($var). "'";
 		
 			} elseif ($escaping === 'identifier') {
 				if ($prefix) {

@@ -62,16 +62,19 @@ class contentAdm {
 		} else {
 			$details = \ze\row::get('content_types', true, \ze\escape::ascii($cType));
 		}
+		
+		if ($details) {
+		
+			if (!$details['content_type_plural_en']) {
+				$details['content_type_plural_en'] == $details['content_type_name_en'];
+			}
 	
-		if (!$details['content_type_plural_en']) {
-			$details['content_type_plural_en'] == $details['content_type_name_en'];
-		}
-	
-		$char2 = substr($details['content_type_plural_en'], 1, 1);
-		if ($char2 === strtolower($char2)) {
-			$details['content_type_plural_lower_en'] = strtolower(substr($details['content_type_plural_en'], 0, 1)). substr($details['content_type_plural_en'], 1);
-		} else {
-			$details['content_type_plural_lower_en'] = $details['content_type_plural_en'];
+			$char2 = substr($details['content_type_plural_en'], 1, 1);
+			if ($char2 === strtolower($char2)) {
+				$details['content_type_plural_lower_en'] = strtolower(substr($details['content_type_plural_en'], 0, 1)). substr($details['content_type_plural_en'], 1);
+			} else {
+				$details['content_type_plural_lower_en'] = $details['content_type_plural_en'];
+			}
 		}
 	
 		return $details;

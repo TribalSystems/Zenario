@@ -1,20 +1,45 @@
 zenario__users:
-    label: Users & contacts
-    css_class: zenario_users__top_level
-    tooltip: |
-        Manage users, contacts and administrators
     nav:
         users:
-            ord: "1"
+            priv: _PRIV_VIEW_USER
             label: 'Users & contacts'
             tooltip: >
                 On a site with an extranet, "Users" can access private areas. "Contacts" are other people whose details are stored.
             link:
                 path: zenario__users/panels/users
         suspended_users:
+            priv: _PRIV_VIEW_USER
             css_class: zenario_suspended_users
             label: Suspended users
             tooltip: People who were extranet users but whose accounts are suspended to prevent them logging in
             link:
                 path: zenario__users/panels/users
                 refiner: suspended_users
+        groups:
+            priv: _PRIV_VIEW_USER
+            label: Groups
+            tooltip: >
+                Users can be arranged into groups, and permissions to view content can be arranged on a by-group basis.
+            link:
+                path: zenario__users/panels/groups
+        smart_groups:
+            priv: _PRIV_VIEW_USER
+            label: Smart groups
+            tooltip: >
+                Smart groups are views of user/contacts, based on
+                filters that you define. Use smart groups to define newsletter mailing lists.
+            link:
+                path: zenario__users/panels/smart_groups
+        consents:
+            priv: _PRIV_VIEW_USER
+            label: Consent log
+            tooltip: >
+                When completing a form, a consent to store data may be required. View the log of consents.
+            link:
+                path: zenario__users/panels/consents
+        access_log:
+            priv: _PRIV_VIEW_USER
+            label: User access log
+            tooltip: Log of extranet users and the private content items they have accessed
+            link:
+                path: zenario__users/panels/access_log

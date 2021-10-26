@@ -131,12 +131,16 @@ zenario__documents:
 
 zenario__users:
     ord: -790
-    priv: _PRIV_VIEW_ADMIN
+    priv:
+        - _PRIV_VIEW_ADMIN
+        - _PRIV_VIEW_USER
     css_class: zenario_cms_core_users
     label: Users & contacts
+    tooltip: |
+        Manage users, contacts and administrators
     nav:
         administrators:
-            ord: "99"
+            ord: 99
             priv: _PRIV_VIEW_ADMIN
             label: Administrators
             tooltip: 'Manage Zenario administrators - people who can edit this site'

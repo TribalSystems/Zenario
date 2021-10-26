@@ -202,7 +202,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$box['key']['from_cType'] = $box['key']['cType'];
 		}
 
-		$contentType = ze\row::get('content_types', true, $box['key']['cType']);
+		$contentType = ze\row::get('content_types', true, $box['key']['cType'] ?: $box['key']['target_cType']);
 
 		$content = $version = $status = $tag = false;
 	

@@ -3652,7 +3652,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 			
 					//Include logic for unchecking children on deselection
 					if (existingParents[v]) {
-						onchange += "if (!this.checked) { $('#children_for___' + this.id + ' input').attr('checked', false); } ";
+						onchange += "if (!this.checked) { $('#children_for___' + this.id + ' input').prop('checked', false); } ";
 					}
 			
 					if (onchange) {
