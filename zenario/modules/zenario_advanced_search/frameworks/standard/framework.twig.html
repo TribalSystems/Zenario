@@ -5,22 +5,22 @@
 		{{Open_Form}}
 			<div>				
 				{% if HasCategory00 %}
-					{{"_CATEGORY"|trans}}
+					{{"Category"|trans}}
 						{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category00_id", 'source_method': "getCategory00Options", 'onchange': "if (this.form.category01_id) { this.form.category01_id.value=0; } this.form.doSearch.click()"})}}
 				{% endif %}
 
 				{% if HasCategory01 %}
-					{{"_SUBCATEGORY"|trans}}
+					{{"Subcategory"|trans}}
 					{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category01_id", 'source_method': "getCategory01Options", 'onchange': "if (this.form.category02_id) { this.form.category02_id.value=0; } this.form.doSearch.click()"})}}
 				{% endif %}
 
 				{% if HasCategory02 %}
-					{{"_SUBCATEGORY"|trans}}
+					{{"Subcategory"|trans}}
 					{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category02_id", 'source_method': "getCategory02Options", 'onchange': "this.form.doSearch.click()"})}}
 				{% endif %}
 
 				{% if HasLanguageSelection %}
-					{{"_LANGUAGE"|trans}}
+					{{"Language"|trans}}
 					{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "language_id", 'source_method': "getLanguagesOptions", 'onchange': "this.form.doSearch.click()"})}}
 				{% endif %}
 				
@@ -30,8 +30,11 @@
 					{% endif %}
                 	value="{{Search_String}}" 
                 		onkeyup="zenario_advanced_search.onKeyUp(this, {{Delay}});" />
-				<input type="submit" class="search_entry_button" name="doSearch" value="{{'_SEARCH'|trans}}" />
-				<input type="submit" class="search_entry_button" name="clearSearch" value="{{'_CLEAR'|trans}}" />
+				<input type="submit" class="search_entry_button" name="doSearch" value="{{'Search'|trans}}" />
+				
+				{% if Show_Clear_Search_Button %}
+					<input type="submit" class="search_entry_button" name="clearSearch" value="{{'Clear search'|trans}}" />
+				{% endif %}
 			</div>
 		{{Close_Form}}
 	{% endif %}
@@ -122,19 +125,19 @@
 		
 		{% if Search_No_Results %}
 			<div class="search_no_results">
-				<p>{{"_SEARCH_RETURNED_NO_HTML_RESULTS"|trans}}</p>
+				<p>{{"Your search returned no results."|trans}}</p>
 			</div>
 		{% endif %}
 		
 		{% if Search_No_Results_document %}
 			<div class="search_no_results">
-				<p>{{"_SEARCH_RETURNED_NO_DOCUMENT_RESULTS"|trans}}</p>
+				<p>{{"Your search returned no results from Documents."|trans}}</p>
 			</div>
 		{% endif %}
 		
 		{% if Search_No_Results_news %}
 			<div class="search_no_results">
-				<p>{{"_SEARCH_RETURNED_NO_NEWS_RESULTS"|trans}}</p>
+				<p>{{"Your search returned no results from News."|trans}}</p>
 			</div>
 		{% endif %}
 	{% endif %}
@@ -144,9 +147,9 @@
 
 {% if Search_Categories %}
 	<div class="search_categories">
-		<h1>{{"_SEARCH_CATEGORIES"|trans}}</h1>
+		<h1>{{"Refine Search by Category"|trans}}</h1>
 		<ul class="all_categories"><li>
-			<a class="search_category{{Category_On}}" {{All_Categories_Onclick}}>{{"_ALL_CATEGORIES"|trans}}</a>
+			<a class="search_category{{Category_On}}" {{All_Categories_Onclick}}>{{"-- All Categories --"|trans}}</a>
 		</li></ul>
 		{{Search_Categories_Tree}}
 	</div>

@@ -20,6 +20,7 @@ plugin_settings:
                     value: current_content_item
                     format_onchange: Yes
                 another_event:
+                    indent: 1
                     label: 'Select Event Content Item:'
                     plugin_setting:
                         name: another_event
@@ -32,4 +33,23 @@ plugin_settings:
                         select_phrase: Select Content Item...
                     validation:
                         required_if_not_hidden: Please select Content Item.
+                show_online_when_event_is_online:
+                    label: 'Show "Online" when event is online'
+                    type: checkbox
+                    plugin_setting:
+                        name: show_online_when_event_is_online
+                    redraw_onchange: true
+                online_text:
+                    indent: 1
+                    label: 'Online text:'
+                    type: text
+                    plugin_setting:
+                        name: online_text
+                    value: 'Online'
+                    visible_if: lib.value('show_online_when_event_is_online')
+                show_address:
+                    label: 'Show address if event has non-database address'
+                    type: checkbox
+                    plugin_setting:
+                        name: show_address
     module_class_name: zenario_ctype_event

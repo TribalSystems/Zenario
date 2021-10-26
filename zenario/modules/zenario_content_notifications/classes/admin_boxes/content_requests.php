@@ -58,7 +58,7 @@ class zenario_content_notifications__admin_boxes__content_requests extends zenar
 			SELECT content_id, content_type, content_version, admin_id, type, datetime_created, note
 			FROM ' . DB_PREFIX . ZENARIO_CONTENT_NOTIFICATIONS_PREFIX . 'versions_mirror
 			WHERE content_id = ' . (int)$box['key']['cID'] . '
-			AND content_type = "' . ze\escape::sql($box['key']['cType']) . '"
+			AND content_type = "' . ze\escape::asciiInSQL($box['key']['cType']) . '"
 			ORDER BY datetime_created DESC';
 		$result = ze\sql::select($sql);
 		$i = 0;

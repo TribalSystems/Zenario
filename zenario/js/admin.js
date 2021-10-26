@@ -68,6 +68,7 @@ phrase = phrase || {};
 zenarioA.adminSettings = zenarioA.adminSettings || {};
 zenarioA.adminPrivs = zenarioA.adminPrivs || {};
 zenarioA.showGridOn = false;
+zenarioA.showEmptySlotsOn = false;
 
 
 
@@ -569,6 +570,20 @@ zenarioA.lookupFileDetails = function(id) {
 zenarioA.toggleShowGrid = function() {
 	if (zenarioA.checkForEdits()) {
 		zenarioA.showGridOn = !zenarioA.showGridOn;
+		zenarioAT.clickTab(zenarioA.toolbar);
+	}
+};
+
+zenarioA.toggleShowEmptySlots = function() {
+	if (zenarioA.checkForEdits()) {
+		zenarioA.showEmptySlotsOn = !zenarioA.showEmptySlotsOn;
+
+		if (zenarioA.showEmptySlotsOn) {
+			$(document.body).addClass('zenario_show_empty_slots');
+		} else {
+			$(document.body).removeClass('zenario_show_empty_slots');
+		}
+
 		zenarioAT.clickTab(zenarioA.toolbar);
 	}
 };
@@ -2191,13 +2206,6 @@ zenarioA.setLinkURL = function(path, key, row) {
 		return;
 	}
 	
-	//For admin boxes, make sure the full URL is used as a workaround for any relative path problems
-	//The stripAbsURLsFromAdminBoxField() function can be used later to strip these off if this is not desirable.
-	if (zenarioA.tinyMCE_fromFAB
-	 && URL.indexOf('://') === -1) {
-		URL = URLBasePath + URL;
-	}
-	
 	zenarioA.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
 	zenarioA.setEditorField(URL);
 };
@@ -2646,7 +2654,7 @@ zenarioA.SKInit = function() {
 	}
 	
 	get('zenario_fbAdminOrganizer').innerHTML =
-		_$html('iframe', 'id', 'zenario_sk_iframe', 'src', URLBasePath + 'zenario/admin/organizer.php?openedInIframe=1&rand=' + (new Date).getTime());
+		_$html('iframe', 'id', 'zenario_sk_iframe', 'src', URLBasePath + 'organizer.php?openedInIframe=1&rand=' + (new Date).getTime());
 	
 	zenarioA.SKInitted = true;
 };
@@ -2875,6 +2883,7 @@ zenarioA.savePageMode = function(async, data) {
 	data._save_page_mode = zenarioA.pageMode;
 	data._save_page_toolbar = zenarioA.toolbar;
 	data._save_page_show_grid = zenarioA.showGridOn? 1 : '';
+	data._save_page_show_empty_slots = zenarioA.showEmptySlotsOn? 1 : '';
 	
 	$.ajax({
 		type: 'POST',
@@ -3210,8 +3219,8 @@ zenarioA.init = function(
 	adminHasSpecificPermsOnThisPage,
 	lang,
 	spareDomains,
-	draftMessage
-
+	draftMessage,
+	showEmptySlotsOn
 ) {
 	zenario.cVersion = cVersion;
 	zenario.adminId = adminId;
@@ -3219,6 +3228,7 @@ zenarioA.init = function(
 	zenarioA.toolbar = toolbar;
 	zenarioA.pageMode = pageMode;
 	zenarioA.showGridOn = showGridOn;
+	zenarioA.showEmptySlotsOn = showEmptySlotsOn;
 	zenarioA.siteSettings = siteSettings;
 	zenarioA.adminSettings = adminSettings;
 	zenarioA.adminPrivs = adminPrivs;

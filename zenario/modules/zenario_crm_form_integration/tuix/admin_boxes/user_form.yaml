@@ -6,15 +6,18 @@ zenario_user_form:
             edit_mode:
                 enabled: true
             fields:
-                client_id:
-                    label: 'Client ID:'
-                    snippet:
-                        html: ''
                 enable:
                     label: 'Enable Salesforce API integration'
                     type: checkbox
                     redraw_onchange: true
                     
+                client_id:
+                    indent: 1
+                    label: 'Client ID:'
+                    snippet:
+                        html: ''
+                    visible_if: zenarioAB.value('enable')
+
                 send_api_request:
                     indent: 1
                     label: Send API request
@@ -38,6 +41,7 @@ zenario_user_form:
                     format_onchange: true
                 
                 s_object:
+                    indent: 1
                     label: Salesforce Object Name
                     type: text
                     note_below: >
@@ -46,6 +50,7 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: Please enter a Salesforce object name.
                 desc:
+                    indent: 1
                     full_width: true
                     snippet:
                         html: >
@@ -53,6 +58,7 @@ zenario_user_form:
                     hide_with_previous_field: true
                 
                 name1: &name
+                    indent: 1
                     label: "Name / Value:"
                     type: text
                     maxlength: "255"
@@ -111,15 +117,18 @@ zenario_user_form:
                     type: information
                     message: You will need to edit each field on your form and enable CRM integration. To do this, select each field in turn and go to its CRM tab, check the checkbox to enable CRM integration, and give it the CRM field name that corresponds to the directions on the MailChimp settings for the relevant mailing list.
             fields:
-                api_key:
-                    label: 'API key:'
-                    snippet:
-                        html: ''
                 enable:
                     label: 'Enable MailChimp API integration'
                     type: checkbox
                     format_onchange: true
                 
+                api_key:
+                    indent: 1
+                    label: 'API key:'
+                    snippet:
+                        html: ''
+                    visible_if: zenarioAB.value('enable')
+
                 send_api_request:
                     indent: 1
                     label: Send API request
@@ -143,6 +152,7 @@ zenario_user_form:
                     format_onchange: true
                 
                 mailchimp_list_id:
+                    indent: 1
                     visible_if: zenarioAB.value('enable')
                     label: 'MailChimp list ID:'
                     type: text
@@ -152,6 +162,7 @@ zenario_user_form:
                     side_note: To find the MailChimp List ID, please go to your MailChimp Lists, pick a List and view its Settings, then at the bottom of the page look for the Unique ID for that list.
                 
                 desc:
+                    indent: 1
                     full_width: true
                     snippet:
                         html: >
@@ -247,15 +258,18 @@ zenario_user_form:
             edit_mode:
                 enabled: true
             fields:
-                api_key:
-                    label: 'API key:'
-                    snippet:
-                        html: ''
                 enable:
                     label: 'Enable 360Lifecycle API integration'
                     type: checkbox
                     format_onchange: true
                     
+                api_key:
+                    indent: 1
+                    label: 'API key:'
+                    snippet:
+                        html: ''
+                    visible_if: zenarioAB.value('enable')
+                
                 send_api_request:
                     indent: 1
                     label: Send API request
@@ -279,6 +293,7 @@ zenario_user_form:
                     format_onchange: true
                     
                 opportunity_advisor:
+                    indent: 1
                     visible_if: zenarioAB.value('enable')
                     label: 'Opportunity Advisor:'
                     type: text
@@ -288,6 +303,7 @@ zenario_user_form:
                         required_if_not_hidden: Enter the Opportunity Advisor.
                     note_below: Matches the "Full name" of the Advisor within the 360 CRM.
                 opportunity_lead_source:
+                    indent: 1
                     visible_if: zenarioAB.value('enable')
                     label: 'Opportunity Lead Source:'
                     type: text
@@ -297,6 +313,7 @@ zenario_user_form:
                         required_if_not_hidden: Enter the Opportunity Lead Source.
                     note_below: Matches the description of an existing "Lead Source" in the 360 CRM.
                 opportunity_lead_type:
+                    indent: 1
                     visible_if: zenarioAB.value('enable')
                     label: 'Opportunity Lead Type:'
                     type: text
@@ -307,6 +324,7 @@ zenario_user_form:
                     note_below: Matches the description of an existing "Lead Type" in the 360 CRM.
                 
                 help:
+                    indent: 1
                     visible_if: zenarioAB.value('enable')
                     label: 'The following CRM field names are expected on this form:'
                     snippet:
@@ -457,6 +475,7 @@ zenario_user_form:
                         required_if_not_hidden: Please choose a consent field.
                     format_onchange: true
                 url:
+                    indent: 1
                     label: "CRM form action URL:"
                     type: text
                     maxlength: "255"
@@ -466,6 +485,7 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: Please enter the CRM form action URL.
                 desc:
+                    indent: 1
                     full_width: true
                     snippet:
                         html: >
@@ -501,5 +521,3 @@ zenario_user_form:
                     
                 name10: *name
                 value10: *value
-
-                

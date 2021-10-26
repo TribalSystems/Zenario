@@ -828,6 +828,8 @@ class zenario_extranet extends ze\moduleBaseClass {
 				
 				//Select the home page as the default redirect page.
 				$fields['action_after_login/welcome_page']['value'] = ze::$specialPages['zenario_home'] ?? '';
+
+				$fields['first_tab/password_reset_page']['value'] = ze::$specialPages['zenario_password_reset'] ?? '';
 				
 				break;
 		}
@@ -921,7 +923,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 					break;
 				
 			}
-			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+			$link = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View Data Protection settings</a>";
 			$panel['notice']['show'] = true;
 			$panel['notice']['message'] = $accessLogDuration.".";

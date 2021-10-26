@@ -65,7 +65,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 				}
 			}
 			
-			$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__layouts/panels/layouts/item_buttons/view_content//' . $box['key']['id'] . '//';
+			$link = ze\link::absolute() . '/organizer.php#zenario__layouts/panels/layouts/item_buttons/view_content//' . $box['key']['id'] . '//';
 			
 			if ($details['content_item_count'] == 1) {
 				$sql = '
@@ -104,7 +104,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['value'] = true;
 				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['disabled'] = true;
 				//TODO
-				$panelLink = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__content/panels/content_types//' . $box['tabs']['template']['fields']['content_type']['value'];
+				$panelLink = ze\link::absolute() . '/organizer.php#zenario__content/panels/content_types//' . $box['tabs']['template']['fields']['content_type']['value'];
 				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['note_below'] =
 					ze\admin::phrase('To change the default layout, go to <a href="' . $panelLink . '" target="_blank">Settings for content types</a> panel.');
 				

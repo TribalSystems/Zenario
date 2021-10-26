@@ -49,7 +49,7 @@ $sql = "
 	  AND ps.is_content = 'version_controlled_setting'
 	  AND ps.foreign_key_to IN('file', 'multiple_files')
 	WHERE pi.content_id = ". (int) $cID. "
-	  AND pi.content_type = '". \ze\escape::sql($cType). "'
+	  AND pi.content_type = '". \ze\escape::asciiInSQL($cType). "'
 	  AND pi.content_version = ". (int) $cVersion;
 $result = \ze\sql::select($sql);
 
@@ -79,7 +79,7 @@ $sql = "
 	INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
 	   ON pi.id = ps.instance_id
 	WHERE pi.content_id = ". (int) $cID. "
-	  AND pi.content_type = '". \ze\escape::sql($cType). "'
+	  AND pi.content_type = '". \ze\escape::asciiInSQL($cType). "'
 	  AND pi.content_version = ". (int) $cVersion. "
 	  AND ps.is_content = 'version_controlled_content'";
 $result = \ze\sql::select($sql);

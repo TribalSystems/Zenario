@@ -14,21 +14,21 @@ zenario_content:
                         html: Use this screen to set dates, times and a location.
                     full_width: Yes
                 start_date:
-                    label: 'Start Date:'
+                    label: 'Start date:'
                     type: date
                     format_onchange: Yes
                     last_value: ""
                 end_date:
-                    label: 'End Date:'
+                    label: 'End date:'
                     type: date
                 specify_time:
-                    label: 'Specify Time'
+                    label: 'Specify a time'
                     type: checkbox
                     format_onchange: Yes
                 start_time_hours:
                     indent: 1
                     hidden: Yes
-                    label: 'Start Time:'
+                    label: 'Start time:'
                     pre_field_html: '&nbsp;Hours:&nbsp;'
                     type: select
                     values:
@@ -78,7 +78,7 @@ zenario_content:
                 end_time_hours:
                     indent: 1
                     hidden: Yes
-                    label: 'End Time:'
+                    label: 'End time:'
                     pre_field_html: '&nbsp;Hours:&nbsp;'
                     type: select
                     values:
@@ -130,8 +130,36 @@ zenario_content:
                     label: 'Late evening Event'
                     type: checkbox
                     note_below: Check this if your Event runs past midnight.
-                location_id:
+                locations_snippet:
+                    snippet:
+                        html: '<span class="title">Where it's on:</span>'
+                online:
                     ord: 100
+                    label: 'Online'
+                    type: checkbox
+                    value: true
+                at_location_checkbox:
+                    ord: 101
+                    label: 'At a physical location'
+                    type: checkbox
+                    redraw_onchange: true
+                at_physical_location:
+                    ord: 102
+                    indent: 1
+                    type: radios
+                    redraw_onchange: true
+                    values:
+                        location_picker:
+                            label: 'Location in database'
+                        address_text:
+                            label: 'Address not in database'
+                    visible_if: lib.value('at_location_checkbox')
+                    validation:
+                        required_if_not_hidden: 'Please select one of the options.'
+                    value: address_text
+                location_id:
+                    ord: 103
+                    indent: 2
                     label: 'Location:'
                     pick_items:
                         path: zenario__locations/panel
@@ -139,21 +167,27 @@ zenario_content:
                         min_path: zenario__locations/panel
                         nothing_selected_phrase: No location selected
                         select_phrase: Select a location...
+                    visible_if: lib.value('at_location_checkbox') && lib.value('at_physical_location') == 'location_picker'
+                    validation:
+                        required_if_not_hidden: 'Please select a location.'
                 location:
-                    ord: 100
-                    label: 'Location:'
+                    ord: 104
+                    indent: 2
+                    label: 'Enter the address:'
                     type: text
                     maxlength: 250
+                    visible_if: lib.value('at_location_checkbox') && lib.value('at_physical_location') == 'address_text'
+                    validation:
+                        required_if_not_hidden: 'Please enter an address.'
                 url:
-                    ord: 101
-                    label: 'URL:'
+                    ord: 105
+                    label: 'URL for further info:'
                     type: text
                     side_note: >
-                        To enter the URL of an external page, start the URL with
-                        http://
+                        To enter the URL of an external page, start the URL with http:// or https://
                     onclick: "if ($(this).val()=='') {$(this).val('http://')}"
                 url_test:
-                    ord: 102
+                    ord: 106
                     same_row: Yes
                     type: button
                     value: Test

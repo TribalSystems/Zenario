@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario_email_template':
+		//Try and ensure that we use absolute URLs where possible
 		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
 		
 		if ($values['meta_data/include_a_fixed_attachment'] == true && $values['meta_data/selected_attachment']) {
@@ -47,7 +48,7 @@ switch ($path) {
 		//Show site-setting value next to field and a link to the settings panel
 		if ($values['meta_data/from_details'] == 'site_settings') {
 			$fields['meta_data/from_details']['post_field_html'] = '&nbsp' . ze::setting('email_address_from') . '/' . ze::setting('email_name_from');
-			$fields['meta_data/from_details']['note_below'] = ze\admin::phrase('Go to')." <a href='".ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//email' target='_blank'>".ze\admin::phrase('Email site settings')."</a>";
+			$fields['meta_data/from_details']['note_below'] = ze\admin::phrase('Go to')." <a href='".ze\link::absolute()."organizer.php?#zenario__administration/panels/site_settings//email' target='_blank'>".ze\admin::phrase('Email site settings')."</a>";
 		} else {
 			$fields['meta_data/from_details']['post_field_html'] = '';
 			$fields['meta_data/from_details']['note_below'] = '';

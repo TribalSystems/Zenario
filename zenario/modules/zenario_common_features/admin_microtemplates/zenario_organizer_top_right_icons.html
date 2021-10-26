@@ -51,7 +51,7 @@
 <% if (zenarioA.adminPrivs._PRIV_VIEW_DIAGNOSTICS) { %>
 	<div
 		class="organizer_diagnostics"
-		onclick="zenario.goToURL('welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"
+		onclick="zenario.goToURL(URLBasePath + 'zenario/admin/welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"
 		title="View site diagnostics"
 		data-tooltip-options="
 			{position: {collision: 'flipfit'}}

@@ -1,6 +1,8 @@
 zenario__administration:
     nav:
         error_log:
+            visible_if: >
+                zenarioA.siteSettings.default_language
             label: Error log
             tooltip: Manage logged errors
             link:

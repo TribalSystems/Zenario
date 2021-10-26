@@ -257,6 +257,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				
 				$titleMrg = [
 					'module' => $module['display_name'],
+					'class_name' => $module['class_name'],
 					'instanceName' => $instanceName
 				];
 
@@ -361,38 +362,38 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				
 				if ($box['key']['eggId'] && $box['key']['isVersionControlled']) {
 					if ($box['key']['isSlideshow']) {
-						$title = ze\admin::phrase('[[module]], in version controlled slideshow [[instanceName]]', $titleMrg);
+						$title = ze\admin::phrase('[[module]] ([[class_name]]), in version controlled slideshow [[instanceName]]', $titleMrg);
 					} else {
-						$title = ze\admin::phrase('[[module]], in version controlled nest [[instanceName]]', $titleMrg);
+						$title = ze\admin::phrase('[[module]] ([[class_name]]), in version controlled nest [[instanceName]]', $titleMrg);
 					}
 		
 				} elseif ($box['key']['eggId']) {
 					if ($box['key']['isSlideshow']) {
-						$title =  ze\admin::phrase('[[module]], in slideshow "[[instanceName]]"', $titleMrg);
+						$title =  ze\admin::phrase('[[module]] ([[class_name]]), in slideshow "[[instanceName]]"', $titleMrg);
 					} else {
-						$title =  ze\admin::phrase('[[module]], in nest "[[instanceName]]"', $titleMrg);
+						$title =  ze\admin::phrase('[[module]] ([[class_name]]), in nest "[[instanceName]]"', $titleMrg);
 					}
 		
 				} elseif ($box['key']['isVersionControlled']) {
-					$title = ze\admin::phrase('Version controlled [[module]]', $titleMrg);
+					$title = ze\admin::phrase('Version controlled [[module]] ([[class_name]])', $titleMrg);
 		
 				} elseif ($box['key']['instanceId']) {
 					switch ($module['class_name']) {
 						case 'zenario_plugin_nest':
-							$title = ze\admin::phrase('Nest');
+							$title = ze\admin::phrase('Nest ([[class_name]])', $titleMrg);
 							break;
 						default:
-							$title = $titleMrg['module'];
+							$title = ze\admin::phrase('[[module]] ([[class_name]])', $titleMrg);
 					}
 		
 				} else {
 					switch ($module['class_name']) {
 						case 'zenario_plugin_nest':
-							$title = ze\admin::phrase('New nest');
+							$title = ze\admin::phrase('New nest ([[class_name]])');
 							break;
 						default:
 							$title = 
-								ze\admin::phrase('New [[module]]', $titleMrg);
+								ze\admin::phrase('New [[module]] ([[class_name]])', $titleMrg);
 					}
 				}
 		
@@ -433,7 +434,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$fields['tuix_snippet/desc2']['snippet']['html'] =
 					'<a
 						target="_blank"
-						href="'. ze\link::absolute(). 'zenario/admin/organizer.php#zenario__modules/panels/tuix_snippets"
+						href="'. ze\link::absolute(). 'organizer.php#zenario__modules/panels/tuix_snippets"
 					>'. ze\admin::phrase('Create/edit TUIX Snippets'). '</a>';
 		
 			
@@ -1528,8 +1529,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					SELECT local_text
 					FROM ". DB_PREFIX. "visitor_phrases
 					WHERE `code` = '". ze\escape::sql($code). "'
-					  AND language_id = '". ze\escape::sql(ze::$defaultLang). "'
-					  AND module_class_name = '". ze\escape::sql($moduleClassNameForPhrases). "'
+					  AND language_id = '". ze\escape::asciiInSQL(ze::$defaultLang). "'
+					  AND module_class_name = '". ze\escape::asciiInSQL($moduleClassNameForPhrases). "'
 				") ?: $defaultText;
 			}
 		}
@@ -1593,7 +1594,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
 			$mrg = [
 				'def_lang_name' => htmlspecialchars(\ze\lang::name(\ze::$defaultLang)),
-				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 		
 			$fields['phrase_table_end']['show_phrase_icon'] = true;

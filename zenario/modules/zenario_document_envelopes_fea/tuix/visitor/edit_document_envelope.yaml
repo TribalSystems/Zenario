@@ -73,6 +73,10 @@ zenario_edit_document_envelope: &definition
                     label: ''
                     hidden: true
                 
+                pinned:
+                    label: 'Pinned'
+                    type: checkbox
+                
                 submit:
                     ord: 9999
                     type: button

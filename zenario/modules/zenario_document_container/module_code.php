@@ -236,7 +236,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 		//Filter the file results by document tags
 		if ($this->useDocumentTags) {
 			$sql .= '
-				AND (d.type = "folder" OR dtl.tag_id IN (' . ze\escape::sql($this->setting('document_tags')) . '))';
+				AND (d.type = "folder" OR dtl.tag_id IN (' . ze\escape::in($this->setting('document_tags'), 'numeric') . '))';
 		}
 		
 		//Filter the file results by a dataset value
@@ -424,7 +424,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 				FROM ' . ze\escape::sql($sqlTable) . ' d
 				INNER JOIN '.DB_PREFIX.'files f
 					ON d.file_id = f.id
-				WHERE d.id IN (' . ze\escape::in(ze::get('ids'), true) . ')' .
+				WHERE d.id IN (' . ze\escape::in(ze::get('ids'), 'numeric') . ')' .
 				$sqlWhere;
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {

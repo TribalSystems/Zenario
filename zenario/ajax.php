@@ -207,8 +207,8 @@ if ($methodCall == 'refreshPlugin'
 	$sql = "
 		SELECT code, local_text
 		FROM ". DB_PREFIX. "visitor_phrases
-		WHERE language_id = '". ze\escape::sql($languageId). "'
-		  AND module_class_name = '". ze\escape::sql($_GET['__class__'] ?? false). "'";
+		WHERE language_id = '". ze\escape::asciiInSQL($languageId). "'
+		  AND module_class_name = '". ze\escape::asciiInSQL($_GET['__class__'] ?? false). "'";
 	
 	if (!empty($codes)) {
 		$sql .= "
@@ -607,7 +607,7 @@ if ($methodCall == 'showFile') {
 			ze\escape::flag('TAB_ID', $slideId);
 		}
 		
-		$cssClass = $module->zAPIGetCSSClass();
+		$cssClass = $module->wrapperClass();
 		
 		$layoutPreview = null;
 		$slotControlHTML = null;

@@ -148,3 +148,47 @@
 .zenario_master_switch-label:hover .zenario_master_switch-switch {
 	opacity:0.8;
 }
+
+
+/*
+	Styles for the on/off switches, 
+	Style 3: with slide and circle,
+	also taken from https://proto.io/freebies/onoff/
+*/
+
+.zen_col_show_hide {
+    position: relative;
+    float: left;
+    width: 40px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.zen_col_show_hide-checkbox {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.zen_col_show_hide-label {
+    display: block; overflow: hidden; cursor: pointer;
+    height: 14px; padding: 0; line-height: 14px;
+    border: 2px solid #E3E3E3; border-radius: 14px;
+    background-color: #CCCCCC;
+    transition: background-color 0.3s ease-in;
+}
+.zen_col_show_hide-label:before {
+    content: "";
+    display: block; width: 14px; margin: 0px;
+    background: #FFFFFF;
+    position: absolute; top: 0; bottom: 0;
+    right: 22px;
+    border: 2px solid #E3E3E3; border-radius: 14px;
+    transition: all 0.3s ease-in 0s; 
+}
+.zen_col_show_hide-checkbox:checked + .zen_col_show_hide-label {
+    background-color: #14BA93;
+}
+.zen_col_show_hide-checkbox:checked + .zen_col_show_hide-label, .zen_col_show_hide-checkbox:checked + .zen_col_show_hide-label:before {
+   border-color: #14BA93;
+}
+.zen_col_show_hide-checkbox:checked + .zen_col_show_hide-label:before {
+    right: 0px; 
+}

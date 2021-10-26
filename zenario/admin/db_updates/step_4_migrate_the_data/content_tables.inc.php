@@ -505,7 +505,7 @@ if (ze\dbAdm::needRevision(52205)) {
 	
 	$module = 'zenario_multiple_image_container';
 	if (ze\module::isRunning($module)) {
-		$moduleId = ze\row::get('modules', 'id', ['class_name' => ze\escape::sql($module)]);
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 
 		$imageIds = [];
 		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
@@ -531,7 +531,7 @@ if (ze\dbAdm::needRevision(52205)) {
 			$sql = '
 				SELECT id, filename
 				FROM ' . DB_PREFIX . 'files
-				WHERE id IN (' . ze\escape::in($imageIds) . ')
+				WHERE id IN (' . ze\escape::in($imageIds, 'numeric') . ')
 				AND location = "db"';
 			
 			$result = ze\sql::select($sql);
@@ -747,7 +747,7 @@ if (ze\dbAdm::needRevision(52205)) {
 if (ze\dbAdm::needRevision(52219)) {
 	$module = 'assetwolf_2';
 	if (ze\module::isRunning($module)) {
-		$moduleId = ze\row::get('modules', 'id', ['class_name' => ze\escape::sql($module)]);
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
 		
 		foreach ($instances as $instance) {
@@ -960,4 +960,72 @@ if (ze\dbAdm::needRevision(53602)) {
 	}
 
 	ze\dbAdm::revision(53602);
+}
+
+//In 9.1, there were 2 removed frameworks for Menu Vertical plugins.
+//Their features were integrated with the standard framework as plugin settings.
+//This logic will set the framework to standard, and enable the relevant setting.
+if (ze\dbAdm::needRevision(53802)) {
+	$module = 'zenario_menu_vertical';
+	if (ze\module::isRunning($module)) {
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
+
+		//Non-nested plugins
+		$pluginInstancesSql = '
+			SELECT id, framework
+			FROM ' . DB_PREFIX . 'plugin_instances
+			WHERE module_id = ' . (int)$moduleId . '
+			AND framework IN ("menu_with_name", "menu_with_title")';
+		$pluginInstancesResult = \ze\sql::select($pluginInstancesSql);
+
+		while ($row = \ze\sql::fetchAssoc($pluginInstancesResult)) {
+			if ($row['framework'] == 'menu_with_title') {
+				ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => $row['id'], 'egg_id' => 0, 'name' => 'show_parent_menu_node_text']);
+			} elseif ($row['framework'] == 'menu_with_name') {
+				ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => $row['id'], 'egg_id' => 0, 'name' => 'change_welcome_message']);
+			}
+			ze\row::set('plugin_instances', ['framework' => 'standard'], ['id' => $row['id']]);
+		}
+		
+		//Nested plugins
+		$nestedPluginInstancesSql = '
+			SELECT instance_id, id, framework
+			FROM ' . DB_PREFIX . 'nested_plugins
+			WHERE module_id = ' . (int)$moduleId . '
+			AND framework IN ("menu_with_name", "menu_with_title")';
+		$nestedPluginsResult = \ze\sql::select($nestedPluginInstancesSql);
+
+		while ($row = \ze\sql::fetchAssoc($nestedPluginsResult)) {
+			if ($row['framework'] == 'menu_with_title') {
+				ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => $row['instance_id'], 'egg_id' => $row['id'], 'name' => 'show_parent_menu_node_text']);
+			} elseif ($row['framework'] == 'menu_with_name') {
+				ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => $row['instance_id'], 'egg_id' => $row['id'], 'name' => 'change_welcome_message']);
+			}
+			
+			ze\row::set('nested_plugins', ['framework' => 'standard'], ['instance_id' => $row['instance_id'], 'id' => $row['id']]);
+		}
+	}
+
+	ze\dbAdm::revision(53802);
+}
+
+//WebP support: remove the public images folder and recreate it, so that webp images are generated.
+if (ze\dbAdm::needRevision(53803)) {
+	//Change the time limit to 10 min
+	//in case there are multiple images being created
+	//on the Diagnostics screen.
+	set_time_limit(60 * 10);
+
+	$publicImagesDir = CMS_ROOT . 'public/images';
+	if (is_dir($publicImagesDir)) {
+		if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
+			exec('rm -rf '. escapeshellarg($publicImagesDir));
+		} else {
+			ze\cache::deleteDir($publicImagesDir, 2);
+		}
+		
+		ze\cache::cleanDirs($force = true);
+	}
+
+	ze\dbAdm::revision(53803);
 }

@@ -96,3 +96,32 @@ if (ze\dbAdm::needRevision(166)) {
 
 	ze\dbAdm::revision(166);
 }
+
+if (ze\dbAdm::needRevision(173)) {
+	//Remove the "Last edited" and "Last edited by" fields.
+	//They are no longer in use, and so junk data can be deleted.
+
+	//Get the dataset ID...
+	$datasetId = ze\datasetAdm::register(
+		'Locations',
+		ZENARIO_LOCATION_MANAGER_PREFIX. 'locations_custom_data',
+		ZENARIO_LOCATION_MANAGER_PREFIX. 'locations',
+		'zenario_location_manager__location',
+		'zenario__locations/panel',
+		''
+	);
+
+	//... and then delete the dataset fields, as well as any values
+	//for 'last_updated' and 'last_updated_by' fields.
+	$sql = "
+		DELETE cdf.*, cdfv.*
+		FROM " . DB_PREFIX . "custom_dataset_fields AS cdf
+		LEFT JOIN " . DB_PREFIX . "custom_dataset_field_values AS cdfv
+		ON cdfv.field_id = cdf.id
+		WHERE cdf.is_system_field = 1
+		AND cdf.field_name IN ('last_updated', 'last_updated_by')
+		AND cdf.dataset_id = ". (int) $datasetId;
+	ze\sql::update($sql);
+
+	ze\dbAdm::revision(173);
+}

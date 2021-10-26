@@ -327,8 +327,8 @@ class moduleAdm {
 				$foundModules[$moduleName] = true;
 				$sql = "
 					INSERT INTO ". DB_PREFIX. "modules SET
-						class_name = '". \ze\escape::sql($moduleName). "',
-						vlp_class = '". \ze\escape::sql($desc['vlp_class_name']). "',
+						class_name = '". \ze\escape::asciiInSQL($moduleName). "',
+						vlp_class = '". \ze\escape::asciiInSQL($desc['vlp_class_name']). "',
 						display_name = '". \ze\escape::sql($desc['display_name']). "',
 						default_framework = '". \ze\escape::sql($desc['default_framework']). "',
 						css_class_name = '". \ze\escape::sql($desc['css_class_name']). "',
@@ -409,7 +409,7 @@ class moduleAdm {
 		$sql = "
 			SELECT 1
 			FROM ". DB_PREFIX. "module_dependencies
-			WHERE dependency_class_name = '". \ze\escape::sql($module['class_name']). "'
+			WHERE dependency_class_name = '". \ze\escape::asciiInSQL($module['class_name']). "'
 			  AND module_id = 0";
 		$result = \ze\sql::select($sql);
 	
@@ -424,7 +424,7 @@ class moduleAdm {
 		$sql = "
 			SELECT module_id, module_class_name
 			FROM ". DB_PREFIX. "module_dependencies
-			WHERE dependency_class_name = '". \ze\escape::sql($module['class_name']). "'
+			WHERE dependency_class_name = '". \ze\escape::asciiInSQL($module['class_name']). "'
 			  AND `type` = 'dependency'";
 		$result = \ze\sql::select($sql);
 	
@@ -447,7 +447,7 @@ class moduleAdm {
 		$sql = "
 			SELECT module_class_name
 			FROM ". DB_PREFIX. "module_dependencies
-			WHERE dependency_class_name = '". \ze\escape::sql($module['class_name']). "'
+			WHERE dependency_class_name = '". \ze\escape::asciiInSQL($module['class_name']). "'
 			  AND `type` = 'dependency'";
 		$result = \ze\sql::select($sql);
 	
@@ -654,7 +654,7 @@ class moduleAdm {
 
 		$sql = "
 			UPDATE ". DB_PREFIX. "modules SET
-				vlp_class = '". \ze\escape::sql($desc['vlp_class_name']). "',
+				vlp_class = '". \ze\escape::asciiInSQL($desc['vlp_class_name']). "',
 				display_name = '". \ze\escape::sql($desc['display_name']). "',
 				default_framework = '". \ze\escape::sql($desc['default_framework']). "',
 				css_class_name = '". \ze\escape::sql($desc['css_class_name']). "',
@@ -709,9 +709,9 @@ class moduleAdm {
 					$sql = "
 						INSERT INTO ". DB_PREFIX. "module_dependencies SET
 							module_id = '". (int) $moduleId. "',
-							module_class_name = '". \ze\escape::sql($moduleClassName). "',
-							dependency_class_name = '". \ze\escape::sql(trim($module)). "',
-							`type` = '". \ze\escape::sql(trim($type)). "'";
+							module_class_name = '". \ze\escape::asciiInSQL($moduleClassName). "',
+							dependency_class_name = '". \ze\escape::asciiInSQL(trim($module)). "',
+							`type` = '". \ze\escape::asciiInSQL(trim($type)). "'";
 					\ze\sql::update($sql);
 				}
 			}
@@ -787,9 +787,9 @@ class moduleAdm {
 						INSERT INTO ". DB_PREFIX. "signals SET
 							signal_name = '". \ze\escape::sql($signal['name']). "',
 							module_id = '". (int) $moduleId. "',
-							module_class_name = '". \ze\escape::sql($moduleClassName). "',
+							module_class_name = '". \ze\escape::asciiInSQL($moduleClassName). "',
 							static_method = ". \ze\ring::engToBoolean($signal['static'] ?? false). ",
-							suppresses_module_class_name = '". \ze\escape::sql($signal['suppresses_module_class_name'] ?? false). "'";
+							suppresses_module_class_name = '". \ze\escape::asciiInSQL($signal['suppresses_module_class_name'] ?? false). "'";
 					\ze\sql::update($sql);
 				}
 			}
@@ -805,10 +805,10 @@ class moduleAdm {
 					$sql = "
 						INSERT IGNORE INTO ". DB_PREFIX. "jobs SET
 							job_type = 'scheduled',
-							manager_class_name = '". \ze\escape::sql((($job['manager_class_name'] ?? false) ?: 'zenario_scheduled_task_manager')). "',
+							manager_class_name = '". \ze\escape::asciiInSQL((($job['manager_class_name'] ?? false) ?: 'zenario_scheduled_task_manager')). "',
 							job_name = '". \ze\escape::sql($job['name']). "',
 							module_id = '". (int) $moduleId. "',
-							module_class_name = '". \ze\escape::sql($moduleClassName). "',
+							module_class_name = '". \ze\escape::asciiInSQL($moduleClassName). "',
 							static_method = ". \ze\ring::engToBoolean($job['static'] ?? false). ",
 							enabled = ". \ze\ring::engToBoolean($job['enabled_by_default'] ?? false). ",
 							months = '". \ze\escape::sql($job['months'] ?? false). "',
@@ -840,7 +840,7 @@ class moduleAdm {
 							manager_class_name = 'zenario_scheduled_task_manager',
 							job_name = '". \ze\escape::sql($job['name']). "',
 							module_id = '". (int) $moduleId. "',
-							module_class_name = '". \ze\escape::sql($moduleClassName). "',
+							module_class_name = '". \ze\escape::asciiInSQL($moduleClassName). "',
 							script_path = '". \ze\escape::sql($job['script_path']). "'";
 					\ze\sql::update($sql);
 				}
@@ -1086,7 +1086,7 @@ class moduleAdm {
 			
 					$sql = "
 						INSERT INTO ". DB_PREFIX. "content_types SET
-							content_type_id = '". \ze\escape::sql($type['content_type_id']). "',
+							content_type_id = '". \ze\escape::asciiInSQL($type['content_type_id']). "',
 							content_type_name_en = '". \ze\escape::sql($type['content_type_name_en']). "',
 							content_type_plural_en = '". \ze\escape::sql($type['content_type_plural_en'] ?? ''). "',
 							writer_field = '". \ze\escape::sql($type['writer_field'] ?? 'hidden'). "',
@@ -1199,6 +1199,40 @@ class moduleAdm {
 		}
 	
 		return true;
+	}
+
+	//Get any plugin instances of a module which are in nests and/or slideshows
+	public static function usageInNestsAndSlideshows($moduleId) {
+		$nestAndSlideshowModuleCount = [
+			'nestCount' => 0,
+			'slideshowCount' => 0
+		];
+
+		$nestAndSlideshowModuleIds = [
+			'pluginNest' => \ze\module::id('zenario_plugin_nest'),
+			'slideshowSimple' => \ze\module::id('zenario_slideshow_simple'),
+			'slideshowAdvanced' => \ze\module::id('zenario_slideshow')
+		];
+
+		foreach ($nestAndSlideshowModuleIds as $nestOrSlideshowKey => $nestOrSlideshowId) {
+			$sql = '
+				SELECT COUNT(DISTINCT pi.id)
+				FROM ' . DB_PREFIX . 'nested_plugins np
+				INNER JOIN ' . DB_PREFIX . 'plugin_instances pi
+					ON pi.id = np.instance_id
+				WHERE np.module_id = ' . (int) $moduleId . '
+				AND pi.module_id = ' . (int) $nestOrSlideshowId;
+			$result = \ze\sql::select($sql);
+			$count = \ze\sql::fetchValue($result);
+
+			if ($nestOrSlideshowKey == 'pluginNest') {
+				$nestAndSlideshowModuleCount['nestCount'] += (int) $count;
+			} elseif (\ze::in($nestOrSlideshowKey, 'slideshowSimple', 'slideshowAdvanced')) {
+				$nestAndSlideshowModuleCount['slideshowCount'] += (int) $count;
+			}
+		}
+		
+		return $nestAndSlideshowModuleCount;
 	}
 
 }

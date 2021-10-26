@@ -63,5 +63,5 @@ if (!$this->forumNotSetUp && (ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || ze\pri
 		'label' => ze\admin::phrase('Manage Forum'),
 		'page_modes' => ['edit' => true, 'item' => true, 'layout' => true],
 		'onclick' => "
-			window.open(URLBasePath + 'zenario/admin/organizer.php#zenario__social/nav/forums/panel//". $this->forumId. "'); return false;"];
+			window.open(URLBasePath + 'organizer.php#zenario__social/nav/forums/panel//". $this->forumId. "'); return false;"];
 }

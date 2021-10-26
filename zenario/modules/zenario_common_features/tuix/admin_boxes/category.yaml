@@ -10,7 +10,7 @@ zenario_categories:
         label: Category ID
     title: 'Creating a category'
     title_for_existing_records: 'Editing the category "[[details/name]]"'
-    max_height: 350
+    max_height: 500
     hide_tab_bar: true
     tabs:
         details:

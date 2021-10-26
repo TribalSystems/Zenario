@@ -5,7 +5,8 @@ body.zenario_pageMode_preview .zenario_slot,body.zenario_pageMode_menu .zenario_
 body.zenario_pageMode_edit .pluginAdminEditButton{visibility:hidden}body.zenario_pageMode_edit .zenario_slotParent .pluginAdminEditButton{visibility:visible}
 body.zenario_skq_open .zenario_menu_node,body.zenario_skq_open .zenario_menu_node *,body.zenario_pageModeIsnt_preview .zenario_menu_node,body.zenario_pageModeIsnt_preview .zenario_menu_node *{cursor:crosshair}
 body.zenario_pageMode_menu .zenario_menu_node,body.zenario_pageMode_menu .zenario_menu_node *{cursor:sw-resize}body.zenario_pageMode_menu .pluginAdminMenuButton,body.zenario_pageMode_menu .pluginAdminMenuButton *{cursor:pointer}
-body.zenario_pageMode_preview em.zenario_inactive{font-style:normal}body.zenario_pageMode_preview span.zenario_conditionally_hidden{display:none}body.zenario_pageMode_layout .zenario_slot_with_layout_preview{display:none !important}
+body.zenario_pageMode_preview em.zenario_inactive{font-style:normal}.unlinked_menu_item .link_error{text-transform:none;font-size:11px;color:#8b0000;font-style:italic}
+body.zenario_pageMode_preview span.zenario_conditionally_hidden{display:none}body.zenario_pageMode_layout .zenario_slot_with_layout_preview{display:none !important}
 body.zenario_pageModeIsnt_layout .zenario_slot_layout_preview{display:none !important}#zenario_citem h1{position:relative;z-index:1}#zenario_citem h1:hover{-webkit-box-shadow:0 0 0 1px blue;-moz-box-shadow:0 0 0 1px blue;box-shadow:0 0 0 1px blue}
 #zenario_citem h1:hover:before{content:"H1";position:absolute;top:0;left:0;width:20px;height:20px;line-height:18px;text-align:center;background:blue;color:#FFF;font-size:10px;font-family:"verdana" !important}
 #zenario_citem .zenario_slot_being_edited h1:hover{-webkit-box-shadow:0;-moz-box-shadow:0;box-shadow:0}.zenario_slot{outline:1px dashed #ccc}.zenario_libraryPlugin .zenario_slot{outline-color:purple}

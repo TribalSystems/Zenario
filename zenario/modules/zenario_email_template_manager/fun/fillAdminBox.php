@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_email_template':
 		
-		$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~ttemplate~k{"id"%3A"email"}';
+		$href = 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~ttemplate~k{"id"%3A"email"}';
 		$mrg = ['link' => '<a href="' . htmlspecialchars($href) . '" target="_blank">view</a>'];
 		ze\lang::applyMergeFields(
 			$fields['meta_data/use_standard_email_template']['values']['yes']['pre_field_html'],
@@ -226,7 +226,7 @@ switch ($path) {
 				
 				if ($logRecord['email_template_id'] && $logRecord['email_template_name']) {
 					$template = ze\row::get('email_templates', ['id', 'code'], ['id' => $logRecord['email_template_id']]);
-					$templateLink = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__email_template_manager/panels/email_templates//' . $template['code'];
+					$templateLink = ze\link::absolute() . 'organizer.php#zenario__email_template_manager/panels/email_templates//' . $template['code'];
 					$mergeFields['template'] = ze\admin::phrase('email template: <a href="' . $templateLink . '" target="_blank">' . $logRecord['email_template_name'] . '</a> (ID' . $template['id'] . ')');
 				} else {
 					$mergeFields['template'] = ze\admin::phrase('no template');
@@ -249,7 +249,7 @@ switch ($path) {
 				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
 			
-			$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__email_template_manager/panels/email_log';
+			$link = ze\link::absolute() . 'organizer.php#zenario__email_template_manager/panels/email_log';
 			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 			$fields['data_protection/period_to_delete_the_email_template_sending_log_headers']['note_below'] = $note;
 			

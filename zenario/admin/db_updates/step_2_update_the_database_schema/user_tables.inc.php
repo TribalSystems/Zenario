@@ -131,6 +131,21 @@ _sql
 		UNIQUE KEY (`country_id`, `user_id`)
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
 _sql
+
+
+
+
+
+//
+//	Zenario 9.1
+//
+
+//Drop one of Robin's debug columns, it's not needed
+); ze\dbAdm::revision(53900
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	DROP COLUMN `db_update_running`
+_sql
 );
 
 

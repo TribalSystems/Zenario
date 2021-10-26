@@ -46,11 +46,11 @@ if ($runningModulesOnly) {
 }
 
 $sql .= "
-	WHERE x.type = '". \ze\escape::sql($type). "'";
+	WHERE x.type = '". \ze\escape::asciiInSQL($type). "'";
 
 if ($requestedPath) {
 	$sql .= "
-	  AND x.path = '". \ze\escape::sql($requestedPath). "'";
+	  AND x.path = '". \ze\escape::asciiInSQL($requestedPath). "'";
 }
 
 $settingGroups = [];

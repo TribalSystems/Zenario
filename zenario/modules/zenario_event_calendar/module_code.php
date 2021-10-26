@@ -381,7 +381,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 				$sql .="
 					AND (FALSE ";
 				foreach ($langs as $lang){
-					$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
+					$sql .= " OR c.language_id='" . ze\escape::asciiInSQL($lang) . "'"; 
 				}
 				$sql .= ") ";
 		 	}
@@ -425,7 +425,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			$sql .= "
 				AND (FALSE ";
 			foreach ($langs as $lang){
-				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
+				$sql .= " OR c.language_id='" . ze\escape::asciiInSQL($lang) . "'"; 
 			}
 			$sql .= ") ";
 		}
@@ -474,7 +474,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			$sql .= "
 				AND (FALSE ";
 			foreach ($langs as $lang){
-				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
+				$sql .= " OR c.language_id='" . ze\escape::asciiInSQL($lang) . "'"; 
 			}
 			$sql .= ") ";
 		}
@@ -543,7 +543,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			$sql .= "
 				AND (FALSE ";
 			foreach ($langs as $lang){
-				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
+				$sql .= " OR c.language_id='" . ze\escape::asciiInSQL($lang) . "'"; 
 			}
 			$sql .= ") ";
 		}
@@ -615,7 +615,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			$sql .= "
 				AND (FALSE ";
 			foreach ($langs as $lang) {
-				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
+				$sql .= " OR c.language_id='" . ze\escape::asciiInSQL($lang) . "'"; 
 			}
 			$sql .= ") ";
 		}
@@ -713,7 +713,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			$sql .= "
 				AND (FALSE ";
 			foreach ($langs as $lang){
-				$sql .= " OR c.language_id='" . ze\escape::sql($lang) . "'"; 
+				$sql .= " OR c.language_id='" . ze\escape::asciiInSQL($lang) . "'"; 
 			}
 			$sql .= ") ";
 		}

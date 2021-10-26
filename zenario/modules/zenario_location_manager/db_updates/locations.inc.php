@@ -528,7 +528,7 @@ if (ze\dbAdm::needRevision(119)) {
 		$sql2 = "
 			UPDATE ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_images
 			SET image_id = ". (int) $imageId. "
-			WHERE checksum = '". ze\escape::sql($row['checksum']). "'";
+			WHERE checksum = '". ze\escape::asciiInSQL($row['checksum']). "'";
 		$result2 = ze\sql::update($sql2);
 	}
 	}

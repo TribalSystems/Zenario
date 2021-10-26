@@ -11,4 +11,8 @@
 .zenario_master_switch-inner:before{content:"On";padding-left:12px;background-color:#228113;color:#fff}.zenario_master_switch-inner:after{content:"Off";padding-right:8px;background-color:#555;color:#FFF;text-align:right}
 .zenario_master_switch-switch{display:block;width:10px;margin:0;position:absolute;top:2px;bottom:2px;right:36px;background:#FFF;border:1px solid #FFF;border-radius:50%;transition:all .3s ease-in 0;-webkit-transition:all .2s ease-in-out;-moz-transition:all .2s ease-in-out;transition:all .2s ease-in-out}
 .zenario_master_switch-checkbox:checked+.zenario_master_switch-label .zenario_master_switch-inner{margin-left:0}.zenario_master_switch-checkbox:checked+.zenario_master_switch-label .zenario_master_switch-switch{right:2px}
-.zenario_master_switch-label:hover .zenario_master_switch-switch{opacity:.8}
+.zenario_master_switch-label:hover .zenario_master_switch-switch{opacity:.8}.zen_col_show_hide{position:relative;float:left;width:40px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
+.zen_col_show_hide-checkbox{position:absolute;opacity:0;pointer-events:none}.zen_col_show_hide-label{display:block;overflow:hidden;cursor:pointer;height:14px;padding:0;line-height:14px;border:2px solid #e3e3e3;border-radius:14px;background-color:#ccc;transition:background-color .3s ease-in}
+.zen_col_show_hide-label:before{content:"";display:block;width:14px;margin:0;background:#fff;position:absolute;top:0;bottom:0;right:22px;border:2px solid #e3e3e3;border-radius:14px;transition:all .3s ease-in 0}
+.zen_col_show_hide-checkbox:checked+.zen_col_show_hide-label{background-color:#14ba93}.zen_col_show_hide-checkbox:checked+.zen_col_show_hide-label,.zen_col_show_hide-checkbox:checked+.zen_col_show_hide-label:before{border-color:#14ba93}
+.zen_col_show_hide-checkbox:checked+.zen_col_show_hide-label:before{right:0}

@@ -7,6 +7,8 @@ zenario__user_forms:
     tooltip: >
             Create online forms and view their responses
     priv: _PRIV_VIEW_FORMS
+    visible_if: >
+        zenarioA.siteSettings.default_language
     nav:
         user_forms:
             ord: 1

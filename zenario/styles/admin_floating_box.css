@@ -62,7 +62,7 @@
 #zenario_fbAdminFloatingBox th,
 #zenario_fbAdminFloatingBox p {
 	margin: 0;
-	padding: 7px 5px;
+	padding: 5px 0;
 	font-style:normal;
 	font-weight:normal;
 	text-align:left;
@@ -72,12 +72,6 @@
 #zenario_fbAdminTooltip h2,
 #zenario_fbAdminTooltip h3,
 #zenario_fbAdminTooltip p,
-#zenario_fbAdminMessage h1,
-#zenario_fbAdminMessage h2,
-#zenario_fbAdminMessage h3,
-#zenario_fbAdminMessage h4,
-#zenario_fbAdminMessage h5,
-#zenario_fbAdminMessage h6,
 #zenario_fbAdminMessage p,
 #zenario_fbAdminMessage li,
 #zenario_fbAdminInfoBox p,
@@ -102,6 +96,46 @@
 #zenario_fbAdminFloatingBox #zenario_fbButtons {
 	font-size: 13px;
 	font-weight:normal;
+	line-height:1.4em;
+}
+
+#zenario_fbAdminMessage .zenario_fabMain #zenario_fbInner {
+	padding-right:10px;
+}
+
+#zenario_fbAdminMessage h1,
+#zenario_fbAdminMessage h2,
+#zenario_fbAdminMessage h3,
+#zenario_fbAdminMessage h4,
+#zenario_fbAdminMessage h5,
+#zenario_fbAdminMessage h6 {
+	color: #444444;
+	font-weight:bold;
+	margin:8px 0 5px 0;
+}
+
+#zenario_fbAdminMessage h1 {
+	font-size:20px;
+}
+
+#zenario_fbAdminMessage h2 {
+	font-size:18px;
+}
+
+#zenario_fbAdminMessage h3 {
+	font-size:15px;
+}
+
+#zenario_fbAdminMessage h4 {
+	font-size:14px;
+}
+
+#zenario_fbAdminMessage h5 {
+	font-size:13px;
+}
+
+#zenario_fbAdminMessage h6 {
+	font-size:11px;
 }
 
 #zenario_fbAdminInfoBox a,
@@ -120,6 +154,9 @@
 	padding-bottom:3px;
 }
 
+#zenario_fbAdminInner .bold {
+	font-weight:bold;
+}
 
 /*  Admin Tooltips  */
 #zenario_fbAdminTooltip {
@@ -1867,6 +1904,7 @@ textarea.zenario_breadcrumb_preview {
 	white-space:normal;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_image #zenario_fbAdminInner .Tokenize .TokensContainer .Token .zenario_row_input_button,
 #zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container #zenario_fbAdminInner .Tokenize .TokensContainer .Token .zenario_row_input_button {
 	width:calc(100% - 25px);
 }
@@ -2867,7 +2905,7 @@ body.ie6 .zenario_now h1 {
 /*  Code editors (the width and height should probably be changed by developers on a case-by-case basis)  */
 
 #zenario_fbAdminInner div.zenario_embedded_ace_editor {
-	width: 670px;
+	width: calc(100% - 2px);
 	height: 250px;
 	border: 1px grey solid;
 	background: white;
@@ -3793,6 +3831,10 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead #zenario_fabTitleWrap {
 	margin-top:12px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_with_global_area .zenario_fabHead #zenario_fabTitleWrap {
+	width:calc(100% - 250px - 110px);
 }
 
 #zenario_fbAdminFloatingBox.zenario_wireframe_plugin_settings .zenario_fabHead #zenario_fabTitleWrap {
@@ -5068,6 +5110,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 
 #zenario_fabGlobalArea .zfab_row .title {
 	width:42px;
+	line-height:30px;
 }
 
 #zenario_fabGlobalArea .zfab_row .zfab_row_fields {
@@ -5165,8 +5208,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	padding:0 10px 10px;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload,
-#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_ab_row__s3_file_upload {
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload {
 	margin-top:5px;
 	padding:0 8px 5px !important;
 	margin-left:-10px;
@@ -5176,8 +5218,7 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	border-radius:4px;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload::after,
-#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_ab_row__s3_file_upload:after {
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload::after {
     content: "";
     clear: both;
     display: table;
@@ -5186,6 +5227,12 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 #zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_ab_row__s3_file_upload iframe {
 	width:98.5%;
 	height:70px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_ab_row__s3_mime_type {
+	padding-top:0;
+	position:relative;
+	top:-10px;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload.zenario_ab_row__document__upload {

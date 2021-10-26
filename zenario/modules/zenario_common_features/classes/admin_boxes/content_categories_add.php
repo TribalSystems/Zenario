@@ -77,7 +77,7 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 			
 			$box['tabs']['categories_add']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
 			
 			
 			$inCats = [];
@@ -87,7 +87,7 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 				INNER JOIN ". DB_PREFIX. "category_item_link AS l
 				   ON c.equiv_id = l.equiv_id
 				  AND c.type = l.content_type
-				WHERE c.tag_id IN (". ze\escape::in($tagIds). ")
+				WHERE c.tag_id IN (". ze\escape::in($tagIds, 'asciiInSQL'). ")
 				GROUP BY l.category_id";
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {

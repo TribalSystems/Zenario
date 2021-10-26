@@ -4,7 +4,7 @@ zenario_delete_language:
     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
     key:
         id: ""
-    max_height: "200"
+    max_height: 220
     hide_tab_bar: Yes
     tabs:
         site:

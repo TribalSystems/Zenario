@@ -2148,7 +2148,7 @@ class tuix {
 		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
 			$mrg = [
 				'def_lang_name' => htmlspecialchars(\ze\lang::name(\ze::$defaultLang)),
-				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 		
 			$fields['phrase_table_end']['show_phrase_icon'] = true;

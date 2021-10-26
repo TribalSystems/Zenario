@@ -188,6 +188,11 @@ methods.ffov = function(action) {
 				thus.drawForm();
 				cb.done();
 				
+				//Scroll to the top of the slot on a "format" or "validate" event
+				if ((action == 'format' || action == 'validate') && thus.tuix.scroll_to_top_of_slot_on_format_or_validate) {
+					zenario.scrollToSlotTop(thus.containerId, true);
+				}
+				
 				if (action == 'save' && thus.tuix.scroll_after_save) {
 					zenario.scrollToSlotTop(thus.containerId, true);
 				}

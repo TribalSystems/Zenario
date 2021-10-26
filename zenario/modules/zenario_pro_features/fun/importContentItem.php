@@ -320,7 +320,7 @@ if (!$xml) {
 		$sql = "
 			SELECT layout_id
 			FROM ". DB_PREFIX. "layouts
-			WHERE content_type = '". ze\escape::sql($cType). "'
+			WHERE content_type = '". ze\escape::asciiInSQL($cType). "'
 			ORDER BY
 				name = '". ze\escape::sql($xml->template->attributes()->name). "' DESC,
 				layout_id ASC

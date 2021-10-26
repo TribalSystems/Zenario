@@ -61,6 +61,26 @@ plugin_settings:
                         required_if_not_hidden: Please select a registration page
                     indent: 1
                 
+                show_link_to_password_reset_page:
+                    label: Show link to password reset page
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                password_reset_page:
+                    plugin_setting:
+                        foreign_key_to: content
+                    label: 'Password reset page (optional):'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    readonly: true
+                    indent: 1
+                
                  
                 redirect_to_login_page_on_submit:
                     plugin_setting:

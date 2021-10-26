@@ -63,9 +63,6 @@ if ($reportDBOutOfDate && \ze\priv::check()) {
 
 $errorMessage = \ze\admin::phrase($errorMessage, ['admin_link' => htmlspecialchars($adminLink)]);
 
-//Workaround for a bug where TinyMCE can add "zenario/admin" into the login link a second time
-$errorMessage = str_replace('zenario/admin/zenario/admin', 'zenario/admin', $errorMessage);
-
 
 echo '
 <html>

@@ -219,7 +219,7 @@ class priv {
 						INNER JOIN ". DB_PREFIX. "content_items AS c
 						   ON c.equiv_id = mn.equiv_id
 						  AND c.type = mn.content_type
-						  AND c.language_id = '". \ze\escape::sql($langId). "'
+						  AND c.language_id = '". \ze\escape::asciiInSQL($langId). "'
 						WHERE mn.id = ". (int) $menuNodeId
 					) as $cItem) {
 						if (!empty($_SESSION['admin_specific_content_types'][$cItem['type']])

@@ -99,6 +99,7 @@ zenario__languages:
                 name: Language
                 names: Languages
                 css_class: language
+                selection_display_type: radios
             collection_buttons:
                 add:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG

@@ -105,4 +105,10 @@ _sql
 	CHANGE `description` `description` text DEFAULT NULL
 _sql
 
+); ze\dbAdm::revision(15
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX]]document_envelopes`
+	ADD COLUMN `pinned` tinyint(1) NOT NULL default 0
+_sql
+
 );

@@ -200,7 +200,11 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 							break;
 					}
 				}
-            } 
+            }
+
+			if ($redirectNeeded == 301) {
+				$linkStatus .= '_' . (int) $redirectNeeded;
+			}
             
             $statuses[$i] = $linkStatus;
         }
@@ -240,7 +244,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 			$sql = "
 				REPLACE INTO ". DB_PREFIX. "admin_organizer_prefs SET
 					prefs = '". ze\escape::sql($_POST['prefs']). "',
-					checksum = '". ze\escape::sql(substr($_POST['checksum'], 0, 22)). "',
+					checksum = '". ze\escape::asciiInSQL(substr($_POST['checksum'], 0, 22)). "',
 					admin_id = ". (int) $_SESSION['admin_userid'];
 			ze\sql::update($sql);
 		
@@ -306,7 +310,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 				FROM ". DB_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias < '". ze\escape::sql($alias). "'
-				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::sql($_POST['cType'] ?? false). "'))
+				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::asciiInSQL($_POST['cType'] ?? false). "'))
 				ORDER BY alias DESC, language_id DESC";
 			$result = ze\sql::select($sql);
 			$lastAlias = ze\sql::fetchRow($result);
@@ -316,7 +320,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 					SELECT lang_code_in_url, language_id, alias
 					FROM ". DB_PREFIX. "content_items
 					WHERE id = ". (int) ($_POST['cID'] ?? false). "
-					  AND type = '". ze\escape::sql($_POST['cType'] ?? false). "'";
+					  AND type = '". ze\escape::asciiInSQL($_POST['cType'] ?? false). "'";
 				$result = ze\sql::select($sql);
 				$thisAlias = ze\sql::fetchRow($result);
 				$thisAlias[2] = $alias;
@@ -334,7 +338,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 				FROM ". DB_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias > '". ze\escape::sql($alias). "'
-				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::sql($_POST['cType'] ?? false). "'))
+				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::asciiInSQL($_POST['cType'] ?? false). "'))
 				ORDER BY alias, language_id";
 			$result = ze\sql::select($sql);
 			$nextAlias = ze\sql::fetchRow($result);

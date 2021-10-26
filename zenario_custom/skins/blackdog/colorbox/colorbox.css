@@ -1,17 +1,18 @@
 /*
-    ColorBox Core Style:
+    Colorbox Core Style:
     The following CSS is consistent between example themes and should not be altered.
 */
-#colorbox, #cboxOverlay, #cboxWrapper{position:absolute; top:0; left:0; z-index:9999; overflow:hidden;}
+#colorbox, #cboxOverlay, #cboxWrapper{position:absolute; top:0; left:0; z-index:9999; overflow:hidden; -webkit-transform: translate3d(0,0,0);}
+#cboxWrapper {max-width:none;}
 #cboxOverlay{position:fixed; width:100%; height:100%;}
 #cboxMiddleLeft, #cboxBottomLeft{clear:left;}
 #cboxContent{position:relative;}
 #cboxLoadedContent{overflow:auto; -webkit-overflow-scrolling: touch;}
-#cboxTitle{margin:0; white-space:normal;}
+#cboxTitle{margin:0;}
 #cboxLoadingOverlay, #cboxLoadingGraphic{position:absolute; top:0; left:0; width:100%; height:100%;}
 #cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow{cursor:pointer;}
-.cboxPhoto{float:left; margin:auto; border:0; display:block; max-width:none;}
-.cboxIframe{width:100%; height:100%; display:block; border:0;}
+.cboxPhoto{float:left; margin:auto; border:0; display:block; max-width:none; -ms-interpolation-mode:bicubic;}
+.cboxIframe{width:100%; height:100%; display:block; border:0; padding:0; margin:0;}
 #colorbox, #cboxContent, #cboxLoadedContent{box-sizing:content-box; -moz-box-sizing:content-box; -webkit-box-sizing:content-box;}
 
 /* 
@@ -44,124 +45,18 @@ body #cboxOverlay{
         #cboxCurrent{display:none !important;}
         #cboxTitle p{padding:6px}
         
-/*  Styles for this skin.  
---------------------------------------------------------------------------------------------------*/
-
-#cboxContent {
-	font-family:'robotoregular',Arial, Helvetica, sans-serif;
-	font-size:100%;
-	line-height:22px;
-}
-
-#cboxTitle {
-	width:calc(100% - 20px);
-	padding:3px 10px;
-	background:rgba(0,0,0,0.6);
-}
-
-/*  Colorbox 
---------------------------------------------------------------------------------------------------*/
-
-#colorbox form {
-	margin:0;
-	padding:0;
-}
-
-#colorbox input,
-#colorbox button,
-#colorbox select,
-#colorbox textarea,
-#colorbox select {
-	font-size:1em;
-	font-family:'robotoregular',Arial, Helvetica, sans-serif;
-}
-
-#colorbox input[type='text'],
-#colorbox input[type='password'],
-#colorbox input[type='email'],
-#colorbox input[type='search'],
-#colorbox textarea,
-#colorbox select {
-	width:calc(100% - 22px);
-	padding:0 10px;
-	color:#525151;
-	background:#FFF;
-	border:1px solid #b8babc;
-}
-
-#colorbox select {
-	width:100%;
-}
-
-#colorbox textarea {
-	padding-top:10px;
-	padding-bottom:10px;
-}
-
-#colorbox input[type='text'],
-#colorbox input[type='password'],
-#colorbox input[type='email'],
-#colorbox input[type='search'],
-#colorbox select {
-	height:30px;
-	line-height:30px;
-	font-size:1em;
-}
-
-#colorbox input[type='text'],
-#colorbox input[type='password'],
-#colorbox input[type='email'],
-#colorbox input[type='search'],
-#colorbox select,
-#colorbox textarea {
-   	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	border-radius: 6px;
-}
-
-#colorbox input[readonly=''],
-#colorbox input[disabled='disabled'],
-#colorbox textarea[disabled='disabled'],
-#colorbox select[disabled='disabled'] {
-	color:#888 !important;
-	background-color:#DFDFDF !important;
-	border-color:#DFDFDF !important;
-	opacity:0.8 !important;
-}
-
-#colorbox input[type='file'] {
-	width:100%;
-	white-space: nowrap;
-  	overflow: hidden;
-  	text-overflow: ellipsis;
-}
-
-#colorbox input[type='submit'],
-#colorbox input[type='button'],
-#colorbox button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext) {
-	display:inline-block;
-	height:36px;
-	line-height:32px;
-	padding: 0 15px;
-	border:0;
-	background:#000;
-	color:#FFF;
-	text-align:center;
-	font-size:0.938em;
-	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	border-radius: 6px;
-	-webkit-transition: all 0.2s ease-in-out;
-  	-moz-transition: all 0.2s ease-in-out;
-  	-o-transition: all 0.2s ease-in-out;
-  	transition: all 0.2s ease-in-out;
-  	cursor:pointer;
-}
-
-#colorbox input[type='submit']:hover,
-#colorbox input[type='button']:hover,
-#colorbox button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext):hover {
-	background:#b8babc;
-	color:#282e35;
-	text-decoration:none;
+/*
+  The following fixes a problem where IE7 and IE8 replace a PNG's alpha transparency with a black fill
+  when an alpha filter (opacity change) is set on the element or ancestor element.  This style is not applied to or needed in IE9.
+  See: http://jacklmoore.com/notes/ie-transparency-problems/
+*/
+.cboxIE #cboxTopLeft,
+.cboxIE #cboxTopCenter,
+.cboxIE #cboxTopRight,
+.cboxIE #cboxBottomLeft,
+.cboxIE #cboxBottomCenter,
+.cboxIE #cboxBottomRight,
+.cboxIE #cboxMiddleLeft,
+.cboxIE #cboxMiddleRight {
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#00FFFFFF,endColorstr=#00FFFFFF);
 }

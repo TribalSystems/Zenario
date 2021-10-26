@@ -42,13 +42,6 @@ class zenario_common_features__organizer__skin_files extends ze\moduleBaseClass 
 		if ($path != 'zenario__layouts/panels/skin_files') return;
 		
 		
-		//Copy the contents of the readme to the help button
-		require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/parsedown/Parsedown.php';
-		$markdown = file_get_contents(CMS_ROOT. 'zenario/reference/sample_skin_readme/README.txt');
-		$markdownToHTML = new Parsedown();
-		$panel['collection_buttons']['help']['help']['message'] = $markdownToHTML->text($markdown);
-		
-		
 		if ($skin = ze\content::skinDetails($_GET['refiner__skin'] ?? false)) {
 			
 			$dir = ze\content::skinPath($skin['name']);

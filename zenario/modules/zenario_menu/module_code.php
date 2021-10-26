@@ -63,7 +63,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		$this->sectionId = ze\menu::sectionId($this->sectionId);
 		
 		$this->startFrom				= $this->setting('menu_start_from');
-		$this->numLevels				= $this->setting('menu_number_of_levels');
+		$this->numLevels				= (int) $this->setting('menu_number_of_levels');
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
 		$this->onlyFollowOnLinks		= !$this->setting('menu_show_all_branches');
@@ -82,14 +82,12 @@ class zenario_menu extends ze\moduleBaseClass {
 		//Get the Menu Node for this content item
 		$this->currentMenuId = ze\menu::getIdFromContentItem(ze::$equivId, ze::$cType, $this->sectionId);
 		
-		return $this->currentMenuId || !$this->setting('hide_if_current_item_not_in_menu');
+		return $this->currentMenuId || !$this->setting('hide_if_current_item_not_in_menu') || $this->methodCallIs('handlePluginAJAX');
 	}
 	
 	
 	public function getUserMergeFields() {
-		if (($id = ze\user::id())
-		 && ($userDetails = ze\user::details($id))) {
-			
+		if ($this->setting('change_welcome_message') && ($id = ze\user::id()) && ($userDetails = ze\user::details($id))) {
 			$userDetails['welcome_message'] = $this->phrase($this->setting('welcome_message'), $userDetails);
 			
 			if ($this->setting('show_group_name_when_user_is_in_groups') && $this->setting('user_groups')) {
@@ -116,17 +114,19 @@ class zenario_menu extends ze\moduleBaseClass {
 		
 		$mrg = [];
 		
-		if ($this->parentMenuId && $parentMenuDetails = ze\menu::getInLanguage($this->parentMenuId, $this->language)) {
-			$mrg['Parent_Name'] = htmlspecialchars($parentMenuDetails['name']);
-			if ($parentMenuDetails['cID']) {
-				$mrg['Parent_Link'] = htmlspecialchars(
-					$this->linkToItem($parentMenuDetails['cID'], $parentMenuDetails['cType'], false, $this->requests, $parentMenuDetails['alias'])
-				);
+		if ($this->setting('show_parent_menu_node_text')) {
+			if ($this->parentMenuId && $parentMenuDetails = ze\menu::getInLanguage($this->parentMenuId, $this->language)) {
+				$mrg['Parent_Name'] = htmlspecialchars($parentMenuDetails['name']);
+				if ($parentMenuDetails['cID']) {
+					$mrg['Parent_Link'] = htmlspecialchars(
+						$this->linkToItem($parentMenuDetails['cID'], $parentMenuDetails['cType'], false, $this->requests, $parentMenuDetails['alias'])
+					);
+				}
+			} else {
+				$homepage = $this->getHomepage(ze\content::visitorLangId());
+				$mrg['Parent_Name'] = htmlspecialchars($homepage['name']);
+				$mrg['Parent_Link'] = htmlspecialchars($homepage['url']);
 			}
-		} else {
-			$homepage = $this->getHomepage(ze\content::visitorLangId());
-			$mrg['Parent_Name'] = htmlspecialchars($homepage['name']);
-			$mrg['Parent_Link'] = htmlspecialchars($homepage['url']);
 		}
 		
 		return $mrg;
@@ -183,6 +183,39 @@ class zenario_menu extends ze\moduleBaseClass {
 		
 		//Draw the Menu Nodes we found
 		$this->mergeFields['nodes'] = $this->getMenuMergeFields($menuArray);
+
+		//The features below are currently only used in Menu (Vertical) module,
+		//which extends this one.
+		
+		//1) Custom title feature
+		$this->mergeFields['show_custom_title'] = $this->phrase($this->setting('show_custom_title'));
+		$this->mergeFields['title_tags'] = $this->setting('title_tags');
+		$this->mergeFields['custom_title'] = $this->setting('custom_title');
+
+		//2) Open/close menu
+		if ($this->setting('enable_open_close')) {
+			$this->mergeFields['enable_open_close'] = true;
+			//Check if the menu is supposed to be open, or closed.
+			//Check the session variables, or fall back on the plugin setting.
+			
+			//Check if the state has already been set before...
+            if (!isset($_SESSION['vertical_menu_open_closed_state']) || !ze::in($_SESSION['vertical_menu_open_closed_state'], 'open', 'closed')) {
+                $_SESSION['vertical_menu_open_closed_state'] = $this->setting('open_close_initial_state');
+            }
+			
+			$this->mergeFields['open_closed_state'] = $_SESSION['vertical_menu_open_closed_state'];
+			$this->mergeFields['ajax_link'] = $this->pluginAJAXLink();
+		}
+
+		//3) Full width view with 1-5 columns
+		if ($this->setting('menu_number_of_levels') == '1_full_width') {
+			$this->mergeFields['full_width_view'] = true;
+			$this->mergeFields['num_columns'] = ($this->setting('number_of_columns_full_width') ?: 1);
+			$this->mergeFields['menu_node_count'] = count($this->mergeFields['nodes']);
+			$this->mergeFields['num_items_per_column'] = (int) ceil($this->mergeFields['menu_node_count'] / $this->mergeFields['num_columns']);
+		}
+
+		$this->mergeFields['containerId'] = $this->containerId;
 		
 		$this->twigFramework($this->mergeFields);
 	}
@@ -394,18 +427,23 @@ class zenario_menu extends ze\moduleBaseClass {
 		} else {
 			$menuItem .= ' class="unlinked_menu_item"';
 		}
+
 		if (!empty($row['onclick'])) {
 			$menuItem .= ' onclick="'. htmlspecialchars($row['onclick']). '"';
 		}
+
 		if (!empty($row['accesskey'])) {
 			$menuItem .= ' accesskey="'. htmlspecialchars($row['accesskey']). '"';
 		}
+
 		if (!empty($row['rel_tag'])) {
 			$menuItem .= ' rel="'. htmlspecialchars($row['rel_tag']). '"';
 		}
+
 		if (!empty($row['target'])) {
 			$menuItem .= ' target="'. $row['target']. '"';
 		}
+		
 		if (!empty($row['title'])) {
 			$menuItem .= ' title="'. $row['title']. '"';
 		}
@@ -417,6 +455,12 @@ class zenario_menu extends ze\moduleBaseClass {
 		
 		} elseif (!empty($row['img'])) {
 			$menuItem .= $row['img'];
+		}
+
+		if (empty($row['url'])) {
+			if (!empty($row['document_privacy_error']) || !empty($row['document_file_not_found'])) {
+				$menuItem .= ' <span class="link_error">(' . ze\admin::phrase('Link error') . ')</span>';
+			}
 		}
 		
 		$menuItem .= '</a>';
@@ -531,5 +575,33 @@ class zenario_menu extends ze\moduleBaseClass {
 		$sectionId = ze\menu::sectionId(($sectionId ?: 'Main'));
 		$currentMenuId = ze\menu::getIdFromContentItem(ze::$equivId, ze::$cType, $sectionId);
 		return ze\row::get('menu_text', ['name'], ['menu_id' => $currentMenuId, 'language_id' => ze::$langId]);
+	}
+
+	public function handlePluginAJAX() {
+        if (ze::post('action') == 'toggleOpenClosed') {
+            $return = [];
+
+			//Check if the state has already been set before...
+            if (!isset($_SESSION['vertical_menu_open_closed_state']) || !ze::in($_SESSION['vertical_menu_open_closed_state'], 'open', 'closed')) {
+                $_SESSION['vertical_menu_open_closed_state'] = $this->setting('open_close_initial_state');
+            }
+
+            //... and reverse it now.
+			if ($_SESSION['vertical_menu_open_closed_state'] == 'open') {
+                $return['previous_menu_state'] = 'open';
+                $return['current_menu_state'] = 'closed';
+                $return['phrase'] = $this->phrase('Open');
+            } else {
+                $return['previous_menu_state'] = 'closed';
+                $return['current_menu_state'] = 'open';
+                $return['phrase'] = $this->phrase('Close');
+            }
+
+            $_SESSION['vertical_menu_open_closed_state'] = $return['current_menu_state'];
+
+            $return['containerId'] = $this->containerId;
+
+            echo json_encode($return);
+        }
 	}
 }

@@ -307,7 +307,7 @@ if (\ze::$cID && \ze::$cID !== -1) {
 		SELECT head_html, head_cc, head_visitor_only, head_overwrite, bg_image_id, bg_color, bg_position, bg_repeat
 		FROM ". DB_PREFIX. "content_item_versions
 		WHERE id = ". (int) \ze::$cID. "
-		  AND type = '". \ze\escape::sql(\ze::$cType). "'
+		  AND type = '". \ze\escape::asciiInSQL(\ze::$cType). "'
 		  AND version = ". (int) \ze::$cVersion;
 	$result = \ze\sql::select($sql);
 	$itemHTML = \ze\sql::fetchAssoc($result);

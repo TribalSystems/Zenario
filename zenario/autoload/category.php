@@ -58,12 +58,14 @@ class category {
 					c.parent_id,
 					c.name,
 					c.code_name,
-					c.public
+					c.public,
+					c.landing_page_equiv_id,
+					c.landing_page_content_type
 				FROM " . DB_PREFIX . "categories AS c
 				INNER JOIN " . DB_PREFIX . "category_item_link AS cil
 					ON c.id = cil.category_id
 				WHERE cil.equiv_id = " . (int) $equivId . "
-					AND cil.content_type = '" . \ze\escape::sql($cType) . "'";
+					AND cil.content_type = '" . \ze\escape::asciiInSQL($cType) . "'";
 		}
 	
 		if ($publicOnly) {

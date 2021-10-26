@@ -71,7 +71,7 @@ class cache {
 			} elseif (strpos($a, 'iPad')) {
 				$c .= ' ios ipad';
 			} elseif (strpos($a, 'Safari/')) {
-				$c .= ' safari';
+				$c .= ' safari no_webp';
 			}
 	
 		} elseif (strpos($a, 'Firefox/')) {
@@ -81,7 +81,7 @@ class cache {
 			$c = 'opera';
 	
 		} elseif (strpos($a, 'MSIE ')) {
-			$c = 'ie';
+			$c = 'ie no_webp';
 			for ($i = 10; $i > 5; --$i) {
 				if (strpos($a, 'MSIE '. $i) !== false) {
 					$c .= ' ie'. $i;
@@ -90,7 +90,7 @@ class cache {
 			}
 	
 		} elseif (strpos($a, 'Trident/')) {
-			$c = 'ie ie11';
+			$c = 'ie no_webp ie11';
 		}
 	
 		return $c;

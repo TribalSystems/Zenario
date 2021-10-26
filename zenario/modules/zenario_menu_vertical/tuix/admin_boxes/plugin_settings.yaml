@@ -20,12 +20,27 @@ plugin_settings:
                 menu_show_all_branches:
                     plugin_setting:
                         name: menu_show_all_branches
+                show_parent_menu_node_text:
+                    plugin_setting:
+                        name: show_parent_menu_node_text
+                    type: checkbox
+                    label: "Show parent menu node text (if available)"
                 change_welcome_message:
                     plugin_setting:
                         name: change_welcome_message
                     label: Customise welcome message
                     type: checkbox
                     format_onchange: true
+                welcome_message:
+                    indent: 1
+                    plugin_setting:
+                        name: welcome_message
+                    type: text
+                    label: Welcome message
+                    visible_if: "zenarioAB.value('change_welcome_message')"
+                    value: "Welcome, [[first_name]] [[last_name]]"
+                    note_below: 'The framework must include the merge field "welcome_message" in order to display this.'
+                    show_phrase_icon: true
                 show_group_name_when_user_is_in_groups:
                     plugin_setting:
                         name: show_group_name_when_user_is_in_groups
@@ -41,13 +56,4 @@ plugin_settings:
                     values: {}
                     #The list of values is populated in the parent module, Zenario Menu (fillAdminBox).
                     visible_if: lib.value('show_group_name_when_user_is_in_groups')
-                welcome_message:
-                    plugin_setting:
-                        name: welcome_message
-                    type: text
-                    label: Welcome message
-                    visible_if: "zenarioAB.value('change_welcome_message')"
-                    value: "Welcome, [[first_name]] [[last_name]]"
-                    note_below: 'The framework must include the merge field "welcome_message" in order to display this.'
-                    show_phrase_icon: true
     module_class_name: zenario_menu_vertical

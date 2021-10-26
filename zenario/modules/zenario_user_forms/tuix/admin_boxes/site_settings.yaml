@@ -1,7 +1,7 @@
 site_settings:
     setting_group: zenario_user_forms__site_settings_group
     title: |
-        Settings for Forms
+        Editing settings for Forms and CRM integration
     tabs:
         zenario_user_forms_emails:
             label: Details

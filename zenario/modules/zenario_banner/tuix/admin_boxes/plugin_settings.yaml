@@ -187,6 +187,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    format_onchange: true
                 height:
                     indent: 2
                     plugin_setting:
@@ -200,6 +201,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    format_onchange: true
                 offset:
                     indent: 2
                     plugin_setting:
@@ -216,6 +218,13 @@ plugin_settings:
                     side_note: |
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
+                stretched_image_warning:
+                    indent: 2
+                    hidden: true
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'The image will be stretched, so quality will be degraded.'
+                    post_field_html: "</div>"
                 show_caption_on_image:
                     indent: 1
                     plugin_setting:

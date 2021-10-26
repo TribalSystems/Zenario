@@ -17,23 +17,94 @@
 	</ul>
 {% endmacro %}
 
+{% set userDetails = this.getUserMergeFields() %}
+{% if userDetails %}
+	<div class="extranet_user_greeting">{{userDetails.welcome_message|escape}}
+		{% if userDetails.groups %}
+			<span class="group">{{userDetails.groups}}</span>
+		{% endif %}
+	</div>
+{% endif %}
+
 <div class="wrap_menu">
-<div class="wrap_menu_outer">
-<div class="wrap_menu_inner">
-	{% for node in nodes %}
-		<ul>
-			<li class="{{node.Class}}">
-				<div class="left_end"></div>
-					<span class="menu_image">{{node.Image}}</span>
-					{{node.Hyperlink}}
-					
-					{% if node.children %}
-						{{ self.childNodes(node.children) }}
+	<div class="wrap_menu_outer">
+		<div
+			id="{{containerId}}_menu_inner"
+			class="wrap_menu_inner"
+			{% if enable_open_close and open_closed_state == 'closed' %}
+				style="display: none;"
+			{% endif %}
+		>
+			{% set Title = this.getTitleMergeFields() %}
+			{% if Title %}
+				<h2 class="side_menu_title"><a href="{{Title.Parent_Link}}">{{Title.Parent_Name}}</a></h2>
+			{% endif %}
+		
+			{% if show_custom_title %}
+				<{{title_tags}}>{{custom_title|trans}}</{{title_tags}}>
+			{% endif %}
+
+			{% if full_width_view %}
+				{% set current_column = 1 %}
+				{% set item_count = 0 %}
+
+				{% if nodes %}
+					<div class="columns_wrap columns_{{num_columns}}">
+					<div class="column">
+				{% endif %}
+			{% endif %}
+			
+			{% for node in nodes %}
+				{% if full_width_view %}
+					{% set item_count = item_count + 1 %}
+
+					{% if item_count > num_items_per_column and current_column < num_columns %}
+						{% set current_column = current_column + 1 %}
+						{% set item_count = 1 %}
+						</div>
+						<div class="column">
 					{% endif %}
-				<div class="right_end"></div>
-			</li>
-		</ul>
-	{% endfor %}
-</div>
-</div>
+				{% endif %}
+				<ul>
+					<li class="{{node.Class}}">
+						<div class="left_end"></div>
+							<span class="menu_image">{{node.Image}}</span>
+							{{node.Hyperlink}}
+							
+							{% if node.children %}
+								{{ self.childNodes(node.children) }}
+							{% endif %}
+						<div class="right_end"></div>
+					</li>
+				</ul>
+			{% endfor %}
+
+			{% if full_width_view and nodes %}
+				</div>
+
+				{# If there aren't enough menu nodes, add dummy divs to draw the required number of columns. #}
+				{% if current_column < num_columns %}
+					{% for i in current_column..(num_columns - 1) %}
+						<div class="column"></div>
+					{% endfor %}
+				{% endif %}
+				</div>
+			{% endif %}
+		</div>
+
+		{% if enable_open_close %}
+			<div
+				id="{{containerId}}_open_close_toggle"
+				class="menu_open_close_toggle {{open_closed_state|e}}"
+				onclick="zenario_menu_vertical.toggleOpenClosed('{{ajax_link}}');"
+			><span>
+				{% if open_closed_state == 'open' %}
+					{{'Close'|trans}}
+				{% elseif open_closed_state == 'closed' %}
+					{{'Open'|trans}}
+				{% endif %}
+				</span>
+			</div>
+		{% endif %}
+	</div>
 </div>

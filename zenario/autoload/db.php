@@ -102,11 +102,33 @@ class col {
 					case 'panel_type':
 					case 'remove_hash':
 					case 'short_checksum':
+					case 'slot_name':
 					case 'tag_id':
 					case 'tracker_hash':
 					case 'usage':
+					
+					
+					//These columns are now redefined as ASCII, will need their DB columns changed to ASCII in 9.2
+					case 'class_name':
+					case 'default_value_class_name':
+					case 'dependency_class_name':
+					case 'manager_class_name':
+					case 'module_class_name':
+					case 'suppresses_module_class_name':
+					case 'vlp_class':
+					case 'detect_lang_codes':
+					case 'language_id':
+					
+					case 'country':
+					case 'country_id':
+					case 'cust_bill_country_code':
+					case 'cust_del_country_code':
+					
+					//"id" columns should always be ascii if they are strings
+					case 'id':
 						$this->isASCII = true;
 						break;
+					
 					
 					case 'type':
 						if (defined('DB_PREFIX')) {
@@ -788,7 +810,16 @@ class db {
 		}
 	
 		$sql = "
-			SELECT sp.page_type, c.equiv_id, c.language_id, c.id, c.type
+			SELECT sp.page_type, c.equiv_id, c.language_id, c.id, c.type";
+		
+		//In Zenario 9.1, a new column allow_search was added.
+		//Do not include that column in the SELECT statement
+		//before the admin has a chance to apply the DB update!
+		if (\ze::$dbL->checkTableDef(DB_PREFIX. 'special_pages', 'allow_search')) {
+			$sql .= ", sp.allow_search";
+		}
+
+		$sql .= "
 			FROM ". DB_PREFIX. "special_pages AS sp
 			INNER JOIN ". DB_PREFIX. "content_items AS c
 			   ON c.equiv_id = sp.equiv_id
@@ -805,8 +836,16 @@ class db {
 				}
 			
 				\ze::$specialPages[$row['page_type']] = $row['type']. '_'. $row['id'];
+
+				if (!isset($row['allow_search']) || !$row['allow_search']) {
+					\ze::$nonSearchablePages[$row['page_type']] = $row['type']. '_'. $row['id'];
+				}
 			} else {
 				\ze::$specialPages[$row['page_type']. '`'. $row['language_id']] = $row['type']. '_'. $row['id'];
+
+				if (!isset($row['allow_search']) || !$row['allow_search']) {
+					\ze::$nonSearchablePages[$row['page_type']. '`'. $row['language_id']] = $row['type']. '_'. $row['id'];
+				}
 			}
 		}
 	

@@ -12,6 +12,7 @@
 	"homepage": "https:\/\/github.com\/TribalSystems\/Zenario",
 	"license": "BSD-3-Clause",
 	"dependencies": {
+		"animate.css": "3.*",
 		"bez": "*",
 		"cytoscape": "*",
 		"jquery": "*",
@@ -25,5 +26,5 @@
 		"vimeo-upload": "*",
 		"wowjs": "*"
 	},
-	"version": "9.0.55141"
+	"version": "9.1.55143"
 }

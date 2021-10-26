@@ -74,5 +74,10 @@ _sql
 	MODIFY COLUMN `url` text
 _sql
 
-);
+); ze\dbAdm::revision(49
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	ADD COLUMN `online` tinyint(1) NOT NULL default 0
+_sql
 
+);

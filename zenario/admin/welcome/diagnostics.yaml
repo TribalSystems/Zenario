@@ -571,7 +571,7 @@ diagnostics:
                         html: |
                             Domain name redirects have been created for this site, but they will not function because no primary domain is defined.
                             Please go to
-                            <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//domains~.site_settings~tprimary_domain~k{&quot;id&quot;%3A&quot;domains&quot;}" target="_blank">
+                            <a href="organizer.php#zenario__administration/panels/site_settings//domains~.site_settings~tprimary_domain~k{&quot;id&quot;%3A&quot;domains&quot;}" target="_blank">
                                 <em>Domains</em> in the site settings
                             </a>
                             to define a primary domain.
@@ -596,13 +596,11 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site is in development mode,
-                            but if you're developing modules you would not be able to see PHP errors and notices.
-                            (The <code>ERROR_REPORTING_LEVEL</code>
-                            should be set to <code>(E_ALL | E_NOTICE | E_STRICT)</code>
-                            in your <code>zenario_siteconfig.php</code> file - or
-                            click the hammer icon at the bottom left of Organizer
-                            to fully enable the site.)
+                            Your site is in development mode.<br/>
+                            The PHP error reporting level will currently suppress PHP errors/notices which developers should see.<br/>
+                            To change this, edit the <code>zenario_siteconfig.php</code> file and ensure the following line is not commented out:<br/>
+                            <code>define('ERROR_REPORTING_LEVEL', (E_ALL | E_NOTICE | E_STRICT));</code><br/>
+                            Alternatively, click the "hammer" icon in Zenario to make the site run in normal production mode.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 notices_shown:
@@ -611,11 +609,10 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site is in production mode, but you are showing PHP notices.
-                            <br/>
-                            (The <code>ERROR_REPORTING_LEVEL</code>
-                            should be set to <code>(E_ALL & ~E_NOTICE & ~E_STRICT)</code>
-                            in your <code>zenario_siteconfig.php</code> file.)
+                            Your site is in production mode, but you are showing PHP Notices.<br/>
+                            This means that any PHP program errors may be seen by website visitors.<br/>
+                            To change this, edit the <code>zenario_siteconfig.php</code> file and ensure the following line is not commented out:<br/>
+                            <code>define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE & ~E_STRICT));</code><br>
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 cache_debug_enabled:
@@ -721,7 +718,7 @@ diagnostics:
                     snippet:
                         html: |
                             The .htaccess file exists and is readable, but Friendly URLs are disabled.
-                            Please go to <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap" target="_blank"><em>URL format, aliases and XML sitemap</em></a> in Configuration->Site Settings to change this.
+                            Please go to <a href="organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap" target="_blank"><em>URL format, aliases and XML sitemap</em></a> in Configuration->Site Settings to change this.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 

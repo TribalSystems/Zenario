@@ -43,16 +43,16 @@ sections:
                 ord: 20
                 css_class: zenario_at_icon_alias
             copy_url:
-                ord: 21
+                ord: 22
                 visible_if: zenario.canCopy()
                 parent: alias_dropdown
                 label: Copy URL/alias to clipboard
             go_to_alias:
-                ord: 22
+                ord: 23
                 parent: alias_dropdown
                 label: Go to content item via its alias
             no_alias:
-                ord: 23
+                ord: 24
                 parent: alias_dropdown
                 tooltip: This content item does not have an alias
             alias:
@@ -60,7 +60,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                     && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
-                ord: 24
+                ord: 21
                 parent: alias_dropdown
                 label: Edit alias
                 admin_box:

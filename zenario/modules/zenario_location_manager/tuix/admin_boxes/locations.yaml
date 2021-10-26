@@ -12,6 +12,12 @@ zenario_location_manager__location:
             label: Details
             edit_mode:
                 enabled: Yes
+            
+            notices:
+                location_suspended:
+                    show: false
+                    type: warning
+                    message: "This location is suspended."
                 
             fields:
                 external_id:
@@ -139,21 +145,6 @@ zenario_location_manager__location:
                     ord: 9996
                     label: Timezone
                     type: select
-                
-                last_edited:
-                    label: 'Last edited:'
-                    type: date
-                    readonly: Yes
-                    hidden: true
-                    row_class: disabled_map_fields
-                    ord: 9998
-                last_edited_by:
-                    label: 'Last edited by:'
-                    type: text
-                    readonly: Yes
-                    hidden: true
-                    row_class: disabled_map_fields
-                    ord: 9999
         content_item:
             label: Descriptive page
             edit_mode:

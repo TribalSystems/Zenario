@@ -36,10 +36,10 @@ zenario_admin:
                     checking_child_checks_parents: true
                     values:
                         _PRIV_VIEW_FORMS:
-                            label: View Forms
+                            label: View form designs
                         _PRIV_MANAGE_FORMS:
                             parent: _PRIV_VIEW_FORMS
-                            label: Create, Edit, Delete Forms
+                            label: Create, edit, delete form designs
                         _PRIV_VIEW_FORM_RESPONSES:
                             parent: _PRIV_VIEW_FORMS
-                            label: View users' form responses
+                            label: View form responses

@@ -317,7 +317,7 @@ plugin_settings:
                     label: 'Button label:'
                     value: "View"
                     show_phrase_icon: true
-                    side_note: "Enter text in the default language. <a href=\"zenario/admin/organizer.php#zenario__languages/panels/phrases\" target=\"_blank\">Click here to manage translations in Organizer.</a>."
+                    side_note: "Enter text in the default language. <a href=\"organizer.php#zenario__languages/panels/phrases\" target=\"_blank\">Click here to manage translations in Organizer.</a>."
                     indent: 1
                     validation:
                         required_if_not_hidden: Please enter a button label.

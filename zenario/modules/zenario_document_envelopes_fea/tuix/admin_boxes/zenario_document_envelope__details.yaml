@@ -56,3 +56,6 @@ zenario_document_envelope__details:
                     type: select
                     empty_value: '-- Select --'
                     values: {}
+                pinned:
+                    label: 'Pinned'
+                    type: checkbox

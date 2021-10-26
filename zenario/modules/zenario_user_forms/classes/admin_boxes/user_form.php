@@ -36,7 +36,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$fields['anti_spam/captcha_type']['values'] = ['math' => 'Maths (Securimage)'];
 		
-		$link = ze\link::absolute()."zenario/admin/organizer.php?#zenario__administration/panels/site_settings//captcha";
+		$link = ze\link::absolute()."organizer.php?#zenario__administration/panels/site_settings//captcha";
 		
 		if (ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
 			$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Google reCaptcha 2.0)';

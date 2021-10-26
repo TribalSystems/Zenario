@@ -33,6 +33,11 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 	
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		$fields['image_and_link/image']['side_note'] =
+		$fields['image_and_link/mobile_image']['side_note'] =
+		$fields['image_and_link/rollover_image']['side_note'] = 
+			ze\admin::phrase('If a JPG or PNG image is selected, Zenario will create and display a WebP version of the image. Fallback logic will be used for browsers which do not support WebP.');
+		
 		//For Wireframe Plugins, pick images from this item's images, rather than 
 		if ($box['key']['isVersionControlled']/*
 		 && ze\content::isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])*/) {
@@ -169,9 +174,11 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		 || $values['image_and_link/image_source'] == '_STICKY_IMAGE'
 		 || $values['image_and_link/link_type'] != '_ENLARGE_IMAGE';
 		
+		$fields['image_and_link/stretched_image_warning']['hidden'] = true;
+
 		if ($imagePicked
 		 && $imageId
-		 && ($image = ze\row::get('files', ['width', 'height', 'alt_tag', 'title', 'floating_box_title'], $imageId))) {
+		 && ($image = ze\row::get('files', ['width', 'height', 'alt_tag', 'title', 'floating_box_title', 'mime_type'], $imageId))) {
 			$editModeOn = ze\ring::engToBoolean($box['tabs']['image_and_link']['edit_mode']['on'] ?? false);
 			
 			if ($box['first_display'] && !$values['image_and_link/alt_tag']) {
@@ -193,7 +200,16 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 					$fields['image_and_link/floating_box_title']['value'] = $image['floating_box_title'];
 				}
 			}
-						
+			
+			if ($values['image_and_link/canvas'] == "resize_and_crop") {
+				$mimeType = $image['mime_type'];
+				if ($mimeType != 'image/svg+xml'
+					&& ($values['image_and_link/width'] > $image['width'] || $values['image_and_link/height'] > $image['height']
+					)
+				) {
+					$fields['image_and_link/stretched_image_warning']['hidden'] = false;
+				}
+			}
 		}
 		
 		$box['first_display'] = false;
@@ -269,7 +285,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			
 			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
-				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 			
 			$fields['first_tab/text']['show_phrase_icon'] =
@@ -305,7 +321,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		//Lazy load - only works if Mobile Behaviour is set to "Same image".
 		if ($values['image_and_link/mobile_behaviour'] != 'mobile_same_image') {
 			$fields['image_and_link/advanced_behaviour']['values']['lazy_load']['disabled'] = true;
-			$fields['image_and_link/advanced_behaviour']['side_note'] = ze\admin::phrase('Lazy load may not be used if Mobile Behaviour is not set to "Same image".');
+			$fields['image_and_link/advanced_behaviour']['side_note'] = ze\admin::phrase('Lazy load may not be used if Mobile Behaviour is not set to "Same image". There is no WebP support for lazy loading.');
 		} else {
 			$fields['image_and_link/advanced_behaviour']['values']['lazy_load']['disabled'] = false;
 			unset($fields['image_and_link/advanced_behaviour']['side_note']);
@@ -315,12 +331,20 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
-			$fields['image_and_link/mobile_behaviour']['side_note'] = ze\admin::phrase('If lazy load is enabled, only "Same image" setting may be used.');
+			$fields['image_and_link/mobile_behaviour']['note_below'] = ze\admin::phrase('If lazy load is enabled, only "Same image" setting may be used.');
+
+			$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase('There is no WebP support for lazy loading.');
 		} else {
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
-			unset($fields['image_and_link/mobile_behaviour']['side_note']);
+			unset($fields['image_and_link/mobile_behaviour']['note_below']);
+
+			if ($values['image_and_link/advanced_behaviour'] == 'use_rollover') {
+				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP images will be generated (with a fallback for browsers not supporting WebP)");
+			} else {
+				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP image will be generated (with a fallback for browsers not supporting WebP)");
+			}
 		}
 		
 		if ($values['first_tab/set_an_anchor']) {
@@ -350,9 +374,9 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		//...and display or hide a privacy warning note if necessary.
 		
 		if ($document && $document['privacy'] == 'private' && ($contentItemPrivacy == 'public' || $contentItemPrivacy == 'logged_out')) {
-			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: content item is Public, the selected document is Private, so the document will not appear to visitors.</p>';
+			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: this content item is public, the selected document is private, so it will not appear to visitors.</p>';
 		} elseif ($document && $document['privacy'] == 'offline') {
-			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: the selected document is Offline, so it will not appear to visitors. Offline documents can be published at any time.</p>';
+			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: the selected document is offline, so it will not appear to visitors. Change the privacy of the document to make it available.</p>';
 		} else {
 			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '';
 		}

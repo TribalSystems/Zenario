@@ -133,13 +133,28 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			if ($item['latest_response']) {
 				$item['latest_response'] = ze\admin::formatDateTime($item['latest_response'], '_MEDIUM');
 			}
-			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['save_record'], $id);
+
+			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['save_record', 'save_data'], $id);
+			
 			if (!$form['save_record']) {
 				$item['latest_response'] = ze\admin::phrase("Doesn't log responses");
+			}
+
+			switch ($form['save_data']) {
+				case 0:
+					$createsUserRecordPhrase = ze\admin::phrase("Doesn't create a user/contact record");
+					break;
+				case 1:
+					$createsUserRecordPhrase = ze\admin::phrase("Always creates a user/contact record");
+					break;
+				case 2:
+					$createsUserRecordPhrase = ze\admin::phrase("Creates a user/contact record on condition of consent field");
+					break;
 			}
 			
 			$item['type'] = zenario_user_forms::getFormTypeEnglish($item['type']);
 
+			$item['crm'] = '';
 			if (ze\module::inc('zenario_crm_form_integration')) {
 				$formEnabledCRM = [];
 				$formEnabledCRMFormattedNicely = [];
@@ -169,6 +184,14 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 					$item['crm'] = implode(', ', $formEnabledCRMFormattedNicely);
 				}
 			}
+
+			if ($item['crm']) {
+				$crmPhrase = ze\admin::phrase("Sends to a CRM");
+			} else {
+				$crmPhrase = ze\admin::phrase("Doesn't send to a CRM");
+			}
+
+			$item['user_record_and_crm_info'] = $createsUserRecordPhrase . ", " . $crmPhrase;
 		}
 	}
 	

@@ -1439,7 +1439,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 						}
 					}
 					
-					tags.tabs[tab].fields.suggested_values_source.note_below = '<a href="' + thus.tuix.link + 'zenario/admin/organizer.php?#zenario__languages/panels/salutations" target="_blank">Manage list of salutations</a>';
+					tags.tabs[tab].fields.suggested_values_source.note_below = '<a href="' + thus.tuix.link + 'organizer.php?#zenario__languages/panels/salutations" target="_blank">Manage list of salutations</a>';
 				}
 				break;
 		}

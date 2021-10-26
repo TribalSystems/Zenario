@@ -103,7 +103,7 @@ class zenario_error_log extends ze\moduleBaseClass {
 				$pageAliasParts = array_unique($pageAliasParts);
 				$pageAliasString = '-' . implode('-', $pageAliasParts);
 				
-				$url = $domain . "zenario/admin/organizer.php#zenario__administration/panels/error_log~" . htmlspecialchars($pageAliasString);
+				$url = $domain . "organizer.php#zenario__administration/panels/error_log~" . htmlspecialchars($pageAliasString);
 
 				echo ze\admin::phrase("To prevent further 404 errors at this URL, go to the site's 404 Error Log at [[url]] and select one item, then click \"Fix this error\" and select a content item. Zenario will create a spare alias to redirect future visitors to a more suitable page.", ['url' => $url]);
 				echo "\n";

@@ -178,15 +178,15 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 									//Switch the slot names in the system
 									$sql = "
 										UPDATE IGNORE ".  DB_PREFIX. "plugin_layout_link
-										SET slot_name = '". ze\escape::sql($newName). "'
-										WHERE slot_name = '". ze\escape::sql($oldName). "'
+										SET slot_name = '". ze\escape::asciiInSQL($newName). "'
+										WHERE slot_name = '". ze\escape::asciiInSQL($oldName). "'
 										  AND layout_id = ". (int) $layout['layout_id'];
 									ze\sql::update($sql);
 								
 									$sql = "
 										UPDATE IGNORE ".  DB_PREFIX. "layout_slot_link
-										SET slot_name = '". ze\escape::sql($newName). "'
-										WHERE slot_name = '". ze\escape::sql($oldName). "'
+										SET slot_name = '". ze\escape::asciiInSQL($newName). "'
+										WHERE slot_name = '". ze\escape::asciiInSQL($oldName). "'
 										  AND layout_id = ". (int) $layout['layout_id'];
 									ze\sql::update($sql);
 								
@@ -196,8 +196,8 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 										   ON pi.content_id = v.id
 										  AND pi.content_type = v.type
 										  AND pi.content_version = v.version
-										SET pi.slot_name = '". ze\escape::sql($newName). "'
-										WHERE pi.slot_name = '". ze\escape::sql($oldName). "'
+										SET pi.slot_name = '". ze\escape::asciiInSQL($newName). "'
+										WHERE pi.slot_name = '". ze\escape::asciiInSQL($oldName). "'
 										  AND v.layout_id = ". (int) $layout['layout_id'];
 									ze\sql::update($sql);
 								
@@ -207,8 +207,8 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 										   ON pil.content_id = v.id
 										  AND pil.content_type = v.type
 										  AND pil.content_version = v.version
-										SET pil.slot_name = '". ze\escape::sql($newName). "'
-										WHERE pil.slot_name = '". ze\escape::sql($oldName). "'
+										SET pil.slot_name = '". ze\escape::asciiInSQL($newName). "'
+										WHERE pil.slot_name = '". ze\escape::asciiInSQL($oldName). "'
 										  AND v.layout_id = ". (int) $layout['layout_id'];
 									ze\sql::update($sql);
 								}

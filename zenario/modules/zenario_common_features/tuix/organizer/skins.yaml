@@ -11,6 +11,8 @@ zenario__layouts:
                 id_column: s.id
             no_items_message: There are no Skins.
             view_mode: list
+            panel_type: multi_line_list
+            use_tall_rows: true
             disable_close_up_view: true
             disable_grid_view: true
             disable_summary_view: true
@@ -21,20 +23,22 @@ zenario__layouts:
                     title: Directory Name
                     db_column: s.name
                     searchable: true
+                    hidden: true
                 display_name:
-                    title: Display Name
+                    title: Skin name
                     db_column: s.display_name
-                    show_by_default: true
+                    always_show: true
                     searchable: true
                 path:
                     title: Path
                     db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/skins/', s.name, '/')"
                     show_by_default: true
+                    width: xxlarge
                 missing:
                     title: Missing
+                    hidden: true
                     db_column: s.missing
-                    format: yes_or_no
-                    show_by_default: true
+                    parent: yes_or_no
                 
                 usage_layouts:
                     title: Usage in Layouts
@@ -45,31 +49,36 @@ zenario__layouts:
                             WHERE stc.skin_id = s.id
                         )
                     align_right: true
-                    show_by_default: true
+                    always_show: true
+                    parent: display_name
                 status:
                     title: Status
                     show_by_default: true
                     width: xlarge
                 extension_of_skin:
                     db_column: s.extension_of_skin
-                extension_of_skin_display_name:
-                    title: Extension of Skin
-                    db_column: s2.display_name
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]skins AS s2
-                                                     ON s.extension_of_skin = s2.name
+                    hidden: true
+                extensions:
+                    title: Extensions
                     show_by_default: true
+                    html: true
+                extension_of_skin_display_name:
+                    #This column is used in the DB lookup in case the current skin extends another one.
+                    title: Extension of Skin
+                    hidden: true
                 extended_by_skins:
+                    #This column is used in the DB lookup in case one or more other skins extend this one.
                     title: Extended by Skins
-                    db_column: |
-                        (
-                                                        SELECT GROUP_CONCAT(
-                                                            s3.display_name
-                                                            ORDER BY s3.display_name DESC
-                                                            SEPARATOR ', ')
-                                                        FROM [[DB_PREFIX]]skins AS s3
-                                                        WHERE s.name = s3.extension_of_skin
-                                                    )
+                    hidden: true
+            
+            collection_buttons:
+                help:
+                    label: Help
+                    help:
+                        message: |
+                            Every layout uses a skin. Skins define the look and feel of layouts: the colour scheme, animations, margins, etc.
+                            
+                            This panel lists the skins that are available on your site. It shows a count of layouts that use a particular skin, as well as warnings if skin files are missing from the filesystem.
             
             item:
                 name: Skin

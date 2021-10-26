@@ -610,7 +610,11 @@ site_settings:
                                     &nbsp; &nbsp; /tmp/** r,<br />
                                 </code>
                             </p><p>
-                                Edit <code>/etc/apparmor.d/usr.sbin.clamd</code> and uncomment the line:
+                                Edit <code>/etc/apparmor.d/usr.sbin.clamd</code> and ensure it has the line:
+                            </p><p>
+                                <code>&nbsp; &nbsp; capability chown,</code>
+                            </p><p>
+                                Ensure <code>/etc/apparmor.d/usr.sbin.clamd</code> has this line:
                             </p><p>
                                 <code>&nbsp; &nbsp; include &lt;local/usr.sbin.clamd&gt;</code>
                             </p><p>

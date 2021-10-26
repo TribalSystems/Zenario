@@ -165,7 +165,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		if (ze\ring::engToBoolean($box['tabs']['unsub_exclude']['edit_mode']['enabled'] ?? false)) {
 			if (!ze::setting('zenario_newsletter__newsletter_consent_policy')) {
 				$siteSettingSring = 'You have not yet selected a consent policy for users receiving newsletters. Please go to [[link_start]]<em>Email and Newsletter</em>[[link_end]] to change this.';
-				$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k{"id"%3A"email"}';
+				$href = 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k{"id"%3A"email"}';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
 
@@ -176,6 +176,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//Try and ensure that we use absolute URLs where possible
 		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
 		
 		$box['tabs']['meta_data']['notices']['test_send_error']['show'] =
@@ -330,7 +331,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$values['unsub_exclude/exclude_recipients_with_no_consent'] = ($newsletterConsentPolicy == 'consent_required');
 		if (!$newsletterConsentPolicy) {
 			//If the newsletter consent flag is not set, show a link to the site settings tab
-			$link= ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"email"}');
+			$link= ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"email"}');
 			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Select a flag that represents a recipients consent to receive newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
 		} else {
 			unset($fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below']);
@@ -363,6 +364,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			
+			//Try and ensure that we use absolute URLs where possible
 			ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
 			
 			

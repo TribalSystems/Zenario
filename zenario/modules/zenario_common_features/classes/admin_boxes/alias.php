@@ -93,7 +93,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 				//... then do the same for the translation chain link...
 				$thisItemTranslationChainHref =
 					ze\link::protocol() . ze\link::host() . SUBDIRECTORY
-					. 'zenario/admin/organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//item_buttons/zenario_trans__view' . $defaultLangContentItemTag;
+					. 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//item_buttons/zenario_trans__view' . $defaultLangContentItemTag;
 				$thisItemTranslationChainLinkStart = '<a href="' . htmlspecialchars($thisItemTranslationChainHref) . '" target="_blank">';
 				$thisItemTranslationChainLinkEnd = '</a>';
 				$linksString = "Go to [[ci_link_start]][[ci_tag_formatted]][[ci_link_end]] and edit its alias, or [[tc_link_start]]view this item's translation chain[[tc_link_end]].";

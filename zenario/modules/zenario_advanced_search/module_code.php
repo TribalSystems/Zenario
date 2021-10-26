@@ -55,6 +55,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		$defaultTab = $this->setting('search_html')? 'html' : ($this->setting('search_document')? 'document' : 'news');
 		$this->cTypeToSearch = (($_REQUEST['ctab'] ?? false) ?: $defaultTab);
+		//Catch the case where a hacker is trying to break the page
+		if (!ze::in($this->cTypeToSearch, 'html', 'document', 'news')) {
+			$this->cTypeToSearch = $defaultTab;
+		}
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
@@ -111,7 +115,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 			
 		$options = [];
-		$options[0] =  $this->phrase('_ALL_CATEGORIES');
+		$options[0] =  $this->phrase('-- All Categories --');
 			
 		while($row = ze\sql::fetchAssoc($result)){
 			$options[$row['id']] = $row['name'];
@@ -135,7 +139,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 	
 	public function getLanguagesOptions(){
 		$options = [];
-		$options[0] =  $this->phrase('_ALL_LANGUAGES');
+		$options[0] =  $this->phrase('-- All languages --');
 		foreach (ze\lang::getLanguages() as $lang) {
 			$options[$lang['id']] = $lang['language_local_name'];
 		}
@@ -259,7 +263,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		if ($this->searchString) {
 			$this->sections['Search_Result_Heading'] = true;
-			$this->mergeFields['Search_Results_For'] = $this->phrase( '_SEARCH_RESULTS_FOR', ['term' => htmlspecialchars('"'. $this->searchString. '"')]);
+			$this->mergeFields['Search_Results_For'] = $this->phrase('Search results for [[term]]:', ['term' => htmlspecialchars('"'. $this->searchString. '"')]);
 		}
 		
 		$this->drawSearchBox();
@@ -303,6 +307,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$this->sections['Placeholder'] = true;
 			$this->sections['Placeholder_Phrase'] = $this->setting('search_placeholder_phrase');
 		}
+
+		$this->sections['Show_Clear_Search_Button'] = $this->setting('show_clear_search_button');
 
 		$this->mergeFields['Show_scores'] = ($this->setting('show_scores') && ze\admin::id());
 		
@@ -417,7 +423,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 	protected function getLanguagesSQLFilter(){
 		if($this->language_id) {
 			return "
-				AND c.language_id = '". ze\escape::sql($this->language_id). "' ";
+				AND c.language_id = '". ze\escape::asciiInSQL($this->language_id). "' ";
 		}
 		return "";
 	}
@@ -591,7 +597,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			  
 		if ($cType != '%all%') {
 			$sql .= "
-			  AND v.type = '". ze\escape::sql($cType). "'";
+			  AND v.type = '". ze\escape::asciiInSQL($cType). "'";
 		}
 	
 		$record_number = 1;
@@ -733,7 +739,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 				if ($cType != '%all%') {
 					$sqlWhere .= "
-					  AND v.type = '". ze\escape::sql($cType). "'";
+					  AND v.type = '". ze\escape::asciiInSQL($cType). "'";
 				}
 
 				$exactPhraseMatchSql = "

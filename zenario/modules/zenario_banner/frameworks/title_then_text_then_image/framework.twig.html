@@ -1,15 +1,8 @@
-{% if Title_Anchor_Enabled %}
-	<a id="{{Title_Anchor|e}}" class="anchor"></a>
-{% endif %}
+{% include this.frameworkBaseDir() ~ 'includes/title_anchor.twig.html' %}
 
 <div class="banner_wrap"><div class="banner_wrap_outer"><div class="banner_wrap_inner" {{Wrap}}>
-	{% if privacy_warning %}
-		{% if privacy == 'offline' %}
-			<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: the selected document \"[[filename]]\" is Offline, so the document will not appear to visitors.', {filename: filename})}}</p>
-		{% elseif privacy == 'private' %}
-			<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: content item is Public, the selected document \"[[filename]]\" is Private, so the document will not appear to visitors.', {filename: filename})}}</p>
-		{% endif %}
-	{% endif %}
+	{% include this.frameworkBaseDir() ~ 'includes/privacy_warning.twig.html' %}
+
 	{% if Title %}
 		<div class="banner_title">
 			<{{Title_Tags}}>
@@ -22,44 +15,23 @@
 		</div>
 	{% endif %}
 	
-	{% if Text %}
-		<div class="banner_text">{{Text}}</div>
-	{% endif %}
+	{% include this.frameworkBaseDir() ~ 'includes/banner_text.twig.html' %}
 
 	{% if More_Link_Text %}
 		<div class="banner_more">
-			<a {{Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
+			{{More_Link_Text}}
 		</div>
 	{% endif %}
 	
 	{% if Background_Image %}
 		<a {{Image_Link_Href}}{{Target_Blank}} id="{{Image_css_id}}"></a>
-	
 	{% elseif Image %}
-		<div class="banner_image" > 
-			{% if Image_Link_Href %} 
-				<a {{Image_Link_Href}}{{Target_Blank}}>
-			{% endif %}
+		<div class="banner_image">
+			{% include this.frameworkBaseDir() ~ 'includes/image_link_href_start.twig.html' %}
 			
-				{% if Lazy_Load %} 
-					<img class="lazy" data-src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} data-srcset="{{Image_Srcset|e}}" {% endif %} />
-				{% else %}
-					<picture>
-						{% if Mobile_Media %}
-							<source media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}">
-						{% endif %}
-						<img src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Srcset %} srcset="{{Image_Srcset|e}}" {% endif %} />
-					</picture>
-				{% endif %}
-				{{Rollover_Images}}
+			{% include this.frameworkBaseDir() ~ 'includes/image.twig.html' %}
 			
-			{% if Enlarge_Image %}
-				<span class="banner_image_zoom" title="{{'Enlarge this image'|trans}}">{{"Enlarge this image"|trans}}</span>
-			{% endif %}
-			
-			{% if Image_Link_Href %} 
-				</a>
-			{% endif %}
+			{% include this.frameworkBaseDir() ~ 'includes/image_link_href_end.twig.html' %}
 		</div>
 	{% endif %}
 </div></div></div>

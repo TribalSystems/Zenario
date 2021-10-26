@@ -131,7 +131,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		}
 		if (!$box['key']['id']) {
 			if (!$values['spare_alias/alias']) {
-				$box['tabs']['spare_alias']['errors'][] = ze\admin::phrase('Please enter an Alias.');
+				$box['tabs']['spare_alias']['errors'][] = ze\admin::phrase('Please enter some text.');
 		
 			} elseif (ze\row::exists('spare_aliases', ['alias' => $values['spare_alias/alias']])) {
 				$box['tabs']['spare_alias']['errors'][] = ze\admin::phrase('The spare alias "[[alias]]" is already in use.', ['alias' => $values['spare_alias/alias']]);

@@ -60,7 +60,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 												FROM " 
 													. DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions 
 												WHERE
-													country_id = '" . ze\escape::sql($id) . "'
+													country_id = '" . ze\escape::asciiInSQL($id) . "'
 												)";
 						ze\sql::update($sql);
 						ze\row::delete(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ['country_id' => $id]);

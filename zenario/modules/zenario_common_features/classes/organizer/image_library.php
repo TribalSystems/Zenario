@@ -69,6 +69,13 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				}
 				
 				unset($panel['item_buttons']['send_to_documents']);
+
+				$panel['quick_filter_buttons']['usage_dropdown']['hidden'] = true;
+				foreach ($panel['columns'] as &$column) {
+					if (isset($column['searchable'])) {
+						$column['searchable'] = false;
+					}
+				}
 		
 				break;
 			
@@ -259,11 +266,11 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				
 				if (isset($item['privacy'])) {
 					if ($item['privacy'] == 'auto') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is Hidden. (will become Public when placed on a public content item, or Private when placed on a private content item)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is hidden. (It will become public when placed on a public content item, or private when placed on a private content item.)', ['name' => htmlspecialchars($item['filename'])]);
 					} elseif ($item['privacy'] == 'private') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this image via an internal link; URL will change from time to time)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (Only a logged-in extranet user can access this image via an internal link; URL will change from time to time.)', ['name' => htmlspecialchars($item['filename'])]);
 					} elseif ($item['privacy'] == 'public') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (Any visitor who knows the public link can access it.)', ['name' => htmlspecialchars($item['filename'])]);
 					}
 				}
 			}

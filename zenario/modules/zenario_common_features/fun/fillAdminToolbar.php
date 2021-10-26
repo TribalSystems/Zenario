@@ -93,7 +93,7 @@ if (!$content || !$version) {
 		$adminToolbar['sections']['layout']['buttons']['settings']['admin_box']['key']['id'] = ze::$layoutId;
 	}
 
-	if (ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => ze\escape::sql($cType)])) {
+	if (ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $cType])) {
 		if ($version['pinned']) {
 			unset($adminToolbar['sections']['icons']['buttons']['not_pinned']);
 		} else {
@@ -216,7 +216,7 @@ if ($cVersion == ze::$adminVersion && ze::$status == 'hidden') {
 			WHERE published_datetime IS NOT NULL
 			  AND published_datetime
 			  AND id = '. (int) ze::$cID. '
-			  AND `type` = \''. ze\escape::sql(ze::$cType). '\'
+			  AND `type` = \''. ze\escape::asciiInSQL(ze::$cType). '\'
 			LIMIT 1
 		')) {
 			$adminToolbar['sections']['status_button']['buttons']['republish']['label'] = ze\admin::phrase('Publish');
@@ -471,24 +471,58 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_meta_data'])) {
 	$cTypeDetails = ze\contentAdm::cTypeDetails($cType);
 	
 	$tooltip =
-		ze\admin::phrase('Title:'). ' '. htmlspecialchars(ze::$pageTitle).
-		'<br/>'. ze\admin::phrase('Language:'). ' '. htmlspecialchars(ze\lang::name(ze::$langId));
+		'<strong>'. ze\admin::phrase('Title:'). '</strong> '. htmlspecialchars(ze::$pageTitle);
+
+	if (ze\lang::count() > 1) {
+		$tooltip .=
+			'<br/><strong>'. ze\admin::phrase('Language:'). '</strong> '. htmlspecialchars(ze\lang::name(ze::$langId));
+	}
 	
 	if ($cTypeDetails['description_field'] != 'hidden') {
 		$tooltip .= 
-			'<br/>'. ze\admin::phrase('Description:'). ' '. htmlspecialchars(ze::$pageDesc);
+			'<br/><strong>'. ze\admin::phrase('Description:'). '</strong> '. (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ze\admin::phrase('[Empty]'));
 	}
 	if ($cTypeDetails['keywords_field'] != 'hidden') {
 		$tooltip .= 
-			'<br/>'. ze\admin::phrase('Keywords:'). ' '. htmlspecialchars(ze::$pageKeywords);
+			'<br/><strong>'. ze\admin::phrase('Keywords:'). '</strong> '. (ze::$pageKeywords ? htmlspecialchars(ze::$pageKeywords) : ze\admin::phrase('[Empty]'));
 	}
 	if ($cTypeDetails['release_date_field'] != 'hidden') {
 		$tooltip .= 
-			'<br/>'. ze\admin::phrase('Release date:'). ' ';
+			'<br/><strong>'. ze\admin::phrase('Release date:'). '</strong> ';
 		
 		if ($version['release_date']) {
+			$tooltip .=  htmlspecialchars(ze\admin::formatDate($version['release_date']));
+		} else {
+			$tooltip .= ze\admin::phrase('[Empty]');
+		}
+	}
+	if ($cTypeDetails['writer_field'] != 'hidden') {
+		$tooltip .= 
+			'<br/><strong>'. ze\admin::phrase('Author:'). '</strong> ';
+		
+		if ($version['writer_id']) {
+			$tooltip .= ze\admin::formatName($version['writer_id']);
+		} else {
+			$tooltip .= ze\admin::phrase('[Empty]');
+		}
+	}
+	if ($cTypeDetails['summary_field'] != 'hidden') {
+		$tooltip .= 
+			'<br/><strong>'. ze\admin::phrase('Summary:'). '</strong> ';
+		
+		if ($version['content_summary']) {
+			$tooltip .= strip_tags(trim($version['content_summary']));
+		} else {
+			$tooltip .= ze\admin::phrase('[Empty]');
+		}
+	}
+	if ($cTypeDetails['allow_pinned_content'] == 1) {
+		if ($version['pinned']) {
 			$tooltip .= 
-				htmlspecialchars(ze\admin::formatDate($version['release_date']));
+				'<br/>'. ze\admin::phrase('Pinned'). ' ';
+		} else {
+			$tooltip .= 
+				'<br/>'. ze\admin::phrase('Not pinned'). ' ';
 		}
 	}
 	
@@ -1160,16 +1194,28 @@ foreach ($showVersions as $showVersion => $dummy) {
 		
 		switch (ze\contentAdm::versionStatus($v['version'], ze::$visitorVersion, ze::$adminVersion, ze::$status)) {
 			case 'draft':
-				if (ze\contentAdm::checkIfVersionChanged($v)) { //('last_author_id', 'last_modified_datetime', 'creating_author_id', 'created_datetime')
+				if ($versionChanged = ze\contentAdm::checkIfVersionChanged($v)) {
 					$labelPhrase = 'v[[version]] (draft)';
 					$tooltipPhrase = 'Version [[version]], Draft modified by [[name]], [[time]] [[date]]';
 					$cssClass = 'zenario_at_icon_version_draft';
-					$lastAction = ($v['last_modified_datetime'] ?: $v['created_datetime']);
-					$lastActionBy = $v['last_author_id'];
+					
+					if ($v['last_modified_datetime']) {
+						$lastAction = $v['last_modified_datetime'];
+						$lastActionBy = $v['last_author_id'];
+					} else {
+						$lastAction = $v['created_datetime'];
+						$lastActionBy = $v['creating_author_id'];
+					}
 
 				} else {
 					$labelPhrase = 'v[[version]] (draft)';
-					$tooltipPhrase = 'Version [[version]], Draft created by [[name]], [[time]] [[date]]';
+					
+					if ($versionChanged === null) {
+						$tooltipPhrase = 'Version [[version]], Draft created by [[name]], [[time]] [[date]], no changes made';
+					} else {
+						$tooltipPhrase = 'Version [[version]], Draft created by [[name]], [[time]] [[date]]';
+					}
+					
 					$cssClass = 'zenario_at_icon_version_draft';
 					$lastAction = $v['created_datetime'];
 					$lastActionBy = $v['creating_author_id'];
@@ -1297,7 +1343,7 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_categories_some'])
 		LEFT JOIN ". DB_PREFIX. "categories AS c
 		   ON cil.category_id = c.id
 		WHERE cil.equiv_id = ". (int) $content['equiv_id']. "
-		  AND cil.content_type = '" . ze\escape::sql($cType). "'";
+		  AND cil.content_type = '" . ze\escape::asciiInSQL($cType). "'";
 	
 	$i = 0;
 	if ($sql && ($result = ze\sql::select($sql))) {
@@ -1336,47 +1382,6 @@ foreach(ze\row::getAssocs('layout_slot_link', ['ord', 'slot_name'], $lookForSlot
 			'onmouseover' => 'return zenarioA.openSlotControls(this, this, "'. ze\escape::js($slot['slot_name']). '", true);',
 			'onclick' => 'return false;'
 		];
-}
-
-
-// Create page preview buttons
-$pagePreviews = ze\row::getAssocs('page_preview_sizes', ['width', 'height', 'description', 'ordinal', 'is_default', 'type'], [], 'ordinal');
-$status = ze::$status;
-switch ($status) {
-	case 'first_draft':
-	case 'published_with_draft':
-	case 'hidden_with_draft':
-	case 'trashed_with_draft':
-		$status = 'Draft';
-		break;
-	case 'published':
-		$status = 'Published';
-		break;
-	case 'hidden':
-		$status = 'Hidden';
-		break;
-	case 'trashed':
-		$status = 'Trashed';
-		break;
-}
-$previewLabel = ze\content::formatTag($cID, $cType, -1). ' Version '.$cVersion. ' ['. $status .']';
-foreach ($pagePreviews as $pagePreview) {
-	$width = $pagePreview['width'];
-	$height = $pagePreview['height'];
-	$description = $pagePreview['description'];
-	$label = $previewLabel. ' '.$width.' x '.$height.' ('.$description.')';
-	
-	$pagePreviewButton = [
-		'parent' => 'page_preview_sizes',
-		'label' => $width.' × '.$height.', '.$description,
-		'css_class' => 'zenario_small_preview_icon_'.$pagePreview['type'],
-		'onclick' => "zenarioA.showPagePreview(". (int) $width. ", ". (int) $height. ", '". ze\escape::js($description). "')"
-	];
-			
-	if ($pagePreview['is_default']) {
-		$pagePreviewButton['label'] .= ' (Default)';
-	}
-	$adminToolbar['sections']['page_preview_sizes']['buttons']['page_preview_'.$pagePreview['ordinal'].'_'.$width.'x'.$height] = $pagePreviewButton;
 }
 
 

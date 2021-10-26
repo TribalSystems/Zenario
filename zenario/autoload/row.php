@@ -244,7 +244,7 @@ class row {
 			$sql .= $sign. 'FIND_IN_SET(\''. \ze\escape::sql((string) $val). '\', '. $cSql. ')';
 	
 		} elseif ($d->isASCII) {
-			$sql .= $cSql. $sign. ' \''. \ze\escape::sql(\ze\escape::ascii((string) $val)). '\'';
+			$sql .= $cSql. $sign. ' \''. \ze\escape::asciiInSQL((string) $val). '\'';
 	
 		} else {
 			$sql .= $cSql. $sign. ' \''. \ze\escape::sql((string) $val). '\'';
@@ -362,6 +362,11 @@ class row {
 			
 				case 'sum':
 					$pre = 'SUM(';
+					$suf = ')';
+					break;
+			
+				case 'avg':
+					$pre = 'AVG(';
 					$suf = ')';
 					break;
 			
@@ -826,6 +831,11 @@ class row {
 	const sumFromTwig = true;
 	public static function sum($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'sum');
+	}
+
+	const avgFromTwig = true;
+	public static function avg($table, $cols, $ids = [], $ignoreMissingColumns = false) {
+		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'avg');
 	}
 
 

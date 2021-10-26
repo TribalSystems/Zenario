@@ -60,9 +60,9 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				
 				$item['css_class'] .= ' zenario_document_privacy_' . $item['privacy'];
 				
-				$privacyPhraseOffline = ze\admin::phrase('[[name]] is Offline. (will become Public when a link to it is made from a public content item, or Private when a link is made on a private content item)', $item);
-				$privacyPhrasePrivate = ze\admin::phrase('[[name]] is Private. (only a logged-in extranet user can access this document via an internal link; URL will change from time to time)', $item);
-				$privacyPhrasePublic = ze\admin::phrase('[[name]] is Public. (any visitor who knows the public link can access it)', $item);
+				$privacyPhraseOffline = ze\admin::phrase('[[name]] is offline. Neither visitors nor logged-in users can access this document.', $item);
+				$privacyPhrasePrivate = ze\admin::phrase('[[name]] is private. (Only a logged-in extranet user can access this document via an internal link; URL will change from time to time.)', $item);
+				$privacyPhrasePublic = ze\admin::phrase('[[name]] is public. Any visitor who knows the public link can access it.', $item);
 				
 				if ($item['privacy'] == 'offline') {
 					$item['tooltip'] = $privacyPhraseOffline;
@@ -423,7 +423,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					//Show success message only if 1 item was selected
 					if($count == 1) {
 						echo "<!--Message_Type:Success-->";
-						echo 'Public link was deleted successfully.';
+						echo 'This document is now offline.';
 					}
 				} else {
 					

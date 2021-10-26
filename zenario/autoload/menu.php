@@ -90,7 +90,7 @@ class menu {
 				   ON mt.menu_id = m.id
 				  AND mt.language_id = c.language_id
 				WHERE c.id = ". (int) $cID. "
-				  AND c.type = '" . \ze\escape::sql($cType) . "'";
+				  AND c.type = '" . \ze\escape::asciiInSQL($cType) . "'";
 		
 			if ($sectionId) {
 				$sql .= "
@@ -123,7 +123,7 @@ class menu {
 			SELECT id
 			FROM ". DB_PREFIX. "menu_nodes
 			WHERE equiv_id = ". (int) $equivId. "
-			  AND content_type = '". \ze\escape::sql($cType). "'
+			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
 			  AND section_id = ". (int) \ze\menu::sectionId($section). "
 			  AND target_loc = 'int'";
 	
@@ -167,7 +167,7 @@ class menu {
 			  AND m2.target_loc = 'int'
 			WHERE m1.target_loc = 'int'
 			  AND m1.equiv_id = ". (int) $equivId. "
-			  AND m1.content_type = '". \ze\escape::sql($cType). "'
+			  AND m1.content_type = '". \ze\escape::asciiInSQL($cType). "'
 			ORDER BY m1.redundancy = 'primary' DESC, m2.redundancy = 'primary' DESC
 			LIMIT 1";
 	
@@ -232,7 +232,7 @@ class menu {
 			  AND m.content_type = c.type
 			  AND m.target_loc = 'int'
 			  AND t.language_id = c.language_id
-			WHERE t.language_id = '" . \ze\escape::sql($langId) . "'
+			WHERE t.language_id = '" . \ze\escape::asciiInSQL($langId) . "'
 			  AND t.menu_id = ". (int) $mID;
 	
 		$result = \ze\sql::select($sql);
@@ -275,7 +275,7 @@ class menu {
 				SELECT COUNT(*)
 				FROM ' . DB_PREFIX . 'menu_nodes
 				WHERE equiv_id = ' . (int)$equiv_id . '
-				AND content_type = "'. \ze\escape::sql($content_type) . '"';
+				AND content_type = "'. \ze\escape::asciiInSQL($content_type) . '"';
 			$result = \ze\sql::select($sql);
 			$row = \ze\sql::fetchRow($result);
 			if ($row[0] == 1) {
@@ -304,8 +304,8 @@ class menu {
 			FROM ". DB_PREFIX. "menu_text AS mt
 			WHERE menu_id = ". (int) $mID. "
 			ORDER BY
-				language_id = '". \ze\escape::sql($langId). "' DESC,
-				language_id = '". \ze\escape::sql(\ze::$defaultLang). "' DESC
+				language_id = '". \ze\escape::asciiInSQL($langId). "' DESC,
+				language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC
 			LIMIT 1";
 	
 		$result = \ze\sql::select($sql);
@@ -370,8 +370,6 @@ class menu {
 		//Logic for menu nodes that point to content items 
 		if ($row['target_loc'] == 'int') {
 		
-		
-		
 			//Check to see if the content item attached to the menu node was visible
 			if (!$row['cID']) {
 			
@@ -386,7 +384,7 @@ class menu {
 						SELECT alias
 						FROM '. DB_PREFIX. 'content_items
 						WHERE id = '. (int) $row['equiv_id']. '
-						  AND `type` = \''. \ze\escape::sql($row['cType']). '\'';
+						  AND `type` = \''. \ze\escape::asciiInSQL($row['cType']). '\'';
 					
 					if ($adminMode) {
 						$sql .= "
@@ -425,7 +423,18 @@ class menu {
 				$cachingRestrictions = max($cachingRestrictions, self::privateItemsExist);
 				return \ze\content::checkPerm($row['cID'], $row['cType'], false, false, false);
 			}
+		//Logic for menu nodes that point to documents
+		} elseif ($row['target_loc'] == 'doc') {
+			$document = \ze\row::get('documents', ['file_id', 'privacy'], ['id' => $row['document_id'], 'type' => 'file']);
+			if ($document) {
+				if ($document['privacy'] == 'public' || \ze\admin::id()) {
+					return true;
+				}
+			}
+			
+			return false;
 		}
+
 		return $row['target_loc'] != 'none';
 	}
 
@@ -444,6 +453,7 @@ class menu {
 				m.param_1,
 				m.param_2,
 				m.equiv_id,
+				m.document_id,
 				c.id AS cID,
 				m.content_type AS cType,
 				c.alias,
@@ -468,11 +478,11 @@ class menu {
 			FROM ". DB_PREFIX. "menu_nodes AS m
 			LEFT JOIN ". DB_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
-			  AND t.language_id = '". \ze\escape::sql($language). "'
+			  AND t.language_id = '". \ze\escape::asciiInSQL($language). "'
 			LEFT JOIN ". DB_PREFIX. "menu_text AS d
 			   ON t.menu_id IS NULL
 			  AND d.menu_id = m.id
-			  AND d.language_id = '". \ze\escape::sql(\ze::$defaultLang). "'";
+			  AND d.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "'";
 	
 		} else {
 			$sql .= ",
@@ -482,7 +492,7 @@ class menu {
 			FROM ". DB_PREFIX. "menu_nodes AS m
 			INNER JOIN ". DB_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
-			  AND t.language_id = '". \ze\escape::sql($language). "'";
+			  AND t.language_id = '". \ze\escape::asciiInSQL($language). "'";
 		}
 	
 		$sql .= "
@@ -490,7 +500,7 @@ class menu {
 			   ON m.target_loc = 'int'
 			  AND m.equiv_id = c.equiv_id
 			  AND m.content_type = c.type
-			  AND c.language_id = '". \ze\escape::sql($language). "'";
+			  AND c.language_id = '". \ze\escape::asciiInSQL($language). "'";
 	
 		if ($adminMode) {
 			$sql .= "
@@ -787,6 +797,21 @@ class menu {
 				$row['url'] .= '#'.$row['anchor'];
 			}
 
+		} else if ($row['target_loc'] == 'doc' && $row['document_id']) {
+			$row['url'] = '';
+
+			$document = \ze\row::get('documents', ['file_id', 'privacy'], ['id' => $row['document_id'], 'type' => 'file']);
+			if ($document) {
+				if (\ze\row::exists('files', ['id' => $document['file_id']])) {
+					if ($document['privacy'] == 'public') {
+						$row['url'] = \ze\file::link($document['file_id']);
+					} else {
+						$row['document_privacy_error'] = true;
+					}
+				} else {
+					$row['document_file_not_found'] = true;
+				}
+			}
 		} else {
 			$row['url'] = '';
 		}

@@ -50,10 +50,7 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 	
 	ze\contentAdm::syncInlineFileContentLink($this->cID, $this->cType, $this->cVersion);
 	
-	$v = [];
-	$v['last_modified_datetime'] = ze\date::now();
-	$v['last_author_id'] = $_SESSION['admin_userid'] ?? false;
-	ze\row::update('content_item_versions', $v, ['id' => ze::$cID, 'type' => ze::$cType, 'version' => ze::$cVersion]);
+	ze\contentAdm::updateVersion(ze::$cID, ze::$cType, ze::$cVersion);
 
 	
 	if (($_POST['_sync_summary'] ?? false) && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {

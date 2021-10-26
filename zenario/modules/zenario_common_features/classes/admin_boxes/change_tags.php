@@ -53,7 +53,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 			$result = ze\sql::select($sql);
 			if (ze\sql::numRows($result) <= 0) {
 				$fields['desc']['hidden'] = true;
-				$link = 'zenario/admin/organizer.php?#zenario__content/panels/image_tags';
+				$link = 'organizer.php?#zenario__content/panels/image_tags';
 				$fields['no_tags_warning']['hidden'] = false;
 				$fields['no_tags_warning']['snippet']['html'] = 
 					'No tags have been created. To create or edit image tags click <a href="' . $link . '">this link</a>.';

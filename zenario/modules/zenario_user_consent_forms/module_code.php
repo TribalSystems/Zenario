@@ -132,7 +132,7 @@ class zenario_user_consent_forms extends zenario_user_forms {
                     while ($row = ze\sql::fetchAssoc($result)) {
            
                         $details['content_item'] = $values['details/content_item'];
-                        $hash = ''.\ze\escape::sql(\ze\userAdm::createHash($row['id'], $row['email'])).'';
+                        $hash = ''.\ze\escape::asciiInSQL(\ze\userAdm::createHash($row['id'], $row['email'])).'';
             
                         ze\sql::update("UPDATE ". DB_PREFIX . "users SET  consent_hash= '".$hash."' where id =".(int)$row['id']);
              

@@ -32,7 +32,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $sql = "
 	INSERT INTO ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
 		content_id = ". (int) $this->cID. ",
-		content_type = '". ze\escape::sql($this->cType). "',
+		content_type = '". ze\escape::asciiInSQL($this->cType). "',
 		date_posted = NOW(),
 		poster_id = ". (int) $userId. ",
 		poster_name = '". ze\escape::sql($name). "',
@@ -56,7 +56,7 @@ $sql = "
 		enable_subs = " .(int) $this->setting('enable_subs') . ",
 		comment_subs_email_template = '" . ze\escape::sql($this->setting('comment_subs_email_template')) . "'
 	WHERE content_id = ". (int) $this->cID. "
-	  AND content_type = '". ze\escape::sql($this->cType). "'";
+	  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
 
 ze\sql::update($sql);
 

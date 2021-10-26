@@ -241,7 +241,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		
 		//Get a link to the users dataset panel
 		$dataset = ze\dataset::details('users');
-		$panel['link_to_dataset'] = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets//' . $dataset['id'];
+		$panel['link_to_dataset'] = ze\link::absolute() . 'organizer.php#zenario__administration/panels/custom_datasets//' . $dataset['id'];
 		
 		//Get centralised lists for fields of type "centralised_radios" and "centralised_select"
 		$centralisedLists = ze\datasetAdm::centralisedLists();

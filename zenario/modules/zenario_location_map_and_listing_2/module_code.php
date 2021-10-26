@@ -47,6 +47,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		
 		//Only load data if this isn't the map
 		if (!empty($_REQUEST['display_map'])) {
+			if (!empty($this->setting('show_map'))) {
+				ze::requireJsLib('https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')));
+			}
 			return true;
 		}
 		
@@ -252,7 +255,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			
 			if ((bool)ze\admin::id()) {
 				$this->data['Logged_in_user_is_admin'] = true;
-				$this->data['Location_organizer_href_start'] = htmlspecialchars(ze\link::absolute() . 'zenario/admin/organizer.php#zenario__locations/panel//');
+				$this->data['Location_organizer_href_start'] = htmlspecialchars(ze\link::absolute() . 'organizer.php#zenario__locations/panel//');
 				$this->data['Location_organizer_href_middle'] = htmlspecialchars('~.zenario_location_manager__location~tdetails~k{"id":"');
 				$this->data['Location_organizer_href_end'] = htmlspecialchars('"}');
 			}
@@ -318,8 +321,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		} else {
 			if (!empty($this->setting('show_map'))) {
 				echo '<div id="'. htmlspecialchars($this->containerId). '_map"></div>'. "\n";
-				echo '<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>';
-				
+			
 				if ($this->setting('initial_map_position') == 'auto_position_at_centre') {
 					$fixedPositionLat = $fixedPositionLng = false;
 				} elseif ($this->setting('initial_map_position') == 'fixed_position') {
@@ -399,8 +401,11 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 					foreach ($datasetFields as $datasetField) {
 						if ($datasetField['tab_name'] == 'filters') {
 							$fields['first_tab/exclude_dataset_filters_picker']['values'][$datasetField['id']] = ['label' => $datasetField['label'], 'ord' => $datasetField['ord']];
+							
 							if (empty($datasetField['parent_id'])) {
 								$fields['first_tab/location_dataset_filter_level_1']['values'][$datasetField['id']] = ['label' => $datasetField['label'], 'ord' => $datasetField['ord']];
+							} else {
+								$fields['first_tab/exclude_dataset_filters_picker']['values'][$datasetField['id']]['parent'] = $datasetField['parent_id'];
 							}
 						}
 					}
@@ -603,7 +608,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			
 			$sql = "
 				DELETE FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "areas
-				WHERE id IN (" . ze\escape::in($ids) . ")";
+				WHERE id IN (" . ze\escape::in($ids, 'numeric') . ")";
 					
 			$result = ze\sql::update($sql);
 		}
@@ -667,7 +672,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 				   ON loc.country_id IS NOT NULL
 				  AND module_class_name = 'zenario_country_manager'
 				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
-				  AND vp_cn.language_id = '". ze\escape::sql(ze::$visLang). "'
+				  AND vp_cn.language_id = '". ze\escape::asciiInSQL(ze::$visLang). "'
 			LEFT JOIN " . DB_PREFIX . "custom_dataset_values_link vl
 				ON vl.linking_id = loc.id
 			LEFT JOIN " . DB_PREFIX . "custom_dataset_field_values fv

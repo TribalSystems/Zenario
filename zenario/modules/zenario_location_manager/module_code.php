@@ -510,6 +510,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
                     if ($locationDetails['content_type'] && $locationDetails['equiv_id']) {
 	                    $values['content_item/content_item'] = $locationDetails['content_type'] . "_" . $locationDetails['equiv_id'];
 	                }
+
+					if ($locationDetails['status'] == 'suspended') {
+						$box['tabs']['details']['notices']['location_suspended']['show'] = true;
+					}
  
                     $box['last_updated'] = ze\admin::formatLastUpdated($locationDetails);
  
@@ -590,7 +594,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					foreach ($fieldsToCheck as $tuixName => $dbName) {
 						$sql = "SELECT DISTINCT " . ze\escape::sql($dbName) . "
 								FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
-								WHERE id IN (" . ze\escape::in($box['key']['id'], true) . ")
+								WHERE id IN (" . ze\escape::in($box['key']['id'], 'numeric') . ")
 								LIMIT 2";
 								
 						$result = ze\sql::select($sql);
@@ -632,7 +636,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							FROM " 
 								. DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 							WHERE 
-								id IN (" . ze\escape::in($box['key']['id'], true) . ")
+								id IN (" . ze\escape::in($box['key']['id'], 'numeric') . ")
 							LIMIT 2";
 							
 					$result = ze\sql::select($sql);
@@ -1081,7 +1085,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 								$contentItemArray = explode("_",$values['content_item/content_item']);
 
 								$fieldsToChangeSQL[] = "equiv_id = " . ($contentItemArray[1] ?? false);
-								$fieldsToChangeSQL[] = "content_type = '" . ze\escape::sql($contentItemArray[0] ?? false) . "'";
+								$fieldsToChangeSQL[] = "content_type = '" . ze\escape::asciiInSQL($contentItemArray[0] ?? false) . "'";
 							} else {
 								$fieldsToChangeSQL[] = "equiv_id = null";
 								$fieldsToChangeSQL[] = "content_type = null";
@@ -1111,7 +1115,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 					$sql .= implode(",",$fieldsToChangeSQL);
 							
-					$sql .= " WHERE id IN (" . ze\escape::in($box['key']['id'], true) . ")";
+					$sql .= " WHERE id IN (" . ze\escape::in($box['key']['id'], 'numeric') . ")";
 					
 					$result = ze\sql::update($sql);
 				}
@@ -1818,7 +1822,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		//$sql = "SELECT id
 		//		FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 		//		WHERE equiv_id = " . (int) $cID . "
-		//			AND content_type = '" . ze\escape::sql($cType) . "'";
+		//			AND content_type = '" . ze\escape::asciiInSQL($cType) . "'";
 
 		$sql = "SELECT l.id
 				FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l
@@ -1829,7 +1833,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					SELECT c2.equiv_id
 					FROM " . DB_PREFIX . "content_items AS c2
 					WHERE c2.id = " . (int) $cID . "
-					AND c2.type = '" . ze\escape::sql($cType) . "'
+					AND c2.type = '" . ze\escape::asciiInSQL($cType) . "'
 				) AS sub
 				ON c1.equiv_id = sub.equiv_id";
 

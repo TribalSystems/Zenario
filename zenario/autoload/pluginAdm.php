@@ -140,7 +140,7 @@ class pluginAdm {
 		
 		$module = \ze\module::details($moduleId);
 	
-		$skLink = 'zenario/admin/organizer.php?fromCID='. (int) $cID. '&fromCType='. urlencode($cType);
+		$skLink = 'organizer.php?fromCID='. (int) $cID. '&fromCType='. urlencode($cType);
 		
 		//$modulesLink = '#zenario__modules/panels/modules//' . $moduleId;
 		//
@@ -310,7 +310,7 @@ class pluginAdm {
 			SELECT dependency_class_name
 			FROM ". DB_PREFIX. "module_dependencies
 			WHERE type = 'inherit_frameworks'
-			  AND module_class_name = '". \ze\escape::sql($className). "'
+			  AND module_class_name = '". \ze\escape::asciiInSQL($className). "'
 			LIMIT 1";
 	
 		$frameworks = [];
@@ -1138,7 +1138,7 @@ class pluginAdm {
 			$moduleId = $instance['module_id'];
 		}
 	
-		return \ze\link::absolute(). 'zenario/admin/organizer.php#'.
+		return \ze\link::absolute(). 'organizer.php#'.
 				'zenario__modules/panels/modules/item//'. (int) $moduleId. '//item_buttons/view_content_items//'. (int) $instanceId. '//';
 	}
 	

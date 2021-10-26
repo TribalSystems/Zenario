@@ -1,5 +1,5 @@
 zenario_document_upload: 
-    title: Upload documents
+    title: Upload one or more documents
     key: 
         id: ''
     hide_tab_bar: true
@@ -22,17 +22,17 @@ zenario_document_upload:
                         dropbox: true
                         dropbox_phrase: 'Upload from Dropbox'
                 privacy:
-                    label: 'Privacy'
+                    label: 'Select the kind of access:'
                     type: radios
                     values:
                         public:
                             label: 'Public'
-                            note_below: 'Document will have a fixed, shareable URL that anyone can access. To show the document on a content item, use a Document Container plugin.'
+                            note_below: 'Document will have a fixed URL that can be shared freely. You can put a Document Container plugin on a public content item to link to the document.'
                         private:
                             label: 'Private'
-                            note_below: 'Document will only be accessible to authorised users via a Document Container on a private content item.'
+                            note_below: 'Document will only be accessible to authorised users. You must put a Document Container on a private content item to allow access to the document.'
                         offline:
                             label: 'Decide later'
-                            note_below: 'Document will initially be offline (not available for any download), but will be made Public or Private as soon as a content item links to it, depending on the privacy of the content item.'
+                            note_below: 'Document will initially be offline (not available). It will become public or private (depending on the privacy of the content item) when a Document Container is made to link to it.'
                     validation:
                         required: 'Choose the privacy of the document.'

@@ -356,6 +356,8 @@ div.zenario_show_on_open {
 
 .zenario_admin_tooltip {
 	font-size: 11px !important;
+	line-height:1.4em;
+	line-height
 	padding: 8px 10px !important;
 }
 
@@ -400,7 +402,11 @@ body .zenario_admin_tooltip_over_tinymce {
 }
 
 .zenario_admin_tooltip p {
-    margin-top: 20px !important;
+    margin-top: 10px !important;
+}
+
+.zenario_admin_tooltip div {
+   padding:0 5px 3px 5px;
 }
 
 .zenario_admin_tooltip p:first-child {
@@ -882,7 +888,8 @@ del.zenario_link_status__spare_domain > del {
 	background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center;
 }
 
-del.zenario_link_status__spare_alias > del {
+del.zenario_link_status__spare_alias > del,
+del.zenario_link_status__published_301 > del {
 	background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center;
 }
 
@@ -905,4 +912,25 @@ div.ace_editor[readonly] .ace_content {
 
 .zenario_inactive_mode {
 	color: red;
+}
+
+/*
+	Hide empty slots
+*/
+
+x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
+	display:none;
+}
+
+body.zenario_show_empty_slots x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
+	display:block;
+}
+
+/*
+	Red text
+*/
+
+.zenario_slot span.red {
+	color:red;
+	font-style: italic;
 }

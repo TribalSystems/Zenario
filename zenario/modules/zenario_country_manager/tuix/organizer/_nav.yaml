@@ -1,6 +1,8 @@
 zenario__languages:
     nav:
         countries:
+            visible_if: >
+                zenarioA.siteSettings.default_language
             label: Countries
             tooltip: "Configure countries and regions which will be available to your site's modules"
             link:

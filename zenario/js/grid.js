@@ -1451,13 +1451,19 @@ methods.checkCellsEmpty = function(data) {
 
 //Delete something
 methods.deleteCell = function(el) {
+	var cell,
+		i,
+		levels,
+		data,
+		slot,
+		doDelete;
+	
 	//Try to get the cell that the delete button was for
-	var cell;
 	if ((cell = $(el).data('for'))
 	 && (cell = $('#' + cell))) {
-		var i = cell.data('i'),
-			levels = thus.getLevels(cell),
-			data = thus.data;
+		i = cell.data('i');
+		levels = thus.getLevels(cell);
+		data = thus.data;
 		
 		//The data variable should be a pointer to the right location in the thus.data object.
 		//(This will either be the thus.data object or a subsection if the cells being re-ordered are
@@ -1469,11 +1475,24 @@ methods.deleteCell = function(el) {
 				data = data.cells[1*levels[l]];
 			}
 		}
+		slot = data.cells[i];
 		
 		//Remove the deleted element
-		data.cells.splice(i, 1);
-		thus.change();
-		toastr.success(phrase.growlSlotDeleted);
+		doDelete = function() {
+			data.cells.splice(i, 1);
+			thus.change();
+			toastr.success(phrase.growlSlotDeleted);
+		};
+		
+		//If this slot was never saved, allow it to be instantly deleted.
+		//If this slot has been previously saved, show a prompt with some info first
+		if (slot.oName
+		 && thus.layoutId
+		 && thus.confirmDeleteSlot) {
+			thus.confirmDeleteSlot(slot, doDelete);
+		} else {
+			doDelete();
+		}
 	}
 };
 

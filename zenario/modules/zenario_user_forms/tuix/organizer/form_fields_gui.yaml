@@ -525,21 +525,21 @@ zenario__user_forms:
                             value_field_columns:
                                 visible_if: |
                                     item.type == 'checkboxes' || item.type == 'radios'
-                                label: 'Value columns:'
+                                label: 'Space values into equal columns:'
                                 type: select
                                 values:
                                     1:
-                                        label: 1
+                                        label: single column
                                     2:
-                                        label: 2
+                                        label: 2 columns
                                     3:
-                                        label: 3
+                                        label: 3 columns
                                     4:
-                                        label: 4
+                                        label: 4 columns
                                     5:
-                                        label: 5
+                                        label: 5 columns
                                     6:
-                                        label: 6
+                                        label: 6 columns
                             word_count_min:
                                 visible_if: |
                                     item.type == 'textarea'
@@ -559,16 +559,16 @@ zenario__user_forms:
                                 label: 'CSS classes:'
                                 type: text
                                 maxlength: 250
-                                note_below: Enter a list of classes separated by spaces that'll be applied to this field.
+                                note_below: CSS classes to apply to this field, separated by spaces.
                             div_wrap_class:
-                                label: 'Wrapper div class:'
+                                label: 'Wrapper div CSS class:'
                                 type: text
                                 maxlength: 250
-                                note_below: Enter a class for a wrapper div around this field. Fields above or below with the same wrapper div class will also be added into this div.
+                                note_below: CSS class for a wrapper div around this field. Fields above/below this one with the same wrapper div class will be put within the same div.
                             custom_code_name:
                                 visible_if: |
                                     item.type != 'section_description'
-                                label: 'Custom code name:'
+                                label: 'Custom field code name:'
                                 type: text
                                 maxlength: 250
                                 note_below: This is used so a developer can reference this field in a module without having to know the ID. Unique per form.

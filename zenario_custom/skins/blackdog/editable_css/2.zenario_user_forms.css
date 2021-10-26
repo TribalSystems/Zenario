@@ -7,11 +7,6 @@
 	color:#999;
 }
 
-.zenario_user_forms .form_field:not(.field_checkbox) .field_title {
-	font-size:0.75em;
-	text-transform:uppercase;
-}
-
 .zenario_user_forms .form_field.mandatory .field_title {
 	color:#000;
 }
@@ -19,42 +14,55 @@
 /* Fancy Checkboxes / Radios */
 
 .zenario_user_forms .field_checkbox,
-.zenario_user_forms .field_radios {
+.zenario_user_forms .field_checkboxes,
+.zenario_user_forms .field_radios,
+.zenario_user_forms .form_field .values_wrap .field_radio > label {
 	position:relative;
 }
 
 .zenario_user_forms .field_checkbox > label.field_title,
-.zenario_user_forms .field_radios > label.field_title,
+.zenario_user_forms .field_checkboxes .field_checkbox > label,
 .zenario_user_forms .form_field .values_wrap .field_radio > label,
 .zenario_user_forms .form_field .values_wrap .field_checkbox > label {
 	padding-left:30px;
 }
 
 .zenario_user_forms .field_checkbox input[type=checkbox] + label,
+.zenario_user_forms .field_checkboxes input[type=checkbox] + label,
 .zenario_user_forms .field_radios input[type=radio] + label {
   display: block;
   cursor: pointer;
 }
 
 .zenario_user_forms .field_checkbox input[type=checkbox],
+.zenario_user_forms .field_checkboxes input[type=checkbox],
 .zenario_user_forms .field_radios input[type=radio] {
   display: none;
 }
 
 .zenario_user_forms .field_checkbox input[type=checkbox] + label:before,
+.zenario_user_forms .field_checkboxes input[type=checkbox] + label:before,
 .zenario_user_forms .field_radios input[type=radio] + label:before {
   content: "\2573";
   border: 1px solid #b8babc;
   display: inline-block;
-  font-size:18px;
+  font-size:12px;
   width: 18px;
   height: 18px;
-  line-height:18px;
+  line-height:16px;
+  text-align:center;
   vertical-align: bottom;
   color: transparent;
   
   position:absolute;
   left:0;
+}
+
+body.ff .zenario_user_forms .field_checkbox input[type=checkbox] + label:before,
+body.ff .zenario_user_forms .field_checkboxes input[type=checkbox] + label:before,
+body.ff .zenario_user_forms .field_radios input[type=radio] + label:before {
+  font-size:24px;
+  line-height:10px;
 }
 
 .zenario_user_forms .field_radios input[type=radio] + label:before {
@@ -64,6 +72,7 @@
 }
 
 .zenario_user_forms .field_checkbox input[type=checkbox]:checked + label:before,
+.zenario_user_forms .field_checkboxes input[type=checkbox]:checked + label:before,
 .zenario_user_forms .field_radios input[type=radio]:checked + label:before {
   background-color: #000;
   border-color: #000;
@@ -71,6 +80,57 @@
 }
 
 /* End Fancy Checkboxes / Radios */
+
+
+.zenario_user_forms .form_field.field_radios .values_wrap,
+.zenario_user_forms .form_field.field_radios .note_to_user,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap,
+.zenario_user_forms .form_field.field_checkboxes .note_to_user {
+	margin-left:15px;
+}
+
+
+.zenario_user_forms .form_field.field_radios .values_wrap[class*="columns"],
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap[class*="columns"] {
+	overflow:hidden;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap[class*="columns"] .column,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap[class*="columns"] .column {
+	display:inline-block;
+	float:left;
+	padding-right:1%;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap.columns_6 .column,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap.columns_6 .column {
+	width:15.66%;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap.columns_5 .column,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap.columns_5 .column {
+	width:19%;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap.columns_4 .column,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap.columns_4 .column {
+	width:24%;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap.columns_3 .column,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap.columns_3 .column {
+	width:32.33%;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap.columns_2 .column,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap.columns_2 .column {
+	width:49%;
+}
+
+.zenario_user_forms .form_field.field_radios .values_wrap.columns_1 .column,
+.zenario_user_forms .form_field.field_checkboxes .checkboxes_wrap.columns_1 .column {
+	width:99%;
+}
 
 .zenario_user_forms .form_field.mandatory input[type='text'], 
 .zenario_user_forms .form_field.mandatory input[type='password'], 
@@ -178,11 +238,14 @@
 	padding-left:8px;
 }
 
+.zenario_user_forms .form_field .note_to_user {
+	font-size:0.857em;
+	font-style:italic;
+}
+
 .zenario_user_forms .form_field.field_checkbox .note_to_user {
 	clear:both;
 	float:none;
-	font-size:0.857em;
-	font-style:italic;
 }
 
 .zenario_user_forms .form_field.field_checkbox > .note_to_user {
@@ -193,7 +256,8 @@
 	text-decoration:underline;
 }
 
-.zenario_user_forms .form_field .values_wrap .field_radio {
+.zenario_user_forms .form_field .values_wrap .field_radio,
+.zenario_user_forms .form_field .checkboxes_wrap .field_checkbox {
 	padding:5px 0;
 }
 
@@ -228,6 +292,87 @@
 
 .zenario_user_forms.zenario_user_forms__default_style .form_buttons .next.submit {
 	float:none;
+}
+
+/* User forms, indent
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms .form_field.indent_1 {
+	margin-left:15px;
+}
+
+.zenario_user_forms .form_field.indent_2 {
+	margin-left:30px;
+}
+
+.zenario_user_forms .form_field.indent_3 {
+	margin-left:45px;
+}
+
+.zenario_user_forms .form_field.indent_4 {
+	margin-left:60px;
+}
+
+.zenario_user_forms .form_field.indent_5 {
+	margin-left:75px;
+}
+
+/* User forms, columns
+------------------------------------------------------------------------------------------------- */
+
+.zenario_user_forms .wrap_2_columns,
+.zenario_user_forms .wrap_3_columns,
+.zenario_user_forms .wrap_4_columns,
+.zenario_user_forms .wrap_5_columns {
+	overflow:hidden;
+}
+
+body.desktop .zenario_user_forms .wrap_2_columns .form_field,
+body.desktop .zenario_user_forms .wrap_3_columns .form_field,
+body.desktop .zenario_user_forms .wrap_4_columns .form_field,
+body.desktop .zenario_user_forms .wrap_5_columns .form_field {
+	float:left;
+}
+
+body.desktop .zenario_user_forms .wrap_2_columns .form_field {
+	width:calc(50% - 10px);
+}
+
+body.desktop .zenario_user_forms .wrap_3_columns .form_field {
+	width:calc(33.33% - 10px);
+	padding-left:5px;
+	padding-right:5px;
+}
+
+body.desktop .zenario_user_forms .wrap_3_columns .form_field:first-child,
+body.desktop .zenario_user_forms .wrap_3_columns .form_field:last-child {
+	padding-left:0;
+	padding-right:0;
+}
+
+body.desktop .zenario_user_forms .wrap_2_columns .form_field:first-child,
+body.desktop .zenario_user_forms .wrap_3_columns .form_field:first-child {
+	padding-right:10px;
+}
+
+body.desktop .zenario_user_forms .wrap_2_columns .form_field:last-child,
+body.desktop .zenario_user_forms .wrap_3_columns .form_field:last-child {
+	padding-left:10px;
+}
+
+body.desktop .zenario_user_forms .wrap_4_columns .form_field {
+	width:calc(25% - 7.5px);
+	padding-left:10px;
+}
+
+body.desktop .zenario_user_forms .wrap_5_columns .form_field {
+	width:calc(20% - 8px);
+	padding-left:10px;
+}
+
+body.desktop .zenario_user_forms .wrap_4_columns .form_field:first-child,
+body.desktop .zenario_user_forms .wrap_5_columns .form_field:first-child {
+	padding-left:0;
 }
 
 /* User forms, repeated blocks

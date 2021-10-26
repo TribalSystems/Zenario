@@ -1145,7 +1145,7 @@ body.webkit input {
 	position:absolute;
 	top:28px;
 	left:-35px;
-	background:#333333 url('../admin/images/welcome/admin-btn-for-tooltip.png') no-repeat right 10px;
+	background:#333333 url('../admin/images/welcome/admin-btn-for-tooltip.svg') no-repeat right 10px / 65px 47px;
 	color:#FFF;
 	width:265px;
 	padding:10px 80px 10px 10px;

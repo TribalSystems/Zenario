@@ -155,6 +155,7 @@ methods.returnMultipleSelectEnabled = function() {
 		foreach (thus.tuix.item_buttons as var i => var button) {
 			if (button
 			 && engToBoolean(button.multiple_select)
+			 && zenarioT.checkActionExists(button)
 			 && !zenarioO.checkButtonHidden(button)) {
 				return true;
 			}

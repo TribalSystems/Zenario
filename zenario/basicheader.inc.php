@@ -50,7 +50,7 @@ if (!defined('CMS_ROOT')) {
 unset($ci, $cwd, $dirname);
 
 if (!is_file(CMS_ROOT. 'zenario/basicheader.inc.php')) {
-	echo 'Your CMS_ROOT value is not correctly set. \''. CMS_ROOT. '\' is not the correct path to the CMS.';
+	echo 'Your CMS_ROOT value is not correctly set. \''. CMS_ROOT. '\' is not the correct path to the folder containing the Zenario index.php file.';
 	exit;
 }
 
@@ -140,6 +140,7 @@ class ze {
 	public static $adminSettings = [];
 	public static $siteConfig = [];
 	public static $specialPages = [];
+	public static $nonSearchablePages = [];
 	public static $slotContents = [];
 	public static $modulesLoaded = [];
 	public static $modulesOnPage = [];

@@ -59,7 +59,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			$allJobsEnabled = ze::setting('jobs_enabled');
 			$scheduledPublishingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobPublishContent', 'module_class_name' => 'zenario_common_features']);
 			if (!($allJobsEnabled && $scheduledPublishingEnabled)) {
-				$scheduledTaskHref = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
+				$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
 				$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
 				$linkEnd = "</a>";
 
@@ -98,7 +98,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = c.admin_version
-			WHERE c.tag_id in (". ze\escape::in($tags, 'sql'). ")
+			WHERE c.tag_id in (". ze\escape::in($tags, 'asciiInSQL'). ")
 			  AND v.scheduled_publish_datetime IS NOT NULL";
 		
 		$result = ze\sql::select($sql);
@@ -161,7 +161,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = c.admin_version
-			WHERE c.tag_id IN (". ze\escape::in($tagIds, 'sql'). ")
+			WHERE c.tag_id IN (". ze\escape::in($tagIds, 'asciiInSQL'). ")
 			  AND v.release_date IS NOT NULL
 			  AND DATE(v.release_date) > ";
 		

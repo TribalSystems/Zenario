@@ -52,7 +52,7 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 				INNER JOIN '. DB_PREFIX. 'users AS u
 					ON l.user_id = u.id
 				WHERE l.content_id = '. (int) $cID. '
-				  AND l.content_type = \''. \ze\escape::sql($cType). '\'
+				  AND l.content_type = \''. \ze\escape::asciiInSQL($cType). '\'
 				ORDER BY l.hit_datetime DESC';
 			$result = ze\sql::select($sql);
 			while ($row = ze\sql::fetchAssoc($result)) {

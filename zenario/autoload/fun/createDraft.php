@@ -231,7 +231,7 @@ if ($newDraftCreated) {
 				slot_name
 			FROM ". DB_PREFIX. "plugin_item_link
 			WHERE content_id = ". (int) $cIDFrom. "
-			  AND content_type = '". \ze\escape::sql($cTypeFrom). "'
+			  AND content_type = '". \ze\escape::asciiInSQL($cTypeFrom). "'
 			  AND content_version = ". (int) $cVersionFrom;
 		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
@@ -253,7 +253,7 @@ if ($newDraftCreated) {
 				extract_wordcount
 			FROM ". DB_PREFIX. "content_cache
 			WHERE content_id = ". (int) $cIDFrom. "
-			  AND content_type = '". \ze\escape::sql($cTypeFrom). "'
+			  AND content_type = '". \ze\escape::asciiInSQL($cTypeFrom). "'
 			  AND content_version = ". (int) $cVersionFrom;
 		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		

@@ -406,7 +406,7 @@ class layoutAdm {
 
 	//Check how many items use a Layout or a Template Family
 	//Formerly "checkTemplateUsage()"
-	public static function usage($layoutId, $publishedOnly = false, $skinId = false, $countItems = true) {
+	public static function usage($layoutId, $publishedOnly = false, $countItems = true, $checkWhereItemLayerIsUsed = false, $slotName = false) {
 		
 		if ($countItems) {
 			$sql = "
@@ -426,25 +426,36 @@ class layoutAdm {
 			$sql .= "
 			  AND v.version = c.visitor_version
 			INNER JOIN ". DB_PREFIX. "layouts AS t
-			   ON t.layout_id = v.layout_id
-			WHERE c.status IN ('published_with_draft', 'published')";
+			   ON t.layout_id = v.layout_id";
 	
 		} else {
 			$sql .= "
 			  AND v.version IN (c.admin_version, c.visitor_version)
 			INNER JOIN ". DB_PREFIX. "layouts AS t
-			   ON t.layout_id = v.layout_id
+			   ON t.layout_id = v.layout_id";
+		}
+	
+		if ($checkWhereItemLayerIsUsed) {
+			$sql .= "
+			INNER JOIN ". DB_PREFIX. "plugin_item_link AS pil
+			   ON pil.content_id = v.id
+			  AND pil.content_type = v.type
+			  AND pil.content_version = v.version
+			  AND pil.slot_name = '". \ze\escape::asciiInSQL($slotName). "'";
+		}
+	
+		if ($publishedOnly) {
+			$sql .= "
+			WHERE c.status IN ('published_with_draft', 'published')";
+	
+		} else {
+			$sql .= "
 			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published')";
 		}
 	
 		
 		$sql .= "
 			AND v.layout_id = ". (int) $layoutId;
-	
-		if ($skinId) {
-			$sql .= "
-			  AND IF(t.skin_id != 0, t.skin_id, f.skin_id) = ". (int) $skinId;
-		}
 	
 		if ($countItems) {
 			return \ze\sql::fetchValue($sql);
@@ -469,8 +480,8 @@ class layoutAdm {
 			GROUP BY lsl.slot_name
 			ORDER BY
 				pitl.slot_name IS NULL DESC,
-				lsl.slot_name LIKE '". \ze\escape::like($guess1). "%' DESC,
-				lsl.slot_name LIKE '". \ze\escape::like($guess2). "%' DESC,
+				lsl.slot_name LIKE '". \ze\escape::like(\ze\escape::ascii($guess1)). "%' DESC,
+				lsl.slot_name LIKE '". \ze\escape::like(\ze\escape::ascii($guess2)). "%' DESC,
 				lsl.slot_name
 			LIMIT 1";
 	
@@ -534,7 +545,7 @@ class layoutAdm {
 
 	//Formerly "getTemplateUsageStorekeeperDeepLink()"
 	public static function usageOrganizerLink($layoutId) {
-		return \ze\link::absolute(). 'zenario/admin/organizer.php#'.
+		return \ze\link::absolute(). 'organizer.php#'.
 				'zenario__layouts/panels/layouts/view_content//'. (int) $layoutId.  '//';
 	}
 	
@@ -553,7 +564,7 @@ class layoutAdm {
 			   ON pi.content_id = v.id
 			  AND pi.content_type = v.type
 			  AND pi.content_version = v.version
-			  AND pi.slot_name = '". \ze\escape::sql($slotName).  "'
+			  AND pi.slot_name = '". \ze\escape::asciiInSQL($slotName).  "'
 			INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
 			   ON ps.instance_id = pi.id
 			  AND ps.is_content = 'version_controlled_content'

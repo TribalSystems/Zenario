@@ -69,7 +69,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 								AS cmc ON l.country_id = cmc.id
 								LEFT JOIN ' . DB_PREFIX . "visitor_phrases AS vs
 										ON CONCAT('_COUNTRY_NAME_',cmc.id) = vs.code
-										AND vs.language_id = '" . ze\escape::sql(ze::$visLang) . "'
+										AND vs.language_id = '" . ze\escape::asciiInSQL(ze::$visLang) . "'
 												ORDER BY 2";
 
 		$result = ze\sql::select($sql);			
@@ -95,11 +95,11 @@ class zenario_project_locations extends ze\moduleBaseClass {
 					INNER JOIN 
 						". DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
 					ON 
-						ids.region_id = R.id and ids.country_id='" . ze\escape::sql($this->country_id) . "'
+						ids.region_id = R.id and ids.country_id='" . ze\escape::asciiInSQL($this->country_id) . "'
 					LEFT JOIN 
 						". DB_PREFIX . "visitor_phrases AS vs
 					ON 
-						R.name = vs.code AND vs.language_id = '" . ze\escape::sql(ze::$visLang) . "'
+						R.name = vs.code AND vs.language_id = '" . ze\escape::asciiInSQL(ze::$visLang) . "'
 					ORDER BY 2";
 		
 			$result = ze\sql::select($sql);
@@ -121,7 +121,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_services'
 				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_PORTFOLIO_SERVICE_', s.id) = vp.code
-				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
+				AND vp.language_id = '" . ze\escape::asciiInSQL(ze::$visLang) . "' ORDER BY 2";
 			
 		$result = ze\sql::select($sql);
 			
@@ -140,7 +140,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_sectors'
 				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_PORTFOLIO_SECTOR_', s.id) = vp.code 
-				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
+				AND vp.language_id = '" . ze\escape::asciiInSQL(ze::$visLang) . "' ORDER BY 2";
 			
 		$result = ze\sql::select($sql);
 			
@@ -181,7 +181,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			LEFT JOIN ". DB_PREFIX. "content_items AS c
 			ON c.equiv_id = pl.equiv_id
 			AND c.type = 'projects'
-			AND c.language_id = '". ze\escape::sql(ze::$langId). "'
+			AND c.language_id = '". ze\escape::asciiInSQL(ze::$langId). "'
 			LEFT JOIN ". DB_PREFIX. "content_item_versions AS v
 			ON v.id = c.id
 			AND v.type = c.type
@@ -209,7 +209,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 		
 		if ($this->country_id) {
 			$sql .= "
-			  AND pl.country_id = '". ze\escape::sql($this->country_id). "'";
+			  AND pl.country_id = '". ze\escape::asciiInSQL($this->country_id). "'";
 			
 			if ($this->region_id) {
 				$sql .= "

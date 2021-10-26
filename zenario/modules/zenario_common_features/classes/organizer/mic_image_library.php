@@ -37,7 +37,7 @@ class zenario_common_features__organizer__mic_image_library extends ze\moduleBas
 
     public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		$module = 'zenario_multiple_image_container';
-		$moduleId = ze\row::get('modules', 'id', ['class_name' => ze\escape::sql($module)]);
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 
 		$imageIds = [];
 		$usage = [];

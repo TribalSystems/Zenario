@@ -1,5 +1,5 @@
 {% if Error_no_event_content_type %}
-	{{"_ERROR_NO_EVENT_CONTENT_TYPE"|trans}}
+	{{"Error. You can only use this Plugin with the Event Content Type."|trans}}
 {% endif %}
 
 
@@ -16,13 +16,25 @@
 		</div>
 		{% if stop_dates %}
 			<div class="event_stopdates">
-				{{"_STOP_DATES:"|trans}} {{stop_dates}}
+				{{"Does not run:"|trans}} {{stop_dates}}
+			</div>
+		{% endif %}
+
+		{% if Online_Text %}
+			<div class="event_online_text">
+				{{Online_Text|trans}}
+			</div>
+		{% endif %}
+
+		{% if Address_Text %}
+			<div class="event_address_text">
+				{{Address_Text|e}}
 			</div>
 		{% endif %}
 
 		{% if More_Info_Url %}
 			<div class="event_more_info">
-				{{"_MORE_INFO:"|trans}} <a target="_blank" href="{{event_url}}"/>{{event_url}}</a>
+				<a target="_blank" href="{{event_url}}"/>{{"For more info, click here"|trans}}</a>
 			</div>
 		{% endif %}
 	</div>

@@ -43,6 +43,7 @@ class zenario_document_envelopes_fea__admin_boxes__document_envelope__details ex
 			$values['details/keywords'] = $envelopeData['keywords'];
 			$values['details/thumbnail_id'] = $envelopeData['thumbnail_id'];
 			$values['details/language_id'] = $envelopeData['language_id'];
+			$values['details/pinned'] = $envelopeData['pinned'];
 			
 			$box['last_updated'] = ze\admin::formatLastUpdated($envelopeData);
 		} else {
@@ -65,7 +66,8 @@ class zenario_document_envelopes_fea__admin_boxes__document_envelope__details ex
 			'name' => $values['details/name'],
 			'description' => $values['details/description'],
 			'keywords' => $values['details/keywords'],
-			'language_id' => $values['details/language_id']
+			'language_id' => $values['details/language_id'],
+			'pinned' => $values['details/pinned']
 		];
 		
 		if (!empty($values['details/thumbnail_id'])) {

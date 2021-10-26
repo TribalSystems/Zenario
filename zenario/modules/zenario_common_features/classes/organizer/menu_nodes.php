@@ -127,7 +127,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		}
 
 
-		$panel['item']['tooltip_when_link_is_active'] = ze\admin::phrase('View child Menu Nodes of &quot;[[name]]&quot;.');
+		$panel['item']['tooltip_when_link_is_active'] = ze\admin::phrase('View child menu nodes of &quot;[[name]]&quot;.');
 		
 		if ($refinerName == 'menu_nodes_using_image') {
 			$mrg = ze\row::get('files', ['filename'], $refinerId);
@@ -138,17 +138,17 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			$mrg['parent'] = ze\menu::name($panel['key']['parentId'], $panel['key']['languageId']);
 			$mrg['n'] = ze\menuAdm::level($panel['key']['parentId']) + 1;
 	
-			$panel['title'] = ze\admin::phrase('"[[section]]" Section in [[lang]]: Child Menu Nodes of "[[parent]]" (Level [[n]])', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('The "[[parent]]" Menu Node has no children.', $mrg);
+			$panel['title'] = ze\admin::phrase('"[[section]]" Section in [[lang]]: child menu nodes of "[[parent]]" (Level [[n]])', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('The "[[parent]]" menu node has no child nodes.', $mrg);
 	
 			if ($isFlatView) {
 				$path = ze\menuAdm::path($panel['key']['parentId'], $panel['key']['languageId'], $separator);
 			}
 
 		} elseif ($panel['key']['sectionId']) {
-			$panel['title'] = ze\admin::phrase('Menu Nodes in the "[[section]]" Section in [[lang]]', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no Menu Nodes in the "[[section]]" section.', $mrg);
-			$panel['no_items_in_search_message'] = ze\admin::phrase('No Menu Nodes in the "[[section]]" section match your search.', $mrg);
+			$panel['title'] = ze\admin::phrase('Menu nodes in the menu section "[[section]]" in [[lang]]', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no menu nodes in the "[[section]]" section.', $mrg);
+			$panel['no_items_in_search_message'] = ze\admin::phrase('No menu nodes in the "[[section]]" section match your search.', $mrg);
 
 		} else {
 			unset($panel['reorder']);
@@ -203,6 +203,14 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					$item['tooltip'] = ze\admin::phrase("This is a secondary menu node. There's a primary menu node that also links to this content item.");
 				}
 	
+			} elseif ($item['target_loc'] == 'doc' && $item['document_id']) {
+				if ($item['redundancy'] == 'unique') {
+					$item['tooltip'] = ze\admin::phrase('This is a unique menu node. No other menu node links to this document.');
+				} elseif ($item['redundancy'] == 'primary') {
+					$item['tooltip'] = ze\admin::phrase("This is a primary menu node. There are other secondary menu nodes linking to the same document.");
+				} else {
+					$item['tooltip'] = ze\admin::phrase("This is a secondary menu node. There's a primary menu node that also links to this document.");
+				}
 			} elseif ($item['target_loc'] == 'ext' && $item['target']) {
 				$item['tooltip'] = ze\admin::phrase('This menu node links to an external URL.');
 	

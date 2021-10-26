@@ -131,7 +131,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			
 		if (!empty($box['key']['type'])) {
 			$sql .= '
-				AND c.type = "' . ze\escape::sql($box['key']['type']) . '"';
+				AND c.type = "' . ze\escape::asciiInSQL($box['key']['type']) . '"';
 		}
 		
 		$sql .= '

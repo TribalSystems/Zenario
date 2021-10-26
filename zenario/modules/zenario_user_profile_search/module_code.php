@@ -154,7 +154,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 				FROM " . DB_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 				AS cmc LEFT JOIN ' . DB_PREFIX . "visitor_phrases AS vs
 						ON CONCAT('_COUNTRY_NAME_',cmc.id) = vs.code
-						AND vs.language_id = '" . ze\escape::sql(ze::$visLang) . "'
+						AND vs.language_id = '" . ze\escape::asciiInSQL(ze::$visLang) . "'
 				WHERE cmc.id IN(SELECT DISTINCT `" . $country_field['name'] . "` FROM " 
 						. DB_PREFIX . ($country_field['is_system_field'] ? 'users' : 'users_custom_data') 
 				. ")

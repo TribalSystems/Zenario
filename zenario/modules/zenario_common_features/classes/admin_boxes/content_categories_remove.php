@@ -75,7 +75,7 @@ class zenario_common_features__admin_boxes__content_categories_remove extends ze
 			INNER JOIN ". DB_PREFIX. "category_item_link AS l
 			   ON c.equiv_id = l.equiv_id
 			  AND c.type = l.content_type
-			WHERE c.tag_id IN (". ze\escape::in($tagIds). ")
+			WHERE c.tag_id IN (". ze\escape::in($tagIds, 'asciiInSQL'). ")
 			GROUP BY l.category_id";
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {

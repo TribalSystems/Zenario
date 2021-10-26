@@ -49,7 +49,6 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 				$box['title'] = ze\admin::phrase('Starting the module "[[class_name]]" ([[display_name]])', $module);
 				$box['save_button_message'] = ze\admin::phrase('Start module');
 		
-				$box['max_height'] = 60;
 				$box['tabs']['confirm']['notices']['are_you_sure']['show'] = true;
 		
 				break;
@@ -67,7 +66,6 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 				$box['title'] = ze\admin::phrase('Starting the module "[[class_name]]" ([[display_name]])', $module);
 				$box['save_button_message'] = ze\admin::phrase('Start module');
 		
-				$box['max_height'] = 60;
 				//$box['tabs']['confirm']['notices']['are_you_sure']['show'] = true;
 		}
 
@@ -81,10 +79,6 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 		 && (ze\moduleAdm::scanPermissionsFromDescription($module['class_name'], $perms, $labels))) {
 			$box['tabs']['confirm']['fields']['grant_perms_desc']['hidden'] = false;
 	
-			if (isset($box['max_height'])) {
-				$box['max_height'] = 300;
-			}
-			
 			$desc = '';
 			
 			if (count($perms) == 1) {
@@ -119,10 +113,10 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 					);
 			
 				$fields['confirm/grant_perms_desc_2']['snippet']['html'] =
-					ze\admin::phrase('Administrators with &ldquo;every possible permission&rdquo; ([[n]]) will be able to use the module. For granular control over individual administrators, please go to the <a href="[[link]]" target="blank">Administrators panel</a>.',
+					ze\admin::phrase('Administrators with &quot;all permissions&quot; ([[n]] people) will be able to use the module. For control over individual administrators, please go to the <a href="[[link]]" target="blank">Administrators panel</a>.',
 						[
 							'n' => $countOfAdminsWithAllPerms,
-							'link' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__users/panels/administrators')
+							'link' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__users/panels/administrators')
 						]
 					);
 			}
@@ -166,14 +160,14 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 		ze\contentAdm::addNeededSpecialPages();
 
 		if ($module['status'] == 'module_not_initialized') {
-			//Check to see if the Module just made any special pages
+			//Check to see if the module just made any special pages
 			$sql = "
 				SELECT c.id, c.type, c.alias, c.language_id
 				FROM ". DB_PREFIX. "special_pages AS sp
 				INNER JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.equiv_id = sp.equiv_id
 				  AND c.type = sp.content_type
-				WHERE sp.module_class_name = '". ze\escape::sql($module['class_name']). "'
+				WHERE sp.module_class_name = '". ze\escape::asciiInSQL($module['class_name']). "'
 				ORDER BY c.type, c.equiv_id, c.id";
 	
 			$contentItems = [];

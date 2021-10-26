@@ -62,7 +62,7 @@ plugin_settings:
                         all:
                                     label: Show content items in all languages enabled
                         specific_languages:
-                                    label: Show content items in pecific languages...
+                                    label: Show content items in specific languages...
                     format_onchange: Yes
                 specific_languages:
                     grouping: content_item_filters
@@ -586,14 +586,6 @@ plugin_settings:
                     format_onchange: Yes
                     side_note: |
                         Show the feature image of each content item, if it has one. For picture content items, a thumbnail will be automatically generated if no feature image exists.
-                show_file_size:
-                    visible_if: |
-                        zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'all'
-                    label: 'Show file size (applies to document content items only)'
-                    type: checkbox
-                    plugin_setting:
-                        name: show_file_size
-                    redraw_onchange: true
                 fall_back_to_default_image:
                     plugin_setting:
                         name: fall_back_to_default_image
@@ -681,6 +673,22 @@ plugin_settings:
                     side_note: |
                         Display image at double density.
                     enable_microtemplates_in_properties: true
+                show_filename:
+                    visible_if: |
+                        zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture' || zenarioAB.value('content_type', 'first_tab') == 'all'
+                    label: 'Show file name (applies to document and picture content items only)'
+                    type: checkbox
+                    plugin_setting:
+                        name: show_filename
+                show_file_size:
+                    visible_if: |
+                        zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture' || zenarioAB.value('content_type', 'first_tab') == 'all'
+                    label: 'Show file size (applies to document and picture content items only)'
+                    type: checkbox
+                    plugin_setting:
+                        name: show_file_size
+                    redraw_onchange: true
+                
                 show_permalink:
                     label: 'Show permalink'
                     plugin_setting:
@@ -699,8 +707,8 @@ plugin_settings:
                     plugin_setting:
                         name: date_format
                     label: 'Date format:'
-                    type: radios
-                    value: _MEDIUM
+                    type: select
+                    value: _RELATIVE
                     values:
                         _SHORT:
                                     label: Short
@@ -713,6 +721,12 @@ plugin_settings:
                             
                     requires: show_dates
                     indent: 1
+                show_times:
+                    indent: 1
+                    plugin_setting:
+                        name: show_times
+                    label: 'Show time'
+                    type: checkbox
                 show_author:
                     plugin_setting:
                         name: show_author
@@ -797,11 +811,6 @@ plugin_settings:
                     side_note: |
                         Display image at double density.
                     enable_microtemplates_in_properties: true
-                show_times:
-                    plugin_setting:
-                        name: show_times
-                    label: 'Show time'
-                    type: checkbox
                 hide_private_items:
                     plugin_setting:
                         name: hide_private_items

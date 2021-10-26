@@ -163,7 +163,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 					SELECT id, detect_lang_codes
 					FROM ". DB_PREFIX. "languages
 					WHERE detect = 1
-					  AND id != '". ze\escape::sql($box['key']['id']). "'";
+					  AND id != '". ze\escape::asciiInSQL($box['key']['id']). "'";
 		
 				$siteLangs = [];
 				$result = ze\sql::select($sql);

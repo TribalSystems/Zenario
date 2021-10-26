@@ -103,6 +103,8 @@ zenario__content:
                 add_translation_to_chain:
                     sql: ''
                     add_translation_to_chain: ''
+                filter_by_language_and_content_type:
+                    exists: true
                 
                 category:
                     table_join: |
@@ -859,7 +861,7 @@ zenario__content:
                 
                 view_frontend:
                     parent: view_dropdown
-                    label: Go to content item in front-end window
+                    label: Content item in front-end
                     frontend_link: true
                 inspect:
                     parent: view_dropdown
@@ -893,7 +895,7 @@ zenario__content:
                     hidden: true
                     ajax:
                         confirm:
-                            message: 'Download the file "[[s3_filename]]"?'
+                            message: 'Download the file "[[s3_filename]]" from S3?'
                             button_message: Download
                             cancel_button_message: Cancel
                             message_type: question
@@ -949,7 +951,7 @@ zenario__content:
 
                 lock:
                     priv: _PRIV_EDIT_DRAFT
-                    parent: lock_dropdown
+                    parent: action_dropdown
                     visible_if_for_all_selected_items: >
                         ('' + item.status).match(/draft/)
                         && item.lock_owner_id == 0
@@ -958,11 +960,9 @@ zenario__content:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure that you wish to lock the draft version of this content item?
+                                Lock this draft?
                                 
-                                No other administrator will be able to edit it until it is unlocked.
-                                
-                                (The item will be automatically unlocked when the draft is published or deleted).
+                                No other administrator will be able to edit it until it is unlocked, published or deleted.
                             button_message: Lock
                             cancel_button_message: Cancel
                             message_type: warning
@@ -1333,7 +1333,8 @@ zenario__content:
                 migrate_old_documents:
                     hide_in_select_mode: true
                     multiple_select: true
-                    label: Migrate to new documents
+                    label: Migrate to hierarchy
+                    tooltip: Migrate to new Document system, where documents are arranged in folders
                     admin_box:
                         path: zenario_migrate_old_documents
                     visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden')

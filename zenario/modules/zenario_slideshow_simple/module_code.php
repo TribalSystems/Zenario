@@ -465,7 +465,7 @@ class zenario_slideshow_simple extends zenario_slideshow {
 			WHERE instance_id = ' . (int)$instanceId;
 		if ($ids) {
 			$sql .= '
-				AND id NOT IN (' . ze\escape::in($ids) . ')';
+				AND id NOT IN (' . ze\escape::in($ids, 'numeric') . ')';
 		}
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {

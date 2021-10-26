@@ -278,7 +278,19 @@ zenario__modules:
                     hide_in_select_mode: true
                     ajax:
                         confirm:
-                            message: 'Are you sure that you wish to suspend the module "[[display_name]]"?'
+                            html: true
+                            message: |
+                                <p>
+                                    Are you sure that you wish to suspend the module &ldquo;[[display_name]]&rdquo;?
+                                </p><p>
+                                    Suspending a module will disable any functionality it provides in Organizer, and
+                                    stop any of its plugins from outputting content.
+                                </p><p>
+                                    When a module is suspended, you can then either:
+                                </p><ul>
+                                    <li>Start it up again to restore the functionality</li>
+                                    <li>Uninitialise it and delete all data associated with it</li>
+                                </ul>
                             button_message: Suspend
                             cancel_button_message: Cancel
                             message_type: warning

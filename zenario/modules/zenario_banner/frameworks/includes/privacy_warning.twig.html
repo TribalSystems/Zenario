@@ -1,0 +1,7 @@
+{% if privacy_warning %}
+    {% if privacy == 'offline' %}
+        <p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: the document \"[[filename]]\" is offline, so it will not appear to visitors.', {filename: filename})}}</p>
+    {% elseif privacy == 'private' %}
+        <p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: this content item is public, the document \"[[filename]]\" is private, so it will not appear to visitors.', {filename: filename})}}</p>
+    {% endif %}
+{% endif %}

@@ -116,10 +116,8 @@ class wrapper {
 		
 			if (!is_dir(CMS_ROOT. $skinPath)) {
 				echo "\n\n". \ze\admin::phrase('This page cannot be displayed, skin not found: '). 'skins/'. $skinName;
-				echo '<br /><br />If you have upgraded to Zenario 9 from Zenario 8, you should move skins directories from under zenario_custom/templates/grid_templates/skins to zenario_custom/skins.';
-                                echo '<br /><br />Layouts are now in the database! You can delete layouts from under zenario_custom/templates/grid_templates.';
-
-				echo '<br /><br /><a href="zenario/admin/organizer.php">Go to Organizer</a>';
+				echo "\n\n". \ze\admin::phrase('<br /><br />If you have recently upgraded from Zenario 8, you will need to move the location of the skins folder(s) from underneath zenario_custom/templates/grid_templates/skins/ to underneath zenario_custom/skins/.');
+				echo '<br /><br /><a href="organizer.php">Go to Organizer</a>';
 				exit;
 			}
 		

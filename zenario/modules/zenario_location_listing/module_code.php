@@ -120,7 +120,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 				LEFT JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.equiv_id = loc.equiv_id
 				  AND c.type = loc.content_type
-				  AND c.language_id = '". ze\escape::sql(ze::$langId). "'
+				  AND c.language_id = '". ze\escape::asciiInSQL(ze::$langId). "'
 				LEFT JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_images AS im
 				   ON im.location_id = loc.id 
 				  AND im.sticky_flag = 1 
@@ -128,7 +128,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 				   ON loc.country_id IS NOT NULL
 				  AND module_class_name = 'zenario_country_manager'
 				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
-				  AND vp_cn.language_id = '". ze\escape::sql(ze::$visLang). "'";
+				  AND vp_cn.language_id = '". ze\escape::asciiInSQL(ze::$visLang). "'";
 			
 			//Custom data:
 			$sql .= "
@@ -146,7 +146,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		
 		if ($this->setting('country')) {
 			$sql .= "
-			  AND loc.country_id = '". ze\escape::sql($this->setting('country')). "'";
+			  AND loc.country_id = '". ze\escape::asciiInSQL($this->setting('country')). "'";
 		}
 		
 		if (!$count) {
@@ -375,7 +375,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		echo '
 			<html>
 				<head>
-					<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_geocode_api_key')) . '"></script>
+					<script id="google_api" type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>
 				</head>
 				<body onload="
 					function initMap(elId,lat,lng,zoom) {

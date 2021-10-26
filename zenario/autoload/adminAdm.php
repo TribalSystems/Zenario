@@ -289,7 +289,7 @@ class adminAdm {
 		$emailAddress = \ze\row::get('admins', 'email', $adminId);
 		$sql = "
 			UPDATE ". DB_PREFIX. "admins 
-			SET hash = '". \ze\escape::sql(\ze\userAdm::createHash($adminId, $emailAddress)). "'
+			SET hash = '". \ze\escape::asciiInSQL(\ze\userAdm::createHash($adminId, $emailAddress)). "'
 			WHERE id = ". (int) $adminId;
 		\ze\sql::update($sql, false, false);
 	}

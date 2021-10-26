@@ -1,5 +1,12 @@
+{% if show_pinned_icon %}
+	<div class="pinned pinned_icon"></div>
+{% endif %}
+
 {% for key, meta_data in content %}
-	{% if key == "show_writer_image" %}
+	{% if key == "show_pinned_icon" %}
+		{# Do nothing, the pinned icon has already been handled. #}
+		
+	{% elseif key == "show_writer_image" %}
 		<div class="{{meta_data.class}}">
 			{% if show_labels %}
 				<{{meta_data.html_tag}}>
@@ -26,20 +33,22 @@
 				<span>{{meta_data.label}}:</span>
 			{% endif %}
 				{% for item in categories %}
-					<a>{{item.Category}}</a>{{item.separator}}
+					<a {% if item.Category_landing_page %} href="{{item.Category_landing_page|e}}" target="_blank" {% endif %}>
+						{{item.Category}}
+					</a>
 				{% endfor %}
 			</{{meta_data.html_tag}}>
 		</div>
 	
 	{% else %}
-			<div class="{{meta_data.class}}">
-				<{{meta_data.html_tag}}>
-				{% if show_labels %}
-					<span>{{meta_data.label}}:</span>
-				{% endif %}
-				{{meta_data.value}}
-				</{{meta_data.html_tag}}>
-			</div>
+		<div class="{{meta_data.class}}">
+			<{{meta_data.html_tag}}>
+			{% if show_labels and meta_data.label %}
+				<span>{{meta_data.label}}:</span>
+			{% endif %}
+			{{meta_data.value}}
+			</{{meta_data.html_tag}}>
+		</div>
 	{% endif %}
 
 {% endfor %}

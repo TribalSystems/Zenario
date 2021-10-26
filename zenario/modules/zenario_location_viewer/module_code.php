@@ -216,7 +216,7 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 							FROM ' . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations AS loc
 							LEFT JOIN '. DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. 'locations_custom_data AS cd
 							ON cd.location_id = loc.id
-							WHERE loc.id = ' . (int) ze\escape::sql($locationId);
+							WHERE loc.id = ' . (int) $locationId;
 					$result = ze\sql::select($sql);
 					$row = ze\sql::fetchAssoc($result);
 					if(is_array($row) && $row){

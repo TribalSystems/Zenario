@@ -89,11 +89,11 @@ class zenario_forum_list extends zenario_content_list {
 		
 		//Only return content in the current language
 		$sql .= "
-		  AND c.language_id = '". ze\escape::sql(ze::$langId). "'";
+		  AND c.language_id = '". ze\escape::asciiInSQL(ze::$langId). "'";
 		
 		//Exclude this page itself
 		$sql .= "
-		  AND v.tag_id != '". ze\escape::sql($this->cType. '_'. $this->cID). "'";
+		  AND v.tag_id != '". ze\escape::asciiInSQL($this->cType. '_'. $this->cID). "'";
 		
 		return $sql;
 	}
@@ -150,7 +150,7 @@ class zenario_forum_list extends zenario_content_list {
 		if (!$screenName) {
 			return '';
 		} elseif ($userId && ($alwaysShowLink || ze\priv::check('_PRIV_VIEW_USER'))) {
-			return '<a href="'. ze\link::absolute(). 'admin/organizer.php#zenario__users/panels/users//'. $userId. '/" target="_blank">'. htmlspecialchars($screenName). '</a>';
+			return '<a href="'. ze\link::absolute(). 'organizer.php#zenario__users/panels/users//'. $userId. '/" target="_blank">'. htmlspecialchars($screenName). '</a>';
 		} else {
 			return htmlspecialchars($screenName);
 		}

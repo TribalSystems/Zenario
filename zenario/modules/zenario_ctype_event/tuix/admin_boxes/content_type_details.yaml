@@ -16,9 +16,25 @@ zenario_content_type_details:
                             label: 'Enabled'
                     value: optional
                     redraw_onchange: true
+                zenario_ctype_event__location_online:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('zenario_ctype_event__location_field') == 'optional'
+                    indent: 1
+                    label: Enable "Online" option
+                    type: checkbox
+                    value: true
+                    readonly: true
+                zenario_ctype_event__location_picker:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('zenario_ctype_event__location_field') == 'optional'
+                    indent: 1
+                    label: Enable location picker (Location Manager is [[running_or_not_running]])
+                    type: checkbox
+                    readonly: true
                 zenario_ctype_event__location_text:
                     hide_with_previous_field: true
                     visible_if: zenarioAB.value('zenario_ctype_event__location_field') == 'optional'
                     indent: 1
-                    label: Use a text field for location
+                    label: Enable text entry field for address
                     type: checkbox
+                    value: true

@@ -48,7 +48,7 @@ login:
                     return_key_presses_button: login
                     label: Remember me
                     note_below: |
-                        If checked, you will see a "Login" button on the top-right of the website front-end the next time you come to the site.
+                        If checked, Zenario will set a cookie on your browser, and you will see a convenient "LOGIN" button on the website front-end when not in admin mode.
                 login:
                     value: Login
                     type: submit

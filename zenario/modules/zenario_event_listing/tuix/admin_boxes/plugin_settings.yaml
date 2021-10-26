@@ -204,7 +204,7 @@ plugin_settings:
                         name: heading_text
                     label: 'Heading:'
                     type: text
-                    value: '[[_HEADING]]'
+                    value: 'List of Events'
                     indent: 1
                 
                 sort_field:

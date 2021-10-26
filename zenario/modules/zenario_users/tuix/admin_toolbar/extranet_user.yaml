@@ -21,7 +21,7 @@ sections:
                 priv: _PRIV_VIEW_USER
                 label: View in Organizer
                 onclick: |
-                    zenario.goToURL(URLBasePath + 'zenario/admin/zenario/admin/organizer.php?fromCID=' + zenario.cID + '&fromCType=' + zenario.cType + '#zenario__users/panels/users//' + zenario.userId);
+                    zenario.goToURL(URLBasePath + 'organizer.php?fromCID=' + zenario.cID + '&fromCType=' + zenario.cType + '#zenario__users/panels/users//' + zenario.userId);
             logout:
                 parent: logged_in
                 label: Logout

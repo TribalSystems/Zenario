@@ -80,7 +80,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 					FROM " 
 						. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 					WHERE
-						hash ='" . ze\escape::sql($_GET['hash'] ?? false) . "'";
+						hash ='" . ze\escape::asciiInSQL($_GET['hash'] ?? false) . "'";
 			
 			$result = ze\sql::select($sql);
 			if ($row = ze\sql::fetchAssoc($result)){
@@ -120,7 +120,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				$sql = "DELETE FROM " 
 						. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
 					WHERE
-						hash ='" . ze\escape::sql($_GET['hash'] ?? false) . "'";
+						hash ='" . ze\escape::asciiInSQL($_GET['hash'] ?? false) . "'";
 				ze\sql::update($sql);
 				
 				ze\user::logIn($row['user_id']);
@@ -221,7 +221,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {
 			//Show warning
-			$recaptchaLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
+			$recaptchaLink = "<a href='organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
 			$fields['use_captcha']['side_note'] = $this->phrase(
 				"Recaptcha keys are not set. To show a captcha you must set the recaptcha [[recaptcha_link]].",
 				['recaptcha_link' => $recaptchaLink]

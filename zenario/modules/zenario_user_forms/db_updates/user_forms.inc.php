@@ -1077,7 +1077,7 @@ if (ze\dbAdm::needRevision(107)) {
 				if ($pageFields) {
 					$sql = '
 						UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
-						SET page_id = ' . (int)$pageId . ' WHERE id IN (' . ze\escape::in(array_keys($pageFields), true) . ')';
+						SET page_id = ' . (int)$pageId . ' WHERE id IN (' . ze\escape::in(array_keys($pageFields), 'numeric') . ')';
 					ze\sql::update($sql);
 				}
 				$pageFields = [];

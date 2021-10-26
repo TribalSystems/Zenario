@@ -191,7 +191,7 @@ if (isset($_GET['og'])) {
 	$width = $requestedWidth;
 	$height = $requestedHeight;
 	if ($width && $height) {
-		$mode = 'stretch';
+		$mode = 'adjust';
 	} else {
 		$mode = 'resize';
 	}
@@ -248,7 +248,7 @@ if ($getUploadedFileInCacheDir) {
 			$sql .= "
 			WHERE f.`usage` = 'content'
 			  AND v.id = ". (int) ($_REQUEST['cID'] ?? false). "
-			  AND v.type = '". ze\escape::sql($_REQUEST['cType'] ?? false). "'";
+			  AND v.type = '". ze\escape::asciiInSQL($_REQUEST['cType'] ?? false). "'";
 	
 			if (ze\priv::check() && ($_REQUEST['cVersion'] ?? false)) {
 				$sql .= "
@@ -269,7 +269,7 @@ if ($getUploadedFileInCacheDir) {
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = ". (ze\priv::check()? "c.admin_version" : "c.visitor_version"). "
-			WHERE f.". $checksumCol. " = '". ze\escape::sql($checksum). "'
+			WHERE f.". $checksumCol. " = '". ze\escape::asciiInSQL($checksum). "'
 			  AND f.`usage` = 'content'";
 
 		} else {
@@ -340,11 +340,11 @@ if ($getUploadedFileInCacheDir) {
 
 	} else {
 		$sql .= "
-		WHERE `usage` = '". ze\escape::sql(ze\escape::ascii($usage)). "'";
+		WHERE `usage` = '". ze\escape::asciiInSQL($usage). "'";
 
 		if ($checksum) {
 			$sql .= "
-		  AND ". $checksumCol. " = '". ze\escape::sql($checksum). "'";
+		  AND ". $checksumCol. " = '". ze\escape::asciiInSQL($checksum). "'";
 		}
 	}
 

@@ -372,7 +372,7 @@ zenario_content:
                     
                     enable_microtemplates_in_properties: true
                     post_field_html: |
-                        <% link = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap~.site_settings~tsitemap~k{"id"%3A"urls_and_xml_sitemap"}'; %>
+                        <% link = 'organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap~.site_settings~tsitemap~k{"id"%3A"urls_and_xml_sitemap"}'; %>
                         <a
                             target="_blank"
                             href="{{URLBasePath|e}}{{link|e}}"
@@ -413,6 +413,13 @@ zenario_content:
                     label: 'Search engine results preview:'
                     snippet:
                         microtemplate: zenario_admin_box_search_engine_preview
+                apply_noindex_meta_tag:
+                    ord: sitemap.5
+                    indent: 1
+                    type: checkbox
+                    label: Apply a noindex meta tag
+                    visible_if: |
+                        (zenarioA.siteSettings.sitemap_enabled && lib.value('exclude_from_sitemap'))
                     
                 
                 keywords:
@@ -434,7 +441,7 @@ zenario_content:
                         path: zenario__users/panels/administrators
                         target_path: zenario__users/panels/administrators
                         min_path: zenario__users/panels/administrators
-                        select_phrase: Select an Administrator...
+                        select_phrase: Select an administrator...
                         nothing_selected_phrase: Nobody selected
                     format_onchange: true
                 writer_name:
@@ -443,8 +450,7 @@ zenario_content:
                     type: text
                     hidden: true
                     note_below: >
-                        You may edit this name to provide an alternative to that
-                        stored against the Administrator.
+                        You may edit this name (it doesn't have to be the administrator's usual name).
                 pinned:
                     label: 'Pin'
                     ord: 135
@@ -830,7 +836,8 @@ zenario_content:
                     label: 'S3 file:'
                     snippet:
                         html: ""
-                    hidden: true
+                    visible_if: |
+                        zenarioAB.tuix.key.cType == 'document'
                     
                 s3_file_id:
                     ord: 23
@@ -844,7 +851,23 @@ zenario_content:
                 s3_file_remove:
                     ord: 25
                     label: ''
-                    type: hidden    
+                    type: hidden
+                
+                s3_mime_type:
+                    ord: 26
+                    label: 'S3 file MIME type:'
+                    type: select
+                    values:
+                        'application/octet-stream':
+                            ord: 1
+                            label: 'application/octet-stream'
+                        'video/mp4':
+                            ord: 2
+                            label: 'video/mp4'
+                    value: 'application/octet-stream'
+                    format_onchange: true
+                    visible_if: |
+                        zenarioAB.tuix.key.cType == 'document'
         
         # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
         privacy:

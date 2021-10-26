@@ -52,22 +52,27 @@ if ($_GET['cId'] && $_GET['cType'] && $_GET['cVersion']) {
 		if (!ze\content::isDraft($status)) {
 			$removeFlag = false;
 			$draftMsg = true;
-		}
-		else
-		{
+		} else {
 			$removeFlag = true;
 			$draftMsg = false;
 		}
 	}
 	
-	if($_SERVER['REQUEST_METHOD'] == "POST" && $_FILES['file']['name'] ) { 
+	if ($_SERVER['REQUEST_METHOD'] == "POST" && $_FILES['file']['name'] ) { 
 
 		$s3Filename = $_FILES['file']['name'];
 		$size = $_FILES['file']['size'];
 		$s3CachePath = $_FILES['file']['tmp_name'];
+		$s3MimeType = '';
+
+		if (!empty($_GET['mime_type'])) {
+			$s3MimeType = $_GET['mime_type'];
+			unset($_GET['mime_type']);
+		}
+
 		$s3file	= [];
 		if (ze\module::inc('zenario_ctype_document')) {
-			$s3file = zenario_ctype_document::uploadS3File('content',$s3CachePath,$s3Filename);
+			$s3file = zenario_ctype_document::uploadS3File('content', $s3CachePath, $s3Filename, $s3MimeType);
 		}	
 			echo '<div class = "s3_container"><div class = "s3_container_inner">';
 			echo '<div class = "s3_details">
@@ -192,7 +197,7 @@ if ($_GET['cId'] && $_GET['cType'] && $_GET['cVersion']) {
 		if (filename) {
 			document.getElementById('submit_button_id').disabled = false;
 			var msg = document.getElementById('UploadFile_Message');
-			msg.innerHTML = 'File ' +filename+ ' selected, click "Upload" to upload.';
+			msg.innerHTML = 'File ' +filename+ ' selected. Select the MIME type and click "Upload" to upload.';
 			var down = document.getElementById('UploadFile_Down'); 
 			down.innerHTML = "";
 		}

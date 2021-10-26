@@ -59,6 +59,8 @@ zenario_list_document_envelopes:
     columns:
         thumbnail_id:
             html: true
+        pinned:
+            hidden: true
         id:
             title: 'ID'
         code:

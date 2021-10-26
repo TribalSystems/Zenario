@@ -68,7 +68,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			
 			$currentRow = [];
 			$prevModuleId = false;
-			$skLink = 'zenario/admin/organizer.php?fromCID='.(int)$cID.'&fromCType='.urlencode($cType);
+			$skLink = 'organizer.php?fromCID='.(int)$cID.'&fromCType='.urlencode($cType);
 			
 			while ($row = ze\sql::fetchAssoc($result)) {
 				if ($prevModuleId !== $row['module_id']) {
@@ -126,7 +126,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 						ci.language_id
 					FROM ". DB_PREFIX. "content_items AS ci
 					WHERE ci.equiv_id = " . (int) $equivId . "
-					AND ci.type = '" . ze\escape::sql($cType) . "'";
+					AND ci.type = '" . ze\escape::asciiInSQL($cType) . "'";
 			
 				$result = ze\sql::select($sql);
 		

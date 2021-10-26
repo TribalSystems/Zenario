@@ -38,7 +38,7 @@ class zenario_google_map extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$apiKey = ze::setting('google_maps_geocode_api_key');
+		$apiKey = ze::setting('google_maps_api_key');
 		if ($apiKey) {
 			$this->data['googlemap'] = '<div id="object_in_' . $this->containerId.'" style="height: '.$this->setting('height').'px; width: '.$this->setting('width').'px;"></div>';
 			$this->callScript(
@@ -47,10 +47,10 @@ class zenario_google_map extends ze\moduleBaseClass {
 				$this->setting("address"),
 				'object_in_' . $this->containerId,
 				$this->phrase( "_GOOGLE_COULD_NOT_FIND_ADDRESS", [ 'address' => $this->setting( 'address' )]),
-				ze\link::protocol() .'maps.google.com/maps/api/js?key=' . urlencode($apiKey)
+				'https://maps.googleapis.com/maps/api/js?key=' . urlencode($apiKey)
 			);
 		} else {
-			$googleApiKeySiteSettingLink = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_maps~k{"id"%3A"api_keys"}';
+			$googleApiKeySiteSettingLink = 'organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_maps~k{"id"%3A"api_keys"}';
 			$this->data['googlemap'] = $this->phrase('Cannot display Google Map, please set a <a href=\'' . $googleApiKeySiteSettingLink . '\' target=\'_blank\'>Google Maps API key</a>.');
 		}
 		return true;

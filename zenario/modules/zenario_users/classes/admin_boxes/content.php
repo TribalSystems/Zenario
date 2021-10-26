@@ -72,11 +72,11 @@ class zenario_users__admin_boxes__content extends zenario_users {
 						$sql = '
 							SELECT id
 							FROM ' . DB_PREFIX . 'custom_dataset_fields
-							WHERE id IN (' . ze\escape::in($ids, true) . ')';
+							WHERE id IN (' . ze\escape::in($ids, 'numeric') . ')';
 						$result = ze\sql::select($sql);
 						
 						$groupIds = ze\sql::fetchValues($result);
-						$values['privacy/group_ids'] = ze\escape::in($groupIds, true);
+						$values['privacy/group_ids'] = ze\escape::in($groupIds, 'numeric');
 						break;
 					
 					case 'with_role':

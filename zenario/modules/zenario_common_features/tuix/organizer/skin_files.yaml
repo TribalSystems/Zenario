@@ -45,8 +45,93 @@ zenario__layouts:
                 help:
                     label: Help
                     help:
-                        message: ''
                         html: true
+                        message: |
+                            <h2>Skins in Zenario</h2>
+
+                            <p>This panel shows files on the server filesystem, which are CSS and other files.
+                                Put together they form a Skin.</p>
+
+                            <p>Whereas a Layout determines the overall layout of web pages, the Layout's Skin determines fonts,
+                                colours, graphics and other styling, animations and other behaviours.</p>
+
+                            <h3>Skin description</h3>
+
+                            <p>The description.yaml file holds meta information for a skin, and can contain styles
+                                that appear in the Formats box of the WYSIWYG editor.</p>
+
+                            <p>It can only be edited on the file system.</p>
+
+                            <h3>Editable CSS</h3>
+
+                            <p>The editable_css folder contains the principle styling of the site, and if you are
+                                designing a site then you should make most of your CSS changes in here.</p>
+
+                            <p>While these files are not editable in Organizer, if you go to the front end of the
+                                site and use the Layout mode, you should be able to edit the CSS there using a
+                                what-you-see-is-what-you-get type interface.</p>
+
+                            <p>Most files are prefixed with a number, and they are included in numerical order:</p>
+                            
+                            <ul>
+                                <li>0.reset.css is always included first</li>
+                                <li>Other number-prefixed files in are included in numerical then alphabetical order</li>
+                                <li>Unnumbered print.css and browser-specific files
+                                    (such as browser-specific stylesheets like style_ie.css) are included last.</li>
+                            </ul>
+
+                            <h3>Colorbox</h3>
+
+                            <p>Zenario includes the jQuery plugin Colorbox which is used by various Zenario plugins
+                                (e.g. MIC, Banner, Form Container etc.) where they may display content in a pop-up (modal window).
+                                The appearance of the pop-ups are controlled through the CSS file colorbox.css found on this folder.
+                                You can edit this file to restyle the pop ups appearance. </p>
+
+                            <p>Only editable on the file system.</p>
+
+                            <h3>Fonts (optional folder)</h3>
+
+                            <p>If you use custom fonts you can upload the web font kit into this folder (a web font kit
+                                includes the multiple font file extensions such as .eot, .woff, .woff2, .ttf or .svg).</p>
+
+                            <p>Only editable on the file system.</p>
+
+                            <h3>Images</h3>
+
+                            <p>The images folder contains images that are referred to by the skin's CSS files (most commonly
+                                by files in editable_css, but potentially by other CSS).</p>
+
+                            <p>Only editable on the file system.</p>
+
+                            <h3>Installer (optional folder)</h3>
+
+                            <p>This is only relevant for skins pre-packaged with Zenario, and includes things in the install process.</p>
+
+                            <h3>jQuery</h3>
+
+                            <p>Zenario includes the jquery library, so the jquery_ui folder contains CSS and images that jQuery uses.</p>
+
+                            <p>Only editable on the file system.</p>
+
+                            <h3>JavaScript</h3>
+
+                            <p>The js folder includes custom JavaScript that is used on the site.</p>
+
+                            <p>Only editable on the file system.</p>
+
+                            <h3>Combining CSS into a single file</h3>
+
+                            <p>By default, Zenario combines multiple CSS files together into one file to reduce the number of
+                                downloads and make your website load faster.</p>
+                            
+                            <p>Designers may want to turn this off for easier debugging. You can turn access this setting at
+                                <a href="organizer.php?#zenario__administration/panels/site_settings//optimisation" target="_blank">
+                                    Configuration->Site Settings->Cache
+                                </a>,
+                                see the "CSS File Wrappers" setting.</p>
+
+
+
             item_buttons:
                 view_dropdown:
                     label: View

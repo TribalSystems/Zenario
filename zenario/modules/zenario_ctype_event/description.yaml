@@ -69,5 +69,3 @@ default_instance_name: Event Details Viewer
 # If this is a core module, consider using runNewModuleDependency() in a 
 # database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
 # to fix it automatically for every site.
-dependencies:
-    zenario_location_manager: true

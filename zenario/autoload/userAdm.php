@@ -89,7 +89,7 @@ class userAdm {
 				}
 			}
 			if (strlen($baseIdentifier) > 50) {
-				$baseIdentifier = mb_substr($baseIdentifier, 0, 50, 'UTF-8');
+				$baseIdentifier = mb_strcut($baseIdentifier, 0, 50, 'UTF-8');
 			}
 		}
 	
@@ -416,7 +416,7 @@ class userAdm {
 		$emailAddress = \ze\row::get('users', 'email', $userId);
 		$sql = "
 			UPDATE ". DB_PREFIX. "users 
-			SET hash = '". \ze\escape::sql(\ze\userAdm::createHash($userId, $emailAddress)). "'
+			SET hash = '". \ze\escape::asciiInSQL(\ze\userAdm::createHash($userId, $emailAddress)). "'
 			WHERE id = ". (int) $userId;
 		\ze\sql::update($sql, false, false);
 	}

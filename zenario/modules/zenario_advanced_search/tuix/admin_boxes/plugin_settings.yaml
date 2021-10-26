@@ -218,6 +218,12 @@ plugin_settings:
                         lib.value: search_placeholder
                     validation:
                         required_if_not_hidden: Please enter a phrase
+                show_clear_search_button:
+                    plugin_setting:
+                        name: show_clear_search_button
+                    label: 'Show "Clear search" button'
+                    type: checkbox
+                    value: false
                     
         content_types:
             ord: "2"

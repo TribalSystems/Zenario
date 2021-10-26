@@ -158,7 +158,7 @@ zenario__locations:
             status:
                 title: Status
                 db_column: l.status
-                show_by_default: false
+                always_show: true
                 searchable: true
                 hidden: false
                 format: enum

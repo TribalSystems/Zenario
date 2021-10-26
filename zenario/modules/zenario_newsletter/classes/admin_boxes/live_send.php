@@ -62,7 +62,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 			$allJobsEnabled = ze::setting('jobs_enabled');
 			$scheduledSendingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobSendNewsletters', 'module_class_name' => 'zenario_newsletter']);
 			if (!($allJobsEnabled && $scheduledSendingEnabled)) {
-				$scheduledTaskHref = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
+				$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
 				$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
 				$linkEnd = "</a>";
 
@@ -173,7 +173,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 				self::sendNewsletterToAdmins($ids, $values['send/admin_options']);
 				self::sendNewsletter($ids, true);
 				
-				$linkHref = ze\link::absolute() .'zenario/admin/organizer.php#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/archive//'. (int) $ids. '//';
+				$linkHref = ze\link::absolute() .'organizer.php#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/archive//'. (int) $ids. '//';
 				$linkOnclick = "zenarioA.closeFloatingBox();";
 
 				$link = '<a href="' . $linkHref . '" onclick="' . $linkOnclick . '">';

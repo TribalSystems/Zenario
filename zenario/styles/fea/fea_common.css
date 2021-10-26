@@ -249,6 +249,7 @@ table.table_list tr.node_deactivated {
 
 .zfea_blocks .zfea_block_list_wrap .zfea_block {
 	position:relative;
+	overflow:hidden;
 	float:left;
 	width:calc(31% - 34px);
 	margin:20px 1% 0;
@@ -505,7 +506,41 @@ body.mobile .zfea_blocks .zfea_block_list_wrap .zfea_block {
 	}
 
 
+/* Pinned item
+--------------------------------------------------------------------------------------------------*/
 
+.zfea_blocks .zfea_block_list_wrap .zfea_block > div.column_thumbnail_id,
+.zfea_table_list_wrap .zfea_row .col_value_for__thumbnail_id {
+	position:relative;
+}
+
+.zfea_blocks .zfea_block_list_wrap .zfea_block > div.column_thumbnail_id img,
+.zfea_table_list_wrap .zfea_row .col_value_for__thumbnail_id img {
+	position:relative;
+	z-index:1;
+}
+
+.zfea_blocks .zfea_block_list_wrap .zfea_block.pinned > div.column_thumbnail_id:before,
+.zfea_table_list_wrap .zfea_row.pinned .col_value_for__thumbnail_id:before {
+	font-family: "FontAwesome";
+	font-size:14px;
+    content: "\f08d";
+    padding-right: 5px;
+    
+    position:absolute;
+	z-index:2;
+    top:5px;
+    left:5px;
+    width: 24px;
+	height: 24px;
+	text-align: center;
+	line-height: 24px;
+	padding: 0;
+	background:rgba(0,0,0,0.7);
+	color:#FFF;
+	border-radius: 50%;
+	-webkit-border-radius: 50%;
+}
 
 /* Placeholder styles for sortable lists
 --------------------------------------------------------------------------------------------------*/
@@ -517,16 +552,19 @@ table.table_list tr th.zfea_col_sorted {
 }
 
 table.table_list tr th.zfea_col_sortable {
-	background-image:url('../../admin/images/sort-arrow-white-down-v2.png');
+	background-image:url('../../admin/images/icon-arrows-sort-white.svg');
+	background-size:17px 11px;
 	cursor: pointer;
 }
 
 table.table_list tr th.zfea_col_sorted {
-	background-image:url('../../admin/images/sort-arrow-green-up.png');
+	background-image:url('../../admin/images/icon-arrow-triangle-up-green.svg');
+	background-size:17px 10px;
 }
 
 table.table_list tr th.zfea_col_sorted.zfea_col_sorted_desc {
-	background-image:url('../../admin/images/sort-arrow-green-down.png');
+	background-image:url('../../admin/images/icon-arrow-triangle-down-green.svg');
+	background-size:17px 10px;
 }
 
 table.table_list tr th.zfea_col_sorted {

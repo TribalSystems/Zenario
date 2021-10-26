@@ -1353,10 +1353,27 @@ _sql
 _sql
 
 
+//
+//	Zenario 9.1
+//
+
+
+//Add support for menu nodes to allo linking to documents.
+//Please note: the revision number was changed while 9.1 was HEAD,
+//so this update will not run if the column already exists.
+);	if (ze\dbAdm::needRevision(53700) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'menu_nodes LIKE "document_id"')) ze\dbAdm::revision(53700
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
+	CHANGE COLUMN `target_loc` `target_loc` enum('int', 'doc', 'ext', 'none') NOT NULL DEFAULT 'none',
+	ADD COLUMN `document_id` int(10) unsigned NOT NULL DEFAULT '0' AFTER `use_download_page`,
+	ADD KEY `document_id` (`document_id`)
+_sql
+
+
 //Correct any bad data left over from a bug where it was possible to make an image tag
 //name with upper case characters.
-//Note that this is being added in a post-branch patch, but is safe to repeat.
-);	ze\dbAdm::revision( 53603
+//Note that this was also added in a post-branch patch, but is safe to repeat.
+);	ze\dbAdm::revision( 53730
 , <<<_sql
 	UPDATE IGNORE `[[DB_PREFIX]]image_tags`
 	SET `name` = LOWER(`name`)
@@ -1365,26 +1382,62 @@ _sql
 //Content can be pinned now.
 //Please note: as this feature was backpatched to 9.0, there is a check
 //to see if the update was already applied.
-);	if (ze\dbAdm::needRevision(53604)
+);	if (ze\dbAdm::needRevision(53731)
 		&& !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_types LIKE "allow_pinned_content"')
-		&& !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_item_versions LIKE "pinned"'))	ze\dbAdm::revision(53604
+		&& !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_item_versions LIKE "pinned"'))	ze\dbAdm::revision(53731
 , <<<_sql
-ALTER TABLE `[[DB_PREFIX]]content_types`
-ADD COLUMN `allow_pinned_content` tinyint(1) NOT NULL default 0
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `allow_pinned_content` tinyint(1) NOT NULL default 0
 _sql
 
 , <<<_sql
-ALTER TABLE `[[DB_PREFIX]]content_item_versions`
-ADD COLUMN `pinned` tinyint(1) NOT NULL default 0
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `pinned` tinyint(1) NOT NULL default 0
+_sql
+
+
+//Add a new column to the content_item_versions table, which allows us to cache the result
+//of the ze\contentAdm::checkIfVersionChanged() function.
+);	ze\dbAdm::revision( 53800
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `version_changed` enum('not_checked', 'no_changes_made', 'changes_made') DEFAULT 'not_checked'
+	AFTER `last_modified_datetime`
+_sql
+
+
+//As of Zenario 9.1, the page preview sizes feature has been completely removed.
+//Please note: this was backpatched to 9.0. However, this code should be safe to use more than once.
+);	ze\dbAdm::revision( 53901
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]page_preview_sizes`
+_sql
+
+); ze\dbAdm::revision( 53902,
+<<<_sql
+	ALTER TABLE [[DB_PREFIX]]content_item_versions
+	ADD COLUMN `apply_noindex_meta_tag` tinyint(1) NOT NULL default 0 AFTER `in_sitemap`
+_sql
+
+);	ze\dbAdm::revision( 53903
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]special_pages`
+	ADD COLUMN `allow_search` tinyint(1) NOT NULL default 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]special_pages`
+	SET allow_search = 1
+	WHERE page_type = "zenario_privacy_policy"
 _sql
 
 
 //Remove any "HTML" files from the allowed file types table
-);	ze\dbAdm::revision( 53605
+);	ze\dbAdm::revision( 53904
 , <<<_sql
 	DELETE FROM `[[DB_PREFIX]]document_types`
 	WHERE `type` IN ('htm', 'html', 'htt', 'mhtml', 'stm', 'xhtml')
 _sql
-
 
 );

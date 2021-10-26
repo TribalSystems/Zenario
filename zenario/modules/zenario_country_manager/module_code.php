@@ -153,10 +153,10 @@ class zenario_country_manager extends ze\moduleBaseClass {
 				WHERE 1 ';
 				
 		if ($regionIdFilter) {
-			$sql .= " AND R.id = '" . ze\escape::sql($regionIdFilter)  . "' ";
+			$sql .= " AND R.id = ". (int) $regionIdFilter. " ";
 		}
 		if ($countryCodeFilter) {
-			$sql .= " AND R.country_id = '" . ze\escape::sql($countryCodeFilter)  . "' ";
+			$sql .= " AND R.country_id = '" . ze\escape::asciiInSQL($countryCodeFilter)  . "' ";
 		} 
 		if ($parentRegionFilter) {
 			$sql .= " AND R.parent_id = " . (int) $parentRegionFilter . " " ;
@@ -165,7 +165,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 			$sql .=" AND R.name = '" . ze\escape::sql($regionNameFilter) . "' ";
 		}
 		if ($excludeIdsCSV){
-			$sql .=" AND R.id NOT IN (" . ze\escape::sql($excludeIdsCSV) . ") ";
+			$sql .=" AND R.id NOT IN (" . ze\escape::in($excludeIdsCSV, 'numeric') . ") ";
 		}
 		$sql .= " ORDER BY R.name";
 		
@@ -260,7 +260,7 @@ class zenario_country_manager extends ze\moduleBaseClass {
 		if (ze\escape::sql(trim(strtoupper($codeFilter)))!='')
 			$sql .= " 
 					AND 
-						id='" . ze\escape::sql(trim(strtoupper($codeFilter))) . "'";
+						id='" . ze\escape::asciiInSQL(trim(strtoupper($codeFilter))) . "'";
 		$sql .= self::getOrderByClause();
 
 		$res = ze\sql::select($sql);

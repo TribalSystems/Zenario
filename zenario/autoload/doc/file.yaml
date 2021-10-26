@@ -265,7 +265,7 @@ imageLink:
     <p style="margin-left: 40px;">If the image needs to be resized, you can set the logic used to resize it here. Possible options are:</p>
     <h4 style="margin-left: 40px;">unlimited</h4>
     <p style="margin-left: 40px;">The image will be outputted at its natural size, ignoring any width or height you enter.</p>
-    <h4 style="margin-left: 40px;">stretch</h4>
+    <h4 style="margin-left: 40px;">adjust</h4>
     <p style="margin-left: 40px;">The image will be stretched to the width and height you enter, ignoring its original aspect ratio.</p>
     <h4 style="margin-left: 40px;">resize</h4>
     <p style="margin-left: 40px;">If it is bigger than the required size, the CMS will automatically resize it for you, maintaining aspect ratio.</p>

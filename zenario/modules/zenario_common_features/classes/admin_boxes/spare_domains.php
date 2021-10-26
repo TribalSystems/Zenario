@@ -112,7 +112,7 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 			$sql = "
 				UPDATE ". DB_PREFIX. "spare_domain_names SET
 					content_id = ". (int) $cID. ",
-					content_type = '". ze\escape::sql($cType). "'
+					content_type = '". ze\escape::asciiInSQL($cType). "'
 				WHERE requested_url = '". ze\escape::sql($requested_url). "'";
 			ze\sql::update($sql);
 			
@@ -121,7 +121,7 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 				INSERT INTO ". DB_PREFIX. "spare_domain_names SET
 					requested_url = '". ze\escape::sql($values['details/requested_url']). "',
 					content_id = ". (int) $cID. ",
-					content_type = '". ze\escape::sql($cType). "'";
+					content_type = '". ze\escape::asciiInSQL($cType). "'";
 			ze\sql::update($sql);
 			
 			$box['key']['id'] = $values['details/requested_url'];
@@ -131,7 +131,7 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 					INSERT INTO ". DB_PREFIX. "spare_domain_names SET
 						requested_url = 'www.". ze\escape::sql($values['details/requested_url']). "',
 						content_id = ". (int) $cID. ",
-						content_type = '". ze\escape::sql($cType). "'";
+						content_type = '". ze\escape::asciiInSQL($cType). "'";
 				ze\sql::update($sql);
 			}
 		}

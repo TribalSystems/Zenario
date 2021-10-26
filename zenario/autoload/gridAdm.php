@@ -826,7 +826,7 @@ public static function updateMetaInfoInDB(&$data, &$layout) {
 
 	if (!empty($slots)) {
 		$sql .= "
-		  AND slot_name NOT IN (". \ze\escape::in(array_keys($slots)). ")";
+		  AND slot_name NOT IN (". \ze\escape::in(array_keys($slots), 'asciiInSQL'). ")";
 	}
 
 	\ze\sql::update($sql);

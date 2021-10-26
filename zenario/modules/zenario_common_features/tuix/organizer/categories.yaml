@@ -42,6 +42,19 @@ zenario__content:
                     always_show: Yes
                     width: medium
                     css_class: label_column
+                landing_page:
+                    title: Landing page
+                    show_by_default: true
+                    width: medium
+                    css_class: label_column
+                landing_page_equiv_id:
+                    title: Landing page equiv ID
+                    hidden: true
+                    db_column: cat.landing_page_equiv_id
+                landing_page_content_type:
+                    title: Landing page content type
+                    hidden: true
+                    db_column: cat.landing_page_content_type
                 item_count:
                     title: Content items
                     db_column: |

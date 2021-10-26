@@ -7,12 +7,12 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Content Type Audio
 description: |
-    <p>This is the base Module for Audio Content Items in Zenario.</p>
-                <p>This Module creates a slotable Plugin which displays an audio player which visitors can use to listen to audio content.</p>
-                <p>The administrator can use the Module settings to change the autoplay on load and loop feature.</p>
-                <p>This Module works MPEG-1 or MPEG-2 Audio Layer III files, more commonly referred to as MP3 files, with the extension '.mp3'.</p>
+    <p>This is the base module for Audio content items in Zenario.</p>
+    <p>This podule creates a plugin which contains an audio player. When put in a slot on a page, visitors can listen to audio content.</p>
+    <p>The administrator can use the module settings to change the autoplay on load and loop feature.</p>
+    <p>This module works with MP3 files (MPEG-1 or MPEG-2 Audio Layer III files), and files should be uploaded with the extension '.mp3'.</p>
 category: content_type
-keywords: audio, mp3, mpeg, mpg, sound, play, player
+keywords: audio, mp3, mpeg, mpg, sound, play, player, podcast
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
@@ -25,9 +25,9 @@ default_framework: standard
 content_types:
     content_type:
         content_type_id: audio
-        content_type_name_en: Audio content item
-        content_type_plural_en: Audio content items
-        default_template_name: Audio Layout
+        content_type_name_en: Audio file
+        content_type_plural_en: Audio files
+        default_template_name: Audio layout
         enable_summary_auto_update: false
         description_field: optional
         tooltip_text: Audio files, so you can put podcasts and other audio material on your site
@@ -35,4 +35,4 @@ content_types:
         summary_field: optional
         release_date_field: optional
         writer_field: hidden
-default_instance_name: Audio Player
+default_instance_name: Audio file player

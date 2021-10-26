@@ -24,9 +24,9 @@
 				{% if item.privacy_warning %}
 					<div class="privacy_warning">
 						{% if item.privacy == 'private' %}
-							<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: content item is Public, the selected document \"[[Document_Link_Text]]\" is Private, so the document will not appear to visitors.', item)}}</p>
+							<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: this content item is public, the document \"[[Document_Link_Text]]\" is private, so it will not appear to visitors.', item)}}</p>
 						{% elseif item.privacy == 'offline' %}
-							<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: the selected document \"[[Document_Link_Text]]\" is Offline, so the document will not appear to visitors.', item)}}</p>
+							<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: the document \"[[Document_Link_Text]]\" is offline, so it will not appear to visitors.', item)}}</p>
 						{% endif %}
 					</div>
 				{% else %}	

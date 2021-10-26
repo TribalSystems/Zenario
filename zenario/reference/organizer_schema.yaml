@@ -1351,6 +1351,24 @@ additionalProperties:
 
                                     This property must be written in your .yaml file.
                                     It can't be changed in php.
+                            selection_display_type:
+                                enum:
+                                    - checkbox
+                                    - checkboxes
+                                    - radio
+                                    - radios
+                                    - smart
+                                description: >
+                                    In panels with "multiple_select" buttons, ths setting allows you to control whether you see
+                                    checkboxes or radio buttons next to each item.
+                                    
+                                    The default option is "smart". If "smart" is selected, checkboxes will be used in full mode,
+                                    and radios will be used in select mode.
+                                    
+                                    Where multiple select mode is available (i.e. in panels with "multiple_select"), this
+                                    setting is ignored and you will always see checkboxes.                                    
+                                    
+                                    This works from version 9.1 onwards.
                     
                     no_items_message:
                         type: string

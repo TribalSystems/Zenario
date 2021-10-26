@@ -121,7 +121,7 @@ class miscAdm {
 		}
 		
 		if ($fullPath) {
-			$prefix = \ze\link::absolute(). 'zenario/admin/organizer.php#';
+			$prefix = \ze\link::absolute(). 'organizer.php#';
 		} else {
 			$prefix = '#';
 		}
@@ -258,7 +258,7 @@ class miscAdm {
 				if ($citem = \ze\sql::fetchAssoc('
 					SELECT alias, equiv_id, language_id, status
 					FROM '. DB_PREFIX. 'content_items
-					WHERE type = \''. \ze\escape::sql($cType). '\'
+					WHERE type = \''. \ze\escape::asciiInSQL($cType). '\'
 					  AND id = '. (int) $cID
 				)) {
 					$name = 
@@ -349,7 +349,7 @@ class miscAdm {
 				INNER JOIN '. DB_PREFIX. 'menu_text AS mt
 				   ON mn.id = mt.menu_id
 				WHERE mn.id = '. (int) $menuNodeId. '
-				ORDER BY mt.language_id = \''. \ze\escape::sql(\ze::$defaultLang). '\'
+				ORDER BY mt.language_id = \''. \ze\escape::asciiInSQL(\ze::$defaultLang). '\'
 				LIMIT 1'
 			);
 			
@@ -1141,10 +1141,10 @@ class miscAdm {
 					if (empty($tf['status'])) {
 						$sql = "
 							DELETE FROM ". DB_PREFIX. "tuix_file_contents
-							WHERE type = '". \ze\escape::sql($tf['type']). "'
-							  AND path = '". \ze\escape::sql($tf['path']). "'
+							WHERE type = '". \ze\escape::asciiInSQL($tf['type']). "'
+							  AND path = '". \ze\escape::asciiInSQL($tf['path']). "'
 							  AND setting_group = '". \ze\escape::sql($tf['setting_group']). "'
-							  AND module_class_name = '". \ze\escape::sql($tf['module_class_name']). "'
+							  AND module_class_name = '". \ze\escape::asciiInSQL($tf['module_class_name']). "'
 							  AND filename = '". \ze\escape::sql($tf['filename']). "'";
 						\ze\sql::cacheFriendlyUpdate($sql);
 			
@@ -1152,14 +1152,14 @@ class miscAdm {
 					} else if ($tf['status'] != 'unchanged') {
 						$sql = "
 							INSERT INTO ". DB_PREFIX. "tuix_file_contents
-							SET type = '". \ze\escape::sql($tf['type']). "',
-								path = '". \ze\escape::sql($tf['path']). "',
-								panel_type = '". \ze\escape::sql($tf['panel_type']). "',
+							SET type = '". \ze\escape::asciiInSQL($tf['type']). "',
+								path = '". \ze\escape::asciiInSQL($tf['path']). "',
+								panel_type = '". \ze\escape::asciiInSQL($tf['panel_type']). "',
 								setting_group = '". \ze\escape::sql($tf['setting_group']). "',
-								module_class_name = '". \ze\escape::sql($tf['module_class_name']). "',
+								module_class_name = '". \ze\escape::asciiInSQL($tf['module_class_name']). "',
 								filename = '". \ze\escape::sql($tf['filename']). "',
 								last_modified = ". (int) $tf['last_modified']. ",
-								checksum = '". \ze\escape::sql($tf['checksum']). "'
+								checksum = '". \ze\escape::asciiInSQL($tf['checksum']). "'
 							ON DUPLICATE KEY UPDATE
 								panel_type = VALUES(panel_type),
 								last_modified = VALUES(last_modified),

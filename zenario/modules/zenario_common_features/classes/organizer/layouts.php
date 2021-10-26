@@ -144,7 +144,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			}
 			
 			//Show how many items use a specific layout, and display links if possible.
-			$usageContentItems = ze\layoutAdm::usage($id, false, false, $countItems = false);
+			$usageContentItems = ze\layoutAdm::usage($id, false, $countItems = false);
 			$usage = [
 				'content_item' => $usageContentItems[0] ?? null,
 				'content_items' => count($usageContentItems)

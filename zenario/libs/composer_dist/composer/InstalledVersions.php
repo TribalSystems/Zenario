@@ -25,8 +25,8 @@ class InstalledVersions
 private static $installed = array (
   'root' => 
   array (
-    'pretty_version' => 'dev-Zenario-9.0',
-    'version' => 'dev-Zenario-9.0',
+    'pretty_version' => 'trunk',
+    'version' => 'dev-trunk',
     'aliases' => 
     array (
     ),
@@ -55,12 +55,12 @@ private static $installed = array (
     ),
     'maxmind-db/reader' => 
     array (
-      'pretty_version' => 'v1.10.0',
-      'version' => '1.10.0.0',
+      'pretty_version' => 'v1.10.1',
+      'version' => '1.10.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '07f84d969cfc527ce49388558a366ad376f1f35c',
+      'reference' => '569bd44d97d30a4ec12c7793a33004a76d4caf18',
     ),
     'maxmind/web-service-common' => 
     array (
@@ -82,12 +82,12 @@ private static $installed = array (
     ),
     'phpmailer/phpmailer' => 
     array (
-      'pretty_version' => 'v6.3.0',
-      'version' => '6.3.0.0',
+      'pretty_version' => 'v6.4.1',
+      'version' => '6.4.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '4a08cf4cdd2c38d12ee2b9fa69e5d235f37a6dcb',
+      'reference' => '9256f12d8fb0cd0500f93b19e18c356906cbed3d',
     ),
     'powder96/numbers.php' => 
     array (
@@ -110,12 +110,12 @@ private static $installed = array (
     ),
     'psr/log' => 
     array (
-      'pretty_version' => '1.1.3',
-      'version' => '1.1.3.0',
+      'pretty_version' => '1.1.4',
+      'version' => '1.1.4.0',
       'aliases' => 
       array (
       ),
-      'reference' => '0f73288fd15629204f9d42b7055f72dacbe811fc',
+      'reference' => 'd49695b909c3b7628b6289db5479a1c204601f11',
     ),
     'smottt/wideimage' => 
     array (
@@ -155,17 +155,17 @@ private static $installed = array (
     ),
     'symfony/process' => 
     array (
-      'pretty_version' => 'v4.4.20',
-      'version' => '4.4.20.0',
+      'pretty_version' => 'v4.4.22',
+      'version' => '4.4.22.0',
       'aliases' => 
       array (
       ),
-      'reference' => '7e950b6366d4da90292c2e7fa820b3c1842b965a',
+      'reference' => 'f5481b22729d465acb1cea3455fc04ce84b0148b',
     ),
     'tribalsystems/zenario' => 
     array (
-      'pretty_version' => 'dev-Zenario-9.0',
-      'version' => 'dev-Zenario-9.0',
+      'pretty_version' => 'trunk',
+      'version' => 'dev-trunk',
       'aliases' => 
       array (
       ),

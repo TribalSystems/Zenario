@@ -311,7 +311,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$sql = "
 			DELETE FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::sql($this->cType). "'
+			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'
 			  AND id = ". (int) $this->post['id'];
 		
 		$result = ze\sql::update($sql);
@@ -322,7 +322,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				post_count = post_count - 1
 			WHERE post_count > 0
 			  AND content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::sql($this->cType). "'";
+			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
 		
 		$result = ze\sql::update($sql);
 	}
@@ -352,7 +352,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 				SET status='published'
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::sql($this->cType). "'
+			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'
 			  AND id = ". (int) $this->post['id'];
 		
 		$result = ze\sql::update($sql);
@@ -391,7 +391,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$sql .= "date_updated = NOW(),
 				updater_id = ". (int) $userId. "
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::sql($this->cType). "'
+			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'
 			  AND id = ". (int) $this->post['id'];
 		
 		$result = ze\sql::update($sql);
@@ -419,7 +419,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		if (!$screenName) {
 			return '';
 		} elseif ($userId && ($alwaysShowLink || ze\priv::check('_PRIV_VIEW_USER'))) {
-			return '<a href="'. ze\link::absolute(). 'admin/organizer.php#zenario__users/panels/users//'. $userId. '/" target="_blank">'. htmlspecialchars($screenName). '</a>';
+			return '<a href="'. ze\link::absolute(). 'organizer.php#zenario__users/panels/users//'. $userId. '/" target="_blank">'. htmlspecialchars($screenName). '</a>';
 		} else {
 			return htmlspecialchars($screenName);
 		}
@@ -438,7 +438,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				locked
 			FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::sql($this->cType). "'";
+			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
 		
 		$result = ze\sql::select($sql);
 		
@@ -450,7 +450,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$sql = "
 			INSERT INTO ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 				content_id = ". (int) $this->cID. ",
-				content_type = '". ze\escape::sql($this->cType). "'";
+				content_type = '". ze\escape::asciiInSQL($this->cType). "'";
 		ze\sql::update($sql);
 		
 		$this->thread = [
@@ -541,7 +541,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				rating
 			FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::sql($this->cType). "'";
+			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
 
 		if ($this->setting('comments_require_approval') && !$this->modPrivs) {
 			$sql .= "
@@ -617,7 +617,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 				locked = ". (int) $lock. "
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::sql($this->cType). "'";
+			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
 		
 		$result = ze\sql::update($sql);
 	}
@@ -719,7 +719,8 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		if ($this->setting('show_name')) {
 			$this->sections['Show_Post_Name'] = true;
 			$this->sections['Post_Message']['Post_Name'] = '';
-			if (isset($_POST['comm_name'])) {
+			if (isset($_POST['comm_name']) && !is_array($_POST['comm_name'])) {
+				//Make sure this is a string.
 				$this->sections['Post_Message']['Post_Name'] = htmlspecialchars($_POST['comm_name']);
 			
 			} elseif (ze\user::screenName()) {
@@ -745,7 +746,8 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		if ($this->setting('show_email')) {
 			$this->sections['Show_Post_Email'] = true;
 			
-			if (isset($_POST['comm_email'])) {
+			if (isset($_POST['comm_email']) && !is_array($_POST['comm_email'])) {
+				//Make sure this is a string.
 				$this->sections['Post_Message']['Post_Email'] = htmlspecialchars($_POST['comm_email']);
 			
 			} elseif (ze\user::email()) {

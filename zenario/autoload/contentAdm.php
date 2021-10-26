@@ -145,26 +145,81 @@ class contentAdm {
 
 	//Formerly "updateVersion()"
 	public static function updateVersion($cID, $cType, $cVersion, $version = []) {
+		
+		//If the result of the ze\contentAdm::checkIfVersionChanged() has been cached,
+		//clear the cached value, as it might not be in date any more
+		$version['version_changed'] = 'not_checked';
+		
+		//Mark down the current time and the currently logged in admin
 		$version['last_modified_datetime'] = \ze\date::now(true);
-	
 		$version['last_author_id'] = $_SESSION['admin_userid'] ?? false;
+		
 		\ze\row::update('content_item_versions', $version, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
 
 	//Formerly "checkIfVersionChanged()"
-	public static function checkIfVersionChanged($cIDOrVersion, $cType = false, $cVersion = false) {
-	
-		if (is_numeric($cIDOrVersion)) {
-			$cIDOrVersion = \ze\row::get(
-				'content_item_versions',
-				['last_author_id', 'last_modified_datetime', 'creating_author_id', 'created_datetime'],
-				['id' => $cIDOrVersion, 'type' => $cType, 'version' => $cVersion]);
+	public static function checkIfVersionChanged($version) {
+		
+		//If we have access to the pro features module, and a version previous exists,
+		//we can tell accurately whether something has changed.
+		if ($version['version'] > 1
+		 && \ze\module::inc('zenario_pro_features')
+		 && \ze\row::exists(
+			'content_item_versions',
+			['id' => $version['id'], 'type' => $version['type'], 'version' => $version['version'] -1]
+		)) {
+			//Cache the result of this check in the `version_changed` column, so we don't have to keep calculating
+			//it every time it's displayed, if there have been no changes since last time.
+			switch ($version['version_changed']) {
+				
+				case 'no_changes_made':
+					//Special case, if we are sure that no changes have been made,
+					//return null not false, so the caller can check for this if they need to.
+					return null;
+				
+				case 'changes_made':
+					return true;
+				
+				//If the cache was empty, we'll need to work out whether changes in fact have been made
+				case 'not_checked':
+					
+					//Do an export of both versions, and check if the contents have changed.
+					$before = '';
+					$after = '';
+			
+					\zenario_pro_features::createExportFile($before, false, false, $version['id'], $version['type'], $version['version'] -1);
+					\zenario_pro_features::createExportFile($after, false, false, $version['id'], $version['type'], $version['version']);
+					
+					//Sometimes the HTML in the exports can be inconsistent, e.g. if tinyMCE has done some code tidying on the HTML text.
+					//Have a few rules ot make sure any whitespace is consistent around <html> tags, but still try to pick up
+					//a change if an admin adds a space intentionally.
+					$before = str_replace(["\n", "\r", '/>', '>', '<'], [' ', ' ', '>', ' > ', ' < '], $before);
+					$after = str_replace(["\n", "\r", '/>', '>', '<'], [' ', ' ', '>', ' > ', ' < '], $after);
+					$before = preg_replace('@\s+@', ' ', $before);
+					$after = preg_replace('@\s+@', ' ', $after);
+					
+					//Add a rule to catch inconsistent HTML attributes that flick between an empty string and not being present
+					$before = preg_replace('@ \w+=""@', '', $before);
+					$after = preg_replace('@ \w+=""@', '', $after);
+					
+					//Excluding all of the exceptions above, if there are some HTML changes between the two versions,
+					//we should consider that there have been changes made.
+					$versionChanged = $before != $after;
+					
+					\ze\row::update(
+						'content_item_versions',
+						['version_changed' => $versionChanged? 'changes_made' : 'no_changes_made'],
+						['id' => $version['id'], 'type' => $version['type'], 'version' => $version['version']]
+					);
+			
+					return $versionChanged? true : null;
+			}
+		
+		} else {
+			return $version['last_author_id'] &&
+				($version['last_modified_datetime'] != $version['created_datetime']
+			  || $version['last_author_id'] != $version['creating_author_id']);
 		}
-	
-		return $cIDOrVersion['last_author_id'] &&
-			($cIDOrVersion['last_modified_datetime'] != $cIDOrVersion['created_datetime']
-		  || $cIDOrVersion['last_author_id'] != $cIDOrVersion['creating_author_id']);
-
 	}
 
 	//Formerly "publishContent()"
@@ -224,13 +279,20 @@ class contentAdm {
 		$sql = "
 			DELETE FROM ". DB_PREFIX. "content_cache
 			WHERE content_id = ". (int) $cID. "
-			  AND content_type = '". \ze\escape::sql($cType). "'
+			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
 			  AND content_version < ". (int) $cVersion;
 		\ze\sql::update($sql);
 
 		\ze\contentAdm::hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'published');
 	
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
+
+		if ($cType == 'document') {
+			//Rescan extract when publishing
+			if (\ze\module::inc('zenario_ctype_document')) {
+				\zenario_ctype_document::rescanExtract($cType . '_' . $cID);
+			}
+		}
 
 		\ze\module::sendSignal("eventContentPublished",["cID" => $cID,"cType" => $cType, "cVersion" => $cVersion]);
 	}
@@ -411,8 +473,9 @@ class contentAdm {
 
 
 
-	//Workaround for problems with absolute and relative URLs in TinyMCE:
-		//When loading, convert all relative URLs to absolute URLs so Admins can always see the images
+	//This fucntion can be used where you have a WYSIWYG editor, and you want to try and
+	//ensure that the URLs used are absolute URLs.
+	//For example, this should be used for URLs that will appear in emails.
 	//Formerly "addAbsURLsToAdminBoxField()"
 	public static function addAbsURLsToAdminBoxField(&$field) {
 		foreach (['value', 'current_value'] as $value) {
@@ -435,9 +498,9 @@ class contentAdm {
 		}
 	}
 
-	//Workaround for problems with absolute and relative URLs in TinyMCE:
-		//Second, convert all absolute URLs to relative URLs when saving
-	//Note: when saving emails/newsletters, you should use \ze\contentAdm::addAbsURLsToAdminBoxField() again and not this one!
+	//This fucntion can be used where you have a WYSIWYG editor, and you want to try and
+	//ensure that the URLs used are relative URLs.
+	//For example, this should be used for URLs that will appear on content items.
 	//Formerly "stripAbsURLsFromAdminBoxField()"
 	public static function stripAbsURLsFromAdminBoxField(&$field) {
 		foreach (['value', 'current_value'] as $value) {
@@ -622,7 +685,7 @@ class contentAdm {
 			   ON u.image_id = f.id
 			WHERE u.image_id IS NULL
 			  AND f.location = 'db'
-			  AND f.`usage` = '". \ze\escape::sql($usage). "'";
+			  AND f.`usage` = '". \ze\escape::asciiInSQL($usage). "'";
 	
 		$result = \ze\sql::select($sql);
 		while ($file = \ze\sql::fetchAssoc($result)) {
@@ -749,7 +812,7 @@ class contentAdm {
 			SELECT MIN(version)
 			FROM ". DB_PREFIX. "content_item_versions
 			WHERE id = ". (int) $cID. "
-			  AND type = '". \ze\escape::sql($cType). "'";
+			  AND type = '". \ze\escape::asciiInSQL($cType). "'";
 	
 		if (($result = \ze\sql::select($sql))
 		 && ($row = \ze\sql::fetchRow($result))
@@ -1136,7 +1199,7 @@ class contentAdm {
 			SELECT last_author_id
 			FROM ". DB_PREFIX. "content_item_versions
 			WHERE id = ". (int) $cID. "
-			  AND type = '". \ze\escape::sql($cType). "'
+			  AND type = '". \ze\escape::asciiInSQL($cType). "'
 			ORDER BY version DESC
 			LIMIT 1";
 	
@@ -1304,23 +1367,23 @@ class contentAdm {
 	
 		if ($alias!="") {
 			if (preg_match('/\s/', $alias)) {
-				$error[] = \ze\admin::phrase("You must not have a space in your alias.");
+				$error[] = \ze\admin::phrase("An alias or spare alias cannot contain spaces. Why not use a - (hyphen) as a word separator?");
 			}
 		
 			if ($alias == 'admin' || is_dir(CMS_ROOT. $alias)) {
-				$error[] = \ze\admin::phrase("You cannot use the name of a directory as an alias (e.g. 'admin', 'cache', 'private', 'public', 'zenario', ...)");
+				$error[] = \ze\admin::phrase("An alias or spare alias cannot contain a directory name (e.g. 'admin', 'cache', 'private', 'public', or 'zenario').");
 		
 			} elseif (is_numeric($alias)) {
-				$error[] = \ze\admin::phrase("Your alias must contain some letters and not just numbers.");
+				$error[] = \ze\admin::phrase("An alias or spare alias must start with a letter.");
 		
 			} elseif (preg_match('/[^a-zA-Z 0-9_-]/', $alias)) {
-				$error[] = \ze\admin::phrase("An alias can only contain the letters a-z, numbers, underscores or hyphens.");
+				$error[] = \ze\admin::phrase("An alias or spare alias can only contain: a-z, A-Z, 0-9, - (hyphen) and _ (underscore).");
 		
 			} elseif (\ze\row::exists('visitor_phrases', ['language_id' => $alias])) {
-				$error[] = \ze\admin::phrase("You cannot use a language code as an alias (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr', ...)");
+				$error[] = \ze\admin::phrase("Don't incude a language code (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr')");
 		
 			} elseif (\ze\content::getCIDAndCTypeFromTagId($dummy1, $dummy2, $alias)) {
-				$error[] = \ze\admin::phrase("You cannot make an alias of the format 'html_1', 'news_2', ...");
+				$error[] = \ze\admin::phrase("An alias or spare alias cannot be in the same form as a content item ID (e.g. 'html_1', 'news_2').");
 			}
 		
 		
@@ -1336,7 +1399,7 @@ class contentAdm {
 		
 			if ($equivId && $cType) {
 				$sql .= "
-				  AND (equiv_id != ". (int) $equivId. " OR type != '". \ze\escape::sql($cType). "')";
+				  AND (equiv_id != ". (int) $equivId. " OR type != '". \ze\escape::asciiInSQL($cType). "')";
 			}
 		
 			$sql .= "
@@ -1646,8 +1709,8 @@ class contentAdm {
 						$sql = '
 							UPDATE ' . DB_PREFIX . 'content_items
 							SET alias = "' . \ze\escape::sql($defaultLangContentItemAlias) . '"
-							WHERE id IN (' . \ze\escape::in($contentItemsToUpdateCsl) . ')
-							AND type = "' . \ze\escape::sql($cType) . '"';
+							WHERE id IN (' . \ze\escape::in($contentItemsToUpdateCsl, 'numeric') . ')
+							AND type = "' . \ze\escape::asciiInSQL($cType) . '"';
 						\ze\sql::update($sql);
 					}
 				}
@@ -1683,7 +1746,7 @@ class contentAdm {
 			) SELECT ". (int) $newEquivId. ", content_type, category_id
 			FROM ". DB_PREFIX. "category_item_link
 			WHERE equiv_id = ". (int) $oldEquivId. "
-			  AND content_type = '". \ze\escape::sql($cType). "'
+			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
 			ORDER BY category_id";
 		\ze\sql::update($sql);
 	
@@ -1704,7 +1767,7 @@ class contentAdm {
 			) SELECT ". (int) $newEquivId. ", content_type, module_class_name, method_name, param_1, param_2
 			FROM ". DB_PREFIX. "translation_chain_privacy
 			WHERE equiv_id = ". (int) $oldEquivId. "
-			  AND content_type = '". \ze\escape::sql($cType). "'";
+			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'";
 		\ze\sql::update($sql);
 	}
 
@@ -1789,7 +1852,7 @@ class contentAdm {
 			}
 	
 			$sql .= "
-				WHERE id = '". \ze\escape::sql($lang). "'";
+				WHERE id = '". \ze\escape::asciiInSQL($lang). "'";
 		
 			$result = \ze\sql::update($sql);
 		}
@@ -1855,7 +1918,7 @@ class contentAdm {
 			   ON pitl.layout_id = t.layout_id
 			  AND pitl.slot_name = tsl.slot_name
 			WHERE v.id = ". (int) $cID. "
-			  AND v.type = '". \ze\escape::sql($cType). "'
+			  AND v.type = '". \ze\escape::asciiInSQL($cType). "'
 			  AND v.version = ". (int) $cVersion. "
 			  AND IFNULL(piil.module_id, pitl.module_id) in (". \ze\escape::in($moduleId, true). ") 
 			  AND IFNULL(piil.instance_id, pitl.instance_id) = 0

@@ -91,7 +91,7 @@ class zenario_users__organizer__access_log extends zenario_users {
 					break;
 				
 			}
-			$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+			$link = ze\link::absolute(). 'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$accessLogDuration .= " <a target='_blank' href='". htmlspecialchars($link). "'>". ze\admin::phrase('View Data Protection settings'). "</a>";
 			$panel['notice']['show'] = true;
 			$panel['notice']['message'] = $accessLogDuration.".";

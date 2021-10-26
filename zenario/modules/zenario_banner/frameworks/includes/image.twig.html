@@ -1,0 +1,103 @@
+{% if Lazy_Load %} 
+    <img class="lazy" data-src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Retina_Srcset %} data-srcset="{{Image_Retina_Srcset|e}}" {% endif %} />
+{% else %}
+    <picture>
+        {% set i = 0 %}
+
+        {% if Mobile_Srcset_WebP %}
+            {% set i = i + 1 %}
+            <source id="{{containerId}}_source_{{i}}" media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset_WebP|e}}" type="image/webp">
+        {% endif %}
+        
+        {% if Mobile_Media %}
+            {% set i = i + 1 %}
+            <source id="{{containerId}}_source_{{i}}" media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}" type="{{Mobile_Mime_Type|e}}">
+        {% endif %}
+
+        {% if WebP_Image_URL %}
+            {% set i = i + 1 %}
+            <source id="{{containerId}}_source_{{i}}" srcset="{{WebP_Image_URL|e}}" type="image/webp">
+        {% endif %}
+
+        {% if Image_Retina_Srcset %}
+            {% set i = i + 1 %}
+            <source id="{{containerId}}_source_{{i}}" srcset="{{Image_Retina_Srcset|e}}" type="{{Mime_Type|e}}">
+        {% endif %}
+
+        <img
+            src="{{Image_URL|e}}"
+            alt="{{Image_Alt}}"
+            {{Image_Style}}
+        />
+    </picture>
+
+    {% if Rollover_Image %}
+        {# Rollover feature: rollover image sources #}
+        <picture>
+            {% set i = 0 %}
+
+            {% if Mobile_Srcset_WebP %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollover_source_{{i}}" media="{{Mobile_Media|e}}" srcset="{{Rollover_Mobile_Srcset_WebP|e}}" type="image/webp">
+            {% endif %}
+            
+            {% if Mobile_Media %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollover_source_{{i}}" media="{{Mobile_Media|e}}" srcset="{{Rollover_Mobile_Srcset|e}}" type="{{Mobile_Mime_Type|e}}">
+            {% endif %}
+
+            {% if WebP_Image_URL %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollover_source_{{i}}" srcset="{{Rollover_WebP_Image_URL|e}}" type="image/webp">
+            {% endif %}
+
+            {% if Image_Retina_Srcset %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollover_source_{{i}}" srcset="{{Rollover_Image_Retina_Srcset|e}}" type="{{Mime_Type|e}}">
+            {% endif %}
+
+            <img
+                id="{{containerId}}_rollover"
+                src="{{Rollover_Image_URL|e}}"
+                alt="{{Image_Alt}}"
+                style="width: 1px; height: 1px; visibility: hidden;"
+            />
+        </picture>
+
+        {# Rollover feature: original image sources #}
+        <picture>
+            {% set i = 0 %}
+
+            {% if Mobile_Srcset_WebP %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollout_source_{{i}}" media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset_WebP|e}}" type="image/webp">
+            {% endif %}
+            
+            {% if Mobile_Media %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollout_source_{{i}}" media="{{Mobile_Media|e}}" srcset="{{Mobile_Srcset|e}}" type="{{Mobile_Mime_Type|e}}">
+            {% endif %}
+
+            {% if WebP_Image_URL %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollout_source_{{i}}" srcset="{{WebP_Image_URL|e}}" type="image/webp">
+            {% endif %}
+
+            {% if Image_Retina_Srcset %}
+                {% set i = i + 1 %}
+                <source id="{{containerId}}_rollout_source_{{i}}" srcset="{{Image_Retina_Srcset|e}}" type="{{Mime_Type|e}}">
+            {% endif %}
+
+            <img
+                id="{{containerId}}_rollout"
+                src="{{Image_URL|e}}"
+                alt="{{Image_Alt}}"
+                style="width: 1px; height: 1px; visibility: hidden;"
+            />
+        </picture>
+    {% endif %}
+{% endif %}
+
+{% if Enlarge_Image %}
+    <span class="banner_image_zoom" title="{{'Enlarge this image'|trans}}">{{"Enlarge this image"|trans}}</span>
+{% endif %}

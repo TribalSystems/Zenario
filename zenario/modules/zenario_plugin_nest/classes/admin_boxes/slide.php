@@ -186,7 +186,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		if (!$instance['content_id'] && !$box['key']['breadcrumbsOverridden'] && (ze\lang::count() > 1)) {
 			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
-				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 			
 			$fields['details/name_or_title']['show_phrase_icon'] = true;

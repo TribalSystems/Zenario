@@ -134,6 +134,7 @@ class zenario_document_envelopes_fea__visitor__edit_document_envelope extends ze
 		$values['details/keywords'] = $this->envelopeData['keywords'];
 		$values['details/thumbnail_id'] = $this->envelopeData['thumbnail_id'];
 		$values['details/language_id'] = $this->envelopeData['language_id'];
+		$values['details/pinned'] = $this->envelopeData['pinned'];
 		
 		$values['details/last_updated'] = ze\user::formatLastUpdated($this->envelopeData);
 	}
@@ -191,7 +192,8 @@ class zenario_document_envelopes_fea__visitor__edit_document_envelope extends ze
 			'description' => $values['details/description'],
 			'keywords' => $values['details/keywords'],
 			'thumbnail_id' => $thumbnailFileId,
-			'language_id' => $values['details/language_id']
+			'language_id' => $values['details/language_id'],
+			'pinned' => $values['details/pinned']
 		];
 		
 		ze\user::setLastUpdated($cols, !$envelopeId);

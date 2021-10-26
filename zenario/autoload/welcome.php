@@ -552,13 +552,23 @@ class welcome {
 		if ($isDiagnosticsPage) {
 			$osInvalid = false;
 			$osWarning = false;
+
+			//This variable will be used multiple times.
+			$otherServerProgramsSiteSettingLink = '<br />Please go to [[link_start]]<em>Other server programs</em>[[link_end]] in Configuration->Site Settings to change this.</small>';
 			
 			//Check if Antivirus (ClamAV) is set up
-			$mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tantivirus~k{"id"%3A"external_programs"}')];
 			if (!\ze::setting('clamscan_tool_path')) {
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tantivirus~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'Antivirus<br><small>Antivirus scanning is not enabled.';
+				
 				$osInvalid = false;
 				$fields['0/os_av']['row_class'] = $valid;
-				$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase('Antivirus<br><small>Antivirus scanning is not enabled. Please go to <a href="[[link]]" target="_blank"><em>Other server programs</em></a> in Configuration->Site Settings to change this.</small>', $mrg);
+				$fields['0/os_av']['snippet']['html'] = $fields['0/os_av']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 		
 			} else {
 				$filepath = CMS_ROOT. \ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf');
@@ -567,9 +577,17 @@ class welcome {
 				$fields['0/os_av']['row_class'] = $valid;
 			
 				if (!$programPath) {
+					$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tantivirus~k{"id"%3A"external_programs"}';
+					$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+					$linkEnd = '</a>';
+					$otherServerProgramsString = 'Antivirus<br><small>Antivirus scanning is not correctly set up.';
+					
 					$osInvalid = true;
 					$fields['0/os_av']['row_class'] = $invalid;
-					$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase('Antivirus<br><small>Antivirus scanning is not correctly set up. Please go to <a href="[[link]]" target="_blank"><em>Other server programs</em></a> in Configuration->Site Settings to change this.</small>', $mrg);
+					$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase(
+						$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
 			
 				} else {
 					$avScan = \ze\server::antiVirusScan($filepath);
@@ -584,18 +602,34 @@ class welcome {
 			
 			$extract = '';
 			if (!\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract)) {
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tantiword~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'Antiword<br><small>The program antiword is not correctly set up. This is needed to read a text extract from Word documents that you upload.';
+				
 				$osWarning = true;
 				$fields['0/os_1']['row_class'] = $warning;
-				$fields['0/os_1']['snippet']['html'] = \ze\admin::phrase('Antiword<br><small>The program antiword is not correctly set up. This is needed to read a text extract from Word documents that you upload.</small>');
+				$fields['0/os_1']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 	
 			} else {
 				$fields['0/os_1']['row_class'] = $valid;
 			}
 
 			if (!\ze\file::createPpdfFirstPageScreenshotPng(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tghostscript~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'Ghostscript<br><small>The program ghostscript is not correctly set up. This is needed to extract an image from PDFs that you upload.';
+				
 				$osWarning = true;
 				$fields['0/os_2']['row_class'] = $warning;
-				$fields['0/os_2']['snippet']['html'] = \ze\admin::phrase('Ghostscript<br><small>The program ghostscript is not correctly set up. This is needed to extract an image from PDFs that you upload.</small>');
+				$fields['0/os_2']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 			} else {
 				$fields['0/os_2']['row_class'] = $valid;
 			}
@@ -605,22 +639,22 @@ class welcome {
 			if ($jpegtran==NULL || $jpegoptim==NULL) {
 				
 				$fields['0/os_3']['row_class'] = $warning;
-				if(\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegtran== NULL && $jpegoptim!= NULL){
+				if (\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegtran== NULL && $jpegoptim!= NULL) {
 					$osWarning = true;
-					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('Compress JPEGs<br><small>jpegtran is not correctly set up.</small><br><small>jpegoptim is correctly set up.</small>');
-				} else if(\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegoptim== NULL && $jpegtran!= NULL) {
+					$jpegtranMsg = 'jpegtran is not correctly set up.';
+					$jpegoptimMsg = 'jpegoptim is correctly set up.';
+				} elseif (\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegoptim== NULL && $jpegtran!= NULL) {
 					$osWarning = true;
-					$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('Compress JPEGs<br><small>jpegtran is correctly set up.</small><br><small>jpegoptim is not correctly set up.</small>');
+					$jpegtranMsg = 'jpegtran is correctly set up.';
+					$jpegoptimMsg = 'jpegoptim is not correctly set up.';
 				} else {
-					
 					if (\ze::setting('jpegtran_path') && $jpegtran == NULL) {
 						$warningFlag = true;
 						$jpegtranMsg = 'jpegtran is not correctly set up.';
-					} else if(!\ze::setting('jpegtran_path')) {
+					} elseif (!\ze::setting('jpegtran_path')) {
 						$warningFlag = false;
 						$jpegtranMsg = 'jpegtran is not enabled.';
-					}
-					else {
+					} else {
 						$warningFlag = false;
 						$jpegtranMsg = 'jpegtran is correctly set up.';
 					}
@@ -628,27 +662,31 @@ class welcome {
 					if (\ze::setting('jpegoptim_path') && $jpegoptim == NULL) {
 						$warningoptionFlag = true;
 						$jpegoptimMsg = 'jpegoptim is not correctly set up.';
-					
-					}else if (!\ze::setting('jpegoptim_path')) {
+					} elseif (!\ze::setting('jpegoptim_path')) {
 						$warningoptionFlag = false;
 						$jpegoptimMsg = 'jpegoptim is not enabled.';
-					
-					}
-					else {
+					} else {
 						$warningoptionFlag = false;
 						$jpegoptimMsg = 'jpegoptim is correctly set up.';
 					}
 					
-					if($warningFlag || $warningoptionFlag){
+					if ($warningFlag || $warningoptionFlag) {
 						$osWarning = true;
 						$fields['0/os_3']['row_class'] = $warning;
 					}else{
 						$fields['0/os_3']['row_class'] = $valid;
 					}
-					
-						$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase('Compress JPEGs<br><small>'.$jpegtranMsg.'</small><br><small>'.$jpegoptimMsg.'</small>');
-
 				}
+
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tjpeg~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'Compress JPEGs<br><small>' . $jpegtranMsg . '</small><br><small>' . $jpegoptimMsg;
+
+				$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 			} else {
 				$fields['0/os_3']['row_class'] = $valid;
 			}
@@ -657,24 +695,44 @@ class welcome {
 			if ($mysqlPath == false || $mysqldumpPath == false ) {
 				$osWarning = true;
 				$fields['0/os_4']['row_class'] = $warning;
-				if($mysqlPath== false && $mysqldumpPath!= false){
-					$fields['0/os_4']['snippet']['html'] = \ze\admin::phrase('Backup/restore<br><small>mysql is not correctly set up.</small><br><small>mysqldump is working successfully.</small>');
-				} else if($mysqlPath!= false && $mysqldumpPath== false) {
-			
-					 $fields['0/os_4']['snippet']['html'] = \ze\admin::phrase('Backup/restore<br><small>mysql is working successfully.</small><br><small>mysqldump is not correctly set up.</small>');
+				if ($mysqlPath== false && $mysqldumpPath!= false) {
+					$MysqlMsg = 'mysql is not correctly set up.';
+					$MysqlDumpMsg = 'mysqldump is working successfully.';
+				} elseif ($mysqlPath!= false && $mysqldumpPath== false) {
+					$MysqlMsg = 'mysql is working successfully.';
+					$MysqlDumpMsg = 'mysqldump is not correctly set up.';
 				} else {
+					$MysqlMsg = 'mysql is not correctly set up.';
+					$MysqlDumpMsg = 'mysqldump is not correctly set up.';
 					$fields['0/os_4']['row_class'] = $warning;
-					$fields['0/os_4']['snippet']['html'] = \ze\admin::phrase('Backup/restore<br><small>mysql is not correctly set up.</small><br><small>mysqldump is not correctly set up.</small>');
 				}
+
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tmysql~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'Backup/restore<br><small>' . $MysqlMsg . '</small><br><small>' . $MysqlDumpMsg;
+
+				$fields['0/os_4']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 			} else {
 				$fields['0/os_4']['row_class'] = $valid;
 			}	
 		
 			$extract = '';
 			if (!(\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))) {
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tpdftotext~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'PDF-To-Text<br><small>The program pdftotext is not correctly set up. This is needed to read a text extract from PDFs that you upload.';
+				
 				$osWarning = true;
 				$fields['0/os_5']['row_class'] = $warning;
-				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase('PDF-To-Text<br><small>The program pdftotext is not correctly set up. This is needed to read a text extract from PDFs that you upload.</small>');
+				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 
 			} else {
 				$fields['0/os_5']['row_class'] = $valid;
@@ -684,21 +742,22 @@ class welcome {
 			if ($optipng == NULL || $advpng ==NULL) {
 				
 				$fields['0/os_6']['row_class'] = $warning;
-				if(\ze::setting('optipng_path') && \ze::setting('advpng_path') && $optipng== NULL && $advpng!= NULL){
+				if (\ze::setting('optipng_path') && \ze::setting('advpng_path') && $optipng== NULL && $advpng!= NULL) {
 					$osWarning = true;
-					$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('Compress PNGs<br><small>optipng is not correctly set up.</small><br><small>advpng is correctly set up.</small>');
-				} else if(\ze::setting('optipng_path') && \ze::setting('advpng_path') && $advpng== NULL && $optipng!= NULL) {
+					$optipngMsg = 'optipng is not correctly set up.';
+					$advpngMsg = 'advpng is correctly set up.';
+				} elseif (\ze::setting('optipng_path') && \ze::setting('advpng_path') && $advpng== NULL && $optipng!= NULL) {
 					$osWarning = true;
-					 $fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('Compress PNGs<br><small>optipng is correctly set up.</small><br><small>advpng is not correctly set up.</small>');
+					$optipngMsg = 'optipng is correctly set up.';
+					$advpngMsg = 'advpng is not correctly set up.';
 				} else {
 					if (\ze::setting('optipng_path') && $optipng == NULL) {
 						$warningFlag = true;
 						$optipngMsg = 'optipng is not correctly set up.';
-					} else if(!\ze::setting('optipng_path')) {
+					} elseif (!\ze::setting('optipng_path')) {
 						$warningFlag = false;
 						$optipngMsg = 'optipng is not enabled.';
-					}
-					else {
+					} else {
 						$warningFlag = false;
 						$optipngMsg = 'optipng is correctly set up.';
 					}
@@ -706,26 +765,31 @@ class welcome {
 					if (\ze::setting('advpng_path') && $advpng == NULL) {
 						$warningoptionFlag = true;
 						$advpngMsg = 'advpng is not correctly set up.';
-					
-					}else if (!\ze::setting('advpng_path')) {
+					} elseif (!\ze::setting('advpng_path')) {
 						$warningoptionFlag = false;
 						$advpngMsg = 'advpng is not enabled.';
-					
-					}
-					else {
+					} else {
 						$warningoptionFlag = false;
 						$advpngMsg = 'advpng is correctly set up.';
 					}
 							
-					if($warningFlag || $warningoptionFlag){
+					if ($warningFlag || $warningoptionFlag) {
 						$osWarning = true;
 						$fields['0/os_6']['row_class'] = $warning;
-					}else{
+					} else {
 						$fields['0/os_6']['row_class'] = $valid;
 					}
-
-						$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase('Compress PNGs<br><small>'.$optipngMsg.'</small><br><small>'.$advpngMsg.'</small>');
 				}
+
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tpng~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'Compress PNGs<br><small>' . $optipngMsg . '</small><br><small>' . $advpngMsg;
+
+				$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 			} else {
 				$fields['0/os_6']['row_class'] = $valid;
 			}
@@ -738,9 +802,17 @@ class welcome {
 				$fields['0/os_7']['row_class'] = $valid;
 			// Enabled but set up incorrectly:
 			} elseif ($programPath && isset($rv) && !$rv) {
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~twkhtmltopdf~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'wkhtmltopdf<br><small>wkhtmltopdf is not correctly set up.';
+				
 				$osWarning = true;
 				$fields['0/os_7']['row_class'] = $warning;
-				$fields['0/os_7']['snippet']['html'] = \ze\admin::phrase('wkhtmltopdf<br><small>wkhtmltopdf is not correctly set up.</small>');
+				$fields['0/os_7']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 			//Disabled:
 			} else {
 				$fields['0/os_7']['hidden'] = true;
@@ -2100,7 +2172,7 @@ class welcome {
 						$sql = "
 							SELECT display_name
 							FROM ". DB_PREFIX. "modules
-							WHERE class_name = '". \ze\escape::sql($module). "'";
+							WHERE class_name = '". \ze\escape::asciiInSQL($module). "'";
 				
 						if (($result = @\ze\sql::select($sql)) && ($row = \ze\sql::fetchAssoc($result))) {
 							$moduleName = ($row['display_name'] ?: $module);
@@ -2878,7 +2950,7 @@ class welcome {
 		
 			if (!\ze::setting('site_enabled')) {
 				
-				$mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//site_disabled~.zenario_enable_site~tsite~k{"id"%3A"site_disabled"}')];
+				$mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//site_disabled~.zenario_enable_site~tsite~k{"id"%3A"site_disabled"}')];
 				
 				$show_warning = true;
 				$fields['0/site_disabled']['row_class'] = 'warning';
@@ -2895,7 +2967,7 @@ class welcome {
 				$show_warning = true;
 				$mrg = [
 					'exampleFile' => $exampleFile,
-					'manageDocumentsLink' => htmlspecialchars('zenario/admin/organizer.php#zenario__content/panels/documents')
+					'manageDocumentsLink' => htmlspecialchars('organizer.php#zenario__content/panels/documents')
 				];
 				
 				$fields['0/public_documents']['row_class'] = 'warning';
@@ -2914,7 +2986,7 @@ class welcome {
 			$mrg = \ze\file::checkAllImagePublicLinks($check = false);
 			if ($mrg && $mrg['numMissing']) {
 				$show_warning = true;
-				$mrg['manageImagesLink'] = htmlspecialchars('zenario/admin/organizer.php#zenario__content/panels/image_library');
+				$mrg['manageImagesLink'] = htmlspecialchars('organizer.php#zenario__content/panels/image_library');
 				
 				$fields['0/public_images']['row_class'] = 'warning';
 				$fields['0/public_images']['snippet']['html'] =
@@ -2960,7 +3032,7 @@ class welcome {
 			}
 			
 			$mrg = [
-				'manageJobsLink' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks')];
+				'manageJobsLink' => htmlspecialchars('organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks')];
 			
 			//Check if the scheduled task manager is running
 			if (!\ze\module::inc('zenario_scheduled_task_manager')) {
@@ -3031,7 +3103,7 @@ class welcome {
 			}
 
 			//Check if the recommended caching settings are enabled.
-			$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//optimisation~.site_settings~tcaching~k{"id"%3A"optimisation"}';
+			$href = 'organizer.php#zenario__administration/panels/site_settings//optimisation~.site_settings~tcaching~k{"id"%3A"optimisation"}';
 			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 			$linkEnd = '</a>';
 			$cacheSiteSettingString = 'Please go to [[link_start]]<em>Cache</em>[[link_end]] in Configuration->Site Settings to change this.';
@@ -3127,7 +3199,7 @@ class welcome {
 				$effectiveIP = \ze::setting('limit_caching_debug_info_by_ip');
 
 				$mrg = [
-					'link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//optimisation~.site_settings~tcaching~k{"id"%3A"optimisation"}'),
+					'link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//optimisation~.site_settings~tcaching~k{"id"%3A"optimisation"}'),
 					'effective_ip_address' => $effectiveIP
 				];
 				$cacheDebugString = 'This site is set to show caching debug information to <em>[[effective_ip_address]]</em> (you can see this by using an &ldquo;incognito&rdquo; browser session that has no administrator cookie). See Configuration->Site Settings, <a href="[[link]]" target="_blank"><em>Cache</em></a> panel.';
@@ -3142,7 +3214,7 @@ class welcome {
 				$show_warning = true;
 				$fields['0/email_addresses_overridden']['row_class'] = 'warning';
 
-				$mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tdebug~k{"id"%3A"email"}')];
+				$mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tdebug~k{"id"%3A"email"}')];
 				
 				$emailDebugString = 'You have &ldquo;Email debug mode&rdquo; enabled in <a href="[[link]]" target="_blank"><em>Email</em></a> (see Configuration->Site Settings). ';
 				
@@ -3659,7 +3731,7 @@ class welcome {
 						}
 						
 						if (++$inactiveAdminCount <= 5) {
-							$row['link'] = 'zenario/admin/organizer.php#zenario__users/panels/administrators//' . $row['id'];
+							$row['link'] = 'organizer.php#zenario__users/panels/administrators//' . $row['id'];
 
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
@@ -3681,7 +3753,7 @@ class welcome {
 				}
 				
 				if ($inactiveAdminCount > 5) {
-					$merge = ['link' => 'zenario/admin/organizer.php#zenario__users/panels/administrators'];
+					$merge = ['link' => 'organizer.php#zenario__users/panels/administrators'];
 				
 					$fields['0/administrator_more_inactive']['hidden'] = false;
 					$fields['0/administrator_more_inactive']['row_class'] = 'warning';
@@ -3715,7 +3787,7 @@ class welcome {
                 if(\ze::setting('zenario_timezones__default_timezone') == ""){
                     $fields['0/default_timezone_not_set']['row_class'] = 'warning';
                     $fields['0/default_timezone_not_set']['hidden'] = false;
-                    $mrg = ['link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//date_and_time~.site_settings~ttimezone_settings~k{"id"%3A"date_and_time"}')];
+                    $mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//date_and_time~.site_settings~ttimezone_settings~k{"id"%3A"date_and_time"}')];
 				
 				    $show_warning = true; 
 				    $fields['0/default_timezone_not_set']['snippet']['html'] =
@@ -3882,7 +3954,7 @@ class welcome {
 	
 		if (!empty($getRequest['og']) && \ze\priv::check()) {
 			return
-				'zenario/admin/organizer.php'.
+				'organizer.php'.
 				(isset($getRequest['fromCID']) && isset($getRequest['fromCType'])? '?fromCID='. $getRequest['fromCID']. '&fromCType='. $getRequest['fromCType'] : '').
 				'#'. $getRequest['og'];
 		
@@ -3948,8 +4020,8 @@ class welcome {
         $mrg = [
 				'DBNAME' => DBNAME,
 				'path' => \ze::setting('automated_backup_log_path'),
-				'link' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//dirs~.site_settings~tautomated_backups~k{"id"%3A"dirs"}'),
-				'manageAutomatedBackupLink' => htmlspecialchars('zenario/admin/organizer.php#zenario__administration/panels/site_settings//dirs')];
+				'link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//dirs~.site_settings~tautomated_backups~k{"id"%3A"dirs"}'),
+				'manageAutomatedBackupLink' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//dirs')];
         $warnings = [];
         if (!\ze::setting('check_automated_backups')) {
             $warnings['row_class'] = 'valid';
@@ -4075,7 +4147,7 @@ class welcome {
 			   ON pi.id = ps.instance_id
 			  AND ps.egg_id = 0
 			  AND ps.name = '". \ze\escape::sql($settingName). "'
-			WHERE m.class_name = '". \ze\escape::sql($moduleClassName). "'";
+			WHERE m.class_name = '". \ze\escape::asciiInSQL($moduleClassName). "'";
 		\ze\sql::update($sql);
 
 		$sql = "
@@ -4086,7 +4158,7 @@ class welcome {
 			INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
 			   ON ps.egg_id = np.id
 			  AND ps.name = '". \ze\escape::sql($settingName). "'
-			WHERE m.class_name = '". \ze\escape::sql($moduleClassName). "'";
+			WHERE m.class_name = '". \ze\escape::asciiInSQL($moduleClassName). "'";
 		\ze\sql::update($sql);
 	}
 	

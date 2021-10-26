@@ -60,6 +60,9 @@ zenario__document_envelopes:
                     db_column: de.keywords
                     searchable: true
                     show_by_default: true
+                pinned:
+                    db_column: de.pinned
+                    hidden: true
             
             collection_buttons:
                 create_document_envelope:
@@ -93,3 +96,12 @@ zenario__document_envelopes:
                             message_type: warning
                         request:
                             delete_document_envelope: true
+            inline_buttons:
+                pinned:
+                    css_class: pinned
+                    tooltip: "This envelope is pinned"
+                    visible_if: item.pinned == 1
+                not_pinned:
+                    css_class: not_pinned
+                    tooltip: "This envelope is not pinned"
+                    visible_if: item.pinned == 0

@@ -41,7 +41,7 @@ if ($this->eggId && isset($this->parentNest)) {
 		$buttonName = 'plugins_in_nest';
 	}
 	
-	$organizerLink = 'zenario/admin/organizer.php?fromCID='. ze::$cID. '&fromCType='. ze::$cType. '#';
+	$organizerLink = 'organizer.php?fromCID='. ze::$cID. '&fromCType='. ze::$cType. '#';
 	
 	$nestPath = 'zenario__modules/panels/modules/item//'. (int) $this->parentNest->moduleId. '//item_buttons/'. $buttonName. '//'. $this->instanceId. '//';
 

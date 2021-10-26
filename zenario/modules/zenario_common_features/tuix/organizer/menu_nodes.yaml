@@ -159,6 +159,8 @@ zenario__menu:
                     show_by_default: true
                 equiv_id:
                     db_column: mi.equiv_id
+                document_id:
+                    db_column: mi.document_id
                 ext_url:
                     db_column: mt.ext_url
                 target_content_id:

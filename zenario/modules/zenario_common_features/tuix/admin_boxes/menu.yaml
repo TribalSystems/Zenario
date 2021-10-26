@@ -63,23 +63,26 @@ zenario_menu:
                 target_loc:
                     ord: 1005
                     label: 'Type of link:'
-                    type: radios
+                    type: select
                     value: none
                     values:
                         none:
                             ord: 1
-                            label: Don't link
+                            label: "No link"
                             side_note: Use this for a menu node that has child nodes.
                         int:
                             ord: 2
-                            label: Internal
-                            side_note: Link to a content item.
-                        ext:
+                            label: "Link to a content item"
+                        doc:
                             ord: 3
-                            label: External
+                            label: "Link to a document"
+                            side_note:
+                        ext:
+                            ord: 4
+                            label: "Link to an external URL"
                             side_note: Link to a URL on another site.
                         exts:
-                            ord: 4
+                            ord: 5
                             label: Link by language
                             side_note: Link to a different external URL in each language.
                     format_onchange: true
@@ -130,9 +133,40 @@ zenario_menu:
                     side_note: >
                         If the linked-to content item is private, you can control
                         when the menu node is displayed.
-                ext_url:
+                document_id:
                     indent: 1
                     ord: 1009
+                    format_onchange: true
+                    visible_if: |
+                        zenarioAB.value('target_loc') == 'doc'
+                    pick_items:
+                        path: zenario__content/panels/documents/refiners/public_documents_only////
+                        min_path: zenario__content/panels/documents
+                        max_path: zenario__content/panels/documents
+                        target_path: zenario__content/panels/documents
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a document...
+                        disabled_if_for_all_selected_items: |
+                            item && item.type == 'folder'
+                    validation:
+                        required_if_not_hidden: "You've set the destination to be to a document, please select a document."
+                document_privacy_error:
+                    indent: 1
+                    ord: 1010
+                    pre_field_html: '<div class="zenario_fbWarning">'
+                    snippet:
+                        html: 'This menu node will not display as it links to a non-public document.'
+                    post_field_html: '</div>'
+                    hidden: true
+                privacy_warning:
+                    ord: 1011
+                    #note_below: Controlled in module_code.php
+                    indent: 1
+                    same_row: true
+                    visible_if: zenarioAB.value('target_loc') == 'doc'
+                ext_url:
+                    indent: 1
+                    ord: 1012
                     label: 'External URL:'
                     type: url
                     maxlength: 255
@@ -140,7 +174,7 @@ zenario_menu:
                         required_if_not_hidden: Please enter a URL
                 open_in_new_window:
                     indent: 1
-                    ord: 1010
+                    ord: 1013
                     label: 'Open in a new window'
                     type: checkbox
                 
@@ -223,6 +257,7 @@ zenario_menu:
                     type: checkbox
                     value: 0
                     redraw_onchange: true
+                    side_note: "Only works for links to content items"
                 custom_get_requests:
                     label: |
                         Custom GET requests:
@@ -236,6 +271,7 @@ zenario_menu:
                         enable_type_ahead_search: false
                         allow_typing_anything: true
                         hide_select_button: true
+                    side_note: "Only works for links to content items"
                 
                 call_static_method:
                     label: |

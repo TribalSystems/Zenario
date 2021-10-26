@@ -63,7 +63,7 @@
 							</a>
 						{% endif %}
 					{% endif %}
-					<a class="single_event_more_link" href="{{Event.Link_To_Event}}" >{{'_MORE'|trans}}</a>
+					<a class="single_event_more_link" href="{{Event.Link_To_Event}}" >{{'more...'|trans}}</a>
 				</div>
 			</div>
 		{% endfor %}
@@ -71,6 +71,6 @@
 	{{Pagination}}
 {% elseif No_Events %}
     <div class="no_events_to_show" > 
-		{{'_NO_EVENTS_TO_DISPLAY'|trans}}
+		{{'There are no events to show.'|trans}}
 	</div>
 {% endif %}

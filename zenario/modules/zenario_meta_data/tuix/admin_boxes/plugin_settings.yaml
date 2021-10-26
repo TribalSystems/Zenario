@@ -64,6 +64,30 @@ plugin_settings:
                         p:
                             label: p
                             ord: 8
+                show_icon_when_pinned:
+                    plugin_setting:
+                        name: show_icon_when_pinned
+                    grouping: filters
+                    label: "Show an icon when pinned"
+                    type: checkbox
+                show_text_when_pinned:
+                    plugin_setting:
+                        name: show_text_when_pinned
+                    grouping: filters
+                    label: "Show text when pinned"
+                    type: checkbox
+                    redraw_onchange: true
+                pinned_text_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: pinned_text_html_tag
+                    grouping: filters
+                    label: Pinned text tags
+                    value: h2
+                    visible_if:
+                        lib.value: show_text_when_pinned
+                    type: select
+                    values: *tags
                 show_date:
                     plugin_setting:
                         name: show_date
@@ -98,28 +122,7 @@ plugin_settings:
                     visible_if:
                         lib.value: show_date
                     type: select
-                    values: &tags
-                        h1:
-                            label: h1
-                            ord: 1
-                        h2:
-                            label: h2
-                            ord: 2
-                        h3:
-                            label: h3
-                            ord: 3
-                        h4:
-                            label: h4
-                            ord: 4
-                        h5:
-                            label: h5
-                            ord: 5
-                        h6:
-                            label: h6
-                            ord: 6
-                        p:
-                            label: p
-                            ord: 8
+                    values: *tags
                 show_published_date:
                     plugin_setting:
                         name: show_published_date
@@ -155,28 +158,7 @@ plugin_settings:
                     visible_if:
                         lib.value: show_published_date
                     type: select
-                    values: &tags
-                        h1:
-                            label: h1
-                            ord: 1
-                        h2:
-                            label: h2
-                            ord: 2
-                        h3:
-                            label: h3
-                            ord: 3
-                        h4:
-                            label: h4
-                            ord: 4
-                        h5:
-                            label: h5
-                            ord: 5
-                        h6:
-                            label: h6
-                            ord: 6
-                        p:
-                            label: p
-                            ord: 8
+                    values: *tags
                 show_description:
                     plugin_setting:
                         name: show_description
@@ -267,7 +249,7 @@ plugin_settings:
                     plugin_setting:
                         name: language_name_html_tag
                     grouping: filters
-                    label: Language name tags
+                    label: 'Language name tags:'
                     value: h2
                     visible_if:
                         lib.value: show_language_name
@@ -277,7 +259,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_language
                     grouping: filters
-                    label: 'Show language'
+                    label: 'Show language ISO code'
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -286,7 +268,7 @@ plugin_settings:
                     plugin_setting:
                         name: language_html_tag
                     grouping: filters
-                    label: Language tags
+                    label: 'Language ISO code tags:'
                     value: h2
                     visible_if:
                         lib.value: show_language
@@ -489,7 +471,44 @@ plugin_settings:
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
                     indent: 2
-        
+                show_feature_image_fallback:
+                    indent: 1
+                    plugin_setting:
+                        name: show_feature_image_fallback
+                    grouping: filters
+                    label: 'Show a fallback image'
+                    type: checkbox
+                    format_onchange: true
+                    visible_if: lib.value('show_sticky_image')
+                feature_image_fallback:
+                    indent: 2
+                    plugin_setting:
+                        name: feature_image_fallback
+                        foreign_key_to: file
+                    grouping: filters
+                    label: 'Fallback image:'
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    value: ""
+                    format_onchange: true
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                    visible_if: |
+                        visible_if: lib.value('show_sticky_image') && lib.value('show_feature_image_fallback')
+                    validation:
+                        required_if_not_hidden: Please select an image.
         order_tab:
             label: Display order
             fields:

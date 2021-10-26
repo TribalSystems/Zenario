@@ -55,7 +55,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 		foreach ($panel['items'] as $id => &$item) {
 			$item['traits'] = [];
 			
-			if($item['id']){
+			if ($item['id']){
 				$sql =" SELECT count(id) as number_of_categories
 						FROM ". DB_PREFIX."categories 
 						WHERE parent_id = ".(int)$item['id'];
@@ -79,12 +79,15 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 										['language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $id, 'module_class_name' => 'zenario_common_features']);
 				}
 			}
+
+			if ($item['landing_page_equiv_id'] && $item['landing_page_content_type']) {
+				$item['landing_page'] = ze\content::formatTag($item['landing_page_equiv_id'], $item['landing_page_content_type']);
+			}
 			
 			$item['children'] = ze\categoryAdm::countChildren($id);
 			$item['path'] = ze\categoryAdm::path($id);
 			
 			$item['full_path_label'] = $item['name'];
-			
 			
 			//In FAB pickers, show the full category path (including the names of any parent categories)
 			if (($mode == 'get_item_name' || $mode == 'typeahead_search' || $mode == 'get_item_links' || $mode == 'select') && $item['id']) {
@@ -138,5 +141,4 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 			}
 		}
 	}
-	
 }

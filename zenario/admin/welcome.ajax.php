@@ -237,7 +237,7 @@ if ($systemRequirementsMet && $installed) {
 			$sql = '
 				SELECT username, id
 				FROM ' . DB_PREFIX . 'admins
-				WHERE hash = "' . ze\escape::sql($hash) . '"
+				WHERE hash = "' . ze\escape::asciiInSQL($hash) . '"
 				AND DATE_ADD(created_date, INTERVAL ' . (int)ze::setting('new_admin_email_expiry') . ' DAY) >= NOW()
 				AND password = ""';
 			$result = ze\sql::select($sql);

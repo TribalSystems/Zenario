@@ -70,6 +70,10 @@
 			{% else %}
 				{{item.Title|e}}
 			{% endif %}
+
+			{% if Show_Filename and item.Filename %}
+				{{item.Filename|e}}
+			{% endif %}
 			
 			{% if Show_File_Size and item.Local_File_Size %}
 				({{item.Local_File_Size}})

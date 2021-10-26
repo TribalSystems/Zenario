@@ -72,10 +72,14 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				}
 				$fields['text/warning']['snippet']['html'] = ze\admin::phrase($warning, $mergeFields);
 		
+			} elseif ($menu['target_loc'] == 'doc' && $menu['document_id']) {
+				$values['text/target_loc'] = 'doc';
+				$values['text/document_id'] = $menu['document_id'];
 			} elseif ($menu['target_loc'] == 'ext') {
 				$values['text/target_loc'] = 'ext';
 				$values['ext_url'] = $menu['ext_url'];
 			}
+
 			$values['text/use_download_page'] = $menu['use_download_page'];
 			$values['text/hide_private_item'] = $menu['hide_private_item'];
 			$values['text/open_in_new_window'] = $menu['open_in_new_window'];
@@ -279,7 +283,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		}
 		
 		$mrg = [
-			'link' => ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/content_types',
+			'link' => ze\link::absolute(). 'organizer.php#zenario__content/panels/content_types',
 			'content_types' => implode('', $cTypes)];
 		
 		
@@ -322,6 +326,17 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$fields['text/use_download_page']['hidden'] = true;
 		}
 
+		$fields['text/document_privacy_error']['hidden'] = true;
+		if ($values['text/target_loc'] == 'doc' && $values['text/document_id']) {
+			$document = ze\row::get('documents', ['file_id', 'privacy'], ['id' => $values['text/document_id'], 'type' => 'file']);
+			if ($document) {
+				if (!ze\row::exists('files', ['id' => $document['file_id']])) {
+					$fields['text/document_id']['error'] = ze\admin::phrase('Error: document file not found.');
+				} elseif ($document['privacy'] != 'public') {
+					$fields['text/document_privacy_error']['hidden'] = false;
+				}
+			}
+		}
 
 		$langs = ze\lang::getLanguages();
 		$numLangs = count($langs);
@@ -527,6 +542,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$submission['use_download_page'] = $values['text/use_download_page'];
 			$submission['open_in_new_window'] = $values['text/open_in_new_window'];
 			$submission['anchor'] = ($values['text/target_loc'] == 'int' && $values['text/link_to_anchor']) ? $values['text/hyperlink_anchor'] : '';
+			$submission['document_id'] = $values['text/document_id'];
 		}
 
 		if (ze\ring::engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {

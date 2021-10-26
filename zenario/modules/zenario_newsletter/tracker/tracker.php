@@ -42,7 +42,7 @@ if (!empty($_GET['t'])
 	$sql = "
 		UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 			time_received = NOW()
-		WHERE tracker_hash = '". ze\escape::sql($_GET['t']). "'
+		WHERE tracker_hash = '". ze\escape::asciiInSQL($_GET['t']). "'
 		  AND time_received IS NULL";
 	ze\sql::update($sql);
 }

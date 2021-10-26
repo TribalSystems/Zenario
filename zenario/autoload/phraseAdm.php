@@ -90,8 +90,8 @@ class phraseAdm {
 	
 		$sql .= "
 			FROM " . DB_PREFIX . "visitor_phrases
-			WHERE language_id = '". \ze\escape::sql($languageId). "'
-			  AND module_class_name = '". \ze\escape::sql($moduleClass). "'
+			WHERE language_id = '". \ze\escape::asciiInSQL($languageId). "'
+			  AND module_class_name = '". \ze\escape::asciiInSQL($moduleClass). "'
 			  AND code = '". \ze\escape::sql($phraseCode). "'";
 	
 	

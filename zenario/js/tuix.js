@@ -470,28 +470,45 @@ zenarioT.resizeImage = function(image_width, image_height, constraint_width, con
 
 
 
+//A list of every implemented action that a button can do in TUIX
+var possibleActions = [
+	'admin_box',
+	'ajax',
+	'combine_items',
+	'navigation_path',
+	'frontend_link',
+	'help',
+	'alert',
+	'link',
+	'onclick',
+	'panel',
+	'pick_items',
+	'popout',
+	'organizer_quick',
+	'upload'
+];
+
+//Given a button, check if it will do anything when clicked
+zenarioT.checkActionExists = function(object) {
+	var pi, action;
+	
+	foreach (possibleActions as pi => action) {
+		if (object[action]) {
+			return true;
+		}
+	}
+	
+	return false;
+};
+
+//Given a button, raise an error if it has more than one action associated with it
 zenarioT.checkActionUnique = function(object) {
 	var actions = [],
-		test,
-		tests = [
-			'admin_box',
-			'ajax',
-			'combine_items',
-			'navigation_path',
-			'frontend_link',
-			'help',
-			'alert',
-			'link',
-			'onclick',
-			'panel',
-			'pick_items',
-			'popout',
-			'organizer_quick',
-			'upload'];
+		pi, action;
 	
-	foreach (tests as test) {
-		if (object[tests[test]]) {
-			actions.push(tests[test]);
+	foreach (possibleActions as pi => action) {
+		if (object[action]) {
+			actions.push(action);
 		}
 	}
 	
@@ -769,7 +786,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			zenarioO.go(navigation_path, -1);
 		} else {
 			zenario.goToURL(zenario.addBasePath(
-				(window.zenarioATLinks && window.zenarioATLinks.organizer || 'zenario/admin/organizer.php') +
+				(window.zenarioATLinks && window.zenarioATLinks.organizer || 'organizer.php') +
 				'#' +
 				navigation_path
 			));
@@ -1454,15 +1471,21 @@ zenarioT.tuixToArray = function(tuix) {
 
 
 
-
-
-zenarioT.setButtonKin = function(buttons, parentClass) {
-	zenarioT.setKin(buttons, parentClass || 'organizer_button_with_children');
+zenarioT.addClass = function(button, cssClass) {
+	if (defined(button.css_class)) {
+		button.css_class += ' ' + cssClass;
+	} else {
+		button.css_class = cssClass;
+	}
 };
 
 zenarioT.setKin = function(buttons, parentClass) {
 	
-	var bi, button, tuix,
+	if (_.isEmpty(buttons)) {
+		return;
+	}
+	
+	var bi, button, originalTUIX,
 		pi, parentId, parentButton,
 		buttonsPos = {};
 	
@@ -1475,23 +1498,15 @@ zenarioT.setKin = function(buttons, parentClass) {
 	foreach (buttons as bi => button) {
 		
 		//Accept either an array of TUIX objects, or a list of objects with pointers to TUIX objects.
-		tuix = button.tuix || button;
+		originalTUIX = button.tuix || button;
 		
-		if (parentId = tuix.parent) {
+		if (parentId = originalTUIX.parent) {
 			pi = buttonsPos[parentId];
 			
 			if (parentButton = buttons[pi]) {
 				
-				if (!parentButton.children) {
-					parentButton.children = [];
-					
-					if (defined(parentClass)) {
-						parentButton.css_class = parentButton.css_class? parentButton.css_class + ' ' + parentClass : parentClass;
-					}
-				}
-				
 				if (button.enabled
-				 && !engToBoolean(tuix.remove_filter)) {
+				 && !engToBoolean(originalTUIX.remove_filter)) {
 					parentButton.childEnabled = true;
 				}
 				if (button.current) {
@@ -1501,6 +1516,9 @@ zenarioT.setKin = function(buttons, parentClass) {
 					parentButton.childSelected = true;
 				}
 				
+				if (!parentButton.children) {
+					parentButton.children = [];
+				}
 				parentButton.children.push(button);
 			}
 		}
@@ -1509,12 +1527,30 @@ zenarioT.setKin = function(buttons, parentClass) {
 	//Remove children from the top-level buttons
 	for (bi = buttons.length - 1; bi >= 0; --bi) {
 		button = buttons[bi];
-		tuix = button.tuix || button;
 		
-		if (tuix.parent || (engToBoolean(tuix.hide_when_children_are_not_visible) && !button.children)) {
+		//Accept either an array of TUIX objects, or a list of objects with pointers to TUIX objects.
+		originalTUIX = button.tuix || button;
+		
+		if (originalTUIX.parent || (engToBoolean(originalTUIX.hide_when_children_are_not_visible) && !button.children)) {
 			buttons.splice(bi, 1);
 		}
+		
+		if (!_.isEmpty(button.children)) {
+			if (defined(parentClass)) {
+				zenarioT.addClass(button, parentClass);
+			}
+			zenarioT.addClass(button, 'tuix_object_with_children');
+			zenarioT.addClass(button.children[0], 'tuix_object_first_child');
+			zenarioT.addClass(button.children[button.children.length - 1], 'tuix_object_last_child');
+		}
 	}
+	
+	if (_.isEmpty(buttons)) {
+		return;
+	}
+	
+	zenarioT.addClass(buttons[0], 'tuix_object_first');
+	zenarioT.addClass(buttons[buttons.length - 1], 'tuix_object_last');
 };
 
 zenarioT.attempts = {};

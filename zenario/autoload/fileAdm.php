@@ -482,7 +482,7 @@ To correct this, please ask your system administrator to perform a
 	//Get the $usage details for an image in the MIC library.
 	public static function getMICImageUsage($imageId) {
 		$module = 'zenario_multiple_image_container';
-		$moduleId = \ze\row::get('modules', 'id', ['class_name' => \ze\escape::sql($module)]);
+		$moduleId = \ze\row::get('modules', 'id', ['class_name' => $module]);
 
 		$usage = [];
 		$instances = \ze\module::getModuleInstancesAndPluginSettings($module);

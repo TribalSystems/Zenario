@@ -218,7 +218,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				module_id = ". (int) ze\row::get('plugin_instances', 'module_id', ['id' => ($senderCmsObjectArray['instanceId'] ?? false)]). ",
 				instance_id = ". (int) ($senderCmsObjectArray['instanceId'] ?? false). ",
 				content_id = ". (int) ($senderCmsObjectArray['cID'] ?? false). ",
-				content_type = '". ze\escape::sql($senderCmsObjectArray['cType'] ?? false). "',
+				content_type = '". ze\escape::asciiInSQL($senderCmsObjectArray['cType'] ?? false). "',
 				content_version = ". (int) ($senderCmsObjectArray['cVersion'] ?? false). ",
 				email_template_id = ". (int) $templateNo. ",
 				email_template_name = '". ze\escape::sql(($template['template_name'] ?? '')). "',

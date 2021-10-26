@@ -363,7 +363,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 				last_run_started,
 				last_run_started IS NOT NULL AND last_run_started <= DATE_SUB(NOW(), INTERVAL 4 HOUR) AS stuck
 			FROM ". DB_PREFIX. "jobs
-			WHERE manager_class_name = '". ze\escape::sql($managerClassName). "'
+			WHERE manager_class_name = '". ze\escape::asciiInSQL($managerClassName). "'
 			  AND job_type = 'scheduled'
 			  AND `enabled` = 1
 			  AND (
@@ -647,7 +647,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		$body .= 'Database Name: '. DBNAME. "\n";
 		$body .= 'Database Host: '. DBHOST. "\n";
 		$body .= 'Scheduled Task: '. $jobName. "\n";
-		$body .= 'Organizer Link: '. ze\link::protocol(). ze\link::host(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks//'. $jobId. "\n";
+		$body .= 'Organizer Link: '. ze\link::protocol(). ze\link::host(). SUBDIRECTORY. 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks//'. $jobId. "\n";
 		$body .= 'Run on: '. $serverTime. "\n";
 		$body .= 'Status: '. $status. "\n\n";
 		$body .= 'Message:'. "\n". $logMessage;
@@ -754,7 +754,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		$sql .= "
 			WHERE manager_class_name = 'zenario_scheduled_task_manager'
 			  AND job_type = 'background'
-			  AND module_class_name = '". ze\escape::sql($moduleClassName). "'
+			  AND module_class_name = '". ze\escape::asciiInSQL($moduleClassName). "'
 			  AND job_name IN (". ze\escape::in($threads, 'sql'). ")";
 		
 		switch ($action) {

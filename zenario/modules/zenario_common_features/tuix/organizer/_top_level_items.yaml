@@ -109,6 +109,8 @@ zenario__menu:
 zenario__documents:
     ord: -970
     priv: _PRIV_VIEW_DOCUMENTS
+    visible_if: >
+        zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_documents
     label: Documents
     tooltip: Documents arranged in folders, which can be public or private, for public sharing or extranet protection
@@ -134,6 +136,8 @@ zenario__users:
     priv:
         - _PRIV_VIEW_ADMIN
         - _PRIV_VIEW_USER
+    visible_if: >
+        zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_users
     label: Users & contacts
     tooltip: |
@@ -181,6 +185,8 @@ zenario__layouts:
                 path: zenario__layouts/panels/skins
 zenario__modules:
     ord: 9200
+    visible_if: >
+        zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_plugins
     label: Modules
     tooltip: Manage modules and their plugins
@@ -228,12 +234,16 @@ zenario__languages:
             link:
                 path: zenario__languages/panels/languages
         phrases:
+            visible_if: >
+                zenarioA.siteSettings.default_language
             label: Phrases
             tooltip: Phrases that are displayed to website visitors
             link:
                 path: zenario__languages/panels/phrases
         salutations:
             ord: 10003
+            visible_if: >
+                zenarioA.siteSettings.default_language
             label: Salutations
             tooltip: Configure salutations
             link:
@@ -286,17 +296,23 @@ zenario__administration:
             link:
                 path: zenario__administration/panels/backups
         content_types:
+            visible_if: >
+                zenarioA.siteSettings.default_language
             label: Content types
             tooltip: Change settings for content types (e.g. blog posts, HTML pages, news items...)
             link:
                 path: zenario__content/panels/content_types
         custom_datasets:
+            visible_if: >
+                zenarioA.siteSettings.default_language
             label: Datasets
             tooltip: Datasets are mini-databases inside Zenario, with customisable schemas
             keywords: "Database, record, lookup, data, file, spreadsheet, field, column"
             link:
                 path: zenario__administration/panels/custom_datasets
         spare_domains:
+            visible_if: >
+                zenarioA.siteSettings.default_language
             #css_class: alias_urls_collection
             label: Domain redirects
             tooltip: >
@@ -305,6 +321,8 @@ zenario__administration:
                 path: zenario__administration/panels/spare_domains
         file_types:
             ord: 10001
+            visible_if: >
+                zenarioA.siteSettings.default_language
             css_class: zenario_separator_before_this dropbox_file
             label: File/MIME Types
             tooltip: >
@@ -312,12 +330,6 @@ zenario__administration:
                 and set the MIME type for each extension.
             link:
                 path: zenario__administration/panels/file_types
-        page_preview_sizes:
-            ord: 10002
-            label: Page Preview
-            tooltip: Configure page preview sizes
-            link:
-                path: zenario__administration/panels/page_preview_sizes
 
 
     data-step: 14

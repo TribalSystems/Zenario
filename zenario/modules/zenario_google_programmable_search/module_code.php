@@ -59,7 +59,7 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 
 				$customSearchEngineId = $this->setting('custom_search_engine_id');
 
-				$url = ze\link::protocol() .'www.googleapis.com/customsearch/v1?key=' . urlencode($apiKey) . '&cx=' . urlencode($customSearchEngineId) . '&q=' . urlencode($searchTerm) . '&sort=date';
+				$url = ze\link::protocol() .'www.googleapis.com/customsearch/v1?key=' . urlencode($apiKey) . '&cx=' . urlencode($customSearchEngineId) . '&q=' . urlencode($searchTerm);
 				$page = ze::get('page') ?: 1;
 
 				//Google Custom Search will display 10 results per page.
@@ -129,7 +129,7 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 			}
 		} else {
 			if (ze\admin::id()) {
-				$googleApiKeySiteSettingLink = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_custom_search~k{"id"%3A"api_keys"}';
+				$googleApiKeySiteSettingLink = ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_custom_search~k{"id"%3A"api_keys"}';
 				$linkStart = "<a href='" . $googleApiKeySiteSettingLink . "' target='_blank'>";
 				$linkEnd = '</a>';
 				$this->data['missingApiKey'] = $this->phrase(
@@ -149,7 +149,7 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!ze::setting('google_custom_search_json_api_key')) {
-			$googleApiKeySiteSettingLink = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_custom_search~k{"id"%3A"api_keys"}';
+			$googleApiKeySiteSettingLink = ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_custom_search~k{"id"%3A"api_keys"}';
 			$linkStart = "<a href='" . $googleApiKeySiteSettingLink . "' target='_blank'>";
 			$linkEnd = '</a>';
 			$fields['first_tab/missing_api_key']['snippet']['html'] = $this->phrase(

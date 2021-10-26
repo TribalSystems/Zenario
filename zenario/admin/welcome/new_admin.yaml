@@ -51,7 +51,7 @@ new_admin:
                     return_key_presses_button: save_password_and_login
                     label: Remember me
                     tooltip: |
-                        If checked, you will see a "Login" button on the top-right of the website front-end the next time you come to the site.
+                        If checked, Zenario will set a cookie on your browser, and you will see a convenient "LOGIN" button on the website front-end when not in admin mode.
                 save_password_and_login:
                     value: Save and login
                     type: submit

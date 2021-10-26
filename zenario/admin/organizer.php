@@ -1,9 +1,51 @@
-<?php
+<?php 
+/*
+ * Copyright (c) 2021, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-require '../adminheader.inc.php';
+//Attempt to include the basic header
+//We need to check two different paths, as this file can be accessed from two different ways,
+//depending on how the friendly URLs have been set up.
+if (is_file('zenario/adminheader.inc.php')) {
+	require 'zenario/adminheader.inc.php';
+} else {
+	require '../adminheader.inc.php';
+}
+
+
+//Catch the case where someone comes in on the old "unfriendly" URL (i.e. zenario/admin/welcome.php),
+//and redirect them to the new "friendly" one (i.e. admin.php).
+$uri = explode('?', $_SERVER['REQUEST_URI'] ?? '', 2)[0];
+if (false !== ze\ring::chopSuffix($uri, 'zenario/admin/organizer.php')) {
+	header ('Location: ../../organizer.php?'. $_SERVER['QUERY_STRING']);
+	exit;
+}
+
 
 ze\skinAdm::checkForChangesInFiles();
-
  
 $homeLink = $backLink = '';
 
@@ -43,9 +85,9 @@ if (!ze\priv::check()) {
 		<body>
 			<script type="text/javascript">
 				var hash = encodeURIComponent(("" + document.location.hash).replace("#", ""));
-				document.location.href = "welcome.php?og=" + (hash? hash : "zenario__content/panels/content");
+				document.location.href = "', ze\escape::js(ze\link::absolute()). 'admin.php?og=" + (hash? hash : "zenario__content/panels/content");
 			</script>
-			<p><a href="welcome.php">', ze\admin::phrase('Please log in'), '</a></p>
+			<p><a href="', ze\escape::js(ze\link::absolute()). 'admin.php">', ze\admin::phrase('Please log in'), '</a></p>
 		</body>
 		</html>';
 	exit;
@@ -53,7 +95,7 @@ if (!ze\priv::check()) {
 
 ze\miscAdm::checkForChangesInYamlFiles();
 
-$prefix = '../';
+$prefix = 'zenario/';
 ze\content::pageHead($prefix, 'organizer', true);
 $v = ze\db::codeVersion();
 
@@ -74,7 +116,7 @@ if (!empty($_GET['openedInIframe'])) {
 	$topLeftHTML = '
 		<div class="home_page_button top_left_button">
 			<a id="home_page_button_link" data-step="1" data-position="right" data-highlightClass="step_1" data-intro="<p><strong>Home page link</strong></p><p>Go to the front-end at your website’s homepage.</p>"
-				href="'. htmlspecialchars(($homeLink = ze\link::toItem($homePageCID, $homePageCType, true)) ?: '../../'). '"
+				href="'. htmlspecialchars(($homeLink = ze\link::toItem($homePageCID, $homePageCType, true)) ?: 'index.php'). '"
 				title="'. ze\admin::phrase('Back to&lt;br/&gt;Home Page'). '"></a>
 		</div>';
 	

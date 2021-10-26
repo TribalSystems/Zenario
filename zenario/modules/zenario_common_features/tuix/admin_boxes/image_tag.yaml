@@ -21,7 +21,7 @@ zenario_image_tag:
                         if (this.value) {
                             var up = ('' + this.value),
                                 low = up.toLowerCase().replace(/[^\w \d\-\_]/g, '');
-                        
+                            
                             if (up != low) {
                                 this.value = low;
                             }

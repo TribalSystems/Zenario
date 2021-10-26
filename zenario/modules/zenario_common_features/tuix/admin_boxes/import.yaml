@@ -35,14 +35,14 @@ zenario_import:
                     snippet:
                         html: |
                             <p>
-                                Welcome to the import wizard.
+                                Use this interface to import data on users or contacts from a file in CSV files or Excel format.
                             </p>
                             <br/>
                             <p>
-                                Use this wizard to import CSV files or Excel spreadsheets into your datasets.
+                                Within the first 5 rows the file must have a row that names the fields contained in the data.
                             </p>
                 file:
-                    label: 'Select your file to import:'
+                    label: 'Select a CSV or XLSX file to import:'
                     upload:
                         drag_and_drop: true
                         accept: 'text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -50,9 +50,7 @@ zenario_import:
                             - .csv
                             - .xls
                     validation:
-                        required: Please upload a CSV file or Excel spreadsheet to import.
-                    side_note: |
-                        Your file must contain a key-line, with a list of the fields contained in the data. The key-line must be in the first five lines of the file.
+                        required: Please select a CSV or XLSX file to import.
                     format_onchange: true
                 type:
                     label: 'Import action:'
@@ -60,10 +58,12 @@ zenario_import:
                     values:
                         insert_data:
                             ord: 1
-                            label: 'Insert new data'
+                            label: 'Insert or update'
+                            note_below: 'Recommended. Imported records with email addresses that match existing records will cause an update. Records with non-matching email addresses will be inserted.'
                         update_data:
                             ord: 2
-                            label: 'Update existing data'
+                            label: 'Update only'
+                            note_below: 'Update existing records using email address as the unique key, but ignore any new records in the import file'
                     value: insert_data
                     validation:
                         required: Please select an import type.
@@ -85,7 +85,7 @@ zenario_import:
                 file_column_match:
                     same_row: true
                     type: select
-                    empty_value: -- Don't import --
+                    empty_value: -- Omit field --
                     format_onchange: true
                     values: dataset_fields
                 file_column_description:
@@ -98,42 +98,46 @@ zenario_import:
                     ord: 0.5
                     snippet:
                         html: |
-                            <p>
-                                Please select the line with field names from your file, then for each of the field names please specify which database column to import its data into.
-                            </p>
+                            <p>Field names: select the row in the file that contains the field names.</p>
+                key_lines_preview:
+                    label: 'Preview (first 5 lines):'
+                    type: code_editor
+                    dont_trim: true
+                    readonly: true
+                    style: "height: 6em"
                 key_line:
                     ord: 1
-                    label: 'Line containing field names:'
+                    label: 'Which row contains the field names?'
                     type: select
                     value: 1
                     values:
-                        1: 1st Line
-                        2: 2nd Line
-                        3: 3rd Line
-                        4: 4th Line
-                        5: 5th Line
+                        1: Row 1
+                        2: Row 2
+                        3: Row 3
+                        4: Row 4
+                        5: Row 5
                     format_onchange: true
                 
                 insert_desc:
                     ord: 1.01
                     snippet:
                         html: |
-                            You can choose to update existing user records instead of creating a new one if a matching email address is found.
+                            <p>Duplicates: you can choose to update existing user records instead of creating a new one if a matching email address is found.</p>
                 
                 insert_options:
                     ord: 1.02
                     type: radios
-                    label: 'Duplicate email options:'
+                    label: 'When encountering a record with an email address already in the database:'
                     values:
                         no_update:
                             ord: 1
-                            label: Don't update
+                            label: Skip; leave existing one as-is
                         merge:
                             ord: 2
-                            label: Merge
+                            label: Merge new record into existing
                         overwrite:
                             ord: 3
-                            label: Overwrite
+                            label: Overwrite existing record with new one
                     value: no_update
                         
                 
@@ -141,11 +145,11 @@ zenario_import:
                     ord: 1.1
                     snippet:
                         html: |
-                            Select the field name to uniquely identify each line. This will be used to match the line to an entry in the database. If two or more lines have matching identifiers they will be not be imported. If two or more entries in the database match a lines identifier they will all be updated (although a warning will show at stage 3).
+                            Select the field name to uniquely identify each line, preferably email address. This will be used to match the line to an entry in the database. If two or more lines have matching identifiers they will be not be imported. If two or more entries in the database match a lines identifier they will all be updated (although a warning will show at stage 3).
                     
                 update_key_field:
                     ord: 1.2
-                    label: 'Key field:'
+                    label: 'Which field contains email address?'
                     type: select
                     empty_value: '-- Select --'
                     values: {}
@@ -154,14 +158,14 @@ zenario_import:
                     ord: 2
                     snippet:
                         html: |
-                            Match field names to database columns.<br/>
+                            <p>Field names: specify which field names correspond to which database columns, or omit the field from import.</p>
                 file_column_headers:
                     ord: 3
                     snippet:
                         html: |
-                            <div style="width:21em;float:left"><b>Field names (from uploaded file)</b></div>
-                            <div style="width:21em;float:left"><b>Database columns</b></div>
-                            <div><b>Field type, input value must be...</b></div>
+                            <div style="width:21em;float:left"><b>Field name in file</b></div>
+                            <div style="width:21em;float:left"><b>Database column</b></div>
+                            <div><b>Field must be:</b></div>
                     post_field_html: <br>
                 
                 previous:
@@ -180,12 +184,12 @@ zenario_import:
             fields:
                 desc:
                     snippet:
-                        html: Review the data about to be imported and the problems encountered. Any line with an error <b><u>will not</u></b> be imported.
+                        html: Review the data about to be imported and the problems encountered. Any line with an error will be skipped.
                 total_readable_lines:
                     snippet:
                         html:
                 csv_preview:
-                    label: 'Preview (up to line 200):'
+                    label: 'Preview (up to 200 lines are shown):'
                     type: code_editor
                     dont_trim: true
                     readonly: true

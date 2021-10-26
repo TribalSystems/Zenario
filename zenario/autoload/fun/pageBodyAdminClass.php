@@ -80,7 +80,6 @@ if (empty($_SESSION['page_mode'])
 	//This removal has also been patched back by Chris, 21 Jul 2021.
 
 
-
 $_SESSION['last_item'] = \ze::$cType. '_'. \ze::$cID;
 
 //Check that we're about to use a toolbar that exists

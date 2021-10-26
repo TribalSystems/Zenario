@@ -8,7 +8,7 @@ zenario__user_forms:
             no_items_message: No forms have been created.
             select_mode_title: Select a form...
             panel_type: multi_line_list
-            css_class: two_line_list_panel
+            css_class: three_line_list_panel
             use_tall_rows: true
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS f'
@@ -41,10 +41,14 @@ zenario__user_forms:
                     db_column: f.name
                     searchable: true
                     always_show: true
-                    width: large
+                    width: xxlarge
                 type:
                     title: Type
                     db_column: f.type
+                    parent: name
+                    always_show: true
+                user_record_and_crm_info:
+                    title: User record and CRM info
                     parent: name
                     always_show: true
                 form_email_addresses:
@@ -195,7 +199,7 @@ zenario__user_forms:
                     hide_when_children_are_not_visible: true
                 view_content_items:
                     ord: 6
-                    label: Content items this form is used on
+                    label: Content items with this form
                     parent: view_dropdown
                     link:
                         path: zenario__content/panels/content

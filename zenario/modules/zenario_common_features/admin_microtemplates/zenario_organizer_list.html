@@ -29,7 +29,7 @@
 						<% if (zenarioO.multipleSelectEnabled) { %>
 							<div onclick="zenarioO.toggleAllItems();">
 								<input
-									type="checkbox"
+									type="{{zenarioO.selectionDisplayType()}}"
 									id="organizer_toggle_all_items_checkbox"
 									{{m.allItemsSelected? ' checked="checked"' : ''}}
 								/>

@@ -253,7 +253,7 @@ class zenario_extranet_registration extends zenario_extranet {
         		
         		if(!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')){
 				    //Show warning
-					$recaptchaLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
+					$recaptchaLink = "<a href='organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
 					$fields['use_captcha']['side_note'] = $this->phrase(
 						"Recaptcha keys are not set. To show a captcha you must set the recaptcha [[recaptcha_link]].",
 						['recaptcha_link' => $recaptchaLink]
@@ -395,6 +395,14 @@ class zenario_extranet_registration extends zenario_extranet {
 	protected function validateFormFields($section, $contactsCountAsUnregistered = false) {
 		$fields = parent::validateFormFields($section, $contactsCountAsUnregistered);
 		if ($section=='Registration_Form') {
+			if (!empty($_POST['first_name']) && mb_strlen($_POST['first_name']) > 25) {
+				$this->errors[] = ['Error' => $this->phrase('Your first name looks too long, are you sure this is your first name?')];
+			}
+
+			if (!empty($_POST['last_name']) && mb_strlen($_POST['last_name']) > 35) {
+				$this->errors[] = ['Error' => $this->phrase('Your last name looks too long, are you sure this is your last name?')];
+			}
+
 			if ($this->setting('user_password')=='user_to_choose_password'){
 				$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),false,get_class($this));
 				if (count($errors)) {
@@ -402,6 +410,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					return false;
 				}
 			}
+
 			if ($this->enableCaptcha()) {
 				if ($this->checkCaptcha2()) {
 					$_SESSION['captcha_passed__'. $this->instanceId] = true;
@@ -538,7 +547,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			ze::$dbL->checkTableDef($tableName = DB_PREFIX . 'users_custom_data');
 			
 			if ($this->setting('user_custom_fields')) {
-				$result = ze\sql::select("select db_column, type, label from ".DB_PREFIX."custom_dataset_fields where id in (". ze\escape::in($this->setting('user_custom_fields'), true). ")");
+				$result = ze\sql::select("select db_column, type, label from ".DB_PREFIX."custom_dataset_fields where id in (". ze\escape::in($this->setting('user_custom_fields'), 'numeric'). ")");
 			
 				// Save custom fields from plugin settings
 				while ($column = ze\sql::fetchAssoc($result)) {
@@ -635,7 +644,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$emailMergeFields = ze\user::details($userId);
 			$emailMergeFields['cms_url'] = ze\link::absolute();
 			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);
-			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
+			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
 			
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
 			
@@ -762,7 +771,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($this->setting('user_activation_notification_email_address') && $this->setting('user_activation_notification_email_template')) {
 			$emailMergeFields = ze\user::details($userId);
 			$emailMergeFields['cms_url'] = ze\link::absolute();
-			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
+			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
 			
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
 			

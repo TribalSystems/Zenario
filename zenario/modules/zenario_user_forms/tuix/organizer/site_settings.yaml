@@ -5,5 +5,5 @@ zenario__administration:
 				#	The new item to add, which will form the Settings Group. We should
 				#	prefix it with our Module name to help avoid any name-clashes.
 				zenario_user_forms__site_settings_group:
-					name: Forms
-					desc: Settings for forms.
+					name: Forms and CRM integration
+					desc: Settings for User Forms and CRM integration using APIs

@@ -350,7 +350,7 @@ class link {
 				SELECT alias, equiv_id, language_id, lang_code_in_url
 				FROM ". DB_PREFIX. "content_items
 				WHERE id = ". (int) $cID. "
-				  AND type = '". \ze\escape::sql($cType). "'"
+				  AND type = '". \ze\escape::asciiInSQL($cType). "'"
 			);
 			if ($content = \ze\sql::fetchRow($result)) {
 				$alias = $content[0];
@@ -537,7 +537,7 @@ class link {
 			SELECT id, parent_id, section_id
 			FROM ". DB_PREFIX. "menu_nodes AS m
 			WHERE m.equiv_id = ". (int) $equivId. "
-			  AND m.content_type = '" . \ze\escape::sql($cType) . "'
+			  AND m.content_type = '" . \ze\escape::asciiInSQL($cType) . "'
 			  AND m.target_loc = 'int'
 			ORDER BY m.redundancy = 'primary' DESC
 			LIMIT 1";
@@ -559,7 +559,7 @@ class link {
 				INNER JOIN ". DB_PREFIX. "content_items AS c
 				   ON c.equiv_id = m.equiv_id
 				  AND c.type = m.content_type
-				  AND c.language_id = '" . \ze\escape::sql($languageId) . "'
+				  AND c.language_id = '" . \ze\escape::asciiInSQL($languageId) . "'
 				WHERE mh.section_id = ". (int) $menu['section_id']. "
 				  AND mh.child_id = ". (int) $menu['parent_id']. "
 				ORDER BY mh.separation ASC";

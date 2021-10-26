@@ -117,7 +117,7 @@ $sql = '
 	SELECT module_class_name, path, panel_type
 	FROM '. DB_PREFIX. 'tuix_file_contents
 	WHERE `type` = \'visitor\'
-	  AND module_class_name IN ('. ze\escape::in(array_keys($moduleDetails)). ')';
+	  AND module_class_name IN ('. ze\escape::in(array_keys($moduleDetails), 'asciiInSQL'). ')';
 
 $result = ze\sql::select($sql);
 while ($fea = ze\sql::fetchRow($result)) {

@@ -20,12 +20,10 @@ zenario_pro_features_spare_alias:
                     full_width: Yes
                     snippet:
                         html: |
-                            Use this panel to define a spare alias (permanent redirect).
-                            
-                            When a visitor follows a link to a spare alias on this site, the CMS responds with a permanent redirect. This can be a redirect to a content item, or another URL.
-                            
-                            Spare aliases are handy if a page's URL has changed (thus avoiding a Not Found message),
-                            or if you want to give the same page several aliases.
+                            <p>A spare alias is a web server redirect, otherwise known as a permanent (or 301) redirect. When a visitor requests a spare alias, they are redirected to another content item or an external web address (URL).</p>
+                            <p>Use this admin box to create or edit a spare alias: you can define the text and the destination to which visitors will be redirected.</p>
+                            <p>If you change the alias of a content item, it's advisable to make its old alias be a spare alias, to avoid visitors seeing a Not Found error (404).</p>
+                            <p>Any number of spare aliases can point to the same content item.</p>
                 grouping_left:
                     name: left
                     type: grouping
@@ -78,16 +76,16 @@ zenario_pro_features_spare_alias:
                     type: grouping
                 target_loc:
                     grouping: right
-                    label: 'Destination:'
+                    label: 'Redirect to:'
                     type: select
                     value: int
                     values:
                         int:
                             ord: "2"
-                            label: Link to a content item
+                            label: A content item
                         ext:
                             ord: "3"
-                            label: Link to an external URL
+                            label: An external URL
                     format_onchange: Yes
                 hyperlink_target:
                     grouping: right

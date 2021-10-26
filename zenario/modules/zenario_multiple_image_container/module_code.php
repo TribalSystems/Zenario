@@ -87,7 +87,7 @@ class zenario_multiple_image_container extends zenario_banner {
 				}
 				
 				if ($this->setting('show_image_uploaded_date')) {
-					$imageMF['Uploaded_Date'] = ze\date::formatDateTime($image['created_datetime'], '_MEDIUM');
+					$imageMF['Uploaded_Date'] = ze\date::format($image['created_datetime'], '_MEDIUM');
 				}
 				
 				$this->mergeFields['Images'][] = $imageMF;
@@ -158,7 +158,7 @@ class zenario_multiple_image_container extends zenario_banner {
 			$noContent = false;
 			$mainLinkArr = [];
 			$allIdsValue = '';
-			if (isset($_POST['prepareDownloadData']) && ($_POST['prepareDownloadData'] ?? false) && $_POST['slotName'] == $this->slotName) {
+			if (!empty($_POST['prepareDownloadData']) && $_POST['slotName'] == $this->slotName) {
 				$getIds = $_POST['imageIds'];
 				$zipFiles = [];
 				$zipFile = [];
@@ -284,7 +284,7 @@ class zenario_multiple_image_container extends zenario_banner {
 		$box['css_class'] .= ' zenario_fab_multiple_image_container';
 		$box['tabs']['image_and_link']['fields']['canvas']['label'] = ze\admin::phrase('Thumbnail image canvas:');
 
-		$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tzip~k{"id"%3A"external_programs"}';
+		$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tzip~k{"id"%3A"external_programs"}';
 		$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 		$linkEnd = '</a>';
 
@@ -479,7 +479,7 @@ class zenario_multiple_image_container extends zenario_banner {
 				$sql = '
 					SELECT id, filename
 					FROM ' . DB_PREFIX . 'files
-					WHERE id IN (' . ze\escape::in($values['image_and_link/image']) . ')
+					WHERE id IN (' . ze\escape::in($values['image_and_link/image'], 'numeric') . ')
 					AND location = "db"';
 				
 				$result = ze\sql::select($sql);

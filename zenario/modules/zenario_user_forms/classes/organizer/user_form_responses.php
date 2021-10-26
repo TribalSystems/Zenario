@@ -82,7 +82,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		}
 		$phrase .= ".";
 
-		$href = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+		$href = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 		$linkStart = "<a target='_blank' href='" . $href . "'>";
 		$linkEnd = "</a>";
 

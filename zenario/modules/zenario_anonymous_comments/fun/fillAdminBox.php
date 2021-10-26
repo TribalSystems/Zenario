@@ -74,7 +74,7 @@ switch ($path) {
 					ze\admin::phrase('Please see the <a href="[[link]]" target="_blank">Module description</a> to get a full list of merge fields which can be used in the selected email template.',
 						['link' => htmlspecialchars(
 							ze\link::absolute().
-							'zenario/admin/organizer.php#zenario__modules/panels/modules//'. $box['key']['moduleId']. '/')]);
+							'organizer.php#zenario__modules/panels/modules//'. $box['key']['moduleId']. '/')]);
 				
 				
 			}

@@ -31,7 +31,7 @@
 	<div class="organizer_cell organizer_checkbox_col" onclick="zenarioO.pi.checkboxClick('{{m.id|escape}}', event); return false;" ondblclick="return zenario.stop(event);">
 		<% if (m.showCheckbox) { %>
 			<input
-				type="{{window.zenarioOSelectMode && !zenarioO.multipleSelectEnabled? 'radio' : 'checkbox'}}"
+				type="{{zenarioO.selectionDisplayType()}}"
 				{{m.selected? ' checked="checked"' : ''}}
 				id="organizer_itemcheckbox_{{m.id|escape}}"
 			/>

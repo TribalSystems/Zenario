@@ -64,8 +64,13 @@ if ($usage == 'image'
 			'offset' => $offset = (int) ($explode[3] ?? false)];
 		
 		$mode = 'unlimited';
-		if (\ze::in($params['mode'], 'unlimited', 'stretch', 'resize_and_crop', 'fixed_width', 'fixed_height', 'resize')) {
+		if (\ze::in($params['mode'], 'unlimited', 'stretch', 'adjust', 'resize_and_crop', 'fixed_width', 'fixed_height', 'resize')) {
 			$mode = $explode[0];
+			
+			//Catch a mode name that got renamed
+			if ($mode == 'stretch') {
+				$mode = 'adjust';
+			}
 		}
 	
 		//Watch out for images that have been resized, either by resizing the image by dragging the handles
@@ -355,7 +360,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				\ze::$mustUseFullPath = false;
 				if (ze\file::imageLink(
 					$dummyWidth, $dummyHeight, $url, $file['id'], $width, $height,
-					$mode = 'stretch', $offset = 0,
+					$mode = 'adjust', $offset = 0,
 					$retina = false, $privacy = 'public',
 					$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
 				)) {

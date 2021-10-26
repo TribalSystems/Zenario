@@ -57,11 +57,12 @@
 				{% if Show_caption_on_image and Image.Text %}
 					<div class="title">{{Image.Text}}</div>
 				{% endif %}
+
+				{% if Show_image_uploaded_date and Image.Uploaded_Date %}
+					<span class="uploaded_date">{{Image.Uploaded_Date}}</span>
+				{% endif %}
 				
 				{% if Show_link_to_download_original %}
-					{% if Show_image_uploaded_date and Image.Uploaded_Date %}
-						<span class="uploaded_date">{{Image.Uploaded_Date}}</span>
-					{% endif %}
 					<span class="download_link">
 						<a href="{{Image.File_Link}}" download>
 							{{"Download original"|trans}}

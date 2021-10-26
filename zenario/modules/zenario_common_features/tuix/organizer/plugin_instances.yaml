@@ -10,7 +10,18 @@ zenario__modules:
             title: Plugin library
             select_mode_title: Select a plugin
             view_mode: list
+            
+            notice:
+                #This notice will be shown if there are any instances of that module
+                #which are in a nest and/or slideshow.
+                message: ''
+                type: warning
+                show: false
+                html: true
+
             db_items:
+                #If displaying nests/slideshows which contain plugins of a specific module,
+                #there will be a table join and extra WHERE statement added in the PHP class.
                 table: '[[DB_PREFIX]]plugin_instances AS pi'
                 id_column: pi.id
                 where_statement: |
@@ -34,6 +45,9 @@ zenario__modules:
                     select_mode_title: Select a slideshow
                     sql: |
                         pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow' OR class_name = 'zenario_slideshow_simple')
+                view_nests_containing:
+                    #The necessary table join and WHERE statement is added in the PHP class.
+                    exists: true
                 
                 plugins_using_form:
                     sql: |
@@ -195,6 +209,13 @@ zenario__modules:
                     admin_box:
                         path: plugin_settings
                         create_another: false
+                view_nests_containing:
+                    label: View nests/slideshows containing this module
+                    hidden: true
+                    hide_on_refiner: view_nests_containing
+                    link:
+                        path: zenario__modules/panels/plugins
+                        refiner: view_nests_containing
                 create_dropdown:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
                     visible_if: |

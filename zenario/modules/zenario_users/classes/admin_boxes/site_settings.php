@@ -87,7 +87,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					}
 				}
 				
-				$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+				$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 				$fields['names/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to keep user sign-in and content-access logs.', ['link' => htmlspecialchars($link)]);
 				break;
 			
@@ -221,7 +221,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 				}
 				
-				$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__users/nav/sign_in_log/panel';
+				$link = ze\link::absolute() . 'organizer.php#zenario__users/nav/sign_in_log/panel';
 				$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 				$fields['data_protection/period_to_delete_sign_in_log']['note_below'] = $note;
 				
@@ -233,7 +233,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 				}
 				
-				$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__users/panels/access_log';
+				$link = ze\link::absolute() . 'organizer.php#zenario__users/panels/access_log';
 				$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 				$fields['data_protection/period_to_delete_the_user_content_access_log']['note_below'] = $note;
 				

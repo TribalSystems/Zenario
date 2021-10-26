@@ -2,7 +2,7 @@
 require '../adminheader.inc.php';
 $getId =  $_GET['id'] ?? false;
 $getPath =  $_GET['path'] ?? false;
-$categoryPath = ze\link::absolute(). 'zenario/admin/organizer.php';
+$categoryPath = ze\link::absolute(). 'organizer.php';
 if ( strpos( $getPath, 'zenario__content/panels/categories' ) !== false) {
 	$sql = '
 			SELECT id,name,parent_id

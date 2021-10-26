@@ -105,8 +105,8 @@ class lang {
 			$sql = "
 				SELECT local_text, seen_in_visitor_mode, seen_at_url IS NULL
 				FROM ". DB_PREFIX. "visitor_phrases
-				WHERE language_id = '". \ze\escape::sql($languageId). "'
-				  AND module_class_name = '". \ze\escape::sql($moduleClass). "'
+				WHERE language_id = '". \ze\escape::asciiInSQL($languageId). "'
+				  AND module_class_name = '". \ze\escape::asciiInSQL($moduleClass). "'
 				  AND code = '". \ze\escape::sql($code). "'
 				LIMIT 1";
 	
@@ -467,7 +467,7 @@ class lang {
 			ORDER BY ";
 	
 		if ($defaultLangFirst) {
-			$sql .= "l.id = '". \ze\escape::sql(\ze::$defaultLang). "' DESC, ";
+			$sql .= "l.id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC, ";
 		}
 	
 		if ($orderByEnglishName) {

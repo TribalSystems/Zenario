@@ -165,7 +165,9 @@ zenarioAB.size = function(refresh) {
 		tabContainerHeight,
 		maxTabContainerHeight,
 		paddingHeight,
-		hideTabBar;
+		hideTabBar,
+		global_area,
+		tuix = zenarioAB.tuix || {};
 	
 	if (width && height && !zenarioAB.isSlidUp) {
 		
@@ -174,7 +176,7 @@ zenarioAB.size = function(refresh) {
 		if (windowSizedChanged || refresh) {
 			zenarioAB.lastSize = width + 'x' + height;
 			
-			hideTabBar = zenarioAB.tuix && engToBoolean(zenarioAB.tuix.hide_tab_bar);
+			hideTabBar = engToBoolean(tuix.hide_tab_bar);
 			
 			if (get('zenario_fbMain')) {
 				if (hideTabBar) {
@@ -197,7 +199,7 @@ zenarioAB.size = function(refresh) {
 			maxBoxWidth = Math.floor(width * 0.96);
 			tabContainerHeight = boxHeight - paddingHeight;
 			
-			maxTabContainerHeight = 1 * (zenarioAB.tuix && zenarioAB.tuix.max_height);
+			maxTabContainerHeight = 1 * tuix.max_height;
 			
 			if (maxTabContainerHeight
 			 && tabContainerHeight > maxTabContainerHeight) {
@@ -215,9 +217,8 @@ zenarioAB.size = function(refresh) {
 				$('#zenario_fabPreview').height(boxHeight);
 			}
 			
-			if (!zenarioAB.tuix
-			 || !zenarioAB.tuix.css_class
-			 || !zenarioAB.tuix.css_class.match(/zenario_fab_plugin\b/)) {
+			if (!tuix.css_class
+			 || !tuix.css_class.match(/zenario_fab_plugin\b/)) {
 				
 				$('#zenario_fabBox').width(FAB_WIDTH);
 				newWidth = FAB_WIDTH;
@@ -285,6 +286,18 @@ zenarioAB.size = function(refresh) {
 					.removeClass('zenario_fab_with_preview_hidden')
 					.addClass('zenario_fab_with_preview_shown');
 			}
+			
+			if ((global_area = tuix.tabs.global_area)
+			 && (!_.isEmpty(global_area.fields))) {
+				$('#zenario_fb' + FAB_NAME)
+					.removeClass('zenario_fab_with_no_global_area')
+					.addClass('zenario_fab_with_global_area');
+			} else {
+				$('#zenario_fb' + FAB_NAME)
+					.removeClass('zenario_fab_with_global_area')
+					.addClass('zenario_fab_with_no_global_area');
+			}
+					
 			
 			if (zenarioAB.previewHidden != previewHidden) {
 				zenarioAB.previewHidden = previewHidden;
@@ -527,7 +540,7 @@ zenarioAB.contentTitleChange = function() {
 zenarioAB.viewFrameworkSource = function() {
 	var url =
 		URLBasePath +
-		'zenario/admin/organizer.php' +
+		'organizer.php' +
 		'#zenario__modules/show_frameworks//' + zenarioAB.tuix.key.moduleId + '//' + zenario.encodeItemIdForOrganizer(zenarioAB.readField('framework'));
 	window.open(url);
 	
@@ -560,6 +573,7 @@ zenarioAB.svgSelected = function(fieldName) {
 
 //Change a child-checkbox
 zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c) {
+	
 	var parentChecked = true,
 		parentClass,
 		fields = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields;

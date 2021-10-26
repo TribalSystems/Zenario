@@ -166,7 +166,7 @@ class content {
 	//Automatically generate SQL to search through Content, for example for a content list
 	//A bit of a techy function so we've included the full code here, so you can see exactly what it does
 	//Formerly "sqlToSearchContentTable()"
-	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSpecialPages = false) {
+	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSearchableSpecialPages = false) {
 
 
 		$sql = "
@@ -280,10 +280,10 @@ class content {
 			  AND tc.privacy IN ('logged_in', 'group_members', 'with_role', 'in_smart_group', 'logged_in_not_in_smart_group')";
 		}
 	
-		//Ensure that special pages are not included in the search results
-		if (!$includeSpecialPages) {
+		//Ensure that non-searchable special pages are not included in the search results
+		if (!$includeSearchableSpecialPages) {
 			$sql .= "
-				  AND c.tag_id NOT IN ('". implode("', '", array_map('ze\\escape::sql', \ze::$specialPages)). "')";
+				  AND c.tag_id NOT IN ('". implode("', '", array_map('ze\\escape::sql', \ze::$nonSearchablePages)). "')";
 		}
 
 	
@@ -330,7 +330,7 @@ class content {
 				SELECT id, equiv_id, language_id
 				FROM ". DB_PREFIX. "content_items
 				WHERE id = ". (int) $cID. "
-				  AND type = '". \ze\escape::sql($cType). "'";
+				  AND type = '". \ze\escape::asciiInSQL($cType). "'";
 			$result = \ze\sql::select($sql);
 	
 			if ($row = \ze\sql::fetchAssoc($result)) {
@@ -339,8 +339,8 @@ class content {
 						SELECT id
 						FROM ". DB_PREFIX. "content_items
 						WHERE equiv_id = ". (int) $row['equiv_id']. "
-						  AND type = '". \ze\escape::sql($cType). "'
-						  AND language_id = '". \ze\escape::sql($langId). "'";
+						  AND type = '". \ze\escape::asciiInSQL($cType). "'
+						  AND language_id = '". \ze\escape::asciiInSQL($langId). "'";
 			
 					if ($checkVisible) {
 						$adminMode = \ze::isAdmin();
@@ -675,8 +675,8 @@ class content {
 						FROM ". DB_PREFIX. "content_items
 						WHERE alias = '". \ze\escape::sql($aliasInURL). "'";
 			
-					//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
-					//If not, only published pages should effect the logic.
+					//If an admin is logged in, any drafts/hidden content items should affect which language they get directed to
+					//If not, only published pages should affect the logic.
 					if ($adminMode) {
 						$sql .= "
 						  AND status NOT IN ('trashed', 'deleted')";
@@ -770,7 +770,7 @@ class content {
 				INNER JOIN ". DB_PREFIX. "languages AS l
 				   ON c.language_id = l.id
 				WHERE c.equiv_id = ". (int) $equivId. "
-				  AND c.type = '". \ze\escape::sql($cType). "'";
+				  AND c.type = '". \ze\escape::asciiInSQL($cType). "'";
 			
 				//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
 				//If not, only published pages should effect the logic.
@@ -784,7 +784,7 @@ class content {
 			
 				$sql .= "
 				ORDER BY
-					c.language_id = '". \ze\escape::sql(\ze::$defaultLang). "' DESC,
+					c.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC,
 					c.language_id";
 	
 			$match = false;
@@ -923,13 +923,13 @@ class content {
 					visitor_version, admin_version, status, lock_owner_id
 				FROM ". DB_PREFIX. "content_items
 				WHERE id = ". (int) $cID. "
-				  AND type = '". \ze\escape::sql($cType). "'")
+				  AND type = '". \ze\escape::asciiInSQL($cType). "'")
 			)
 		 && ($chain = \ze\sql::fetchAssoc("
 				SELECT equiv_id, type, privacy, at_location, smart_group_id
 				FROM ". DB_PREFIX. "translation_chains
 				WHERE equiv_id = ". (int) $content['equiv_id']. "
-				  AND type = '". \ze\escape::sql($cType). "'")
+				  AND type = '". \ze\escape::asciiInSQL($cType). "'")
 		)) {
 			
 			if (is_null($adminMode)) {
@@ -1203,7 +1203,7 @@ class content {
 				cols, min_width, max_width, fluid, responsive
 			FROM ". DB_PREFIX. "layouts
 			ORDER BY
-				content_type = '". \ze\escape::sql(\ze::$cType). "' DESC";
+				content_type = '". \ze\escape::asciiInSQL(\ze::$cType). "' DESC";
 	
 		if (($layoutId = $version['layout_id']) || ($layoutId = \ze\row::get('content_types', 'default_layout_id', ['content_type_id' => \ze::$cType]))) {
 			$sql .= ",
@@ -1364,7 +1364,9 @@ class content {
 	
 		if ($alias === -1) {
 			$content = \ze\row::get('content_items', ['alias', 'language_id'], ['id' => $cID, 'type' => $cType]);
-			$alias = $content['alias'];
+			if ($content && $content['alias']) {
+				$alias = $content['alias'];
+			}
 		}
 	
 		if ($alias) {

@@ -146,7 +146,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$sql .= "
 			INNER JOIN ". DB_PREFIX. "menu_nodes AS mi1
 			   ON mi1.equiv_id = ". (int) ze::$equivId. "
-			  AND mi1.content_type = '". ze\escape::sql($this->cType). "'
+			  AND mi1.content_type = '". ze\escape::asciiInSQL($this->cType). "'
 			  AND mi1.target_loc = 'int'";
 			
 			if (!$this->setting('show_secondaries')) {
@@ -193,7 +193,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		if ($this->setting('content_type') != 'all') {
 			$sql .= "
-			  AND v.type = '". ze\escape::sql($this->setting('content_type')). "'";
+			  AND v.type = '". ze\escape::asciiInSQL($this->setting('content_type')). "'";
 		} else {
 			$cTypes = [];
 			foreach (ze\content::getContentTypes() as $cType) {
@@ -273,7 +273,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		if ($this->setting('language_selection') == 'visitor') {
 			//Only return content in the current language
 			$sql .= "
-			  AND c.language_id = '". ze\escape::sql(ze::$langId). "'";
+			  AND c.language_id = '". ze\escape::asciiInSQL(ze::$langId). "'";
 		
 		} elseif ($this->setting('language_selection') == 'specific_languages') { 
 			//Return content in languages selected by admin
@@ -287,7 +287,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		//Exclude this page itself
 		$sql .= "
-		  AND v.tag_id != '". ze\escape::sql($this->cType. '_'. $this->cID). "'";
+		  AND v.tag_id != '". ze\escape::asciiInSQL($this->cType. '_'. $this->cID). "'";
 		
 		
 		//Release date section
@@ -610,6 +610,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 						);
 					}
 				}
+
+				$item['Filename'] = $row['filename'] ?? '';
 				
 				
 				$width = $height = $url = false;
@@ -705,7 +707,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				//Added info icon when viewed in admin mode
 				if ((bool)ze\admin::id()) {
 					$item['Logged_in_user_is_admin'] = true;
-					$item['Content_panel_organizer_href_start'] = htmlspecialchars(ze\link::absolute() . 'zenario/admin/organizer.php#zenario__content/panels/content/refiners/content_type//'.$row['type'].'//'.$item['Id']);
+					$item['Content_panel_organizer_href_start'] = htmlspecialchars(ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//'.$row['type'].'//'.$item['Id']);
 					
 				}
 				
@@ -807,7 +809,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			INNER JOIN ' . DB_PREFIX . 'categories c
 				ON l.category_id = c.id
 			WHERE l.equiv_id = ' . (int)$equivId . '
-			AND l.content_type = "' . ze\escape::sql($cType) . '"';
+			AND l.content_type = "' . ze\escape::asciiInSQL($cType) . '"';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			if ($row['public']) {
@@ -1016,7 +1018,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$mainLinkArr = [];
 		$Link_To_Download_Page = false;
 		$allIdsValue = '';
-		if ( isset($_POST['prepareDownloadData']) && ($_POST['prepareDownloadData'] ?? false) && $_POST['slotName'] == $this->slotName) {
+		if (!empty($_POST['prepareDownloadData']) && $_POST['slotName'] == $this->slotName) {
 			
 			$getIds = $_POST['documentIds'];
 			$zipFiles = [];
@@ -1158,6 +1160,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Show_Title' => (bool)$this->setting('show_headings'),
 			'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
 			'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists'),
+			'Show_Filename' => (bool) $this->setting('show_filename') && ze::in($this->setting('content_type'), 'all', 'document', 'picture'),
 			'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height'),
 			'Show_Category_Public' => (bool)$this->setting('show_category_name') && (bool)ze::setting('enable_display_categories_on_content_lists'),
 			'Local_File_Link_Text' => ze::setting('local_file_link_text') ? ze::setting('local_file_link_text') : 'Download',
@@ -1240,14 +1243,14 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$sql = '
 						SELECT id,name,parent_id
 						FROM ' . DB_PREFIX . 'categories
-						WHERE public = 1 And id IN (' . ze\escape::in($categoryIds, true) . ')';
+						WHERE public = 1 And id IN (' . ze\escape::in($categoryIds, 'numeric') . ')';
 				}
 				else{
 								
 					$sql = '
 						SELECT id,name,parent_id
 						FROM ' . DB_PREFIX . 'categories
-						WHERE id IN (' . ze\escape::in($categoryIds, true) . ')';
+						WHERE id IN (' . ze\escape::in($categoryIds, 'numeric') . ')';
 				}
 				$result = ze\sql::select($sql);
 			
@@ -1327,7 +1330,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					}
 				}
 				
-				$href = 'zenario/admin/organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tzip~k{"id"%3A"external_programs"}';
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tzip~k{"id"%3A"external_programs"}';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
 				
@@ -1342,11 +1345,20 @@ class zenario_content_list extends ze\moduleBaseClass {
 				
 				$categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
 				if (!$categoriesEnabled) {
+					$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//categories~.site_settings~tcategories~k{\"id\"%3A\"categories\"}' target='_blank'>site settings</a>";
+					
+					$categoriesSiteSettingPhrase = ze\admin::phrase(
+						'You must enable this option in your [[site_settings_link]] under "Categories".',
+						['site_settings_link' => $siteSettingsLink]
+					);
+
+					$fields['each_item/show_content_items_lowest_category']['side_note'] =
+					$fields['first_tab/show_category_name']['side_note'] =
+						$categoriesSiteSettingPhrase;
+					
 					$fields['each_item/show_content_items_lowest_category']['disabled'] = true;
-					$fields['each_item/show_content_items_lowest_category']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
 					$values['each_item/show_content_items_lowest_category'] = false;
 					$fields['first_tab/show_category_name']['disabled'] = true;
-					$fields['first_tab/show_category_name']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
 					$values['first_tab/show_category_name'] = false;
 				}
 				

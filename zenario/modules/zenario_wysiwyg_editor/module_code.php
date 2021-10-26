@@ -95,9 +95,8 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		switch ($path) {
 			case 'plugin_settings':
 				if (!$box['key']['isVersionControlled']) {
-					//Workaround for problems with absolute and relative URLs:
-						//First, convert all relative URLs to absolute URLs so Admins can always see the images
-					ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['first_tab']['fields']['html']);
+					//Try and ensure that we use relative URLs where possible
+					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['first_tab']['fields']['html']);
 				}
 				
 				break;
@@ -108,8 +107,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		switch ($path) {
 			case 'plugin_settings':
 				if (!$box['key']['isVersionControlled']) {
-					//Workaround for problems with absolute and relative URLs:
-						//Second, convert all absolute URLs to relative URLs when saving
+					//Try and ensure that we use relative URLs where possible
 					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['first_tab']['fields']['html']);
 				}
 				

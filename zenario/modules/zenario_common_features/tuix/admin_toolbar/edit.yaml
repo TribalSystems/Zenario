@@ -198,7 +198,7 @@ sections:
                     this version because a draft exists.
 
             lock:
-                parent: lock_dropdown
+                parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
@@ -209,11 +209,9 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Are you sure that you wish to lock the draft version of this content item?
-                            
-                            No other administrator will be able to edit it until it is unlocked.
-                            
-                            (The item will be automatically unlocked when the draft is published or deleted).
+                            Lock this draft?
+
+                            No other administrator will be able to edit it until it is unlocked, published or deleted.
                         button_message: Lock
                         cancel_button_message: Cancel
                         message_type: warning

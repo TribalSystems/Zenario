@@ -19,6 +19,11 @@
 	opacity:1;
 }
 
+.zenario_visitor_tooltip.ui-widget-shadow {
+	filter: Alpha(Opacity=100); /* support: IE8 */
+	opacity:1 !important;
+}
+
 .zenario_visitor_tooltip.tooltip_top_center {
 	margin-top:5px;
 }

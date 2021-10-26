@@ -150,7 +150,7 @@ zenario__layouts:
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create a layout
+                    label: Create a layout with Gridmaker
                     hide_on_refiner:
                         module_usage: true
                         plugin_instance_usage: true
@@ -170,11 +170,11 @@ zenario__layouts:
                     label: Help
                     help:
                         message: |
-                            Every content item relies on a layout. Layouts define the HTML of the finished pages, the positions of slots, and which plugins are in the slots.
+                            Layouts define the layout of content items (web pages): the sizes and positions of slots, and which plugins are in which slots.
                             
-                            This panel lists the layouts that are already defined for your site.
+                            Zenario uses the 960gs grid system, which means that layouts are based on a number of columns (often 12, but this can be adjusted), with each slot spanning a certain number of columns.
                             
-                            To create a layout using the gridmaker interactive tool, click the "Create" button. This will allow you to define a 960 type grid, and to specify the positions of slots on the layout.
+                            There's an interactive tool called Gridmaker. Click the "Create" button to make a new layout, or select an existing one and click "Edit with Gridmaker". Gridmaker lets you specify the type of layout, to add slots, groupings of slots, grid-breaks, whitespace and other features.
             
             inline_buttons:
                 layout:

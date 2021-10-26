@@ -51,6 +51,10 @@ ul.zenario_grids {
 	height: auto;
 }
 
+.zenario_overflow_wrap > ul.zenario_grids:first-child {
+	min-height:400px;
+}
+
 li.zenario_grid_add,
 li.zenario_grid_cell {
 	position:relative;
@@ -1237,6 +1241,15 @@ div.zenario_grid_download_bg {
 		padding:10px 10px 80px;
 	}
 	
+	#colorbox.zenario_grid_box.zenario_grid_rename_slot_box .content_wrap {
+		height:330px;
+		padding-bottom:10px;
+	}
+	
+	#colorbox.zenario_grid_box.zenario_grid_rename_slot_box .content_wrap #zenario_grid_error {
+		padding-top:5px;
+	}
+	
 	#colorbox.zenario_grid_add_cell_box .content_wrap {
 		padding:20px 15px 10px;
 	}
@@ -1308,6 +1321,14 @@ div.zenario_grid_download_bg {
 	.zenario_grid_add_cell_box a.zenario_grid_add_grid_break_with_slot,
 	.zenario_grids a.ui-draggable.zenario_grid_add_grid_break_with_slot {
 		background:url('../admin/images/grid_maker/add-slot-outside-grid-placeholder.gif') no-repeat 0 0;
+	}
+	
+	.zenario_grid_add_cell_box a,
+	.zenario_grids a.ui-draggable {
+		cursor: move; /* fallback if grab cursor is unsupported */
+    	cursor: grab;
+    	cursor: -moz-grab;
+    	cursor: -webkit-grab;
 	}
 	
 	/*

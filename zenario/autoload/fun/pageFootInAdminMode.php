@@ -60,7 +60,7 @@ if ($includeOrganizer) {
 		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
 			echo '
-'. $scriptTag. ' src="https://maps.google.com/maps/api/js?libraries=geometry&key=' , urlencode(\ze::setting('google_maps_api_key')) , '"></script>';
+'. $scriptTag. ' src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' , urlencode(\ze::setting('google_maps_api_key')) , '"></script>';
 		}
 	}
 	

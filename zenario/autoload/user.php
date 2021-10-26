@@ -951,7 +951,7 @@ class user {
 						if (\ze\sql::numRows('
 							SELECT 1
 							FROM '. DB_PREFIX. 'user_country_link
-							WHERE country_id = \''. \ze\escape::sql($countryId). '\'
+							WHERE country_id = \''. \ze\escape::asciiInSQL($countryId). '\'
 							  AND user_id = '. (int) $authenticatingUserId
 						)) {
 							

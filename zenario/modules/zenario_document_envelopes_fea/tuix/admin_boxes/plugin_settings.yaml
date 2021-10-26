@@ -73,7 +73,7 @@ plugin_settings:
                         name: microtemplate
                         use_value_for_plugin_name: 1
                     visible_if: 
-                        lib.modeIn: list_document_envelopes
+                        lib.modeIn: list_document_envelopes, list_files_in_document_envelope
                     label: Microtemplate
                     type: select
                     value: ''
@@ -238,6 +238,15 @@ plugin_settings:
                         visible_if: lib.modeIn('list_document_envelopes', 'view_document_envelope') && lib.value('show_thumbnail_image') && zenarioAB.value("use_fallback_image")
                     validation:
                         required_if_not_hidden: Please select an image.
+                show_pin_if_pinned:
+                    grouping: show_columns
+                    indent: 1
+                    plugin_setting:
+                        name: show_pin_if_pinned
+                    label: 'Show pin if pinned'
+                    type: checkbox
+                    visible_if:
+                        lib.modeIn: list_document_envelopes
                 show_title:
                     grouping: display_options
                     visible_if:
@@ -403,6 +412,22 @@ plugin_settings:
                     label: Show File Formats search drop-down
                     type: checkbox
                     value: true
+                type_of_display:
+                    grouping: search
+                    indent: 1
+                    visible_if: (lib.modeIn('list_document_envelopes') && !lib.value('enable.search_box'))
+                    plugin_setting:
+                        name: type_of_display
+                    label: "Type of display:"
+                    type: select
+                    value: show_all
+                    values:
+                        show_only_pinned:
+                            label: "Show only pinned items"
+                            ord: 1
+                        show_all:
+                            label: "Show all items"
+                            ord: 2
                 
                 #Other options
                 enable_mass_actions:

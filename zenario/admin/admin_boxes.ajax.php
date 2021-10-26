@@ -243,7 +243,7 @@ if ($debugMode) {
 		
 		if (ze\priv::check('_PRIV_MANAGE_DATASET')) {
 			$tags['configure'] = [
-				'link' => 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//'. $dataset['id']. '//',
+				'link' => 'organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//'. $dataset['id']. '//',
 				'tooltip' => ze\admin::phrase('This box is editable, go to [[label]] dataset editor', $dataset)
 			];
 		}
@@ -521,7 +521,7 @@ if ($debugMode) {
 	
 	if ($requestedPath == 'zenario_content' && ze\priv::check('_PRIV_EDIT_CONTENT_TYPE')) {
 		$tags['configure'] = [
-				'link' => 'zenario/admin/organizer.php#zenario__content/panels/content_types//' . htmlspecialchars($tags['key']['cType']) . '~.zenario_content_type_details~tdetails~k{"id":"' . htmlspecialchars($tags['key']['cType']) . '"}',
+				'link' => 'organizer.php#zenario__content/panels/content_types//' . htmlspecialchars($tags['key']['cType']) . '~.zenario_content_type_details~tdetails~k{"id":"' . htmlspecialchars($tags['key']['cType']) . '"}',
 				'tooltip' => ze\admin::phrase('Edit settings for this content type')
 			];
 	}

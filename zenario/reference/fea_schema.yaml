@@ -191,6 +191,16 @@ additionalProperties:
                 A message like "[[count]] items" which will show the number of items in a list.
                 Will only show when there is more than 1 item.
         
+        scroll_after_save:
+            type: boolean
+            description: >
+                Whether this plugin should scroll to the top of the slot after saving.
+        
+        scroll_to_top_of_slot_on_format_or_validate:
+            type: boolean
+            description: >
+                Whether this plugin should scroll to the top of the slot on a "format" or "validate" event.
+        
         tab:
             type: *stringy
             modified_by_cms: true

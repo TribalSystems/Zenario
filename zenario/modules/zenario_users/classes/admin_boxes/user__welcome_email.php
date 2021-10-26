@@ -40,7 +40,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 		
 		$fields['details/email_to_send']['value'] = ze::setting('default_activation_email_template');
 
-		$siteSettingsLink = "<a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
+		$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
 		$fields['details/email_to_send']['note_below'] = ze\admin::phrase(
 			'The default activation email template can be changed in the [[site_settings_link]].',
 			['site_settings_link' => $siteSettingsLink]

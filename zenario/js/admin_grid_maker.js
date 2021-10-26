@@ -591,6 +591,24 @@ zenarioGM.drawLinks = function() {
 };
 
 
+zenarioGM.confirmDeleteSlot = function(slot, doDelete) {
+	
+	var url = URLBasePath + 'zenario/ajax.php?moduleClassName=zenario_common_features&method_call=handleAJAX',
+		requests = {
+			removeSlot: 1,
+			level: 2,
+			slotName: slot.oName,
+			layoutId: zenarioGM.layoutId
+		};
+	
+	zenario.ajax(url + zenario.urlRequest(requests)).after(function(message) {
+		
+		zenarioA.floatingBox(message, zenarioA.phrase.gridDelete, 'warning', false, false, true, undefined, doDelete);
+	});
+};
+
+
+
 //Allow an Admin to save a grid design to the database
 zenarioGM.save = function(saveAs) {
 	

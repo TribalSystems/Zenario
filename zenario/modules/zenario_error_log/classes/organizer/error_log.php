@@ -62,7 +62,7 @@ class zenario_error_log__organizer__error_log extends ze\moduleBaseClass {
 					break;
 				
 			}
-		$link = ze\link::absolute() .'zenario/admin/organizer.php#zenario__administration/panels/site_settings//zenario_error_log__site_settings_group~.site_settings~tdetails~k{"id"%3A"zenario_error_log__site_settings_group"}';
+		$link = ze\link::absolute(). 'organizer.php#zenario__administration/panels/site_settings//zenario_error_log__site_settings_group~.site_settings~tdetails~k{"id"%3A"zenario_error_log__site_settings_group"}';
 		$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View error log settings</a>";
 		$panel['notice']['show'] = true;
 		$panel['notice']['message'] = $accessLogDuration.".";

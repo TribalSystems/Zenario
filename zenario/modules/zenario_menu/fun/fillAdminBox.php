@@ -57,6 +57,23 @@ switch ($path) {
 				}
 			}
 		}
+
+		//The features below are currently only used in Menu (Vertical) module,
+		//which extends this one.
+		if ($box['module_class_name'] != 'zenario_menu_vertical') {
+			//Custom title feature...
+			unset($box['tabs']['first_tab']['fields']['show_custom_title']);
+			unset($box['tabs']['first_tab']['fields']['title_tags']);
+			unset($box['tabs']['first_tab']['fields']['custom_title']);
+
+			//... open/close menu...
+			unset($box['tabs']['first_tab']['fields']['enable_open_close']);
+			unset($box['tabs']['first_tab']['fields']['open_close_initial_state']);
+
+			//... and full width view.
+			unset($box['tabs']['first_tab']['fields']['menu_number_of_levels']['values']['1_full_width']);
+			unset($box['tabs']['first_tab']['fields']['number_of_columns_full_width']);
+		}
 		
 		break;
 }

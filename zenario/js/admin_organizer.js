@@ -2744,6 +2744,26 @@ zenarioO.clearSearch = function() {
 
 
 
+zenarioO.selectionDisplayType = function() {
+	
+	if (zenarioO.multipleSelectEnabled) {
+		return 'checkbox';
+	}
+	
+	switch (zenarioO.tuix && zenarioO.tuix.item && zenarioO.tuix.item.selection_display_type) {
+		case 'radio':
+		case 'radios':
+			return 'radio';
+		
+		case 'checkbox':
+		case 'checkboxes':
+			return 'checkbox';
+		
+		default:
+			return window.zenarioOSelectMode? 'radio' : 'checkbox';
+	}
+};
+
 zenarioO.toggleAllItems = function() {
 	if (zenarioO.allItemsSelected()) {
 		zenarioO.deselectAllItems();
@@ -3836,15 +3856,8 @@ zenarioO.setViewOptions = function() {
 		post_field_html: '</div>'
 	};
 	
-	fields.sortcol__title_ = {
-		ord: -1,
-		same_row: true,
-		pre_field_html: '<div class="organizer_colPickerTitle_sort">',
-		snippet: {html: phrase.sort},
-		post_field_html: '</div>'
-	};
-	
 	var c, colNo, column,
+		alwaysShown,
 		lastCol = false,
 		lastColName = false,
 		prefs = zenarioO.prefs[zenarioO.path] || {};
@@ -3855,6 +3868,8 @@ zenarioO.setViewOptions = function() {
 		if ((column = zenarioO.tuix.columns[c])
 		 && (zenarioO.isShowableColumn(c, false))) {
 			
+			alwaysShown = zenarioO.view_mode == 'grid' || engToBoolean(column.always_show);
+			
 			fields['start_of_row__' + c] = {
 				ord: 100 * colNo,
 				full_width: true,
@@ -3864,14 +3879,17 @@ zenarioO.setViewOptions = function() {
 			fields['showcol_' + c] = {
 				ord: 100 * colNo + 4,
 				same_row: true,
-				type: 'toggle',
+				pre_field_html: '<div class="zen_col_show_hide' + (alwaysShown? ' alwaysShown' : '') + '">',
+				type: 'checkbox',
 				onclick: "zenarioO.showHideColumn(!" + engToBoolean(zenarioO.shownColumns[c]) + ", '" + htmlspecialchars(c) + "'); zenarioO.setViewOptions();",
-				value: zenarioO.shownColumns[c]? 'Hide' : 'Show',
-				title: phrase.showCol,
-				'class': (zenarioO.view_mode == 'grid' ||
-						 engToBoolean(column.always_show)?
-						 	'notused ' : '') + (zenarioO.shownColumns[c]? 'zen_col_hidden' : 'zen_col_shown')
+				value: zenarioO.shownColumns[c],
+				'class':
+					'zen_col_show_hide-checkbox ' +
+					(alwaysShown? 'alwaysShown ' : '') +
+					(zenarioO.shownColumns[c]? 'zen_col_hidden' : 'zen_col_shown'),
+				post_field_html: '<label class="zen_col_show_hide-label" for="' + htmlspecialchars('showcol_' + c) + '"></label></div>',
 			};
+			
 			
 			if (zenarioO.showCSVInViewOptions) {
 				delete fields['showcol_' + c].onclick;
@@ -3897,11 +3915,11 @@ zenarioO.setViewOptions = function() {
 					value: value,
 					'class': zenarioO.view_mode == 'grid' ||
 							 engToBoolean(column.always_show)?
-								'notused' : ''
+								'alwaysShown' : ''
 				};
 			}
 			
-			fields['sortcol_' + c] = {
+			fields['showcol_label_' + c] = {
 				ord: 100 * colNo + 6,
 				same_row: true,
 				snippet: {
@@ -4797,7 +4815,7 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 							'"';
 					
 					} else if (item.navigation_path) {
-						href = ' href="' + URLBasePath + 'zenario/admin/organizer.php#/' + htmlspecialchars(item.navigation_path) + '" target="_blank"';
+						href = ' href="' + URLBasePath + 'organizer.php#/' + htmlspecialchars(item.navigation_path) + '" target="_blank"';
 					
 					} else {
 						isSKLink = false;
@@ -5396,7 +5414,7 @@ zenarioO.setTopRightButtons = function() {
 	}
 	
 	//Add parent/child relationships
-	zenarioT.setButtonKin(buttons);
+	zenarioT.setKin(buttons);
 	
 	$('#organizer_top_right_buttons').html(zenarioT.microTemplate('zenario_organizer_top_right_button', buttons));
 	
@@ -5549,7 +5567,7 @@ zenarioO.getQuickFilters = function() {
 	}
 	
 	//Add parent/child relationships
-	zenarioT.setButtonKin(buttons);
+	zenarioT.setKin(buttons);
 	
 	return buttons;
 };
@@ -5581,7 +5599,7 @@ zenarioO.getCollectionButtons = function(m) {
 	}
 	
 	//Add parent/child relationships
-	zenarioT.setButtonKin(buttons);
+	zenarioT.setKin(buttons);
 	
 	m.collectionButtons = buttons;
 };
@@ -5752,7 +5770,7 @@ zenarioO.getItemButtons = function(m) {
 	}
 	
 	//Add parent/child relationships
-	zenarioT.setButtonKin(buttons);
+	zenarioT.setKin(buttons);
 	
 	
 	m.itemButtons = buttons;

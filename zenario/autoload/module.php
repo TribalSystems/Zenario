@@ -50,7 +50,7 @@ class module {
 	
 		if ($fetchBy == 'class' || $fetchBy == 'name') {
 			$sql .= "
-				WHERE class_name = '" . \ze\escape::sql($idOrName) . "'";
+				WHERE class_name = '" . \ze\escape::asciiInSQL($idOrName) . "'";
 	
 		} else {
 			$sql .= "
@@ -102,7 +102,7 @@ class module {
 		return (bool) \ze\sql::fetchRow("
 			SELECT 1
 			FROM ". DB_PREFIX. "modules
-			WHERE class_name = '". \ze\escape::sql($className). "'
+			WHERE class_name = '". \ze\escape::asciiInSQL($className). "'
 			  AND status IN ('module_running', 'module_is_abstract')"
 		);
 	}
@@ -161,7 +161,7 @@ class module {
 			$module = \ze\sql::fetchAssoc("
 				SELECT id, class_name, status
 				FROM ". DB_PREFIX. "modules
-				WHERE class_name = '". \ze\escape::sql($module). "'
+				WHERE class_name = '". \ze\escape::asciiInSQL($module). "'
 				LIMIT 1");
 		}
 	
@@ -272,7 +272,7 @@ class module {
 			LEFT OUTER JOIN ". DB_PREFIX. "modules AS m
 			   ON d.dependency_class_name = m.class_name
 			  AND m.status IN ('module_running', 'module_is_abstract')
-			WHERE d.module_class_name = '". \ze\escape::sql($moduleName). "'
+			WHERE d.module_class_name = '". \ze\escape::asciiInSQL($moduleName). "'
 			  AND `type` = 'dependency'";
 	
 		return \ze\sql::fetchAssocs($sql);
@@ -323,8 +323,8 @@ class module {
 		$sql = "
 			SELECT dependency_class_name
 			FROM ".  DB_PREFIX. "module_dependencies
-			WHERE module_class_name = '". \ze\escape::sql($moduleClassName). "'
-			  AND `type` = '". \ze\escape::sql($type). "'
+			WHERE module_class_name = '". \ze\escape::asciiInSQL($moduleClassName). "'
+			  AND `type` = '". \ze\escape::asciiInSQL($type). "'
 			LIMIT 1";
 	
 		$result = \ze\sql::select($sql);
@@ -435,7 +435,7 @@ class module {
 			$module = \ze\sql::fetchAssoc("
 				SELECT id, class_name, status
 				FROM ". DB_PREFIX. "modules
-				WHERE class_name = '". \ze\escape::sql($module). "'
+				WHERE class_name = '". \ze\escape::asciiInSQL($module). "'
 				  ". ($mustBeRunning? "AND status IN ('module_running', 'module_is_abstract')" : ""). "
 				LIMIT 1");
 		}
@@ -509,7 +509,7 @@ class module {
 		$sql = '
 			SELECT id
 			FROM ' . DB_PREFIX . 'modules
-			WHERE class_name = "' . \ze\escape::sql($className) . '"';
+			WHERE class_name = "' . \ze\escape::asciiInSQL($className) . '"';
 		$result = \ze\sql::select($sql);
 		$row = \ze\sql::fetchAssoc($result);
 		$moduleId = $row['id'];

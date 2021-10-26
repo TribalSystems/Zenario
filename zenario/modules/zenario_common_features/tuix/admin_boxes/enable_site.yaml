@@ -65,8 +65,8 @@ zenario_enable_site:
                     type: editor
                     dont_trim: true
                     editor_options:
-                        convert_urls: false
-                        relative_urls: false
+                        convert_urls: true
+                        relative_urls: true
                     rows: 4
                     cols: 80
                 

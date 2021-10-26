@@ -138,7 +138,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				}
 
 				if ($this->setting('show_location_name') && ze::setting('zenario_ctype_event__location_field') != 'hidden') {
-					if (ze::setting('zenario_ctype_event__location_text')) {
+					if (ze::setting('zenario_ctype_event__location_text') && $row['location']) {
 						$eventRow['Event_location_name'] = $row['location'];
 					} elseif (($locationId = $row['location_id'] ?? false) 
 						&& ze\module::inc('zenario_location_manager')
@@ -148,11 +148,11 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					}
 				}
 				
-				if ($this->setting('show_location_city')) {
+				if ($this->setting('show_location_city') && $row['location_id']) {
 					$eventRow['Event_location_city'] = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 'city', ['id' => $row['location_id']]);
 				}
 				
-				if ($this->setting('show_location_country')) {
+				if ($this->setting('show_location_country') && $row['location_id']) {
 					$countryId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 'country_id', ['id' => $row['location_id']]);
 					$eventRow['Event_location_country'] = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => $countryId]);
 				}
@@ -477,13 +477,13 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		$rv = '';
 		switch($periodName){
 			case 'today':
-				$rv = $this->phrase("_TODAY");
+				$rv = $this->phrase("Today");
 				break;
 			case 'week':
 				if ((int)$periodShift) {
-					$rv = $this->phrase("_NEXT_WEEK");
+					$rv = $this->phrase("Next week");
 				} else {
-					$rv = $this->phrase("_THIS_WEEK");
+					$rv = $this->phrase("This week");
 				}
 				break;
 			case 'month_eq':
@@ -499,18 +499,18 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$sql = "SELECT IF(YEAR(" . $this->displayForAsSQLDateString() . ")=YEAR('" . $periodStart ."'),'[[_MONTH_LONG_%m]]','[[_MONTH_LONG_%m]] %Y') AS format";
 				$result = ze\sql::select($sql);
 				if ($row = ze\sql::fetchAssoc($result)){
-					$rv = $this->phrase("_MONTH_ONWARDS", ['month_name' => ze\date::format($periodStart,$row['format'])] );
+					$rv = $this->phrase("[[month_name]] onwards", ['month_name' => ze\date::format($periodStart,$row['format'])] );
 				}
 				break;
 			case 'year':
 				if ((int)$periodShift) {
-					$rv = $this->phrase("_NEXT_YEAR");
+					$rv = $this->phrase("Next year");
 				} else {
-					$rv = $this->phrase("_THIS_YEAR");
+					$rv = $this->phrase("This year");
 				}
 				break;
 			case 'all_time':
-				$rv = $this->phrase("_THIS_YEAR");
+				$rv = $this->phrase("This year");
 				break;
 		}
 		return $rv;
@@ -572,7 +572,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					if ($this->setting('language_selection') == 'visitor') {
 						//Only return content in the current language
 						$sql .= "
-						  AND c.language_id = '". ze\escape::sql(ze::$langId). "'";
+						  AND c.language_id = '". ze\escape::asciiInSQL(ze::$langId). "'";
 					} elseif ($this->setting('language_selection') == 'specific_languages') { 
 						//Return content in languages selected by admin
 						$arr = [''];

@@ -217,7 +217,7 @@ function renamePluginSetting($moduleNames, $oldPluginSettingName, $newPluginSett
 			  AND ps.egg_id = 0
 			  AND ps.name = '". ze\escape::sql($oldPluginSettingName). "'
 			SET ps.name = '". ze\escape::sql($newPluginSettingName). "'
-			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'sql'). ")";
+			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")";
 		ze\sql::update($sql);
 	}
 
@@ -231,7 +231,7 @@ function renamePluginSetting($moduleNames, $oldPluginSettingName, $newPluginSett
 			  AND ps.egg_id = np.id
 			  AND ps.name = '". ze\escape::sql($oldPluginSettingName). "'
 			SET ps.name = '". ze\escape::sql($newPluginSettingName). "'
-			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'sql'). ")";
+			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")";
 		ze\sql::update($sql);
 	}
 }

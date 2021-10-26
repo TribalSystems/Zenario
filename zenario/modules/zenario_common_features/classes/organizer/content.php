@@ -62,8 +62,8 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				//Set the refiner SQL to show content items of the requested
 				//type and language.
 				$panel['refiners']['add_translation_to_chain']['sql'] = '
-					  AND c.type = "'. ze\escape::sql($equivType). '"
-					  AND c.language_id = "'. ze\escape::sql($requestedLangId). '"
+					  AND c.type = "'. ze\escape::asciiInSQL($equivType). '"
+					  AND c.language_id = "'. ze\escape::asciiInSQL($requestedLangId). '"
 					  AND c.equiv_id != '. (int) $equivId;
 				
 				//Add a column to display which might be collisions
@@ -79,7 +79,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 						SELECT language_id
 						FROM '. DB_PREFIX. 'content_items AS existing_translations
 						WHERE existing_translations.equiv_id = '. (int) $equivId. '
-						  AND existing_translations.type = "'. ze\escape::sql($equivType). '"
+						  AND existing_translations.type = "'. ze\escape::asciiInSQL($equivType). '"
 					  )';
 			}
 		}
@@ -88,7 +88,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$requestedContentType = $refinerId ?: ($_REQUEST['parent__id'] ?? '');
 
 			if ($requestedContentType) {
-				$pinningEnabled = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => ze\escape::sql($requestedContentType)]);
+				$pinningEnabled = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $requestedContentType]);
 
 				if (!$pinningEnabled) {
 					unset($panel['inline_buttons']['pinned']);
@@ -239,30 +239,6 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			//Note down which content types have categories
 			$panel['custom__content_types_with_categories'] =
 				ze\ray::valuesToKeys(ze\row::getValues('content_types', 'content_type_id', ['enable_categories' => 1]));
-			
-			//Create page preview buttons
-			$pagePreviews = ze\row::getAssocs('page_preview_sizes', ['width', 'height', 'description', 'ordinal', 'is_default'], [], 'ordinal');
-			foreach ($pagePreviews as $pagePreview) {
-				$width = $pagePreview['width'];
-				$height = $pagePreview['height'];
-				$description = $pagePreview['description'];
-	
-				$pagePreviewButton = [
-					'parent' => 'page_preview_sizes',
-					'label' => $width.' × '.$height.', '.$description,
-					'onclick' => "zenarioA.showPagePreview(". (int) $width. ", ". (int) $height. ", '". ze\escape::js($description). "')"
-				];
-			
-				if ($pagePreview['is_default']) {
-					$pagePreviewButton['label'] .= ' (Default)';
-					 $panel['inline_buttons']['inspect']['custom_width'] = $width;
-					 $panel['inline_buttons']['inspect']['custom_height'] = $height;
-					 $panel['inline_buttons']['inspect']['custom_description'] = $description;
-				}
-				$panel['item_buttons']['page_preview_'.$pagePreview['ordinal'].'_'.$width.'x'.$height] = $pagePreviewButton;
-			}
-		} else {
-			unset($panel['item_buttons']['page_preview_sizes']);
 		}
 		
 		$numLanguages = ze\lang::count();
@@ -363,7 +339,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			
 			if ($panel['key']['cType']) {
 				$sql .= "
-				  AND content_type = '". ze\escape::sql($panel['key']['cType']). "'";
+				  AND content_type = '". ze\escape::asciiInSQL($panel['key']['cType']). "'";
 			}
 			
 			$sql .= "
@@ -1041,9 +1017,9 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$adminDetails = ze\admin::details($contentInfo['lock_owner_id']);
 					
 					if (ze\priv::check(false, $cID, $cType)) {
-						echo ze\admin::phrase('Are you sure that you wish to unlock on this content item?');
+						echo ze\admin::phrase('Unlock this draft?');
 					} else {
-						echo ze\admin::phrase('Are you sure that you wish to force-unlock on this content item?');
+						echo ze\admin::phrase('Are you sure that you wish to force-unlock this draft?');
 					}
 					
 					echo ' ';
@@ -1056,7 +1032,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 						$mrg['publicationTime'] = ze\admin::formatDateTime($date, 'vis_date_format_long');
 						echo ze\admin::phrase('It has been scheduled by [[first_name]] [[last_name]] to be published on [[publicationTime]].', $mrg);
 					} else {
-						echo ze\admin::phrase('Any administrator who has authoring permission will be able to make changes to it.');
+						echo ze\admin::phrase('Other administrators will then be able to edit it.');
 					}
 				}
 			}

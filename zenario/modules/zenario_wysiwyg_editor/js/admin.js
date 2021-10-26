@@ -135,7 +135,7 @@ directionality	ltr rtl
 		allow_script_urls: true,
 		document_base_url: URLBasePath,
 		convert_urls: true,
-		relative_urls: true,
+		relative_urls: !zenario.slashesInURL,
 		
 		
 		style_formats: zenarioA.skinDesc.style_formats,

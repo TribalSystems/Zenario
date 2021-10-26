@@ -76,6 +76,7 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 		$sql = '
 			SELECT
 				de.thumbnail_id,
+				de.pinned,
 				de.id,
 				de.code,
 				de.name,
@@ -135,86 +136,91 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 		//Search box
 		$search = ze::request('search');
 		$fileFormat = ze::request('file_format');
-		if ($this->checkThingEnabled('search_box') && (((count($this->customDatasetFieldIds) > 0)) || $search || $tags['key']['language_id'])) {
-			$searchSubquery = $languageSubquery = $fileFormatSubquery = $customFiltersSubquery = '';
-			
-			$or = $and = '';
-			if ($search) {
-				$searchSubquery .= '(';
+		if ($this->checkThingEnabled('search_box')) {
+			if (count($this->customDatasetFieldIds) > 0 || $search || $tags['key']['language_id']) {
+				$searchSubquery = $languageSubquery = $fileFormatSubquery = $customFiltersSubquery = '';
 				
-				//Split the search string along word boundaries
-				$searchTerms = preg_split("/[\s,]+/", $search);
-				foreach ($searchTerms as $searchTerm) {
-					foreach (['id', 'code', 'name', 'description', 'keywords'] as $columnName) {
-						$searchSubquery .= '
-							' . $or . 'de.' . ze\escape::sql($columnName) . ' LIKE "%' . ze\escape::sql($searchTerm) . '%"';
-				
-						$or = 'OR ';
-					}
-				}
-				
-				$searchSubquery .= ')';
-				$and = 'AND ';
-			}
-			
-			//Show envelopes in the specified language, but also multilingual ones.
-			if ($tags['key']['language_id']) {
-				$languagesIn = '"' . ze\escape::sql($tags['key']['language_id']) . '"';
-				
-				$languageFlaggedAsMultipleLanguages = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelope_languages', 'language_id', ['multiple_languages_flag' => true]);
-				if ($languageFlaggedAsMultipleLanguages && $tags['key']['language_id'] != $languageFlaggedAsMultipleLanguages) {
-					$languagesIn .= ', "' . ze\escape::sql($languageFlaggedAsMultipleLanguages) . '"';
-				}
-				$languageSubquery .= '
-					' . $and . 'de.language_id IN (' . $languagesIn . ')';
-				
-				$and = 'AND ';
-				$or = 'OR ';
-			}
-			
-			if ($fileFormat) {
-				$fileFormatSubquery .= '
-					' . $and . 'die.file_format = "' . ze\escape::sql($fileFormat) . '"';
-		
-				$and = 'AND ';
-				$or = 'OR ';
-			}
-			
-			if (count($this->customDatasetFieldIds) > 0
-			 && (
-				 ($tags['key']['custom_field_1'] && $this->setting('make_custom_field_1_searchable'))
-				 || ($tags['key']['custom_field_2'] && $this->setting('make_custom_field_2_searchable'))
-				 || ($tags['key']['custom_field_3'] && $this->setting('make_custom_field_3_searchable'))
-			 )
-			) {
-				$customFiltersSubquery .= "
-					" . $and;
-				$and = '';
-				$or = '';
-				foreach ($this->customDatasetFieldIds as $customDatasetFieldIdKey => $customDatasetFieldId) {
-					if (!empty($tags['key'][$customDatasetFieldIdKey]) && $this->setting('make_' . $customDatasetFieldIdKey . '_searchable')) {
-						$customFiltersSubquery .= $or;
-						$datasetField = $this->datasetAllCustomFields[$customDatasetFieldId];
-						if ($datasetField && $datasetField['db_column']) {
-							if ($datasetField['is_system_field']) {
-								$customFiltersSubquery .= 'de.' . ze\escape::sql($datasetField['db_column']) . ' LIKE "%' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . '%"';
-							} elseif ($datasetField['type'] == "checkboxes") {
-								$customFiltersSubquery .= 'decdvl.value_id IN (' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . ')';
-							} else {
-								$customFiltersSubquery .= 'decd.' . ze\escape::sql($datasetField['db_column']) . ' = "' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . '"';
-							}
+				$or = $and = '';
+				if ($search) {
+					$searchSubquery .= '(';
+					
+					//Split the search string along word boundaries
+					$searchTerms = preg_split("/[\s,]+/", $search);
+					foreach ($searchTerms as $searchTerm) {
+						foreach (['id', 'code', 'name', 'description', 'keywords'] as $columnName) {
+							$searchSubquery .= '
+								' . $or . 'de.' . ze\escape::sql($columnName) . ' LIKE "%' . ze\escape::sql($searchTerm) . '%"';
+					
+							$or = 'OR ';
 						}
-						$customFiltersSubquery .= ' ';
-						$and = 'AND ';
-						$or = 'OR ';
+					}
+					
+					$searchSubquery .= ')';
+					$and = 'AND ';
+				}
+				
+				//Show envelopes in the specified language, but also multilingual ones.
+				if ($tags['key']['language_id']) {
+					$languagesIn = '"' . ze\escape::sql($tags['key']['language_id']) . '"';
+					
+					$languageFlaggedAsMultipleLanguages = ze\row::get(ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelope_languages', 'language_id', ['multiple_languages_flag' => true]);
+					if ($languageFlaggedAsMultipleLanguages && $tags['key']['language_id'] != $languageFlaggedAsMultipleLanguages) {
+						$languagesIn .= ', "' . ze\escape::sql($languageFlaggedAsMultipleLanguages) . '"';
+					}
+					$languageSubquery .= '
+						' . $and . 'de.language_id IN (' . $languagesIn . ')';
+					
+					$and = 'AND ';
+					$or = 'OR ';
+				}
+				
+				if ($fileFormat) {
+					$fileFormatSubquery .= '
+						' . $and . 'die.file_format = "' . ze\escape::sql($fileFormat) . '"';
+			
+					$and = 'AND ';
+					$or = 'OR ';
+				}
+				
+				if (count($this->customDatasetFieldIds) > 0
+				&& (
+					($tags['key']['custom_field_1'] && $this->setting('make_custom_field_1_searchable'))
+					|| ($tags['key']['custom_field_2'] && $this->setting('make_custom_field_2_searchable'))
+					|| ($tags['key']['custom_field_3'] && $this->setting('make_custom_field_3_searchable'))
+				)
+				) {
+					$customFiltersSubquery .= "
+						" . $and;
+					$and = '';
+					$or = '';
+					foreach ($this->customDatasetFieldIds as $customDatasetFieldIdKey => $customDatasetFieldId) {
+						if (!empty($tags['key'][$customDatasetFieldIdKey]) && $this->setting('make_' . $customDatasetFieldIdKey . '_searchable')) {
+							$customFiltersSubquery .= $or;
+							$datasetField = $this->datasetAllCustomFields[$customDatasetFieldId];
+							if ($datasetField && $datasetField['db_column']) {
+								if ($datasetField['is_system_field']) {
+									$customFiltersSubquery .= 'de.' . ze\escape::sql($datasetField['db_column']) . ' LIKE "%' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . '%"';
+								} elseif ($datasetField['type'] == "checkboxes") {
+									$customFiltersSubquery .= 'decdvl.value_id IN (' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . ')';
+								} else {
+									$customFiltersSubquery .= 'decd.' . ze\escape::sql($datasetField['db_column']) . ' = "' . ze\escape::sql($tags['key'][$customDatasetFieldIdKey]) . '"';
+								}
+							}
+							$customFiltersSubquery .= ' ';
+							$and = 'AND ';
+							$or = 'OR ';
+						}
 					}
 				}
+				
+				if ($searchSubquery || $languageSubquery || $fileFormatSubquery || $customFiltersSubquery) {
+					$sql .= '
+						AND (' . $searchSubquery . $languageSubquery . $fileFormatSubquery . $customFiltersSubquery . ')';
+				}
 			}
-			
-			if ($searchSubquery || $languageSubquery || $fileFormatSubquery || $customFiltersSubquery) {
-				$sql .= '
-					AND (' . $searchSubquery . $languageSubquery . $fileFormatSubquery . $customFiltersSubquery . ')';
-			}
+		} elseif ($this->setting('type_of_display') == 'show_only_pinned') {
+			$sql .= '
+				AND de.pinned = 1';
 		}
 		
 		return $sql;
@@ -228,6 +234,10 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 	protected function populateItemsOrderBy($path, &$tags, &$fields, &$values) {
 		$sql = '
 			ORDER BY ';
+		
+		if ($this->setting('type_of_display') == 'show_only_pinned') {
+			$sql .= 'de.last_edited DESC, de.created DESC, ';
+		}
 		
 		$desc = $this->sortDesc($tags);
 		switch ($this->sortCol($tags)) {
@@ -257,12 +267,20 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 		
 		$item['created'] = ze\date::formatDateTime($item['created'], '_MEDIUM');
 		
+		//Thumbnail logic: try to use the envelope's thumbnail if available...
 		if ($item['thumbnail_id']) {
 			$item['thumbnail_id'] = $this->getImageAnchor($item['thumbnail_id']);
+		//... or the fallback image if set.
 		} elseif ($this->setting('use_fallback_image')) {
 			$item['thumbnail_id'] = $this->getImageAnchor($this->setting('fallback_image'));
 		} else {
 			unset($item['thumbnail_id']);
+		}
+
+		//If either the envelope thumbnail or the fallback is enabled,
+		//check if the pin icon should be displayed.
+		if ($this->setting('show_thumbnail_image') && $this->setting('show_pin_if_pinned') && $item['pinned']) {
+			$item['row_class'] = 'pinned';
 		}
 		
 		if (!$item['file_formats']) {
@@ -482,7 +500,7 @@ class zenario_document_envelopes_fea__visitor__list_document_envelopes extends z
 							self::deleteDocumentsInEnvelope($envelopeId);
 							$sql = '
 								DELETE FROM ' . DB_PREFIX . ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes
-								WHERE id IN (' . ze\escape::in($envelopeId) . ')';
+								WHERE id IN (' . ze\escape::in($envelopeId, 'numeric') . ')';
 							ze\sql::update($sql);
 						}
 					}

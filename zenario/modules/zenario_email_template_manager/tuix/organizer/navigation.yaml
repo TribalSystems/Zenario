@@ -2,6 +2,8 @@
 ---
 zenario__email_template_manager:
     ord: -690
+    visible_if: >
+        zenarioA.siteSettings.default_language
     css_class: zenario_email_template_top_level
     label: Email
     tooltip: >

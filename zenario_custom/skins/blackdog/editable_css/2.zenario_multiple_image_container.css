@@ -69,8 +69,7 @@
 }
 
 #colorbox.multiple_image_container #cboxTitle {
-	width:calc(100% - 70px);
-	padding-right:60px;
+	width:calc(100% - 20px);
 	line-height:1.2em;
 }
 
@@ -89,8 +88,7 @@
 	color:#888;
 }
 
-.zenario_multiple_image_container .banner_images .banner_image span.download_link:before,
-#colorbox.multiple_image_container  #cboxTitle span.download_link a:before {
+.zenario_multiple_image_container .banner_images .banner_image span.download_link:before {
 	font-family:"FontAwesome";
 	content: "\f019";
 	color:#2a98ce;
@@ -107,31 +105,11 @@
 }
 
 #colorbox.multiple_image_container  #cboxTitle span.download_link {
-	position:absolute;
-	top:0;
-	bottom:0;
-	right:15px;
-	border-left: 1px solid #fff;
+	padding-bottom:5px;
+	display:inline-block;
 }
 
 #colorbox.multiple_image_container  #cboxTitle span.download_link a {
-	font-size:0;
-	text-indent:-999px;
-	line-height:0;
-}
-
-#colorbox.multiple_image_container  #cboxTitle span.download_link a:before {
-	font-size:22px;
-	line-height:18px;
-	text-indent:0;
-	position: relative;
-	top: 15px;
-	padding-left: 15px;
-    -moz-transition: all 0.3s ease-in-out;
-	-o-transition: all 0.3s ease-in-out;
-	transition: all 0.3s ease-in-out;
-}
-
-#colorbox.multiple_image_container  #cboxTitle span.download_link a:hover:before {
-	color:yellow;
+	font-size:0.813em;
+	color:#FFF;
 }

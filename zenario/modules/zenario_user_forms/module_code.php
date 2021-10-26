@@ -3445,7 +3445,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				'eventUserFormSubmitted', 
 				[
 					'data' => $this->getTemplateEmailMergeFields($userId),
-					'formProperties' => $this->form,
+					'form' => $this->form,
 					'fieldIdValueLink' => $fieldIdValueLink,
 					'responseId' => $responseId
 				]
@@ -4068,7 +4068,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	private function enableCaptcha() {
-		if ($this->form['use_captcha']
+		if (is_array($this->form)
+			&& $this->form['use_captcha']
 			&& empty($_SESSION['captcha_passed__' . $this->instanceId])
 			&& (!$this->userId || $this->form['extranet_users_use_captcha'])
 		) {

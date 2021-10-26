@@ -93,6 +93,15 @@ plugin_settings:
                     value: zenario_extranet_registration__to_admin_user_signup_notification_en
                     note_below: 'By default this plugin uses the email template with code "zenario_extranet_registration__to_admin_user_signup_notification_en".'
                     indent: 1
+                
+                name_fields:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                The first name may not exceed 25 characters.<br />
+                                The last name may not exceed 35 characters.
+                            </div>
+                
                 user_password:
                     label: "User's password:"
                     type: select
@@ -126,7 +135,7 @@ plugin_settings:
                     type: checkbox
                     readonly: true
                     side_note: >
-                        To show/hide screen name you must change the "Use screen names" <a href='zenario/admin/organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{"id"%3A"users"}' target='_blank'>site setting</a>.
+                        To show/hide screen name you must change the "Use screen names" <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{"id"%3A"users"}' target='_blank'>site setting</a>.
                     
             
                 user_email_verification:
@@ -490,7 +499,7 @@ plugin_settings:
                     full_width: true
                     snippet:
                         html: >
-                            <div>Use this tab to add <a href='zenario/admin/organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[id]]//' target='_blank'>user dataset fields</a>. 
+                            <div>Use this tab to add <a href='organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[id]]//' target='_blank'>user dataset fields</a>. 
                             If using the standard framework, all fields will appear after last name and will be optional.</div>
                 user_custom_fields:
                     plugin_setting:

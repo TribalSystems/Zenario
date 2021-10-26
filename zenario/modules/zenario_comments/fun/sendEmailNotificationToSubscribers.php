@@ -78,7 +78,7 @@ if ($newPost
 		   ON cu.user_id = u.id
 		  AND IFNULL(cu.latest_activity > us.last_notified, true)
 		WHERE us.content_id = ". (int) $comment['content_id']. "
-		  AND us.content_type = '". ze\escape::sql($comment['content_type']). "'
+		  AND us.content_type = '". ze\escape::asciiInSQL($comment['content_type']). "'
 		  AND us.forum_id = 0
 		  AND us.thread_id = 0
 		  AND us.user_id != ". (int) $poster['id'];

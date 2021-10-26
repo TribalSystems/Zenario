@@ -47,7 +47,7 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 					and must be in the directory "zenario/libs/not_to_redistribute/profanity-filter/".';
 			}
 			
-			$link = ze\link::absolute() . '/zenario/admin/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
+			$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$fields['zenario_user_forms_emails/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store form responses.', ['link' => htmlspecialchars($link)]);
 		
 		} elseif ($settingGroup == 'data_protection') {
@@ -61,7 +61,7 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
 			
-			$link = ze\link::absolute() . 'zenario/admin/organizer.php#zenario__user_forms/panels/user_forms';
+			$link = ze\link::absolute() . 'organizer.php#zenario__user_forms/panels/user_forms';
 			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 			$fields['data_protection/period_to_delete_the_form_response_log_headers']['note_below'] = $note;
 			

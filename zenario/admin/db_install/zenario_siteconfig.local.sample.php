@@ -103,18 +103,15 @@ define('COOKIE_TIMEOUT', 8640000);
 
 // The length of time (in seconds) to persist the login of administrators and extranet users.
 //
-// I.e. if they do not visit the site for the set time they will be logged out.
-// This will be overridden by the session.cookie_lifetime and/or session.gc_maxlifetime
-// settings in the php.ini file if they are shorter.
-//
-// If non-zero, the user will be logged out after that number of seconds, but they will not
-// be logged out simply by quitting their browser or restarting their PC.
+// If not active on the site for this amount of time, they will be logged out.
+// If session.cookie_lifetime and/or session.gc_maxlifetime settings in php.ini file are
+// shorter, they will take precedence.
 //
 // If set to 0 then they will be logged out when quitting/restarting, but will otherwise
 // remain logged in until session.cookie_lifetime and/or session.gc_maxlifetime.
 // 
-// Set this to 0 for maximum security.
-define('SESSION_TIMEOUT', 0);
+// We recomment setting this to 900 (15 minutes).
+define('SESSION_TIMEOUT', 900);
 
 
   /////////////////////

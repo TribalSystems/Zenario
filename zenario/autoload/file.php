@@ -400,13 +400,15 @@ class file {
 	//Formerly "optimiseImage()"
 	public static function optimiseImage($path) {
 	
-		if (!\ze::in(self::mimeType($path), 'image/png', 'image/jpeg')
+		$mimeType = self::mimeType($path);
+
+		if (!\ze::in($mimeType, 'image/png', 'image/jpeg')
 		 || !is_file($path)
 		 || !is_writable($path)) {
 			return false;
 		}
 	
-		switch (self::mimeType($path)) {
+		switch ($mimeType) {
 			case 'image/png':
 				self::optimise('optipng', $path);
 				self::optimise('advpng', $path);
@@ -417,6 +419,8 @@ class file {
 				}
 				break;
 		}
+
+		self::createWebPFromImage($path, $mimeType);
 	
 		return true;
 	}
@@ -455,7 +459,7 @@ class file {
 				LEFT JOIN ' . DB_PREFIX . 'content_item_versions civ
 					ON civ.tag_id = ci.tag_id
 				WHERE civ.file_id = ' . (int) $fileId . '
-				AND ci.tag_id <> "' . \ze\escape::sql($tagId) . '"
+				AND ci.tag_id <> "' . \ze\escape::asciiInSQL($tagId) . '"
 				AND ci.status NOT IN ("deleted", "trashed", "hidden")';
 			$result = \ze\sql::select($sql);
 			$usage = \ze\sql::fetchValue($result);
@@ -584,7 +588,7 @@ class file {
 		$sql = '
 			SELECT mime_type, is_allowed
 			FROM '. DB_PREFIX. 'document_types
-			WHERE `type` = \''. \ze\escape::sql($type). '\'';
+			WHERE `type` = \''. \ze\escape::asciiInSQL($type). '\'';
 		
 		if (!$dt = \ze\sql::fetchRow($sql)) {
 			return false;
@@ -869,9 +873,9 @@ class file {
 				$sql = '
 					SELECT 1
 					FROM '. DB_PREFIX. 'files
-					WHERE `usage` = \''. \ze\escape::sql($file['usage']). '\'
+					WHERE `usage` = \''. \ze\escape::asciiInSQL($file['usage']). '\'
 					  AND filename = \''. \ze\escape::sql($file['filename']). '\'
-					  AND short_checksum != \''. \ze\escape::sql($file['short_checksum']). '\'
+					  AND short_checksum != \''. \ze\escape::asciiInSQL($file['short_checksum']). '\'
 					LIMIT 1';
 			
 				if ($file['ssc'] = (bool) \ze\sql::fetchRow($sql)) {
@@ -1091,10 +1095,14 @@ class file {
 	
 	
 		//Combine the resize options into a string
-		$settingCode = $mode. '_'. $widthLimit. '_'. $heightLimit. '_'. $offset;
-	
+		$settingCode = $mode. '_'. $widthLimit. '_'. $heightLimit;
+		
 		if ($retina) {
-			$settingCode .= '_2';
+			$settingCode .= '_2x';
+		}
+		
+		if ($offset) {
+			$settingCode .= '_offset_'. $offset;
 		}
 	
 		//If the $useCacheDir variable is set and the public/private directories are writable,
@@ -1229,6 +1237,18 @@ class file {
 				if ($imageNeedsToBeResized || $pregeneratedThumbnailUsed || $image['location'] == 'db') {
 					file_put_contents($filepath, $image['data']);
 					\ze\cache::chmod($filepath, 0666);
+
+					if (\ze::in($image['mime_type'], 'image/png', 'image/jpeg')) {
+						//Create and save a WebP version.
+						$fileParts = pathinfo($filepath);
+						$newPath = $fileParts['dirname'];
+						$newName = $fileParts['filename'] . '.webp';
+						$newFullPath = $newPath . '/' . $newName;
+			
+						if (is_file($filepath)) {
+							self::createWebPFromImage($filepath, $image['mime_type']);
+						}
+					}
 				
 					//Try to optimise the image, if the libraries are installed.
 					//Please note: private images will not be optimised, as they need to be re-generated periodically.
@@ -1655,56 +1675,64 @@ class file {
 		$maxWidth = (int) $maxWidth;
 		$maxHeight = (int) $maxHeight;
 		$allowUpscale = $mimeType == 'image/svg+xml';
-	
-		if ($mode == 'unlimited') {
-			$cropNewWidth = $cropWidth = $newWidth = $imageWidth;
-			$cropNewHeight = $cropHeight = $newHeight = $imageHeight;
-	
-		} elseif ($mode == 'stretch') {
-			$allowUpscale = true;
-			$cropWidth = $imageWidth;
-			$cropHeight = $imageHeight;
-			$cropNewWidth = $newWidth = $maxWidth;
-			$cropNewHeight = $newHeight = $maxHeight;
-	
-		} elseif ($mode == 'resize_and_crop') {
 		
-			//Attempt to prevent "division by zero" error
-			if (empty($imageWidth)) {
-				$imageWidth = 1;
-			}
+		switch ($mode) {
+			case 'unlimited':
+				$cropNewWidth = $cropWidth = $newWidth = $imageWidth;
+				$cropNewHeight = $cropHeight = $newHeight = $imageHeight;
+				break;
 			
-			if (empty($imageHeight)) {
-				$imageHeight = 1;
-			}
+			//Catch a mode name that got renamed
+			case 'stretch':
+				$mode = 'adjust';
 			
-			if (($maxWidth / $imageWidth) < ($maxHeight / $imageHeight)) {
-				$newWidth = (int) ($imageWidth * $maxHeight / $imageHeight);
-				$newHeight = $maxHeight;
-				$cropWidth = (int) ($maxWidth * $imageHeight / $maxHeight);
-				$cropHeight = $imageHeight;
-				$cropNewWidth = $maxWidth;
-				$cropNewHeight = $maxHeight;
-		
-			} else {
-				$newWidth = $maxWidth;
-				$newHeight = (int) ($imageHeight * $maxWidth / $imageWidth);
+			case 'adjust':
+				$allowUpscale = true;
 				$cropWidth = $imageWidth;
-				$cropHeight = (int) ($maxHeight * $imageWidth / $maxWidth);
-				$cropNewWidth = $maxWidth;
-				$cropNewHeight = $maxHeight;
-			}
-	
-		} elseif ($mode == 'fixed_width') {
-			$maxHeight = $allowUpscale? 999999 : $imageHeight;
-			$mode = 'resize';
-	
-		} elseif ($mode == 'fixed_height') {
-			$maxWidth = $allowUpscale? 999999 : $imageWidth;
-			$mode = 'resize';
-	
-		} else {
-			$mode = 'resize';
+				$cropHeight = $imageHeight;
+				$cropNewWidth = $newWidth = $maxWidth;
+				$cropNewHeight = $newHeight = $maxHeight;
+				break;
+			
+			case 'resize_and_crop':
+				//Attempt to prevent "division by zero" error
+				if (empty($imageWidth)) {
+					$imageWidth = 1;
+				}
+			
+				if (empty($imageHeight)) {
+					$imageHeight = 1;
+				}
+			
+				if (($maxWidth / $imageWidth) < ($maxHeight / $imageHeight)) {
+					$newWidth = (int) ($imageWidth * $maxHeight / $imageHeight);
+					$newHeight = $maxHeight;
+					$cropWidth = (int) ($maxWidth * $imageHeight / $maxHeight);
+					$cropHeight = $imageHeight;
+					$cropNewWidth = $maxWidth;
+					$cropNewHeight = $maxHeight;
+		
+				} else {
+					$newWidth = $maxWidth;
+					$newHeight = (int) ($imageHeight * $maxWidth / $imageWidth);
+					$cropWidth = $imageWidth;
+					$cropHeight = (int) ($maxHeight * $imageWidth / $maxWidth);
+					$cropNewWidth = $maxWidth;
+					$cropNewHeight = $maxHeight;
+				}
+				break;
+			
+			case 'fixed_width':
+				$maxHeight = $allowUpscale? 999999 : $imageHeight;
+				$mode = 'resize';
+				break;
+			
+			case 'fixed_height':
+				$maxWidth = $allowUpscale? 999999 : $imageWidth;
+				$mode = 'resize';
+			
+			default:
+				$mode = 'resize';
 		}
 	
 		if ($mode == 'resize') {
@@ -1924,5 +1952,34 @@ class file {
 			$calculatedFilesize = $filevalue * 1024;
 		}
 		return $calculatedFilesize;
+	}
+
+	public static function createWebPFromImage($path, $mimeType) {
+		if (\ze::in($mimeType, 'image/png', 'image/jpeg')) {
+			//Create and save a WebP version.
+			$fileParts = pathinfo($path);
+			$newPath = $fileParts['dirname'];
+			$newName = $fileParts['filename'] . '.webp';
+			$newFullPath = $newPath . '/' . $newName;
+
+			if ($mimeType == 'image/jpeg') {
+				$img = imagecreatefromjpeg($path);
+			} elseif ($mimeType == 'image/png') {
+				$img = imagecreatefrompng($path);
+
+				imagepalettetotruecolor($img);
+				imagealphablending($img, true);
+				imagesavealpha($img, true);
+			}
+			
+			imagewebp($img, $newFullPath, 100);
+			\ze\cache::chmod($newFullPath, 0666);
+
+			if (filesize($newFullPath) % 2 == 1) {
+				file_put_contents($newFullPath, "\0", FILE_APPEND);
+			}
+
+			imagedestroy($img);
+		}
 	}
 }

@@ -35,13 +35,13 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 		if (ze\module::statusByName('zenario_ctype_document') == 'module_running') {
 			if ($box['key']['id']) {
 				
-				$fields['details/html']['snippet']['html'] = ze\admin::phrase('For each document meta data field below, select a dataset field to migrate the data to. If no dataset field is chosen then the data won\'t be saved. (<a [[link]]>Edit dataset fields</a>)', ['link' => 'href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets'). '" target="_blank"']);
+				$fields['details/html']['snippet']['html'] = ze\admin::phrase('For each document meta data field below, select a dataset field to migrate the data to. If no dataset field is chosen then the data won\'t be saved. (<a [[link]]>Edit dataset fields</a>)', ['link' => 'href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__administration/panels/custom_datasets'). '" target="_blank"']);
 				
 				// Set select lists for dataset fields
 				$link = '';
 				$datasetDetails = ze\dataset::details('documents');
 				if ($details = ze\dataset::details('documents')) {
-					$link = ze\link::absolute(). 'zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets//'.$details['id'];
+					$link = ze\link::absolute(). 'organizer.php?#zenario__administration/panels/custom_datasets//'.$details['id'];
 				}
 				$textDocumentDatasetFields = ze\row::getAssocs('custom_dataset_fields', ['label', 'default_label'], ['type' => 'text', 'dataset_id' => $datasetDetails['id']], 'ord');
 				$textDocumentDatasetFields = array_map(function($e) { return $e['label'] ? $e['label'] : $e['default_label']; }, $textDocumentDatasetFields);
@@ -117,7 +117,7 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends ze\mod
 				FROM '.DB_PREFIX.'content_items AS c
 				INNER JOIN '.DB_PREFIX.'content_item_versions AS v
 					ON (c.tag_id = v.tag_id AND c.admin_version = v.version)
-				WHERE c.tag_id = "'.ze\escape::sql($tagId).'"';
+				WHERE c.tag_id = "'.ze\escape::asciiInSQL($tagId).'"';
 			$result = ze\sql::select($sql);
 			$documentData = ze\sql::fetchAssoc($result);
 			

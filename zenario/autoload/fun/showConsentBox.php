@@ -80,7 +80,7 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
 				class="clear_admin_cookie"
 				href="zenario/cookies.php?clear_admin_cookie=1"
 				onclick="
-					return confirm(\'', (\ze\admin::phrase('Are you sure you wish to remove the admin login link?\n\nGo to /admin to login if the admin link is not visible.')), '\');
+					return confirm(\'', (\ze\admin::phrase('Remove your admin login link?\n\nThis will delete your admin cookie.\n\nGo to /admin to sign in next time!')), '\');
 				"
 			></a>
 			<a class="admin_login_link" href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '">

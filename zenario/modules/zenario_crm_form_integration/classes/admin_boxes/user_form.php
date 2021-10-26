@@ -33,9 +33,9 @@ class zenario_crm_form_integration__admin_boxes__user_form extends zenario_crm_f
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		//Add links to site-settings in information notice
-		$linkToSalesforceTab = ze\link::absolute() . 'zenario/admin/organizer.php?#zenario__administration/panels/site_settings//zenario_user_forms__site_settings_group~.site_settings~tzenario_salesforce_api_form_integration~k' . urlencode('{"id":"zenario_user_forms__site_settings_group"}');
-		$linkToMailChimpTab = ze\link::absolute() . 'zenario/admin/organizer.php?#zenario__administration/panels/site_settings//zenario_user_forms__site_settings_group~.site_settings~tmailchimp~k' . urlencode('{"id":"zenario_user_forms__site_settings_group"}');
-		$linkTo360LifecycleTab = ze\link::absolute() . 'zenario/admin/organizer.php?#zenario__administration/panels/site_settings//zenario_user_forms__site_settings_group~.site_settings~t360lifecycle~k' . urlencode('{"id":"zenario_user_forms__site_settings_group"}');
+		$linkToSalesforceTab = ze\link::absolute() . 'organizer.php?#zenario__administration/panels/site_settings//zenario_user_forms__site_settings_group~.site_settings~tzenario_salesforce_api_form_integration~k' . urlencode('{"id":"zenario_user_forms__site_settings_group"}');
+		$linkToMailChimpTab = ze\link::absolute() . 'organizer.php?#zenario__administration/panels/site_settings//zenario_user_forms__site_settings_group~.site_settings~tmailchimp~k' . urlencode('{"id":"zenario_user_forms__site_settings_group"}');
+		$linkTo360LifecycleTab = ze\link::absolute() . 'organizer.php?#zenario__administration/panels/site_settings//zenario_user_forms__site_settings_group~.site_settings~t360lifecycle~k' . urlencode('{"id":"zenario_user_forms__site_settings_group"}');
 		ze\lang::applyMergeFields($box['tabs']['crm_integration']['notices']['crm_info']['message'], ['link_to_salesforce_tab' => $linkToSalesforceTab, 'link_to_mailchimp_tab' => $linkToMailChimpTab]);
 		
 		//Load generic CRM details

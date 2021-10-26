@@ -658,7 +658,7 @@ methods.drawTabs = function(microTemplate) {
 		}
 	}
 	
-	zenarioT.setButtonKin(data, 'zenario_fab_tab_with_children');
+	zenarioT.setKin(data, 'zenario_fab_tab_with_children');
 	
 	setPrevNextTabs(data);
 	thus.prevTab = prevTab;
@@ -2177,7 +2177,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								readonly: false,
 						
 								convert_urls: true,
-								relative_urls: false,
+								relative_urls: !zenario.slashesInURL,
 		
 								content_css: content_css,
 								toolbar: 'undo redo | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
@@ -2979,6 +2979,8 @@ methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
 
 //methods._tokenizeNoRecurse = false;
 
+var catchThatBlur = false;
+
 methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 	
 	var searchURL,
@@ -3015,6 +3017,12 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		onAddToken: function(value, text, e) {
 			if (thus._tokenizeNoRecurse) {
 				return;
+			}
+			
+			//Adding a token should override the blur logic below if it is set.
+			if (catchThatBlur) {
+				clearTimeout(catchThatBlur);
+				catchThatBlur = false;
 			}
 			
 			if (multiple_select) {
@@ -3086,9 +3094,14 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 				thus.$getPickItemsInput(id).blur(function() {
 					var value, obj;
 					if (value = thus.$getPickItemsInput(id).val()) {
-						obj = {};
-						obj[value] = value;
-						thus.addToPickedItems(obj, id, tab);
+						
+						//If they'd been trying to type a value, we'll want to add it.
+						//But if they are clicking on the type-ahead, that should cancel this action.
+						catchThatBlur = setTimeout(function() {
+							obj = {};
+							obj[value] = value;
+							thus.addToPickedItems(obj, id, tab);
+						}, 150);
 					}
 				});
 			}

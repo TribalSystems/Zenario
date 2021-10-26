@@ -57,7 +57,7 @@ class zenario_news_ticker extends ze\moduleBaseClass {
 		
 		if ($this->setting('content_type')) {
 			$sql .= "
-			  AND v.type = '". ze\escape::sql($this->setting('content_type')). "'";
+			  AND v.type = '". ze\escape::asciiInSQL($this->setting('content_type')). "'";
 		}
 		if ($this->setting('filter_by_release_date') && $this->setting('result_count')) {
 			$sql .= '

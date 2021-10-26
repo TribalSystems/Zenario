@@ -2,19 +2,19 @@
 
 [![GitHub repo](https://img.shields.io/badge/Repo-GitHub-yellow.svg)](https://github.com/cytoscape/cytoscape.js)
 [![Twitter updates](https://img.shields.io/badge/Updates-Twitter-yellow.svg)](https://twitter.com/cytoscapejs)
-[![News and tutorials](https://img.shields.io/badge/News%20and%20tutorials-Blog-yellow.svg)](https://blog.js.cytoscape.org)
+[![News and tutorials](https://img.shields.io/badge/News%20%26%20tutorials-Blog-yellow.svg)](https://blog.js.cytoscape.org)
 [![Questions at StackOverflow](https://img.shields.io/badge/Questions-StackOverflow-yellow.svg)](https://stackoverflow.com/questions/tagged/cytoscape.js)
-[![Ask a question at StackOverflow](https://img.shields.io/badge/Ask%20a%20question-StackOverflow-yellow.svg)](http://stackoverflow.com/questions/ask?tags=cytoscape.js,javascript)
-[![GitHub license](https://img.shields.io/badge/License-MIT-blue.svg)](https://raw.githubusercontent.com/cytoscape/cytoscape.js/master/LICENSE)
+[![Ask a question at StackOverflow](https://img.shields.io/badge/Ask%20a%20question-StackOverflow-yellow.svg)](https://stackoverflow.com/questions/ask?tags=cytoscape.js,javascript)
+[![Community discussions](https://img.shields.io/badge/Community%20discussions-GitHub-yellow.svg)](https://github.com/cytoscape/cytoscape.js/discussions)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://raw.githubusercontent.com/cytoscape/cytoscape.js/master/LICENSE)
 [![DOI](https://zenodo.org/badge/2255947.svg)](https://zenodo.org/badge/latestdoi/2255947)
-[![Cite](https://img.shields.io/badge/Cite-Oxford%20Bioinformatics%20Article-blue.svg)](http://js.cytoscape.org/#introduction/citation)
+[![Cite](https://img.shields.io/badge/Cite-Oxford%20Bioinformatics%20Article-blue.svg)](https://js.cytoscape.org/#introduction/citation)
 [![npm](https://img.shields.io/npm/v/cytoscape.svg)](https://www.npmjs.com/package/cytoscape)
 [![Download](https://img.shields.io/npm/v/cytoscape.svg?label=Download)](https://github.com/cytoscape/cytoscape.js/tree/master/dist)
-[![Extensions](https://img.shields.io/badge/Extensions-52-blue.svg)](http://js.cytoscape.org/#extensions)
+[![Extensions](https://img.shields.io/badge/Extensions-61-blue.svg)](https://js.cytoscape.org/#extensions)
 [![npm installs](https://img.shields.io/npm/dm/cytoscape.svg?label=npm%20installs)](https://www.npmjs.com/package/cytoscape)
 [![master branch tests](https://img.shields.io/travis/cytoscape/cytoscape.js/master.svg?label=master%20branch)](https://travis-ci.org/cytoscape/cytoscape.js)
 [![unstable branch tests](https://img.shields.io/travis/cytoscape/cytoscape.js/unstable.svg?label=unstable%20branch)](https://travis-ci.org/cytoscape/cytoscape.js)
-[![Greenkeeper badge](https://badges.greenkeeper.io/cytoscape/cytoscape.js.svg)](https://greenkeeper.io/)
 
 # Cytoscape.js
 
@@ -53,7 +53,11 @@ Future versions of Cytoscape.js are planned in the [milestones of the Github iss
 
 ## Contributing to Cytoscape.js
 
-Please refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+Would you like to become a Cytoscape.js contributor?  You can contribute in technical roles (e.g. features, testing) or non-technical roles (e.g. documentation, outreach), depending on your interests.  [Get in touch with us by posting a GitHub discussion](https://github.com/cytoscape/cytoscape.js/discussions).
+
+For the mechanics of contributing a pull request, refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
+Feature releases are made monthly, while patch releases are made weekly.  This allows for rapid releases of first- and third-party contributions.
 
 
 
@@ -74,7 +78,7 @@ Franz M, Lopes CT, Huck G, Dong Y, Sumer O, Bader GD
 
 ## Build dependencies
 
-Install `node`, `npm` and `gulp` (optional).  Of course, `npm install` before using `gulp` or `npm run`.
+Install `node` and `npm`.  Run `npm install` before using `npm run`.
 
 
 
@@ -85,10 +89,10 @@ Run `npm run <target>` in the console.  The main targets are:
 
 **Building:**
 
- * `build`: do all builds of the library (unmin, min, umd)
- * `build:unmin` : do the unminified build with bundled dependencies (for simple html pages, good for novices)
+ * `build`: do all builds of the library (umd, min, umd, esm)
  * `build:min` : do the unminified build with bundled dependencies (for simple html pages, good for novices)
  * `build:umd` : do the umd (cjs/amd/globals) build
+ * `build:esm` : do the esm (ES 2015 modules) build
  * `clean` : clean the `build` directory
  * `docs` : build the docs into `documentation`
  * `release` : build all release artifacts
@@ -105,16 +109,19 @@ Run `npm run <target>` in the console.  The main targets are:
 
 **Testing:**
 
-If the `TRAVIS` or `TEST_BUILD` environment variables are defined, then `mocha` or `gulp test` will test `build/cytoscape.umd.js`.  Otherwise, the unbundled, unbabelified, raw source is tested.  This keeps local tests very quick to run on modern versions of node while ensuring we can test old versions of node as well.  The library can be built on `node>=6`, but it can be tested on `node>=0.10`.
+The default test scripts run directly against the source code.  Tests can alternatively be run on a built bundle.  The library can be built on `node>=6`, but the library's bundle can be tested on `node>=0.10`.
 
- * `test` : run the Mocha unit tests
- * `test:build` : run the Mocha unit tests (on a built bundle)
+ * `test` : run all testing & linting
+ * `test:js` : run the mocha tests on the public API of the lib (directly on source files)
+   * `npm run test:js -- -g "my test name"` runs tests on only the matching test cases
+ * `test:build` : run the mocha tests on the public API of the lib (on a built bundle) 
+   * `npm run build` should be run beforehand on a recent version of node
+   * `npm run test:build -- -g "my test name"` runs build tests on only the matching test cases
+ * `test:modules` : run unit tests on private, internal API
+   * `npm run test:modules -- -g "my test name"` runs modules tests on only the matching test cases
  * `lint` : lint the js sources via eslint
- * `ci` : run tests and linting
- * `ci:build` : run tests and linting (on a built bundle)
  * `benchmark` : run all benchmarks
  * `benchmark:single` : run benchmarks only for the suite specified in `benchmark/single`
- * `sniper` : runs a biojs sniper server that hosts demos
 
 
 
@@ -141,4 +148,4 @@ If the `TRAVIS` or `TEST_BUILD` environment variables are defined, then `mocha` 
 
 ## Tests
 
-Mocha tests are found in the [test directory](https://github.com/cytoscape/cytoscape.js/tree/master/test).  The tests can be run in the browser or they can be run via Node.js (`npm test` or `mocha`).
+Mocha tests are found in the [test directory](https://github.com/cytoscape/cytoscape.js/tree/master/test).  The tests can be run in the browser or they can be run via Node.js (`npm run test:js`).

@@ -43,6 +43,8 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 	];
 	
 	public function init() {
+		ze::requireJsLib('https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')));
+		
 		//Look up details on the locations dataset
 		$this->dataset = ze\dataset::details(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 		$this->datasetFields = ze\dataset::fieldsDetails($this->dataset['id']);
@@ -217,16 +219,16 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				   ON loc.country_id IS NOT NULL
 				  AND module_class_name = 'zenario_country_manager'
 				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
-				  AND vp_cn.language_id = '". ze\escape::sql(ze::$visLang). "'
+				  AND vp_cn.language_id = '". ze\escape::asciiInSQL(ze::$visLang). "'
 			WHERE loc.status = 'active'";
 		
 		if ($this->setting('filter_by_country') && $this->data['country_id'] != 'xx') {
 			$sql .= "
-				AND loc.country_id = '". ze\escape::sql($this->data['country_id']). "'";
+				AND loc.country_id = '". ze\escape::asciiInSQL($this->data['country_id']). "'";
 		}
 		if ($countryId = $this->setting('country')) {
 			$sql .= "
-				AND loc.country_id = '". ze\escape::sql($countryId). "'";
+				AND loc.country_id = '". ze\escape::asciiInSQL($countryId). "'";
 		}
 		
 		if (($fieldId = $this->setting('location_filter'))
@@ -440,7 +442,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			SELECT SUBSTR(code, 15), local_text
 			FROM ". DB_PREFIX. "visitor_phrases AS vp_cn
 			WHERE module_class_name = 'zenario_country_manager'
-			  AND language_id = '". ze\escape::sql(ze::$visLang). "'
+			  AND language_id = '". ze\escape::asciiInSQL(ze::$visLang). "'
 			  AND code IN (
 				SELECT CONCAT('_COUNTRY_NAME_', loc.country_id)
 				FROM ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc
@@ -481,9 +483,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 					body {
 						overflow: hidden !important;
 					}
-				</style>
-				
-				<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>';
+				</style>';
 			
 			//Add icons so the JavaScript code can look up the background image from them
 			$cssClasses = [];

@@ -217,7 +217,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 						$sql2 = "
 							SELECT language_id, COUNT(*) AS c
 							FROM ". DB_PREFIX. "visitor_phrases
-							WHERE module_class_name = '". ze\escape::sql($module['vlp_class']). "'
+							WHERE module_class_name = '". ze\escape::asciiInSQL($module['vlp_class']). "'
 							GROUP BY language_id";
 				
 						$result2 = ze\sql::select($sql2);

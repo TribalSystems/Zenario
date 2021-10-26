@@ -405,8 +405,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['meta_data/writer_name'] = $version['writer_name'];
 				$values['meta_data/content_summary'] = $version['content_summary'];
 				$values['meta_data/layout_id'] = $version['layout_id'];
-				#$values['meta_data/in_sitemap'] = $version['in_sitemap'];
 				$values['meta_data/exclude_from_sitemap'] = !$version['in_sitemap'];
+				$values['meta_data/apply_noindex_meta_tag'] = $version['apply_noindex_meta_tag'];
 				$values['css/css_class'] = $version['css_class'];
 				$values['css/background_image'] = $version['bg_image_id'];
 				$values['css/bg_color'] = $version['bg_color'];
@@ -415,6 +415,16 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['file/file'] = $version['file_id'];
 				$values['file/s3_file_id'] = $version['s3_file_id'];
 				$values['file/s3_file_name'] = $version['s3_filename'];
+
+				if ($values['file/s3_file_id'] && ze\module::inc('zenario_ctype_document')) {
+					$s3FileDetails = zenario_ctype_document::getS3FileDetails($values['file/s3_file_id']);
+
+					if (!empty($s3FileDetails) && isset($s3FileDetails['ContentType'])) {
+						$values['file/s3_mime_type'] = $s3FileDetails['ContentType'];
+					}
+
+					$fields['file/s3_mime_type']['show_as_a_span'] = true;
+				}
 
 				$values['meta_data/pinned'] = $version['pinned'];
 				
@@ -572,7 +582,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (isset($box['tabs']['categories']['fields']['desc'])) {
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/categories'). '" target="_blank"']);
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
 		
 				if (ze\row::exists('categories', [])) {
 					$fields['categories/no_categories']['hidden'] = true;
@@ -737,7 +747,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 							published_datetime,scheduled_publish_datetime,
 							(SELECT username FROM " . DB_PREFIX . "admins as a WHERE a.id = v.publisher_id) as publisher
 						FROM " . DB_PREFIX . "content_item_versions as v 
-						WHERE v.tag_id = '" . ze\escape::sql($box['key']['id']) . "'
+						WHERE v.tag_id = '" . ze\escape::asciiInSQL($box['key']['id']) . "'
 						ORDER BY v.version desc";
 			$result = ze\sql::select($sql);
 			if (ze\sql::numRows($result) > 0 ) {
@@ -821,7 +831,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				  AND v.type = c.type
 				  AND v.version = c.admin_version
 				WHERE c.id = ". (int) $box['key']['cID']. "
-				  AND c.type = '". ze\escape::sql($box['key']['cType']). "'
+				  AND c.type = '". ze\escape::asciiInSQL($box['key']['cType']). "'
 				  AND v.scheduled_publish_datetime IS NOT NULL";
 		
 			if ($row = ze\sql::fetchAssoc($sql)) {
@@ -836,24 +846,27 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 		
 		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
-			$fields['file/file']['label']= 'Local file:';
-			$fields['file/s3_file_upload']['hidden']= false;
+			$fields['file/file']['label'] = ze\admin::phrase('Local file:');
+			$fields['file/s3_file_upload']['hidden'] = false;
 			$maxUploadSize = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
 			
-			if (ze\dbAdm::apacheMaxFilesize() < ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit'))) {
+			if (ze\dbAdm::apacheMaxFilesize() < ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'), ze::setting('content_max_filesize_unit'))) {
 				$maxLocalUploadSize = $maxUploadSize;
 			} else {
-				$maxLocalUploadSize = ze\file::fileSizeConvert(ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit')));
+				$maxLocalUploadSize = ze\file::fileSizeConvert(ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'), ze::setting('content_max_filesize_unit')));
 			}
+
 			if (ze\dbAdm::apacheMaxFilesize() < 5368706371) {
 				$maxS3UploadSize = $maxUploadSize;
 			} else {
 				$maxS3UploadSize = ze\file::fileSizeConvert(5368706371);
 			}
 			
-			$box['tabs']['file']['fields']['document_desc']['snippet']['html'] = ze\admin::phrase('Please upload a local file (for storage in Zenario\'s docstore), maximum size [[maxLocalUploadSize]].',['maxLocalUploadSize' => $maxLocalUploadSize]); 
+			$box['tabs']['file']['fields']['document_desc']['snippet']['html'] =
+				ze\admin::phrase('Please upload a local file (for storage in Zenario\'s docstore), maximum size [[maxLocalUploadSize]].', ['maxLocalUploadSize' => $maxLocalUploadSize]); 
 			
-			$box['tabs']['file']['fields']['s3_document_desc']['snippet']['html'] = ze\admin::phrase('You can upload a related file for storage on AWS S3, maximum size [[maxS3UploadSize]].',['maxS3UploadSize' => $maxS3UploadSize]);
+			$box['tabs']['file']['fields']['s3_document_desc']['snippet']['html'] =
+				ze\admin::phrase('You can upload a related file for storage on AWS S3, maximum size [[maxS3UploadSize]].', ['maxS3UploadSize' => $maxS3UploadSize]);
 		}
 	}
 	
@@ -861,14 +874,14 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$box['tabs']['file']['hidden'] = true;
 		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
-			
-			if($values['file/s3_file_remove']) {
-				
-				$s3_file_upload = "<iframe id=\"s3_file_upload\" name=\"s3_file_upload\" src=\"" .ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.'zenario/s3FileUpload.php?cId='. $box['key']['cID'] .'&cType='. $box['key']['cType']. '&cVersion='. $box['key']['source_cVersion']."&remove=1\" style=\"border: none;\"></iframe>\n";
-			
-			} else {
-				$s3_file_upload = "<iframe id=\"s3_file_upload\" name=\"s3_file_upload\" src=\"" .ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.'zenario/s3FileUpload.php?cId='. $box['key']['cID'] .'&cType='. $box['key']['cType']. '&cVersion='. $box['key']['source_cVersion']."\" style=\"border: none;\"></iframe>\n";
+			$src = ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.'zenario/s3FileUpload.php';
+			$requests = '?cId='. $box['key']['cID'] .'&cType='. $box['key']['cType']. '&cVersion='. $box['key']['source_cVersion'] . '&mime_type=' . htmlspecialchars($values['file/s3_mime_type']);
+
+			if ($values['file/s3_file_remove']) {
+				$requests .= "&remove=1";
 			}
+				
+			$s3_file_upload = "<iframe id=\"s3_file_upload\" name=\"s3_file_upload\" src=\"" . $src . $requests . "\" style=\"border: none;\"></iframe>\n";
 			
 			$fields['file/s3_file_upload']['snippet']['html'] = $s3_file_upload;
 		}
@@ -1074,7 +1087,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$box['tabs']['content'. $i]['label'] = substr($slot, 0, 8). '...'. substr($slot, -8);
 					}
 					$WYSIWYGCount++;
-					ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['content'. $i]['fields']['content']);
+					
+					//Try and ensure that we use relative URLs where possible
+					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['content'. $i]['fields']['content']);
 				}
 			}
 			
@@ -1115,7 +1130,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$box['tabs']['rawhtml'. $i]['label'] = substr($slot, 0, 8). '...'. substr($slot, -8);
 					}
 					$RawCount++;
-					ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['rawhtml'. $i]['fields']['content']);
+					
+					//Try and ensure that we use relative URLs where possible
+					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['rawhtml'. $i]['fields']['content']);
 				}
 			}
 			
@@ -1137,7 +1154,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		
 		if (isset($box['tabs']['meta_data']['fields']['content_summary'])) {
-			ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
+			//Try and ensure that we use relative URLs where possible
+			ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
 		}
 		
 		//Show the options for the site-map/search engine preview by default
@@ -1151,6 +1169,14 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$fields['meta_data/excluded_from_sitemap']['hidden'] = false;
 			$fields['meta_data/included_in_sitemap']['hidden'] = true;
 		}
+
+		$fields['meta_data/apply_noindex_meta_tag']['note_below'] = ze\admin::phrase(
+			'<p>
+				Put a <code>noindex</code> meta tag in the <head> section of the page when displaying this content item. This will be of the format:
+				<br \>
+				<code>&lt;meta name=&quot;robots&quot; content=&quot;noindex&quot;&gt;</code>
+			</p>'
+		);
 		
 		if (isset($box['key']['id'])) {
 			$fields['meta_data/suggest_alias_from_title']['hidden'] = true;
@@ -1177,7 +1203,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					SELECT id, type, language_id, alias, visitor_version, admin_version, status, tag_id
 					FROM ". DB_PREFIX. "content_items
 					WHERE equiv_id = " . (int) $equivId . "
-					AND type = '" . ze\escape::sql($box['key']['cType']) . "'
+					AND type = '" . ze\escape::asciiInSQL($box['key']['cType']) . "'
 					AND id = " . (int) $equivId;
 				$mainLanguageContentItemResult = ze\sql::select($mainLanguageContentItemSql);
 				$mainLanguageContentItem = ze\sql::fetchAssoc($mainLanguageContentItemResult);
@@ -1186,13 +1212,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					SELECT COUNT(id)
 					FROM ". DB_PREFIX. "content_items
 					WHERE equiv_id = " . (int) $equivId . "
-					AND type = '" . ze\escape::sql($box['key']['cType']) . "'
+					AND type = '" . ze\escape::asciiInSQL($box['key']['cType']) . "'
 					AND id <> " . (int) $box['key']['cID'];
 				$translationsCountResult = ze\sql::select($translationsCountSql);
 				$translationsCount = ze\sql::fetchValue($translationsCountResult);
 
 				$translationChainHref =
-					ze\link::absolute(). 'zenario/admin/organizer.php#zenario__content/panels/content/refiners/content_type//' 
+					ze\link::absolute(). 'organizer.php#zenario__content/panels/content/refiners/content_type//' 
 					. htmlspecialchars($box['key']['cType']) . '//item_buttons/zenario_trans__view//' . htmlspecialchars($mainLanguageContentItem['tag_id']) . '//';
 				$translationChainLinkStart = '<a href="' . $translationChainHref . '" target="_blank">';
 				$translationChainLinkEnd = '</a>';
@@ -1440,11 +1466,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$version['release_date'] = $values['meta_data/release_date'];
 			$version['writer_id'] = $values['meta_data/writer_id'];
 			$version['writer_name'] = $values['meta_data/writer_name'];
-			#$version['in_sitemap'] = $values['meta_data/in_sitemap'];
 			$version['in_sitemap'] = !$values['meta_data/exclude_from_sitemap'];
+			$version['apply_noindex_meta_tag'] = ($values['meta_data/exclude_from_sitemap'] && $values['meta_data/apply_noindex_meta_tag']);
 			$version['pinned'] = $values['meta_data/pinned'];
 	
+			//Try and ensure that we use relative URLs where possible
 			ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
+			
 			$version['content_summary'] = $values['meta_data/content_summary'];
 	
 			if (isset($fields['meta_data/lock_summary_edit_mode']) && !$fields['meta_data/lock_summary_edit_mode']['hidden']) {
@@ -1541,10 +1569,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			//To upload file on AWS s3 
 			if ($values['file/s3_file_id']) {
-					$version['s3_filename'] = $values['file/s3_file_name'];
-					$version['s3_file_id'] = $values['file/s3_file_id'];
-				} 
-				else {
+				$version['s3_filename'] = $values['file/s3_file_name'];
+				$version['s3_file_id'] = $values['file/s3_file_id'];
+			} else {
 				$version['s3_file_id'] = $values['file/s3_file_id'];
 			}
 			
@@ -1572,7 +1599,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					}
 			
 					if (!empty($box['tabs']['content'. $i]['edit_mode']['on'])) {
+						//Try and ensure that we use relative URLs where possible
 						ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['content'. $i]['fields']['content']);
+						
 						ze\contentAdm::saveContent($values['content'. $i. '/content'], $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $slot);
 						$changes = true;
 					}
@@ -1594,7 +1623,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					}
 			
 					if (!empty($box['tabs']['rawhtml'. $i]['edit_mode']['on'])) {
+						//Try and ensure that we use relative URLs where possible
 						ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['rawhtml'. $i]['fields']['content']);
+						
 						ze\contentAdm::saveContent($values['rawhtml'. $i. '/content'], $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $slot,'zenario_html_snippet');
 						$changes = true;
 					}
@@ -1856,13 +1887,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$sql = "
 						INSERT IGNORE INTO ". DB_PREFIX. "menu_text
 							(menu_id, language_id, name, descriptive_text)
-						SELECT menu_id, '". ze\escape::sql($values['meta_data/language_id']). "', '". ze\escape::sql($values['meta_data/menu_text']). "', descriptive_text
+						SELECT menu_id, '". ze\escape::asciiInSQL($values['meta_data/language_id']). "', '". ze\escape::sql($values['meta_data/menu_text']). "', descriptive_text
 						FROM ". DB_PREFIX. "menu_nodes AS mn
 						INNER JOIN ". DB_PREFIX. "menu_text AS mt
 						   ON mt.menu_id = mn.id
-						  AND mt.language_id = '". ze\escape::sql(ze\content::langId($box['key']['source_cID'], $box['key']['cType'])). "'
+						  AND mt.language_id = '". ze\escape::asciiInSQL(ze\content::langId($box['key']['source_cID'], $box['key']['cType'])). "'
 						WHERE mn.equiv_id = ". (int) $equivId. "
-						  AND mn.content_type = '". ze\escape::sql($box['key']['cType']). "'
+						  AND mn.content_type = '". ze\escape::asciiInSQL($box['key']['cType']). "'
 						ORDER BY mn.id";
 					ze\sql::update($sql);
 				}

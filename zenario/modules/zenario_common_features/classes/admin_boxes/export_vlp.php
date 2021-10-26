@@ -40,7 +40,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 		$phrases['present'] = ze\sql::fetchValue("
 			SELECT COUNT(DISTINCT code, module_class_name)
 			FROM ". DB_PREFIX. "visitor_phrases
-			WHERE language_id = '". ze\escape::sql($box['key']['id']). "'
+			WHERE language_id = '". ze\escape::asciiInSQL($box['key']['id']). "'
 			  AND local_text IS NOT NULL
 			  AND local_text != ''"
 		);
@@ -139,13 +139,13 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS phrases
 			   ON phrases.code = codes.code
 			  AND phrases.module_class_name = codes.module_class_name
-			  AND phrases.language_id = '". ze\escape::sql($languageId). "'
+			  AND phrases.language_id = '". ze\escape::asciiInSQL($languageId). "'
 			  AND phrases.local_text IS NOT NULL
 			  AND phrases.local_text != ''
 			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS reference
 			   ON reference.code = codes.code
 			  AND reference.module_class_name = codes.module_class_name
-			  AND reference.language_id = '". ze\escape::sql(ze::$defaultLang). "'
+			  AND reference.language_id = '". ze\escape::asciiInSQL(ze::$defaultLang). "'
 			  AND reference.code != '__LANGUAGE_LOCAL_NAME__'";
 		
 		if ($values['export/option'] == 'missing') {

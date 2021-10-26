@@ -37,7 +37,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 		$this->clearCacheBy(
-			$clearByContent = (bool) $this->setting('show_categories'), $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = ((bool) ze::setting('enable_display_categories_on_content_lists') && (bool) $this->setting('show_categories')), $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
 		return true;
 	}
@@ -83,7 +83,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				INNER JOIN '.DB_PREFIX.'files f
 					ON a.image_id = f.id
 				WHERE v.id = '.(int)$this->cID.'
-					AND v.type = "'.ze\escape::sql($this->cType).'"
+					AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
 					AND v.version = '.(int)$this->cVersion;
 			$result = ze\sql::select($sql);
 			$file = ze\sql::fetchAssoc($result);
@@ -103,15 +103,31 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				INNER JOIN '.DB_PREFIX.'files f
 					ON v.feature_image_id = f.id
 				WHERE v.id = '.(int)$this->cID.'
-					AND v.type = "'.ze\escape::sql($this->cType).'"
+					AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
 					AND v.version = '.(int)$this->cVersion;
 			$result = ze\sql::select($sql);
 			$file = ze\sql::fetchAssoc($result);
+
+			//If there is no feature image, try to use the fallback image.
+			if (empty($file) && $this->setting('show_feature_image_fallback')) {
+				$file = ze\row::get('files', ['id', 'alt_tag'], $this->setting('feature_image_fallback'));
+			}
+
 			if (!empty($file)) {
 				$width = $height = $url = false;
-				ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('sticky_image_width'), $this->setting('sticky_image_height'), $this->setting('sticky_image_canvas'), $this->setting('sticky_image_offset'));
+				ze\file::imageLink(
+					$width, $height, $url, $file['id'],
+					$this->setting('sticky_image_width'), $this->setting('sticky_image_height'),
+					$this->setting('sticky_image_canvas'), $this->setting('sticky_image_offset')
+				);
 				if ($url) {
-					$this->mergeFields['Sticky_image'] = ['Sticky_Image_Src' => $url, 'Sticky_Image_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('sticky_image_label_html_tag'), 'label' => $this->phrase('Featured image'), 'class' => 'sticky_image'];
+					$this->mergeFields['Sticky_image'] = [
+						'Sticky_Image_Src' => $url,
+						'Sticky_Image_Alt' => $file['alt_tag'],
+						'html_tag' => $this->setting('sticky_image_label_html_tag'),
+						'label' => $this->phrase('Featured image'),
+						'class' => 'sticky_image'
+					];
 					$this->showSections['show_sticky_image'] = true;
 				}
 			}
@@ -152,30 +168,71 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			$this->showSections['show_language_name'] = true;
 		}
 		
-		if ($this->setting('show_categories') && is_array($itemCats = ze\category::contentItemCategories($this->cID, $this->cType, true))) {
+		if (ze::setting('enable_display_categories_on_content_lists') && $this->setting('show_categories') && is_array($itemCats = ze\category::contentItemCategories($this->cID, $this->cType, true))) {
 			$this->showSections['show_categories'] = true;
 			$this->showSections['categories'] = [];
 			
 			$c = -1;
-			foreach($itemCats as $cat) {
+			$categoryLandingPagesEnabled = ze::setting('enable_category_landing_pages');
+			foreach ($itemCats as $cat) {
 				++$c;
 				$section = ['Category' => htmlspecialchars($cat['public_name'])];
+
+				if ($categoryLandingPagesEnabled && $cat['landing_page_equiv_id'] && $cat['landing_page_content_type']) {
+					$section['Category_landing_page'] = ze\link::toItem($cat['landing_page_equiv_id'], $cat['landing_page_content_type']);
+				}
 				
 				$this->showSections['categories'][] = $section;
 			}
 			
 			$this->mergeFields['Categories'] = ['html_tag' => $this->setting('categories_html_tag'), 'label' => $this->phrase('Categories'), 'class' => 'categories'];
 		}
+
+		//"Pinned" status: check if pinning is enabled for this content type...
+		$allowPinnedContent = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $this->cType]);
 		
+		//... and if it is, go through the relevant plugin settings.
+		if ($allowPinnedContent) {
+			$pinned = ze\row::get('content_item_versions', 'pinned', ['id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion]);
+			if ($pinned) {
+				$this->showSections['show_pinned_icon'] = $this->setting('show_icon_when_pinned');
+
+				if ($this->setting('show_text_when_pinned')) {
+					$this->showSections['show_pinned_text'] = true;
+					$this->mergeFields['Text_when_pinned'] = ['value' => $this->phrase('Pinned'), 'html_tag' => $this->setting('pinned_text_html_tag'), 'class' => 'pinned_text'];
+				}
+			}
+		}
+
 		$this->mergeFields['content'] = [];
 		
 		foreach (explode(',', $this->setting('reorder_fields')) as $field) {
 
-			$fieldName = str_replace('show_', '', $field);	
+			$fieldName = str_replace('show_', '', $field);
 			
-			if(isset($this->mergeFields[ucwords($fieldName)])) {				
+			if (isset($this->mergeFields[ucwords($fieldName)])) {				
 				$this->mergeFields['content'][$field] = $this->mergeFields[ucwords($fieldName)];
 			}
+		}
+	}
+
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		switch ($path) {
+			case 'plugin_settings':
+				$categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
+				if (!$categoriesEnabled) {
+					$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//categories~.site_settings~tcategories~k{\"id\"%3A\"categories\"}' target='_blank'>site settings</a>";
+					
+					$fields['first_tab/show_categories']['side_note'] = ze\admin::phrase(
+						'You must enable this option in your [[site_settings_link]] under "Categories".',
+						['site_settings_link' => $siteSettingsLink]
+					);
+					
+					$fields['first_tab/show_categories']['disabled'] = true;
+					$values['first_tab/show_categories'] = false;
+				}
+
+				break;
 		}
 	}
 	
@@ -206,19 +263,21 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				}
 				
 				//All available fields in Details tab
-				$availableFields = ['show_date',
-									'show_published_date',
-									'show_title',
-									'show_description',
-									'show_summary',
-									'show_categories',
-									'show_keywords',
-									'show_language_name',
-									'show_language',
-									'show_writer_name',
-									'show_writer_image',
-									'show_sticky_image'
-									];
+				$availableFields = [
+					'show_date',
+					'show_published_date',
+					'show_title',
+					'show_description',
+					'show_summary',
+					'show_categories',
+					'show_keywords',
+					'show_language_name',
+					'show_language',
+					'show_writer_name',
+					'show_writer_image',
+					'show_sticky_image',
+					'show_text_when_pinned'
+				];
 													
 				$fieldsWithNiceNames = [];
 				
@@ -227,7 +286,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					if ($values['first_tab/' . $field] == "1") {
 						$niceName = ucwords(str_replace('_', ' ', str_replace('show_', '', $field)));
 						
-						if($niceName == 'Sticky Image') {
+						if ($niceName == 'Sticky Image') {
 							$niceName = 'Feature Image';
 						}
 						
@@ -240,10 +299,10 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				}
 				
 				//Check if this is the first time the admin box has been run...
-				if(isset($fields['order_tab/reorder_fields']['current_value'])) {
+				if (isset($fields['order_tab/reorder_fields']['current_value'])) {
 					//... if not (e.g. switching a tab), use current order instead of getting it from the database...
 					$metaData = explode(',', $fields['order_tab/reorder_fields']['current_value']);
-				} elseif(!empty($fields['order_tab/reorder_fields']['value'])) {
+				} elseif (!empty($fields['order_tab/reorder_fields']['value'])) {
 					//... if yes (opening the admin box), get the order from the database...
 					$metaData = explode(',', $fields['order_tab/reorder_fields']['value']);
 				} else {
@@ -255,9 +314,8 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				
 				//Only process fields selected on Details page
 				foreach($metaData as $field) {
-					if($field)
-					{
-						if($values[$field] == 1) {
+					if ($field) {
+						if ($values[$field] == 1) {
 							$fieldsInOrder[$field] = $fieldsWithNiceNames[$field];
 						}
 					}
@@ -266,7 +324,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				
 				//If a previously unselected field has been selected now, add it
 				foreach($fieldsWithNiceNames as $field => $value) {
-					if(!isset($metaData[$field]) && $values[$field] == 1) {
+					if (!isset($metaData[$field]) && $values[$field] == 1) {
 						$fieldsInOrder[$field] = $value;
 					}
 				}

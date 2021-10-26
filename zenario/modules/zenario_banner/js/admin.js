@@ -100,7 +100,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 		allow_script_urls: false,
 		document_base_url: URLBasePath,
 		convert_urls: true,
-		relative_urls: true,
+		relative_urls: !zenario.slashesInURL,
 		
 		style_formats: zenarioA.skinDesc.style_formats,
 		file_browser_callback: zenarioA.fileBrowser,

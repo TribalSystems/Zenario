@@ -61,7 +61,7 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		
 		$datasetExportFields = $datasetFieldNames;
 		$linkFooter = ze\admin::phrase(
-			'<p>To add fields, open the <a href="zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[dataset]]//" target="zenario_dataset_editor">'.$dataset['label'].' dataset<a>. Select the fields required, and mark them to be included in export.</p>
+			'<p>To add fields, open the <a href="organizer.php?#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[dataset]]//" target="zenario_dataset_editor">'.$dataset['label'].' dataset<a>. Select the fields required, and mark them to be included in export.</p>
 			<br>
 			<p>If your current view includes filters, the export will include only the filtered records.</p>'
 		, ['dataset' => $box['key']['dataset']]);

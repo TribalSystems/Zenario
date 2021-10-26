@@ -291,7 +291,7 @@ class zenario_search_results extends ze\moduleBaseClass {
 	
 	protected function getLanguagesSQLFilter(){
 		return "
-			AND c.language_id = '". ze\escape::sql(ze\content::currentLangId()). "' ";
+			AND c.language_id = '". ze\escape::asciiInSQL(ze\content::currentLangId()). "' ";
 	}
 	
 	
@@ -391,7 +391,7 @@ class zenario_search_results extends ze\moduleBaseClass {
 		
 		if ($cType != '%all%') {
 			$sql .= "
-			  AND v.type = '". ze\escape::sql($cType). "'";
+			  AND v.type = '". ze\escape::asciiInSQL($cType). "'";
 		}
 	
 		$record_number = 1;

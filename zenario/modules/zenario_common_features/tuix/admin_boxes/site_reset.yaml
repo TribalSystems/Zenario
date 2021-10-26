@@ -12,14 +12,14 @@ zenario_site_reset:
                 are_you_sure: 
                     show: true
                     type: warning
-                    message: "Are you sure that you wish to reset your site to its initial state? THIS CANNOT BE UNDONE!"
+                    message: "Are you sure that you wish to reset your site to its factory settings? THIS CANNOT BE UNDONE!"
             fields: 
                 username: 
-                    label: "Username:"
+                    label: "Administrator username:"
                     type: text
                     readonly: true
                 password: 
-                    label: "Password:"
+                    label: "Administrator password:"
                     type: password
     save_button_message: Reset
     cancel_button_message: Cancel

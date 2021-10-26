@@ -120,7 +120,7 @@ class zenario_users extends ze\moduleBaseClass {
 					user_id = ". (int) $_SESSION['extranetUserID']. ",
 					hit_datetime = NOW(),
 					content_id = ". (int) $cID. ",
-					content_type = '". ze\escape::sql($cType). "',
+					content_type = '". ze\escape::asciiInSQL($cType). "',
 					content_version = ". (int) $cVersion;
 			ze\sql::update($sql);
 		}

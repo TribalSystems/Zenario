@@ -49,7 +49,7 @@ class zenario_event_slideshow extends ze\moduleBaseClass {
 		$sqlWhere = '
 			WHERE c.type = "event"
 			AND c.status = "published"
-			AND c.language_id = "'.ze\escape::sql(ze::$langId).'"
+			AND c.language_id = "'.ze\escape::asciiInSQL(ze::$langId).'"
 			AND cv.end_date >= CURDATE()
 			AND tc.privacy = "public"';
 		if ($this->setting('filter_by_category') && $this->setting('content_category')) {

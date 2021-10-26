@@ -105,7 +105,7 @@ switch ($path) {
 			
 			$mrg = [
 				'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
-				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 			
 			$fields['overall_list/heading_if_items']['show_phrase_icon'] =
@@ -139,8 +139,8 @@ switch ($path) {
 				$fields['overall_list/order']['values']['Menu'] = ze\admin::phrase('Menu ordinal');
 			}
 		}
-		
-		$fields['first_tab/specific_languages']['hidden'] = $values['first_tab/language_selection'] != 'specific_languages';
+		//Language settings
+		$fields['first_tab/specific_languages']['hidden'] = ($values['first_tab/language_selection'] != 'specific_languages');
 	
 	
 	

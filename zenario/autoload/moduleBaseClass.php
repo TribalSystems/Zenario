@@ -185,7 +185,7 @@ class moduleAPI {
 				$cType = $inType;
 			}
 			
-			return (\ze\priv::check() || \ze\content::publishedVersion($cID, $cType));
+			return (\ze::isAdmin() || \ze\content::publishedVersion($cID, $cType));
 		}
 		
 		return false;
@@ -317,7 +317,15 @@ class moduleAPI {
 						if ($this->frameworkPath) {
 							$output = \ze\twig::render($this->frameworkPath, $vars);
 						} elseif ($this->framework) {
-							$output = \ze\admin::phrase('Cannot display; the file [[moduleClassName]]/frameworks/[[framework]]/framework.twig.html is missing.', ['framework' => $this->framework, 'moduleClassName' => $this->moduleClassName]);
+							$output = \ze\admin::phrase(
+								'[[htmlRedClassStart]]Cannot display; the file [[moduleClassDir]]frameworks/[[framework]]/framework.twig.html is missing.[[htmlRedClassEnd]]',
+								[
+									'framework' => $this->framework,
+									'moduleClassDir' => \ze::moduleDir($this->moduleClassName),
+									'htmlRedClassStart' => '<span class="red">',
+									'htmlRedClassEnd' => '</span>'
+								]
+							);
 						} else {
 							$output = \ze\admin::phrase("Cannot display; no framework was selected.");
 						}
@@ -336,7 +344,7 @@ class moduleAPI {
 			} catch (\Exception $e) {
 				\ze::$canCache = false;
 			
-				if (\ze\priv::check()) {
+				if (\ze::isAdmin()) {
 					echo
 						\ze\admin::phrase('[[moduleClassName]] in [[slotName]]: [[error]] (In [[framework]] at line [[line]].)', [
 							'error' => htmlspecialchars($e->getMessage()),
@@ -671,7 +679,7 @@ class moduleAPI {
 	}
 	
 	protected final function registerPluginPage($mode = null, $moduleClassName = null) {
-		if (\ze\priv::check() && \ze::$equivId) {
+		if (\ze::isAdmin() && \ze::$equivId) {
 			
 			$state = '';
 			if (isset($this->parentNest)) {
@@ -742,7 +750,7 @@ class moduleAPI {
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call='. $methodCall.
 			'&cID='. $this->cID.
 			'&cType='. $this->cType.
-		  (\ze\priv::check()?
+		  (\ze::isAdmin()?
 			'&cVersion='. $this->cVersion
 		   : '').
 			'&instanceId='. $this->instanceId.
@@ -794,7 +802,7 @@ class moduleAPI {
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showFloatingBox'.
 			'&cID='. $this->cID.
 			'&cType='. $this->cType.
-		  (\ze\priv::check()?
+		  (\ze::isAdmin()?
 			'&cVersion='. $this->cVersion
 		   : '').
 			'&instanceId='. $this->instanceId.
@@ -806,7 +814,7 @@ class moduleAPI {
 	public final function showSingleSlotLink($requests = '', $hideLayout = true) {
 		return
 			$this->linkToItem($this->cID, $this->cType, false, 
-			  (\ze\priv::check()?
+			  (\ze::isAdmin()?
 				'&cVersion='. $this->cVersion
 			   : '').
 				'&method_call=showSingleSlot'.
@@ -836,7 +844,7 @@ class moduleAPI {
 			$this->visitorTUIXLink($callbackFromScriptTags, $path, $requests, $mode).
 			'&cID='. $this->cID.
 			'&cType='. $this->cType.
-		  (\ze\priv::check()?
+		  (\ze::isAdmin()?
 			'&cVersion='. $this->cVersion
 		   : '').
 			'&instanceId='. $this->instanceId.
@@ -1075,8 +1083,12 @@ class moduleAPI {
 			$this->slideId];
 	}
 	
-	public final function zAPIGetCSSClass() {
-		return $this->cssClass;
+	public final function wrapperClass() {
+		if (isset($this->zAPISettings['mode'])) {
+			return $this->cssClass. ' '. $this->moduleClassName. '__in_mode__'. $this->zAPISettings['mode'];
+		} else {
+			return $this->cssClass;
+		}
 	}
 	
 	public final function zAPISetCachableVars(&$a) {
@@ -1158,6 +1170,12 @@ class moduleAPI {
 		}
 	}
 	
+	public final function setErrorMessage($errorMessage) {
+		if (!empty(\ze::$slotContents[$this->slotNameNestId])) {
+			\ze::$slotContents[$this->slotNameNestId]['error'] = $errorMessage;
+		}
+	}
+	
 	public final function mainClass() {
 		return $this->zAPIMainClass;
 	}
@@ -1184,7 +1202,7 @@ class moduleAPI {
 				$sql = "
 					SELECT `name`, default_value
 					FROM ". DB_PREFIX. "plugin_setting_defs
-					WHERE module_class_name = '". \ze\escape::sql($className). "'";
+					WHERE module_class_name = '". \ze\escape::asciiInSQL($className). "'";
 				$result = \ze\sql::select($sql);
 				
 				while($row = \ze\sql::fetchAssoc($result)) {
@@ -1239,7 +1257,7 @@ class moduleAPI {
 		$slot = &\ze::$slotContents[$this->slotNameNestId];
 		
 		//Include the controls if this is admin mode, and if this is not a preview of a layout
-		if ($checkPriv = $includeAdminControlsIfInAdminMode && !$isLayoutPreview && \ze\priv::check()) {
+		if ($checkPriv = $includeAdminControlsIfInAdminMode && !$isLayoutPreview && \ze::isAdmin()) {
 			$this->startIncludeAdminControls();
 		}
 		
@@ -1252,7 +1270,7 @@ class moduleAPI {
 		 && $this->slotLevel == 2
 		 && \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			if ((bool)\ze\admin::id()) {
-				echo '<div id="'. $this->containerId. '-layout_preview" onclick = "zenarioA.adminSlotWrapperClick(\''.htmlspecialchars($this->slotName).'\');" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
+				echo '<div id="'. $this->containerId. '-layout_preview" onclick="zenarioA.adminSlotWrapperClick(\''. htmlspecialchars($this->slotName). '\');" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
 			}	else {
 				echo '<div id="'. $this->containerId. '-layout_preview" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
 			}		
@@ -1358,7 +1376,7 @@ class moduleAPI {
 		
 		//Put a section around the slot and the slot controls in admin mode.
 		//This lets us adjust the look of the slot and the slot controls using CSS.
-		if (\ze\priv::check()) {
+		if (\ze::isAdmin()) {
 			
 			$tuixSnippetId = $this->zAPISettings['~tuix_snippet~'] ?? null;
 			$em = self::$zAPIExtendingModules[$this->containerId] ?? null;
@@ -1374,7 +1392,7 @@ class moduleAPI {
 			if ($tuixSnippetId && ($custom = \ze\sql::fetchValue('SELECT name FROM '. DB_PREFIX. 'tuix_snippets WHERE id = '. (int) $tuixSnippetId))) {
 				echo ' data-tuix_snippet="', htmlspecialchars($custom. ' (ID '. $tuixSnippetId. ')'), '"';
 			}
-			if ($em && ($names = \ze\sql::fetchValues('SELECT CONCAT(class_name, \' (\', display_name, \')\') FROM '. DB_PREFIX. 'modules WHERE class_name IN ('. \ze\escape::in(array_keys($em)). ')'))) {
+			if ($em && ($names = \ze\sql::fetchValues('SELECT CONCAT(class_name, \' (\', display_name, \')\') FROM '. DB_PREFIX. 'modules WHERE class_name IN ('. \ze\escape::in(array_keys($em), 'asciiInSQL'). ')'))) {
 				echo ' data-extnames="', htmlspecialchars(implode(', ', $names)), '"';
 			}
 			
@@ -1391,26 +1409,19 @@ class moduleAPI {
 	public final function startInner() {
 		if (\ze::$isTwig) return;
 		
-		if (isset($this->zAPISettings['mode'])) {
-			$cm = ' '. $this->moduleClassName. '__in_mode__'. $this->zAPISettings['mode'];
-		} else {
-			$cm = '';
-		}
-		if ((bool)\ze\admin::id()) {
-			
-			
-			return '
+		$html = '
 
-					<div id="'. $this->containerId. '"  class="zenario_slot '. $this->cssClass. $cm. '" onclick = "zenarioA.adminSlotWrapperClick(\''.htmlspecialchars($this->slotName).'\');" >';
-		} else {
-			return '
-
-					<div id="'. $this->containerId. '"  class="zenario_slot '. $this->cssClass. $cm. '">';
+					<div id="'. $this->containerId. '"  class="zenario_slot '. $this->wrapperClass(). '"';
+		
+		if (\ze::isAdmin()) {
+			$html .= ' onclick="zenarioA.adminSlotWrapperClick(\''. htmlspecialchars($this->slotName). '\');"';
 		}
+		
+		return $html. '>';
 	}
 	
 	protected final function noModeSelected() {
-		if (\ze\priv::check()) {
+		if (\ze::isAdmin()) {
 			echo
 				'<p class="zenario_inactive_mode">'.
 					\ze\admin::phrase('This plugin is inactive. Please edit its settings to make it active.').
@@ -1423,7 +1434,7 @@ class moduleAPI {
 		if (\ze::$isTwig) return;
 		
 		$padding = '';
-		if (\ze\priv::check()) {
+		if (\ze::isAdmin()) {
 			if ($this->instanceId && !$this->frameworkOutputted) {
 				$padding = '
 					<span class="zenario_slot_padding">&nbsp;</span>';
@@ -1439,7 +1450,7 @@ class moduleAPI {
 		if (\ze::$isTwig) return;
 		
 		//Display the HTML at the end of a slot when in admin mode
-		if (\ze\priv::check()) {
+		if (\ze::isAdmin()) {
 			echo '
 				</x-zenario-admin-slot-wrapper>';
 		}

@@ -326,7 +326,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 												SELECT privacy
 												FROM ". DB_PREFIX. "translation_chains
 												WHERE equiv_id = ". (int) ze::$equivId. "
-												  AND type = '". ze\escape::sql(ze::$cType). "'")
+												  AND type = '". ze\escape::asciiInSQL(ze::$cType). "'")
 							) {
 								$mergefields['auth_warning'] = $this->phrase('Warning: this page is password-protected, so users will need to be authenticated to this site before they can view the content.');
 							}

@@ -250,7 +250,7 @@ class zenario_document_envelopes_fea extends zenario_abstract_fea {
 		
 			if ($retina) {
 				$sWidth = $sHeight = $sURL = false;
-				if (ze\file::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', 0, false)) {
+				if (ze\file::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $canvas == 'resize_and_crop'? 'resize_and_crop' : 'adjust', 0, false)) {
 					if ($url != $sURL) {
 						$srcSet = $url. ' 2x';
 						$url = $sURL;

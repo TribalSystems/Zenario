@@ -115,7 +115,7 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_services'
 				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_plocations_SERVICE_', s.id) = vp.code
-				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
+				AND vp.language_id = '" . ze\escape::asciiInSQL(ze::$visLang) . "' ORDER BY 2";
 			
 		$result = ze\sql::select($sql);
 			
@@ -133,7 +133,7 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 				FROM ' . DB_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . 'project_location_sectors'
 				. ' AS s LEFT JOIN ' . DB_PREFIX . "visitor_phrases 
 				AS vp ON CONCAT('_PROJECT_plocations_SECTOR_', s.id) = vp.code 
-				AND vp.language_id = '" . ze\escape::sql(ze::$visLang) . "' ORDER BY 2";
+				AND vp.language_id = '" . ze\escape::asciiInSQL(ze::$visLang) . "' ORDER BY 2";
 			
 		$result = ze\sql::select($sql);
 			

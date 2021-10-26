@@ -81,21 +81,21 @@ class zenario_common_features__organizer__languages extends ze\moduleBaseClass {
 					$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_languages_enabled'];
 	
 					if (!$atLeastOneLanguageEnabled) {
-						$panel['title'] = ze\admin::phrase('Enable a Language');
+						$panel['title'] = ze\admin::phrase('Enable a language');
 						$panel['popout_message'] =
 							'<!--Message_Type:Warning-->'.
 							ze\admin::phrase(
 <<<_text
-<p>Zenario needs at least one Language to be enabled in order to run.</p>
+<p>Zenario needs at least one language to be enabled in order to run.</p>
 
-<p>Please select a Language Pack from the panel - click it once and then click the &quot;Enable Language&quot; button.</p>
+<p>Please select a language from the panel: with it selected, click the &quot;Enable this language&quot; button.</p>
 
-<p>If the language you require is not shown, you can create it by clicking on the button &quot;Create a Custom Language&quot;.</p>
+<p>The panel shows many languages, but if the language you require is not shown, you can create it by clicking on the button &quot;Define a language&quot;.</p>
 _text
 						);
 	
 					} else {
-						$panel['title'] = ze\admin::phrase('Enable another Language');
+						$panel['title'] = ze\admin::phrase('Enable another language');
 					}
 				}
 
@@ -128,9 +128,9 @@ _text
 							  AND v.type = c.type
 							  AND v.version = c.admin_version
 							  AND v.layout_id = ". (int) ($_GET['refiner__template'] ?? false). "
-							WHERE c.language_id = '". ze\escape::sql($id). "'
+							WHERE c.language_id = '". ze\escape::asciiInSQL($id). "'
 							  AND c.status NOT IN ('trashed','deleted')
-							  AND c.type = '". ze\escape::sql($details['content_type']). "'";
+							  AND c.type = '". ze\escape::asciiInSQL($details['content_type']). "'";
 		
 						$result = ze\sql::select($sql);
 						$row = ze\sql::fetchRow($result);
@@ -181,7 +181,7 @@ _text
 					foreach ($panel['collection_buttons'] as &$button) {
 						$button['hidden'] = true;
 					}
-					$panel['no_items_message'] = ze\admin::phrase('No Languages have been enabled. You must enable a Language before creating any Content Items.');
+					$panel['no_items_message'] = ze\admin::phrase('No languages have been enabled. You must enable at least one language before creating any content items.');
 
 				}
 			
@@ -280,8 +280,8 @@ _text
 					$sql = "
 						DELETE
 						FROM " . DB_PREFIX . "visitor_phrases
-						WHERE language_id = '" . ze\escape::sql($_POST['id']) . "'
-						  AND '" . ze\escape::sql($_POST['id']) . "' NOT IN (
+						WHERE language_id = '" . ze\escape::asciiInSQL($_POST['id']) . "'
+						  AND '" . ze\escape::asciiInSQL($_POST['id'] ?? '') . "' NOT IN (
 							SELECT id
 							FROM " . DB_PREFIX . "languages
 						)";

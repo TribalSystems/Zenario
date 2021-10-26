@@ -36,7 +36,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 			SELECT sa.alias AS spare_alias
 			FROM ". DB_PREFIX. "spare_aliases AS sa
 			WHERE sa.content_id = ". (int) $box['key']['cID']. "
-			AND sa.content_type = '". ze\escape::sql($box['key']['cType']). "'
+			AND sa.content_type = '". ze\escape::asciiInSQL($box['key']['cType']). "'
 			ORDER BY sa.alias";
 		$result = ze\sql::select($sql);
 		
@@ -94,7 +94,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 			foreach (ze\ray::explodeAndTrim($values['spare_aliases']) as $alias) {
 				
 				if ($alias == $values['meta_data/alias']) {
-					$href = ze\link::protocol() . ze\link::host() . SUBDIRECTORY . 'zenario/admin/organizer.php#zenario__administration/panels/zenario_settings_pro_features__spare_aliases';
+					$href = ze\link::protocol() . ze\link::host() . SUBDIRECTORY . 'organizer.php#zenario__administration/panels/zenario_settings_pro_features__spare_aliases';
 					$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 					$linkEnd = '</a>';
 					$box['tabs']['meta_data']['notices']['alias_cannot_also_be_spare_alias']['message'] =
@@ -109,7 +109,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 						SELECT 1
 						FROM ". DB_PREFIX. "content_items
 						WHERE `alias`= '". ze\escape::sql($alias). "'
-						  AND (id, `type`) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::sql($box['key']['cType']). "'))
+						  AND (id, `type`) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::asciiInSQL($box['key']['cType']). "'))
 						LIMIT 1";
 					
 					if (ze\sql::numRows($sql)) {
@@ -120,14 +120,14 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 							SELECT content_id,content_type,alias
 							FROM ". DB_PREFIX. "spare_aliases
 							WHERE `alias`= '". ze\escape::sql($alias). "'
-							  AND (content_id, content_type) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::sql($box['key']['cType']). "'))
+							  AND (content_id, content_type) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::asciiInSQL($box['key']['cType']). "'))
 							LIMIT 1";
 						
 						$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['show'] = false;
 						if (ze\sql::numRows($sql)) {
 							$aliasResult = ze\sql::fetchAssoc($sql);
 							$aliasTag = ze\content::formatTag($aliasResult['content_id'], $aliasResult['content_type']);
-							$linkSpare = ' <a href = "'.ze\link::absolute().'zenario/admin/organizer.php#zenario__administration/panels/zenario_settings_pro_features__spare_aliases" target= "_blank"> View this spare alias. </a>';
+							$linkSpare = ' <a href = "'.ze\link::absolute().'organizer.php#zenario__administration/panels/zenario_settings_pro_features__spare_aliases" target= "_blank"> View this spare alias. </a>';
 							
 							$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['show'] = true;
 							$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['message'] = ze\admin::phrase('\'[[alias]]\' already exists as a spare alias. It points to \'[[aliasTag]]\'. [[linkSpare]]', ['alias' => $alias,'aliasTag' => $aliasTag,'linkSpare' => $linkSpare]);

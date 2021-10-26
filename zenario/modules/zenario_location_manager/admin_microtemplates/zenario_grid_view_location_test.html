@@ -8,7 +8,7 @@
 				<div id="organizer_checkbox_col" class="organizer_cell">
 					<% if (zenarioO.multipleSelectEnabled) { %>
 						<div onclick="zenarioO.toggleSelectAll();">
-							<input type="checkbox" {{m.allItemsSelected? ' checked="checked"' : ''}}>
+							<input type="{{zenarioO.selectionDisplayType()}}" {{m.allItemsSelected? ' checked="checked"' : ''}}>
 						</div>
 					<% } %>
 				</div>

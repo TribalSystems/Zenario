@@ -85,7 +85,8 @@ echo '
 			echo ", ". (int) $layoutId,  ", '". ze\layoutAdm::codeName($layoutId),  "'";
 		
 		} else {
-			echo "'{}'";
+			//When creating a new layout, these will be the default values.
+			echo "'{\"cols\": 12, \"fluid\": true, \"gCols\": 12, \"mirror\": false, \"gGutter\": 1, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"gGutterLeftEdge\": 1.6, \"gGutterRightEdge\": 1.6, \"gutterLeftEdgeFlu\": 1.6, \"gutterRightEdgeFlu\": 1.6}'";
 		}
 	?>);
 	$(document).ready(function() { zenarioGM.draw(); });

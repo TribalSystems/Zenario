@@ -73,6 +73,7 @@ Options -Indexes
 	
 	# Admin URL:
 	RewriteRule ^admin(|\.\w+)$ zenario/admin/welcome.php [L,QSA]
+	RewriteRule ^organizer.php$ zenario/admin/organizer.php [L,QSA]
 	
 	# Friendly URLs:
 	RewriteCond %{REQUEST_URI} !/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)/

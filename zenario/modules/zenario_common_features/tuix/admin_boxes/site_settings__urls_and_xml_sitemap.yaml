@@ -2,10 +2,10 @@
 ---
 site_settings:
     setting_group: urls_and_xml_sitemap
-    title: Editing settings for URL format and XML Sitemap
+    title: Editing settings for URL format and XML sitemap
     tabs:
         urls:
-            label: URLs
+            label: Friendly URLs
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -15,8 +15,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            This tab contains settings for generating URLs for the pages
-                            on your site.
+                            Friendly URLs are more readable for visitors and may improve search engine optimisation.
                 friendly_urls_disabled_warning:
                     pre_field_html: "<div class=\"zenario_fbWarning\">"
                     snippet: 
@@ -28,23 +27,27 @@ site_settings:
                 mod_rewrite_enabled:
                     site_setting:
                         name: mod_rewrite_enabled
-                    label: 'Use friendly URLs'
+                    label: 'Use friendly URLs for visitors'
                     type: checkbox
                     value: ""
                     format_onchange: true
                     note_below: |
-                        Turn this on if your Apache installation has support for mod_rewrite and is configured with rewrite rules.
-                        This may improve search engine optimization.
-                        <br/>
-                        Please see <a href="https://zenar.io/search-engine-friendly-urls.html" target="_blank">zenar.io/search-engine-friendly-urls.html</a>
-                        for more information.
+                        Recommended.
+                        <br />
+                        Note that your Apache web server must be configured with support for mod_rewrite and is configured with the Zenario .htaccess file for correct rewrite rules.
+                        <br />
+                        <a href="https://zenar.io/search-engine-friendly-urls.html" target="_blank">More information</a>.
                 mod_rewrite_admin_mode:
                     indent: 1
                     site_setting:
                         name: mod_rewrite_admin_mode
                     visible_if: |
                         zenarioAB.value('mod_rewrite_enabled')
-                    label: 'Use friendly URLs in admin mode'
+                    label: 'Use friendly URLs in admin mode too'
+                    note_below: |
+                            Recommended.
+                            <br />
+                            Allows administrators to see friendly URLs while in admin mode.
                     type: checkbox
                     value: 1
                 mod_rewrite_suffix:
@@ -53,10 +56,10 @@ site_settings:
                         name: mod_rewrite_suffix
                     visible_if: |
                         zenarioAB.value('mod_rewrite_enabled')
-                    label: 'mod_rewrite Suffix:'
+                    label: 'mod_rewrite suffix:'
                     type: select
                     value: ""
-                    empty_value: '-- No Suffix --'
+                    empty_value: '-- No suffix (recommended) --'
                     note_below: |
                         An optional suffix which every friendly URL will have.
                         Internal links created by Zenario will have this suffix.
@@ -71,9 +74,13 @@ site_settings:
                     value: ''
                     redraw_onchange: true
                     note_below: |
-                        Enabling this option will cause the menu structure to appear
-                        as a folder-structure in the friendly URLs.
-                        This may further improve search engine optimization.
+                        Enable this option to make URLs of deeper-level pages be preceded by the aliases of pages above them in the menu.
+                        <br />
+                        e.g. <code>zenariosite.com/products/top-sellers/another-page</code>
+                        <br />
+                        ...where <code>products</code> would be the alias of a level 1 page, <code>top-sellers</code> that of a level 2 page, and <code>another-page</code> a level 3 page.
+                        <br />
+                        This may further improve search engine optimisation.
                         
                 translations_different_aliases:
                     visible_if: |
@@ -138,7 +145,7 @@ site_settings:
                         Your language-specific domain names will be used to show the language,
                         e.g.: en.example.com/pagename
         sitemap:
-            label: XML Sitemap
+            label: XML sitemap
             edit_mode:
                 enabled: Yes
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -148,8 +155,8 @@ site_settings:
                     full_width: Yes
                     snippet:
                         html: |
-                            This CMS can generate an XML Sitemap, which you can supply to search engines to help them index your site.
-                                                            The XML Sitemap includes the URLs of all published, non-private content items.
+                            <p>Zenario can generate an XML sitemap, which helps search engines to index this site.</p>
+                            <p>It includes the URLs of all published, non-private content items.</p>
                 sitemap_disabled_warning:
                     pre_field_html: "<div class=\"zenario_fbWarning\">"
                     snippet: 
@@ -159,7 +166,7 @@ site_settings:
                 sitemap_enabled:
                     site_setting:
                         name: sitemap_enabled
-                    label: 'Enable XML Sitemap:'
+                    label: 'Generate an XML sitemap'
                     type: checkbox
                     format_onchange: Yes
                 sitemap_url:
@@ -167,7 +174,6 @@ site_settings:
                     type: text
                     readonly: readonly
                     note_below: |
-                        The XML Sitemap will have the above URL which is not editable.
-                                                        You can copy and paste this URL into search engine tools
-                                                        (such as <a href="https://www.google.com/webmasters/tools/" target="_blank">Google Webmaster Tools</a>).
-                                                        We recommend that you go to Configuration->Site Settings and open the URL format, aliases and XML sitemap interface to enable Friendly URLs. When enabled, URLs will contain the more friendly alias-based format.
+                        The XML sitemap will have the above URL. It is not editable.
+                        Copy and paste this URL into search engine tools such as <a href="https://www.google.com/webmasters/tools/" target="_blank">Google Webmaster Tools</a>.
+                        Friendly URLs must be enabled in order to enable the XML sitemap.

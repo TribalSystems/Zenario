@@ -1,7 +1,7 @@
 <li>
 	<a
 		<% if (m.href) { %>
-			href="{{URLBasePath + (zenarioATLinks.organizer || 'zenario/admin/organizer.php') + zenarioAT.customiseOrganizerLink(m.href, true)|escape}}"
+			href="{{URLBasePath + (zenarioATLinks.organizer || 'organizer.php') + zenarioAT.customiseOrganizerLink(m.href, true)|escape}}"
 		<% } else if (m.onclick) { %>
 			onclick="{{m.onclick|escape}}"
 		<% } %>

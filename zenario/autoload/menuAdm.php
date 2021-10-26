@@ -57,9 +57,7 @@ class menuAdm {
 	}
 	
 	public static function cssClass($menuNode) {
-		$internalTarget = $menuNode['target_loc'] == 'int' && $menuNode['equiv_id'];
-		
-		if ($internalTarget) {
+		if (($menuNode['target_loc'] == 'int' && $menuNode['equiv_id']) || ($menuNode['target_loc'] == 'doc' && $menuNode['document_id'])) {
 			if ($menuNode['redundancy'] == 'unique') {
 				$cssClass = 'zenario_menunode_internal_unique';
 			} elseif ($menuNode['redundancy'] == 'primary') {
@@ -116,12 +114,12 @@ class menuAdm {
 		} else {
 			$sql .= "
 					(
-						SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::sql($langId). "', '', CONCAT(' (', mt.language_id, ')')))
+						SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::asciiInSQL($langId). "', '', CONCAT(' (', mt.language_id, ')')))
 						FROM ". DB_PREFIX. "menu_text AS mt
 						WHERE mt.menu_id = mi.id
 						ORDER BY
-							mt.language_id = '". \ze\escape::sql($langId). "' DESC,
-							mt.language_id = '". \ze\escape::sql(\ze::$defaultLang). "' DESC
+							mt.language_id = '". \ze\escape::asciiInSQL($langId). "' DESC,
+							mt.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC
 						LIMIT 1
 					)";
 		}
@@ -274,7 +272,7 @@ class menuAdm {
 					UPDATE ". DB_PREFIX. "menu_nodes SET
 						redundancy = 'secondary'
 					WHERE equiv_id = ". (int) $submission['equiv_id']. "
-					  AND content_type = '". \ze\escape::sql($submission['content_type']). "'
+					  AND content_type = '". \ze\escape::asciiInSQL($submission['content_type']). "'
 					  AND id != ". (int) $menuId;
 				\ze\sql::update($sql);
 			} else {
@@ -342,7 +340,7 @@ class menuAdm {
 		if ($sql && $hadUsefulField) {
 			if ($textExists) {
 				$sql .= "
-					WHERE language_id = '". \ze\escape::sql($languageId). "'
+					WHERE language_id = '". \ze\escape::asciiInSQL($languageId). "'
 					  AND menu_id = ". (int) $menuId;	
 			}
 		
@@ -381,11 +379,11 @@ class menuAdm {
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = c.admin_version
-			WHERE c.tag_id IN (". \ze\escape::in($tagIds). ")
+			WHERE c.tag_id IN (". \ze\escape::in($tagIds, 'asciiInSQL'). ")
 			ORDER BY
 				c.type,
 				c.equiv_id,
-				c.language_id = '". \ze\escape::sql(\ze::$defaultLang). "' DESC,
+				c.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC,
 				c.language_id,
 				v.title";
 
@@ -668,7 +666,7 @@ class menuAdm {
 			UPDATE ". DB_PREFIX. "menu_nodes SET
 				redundancy = 'primary'
 			WHERE equiv_id = ". (int) $equivId. "
-			  AND content_type = '". \ze\escape::sql($cType). "'
+			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
 			ORDER BY redundancy = 'primary' DESC
 			LIMIT 1";
 		\ze\sql::update($sql);

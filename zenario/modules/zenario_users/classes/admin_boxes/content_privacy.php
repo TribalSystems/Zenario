@@ -97,7 +97,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 							   ON tc.equiv_id = tcp.equiv_id
 							  AND tc.type = tcp.content_type
 							WHERE tc.equiv_id = ". (int) $equivId. "
-							  AND tc.type = '". ze\escape::sql($cType). "'";
+							  AND tc.type = '". ze\escape::asciiInSQL($cType). "'";
 						
 						if ($chain = ze\sql::fetchAssoc($sql)) {
 							

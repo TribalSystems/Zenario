@@ -135,6 +135,15 @@ body.zenario_pageMode_preview em.zenario_inactive {
 	font-style:normal;
 }
 
+/*  Unlinked menu items link error  */
+
+.unlinked_menu_item .link_error {
+	text-transform: none;
+    font-size: 11px;
+    color: #8B0000;
+    font-style: italic;
+}
+
 body.zenario_pageMode_preview span.zenario_conditionally_hidden {
 	display: none;
 }

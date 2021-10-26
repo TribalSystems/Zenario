@@ -99,7 +99,7 @@ class plugin {
 		$whereSlotName = '';
 		if ($specificSlotName && !$specificInstanceId) {
 			$whereSlotName = "
-				  AND slot_name = '". \ze\escape::sql($specificSlotName). "'";
+				  AND slot_name = '". \ze\escape::asciiInSQL($specificSlotName). "'";
 		}
 	
 		//Look for every plugin instance on the current page, prioritising item level
@@ -124,7 +124,7 @@ class plugin {
 				SELECT slot_name, module_id, instance_id, id, 'item' AS type, 1 AS level
 				FROM ". DB_PREFIX. "plugin_item_link
 				WHERE content_id = ". (int) $cID. "
-				  AND content_type = '". \ze\escape::sql($cType). "'
+				  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
 				  AND content_version = ". (int) $cVersion.
 				  $whereSlotName;
 		}
@@ -147,7 +147,7 @@ class plugin {
 			LEFT JOIN ". DB_PREFIX. "plugin_instances AS vcpi
 			   ON vcpi.module_id = pi.module_id
 			  AND vcpi.content_id = ". (int) $cID. "
-			  AND vcpi.content_type = '". \ze\escape::sql($cType). "'
+			  AND vcpi.content_type = '". \ze\escape::asciiInSQL($cType). "'
 			  AND vcpi.content_version = ". (int) $cVersion. "
 			  AND vcpi.slot_name = pi.slot_name
 			  AND pi.instance_id = 0
@@ -159,7 +159,7 @@ class plugin {
 		}
 		if ($exactMatch && $specificSlotName) {
 			$sql .= "
-			  AND pi.slot_name = '". \ze\escape::sql($specificSlotName). "'";
+			  AND pi.slot_name = '". \ze\escape::asciiInSQL($specificSlotName). "'";
 		}
 	
 		$sql .= "
@@ -171,7 +171,7 @@ class plugin {
 		}
 		if (!$exactMatch && $specificSlotName) {
 			$sql .= "
-				pi.slot_name = '". \ze\escape::sql($specificSlotName). "' DESC,";
+				pi.slot_name = '". \ze\escape::asciiInSQL($specificSlotName). "' DESC,";
 		}
 	
 		$sql .= "
@@ -978,9 +978,9 @@ class plugin {
 		$sql = "
 			SELECT ". ($getModuleId? 'module_id' : 'instance_id'). "
 			FROM ". DB_PREFIX. "plugin_item_link
-			WHERE slot_name = '". \ze\escape::sql($slotName). "'
+			WHERE slot_name = '". \ze\escape::asciiInSQL($slotName). "'
 			  AND content_id = ". (int) $cID. "
-			  AND content_type = '". \ze\escape::sql($cType). "'
+			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
 			  AND content_version = ". (int) $cVersion;
 	
 		$result = \ze\sql::select($sql);
@@ -1005,7 +1005,7 @@ class plugin {
 		$sql = "
 			SELECT ". ($getModuleId? 'module_id' : 'instance_id'). "
 			FROM ". DB_PREFIX. "plugin_layout_link
-			WHERE slot_name = '". \ze\escape::sql($slotName). "'
+			WHERE slot_name = '". \ze\escape::asciiInSQL($slotName). "'
 			  AND layout_id = ". (int) $layoutId;
 	
 		$result = \ze\sql::select($sql);
@@ -1052,7 +1052,7 @@ class plugin {
 			SELECT dependency_class_name
 			FROM ". DB_PREFIX. "module_dependencies
 			WHERE type = 'inherit_frameworks'
-			  AND module_class_name = '". \ze\escape::sql($className). "'
+			  AND module_class_name = '". \ze\escape::asciiInSQL($className). "'
 			LIMIT 1";
 	
 		if (($result = \ze\sql::select($sql))

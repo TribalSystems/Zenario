@@ -4,6 +4,8 @@ zenario__administration:
     nav:
         zenario_settings_pro_features__spare_aliases:
             ord: 5.1
+            visible_if: >
+                zenarioA.siteSettings.default_language
             #css_class: alias_urls_collection
             name: Spare aliases (301s)
             tooltip: Manage spare aliases (301 redirects)
@@ -11,8 +13,8 @@ zenario__administration:
                 path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
     panels:
         zenario_settings_pro_features__spare_aliases:
-            title: Spare aliases (301 redirects)
-            no_items_message: No spare aliases have been created.
+            title: Spare aliases (permanent/301 redirects)
+            no_items_message: No spare aliases (permanent redirects) have been created.
             view_mode: list
             db_items:
                 table: '[[DB_PREFIX]]spare_aliases AS sa'
@@ -46,14 +48,14 @@ zenario__administration:
                     priv: _PRIV_MANAGE_SPARE_ALIAS
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create
+                    label: Create a spare alias
                     admin_box:
                         path: zenario_pro_features_spare_alias
                         create_another: true
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_SPARE_ALIAS
-                    label: Properties
+                    label: Edit spare alias
                     admin_box:
                         path: zenario_pro_features_spare_alias
                 delete:

@@ -6,7 +6,7 @@ Options -Indexes
 
 <ifModule mod_headers.c>
 	Header setifempty Content-Security-Policy "default-src *; img-src * data:; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'"
-	Header setifempty Feature-Policy "sync-xhr *; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none'; speaker 'none';"
+	Header setifempty Feature-Policy "sync-xhr *; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none';"
 	Header setifempty Referrer-Policy strict-origin-when-cross-origin
 	Header setifempty X-Content-Type-Options nosniff
 	Header setifempty X-Frame-Options SAMEORIGIN
@@ -22,7 +22,7 @@ Options -Indexes
 	AddType application/font-woff .woff2
 	AddType text/css .css
 	AddType text/javascript .js
-
+	AddType image/webp .webp
 	
 	ExpiresActive On
 	ExpiresByType application/javascript "access plus 1 month"
@@ -32,6 +32,7 @@ Options -Indexes
 	ExpiresByType image/gif "access plus 1 year"
 	ExpiresByType image/jpeg "access plus 1 year"
 	ExpiresByType image/png "access plus 1 year"
+	ExpiresByType image/webp "access plus 1 year"
 	ExpiresByType image/svg+xml "access plus 1 year"
 	ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
 	ExpiresByType image/x-icon "access plus 1 year"
@@ -62,6 +63,7 @@ Options -Indexes
 	
 	# Admin URL:
 	RewriteRule ^admin(|\.\w+)$ zenario/admin/welcome.php [L,QSA]
+	RewriteRule ^organizer.php$ zenario/admin/organizer.php [L,QSA]
 	
 	# Friendly URLs:
 	RewriteCond %{REQUEST_URI} !/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)/

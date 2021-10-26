@@ -77,6 +77,15 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			case 'plugin':
 				$panel['key']['moduleId'] = $refinerId;
 			
+			case 'view_nests_containing':
+				$isNest = false;
+				$isSlideshow = true;
+				$pluginAdminName = \ze\admin::phrase('plugin');
+				$ucPluginAdminName = \ze\admin::phrase('Plugin');
+                $panel['no_items_in_search_message'] = \ze\admin::phrase('No nests or slideshows match your search');
+				$panel['key']['containingModuleId'] = (int) ze::get('refiner__plugin');
+				break;
+			
 			default:
 				$isNest = false;
 				$isSlideshow = false;
@@ -102,7 +111,14 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			case 'slideshows_using_image':
 				$mrg = ze\row::get('files', ['filename'], $refinerId);
 				unset($panel['collection_buttons']['create'], $panel['collection_buttons']['create_dropdown']);
+				break;
+			
+			case 'view_nests_containing':
+				$mrg = ze\row::get('modules', ['display_name'], ['id' => (int) $refinerId]);
+				unset($panel['collection_buttons'], $panel['item_buttons']);
+				break;
 		}
+
 		switch ($refinerName) {
 			case 'plugins_using_form':
 				$panel['title'] = ze\admin::phrase('Plugins using the form "[[name]]"', $mrg);
@@ -136,8 +152,15 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			case 'slideshows':
                 $panel['no_items_message'] = \ze\admin::phrase('No slideshows are in the slideshow library');
                 break;
+
 			default:
                 $panel['no_items_message'] = \ze\admin::phrase('No plugins are in the plugin library');
+		}
+
+		if (ze::in($refinerName, 'nests_containing_plugins_of_specific_module', 'slideshows_containing_plugins_of_specific_module')) {
+			$panel['db_items']['table'] .= '
+				INNER JOIN [[DB_PREFIX]]nested_plugins np
+					ON pi.id = np.instance_id';
 		}
 
 		//Catch the case where the user is viewing nest/slideshow plugin instances
@@ -319,8 +342,30 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 					$panel['no_items_message'] = ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', $mrg);
 			}
 		
-		//By default, don't show nests and slideshows with other library plugins
+		} elseif ($refinerName == 'view_nests_containing' && !empty($panel['key']['containingModuleId'])) {
+			//Table join required to work...
+			$panel['db_items']['table'] .= '
+				INNER JOIN [[DB_PREFIX]]nested_plugins np
+					ON np.instance_id = pi.id';
+			
+			//... and WHERE statement.
+			$panel['db_items']['where_statement'] .= '
+				AND pi.module_id IN (
+					SELECT id FROM [[DB_PREFIX]]modules
+					WHERE class_name IN ("zenario_plugin_nest", "zenario_slideshow", "zenario_slideshow_simple")
+				)
+				AND np.module_id = ' . (int) $panel['key']['containingModuleId'];
+
+			$module = ze\module::details($panel['key']['containingModuleId']);
+			$mrg = ['name' => $module['display_name']];
+
+			$panel['title'] =
+			$panel['select_mode_title'] =
+				ze\admin::phrase('Nests or slideshows containing plugins of module "[[name]]"', $mrg);
+			$panel['no_items_message'] = \ze\admin::phrase('There are no nests or slideshows containing plugins of module "[[name]]"', $mrg);
+		
 		} elseif (!$isNest) {
+			//By default, don't show nests and slideshows with other library plugins
 			$panel['db_items']['where_statement'] .= ' '. $panel['db_items']['custom__exclude_nests_and_slideshows'];
 		}
 	}
@@ -364,6 +409,26 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//' . (int)$id . '//'
 				];
 				$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+			}
+		}
+
+		if ($refinerName == 'plugin' && $refinerId) {
+			$usageInNestsAndSlideshows = ze\moduleAdm::usageInNestsAndSlideshows($refinerId);
+			$usageInNestsAndSlideshowsTotal = $usageInNestsAndSlideshows['nestCount'] + $usageInNestsAndSlideshows['slideshowCount'];
+			if ($usageInNestsAndSlideshowsTotal > 0) {
+				$panel['notice']['show'] = true;
+				$panel['collection_buttons']['view_nests_containing']['hidden'] = false;
+
+				$panel['notice']['message'] = ze\admin::nPhrase(
+					"There is 1 plugin nest or slideshow which uses this module, [[link_start]]click to view[[link_end]].",
+					"There are [[count]] nests or slideshows which use this module, [[link_start]]click to view[[link_end]].",
+					$usageInNestsAndSlideshowsTotal,
+					[
+						'link_start' =>
+							'<a href="' . ze\link::absolute(). 'organizer.php#zenario__modules/panels/modules/item//' . (int) $refinerId . '//collection_buttons/view_nests_containing////">',
+						'link_end' => '</a>'
+					]
+				);
 			}
 		}
 	}

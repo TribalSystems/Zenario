@@ -29,6 +29,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 $bodyTag = '<body class="desktop no_js '. \ze\cache::browserBodyClass();
+	//N.b. if you change this line above, you'll also need to edit the following two files:
+		//zenario/includes/index.pre_load.inc.php
+		//zenario/includes/index.post_display.inc.php
+	//...and change the line there as well, as they have str_replace()s that look for this text!
+
 
 //Add the Admin Toolbar in Admin Mode
 if (\ze\priv::check()) {

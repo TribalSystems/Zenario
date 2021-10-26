@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $zenarioATLinks = [
 	'logout' => \ze\admin::logoutOnclick(),
 	'tag' => \ze::$cType. '_'. \ze::$cID,
-	'organizer' => 'zenario/admin/organizer.php?fromCID='. \ze::$cID. '&fromCType='. \ze::$cType,
+	'organizer' => 'organizer.php?fromCID='. \ze::$cID. '&fromCType='. \ze::$cType,
 	'diagnostics' => 'admin.php?task=diagnostics&'. http_build_query(\ze\link::importantGetRequests(true))
 ];
 

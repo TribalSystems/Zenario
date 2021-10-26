@@ -93,14 +93,14 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 				  AND ci.type = pil.content_type
 				  AND ci.visitor_version = pil.content_version
 				WHERE path.command = 'edit_tuix_snippet'
-				ORDER BY ci.language_id = '". ze\escape::sql(ze::$visLang). "' DESC";
+				ORDER BY ci.language_id = '". ze\escape::asciiInSQL(ze::$visLang). "' DESC";
 		
 			if (($cItem = ze\sql::fetchAssoc($sql))
 			 && (ze\content::checkPerm($cItem['id'], $cItem['type'], $cItem['visitor_version']))) {
 				self::$tsLink = ze\link::toItem($cItem['id'], $cItem['type'], false, ['state' => $cItem['to_state']], $cItem['alias']). '&id=';
 		
 			} elseif (ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
-				self::$tsLink = 'zenario/admin/organizer.php?fromCID='. $this->cID. '&fromCType='. $this->cType. '#zenario__modules/panels/tuix_snippets//';
+				self::$tsLink = 'organizer.php?fromCID='. $this->cID. '&fromCType='. $this->cType. '#zenario__modules/panels/tuix_snippets//';
 			
 			} else {
 				self::$tsLink = false;

@@ -49,7 +49,7 @@ class zenario_document_envelopes_fea__organizer__document_envelopes extends zena
 		if (isset($_POST['delete_document_envelope'])) {
 			$sql = '
 				DELETE FROM ' . DB_PREFIX . ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . 'document_envelopes
-				WHERE id IN (' . ze\escape::like($ids) . ')';
+				WHERE id IN (' . ze\escape::in($ids, 'numeric') . ')';
 			ze\sql::update($sql);
 		}
 	}

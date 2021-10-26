@@ -368,8 +368,9 @@ if (ze::setting('mod_rewrite_slashes')) {
 echo '
 <title>', htmlspecialchars(ze::$pageTitle), '</title>';
 
-//Don't allow placeholder pages to be indexed by search engines!
-if (ze::$langId !== ze::$visLang) {
+//Don't allow placeholder pages, or content items with noindex meta tag, to be indexed by search engines!
+$applyNoindexMetaTag = ze\row::get('content_item_versions', 'apply_noindex_meta_tag', ['id' => ze::$cID, 'type' => ze::$cType, 'version' => (int) $version['version']]);
+if (ze::$langId !== ze::$visLang || $applyNoindexMetaTag) {
 	echo '
 <meta name="robots" content="noindex" />';
 
@@ -444,7 +445,7 @@ if (ze\lang::count() > 1) {
 			  AND c.type = tc.type
 			WHERE tc.privacy = 'public'
 			  AND c.equiv_id = ". (int) ze::$equivId. "
-			  AND c.type = '". ze\escape::sql(ze::$cType). "'
+			  AND c.type = '". ze\escape::asciiInSQL(ze::$cType). "'
 			  AND c.status IN ('published_with_draft', 'published')";
 		$result = ze\sql::select($sql);
 		if (ze\sql::numRows($result) > 1) {

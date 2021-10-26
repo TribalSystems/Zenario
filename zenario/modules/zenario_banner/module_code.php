@@ -422,19 +422,36 @@ class zenario_banner extends ze\moduleBaseClass {
 			if (ze\file::imageLink($width, $height, $url, $imageId, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
 				
 				$this->normalImage = $url;
+				
+				$mimeType = ze\file::mimeType($url);
+
+				if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+					$fileParts = pathinfo($url);
+					$this->normalImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+					$this->mergeFields['WebP_Image_URL'] = $this->normalImageWebP;
+				}
 
 				//If this was a retina image, get a normal version of the image as well for standard displays
 				if ($banner_retina) {
 					$sWidth = $sHeight = $sURL = false;
-					if (ze\file::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
+					if (ze\file::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'adjust', $banner_offset, false)) {
 						
 						if ($url != $sURL) {
-							$this->mergeFields['Image_Srcset'] = $url. ' 2x';
-							
+							$this->mergeFields['Image_Retina_Srcset'] = $url. ' 2x';
+
+							$mimeType = ze\file::mimeType($url);
+							$this->mergeFields['Mime_Type'] = $mimeType;
+
 							$this->retinaImage = $url;
 							$this->normalImage = $sURL;
 							
 							$url = $sURL;
+
+							if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+								$fileParts = pathinfo($sURL);
+								$this->normalImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+								$this->mergeFields['WebP_Image_URL'] = $this->normalImageWebP. ' 1x, '. $this->mergeFields['WebP_Image_URL']. ' 2x';
+							}
 						}
 					}
 				}
@@ -448,7 +465,6 @@ class zenario_banner extends ze\moduleBaseClass {
 					$this->clearCacheBy(
 						$clearByContent = true, false, false, $clearByFile = true, false);
 				}
-				
 				
 				$this->subSections['Image'] = true;
 				$this->mergeFields['Image_URL'] = $url;
@@ -488,6 +504,15 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 								$this->respImage = $respURL;
 								$this->mergeFields['Mobile_Srcset'] = $respURL;
+
+								$mimeType = ze\file::mimeType($respURL);
+								$this->mergeFields['Mobile_Mime_Type'] = $mimeType;
+
+								if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+									$fileParts = pathinfo($respURL);
+									$this->respImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+									$this->mergeFields['Mobile_Srcset_WebP'] = $this->respImageWebP;
+								}
 						
 								//If this was a retina image, get a normal version of the image as well for standard displays
 								if ($mobile_retina) {
@@ -497,8 +522,18 @@ class zenario_banner extends ze\moduleBaseClass {
 											
 											$this->respImage = $sURL;
 											$this->retinaRespImage = $respURL;
+
+											$fileParts = pathinfo($sURL);
+											$this->respImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+
+											$fileParts = pathinfo($respURL);
+											$this->retinaRespImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
 											
 											$this->mergeFields['Mobile_Srcset'] = $sURL. ' 1x, '. $respURL. ' 2x';
+
+											if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+												$this->mergeFields['Mobile_Srcset_WebP'] = $this->respImageWebP. ' 1x, '. $this->retinaRespImageWebP. ' 2x';
+											}
 										}
 									}
 								}
@@ -530,6 +565,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				 && ($this->setting('advanced_behaviour') == 'use_rollover')
 				 && $this->setting('image_source') == '_CUSTOM_IMAGE'
 				 && ($rollover_image = $this->setting('rollover_image'))) {
+					$this->mergeFields['Rollover_Image'] = true;
 					
 					$rollSrcset = '';
 					$normalSrcset = '';
@@ -538,14 +574,29 @@ class zenario_banner extends ze\moduleBaseClass {
 					if (ze\file::imageLink($rWidth, $rHeight, $rollURL, $rollover_image, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
 						
 						$this->rolloverImage = $rollURL;
+						$this->mergeFields['Rollover_Image_URL'] = $this->rolloverImage;
+
+						$mimeType = ze\file::mimeType($rollURL);
+
+						if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+							$fileParts = pathinfo($rollURL);
+							$this->rolloverImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+							$this->mergeFields['Rollover_WebP_Image_URL'] = $this->rolloverImageWebP;
+						}
 						
 						//If this was a retina image, get a normal version of the image as well for standard displays
 						if ($banner_retina) {
 							$sWidth = $sHeight = $sURL = false;
-							if (ze\file::imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'stretch', $banner_offset, false)) {
+							if (ze\file::imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'adjust', $banner_offset, false)) {
 								if ($rollURL != $sURL) {
 									$rollSrcset = $rollURL. ' 2x';
 									$rollSrcset = 'srcset="'. htmlspecialchars($rollSrcset). '"';
+
+									if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+										$fileParts = pathinfo($rollURL);
+										$this->rolloverImageRetinaWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+										$this->mergeFields['Rollover_Image_Retina_Srcset'] = $this->rolloverImageRetinaWebP;
+									}
 									
 									$this->rolloverImage = $sURL;
 									$this->retinaRolloverImage = $rollURL;
@@ -556,17 +607,40 @@ class zenario_banner extends ze\moduleBaseClass {
 						}
 					}
 					
-					if (!empty($this->mergeFields['Image_Srcset'])) {
-						$normalSrcset = 'srcset="'. htmlspecialchars($this->mergeFields['Image_Srcset']). '"';
+					if (!empty($this->mergeFields['Image_Retina_Srcset'])) {
+						$normalSrcset = 'srcset="'. htmlspecialchars($this->mergeFields['Image_Retina_Srcset']). '"';
 					}
 					
-					$this->mergeFields['Rollover_Images'] =
-						'<img id="'. $this->containerId. '_rollout" alt="'. $alt_tag. '" src="'. htmlspecialchars($url). '" '. $normalSrcset. ' style="width: 1px; height: 1px; visibility: hidden;"/>'.
-						'<img id="'. $this->containerId. '_rollover" alt="'. $alt_tag. '" src="'. htmlspecialchars($rollURL). '" '. $rollSrcset. ' style="width: 1px; height: 1px; visibility: hidden;"/>';
-					
 					$this->mergeFields['Wrap'] =
-						'onmouseout="var x = \''. $this->containerId. '\', y = document.getElementById(x + \'_img\'), z = document.getElementById(x + \'_rollout\'); y.src = z.src; y.srcset = z.srcset;" '.
-						'onmouseover="var x = \''. $this->containerId. '\', y = document.getElementById(x + \'_img\'), z = document.getElementById(x + \'_rollover\'); y.src = z.src; y.srcset = z.srcset;" ';
+						'onmouseover="
+							var
+								i = 0,
+								x = \''. $this->containerId. '\',
+								y = document.getElementById(x + \'_img\'),
+								z = document.getElementById(x + \'_rollover\');
+							
+							y.src = z.src;
+							y.srcset = z.srcset;
+							
+							while (y = document.getElementById(x + \'_source_\' + ++i)) {
+								z = document.getElementById(x + \'_rollover_source_\' + i);
+								y.srcset = z.srcset;
+							}"
+					
+						onmouseout="
+							var
+								i = 0,
+								x = \''. $this->containerId. '\',
+								y = document.getElementById(x + \'_img\'),
+								z = document.getElementById(x + \'_rollout\');
+							
+							y.src = z.src;
+							y.srcset = z.srcset;
+
+							while (y = document.getElementById(x + \'_source_\' + ++i)) {
+								z = document.getElementById(x + \'_rollout_source_\' + i);
+								y.srcset = z.srcset;
+							}"';
 				
 				
 				
@@ -678,18 +752,41 @@ class zenario_banner extends ze\moduleBaseClass {
 				$this->mergeFields['Wrap'] = '';
 				$this->mergeFields['Background_Image'] = true;
 				$this->mergeFields['Image_css_id'] = $this->containerId. '_img';
+
+				$isJpegOrPng = ze::in($mimeType, 'image/png', 'image/jpeg');
 				
-				$this->styles[] = '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
+				if ($isJpegOrPng && $this->normalImageWebP) {
+					$this->styles[] = '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImageWebP).  '\'); }';
+					$this->styles[] = 'body.no_webp #'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
+				} else {
+					$this->styles[] = '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
+				}
 				
 				if ($this->retinaImage) {
-					$this->styles[] = 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
+					if ($isJpegOrPng) {
+						$fileParts = pathinfo($this->retinaImage);
+						$this->retinaImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+						
+						$this->styles[] = 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImageWebP).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
+						$this->styles[] = 'body.retina.no_webp #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
+					} else {
+						$this->styles[] = 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
+					}
 				}
 				
 				if ($this->respImage) {
-					$this->styles[] = 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImage).  '\'); }';
+					if ($isJpegOrPng && $this->respImageWebP) {
+						$this->styles[] = 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImageWebP).  '\'); }';
+					} else {
+						$this->styles[] = 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImage).  '\'); }';
+					}
 					
 					if ($this->retinaRespImage) {
-						$this->styles[] = 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImage).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
+						if ($isJpegOrPng && $this->retinaRespImageWebP) {
+							$this->styles[] = 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImageWebP).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
+						} else {
+							$this->styles[] = 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImage).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
+						}
 					}
 				}
 				
@@ -735,9 +832,9 @@ class zenario_banner extends ze\moduleBaseClass {
 
 		//...and display or hide a privacy warning note if necessary.
 		if ($document['privacy'] == 'private' && ($contentItemPrivacy == 'public' || $contentItemPrivacy == 'logged_out')) {
-			$field['privacy_warning']['note_below'] = '<p>Warning: content item is Public, the selected document is Private, so the document will not appear to visitors.</p>';
+			$field['privacy_warning']['note_below'] = '<p>Warning: this content item is public, the selected document is private, so it will not appear to visitors.</p>';
 		} elseif ($document['privacy'] == 'offline') {
-			$field['privacy_warning']['note_below'] = '<p>Warning: the selected document is Offline, so it will not appear to visitors. Offline documents can be published at any time.</p>';
+			$field['privacy_warning']['note_below'] = '<p>Warning: the selected document is offline, so it will not appear to visitors. Change the privacy of the document to make it available.</p>';
 		} else {
 			$field['privacy_warning']['note_below'] = '';
 		}

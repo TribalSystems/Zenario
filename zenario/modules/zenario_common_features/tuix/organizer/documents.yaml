@@ -29,6 +29,11 @@ zenario__content:
             disable_periodic_refresh: true
             default_sort_column: name
             no_items_message: There are no documents or folders
+
+            refiners:
+                public_documents_only:
+                    sql: '(d.type = "folder" OR d.privacy = "public")'
+
             columns:
                 id:
                     title: ID

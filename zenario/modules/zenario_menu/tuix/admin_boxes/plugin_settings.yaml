@@ -7,7 +7,24 @@ plugin_settings:
             ord: 1
             label: Menu display
             fields:
+                menu_generation_current_or_specific:
+                    plugin_setting:
+                        name: menu_generation_current_or_specific
+                    label: 'Menu origin:'
+                    type: radios
+                    value: _CURRENT
+                    values:
+                        _CURRENT:
+                            ord: "1"
+                            label: Auto
+                        _SPECIFIC:
+                            ord: "1"
+                            label: Custom
+                    format_onchange: Yes
+                    side_note: >
+                        Select "Auto" to generate the menu around the current content item (recommended). Select "Custom" to show the menu of a different part of the site.
                 menu_section:
+                    indent: 1
                     plugin_setting:
                         name: menu_section
                         foreign_key_to: menu_section
@@ -26,23 +43,8 @@ plugin_settings:
                     format_onchange: Yes
                     side_note: >
                         The principal menu navigation is usually in a secton called "Main". To display menu nodes from a different section, choose it here.
-                menu_generation_current_or_specific:
-                    plugin_setting:
-                        name: menu_generation_current_or_specific
-                    label: 'Menu origin:'
-                    type: radios
-                    value: _CURRENT
-                    values:
-                        _CURRENT:
-                            ord: "1"
-                            label: Auto
-                        _SPECIFIC:
-                            ord: "1"
-                            label: Custom
-                    format_onchange: Yes
-                    side_note: >
-                        Select "Auto" to generate the menu around the current content item (recommended). Select "Custom" to show the menu of a different part of the site.
                 specific_menu_node:
+                    indent: 1
                     plugin_setting:
                         name: specific_menu_node
                     label: 'Select custom menu node:'
@@ -56,24 +58,12 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select a menu node
                     hidden: Yes
-                menu_number_of_levels:
-                    plugin_setting:
-                        name: menu_number_of_levels
-                    label: 'Number of levels to display:'
-                    type: select
-                    values:
-                        1: "1 level"
-                        2: "2 levels"
-                        3: "3 levels"
-                        4: "4 levels"
-                        5: "5 levels"
-                    value: "2"
-                    side_note: "If displaying 3 or more levels, the menu can be hard for users to use. Hint: use the Promo Menu plugin instead."
                 menu_start_from:
+                    indent: 1
                     plugin_setting:
                         name: menu_start_from
                     label: 'Starting level:'
-                    type: radios
+                    type: select
                     value: _MENU_LEVEL_1
                     values:
                         _MENU_LEVEL_1:
@@ -99,6 +89,35 @@ plugin_settings:
                             label: Current menu level
                     side_note: >
                         To generate the main nav of the site from the top level, choose level 1 (recommended). Use other options to generate only deeper parts of the menu.
+                menu_number_of_levels:
+                    plugin_setting:
+                        name: menu_number_of_levels
+                    label: 'Number of levels to display:'
+                    type: select
+                    values:
+                        1: "1 level"
+                        1_full_width: "1 level (full width)"
+                        2: "2 levels"
+                        3: "3 levels"
+                        4: "4 levels"
+                        5: "5 levels"
+                    value: "2"
+                    side_note: "If displaying 3 or more levels, the menu can be hard for users to use. Hint: use the Promo Menu plugin instead."
+                    format_onchange: true
+                number_of_columns_full_width:
+                    indent: 1
+                    plugin_setting:
+                        name: number_of_columns_full_width
+                    label: "Number of columns to display:"
+                    type: select
+                    values:
+                        1: "1"
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                    value: 1
+                    visible_if: lib.value('menu_number_of_levels') == "1_full_width"
                 menu_show_all_branches:
                     plugin_setting:
                         name: menu_show_all_branches
@@ -113,6 +132,30 @@ plugin_settings:
                     label: 'Show missing menu nodes'
                     type: checkbox
                     value: ""
+                enable_open_close:
+                    plugin_setting:
+                        name: enable_open_close
+                    label: 'Enable open/close menu with persistence across pages'
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
+                open_close_initial_state:
+                    indent: 1
+                    plugin_setting:
+                        name: open_close_initial_state
+                    label: 'Initial state:'
+                    type: select
+                    empty_value: "-- Select --"
+                    values:
+                        closed:
+                            ord: 1
+                            label: "Closed"
+                        open:
+                            ord: 2
+                            label: "Open"
+                    visible_if: lib.value('enable_open_close')
+                    validation:
+                        required_if_not_hidden: "Please select the initial state."
                 hide_if_current_item_not_in_menu:
                     plugin_setting:
                         name: hide_if_current_item_not_in_menu
@@ -137,3 +180,37 @@ plugin_settings:
                     value: ""
                     side_note: >
                         Menu nodes flagged as "invisible" are normally not displayed; check here to show invisible menu nodes anyway.
+                show_custom_title:
+                    plugin_setting:
+                        name: show_custom_title
+                    label: 'Show a custom title'
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
+                    side_note: 'The title will appear above the menu.'
+                title_tags:
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tags:'
+                    type: select
+                    values:
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h2
+                    same_row: true
+                    visible_if: lib.value('show_custom_title')
+                custom_title:
+                    indent: 1
+                    plugin_setting:
+                        name: custom_title
+                    label: 'Custom title:'
+                    type: text
+                    value: 'In this section'
+                    visible_if: lib.value('show_custom_title')
+                    validation:
+                        required_if_not_hidden: 'Please enter a title.'
