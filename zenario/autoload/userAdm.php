@@ -74,16 +74,16 @@ class userAdm {
 			if ($firstName) {
 				if ($lastName) {
 					$baseIdentifier =
-						substr($firstName, 0, (int) \ze::setting('user_chars_from_first_name') ?: 99).
-						substr($lastName, 0, (int) \ze::setting('user_chars_from_last_name') ?: 99);
+						mb_substr($firstName, 0, (int) \ze::setting('user_chars_from_first_name') ?: 99).
+						mb_substr($lastName, 0, (int) \ze::setting('user_chars_from_last_name') ?: 99);
 				} else {
 					$baseIdentifier =
-						substr($firstName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
+						mb_substr($firstName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
 				}
 			} else {
 				if ($lastName) {
 					$baseIdentifier =
-						substr($lastName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
+						mb_substr($lastName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
 				} else {
 					$baseIdentifier = 'User';
 				}
@@ -119,7 +119,7 @@ class userAdm {
 				$userId = (string)$userId;
 				for ($i = 1; $i <= strlen($userId); $i++) {
 					$userNumber = substr($userId, -($i));
-					$baseIdentifier = substr($baseIdentifier, 0, (50 - ($i + 1)));
+					$baseIdentifier = mb_substr($baseIdentifier, 0, (50 - ($i + 1)));
 					$uniqueIdentifier = $baseIdentifier . '-' . $userNumber;
 					if (!isset($identifiers[strtoupper($uniqueIdentifier)])) {
 						return $uniqueIdentifier;
@@ -138,7 +138,7 @@ class userAdm {
 				$userId = (string)$userId;
 				for ($i = 1; $i <= strlen($userId); $i++) {
 					$userNumber = substr($userId, -($i));
-					$baseIdentifier = substr($baseIdentifier, 0, (50 - ($i + 1)));
+					$baseIdentifier = mb_substr($baseIdentifier, 0, (50 - ($i + 1)));
 					$uniqueIdentifier = $baseIdentifier . '-' . $userNumber;
 					if (!\ze\row::exists('users', ['identifier' => $uniqueIdentifier, 'id' => ['!' => $userId]])) {
 						return $uniqueIdentifier;

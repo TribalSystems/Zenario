@@ -734,10 +734,7 @@ zenarioA.getGridSlotDetails = function(slotName) {
 				widthInfo = columns + ' columns';
 			}
 			
-			selectorText = '.container_' + maxCols;
-			if (columns != maxCols) {
-				selectorText += ' .span' + columns;
-			}
+			selectorText = '.container_' + maxCols + ' .span' + columns;
 			
 			//If we're using a grid-template, try to work out the width of this slot
 			//from the CSS

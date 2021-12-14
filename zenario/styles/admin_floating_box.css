@@ -3970,6 +3970,10 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 	border:1px solid #6F6F6F;
 }
 
+.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain select option {
+	color:#000;
+}
+
 body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain select {
 	background:url('../admin/images/bg-black-fields-ff.gif');
 }

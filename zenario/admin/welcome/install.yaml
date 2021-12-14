@@ -336,7 +336,6 @@ install:
                         <div class="horizontal_scroll">
                             <div>
                     type: radios
-                    value: blackdog
                     post_field_html: |
                         </div></div>
                 

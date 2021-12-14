@@ -1493,7 +1493,7 @@ class welcome {
 				//	
 				//}
 			
-				if (empty($fields['4/theme']['values'])) {
+				if (empty($values['4/theme'])) {
 					$values['4/theme'] = INSTALLER_DEFAULT_THEME;
 					$fields['4/theme']['values'] = [];
 					foreach (\ze\welcome::listSampleThemes() as $dir => $imageSrc) {
@@ -2983,7 +2983,7 @@ class welcome {
 				$fields['0/public_documents']['hidden'] = true;
 			}
 			
-			$mrg = \ze\file::checkAllImagePublicLinks($check = false);
+			$mrg = \ze\file::checkAllImagePublicLinks($check = true);
 			if ($mrg && $mrg['numMissing']) {
 				$show_warning = true;
 				$mrg['manageImagesLink'] = htmlspecialchars('organizer.php#zenario__content/panels/image_library');

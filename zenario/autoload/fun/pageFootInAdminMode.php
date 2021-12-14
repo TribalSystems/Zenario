@@ -117,11 +117,18 @@ if (!empty(\ze::$siteConfig)) {
 $adminSettings = [];
 if (!empty(\ze::$adminSettings)) {
 	foreach (\ze::$adminSettings as $setting => &$value) {
-		if ($value
-		 && (/*$setting == '...'
-		  || $setting == '...'
-		  || */is_numeric($value))) {
-			$adminSettings[$setting] = \ze::$adminSettings[$setting];
+		
+		//Don't shown the COOKIE settings on the client
+		if (!$setting
+		 || substr($setting, 0, 7) == 'COOKIE_') {
+			continue;
+		}
+		
+		//Catch the case where a 0 or a 1 has been saved as a string
+		if (is_numeric($value)) {
+			$adminSettings[$setting] = $value + 0;
+		} else {
+			$adminSettings[$setting] = $value;
 		}
 	}
 }

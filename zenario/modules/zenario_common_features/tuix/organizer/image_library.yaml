@@ -445,11 +445,20 @@ zenario__content:
                     label: Re-generate cache
                     ajax:
                         confirm:
+                            html: true
                             message: >
-                                This action will re-generate the cache of all publicly-accessible images in the
-                                Zenario directory public/images from the originals in the database.
-                                This can be necessary after a site move or if the public directory has been emptied.
+                                Zenario will re-generate the cache of all publicly-accessible images in the directory
+                                &quot;<code>public/images/</code>&quot;.
+                                This is quite normal if the &quot;<code>public/</code>&quot; directory has been emptied,
+                                e.g. after moving a site.
                                 
+                                <br/><br/>
+                                
+                                Zenario will read from original images in the database, so this may take some time, even several minutes.
+                                In the event that you see &quot;500&quot; errors these are probably script timeouts with Zenario
+                                only part-completing the update; in this case you should try again to make the process continue.
+                                
+                                <br/><br/>
                                 
                                 Proceed?
                             button_message: Re-generate
