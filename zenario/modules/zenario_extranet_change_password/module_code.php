@@ -44,7 +44,7 @@ class zenario_extranet_change_password extends zenario_extranet {
 		
 			if ($this->changePassword()) {
 			
-				$this->message = $this->phrase('_PASSWORD_CHANGED');
+				$this->message = $this->phrase('Your password has been changed.');
 				$this->mode = 'modeLoggedIn';
 				//send change password notification
 				if ($this->setting('zenario_extranet_change_password__send_notification_email') && $this->setting('zenario_extranet_change_password__notification_email_template')

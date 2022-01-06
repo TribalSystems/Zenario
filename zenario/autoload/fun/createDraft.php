@@ -105,13 +105,6 @@ if (!$cIDTo || !($content = \ze\row::get('content_items', true, ['id' => $cIDTo,
 	}
 }
 
-if ($newDraftCreated) {
-	if (\ze::setting('lock_item_upon_draft_creation')) {
-		$content['lock_owner_id'] = $_SESSION['admin_userid'] ?? false;
-		$content['locked_datetime'] = \ze\date::now();
-	}
-}
-
 //Update/insert into the content table
 \ze\row::set('content_items', $content, ['id' => $content['id'], 'type' => $content['type']]);
 
@@ -131,8 +124,13 @@ if (!$cIDFrom
 	if (!empty($contentTypeDetails['writer_field'])
 	 && $contentTypeDetails['writer_field'] != 'hidden'
 	 && ($adminDetails = \ze\admin::details($adminId))) {
-		$version['writer_id'] = $adminId;
-		$version['writer_name'] = $adminDetails['first_name']. ' '. $adminDetails['last_name'];
+		$currentAdminId = ze\admin::id();
+
+		//Check if this admin has a writer profile.
+		$writerProfile = ze\row::get('writer_profiles', ['id'], ['admin_id' => (int) $currentAdminId]);
+		if ($writerProfile) {
+			$version['writer_id'] = $writerProfile['id'];
+		}
 	}
 	
 	if (!empty($contentTypeDetails['release_date_field'])

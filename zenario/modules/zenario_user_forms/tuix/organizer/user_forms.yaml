@@ -185,18 +185,19 @@ zenario__user_forms:
                         request:
                             duplicate_form: "1"
                     hide_on_refiner: archived
-                view_responses:
-                    ord: 3.9
-                    label: View user responses
-                    priv: _PRIV_VIEW_FORM_RESPONSES
-                    link:
-                        path: zenario__user_forms/panels/user_form_responses
-                        refiner: form_id
                 view_dropdown:
                     ord: 4
                     label: View
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
+                view_responses:
+                    ord: 1
+                    label: Responses
+                    parent: view_dropdown
+                    priv: _PRIV_VIEW_FORM_RESPONSES
+                    link:
+                        path: zenario__user_forms/panels/user_form_responses
+                        refiner: form_id
                 view_content_items:
                     ord: 6
                     label: Content items with this form

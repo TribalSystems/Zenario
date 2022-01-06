@@ -252,7 +252,7 @@ zenario_user_form:
                         1:
                             label: 'Always create a user/contact record'
                         2:
-                            label: 'Create a user/contact record on condition of consent field'
+                            label: 'Create a user/contact record only if consent checkbox checked'
                     value: no_user_record
                     format_onchange: true
                 consent_field:
@@ -293,7 +293,7 @@ zenario_user_form:
             
                 # BEGIN save_data options
                 user_status:
-                    label: 'Create user with status:'
+                    label: 'Status of the created account:'
                     type: radios
                     values:
                         contact:
@@ -390,7 +390,7 @@ zenario_user_form:
                             <b>Emails</b>
         
                 send_email_to_user:
-                    label: 'Send email to user'
+                    label: 'Send email to form user'
                     type: checkbox
                     format_onchange: true
         
@@ -430,14 +430,15 @@ zenario_user_form:
                         required_if_not_hidden: Please select an email template for user emails.
                     indent: 3
                 send_email_to_email_from_field:
-                    label: Send to email specified in form field...
+                    label: Send to email address specified in form...
                     type: checkbox
                     format_onchange: true
                     indent: 1
                 user_email_field:
-                    label: 'Email form field:'
+                    label: |
+                        Form field specifying email address:
                     type: select
-                    empty_value: -- Select --
+                    empty_value: -- Select field --
                     validation:
                         required_if_not_hidden: Please select a form field to send user email to.
                     indent: 2
@@ -488,7 +489,7 @@ zenario_user_form:
                 
                 send_email_to_admin_condition:
                     indent: 1
-                    label: "Send email to admin condition:"
+                    label: "Send email to administrator:"
                     type: select
                     values:
                         always_send:

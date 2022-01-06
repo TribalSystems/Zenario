@@ -7,10 +7,10 @@
             {% endif %}
             
             {% if Login %}
-				<h1>{{"_LOGGED_OUT"|trans}}</h1>
+				<h1>{{"You have been logged out."|trans}}</h1>
                 <div class="extranet_links">
                     {% if Login_Link_Section %}
-                        <div><a {{Login_Link}}>{{"_LOGIN"|trans}}</a></div>
+                        <div><a {{Login_Link}}>{{"Log in again"|trans}}</a></div>
                     {% endif %}
                 </div>
             {% endif %} 

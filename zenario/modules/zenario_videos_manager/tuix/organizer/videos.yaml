@@ -1,0 +1,108 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_videos_manager:
+    panels:
+        videos:
+            title: Video library
+            no_items_message: No videos found
+            panel_type: multi_line_list_or_grid
+            item: 
+                css_class: zenario_videos_manager_item
+            db_items:
+                table: '[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]videos AS v'
+                id_column: v.id
+            columns:
+                thumbnail_id:
+                    type: hidden
+                    hidden: true
+                    db_column: v.image_id
+                thumbnail_checksum:
+                    type: hidden
+                    hidden: true
+                    db_column: f.checksum
+                    table_join: |
+                        LEFT JOIN [[DB_PREFIX]]files f
+                        ON f.id = v.image_id
+                id:
+                    title: ID
+                    format: id
+                    db_column: v.id
+                    searchable: true
+                    always_show: true
+                    align_right: true
+                    width: xxsmall
+                url:
+                    hidden: true
+                    db_column: v.url
+                title:
+                    title: Title
+                    db_column: v.title
+                    width: xlarge
+                    always_show: true
+                    searchable: true
+                date:
+                    title: Date
+                    db_column: v.date
+                    format: date
+                    always_show: true
+                    searchable: true
+                categories:
+                    title: Categories
+                    table_join: |
+                        [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]video_categories vc
+                            ON v.id = vc.video_id
+                        LEFT JOIN [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]categories c
+                            ON vc.category_id = c.id
+                    db_column: GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ')
+                    width: xlarge
+                    always_show: true
+                language:
+                    title: Language
+                    db_column: v.language_id
+                video_privacy:
+                    title: Video privacy
+                    show_by_default: true
+                    width: xlarge
+            item_buttons:
+                edit:
+                    hide_in_select_mode: true
+                    label: Edit video
+                    admin_box:
+                        path: zenario_videos_manager__video
+                delete:
+                    hide_in_select_mode: true
+                    label: Delete
+                    multiple_select_tooltip: Delete these videos?
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: Are you sure you want to delete the video "[[title]]"?
+                            multiple_select_message: Are you sure you wish to delete these videos?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_video: 1
+            collection_buttons:
+                # Commenting out the button as of 14 Oct 2021. Might restore it later.
+                # upload_video:
+                #     hide_in_select_mode: true
+                #     css_class: zenario_create_a_new
+                #     label: Upload a video
+                #     popout: 
+                #         href: "zenario_extra_modules/zenario_videos_manager/video_upload/video_upload.php"
+                #         width: 60%
+                #         height: 100%
+                #         maxWidth: 100%
+                #         maxHeight: 100%
+                #         initialWidth: 60%
+                #         initialHeight: 100%
+                #         iframe: true
+                #         transition: "none"
+                add_embed_code:
+                    hide_in_select_mode: true
+                    css_class: zenario_create_a_new
+                    label: Add a video by URL
+                    admin_box:
+                        path: zenario_videos_manager__video
+            

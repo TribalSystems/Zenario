@@ -1,0 +1,114 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_writer_profile:
+    key:
+        id: ''
+    identifier:
+        css_class: writer_profile
+        label: Writer profile ID
+    title: Creating a writer profile
+
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+            notices:
+                admin_acc_trashed:
+                    show: false
+                    type: warning
+                    message: "The admin account associated with this writer profile is trashed."
+            fields:
+                type_span:
+                    type: text
+                    label: ''
+                    show_as_a_span: true
+                    hidden: true
+                    #This field only appears when editing a profile.
+                    #The "Type" selector below will be hidden, and its value will appear here.
+                type:
+                    label: "Type:"
+                    type: select
+                    empty_value: -- Select --
+                    values:
+                        administrator:
+                            ord: 1
+                            label: "Administrator"
+                        external_writer:
+                            ord: 2
+                            label: "External writer"
+                    format_onchange: true
+                    validation:
+                        required: "Please select the type."
+                admin_id:
+                    indent: 1
+                    label: "Create from administrator account:"
+                    pick_items:
+                        path: zenario__administration/panels/administrators
+                        target_path: zenario__administration/panels/administrators
+                        min_path: zenario__administration/panels/administrators
+                        select_phrase: Select an administrator...
+                        nothing_selected_phrase: Nobody selected
+                    format_onchange: true
+                    visible_if: lib.value('type') == 'administrator'
+                first_name:
+                    label: "First name:"
+                    type: text
+                    maxlength: 250
+                    validation:
+                        required: "Please enter the first name."
+                last_name:
+                    label: "Last name:"
+                    type: text
+                    maxlength: 250
+                email:
+                    label: "Email:"
+                    type: text
+                    maxlength: 250
+                photo:
+                    label: "Photo:"
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    upload:
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                    format_onchange: true
+                profile:
+                    label: 'Profile:'
+                    type: editor
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
+                    style: |
+                        width: 98%;
+                    rows: 30
+                    language: twig
+                    insert_image_button:
+                        pick_items:
+                            path: 'zenario__content/panels/image_library'
+                            target_path: 'zenario__content/panels/image_library'
+                            min_path: 'zenario__content/panels/image_library'
+                            max_path: 'zenario__content/panels/image_library'
+                            disallow_refiners_looping_on_min_path: true
+                    insert_link_button:
+                        exists: true
+                post_count: 
+                    label: "Post count:"
+                    type: text
+                    readonly: true
+                    show_as_a_span: true
+                    value: 0
+                    hidden: true
+                    side_note: "Published content items"

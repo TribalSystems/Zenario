@@ -574,14 +574,14 @@ zenarioA.toggleShowGrid = function() {
 	}
 };
 
-zenarioA.toggleShowEmptySlots = function() {
+zenarioA.toggleShowEmptySlots = function(alwaysShow) {
 	if (zenarioA.checkForEdits()) {
 		zenarioA.showEmptySlotsOn = !zenarioA.showEmptySlotsOn;
 
-		if (zenarioA.showEmptySlotsOn) {
-			$(document.body).addClass('zenario_show_empty_slots');
+		if (alwaysShow || zenarioA.showEmptySlotsOn) {
+			$(document.body).addClass('zenario_show_empty_slots_and_mobile_only_slots');
 		} else {
-			$(document.body).removeClass('zenario_show_empty_slots');
+			$(document.body).removeClass('zenario_show_empty_slots_and_mobile_only_slots');
 		}
 
 		zenarioAT.clickTab(zenarioA.toolbar);
@@ -819,7 +819,7 @@ zenarioA.getGridSlotDetails = function(slotName) {
 		}
 	
 	} else {
-		//Fallback logic for non-grid maker slots
+		//Fallback logic for non-Gridmaker slots
 		$gridspan = $('.' + slotName + '.slot');
 		
 		if ($gridspan.length) {
@@ -835,6 +835,67 @@ zenarioA.getGridSlotDetails = function(slotName) {
 
 /*  Functions for managing plugin slots  */
 
+
+//Attempt to show the drop-down menu for the slot when clicking anywhere in it
+var stoppingWrapperClicks = false;
+zenarioA.adminSlotWrapperClick = function(slotName, e, isEgg) {
+	
+	
+	if (stoppingWrapperClicks) {
+		return false;
+	}
+	
+	//Don't do anything in preview/create/menu modes
+	if (zenarioA.toolbar == 'preview'
+	 || zenarioA.toolbar == 'create'
+	 || zenarioA.toolbar.match(/^menu/)) {
+		return true;
+	}
+	
+	//Don't allow clicks on nested plugins
+	if (isEgg) {
+		zenario.stop(e);
+		return false;
+	}
+	
+	//Don't try to open the dropdown menu if things are being edited
+	if (zenarioA.checkSlotsBeingEdited(true)) {
+		return true;
+	}
+	
+	var slotControlsBox = get(plgslt_ + slotName + '-options');
+	
+	//Don't do anything if we can't find the anchor for the drop-down menu
+	if (!slotControlsBox) {
+		return true;
+	}
+	
+	//This line tries to open the drop-down menu near where the mouse cursor is
+	zenarioA.openSlotControls(slotControlsBox, e, slotName);
+	
+	//This (commented out) line would try to open the drop-down menu in its usual place
+	//at the top-right of the slot.
+	//zenarioA.openSlotControls(slotControlsBox, slotControlsBox, slotName);
+	
+	return false;
+};
+
+//Allow other buttons/widgets in slots to be clicked on without invoking the slot menu
+zenarioA.suspendStopWrapperClicks = function() {
+	
+	if (stoppingWrapperClicks) {
+		clearTimeout(stoppingWrapperClicks);
+	}
+	
+	stoppingWrapperClicks = setTimeout(function() {
+		stoppingWrapperClicks = false;
+	}, 1);
+};
+
+
+
+
+//Show the drop-down menu for the slot
 zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 	
 	var closeAsIsAlreadyOpen = !isFromAdminToolbar && $('#zenario_fbAdminSlotControls-' + slotName).is(':visible'),
@@ -854,14 +915,18 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 		
 		//If this was opened from the admin toolbar, keep the drop-down menu open for now
 		if (wasFromAdminToolbar = isFromAdminToolbar) {
-			$('#zenario_at_toolbars .zenario_at_slot_controls ul ul').css('display', 'block');
+			$('#zenario_at_toolbars .zenario_at_slot_controls ul li#zenario_at_button__slot_control_dropdown ul').css('display', 'block');
 			slotParentMouseOverLastId = false;
 		}
 		
 		
 		var width,
 			section,
-			sections = {info: false, notes: false, actions: false, re_move_place: false, overridden_info: false, overridden_actions: false},
+			sections = {
+				info: false, notes: false, actions: false,
+				re_move_place: false, overridden_info: false, overridden_actions: false,
+				no_perms: false
+			},
 			instanceId = zenario.slots[slotName].instanceId,
 			grid = zenarioA.getGridSlotDetails(slotName);
 		
@@ -986,7 +1051,7 @@ zenarioA.closeSlotControls = function() {
 		$('.zenario_atSlotControl').removeClass('zenario_atSlotControlOpen');
 		
 		//Allow the slot controls on the admin toolbar to be closed once again
-		$('#zenario_at_toolbars .zenario_at_slot_controls ul ul').css('display', '');
+		$('#zenario_at_toolbars .zenario_at_slot_controls ul li#zenario_at_button__slot_control_dropdown ul').css('display', '');
 	}
 };
 
@@ -1114,6 +1179,8 @@ zenarioA.pluginSlotEditSettings = function(el, slotName, fabPath, requests, tab)
 		);
 		
 		zenarioAB.open(fabPath || 'plugin_settings', requests, tab);
+		
+		zenarioA.suspendStopWrapperClicks();
 	}
 	
 	return false;
@@ -1139,7 +1206,7 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 	zenarioA.cancelMovePlugin(el);
 	
 	if (moveSource && moveDestination) {
-		if (zenarioA.toolbar == 'item') {
+		if (zenarioA.toolbar == 'edit') {
 			zenarioA.doMovePlugin2(moveSource, moveDestination, 1);
 		} else if (zenarioA.toolbar == 'layout') {
 			var html = zenario.moduleNonAsyncAJAX('zenario_common_features', {movePlugin: 1, level: 2, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, false);
@@ -1283,6 +1350,8 @@ zenarioA.swapContents = function(el, slotName) {
 
 
 zenarioA.removePlugin = function(el, slotName, level) {
+	zenarioA.toggleShowEmptySlots(true);
+
 	el.blur();
 	
 	var req = {
@@ -1430,17 +1499,23 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 };
 
 
-zenarioA.checkSlotsBeingEdited = function() {
+zenarioA.checkSlotsBeingEdited = function(dontUpdateBodyClass) {
 	if (zenario.slots) {
 		foreach (zenario.slots as var slotName => var slot) {
 			if (slot.beingEdited) {
-				$('body').addClass('zenario_being_edited');
+				
+				if (!dontUpdateBodyClass) {
+					$('body').addClass('zenario_being_edited');
+				}
 				return true;
 			}
 		}
 	}
 	
-	$('body').removeClass('zenario_being_edited');
+	if (!dontUpdateBodyClass) {
+		$('body').removeClass('zenario_being_edited');
+	}
+	
 	return false;
 };
 
@@ -1911,15 +1986,6 @@ zenarioA.closeFloatingBox = function($button) {
 };
 
 
-
-//Add jQuery elements automatically by class name
-zenarioA.addJQueryElements = function(path) {
-	
-	//Admin mode tooltips
-	zenarioA.tooltips(path + 'span[title]');
-	zenarioA.tooltips(path + '.pluginAdminMenuButton[title]', {position: {my: 'left top+2', at: 'left bottom', collision: 'flipfit'}});
-};
-
 zenarioA.tooltips = function(target, options) {
 	if (!options) {
 		options = {};
@@ -1938,6 +2004,65 @@ zenarioA.tooltips = function(target, options) {
 	}
 	
 	zenario.tooltips(target, options);
+};
+
+zenarioA.addImagePropertiesButtons = function(path) {
+
+	//If this is the front-end, check for images and try to add the image properties buttons
+	if (zenario.cID) {
+		
+		//Look for things with the zenario_image_properties CSS class
+		$(path + '.zenario_image_properties').each(function(i, el) {
+			
+			//Try to work out the image id, which will be using a CSS class in the format "zenario_image_id__123__"
+			var $el = $(el),
+				imageId = el.className.match(/zenario_image_id__(\d+)__/),
+				slotName = zenario.getSlotnameFromEl(el),
+				eggId = zenario.getSlotnameFromEl(el, false, true),
+				slot = slotName && zenario.slots[slotName],
+				instanceId = slot && slot.instanceId,
+				nodeName, $parent, $imagePropertiesButton;
+			
+			if (imageId) {
+				imageId = 1*imageId[1];
+			}
+			
+			if (imageId && instanceId) {
+				//We want to try and attach a button just before the image.
+				//If there is an image inside a link, a picture tag, or a <div class="banner_image">, try to go up one
+				//level and attach the button outside the tag, rather than inside
+				while ($el
+					&& ($parent = $el.parent())
+					&& (nodeName = $parent[0].nodeName)
+					&& (nodeName = nodeName.toLowerCase())
+					&& (nodeName == 'a'
+					 || nodeName == 'picture'
+					 || (nodeName == 'div' && $parent.hasClass('banner_image')))
+				) {
+					$el = $parent;
+				}
+			
+			
+			
+				if (instanceId) {
+					$imagePropertiesButton = $(_$span('class', 'zenario_image_properties_button'));
+				
+					$el.before($imagePropertiesButton);
+				
+					$imagePropertiesButton.on('click', function() {
+						zenarioAB.open('zenario_image', {
+							id: imageId,
+							slotName: slotName,
+							instanceId: instanceId,
+							eggId: eggId
+						}, 'crop_1');
+						
+						return false;
+					});
+				}
+			}
+		});
+	}
 };
 
 zenarioA.setTooltipIfTooLarge = function(target, title, sizeThreshold) {
@@ -2970,7 +3095,7 @@ zenarioA.rememberToast = function() {
 
 zenarioA.longToast = function(msg, cssClass) {
 	if (!$('#toast-container .' + cssClass).length) {
-		toastr.warning(msg, undefined, {timeOut: 9e9, extendedTimeOut: 9e9, toastClass: 'toast ' + cssClass});
+		toastr.warning(msg, undefined, {timeOut: 5000, extendedTimeOut: 5000, toastClass: 'toast ' + cssClass});
 	}
 };
 
@@ -3269,37 +3394,6 @@ zenarioA.init = function(
 
 //Calculate function short names, we need to do this before calling any functions!
 zenario.shrtNms(zenarioA);
-
-//Show the thickbox for editing the instance in the slot, if there is one
-zenarioA.adminSlotWrapperClick = function(slotName, tab) {
-	
-	var slotMeta = zenario.slots[slotName];
-	
-	if (zenarioA.toolbar == 'preview' || zenarioA.toolbar == 'create') {
-		return;
-	}
-	else {	
-		if(slotMeta.isVersionControlled == true)
-		{
-			if(zenarioA.toolbar != 'edit' ){
-				zenarioAT.clickTab('edit');
-			}
-			else if(zenarioA.toolbar == 'edit'){
-			return;
-			}
-			
-		}
-		else if((zenarioA.toolbar != 'menu1' || zenarioA.toolbar == 'menu1')&& slotMeta.isMenu == true)
-			zenarioAT.clickTab('menu1');
-		else if((zenarioA.toolbar != 'layout' || zenarioA.toolbar == 'layout' )&& slotMeta.level == 2)
-			zenarioAT.clickTab('layout');
-		else
-			zenarioAT.clickTab('item');
-		
-		
-		return true;
-	}
-};
 
 
 });

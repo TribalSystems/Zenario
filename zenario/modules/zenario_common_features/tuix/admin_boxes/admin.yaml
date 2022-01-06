@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario_admin:
+zenario_admin: &admin
     key:
         id: ""
         authtype: ""
@@ -29,7 +29,7 @@ zenario_admin:
                     snippet:
                         html: ''
                 first_name:
-                    label: 'First Name:'
+                    label: 'First name:'
                     type: text
                     maxlength: "100"
                     style: 'width: 25em;'
@@ -43,9 +43,10 @@ zenario_admin:
                             $('#username').val(userFName + userLName);
                         }
                     validation:
-                        required: Please enter a First Name.
+                        required: |
+                            Please enter the administrator's first name.
                 last_name:
-                    label: 'Last Name:'
+                    label: 'Last name:'
                     type: text
                     maxlength: "100"
                     style: 'width: 25em;'
@@ -59,7 +60,8 @@ zenario_admin:
                             $('#username').val(userFName + userLName);
                         }
                     validation:
-                        required: Please enter a Last Name.
+                        required: |
+                            Please enter the administrator's last name.
                 username:
                     label: 'Administrator username:'
                     type: text
@@ -79,7 +81,7 @@ zenario_admin:
                     maxlength: "200"
                     validation:
                         required: Please enter an email address.
-                        email: Please enter a valid email address.
+                        email: That email address doesn't look valid.
                 inform_by_email:
                     visible_if: '!zenarioAB.tuix.key.id'
                     label: 'Inform by email'
@@ -91,16 +93,6 @@ zenario_admin:
                 is_client_account:
                     label: 'Is client account'
                     type: checkbox
-                image:
-                    label: 'Image:'
-                    upload:
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
                 
         password:
             priv: _PRIV_CHANGE_ADMIN_PASSWORD
@@ -166,7 +158,7 @@ zenario_admin:
                                 This administrator will be able to make changes on this entire site,
                                 subject to the permissions specified in the checkboxes.
                         specific_areas:
-                            label: "Grant by language / content type / content item"
+                            label: "Grant by content type and/or specific content items"
                             side_note: |
                                 This administrator will be allowed to edit content items if they match one of the rules below.
                                 They will not be allowed to access other parts of Zenario (e.g. users, emails, etc.)
@@ -179,22 +171,11 @@ zenario_admin:
                     name: specific_actions
                 
                 
-                specific_languages:
-                    indent: 1
-                    visible_if: |
-                        zenarioAB.value('permissions') == 'specific_areas'
-                    label: 'All content items in these languages:'
-                    type: checkboxes
-                    cols: 2
-                    side_note: |
-                        This administrator will be allowed to edit all content items in these languages,
-                        and to create content items in those languages where equivalents exist in the default language ([[default_language]]).
-                
                 specific_content_types:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('permissions') == 'specific_areas'
-                    label: 'All content items of these content types:'
+                    label: 'Grant author/publish on items of these content types:'
                     type: checkboxes
                     cols: 2
                     side_note: |
@@ -204,7 +185,7 @@ zenario_admin:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('permissions') == 'specific_areas'
-                    label: 'And the following specific content items:'
+                    label: 'Grant author/publish on the following specific content items:'
                     pick_items:
                         path: zenario__content/panels/content
                         min_path: zenario__content/panels/content
@@ -225,5 +206,4 @@ zenario_admin:
                         Administrators without specific permissions can view ALL content items,
                         irrespective of publishing status or user permission.
                     
-                    
-                
+zenario_admin_edit_self: *admin

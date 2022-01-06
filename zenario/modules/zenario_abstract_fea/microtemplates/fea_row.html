@@ -55,6 +55,7 @@
 		{{ff.error? 'zenario_row_with_error_on_first_field' : ''}}
 		{{ff.row_class|escape}}
 		{{ff.pressed? 'zfea_row_pressed' : ''}}
+		{{ff.onoff? 'zenario_onoffswitch zenario_onoffswitch_visitor' : ''}}
 		{{ff._hideOnOpen? 'zfea_form_hide_row_on_open' : ''}}
 		{{ff.indent? 'zfea_form_indent_level zfea_form_indent_level_' +  (1*ff.indent) : ''}}
 		zfea_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
@@ -77,6 +78,10 @@
 			<% if (ff.label !== undefined && !(ff.type == 'checkbox' || ff.type == 'radio')) { %>
 				<div class="title">
 					<label for="{{ff._id|escape}}">{{ff.label}}</label>
+					
+					<% if (ff.pre_field_post_label_html) { %>
+						{{ff.pre_field_post_label_html}}
+					<% } %>
 				</div>
 			<% } %>
 			<div class="{{ff._hideOnOpen? 'zfea_form_hide_on_open' : ''}} {{ff._showOnOpen? 'zfea_form_show_on_open' : ''}}">

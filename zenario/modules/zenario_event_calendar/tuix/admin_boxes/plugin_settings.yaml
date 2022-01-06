@@ -110,18 +110,19 @@ plugin_settings:
                     type: select
                     values:
                         nothing:
-                            label: 'Nothing'
+                            label: |
+                                Don't show event details
                         first_event:
-                            label: 'Title of first event'
+                            label: 'Title of first event in time period'
                         all_events:
-                            label: 'Titles of all events'
+                            label: 'Titles of all events in time period'
                     value: first_event
                 event_count:
                     label: 'Show number of events'
                     plugin_setting:
                         name: event_count
                     type: checkbox
-                    value: false
+                    value: true
                 hide_private_items:
                     label: 'Hide private events from public view'
                     plugin_setting:
@@ -160,7 +161,7 @@ plugin_settings:
                     type: checkbox
                     format_onchange: true
                 show_title:
-                    label: 'Show title'
+                    label: 'Show event titles'
                     indent: 1
                     type: checkbox
                     value: "1"
@@ -168,7 +169,7 @@ plugin_settings:
                     visible_if:
                         lib.value: enable_popup
                 show_summary:
-                    label: 'Show summary'
+                    label: 'Show event summaries'
                     indent: 1
                     plugin_setting:
                         name: show_summary
@@ -201,12 +202,12 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: show_sticky_images
-                    label: "Show feature image"
+                    label: "Show featured image"
                     type: checkbox
                     value: ""
                     format_onchange: Yes
                     side_note: |
-                        The feature image for the content item will be shown if it exists.
+                        The featured image of the content item will be shown if it exists.
                     visible_if:
                         lib.value: enable_popup
                 canvas:
@@ -214,7 +215,7 @@ plugin_settings:
                         name: canvas
                     label: 'Image canvas:'
                     type: select
-                    value: unlimited
+                    value: fixed_width_and_height
                     values:
                         unlimited:
                             ord: "1"
@@ -241,7 +242,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: ""
+                    value: 240
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
@@ -254,7 +255,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
-                    value: ""
+                    value: 160
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'

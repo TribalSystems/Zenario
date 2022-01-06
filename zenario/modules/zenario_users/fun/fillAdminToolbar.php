@@ -53,83 +53,93 @@ if (isset($adminToolbar['sections']['history']['buttons']['zenario_users__access
 
 // Show the name of the logged in Extranet User
 // (N.b. the options to log in/edit/log out are currently commented out.)
-if ($userId = ze\user::id()) {
-	$userLabel = ze\admin::phrase('Edit [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
-	
-	$groups = ze\user::groups(ze\user::id());
-	foreach ($groups as $groupId => &$groupCodename) {
-		$groupCodename = ze\user::getGroupLabel($groupId);
-	}
-	
-	$userLabelNotes = [];
-	
-	if (!empty($groups)) {
-		$userLabelNotes[] = ze\admin::phrase('Groups: [[groups]]', ['groups' => implode(', ', $groups)]);
-	} else {
-		$userLabelNotes[] = ze\admin::phrase('Groups: None');
-	}
-	
-	if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager', true)) {
-		$sql = "
-			SELECT DISTINCT url.name
-			FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
-			INNER JOIN ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_location_roles AS url
-			   ON urll.role_id = url.id
-			WHERE user_id = ". (int) $userId. "
-			ORDER BY 1";
-		$roles = ze\sql::fetchValues($sql);
+if (ze\module::isRunning('zenario_extranet')) {
+	if ($userId = ze\user::id()) {
+		$userLabel = ze\admin::phrase('Edit [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
 		
-		if (!empty($roles)) {
-			$userLabelNotes[] = ze\admin::phrase('Roles: [[roles]]', ['roles' => implode(', ', $roles)]);
-		} else {
-			$userLabelNotes[] = ze\admin::phrase('Roles: None');
+		$groups = ze\user::groups(ze\user::id());
+		foreach ($groups as $groupId => &$groupCodename) {
+			$groupCodename = ze\user::getGroupLabel($groupId);
 		}
-	}
-	
-	if (!empty($userLabelNotes)) {
-		$userLabel .= ' ('. implode('; ', $userLabelNotes). ')';
-	}
+		
+		$userLabelNotes = [];
+		
+		if (!empty($groups)) {
+			$userLabelNotes[] = ze\admin::phrase('Groups: [[groups]]', ['groups' => implode(', ', $groups)]);
+		} else {
+			$userLabelNotes[] = ze\admin::phrase('Groups: None');
+		}
+		
+		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager', true)) {
+			$sql = "
+				SELECT DISTINCT url.name
+				FROM ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_role_location_link AS urll
+				INNER JOIN ". DB_PREFIX. $ZENARIO_ORGANIZATION_MANAGER_PREFIX. "user_location_roles AS url
+				ON urll.role_id = url.id
+				WHERE user_id = ". (int) $userId. "
+				ORDER BY 1";
+			$roles = ze\sql::fetchValues($sql);
+			
+			if (!empty($roles)) {
+				$userLabelNotes[] = ze\admin::phrase('Roles: [[roles]]', ['roles' => implode(', ', $roles)]);
+			} else {
+				$userLabelNotes[] = ze\admin::phrase('Roles: None');
+			}
+		}
+		
+		if (!empty($userLabelNotes)) {
+			$userLabel .= ' ('. implode('; ', $userLabelNotes). ')';
+		}
 
-	if (isset($adminToolbar['sections']['extranet_user']['buttons']['edit_user'])) {
-		$adminToolbar['sections']['extranet_user']['buttons']['edit_user']['admin_box']['key']['id'] = $userId;
-		$adminToolbar['sections']['extranet_user']['buttons']['edit_user']['label'] = $userLabel;
-	}
-	
-	$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['label'] =
-		ze\admin::phrase('User [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
+		if (isset($adminToolbar['sections']['extranet_user']['buttons']['edit_user'])) {
+			$adminToolbar['sections']['extranet_user']['buttons']['edit_user']['admin_box']['key']['id'] = $userId;
+			$adminToolbar['sections']['extranet_user']['buttons']['edit_user']['label'] = $userLabel;
+		}
+		
+		$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['label'] =
+			ze\admin::phrase('User [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
 
+		unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
+		unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']);
+		unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
+
+		$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['parent'] = 'logged_in';
+		$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['label'] = ze\admin::phrase('Other user...');
+
+	} else {
+		$lCID = $lCType = false;
+		if (ze\content::langSpecialPage('zenario_login', $lCID, $lCType, ze::$langId)
+		&& ($lURL = ze\link::toItem($lCID, $lCType))) {
+		
+			$adminToolbar['sections']['extranet_user']['buttons']['log_in']['onclick'] = 'zenario.goToURL("'. ze\escape::js($lURL). '");';
+		} else {
+			unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
+		}
+		
+		if (isset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous'])) {
+			if ((!empty($_COOKIE['COOKIE_LAST_EXTRANET_EMAIL'])
+			&& ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'email' => $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL']])))
+			|| (!empty($_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME'])
+			&& ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'screen_name' => $_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME']])))) {
+			
+				$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['admin_box']['key']['id'] = $user['id'];
+				$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['label'] = ze\admin::phrase('Login as [[identifier]]', $user);
+				
+				$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['label'] = ze\admin::phrase('Other user...');
+			} else {
+				unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']);
+			}
+		}
+
+		unset($adminToolbar['sections']['extranet_user']['buttons']['logged_in']);
+		unset($adminToolbar['sections']['extranet_user']['buttons']['edit_user']);
+		unset($adminToolbar['sections']['extranet_user']['buttons']['view_user']);
+		unset($adminToolbar['sections']['extranet_user']['buttons']['logout']);
+	}
+} else {
 	unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
 	unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']);
 	unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
-
-	$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['parent'] = 'logged_in';
-	$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['label'] = ze\admin::phrase('Other user...');
-
-} else {
-	$lCID = $lCType = false;
-	if (ze\content::langSpecialPage('zenario_login', $lCID, $lCType, ze::$langId)
-	 && ($lURL = ze\link::toItem($lCID, $lCType))) {
-	
-		$adminToolbar['sections']['extranet_user']['buttons']['log_in']['onclick'] = 'zenario.goToURL("'. ze\escape::js($lURL). '");';
-	} else {
-		unset($adminToolbar['sections']['extranet_user']['buttons']['log_in']);
-	}
-	
-	if (isset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous'])) {
-		if ((!empty($_COOKIE['COOKIE_LAST_EXTRANET_EMAIL'])
-		  && ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'email' => $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL']])))
-		 || (!empty($_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME'])
-		  && ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'screen_name' => $_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME']])))) {
-		
-			$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['admin_box']['key']['id'] = $user['id'];
-			$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['label'] = ze\admin::phrase('Login as [[identifier]]', $user);
-			
-			$adminToolbar['sections']['extranet_user']['buttons']['impersonate']['label'] = ze\admin::phrase('Other user...');
-		} else {
-			unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']);
-		}
-	}
-
 	unset($adminToolbar['sections']['extranet_user']['buttons']['logged_in']);
 	unset($adminToolbar['sections']['extranet_user']['buttons']['edit_user']);
 	unset($adminToolbar['sections']['extranet_user']['buttons']['view_user']);

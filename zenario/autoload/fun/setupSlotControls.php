@@ -47,7 +47,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 	\ze\tuix::parse2($tagsEmpty, $removedColumns, 'slot_controls', $path);
 	$tagsEmpty = $tagsEmpty[$path];
 	
-	$sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions'];
+	$sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions', 'no_perms'];
 	
 	//Loop through all of the slots
 	$activeModules = [];
@@ -115,7 +115,6 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		
 		
 		$showSlotInEditMode = false;
-		$showSlotInItemMode = false;
 		$showSlotInLayoutMode = false;
 		$slotWrapperClass = $tags['css_class'];
 		
@@ -135,7 +134,8 @@ if (!empty($slotContents) && is_array($slotContents)) {
 				
 				if ($section == 'actions'
 				 || $section == 're_move_place'
-				 || $section == 'overridden_actions') {
+				 || $section == 'overridden_actions'
+				 || $section == 'no_perms') {
 					$thisHtml .= ' onclick="zenarioA.closeSlotControls();"';
 				}
 				$isInfoSection = $section == 'info';
@@ -156,16 +156,6 @@ if (!empty($slotContents) && is_array($slotContents)) {
 							
 							if (!$isInfoSection) {
 								$showSlotInEditMode = true;
-							}
-						}
-						
-						if (empty($control['page_modes']['item'])) {
-							$thisHtml .= 'zenario_hideInItemMode ';
-						} else {
-							$thisHtml .= 'zenario_showInItemMode ';
-							
-							if (!$isInfoSection) {
-								$showSlotInItemMode = true;
 							}
 						}
 						
@@ -224,11 +214,6 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			$slotWrapperClass .= ' zenario_showSlotInEditMode';
 		} else {
 			$slotWrapperClass .= ' zenario_hideSlotInEditMode';
-		}
-		if ($showSlotInItemMode) {
-			$slotWrapperClass .= ' zenario_showSlotInItemMode';
-		} else {
-			$slotWrapperClass .= ' zenario_hideSlotInItemMode';
 		}
 		if ($showSlotInLayoutMode) {
 			$slotWrapperClass .= ' zenario_showSlotInLayoutMode';

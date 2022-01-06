@@ -5348,6 +5348,39 @@ zenarioO.getNavigation = function() {
 	return zenarioO.setNavigation(true);
 };
 
+//For T12085, Menu links into Organizer from admin toolbar: make the nav 2 columns to avoid long menus
+zenarioO.splitCols = function(items) {
+	var i,
+		di, deepArray = [[]];
+	
+	//console.log(items);
+	
+	for (i = 0; i < items.length; ++i) {
+		deepArray[deepArray.length-1].push(items[i]);
+		
+		//console.log(items[i], items[i+1]);
+		
+		if (items[i+1]
+		 && ((items[i].css_class
+		   && items[i].css_class.match(/\bzenario_separator_after_this\b/i))
+		  || (items[i+1].css_class
+		   && items[i+1].css_class.match(/\bzenario_separator_before_this\b/i)))) {
+			deepArray.push([]);
+		}
+	}
+	
+	for (di = 0; di < deepArray.length; ++di) {
+		items = deepArray[di];
+		
+		deepArray[di] = [
+			_.filter(items, function(item, i) { return !(i % 2); }),
+			_.filter(items, function(item, i) { return i % 2; })
+		];
+	}
+	
+	return deepArray;
+};
+
 zenarioO.scrollTopLevelNav = function($topLevelNav, up) {
 	$topLevelNav.scrollTop($topLevelNav.scrollTop() + (up? -50 : 50));
 	zenarioO.setTopLevelNavScrollStatus($topLevelNav);
@@ -6502,6 +6535,13 @@ zenarioO.closeSelectMode = function() {
 		zenarioO.go(zenarioO.defaultPathInIframePreload);
 		zenarioA.closeBox('og');
 		zenarioO.firstLoaded = false;
+		
+		if (window.zenarioOQuickMode
+		 && zenario.reloadPageWhenOrganizerQuickCloses
+		 && windowParent
+		 && windowParent.location) {
+			windowParent.location.reload(true);
+		}
 	}
 	
 	return false;

@@ -1,0 +1,198 @@
+* {
+  margin: 0;
+}
+
+html {
+	position:relative;
+}
+
+body {
+	height:100%;
+}
+
+body.zenario_adminLoggedIn {
+	height:calc(100% - 129px);
+}
+
+html,
+body .zenario_skin {
+	height:100%;
+}
+
+.zenario_skin {
+	min-height: 100%;
+}
+
+#zenario_citem {
+	position:relative;
+}
+
+.zenario_slot_padding {
+	display:none;
+}
+
+/*  HEADER
+--------------------------------------------------------------------------------------------------*/
+
+.Gridbreak_Top {
+	position:relative;
+	z-index:96; /* Higher than Gridbreak_Header to show advanced search dropdown */
+	height:40px;
+	background:#fff;
+	border-bottom:1px solid #f0f0f0;
+}
+
+.Slot_Top .zenario_slot {
+	padding-top:10px;
+}
+
+.Slot_Top .zenario_plugin_nest .zenario_slot {
+	padding-top:inherit;
+}
+
+.Gridbreak_Header {
+	top:0;
+	position:relative;
+	height:80px;
+}
+
+.Gridbreak_Header,
+.dropshadow {
+	box-shadow: 0px 2px 6.44px 0.56px rgba(0, 0, 0, 0.18);
+}
+
+.Gridbreak_Header,
+.Fixed {
+	z-index:95;
+	background:#fff;
+}
+
+.Fixed {
+	width:100%;
+	position:absolute;
+}
+
+.Fixed_Header {
+	position:fixed;
+	top:0;
+}
+
+.Gridbreak_Top + .Fixed:not(.Fixed_Header) {
+	top:41px;
+}
+
+body.desktop .Fixed + div {
+	padding-top:80px; /* Space, same value of header's height */
+}
+
+/* ADMIN RESETS */
+
+	.zenario_adminLoggedIn .Fixed {
+		position:relative;
+	}
+	
+	.zenario_adminLoggedIn .Gridbreak_Top + .Fixed {
+		top:0;
+	}
+	
+	body.desktop.zenario_adminLoggedIn .Fixed + div {
+		padding-top:0;
+	}
+
+	.zenario_adminLoggedIn .Gridbreak_Header,
+	.zenario_adminLoggedIn .Slot_Masthead {
+		padding-top:1px; /* Makes visible slots borders */
+	}
+
+	.zenario_adminLoggedIn.zenario_pageMode_edit .Gridbreak_Header,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .Gridbreak_Header,
+	.zenario_adminLoggedIn.zenario_pageMode_template .Gridbreak_Header {
+		height:auto;
+	}
+
+/*  HEADER WITH RESPOSIVE DATA PUSH AND PULL MENU
+--------------------------------------------------------------------------------------------------*/
+
+body > .Gridbreak_Header {
+	position:absolute;
+	z-index:97 !important;
+	width:100%;
+	top:41px;
+	left:0;
+	right:0;
+}
+
+.mm-wrapper_opening .Gridbreak_Header {
+	z-index:1 !important;
+}
+
+body.zenario_adminLoggedIn > .Gridbreak_Header {
+	top:170px;
+}
+
+body.zenario_adminLoggedIn > .Gridbreak_Header.Fixed_Header {
+	top:0;
+}
+
+body.zenario_adminLoggedIn.zenario_pageMode_template > .Gridbreak_Header,
+body.zenario_adminLoggedIn.zenario_pageMode_edit > .Gridbreak_Header {
+	z-index:1 !important;
+}
+
+/*  BODY
+--------------------------------------------------------------------------------------------------*/
+
+.Gridbreak_Body .container {
+	min-height:450px;
+	padding-top:30px;
+}
+
+.Gridbreak_Body .zenario_slot {
+	margin-bottom:30px;
+}
+
+.Gridbreak_Body .zenario_slot .zenario_slot {
+	margin-bottom:0;
+}
+
+.space_at_top {
+	margin-top:45px;
+}
+
+.Gridbreak_Full_Boxes {
+	padding:100px 0;
+	background:#292e35;
+}
+
+.Grouping_Contact {
+	background:url('../images/vertical-divider.png') repeat-y center top;
+}
+
+body.desktop .Grouping_Contact .zenario_slot {
+	padding-right:40px;
+}
+
+/*  FOOTER
+--------------------------------------------------------------------------------------------------*/
+
+.Gridbreak_Footer {
+	padding:30px 0 40px;
+	background:#292e35;
+}
+
+.zenario_skin .Gridbreak_Footer *,
+.zenario_skin .Gridbreak_Footer a {
+	color:#FFF;
+}
+
+.Gridbreak_Footer .zenario_slot {
+	padding-top:10px;
+}
+
+.Gridbreak_Footer .zenario_slot .zenario_slot {
+	padding-top:0;
+}
+
+.Gridbreak_Footer .Grouping_Footer {
+	text-align:right;
+}

@@ -519,6 +519,14 @@ zenarioT.checkActionUnique = function(object) {
 		case 0:
 			return false;
 		
+		//New as of version 9.2.
+		//Allow a button to have a custom onclick *and* another action as well.
+		//(Previously you would have needed two separate buttons chained together to achieve this effect.)
+		case 2:
+			if (object.onclick) {
+				return true;
+			}
+		
 		default:
 			console.log(object);
 			alert('This navigation or button has multiple actions associated with it:\n\n' + actions + '\n\n(See the console log for the faulty definition.)');

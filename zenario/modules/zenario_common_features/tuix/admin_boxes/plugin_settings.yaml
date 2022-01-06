@@ -68,7 +68,7 @@ plugin_settings:
         
         advanced_dropdown:
             ord: 100002
-            label: Advanced
+            label: CSS/framework
             hide_when_children_are_not_visible: true
         
         tuix_snippet:

@@ -38,6 +38,8 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 		foreach ($panel['items'] as $id => &$item) {
 			$item['members'] = ze\smartGroup::countMembers($id);
 
+			$item['members_formatted_nicely'] = ze\admin::nPhrase('1 member', '[[count]] members', (int) $item['members'], ['count' => (int) $item['members']]);
+
 
 			if ($item['members'] === false) {
 				$item['description'] = ze\admin::phrase('There is a problem with this smart group.');
@@ -48,9 +50,11 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 			switch ($item['intended_usage']) {
 				case 'smart_newsletter_group':
 					$item['css_class'] = 'zenario_smart_news_group';
+					$item['intended_usage_formatted_nicely'] = ze\admin::phrase('Smart newsletter group');
 					break;
 				case 'smart_permissions_group':
 					$item['css_class'] = 'zenario_smart_perms_group';
+					$item['intended_usage_formatted_nicely'] = ze\admin::phrase('Smart group');
 					break;
 			}
 		}

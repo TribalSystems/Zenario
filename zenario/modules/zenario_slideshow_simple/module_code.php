@@ -84,8 +84,8 @@ class zenario_slideshow_simple extends zenario_slideshow {
 					case 'fixed_width_and_height':
 						$desktopCanvasSettingNiceName = 'Constrain by width and height';
 						break;
-					case 'resize_and_crop':
-						$desktopCanvasSettingNiceName = 'Resize and crop';
+					case 'crop_and_zoom':
+						$desktopCanvasSettingNiceName = 'Crop and zoom';
 						break;
 				}
 				
@@ -101,8 +101,8 @@ class zenario_slideshow_simple extends zenario_slideshow {
 					case 'fixed_width_and_height':
 						$mobileCanvasSettingNiceName = 'Constrain by width and height';
 						break;
-					case 'resize_and_crop':
-						$mobileCanvasSettingNiceName = 'Resize and crop';
+					case 'crop_and_zoom':
+						$mobileCanvasSettingNiceName = 'Crop and zoom';
 						break;
 				}
 				

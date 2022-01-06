@@ -1,0 +1,407 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_videos_fea
+    tabs:
+        global_area:
+            fields:
+                mode: 
+                    plugin_setting: 
+                        name: mode
+                        use_value_for_plugin_name: 1
+                    label: Mode
+                    type: select
+                    css_class: iconselectmenu
+                    format_onchange: true
+                    value: list_videos
+                    values:
+                        videos:
+                            label: Videos
+                        list_videos:
+                            parent: videos
+                            label: List videos
+                        new_video:
+                            parent: videos
+                            label: New video
+                        view_video:
+                            parent: videos
+                            label: View video
+                        edit_video:
+                            parent: videos
+                            label: Edit video
+        first_tab:
+            label: Options
+            custom_templates:
+                to_state1: &to_state1
+                    group_with_previous_field: true
+                    hide_with_previous_field: true
+                    hide_if_previous_value_isnt: 1
+                    same_row: true
+                    pre_field_html: ' - goes to&nbsp; '
+                    type: select
+                    empty_value: 'No path defined in conductor'
+                    values: slides_and_states
+                    readonly: true
+                    show_as_a_label_when_readonly: true
+                    css_class: zfab_conductor_button_destination
+                to_state2: &to_state2
+                    group_with_previous_field: true
+                    hide_with_previous_field: true
+                    hidden: true
+                    same_row: true
+                    pre_field_html: ' and&nbsp; '
+                    type: select
+                    values: slides_and_states
+                    readonly: true
+                    show_as_a_label_when_readonly: true
+                    css_class: zfab_conductor_button_destination
+            fields:
+                scope:
+                    plugin_setting:
+                        name: scope
+                    visible_if:
+                        lib.modeIn: list_videos
+                    label: Scope
+                    type: select
+                    format_onchange: true
+                    empty_value: ' -- Select -- '
+                    value: all
+                    values:
+                        all:
+                            label: Show all
+                        specific_categories:
+                            label: Show videos in specific categories
+                        similar_videos:
+                            label: Videos in the same categories as the video in the URL
+                    validation:
+                        required_if_not_hidden: Please select a scope
+                
+                filters:
+                    type: grouping
+                    snippet:
+                        label: Filters
+                        label_class: subheading
+                show_columns:
+                    type: grouping
+                    snippet:
+                        label: Show columns
+                        label_class: subheading
+                buttons:
+                    type: grouping
+                    snippet:
+                        label: Buttons
+                        label_class: subheading
+                item_buttons:
+                    type: grouping
+                    snippet:
+                        label: Item-specific buttons
+                        label_class: subheading
+                options:
+                    type: grouping
+                    snippet:
+                        label: Options
+                        label_class: subheading
+                
+                
+                list_videos__column__image:
+                    grouping: show_columns
+                    visible_if:
+                        lib.modeIs: list_videos
+                    label: Image
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                list_videos__column__title:
+                    grouping: show_columns
+                    visible_if:
+                        lib.modeIs: list_videos
+                    label: Title
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                list_videos__column__short_description:
+                    grouping: show_columns
+                    visible_if:
+                        lib.modeIs: list_videos
+                    plugin_setting:
+                        name: list_videos__column__short_description
+                    label: Short description
+                    type: checkbox
+                    value: 1
+                list_videos__column__date:
+                    grouping: show_columns
+                    visible_if:
+                        lib.modeIs: list_videos
+                    plugin_setting:
+                        name: list_videos__column__date
+                    label: Date
+                    type: checkbox
+                    value: 1
+                
+                enable.new_video:
+                    grouping: buttons
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIs: list_videos
+                    plugin_setting:
+                        name: enable.new_video
+                    label: New video
+                    type: checkbox
+                    redraw_onchange: true
+                to_state1.new_video: *to_state1
+                to_state2.new_video: *to_state2
+                
+                enable.view_video:
+                    grouping: item_buttons
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIs: list_videos
+                    plugin_setting:
+                        name: enable.view_video
+                    label: View video
+                    type: checkbox
+                    redraw_onchange: true
+                to_state1.view_video: *to_state1
+                to_state2.view_video: *to_state2
+                
+                view_video_new_window:
+                    grouping: item_buttons
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIs: list_videos
+                    visible_if: zenarioAB.value('enable.view_video')
+                    indent: 1
+                    plugin_setting:
+                        name: view_video_new_window
+                    label: Open in a new window
+                    type: checkbox
+                
+                enable.edit_video:
+                    grouping: item_buttons
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIn: list_videos, view_video
+                    plugin_setting:
+                        name: enable.edit_video
+                    label: Edit video
+                    type: checkbox
+                    redraw_onchange: true
+                to_state1.edit_video: *to_state1
+                to_state2.edit_video: *to_state2
+                
+                enable.delete_video:
+                    grouping: item_buttons
+                    visible_if:
+                        lib.modeIn: view_video
+                    plugin_setting:
+                        name: enable.delete_video
+                    label: Delete video
+                    type: checkbox
+                
+                show_title:
+                    grouping: options
+                    label: Show title
+                    visible_if:
+                        lib.modeIn: 
+                            - list_videos
+                    plugin_setting:
+                        name: show_title
+                    value: 1
+                    type: checkbox
+                    redraw_onchange: true
+                title_tags:
+                    indent: 1
+                    grouping: options
+                    visible_if:
+                        lib.value: show_title
+                    hide_with_previous_field: true
+                    plugin_setting:
+                        name: title_tags
+                    label: Title tags
+                    value: h1
+                    type: select
+                    values: &tags
+                        h1:
+                            label: h1
+                            ord: 1
+                        h2:
+                            label: h2
+                            ord: 2
+                        h3:
+                            label: h3
+                            ord: 3
+                        h4:
+                            label: h4
+                            ord: 4
+                        h5:
+                            label: h5
+                            ord: 5
+                        h6:
+                            label: h6
+                            ord: 6
+                        h7:
+                            label: h7
+                            ord: 7
+                        p:
+                            label: p
+                            ord: 8
+                show_video_title:
+                    grouping: options
+                    label: Show video title
+                    visible_if:
+                        lib.modeIn: 
+                            - view_video
+                    plugin_setting:
+                        name: show_video_title
+                    value: 0
+                    type: checkbox
+                    redraw_onchange: true
+                video_title_tags:
+                    indent: 1
+                    grouping: options
+                    visible_if:
+                        lib.value: show_video_title
+                    hide_with_previous_field: true
+                    plugin_setting:
+                        name: video_title_tags
+                    label: Video title tags
+                    value: h1
+                    type: select
+                    values: *tags
+                
+                show_images:
+                    grouping: options
+                    label: Show images
+                    visible_if:
+                        lib.modeIn: 
+                            - list_videos
+                    plugin_setting:
+                        name: show_images
+                    value: 1
+                    type: checkbox
+                    format_onchange: true
+                
+                fall_back_to_default_image:
+                    grouping: options
+                    indent: 1
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('show_images')
+                    plugin_setting:
+                        name: fall_back_to_default_image
+                    label: Fall back to default image
+                    type: checkbox
+                    redraw_onchange: true
+                    
+                default_image_id:
+                    grouping: options
+                    indent: 2
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('fall_back_to_default_image')
+                    plugin_setting:
+                        name: default_image_id
+                    label: 'Default image:'
+                    upload:
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    validation:
+                        required_if_not_hidden: Please choose a default image.
+                
+                image_canvas:
+                    grouping: options
+                    indent: 1
+                    plugin_setting:
+                        name: image_canvas
+                    label: 'Image size:'
+                    type: select
+                    value: fixed_width_and_height
+                    values:
+                        unlimited:
+                            label: Unlimited size
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                    format_onchange: true
+                image_width:
+                    grouping: options
+                    indent: 2
+                    plugin_setting:
+                        name: image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        numeric: The width must be a number.
+                    value: "320"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                image_height:
+                    grouping: options
+                    indent: 2
+                    plugin_setting:
+                        name: image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        numeric: The height must be a number.
+                    value: "180"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+
+                show_video_language:
+                    grouping: options
+                    label: Show language
+                    visible_if:
+                        lib.modeIn: 
+                            - view_video
+                    plugin_setting:
+                        name: show_video_language
+                    value: 0
+                    type: checkbox
+                highlight_currently_playing_video:
+                    grouping: options
+                    type: checkbox
+                    label: Highlight currently playing video
+                    plugin_setting:
+                        name: highlight_currently_playing_video
+                    visible_if:
+                        lib.modeIs: list_videos
+                
+                category_filters:
+                    grouping: filters
+                    label: 'Categories:'
+                    visible_if:
+                        lib.modeIs: list_videos
+                        lib.scopeIs: specific_categories
+                    plugin_setting:
+                        name: category_filters
+                    type: checkboxes
+                    note_below: Videos in ANY of the selected categories will be shown
+                
+                order_by:
+                    grouping: options
+                    label: 'Sort order:'
+                    visible_if:
+                        lib.modeIs: list_videos
+                    plugin_setting:
+                        name: order_by
+                    type: radios
+                    values:
+                        alphabetic:
+                            label: Alphabetical on title
+                        date:
+                            label: Most recent date first
+                    value: alphabetic

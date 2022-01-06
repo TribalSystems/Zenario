@@ -4,7 +4,7 @@ sections:
     edit:
         buttons:
             item_meta_data:
-                priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Edit metadata
@@ -19,7 +19,7 @@ sections:
         # property_dropdown
             alias:
                 parent: property_dropdown
-                priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
                     edit: true
@@ -28,7 +28,7 @@ sections:
                     path: zenario_alias
             layout:
                 parent: property_dropdown
-                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Change layout
@@ -39,7 +39,7 @@ sections:
             
             categories:
                 parent: property_dropdown
-                priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                priv: _PRIV_EDIT_DRAFT
                 label: Change categories
                 appears_in_toolbars:
                     edit: true
@@ -51,6 +51,9 @@ sections:
                 label: Actions
                 hide_when_children_are_not_visible: true
             view_items_images: &view_items_images
+                featured_image_container: true
+                featured_image_src: ''
+                featured_image_alt: ''
                 label: Images
                 organizer_quick:
                     target_path: zenario__content/panels/image_library
@@ -69,7 +72,7 @@ sections:
             cant_start_editing_pos: {}
             create_draft_by_copying:
                 parent: action_dropdown
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
@@ -94,7 +97,7 @@ sections:
                             create_draft_by_copying: 1
             create_draft_by_overwriting:
                 parent: action_dropdown
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
@@ -152,7 +155,7 @@ sections:
                             This action will read the contents of a Microsoft Word or PDF document
                             (subject to external server programs being available).
                             
-                            If the file is a PDF document also a screenshot of the first page will be extracted and attached as a feature image.
+                            If the file is a PDF document also a screenshot of the first page will be extracted and attached as a featured image.
                         button_message: Rescan text extract
                         cancel_button_message: Cancel
                         message_type: warning
@@ -166,7 +169,7 @@ sections:
             trash_content_pos: {}
             redraft_pos: {}
             rollback_item:
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Rollback
@@ -188,7 +191,7 @@ sections:
                     request:
                         rollback: 1
             no_rollback_item:
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: "Can't Rollback"

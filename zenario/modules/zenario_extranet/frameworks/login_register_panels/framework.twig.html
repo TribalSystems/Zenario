@@ -43,67 +43,81 @@
 							<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>
 						</div>
 					{% endif %}
-					<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="{{login_button_text}}" /></div></div>
 				
 					{% if Remember_Me_Section %}
 						<div class="extranet_remember_me">
 							{{this.frameworkField({'type': "checkbox", 'name': "extranet_remember_me", 'id': "extranet_remember_me", 'checked': "checked"})}}
-							<label for="extranet_remember_me">{{"_REMEMBER_ME"|trans}}</label>
+							<label for="extranet_remember_me">{{"Remember me"|trans}}</label>
 						</div>
 					{% endif %}
+
 					{% if Log_Me_In_Section %}
 						<div class="extranet_log_me_in">
 							{{this.frameworkField({'type': "checkbox", 'name': "extranet_log_me_in", 'id': "extranet_log_me_in", 'checked': "checked"})}}
-							<label for="extranet_log_me_in">{{"_LOG_ME_IN"|trans}}</label>
+							<label for="extranet_log_me_in">{{"Store a cookie to keep me logged in at this computer"|trans}}</label>
 						</div>
 					{% endif %}
+
+					{% if Captcha %}
+						<div class="extranet_field">
+							<div class="captcha">
+								{{"Please help us combat form submissions by spam devices:"|trans}}
+								{{Captcha}}
+							</div>
+						</div>
+					{% endif %}
+
+					<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="{{login_button_text}}" /></div></div>
 				
-				{{ this.closeForm() }}
+				{{this.closeForm()}}
 				<div class="extranet_links">
 					{% if Reset_Password_Link_Section %}
 						<div><a {{Reset_Password_Link}}>{{"Forgotten password?"|trans}}</a></div>
 					{% endif %}
+
 					{% if Registration_Link_Section %}
-						<div><a {{Registration_Link}}>{{"_REGISTER"|trans}}</a></div>
+						<div><a {{Registration_Link}}>{{"Register"|trans}}</a></div>
 					{% endif %}
 				</div>
 			</div>
 			
-				<div class="panel_register">
+			<div class="panel_register">
 				<h2>{{"Don't have an account?"|trans}}</h2>
 				
 				{% if Registration_Link_Section %}
 					<div><a {{Registration_Link}} class="nice_button">{{"Register here"|trans}}</a></div>
 				{% endif %}
 			</div>
+
 			</div>
 		{% endif %}
+
 		{% if Logged_In %}
 			{% if Welcome_Message_Section %}
 				<div class="extranet_welcome_text">{{Welcome_Message}}</div>
 			{% endif %}
 			{% if Destination_url_section %} 
 				<div class="extranet_requested_link">
-					{{"_REQUESTED_LINK:"|trans}}
+					{{"Your requested page:"|trans}}
 					<a href="{{destURL_Link}}">{{destURL_Title}}</a>
 				</div>
 			{% endif %}
 			<div class="extranet_links">
 				{% if Change_Password_Link_Section %}
 					<div>
-						<a {{Change_Password_Link}}>{{"_CHANGE_PASSWORD"|trans}}</a>
+						<a {{Change_Password_Link}}>{{"Change your password"|trans}}</a>
 					</div>
 				{% endif %}
 				{% if Logout_Link_Section %}
 					<div>
-						<a {{Logout_Link}}>{{"_LOGOUT"|trans}}</a>
+						<a {{Logout_Link}}>{{"Logout"|trans}}</a>
 					</div>
 				{% endif %}
 			</div>
 		{% endif %}
 		
-		 {% if Change_Password_Form %}
-			<h1>{{"_CHANGE_PASSWORD_TITLE"|trans}}</h1>
+		{% if Change_Password_Form %}
+			<h1>{{"You need to change your password"|trans}}</h1>
 			
 			{% for item in Password_Error_Display %}
 				<div class="extranet_error">{{item.Error}}</div>
@@ -111,14 +125,14 @@
 			
 			<div>
 				<div class="extranet_field">
-					<div class="label"><label for="extranet_new_password">{{"_NEW_PASSWORD"|trans}}:</label></div>
+					<div class="label"><label for="extranet_new_password">{{"New password"|trans}}:</label></div>
 					{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
 				</div>
 				<div class="extranet_field">
-					<div class="label"><label for="extranet_new_password_confirm">{{"_NEW_PASSWORD_REPEAT"|trans}}:</label></div>
+					<div class="label"><label for="extranet_new_password_confirm">{{"Repeat password"|trans}}:</label></div>
 					{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
 				</div>
-				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'_CHANGE_PASSWORD'|trans}}" /></div></div>
+				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'Change your password'|trans}}" /></div></div>
 			</div>
 		{% endif %}
 		

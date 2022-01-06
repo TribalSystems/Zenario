@@ -4,7 +4,7 @@ sections:
     edit:
         buttons:
             translate:
-                priv: _PRIV_IMPORT_CONTENT_ITEM
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 parent: action_dropdown

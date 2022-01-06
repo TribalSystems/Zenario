@@ -1088,11 +1088,6 @@ class content {
 							  AND link_from = 'slide'
 							  AND link_from_id = ". (int) $privacy['slide_id'];
 				
-					} elseif (!empty($privacy['slide_layout_id'])) {
-						$sql .= "
-							  AND link_from = 'slide_layout'
-							  AND link_from_id = ". (int) $privacy['slide_layout_id'];
-				
 					} else {
 						return false;
 					}
@@ -1362,6 +1357,7 @@ class content {
 		$content = false;
 		$friendlyURL = '';
 	
+		//If no alias is provided, try to load it from the database...
 		if ($alias === -1) {
 			$content = \ze\row::get('content_items', ['alias', 'language_id'], ['id' => $cID, 'type' => $cType]);
 			if ($content && $content['alias']) {
@@ -1369,7 +1365,8 @@ class content {
 			}
 		}
 	
-		if ($alias) {
+		//... but if it's blank in the database, then don't forcibly add -1 to the tag string.
+		if ($alias && $alias !== -1) {
 			$friendlyURL = '/'. $alias;
 		}
 	

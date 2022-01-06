@@ -41,6 +41,3 @@ zenario_admin:
                         _PRIV_MANAGE_GROUP:
                             parent: _PRIV_VIEW_USER
                             label: "Manage user/contact groups"
-                        _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS:
-                            label: Manage confidential user documents
-                            label_class: zfab_scary_option

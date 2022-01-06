@@ -226,7 +226,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			} else {
 				$canEdit =
 					$status == 'published'
-				 && ze\priv::check('_PRIV_CREATE_REVISION_DRAFT', $box['key']['cID'], $box['key']['cType'])
+				 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])
 				 && $box['key']['cVersion'] == ze\content::latestVersion($box['key']['cID'], $box['key']['cType']);
 			}
 
@@ -538,6 +538,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							
 							if (!$is_writable) {
 								$fields['this_css_tab/use_css_file']['side_note'] = ze\admin::phrase('The &quot;editable_css&quot; directory is not writable.');
+								$box['tabs']['this_css_tab']['notices']['css_permissions_problem']['show'] = true;
 							}
 						}
 						
@@ -582,6 +583,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						
 						if (!$is_writable) {
 							$fields['all_css_tab/use_css_file']['side_note'] = ze\admin::phrase('The &quot;editable_css&quot; directory is not writable.');
+							$box['tabs']['all_css_tab']['notices']['css_permissions_problem']['show'] = true;
 						}
 					}
 					
@@ -618,12 +620,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						). '</span>';
 					
 					$fields['this_css_tab/css_class']['label'] = ze\admin::phrase('CSS classes for this [[pluginAdminName]] of the module [[class_name]]:', $module);
-					$fields['this_css_tab/css_class']['side_note'] = ze\admin::phrase("A module-wide class is always applied, and a numbered class for this particular [[pluginAdminName]]. You can use this text box to add any additional classes you need. The text box reverts to the module's default style if not specified otherwise.", $module);
-					$fields['this_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS for this [[pluginAdminName]]:', $module);
+					$fields['this_css_tab/css_class']['side_note'] = ze\admin::phrase("A numbered class for this particular [[pluginAdminName]] is always applied (matching its ID), as well as a module-wide class ending in __default_style (and auto-populates this box). You may enter add additional classes here.", $module);
+					$fields['this_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS directly for this [[pluginAdminName]] (creates a CSS file)', $module);
 				
 					$fields['all_css_tab/css_class']['label'] = ze\admin::phrase('CSS class for all [[pPluginAdminName]] of the module [[class_name]]:', $module);
-					$fields['all_css_tab/css_class']['side_note'] = ze\admin::phrase('A module-wide class is always applied.');
-					$fields['all_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS for all plugins of the module [[class_name]]:', $module);
+					$fields['all_css_tab/css_class']['side_note'] = ze\admin::phrase('The class named here is always applied.');
+					$fields['all_css_tab/use_css_file']['label'] = ze\admin::phrase('Enter CSS for all [[class_name]] plugins (edits a CSS file)', $module);
 					
 					if ($module['css_class_name']
 					 && $module['css_class_name'] != $module['class_name']) {
@@ -953,7 +955,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 	
 			//Otherwise create a new draft
 			} else {
-				ze\priv::exitIfNot('_PRIV_CREATE_REVISION_DRAFT', $instance['content_id'], $instance['content_type']);
+				ze\priv::exitIfNot('_PRIV_EDIT_DRAFT', $instance['content_id'], $instance['content_type']);
 		
 				//Create a new Content Item, or a new Draft of a Content Item, if this wireframe isn't already on a draft.
 				$cVersionTo = $instance['content_version'];

@@ -7,11 +7,11 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Event Calendar
 description: |
-    <p>When a Plugin from this Module is inserted into a Slot on a visitor-facing page, it displays a calendar in either month-view or year-view format, highlighting any days/months that contain Events. </p>
-            <p>When a visitor clicks on a populated day or month, it displays a popup panel that floats above the web page, inside which are displayed summary details of the relevant event(s). The summaries can contain a hyperlink to the full web page for the event (the Event Content Item).</p>
-            <p>You can set the Filter to display all Events, or limit the calendar to display just Events in a given Category.</p>
-            <p>You can also use the Filter to show just Events in the current visitor web page language, or to show Events described irrespective of Language.</p>
-            <p>Dates and times can be formatted in various ways to support translation into multiple languages (the names of months and days, and the format of dates and times).</p>
+    <p>This module allows the display of a calendar of events.</p>
+    <p>When started, the module will allow a plugin to be created, and you should place this in a slot on the content item (e.g. the HTML home page) where you would like the calendar to be shown.</p>
+    <p>The calendar can be either in month-view or year-view format, and any days/months that contain events (Event content items) will be highlighted.</p>
+    <p>When a visitor clicks on a day or month, it displays a popup panel, inside which are summary details of the relevant events. There can be a link to the Event content item for the event.</p>
+    <p>You can set the filter to display all Event content items, or limit the calendar to display just Events in a given category.</p>
 category: pluggable
 keywords: calendar, day, event, events, future, month, week, year
 
@@ -34,4 +34,3 @@ default_instance_name: Event Calendar
 # to fix it automatically for every site.
 dependencies:
     zenario_ctype_event: true
-    zenario_location_manager: true

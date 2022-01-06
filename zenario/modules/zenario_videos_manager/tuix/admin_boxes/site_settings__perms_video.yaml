@@ -1,0 +1,37 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: perms
+    tabs:
+        videos:
+            label: Videos
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                perm.manage.video:
+                    snippet:
+                        label: "Manage (create/edit/delete): users can manage a video if..."
+                perm.manage.video.by.group:
+                    site_setting:
+                        name: perm.manage.video.by.group
+                    indent: 1
+                    type: checkbox
+                    label: 'They are a member of the group(s):'
+                    redraw_onchange: true
+                perm.manage.video.groups:
+                    site_setting:
+                        name: perm.manage.video.groups
+                    hide_if_previous_outdented_value_isnt: 1
+                    indent: 2
+                    pick_items:
+                        path: zenario__users/panels/groups
+                        target_path: zenario__users/panels/groups
+                        min_path: zenario__users/panels/groups
+                        max_path: zenario__users/panels/groups
+                        disallow_refiners_looping_on_min_path: true
+                        nothing_selected_phrase: No group selected
+                        select_phrase: Select a group...
+                        multiple_select: true
+                    validation:
+                        required_if_not_hidden: Please select a group who can create an envelope.

@@ -97,6 +97,19 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			}
 		}
 
+		if ($refinerName == 'filter_by_language_and_content_type') {
+			$requestedContentType = $refinerId ?: ($_REQUEST['parent__id'] ?? '');
+
+			if (!$cTypeFilter = zenario_organizer::filterValue('type')) {
+				zenario_organizer::setFilterValue('type', $requestedContentType);
+			}
+
+			if (!$langIdFilter = zenario_organizer::filterValue('language_id')) {
+				$langIdFilter = ze::$defaultLang;
+				zenario_organizer::setFilterValue('language_id', $langIdFilter);
+			}
+		}
+
 		//Have a refiner that enforces the language filter be set.
 		if ($mode != 'typeahead_search'
 		 && (isset($_GET['refiner__filter_by_lang']) || isset($_GET['refiner__filter_exclude_documents']))
@@ -136,7 +149,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		
 		//Check which content type we're displaying and whether the current admin has rights to create content items of that type.
 		$checkPermsOnCType = $panel['key']['cType'] ?? '';
-		$hasPermsOnCType = ze\priv::check('_PRIV_CREATE_FIRST_DRAFT', false, $checkPermsOnCType);
+		$hasPermsOnCType = ze\priv::check('_PRIV_EDIT_DRAFT', false, $checkPermsOnCType);
 		
 		//If they've no permissions, try to make sure that any "create" button is not visible
 		//(as the admin would just see a permissions error if they clicked on it).
@@ -188,7 +201,6 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					'writer_field' => 'writer_name',
 					'description_field' => 'description',
 					'keywords_field' => 'keywords',
-					//'summary_field' => '...',
 					'release_date_field' => 'release_date'
 				] as $fieldName => $columnName) {
 					if (!isset($details[$fieldName])) {
@@ -223,7 +235,6 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				'writer_field' => 'writer_name',
 				'description_field' => 'description',
 				'keywords_field' => 'keywords',
-				//'summary_field' => '...',
 				'release_date_field' => 'release_date'
 			] as $fieldName => $columnName) {
 	
@@ -257,10 +268,33 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		if($contentType=($_REQUEST['refiner__content_type'] ?? false)){
-			if(ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'=>$contentType])){
+		if ($contentType = ($_REQUEST['refiner__content_type'] ?? false)){
+			//Hide the content type quick filter when viewing
+			//specific content types, rather than "All content items" panel.
+			unset($panel['quick_filter_buttons']['content_type']);
+			unset($panel['quick_filter_buttons']['all_content_types']);
+			
+			if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'=>$contentType])){
 				unset($panel['inline_buttons']['no_categories']);
 				unset($panel['inline_buttons']['one_or_more_categories']);
+			}
+		}
+
+		$panel['columns']['type']['values'] = [];
+		$ord = 1;
+		foreach (ze\content::getContentTypes() as $cType) {
+			$panel['columns']['type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
+
+			//Only populate the content type quick filter
+			//when viewing the "All content items" panel.
+			if (!$contentType) {
+				$panel['quick_filter_buttons'][$cType['content_type_id']] = [
+					'ord' => ++$ord,
+					'parent' => 'content_type',
+					'column' => 'type',
+					'label' => $cType['content_type_name_en'],
+					'value' => $cType['content_type_id']
+				];
 			}
 		}
 		
@@ -323,11 +357,22 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['quick_filter_buttons']['status']['label'] =
 				$panel['quick_filter_buttons'][$statusFilter]['label'];
 		}
+
+		//Likewise, change the label for content type filter.
+		if (($typeFilter = zenario_organizer::filterValue('type'))
+			&& (!empty($panel['quick_filter_buttons'][$typeFilter]['label']))
+		) {
+			$panel['quick_filter_buttons']['content_type']['label'] =
+				$panel['quick_filter_buttons'][$typeFilter]['label'];
+		}
 		
 		//If this panel is for a specific layout, don't show the layout filter
+
+		// As of 13 Jul 2021, the quick filter for layouts is removed.
+		// The logic below is currently disabled in case we ever need to bring it back. --Marcin
 		if ($panel['key']['layoutId'] || !ze::in($mode, 'full', 'quick', 'select')) {
-			unset($panel['quick_filter_buttons']['layout']);
-			unset($panel['quick_filter_buttons']['all_layouts']);
+			// unset($panel['quick_filter_buttons']['layout']);
+			// unset($panel['quick_filter_buttons']['all_layouts']);
 		
 		} else {
 			$sql = "
@@ -349,26 +394,30 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$layoutIdFilter = zenario_organizer::filterValue('layout_id');
 			
 			//For each layout, add a filter option
-			$ord = 1000;
-			$result = ze\sql::select($sql);
-			while ($layout = ze\sql::fetchAssoc($result)) {
+
+			// As of 13 Jul 2021, the quick filter for layouts is removed.
+			// The logic below is currently disabled in case we ever need to bring it back. --Marcin
+			// $ord = 1000;
+			// $result = ze\sql::select($sql);
+			// while ($layout = ze\sql::fetchAssoc($result)) {
 				
-				$label = ze\admin::phrase('[[id_and_name]]', $layout);
+			// 	$label = ze\admin::phrase('[[id_and_name]]', $layout);
 				
-				$panel['quick_filter_buttons']['layout_'. $layout['layout_id']] = [
-					'ord' => ++$ord,
-					'parent' => 'layout',
-					'column' => 'layout_id',
-					'label' => $label,
-					'value' => $layout['layout_id']
-				];
+			// 	$panel['quick_filter_buttons']['layout_'. $layout['layout_id']] = [
+			// 		'ord' => ++$ord,
+			// 		'parent' => 'layout',
+			// 		'column' => 'layout_id',
+			// 		'label' => $label,
+			// 		'value' => $layout['layout_id']
+			// 	];
 				
-				//If the layout was chosen, change the text on the parent-button
-				if ($layoutIdFilter == $layout['layout_id']) {
-					$panel['quick_filter_buttons']['layout']['label'] = $label;
-				}
+			// 	//If the layout was chosen, change the text on the parent-button
+
+			// 	if ($layoutIdFilter == $layout['layout_id']) {
+			// 		$panel['quick_filter_buttons']['layout']['label'] = $label;
+			// 	}
 				
-			}
+			// }
 		}
 		
 		
@@ -544,12 +593,6 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the image "[[filename]]"', $mrg);
 			unset($panel['trash']);
 		}
-
-
-		$panel['columns']['type']['values'] = [];
-		foreach (ze\content::getContentTypes() as $cType) {
-			$panel['columns']['type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
-		}
         
 		//If this is full, quick or select mode, and the admin looking at this only has permissions
 		//to edit specific content items, we'll need to check if the current admin can edit each
@@ -701,7 +744,30 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				//Content that is not in the Menu
 				if (empty($menuItems)) {
 					//To show blue icon in Content items Organizer panels for orphan menu node
+
+					//If the check comes out empty, do an additional check
+					//to see if just the menu text is missing in the target language,
+					//or if the item is truly orphaned.
+					
+					$sql = "
+						SELECT m.id, t.name
+						FROM ". DB_PREFIX. "content_items AS c
+						INNER JOIN ". DB_PREFIX. "menu_nodes AS m
+						ON m.equiv_id = c.equiv_id
+						AND m.content_type = c.type
+						AND m.target_loc = 'int'
+						LEFT JOIN ". DB_PREFIX. "menu_text AS t
+						ON t.menu_id = m.id
+						AND t.language_id = c.language_id
+						WHERE c.id = ". (int) $item['id']. "
+						AND c.type = '" . \ze\escape::asciiInSQL($item['type']) . "'";
+					$result = ze\sql::fetchAssoc($sql);
+					
+					if (!empty($result) && is_array($result) && $result['id'] && empty($result['name'])) {
+						$item['menunodecounter'] = 'menu_node_text_missing';
+					} else {
 						$item['menunodecounter'] = 0;
+					}
 
 				//Content with at least one Menu Node
 				} else {
@@ -827,9 +893,12 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$item['tag'] = ze\admin::phrase('MISSING [[lang_name]] ([[language_id]])', $item);
 					$item['ghost'] = true;
 	
-					if ($checkSpecificPerms && ze\priv::onLanguage(false, $item['language_id'])) {
-						$item['_specific_perms'] = true;
-					}
+					//We used to have the ability for limited admins to have permissions on a specific language.
+					//This would let them create translations in languages they had permissions for.
+					//However this option was not being used and has been removed as of 9.2.
+					#if ($checkSpecificPerms && ze\priv::onLanguage(false, $item['language_id'])) {
+					#	$item['_specific_perms'] = true;
+					#}
 				} else {
 					++$numEquivs;
 					$existingItemCount++;
@@ -957,10 +1026,10 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		    $j=0;  
                     
             foreach(ze\content::getContentTypes() as $content){
-            	if (ze\priv::check('_PRIV_CREATE_FIRST_DRAFT', false, $content['content_type_id'])) {
+            	if (ze\priv::check('_PRIV_EDIT_DRAFT', false, $content['content_type_id'])) {
 					$j++;
 					$panel['collection_buttons']['new_node_'.$j]['label'] = $content['content_type_name_en']; 
-					$panel['collection_buttons']['new_node_'.$j]['priv'] = '_PRIV_CREATE_FIRST_DRAFT'; 
+					$panel['collection_buttons']['new_node_'.$j]['priv'] = '_PRIV_EDIT_DRAFT'; 
 					$panel['collection_buttons']['new_node_'.$j]['hide_in_select_mode'] = $panel['collection_buttons']['new_node_'.$j]['hide_on_filter'] = true; 
 					$panel['collection_buttons']['new_node_'.$j]['parent'] = 'new_dropdown'; 
 					$panel['collection_buttons']['new_node_'.$j]['admin_box']['path'] = 'zenario_content'; 
@@ -1049,10 +1118,10 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 			}
 	
-		} elseif ((ze::post('create_draft') || ze::post('redraft')) && ze\priv::check('_PRIV_CREATE_REVISION_DRAFT')) {
+		} elseif ((ze::post('create_draft') || ze::post('redraft')) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (($content = ze\row::get('content_items', ['id', 'type', 'status', 'admin_version', 'visitor_version'], ['tag_id' => $id]))
-				 && (ze\priv::check('_PRIV_CREATE_REVISION_DRAFT', $content['id'], $content['type']))) {
+				 && (ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type']))) {
 			
 					if (ze::post('create_draft') && ze\content::isDraft($content['status'])) {
 						continue;
@@ -1073,18 +1142,18 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 			}
 
-		} elseif (ze::post('create_draft_by_copying') && ze\priv::check('_PRIV_CREATE_REVISION_DRAFT')) {
+		} elseif (ze::post('create_draft_by_copying') && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			$sourceCID = $sourceCType = false;
 			if (ze\content::getCIDAndCTypeFromTagId($sourceCID, $sourceCType, $ids2)
 			 && ($content = ze\row::get('content_items', ['id', 'type', 'status'], ['tag_id' => $ids]))
-			 && (ze\priv::check('_PRIV_CREATE_REVISION_DRAFT', $content['id'], $content['type']))) {
+			 && (ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type']))) {
 				$hasDraft =
 					$content['status'] == 'first_draft'
 				 || $content['status'] == 'published_with_draft'
 				 || $content['status'] == 'hidden_with_draft'
 				 || $content['status'] == 'trashed_with_draft';
 		
-				if (!$hasDraft || ze\priv::check('_PRIV_DELETE_DRAFT', $content['id'], $content['type'])) {
+				if (!$hasDraft || ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
 					if ($hasDraft) {
 						ze\contentAdm::deleteDraft($content['id'], $content['type'], false);
 					}
@@ -1103,14 +1172,14 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 			}
 			
-		} elseif (ze::post('add_existing_translation_to_chain') && ze\priv::check('_PRIV_CREATE_TRANSLATION_FIRST_DRAFT')) {
+		} elseif (ze::post('add_existing_translation_to_chain') && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			
 			$cID = $cType = false;
 			if ((ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids2))
 			 && ($equivId = (int) ($_POST['equivId'] ?? 0))) {
 				ze\contentAdm::recordEquivalence($equivId, $cID, $cType);
 			}
-		} elseif (ze::post('remove_translation_from_chain') && ze\priv::check('_PRIV_DELETE_DRAFT')) {
+		} elseif (ze::post('remove_translation_from_chain') && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			
 			$cID = $cType = false;
 			if ((ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids))

@@ -21,18 +21,19 @@ zenario_document_upload:
                         #	- .zip
                         dropbox: true
                         dropbox_phrase: 'Upload from Dropbox'
+                
                 privacy:
                     label: 'Select the kind of access:'
                     type: radios
                     values:
                         public:
                             label: 'Public'
-                            note_below: 'Document will have a fixed URL that can be shared freely. You can put a Document Container plugin on a public content item to link to the document.'
+                            note_below: 'Document will have a fixed URL that can be shared freely. Put a Document Container plugin on a content item (with Public permission) in order to link to the document.'
                         private:
                             label: 'Private'
-                            note_below: 'Document will only be accessible to authorised users. You must put a Document Container on a private content item to allow access to the document.'
+                            note_below: 'Document will only be accessible to extranet users and will have a private URL that changes on every page load. Requires Extranet Base Module to be running. Put a Document Container plugin on a content item with a Private permission, and link it to the document.'
                         offline:
                             label: 'Decide later'
-                            note_below: 'Document will initially be offline (not available). It will become public or private (depending on the privacy of the content item) when a Document Container is made to link to it.'
+                            note_below: 'Document will initially be offline, i.e. not available for download. It will become public or private (depending on the privacy of the content item) when a Document Container plugin is created, placed on a content item, and links to the document.'
                     validation:
                         required: 'Choose the privacy of the document.'

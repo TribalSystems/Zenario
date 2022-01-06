@@ -45,6 +45,16 @@ class zenario_users__admin_boxes__content extends zenario_users {
 			$values['privacy/privacy'] = $chain['privacy'];
 			$values['privacy/at_location'] = $chain['at_location'];
 		}
+
+		if (!ze\module::isRunning('zenario_extranet')) {
+			foreach ($fields['privacy/privacy']['values'] as $name => $setting) {
+				if ($name != 'public') {
+					$fields['privacy/privacy']['values'][$name]['hidden'] = true;
+				}
+			}
+
+			$fields['privacy/privacy_settings_disabled_note']['hidden'] = false;
+		}
 		
 		if (empty($box['tabs']['privacy']['hidden'])) {
 			$cType = $box['key']['cType'];
@@ -155,7 +165,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 		
 		if (empty($box['tabs']['privacy']['hidden'])
 		 && ze\ring::engToBoolean($box['tabs']['privacy']['edit_mode']['on'] ?? false)
-		 && ze\priv::check('_PRIV_EDIT_CONTENT_ITEM_PERMISSIONS')) {
+		 && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			
 			$this->savePrivacySettings($tagIds, $values);
 		}

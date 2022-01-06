@@ -1,0 +1,90 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_videos_manager__video:
+
+    
+    # The identifier property displays the Video Id.
+    identifier: 
+        css_class: zenario_videos_manager_item
+        label: "Video ID: "
+    key:
+        id: ""
+        from_video_upload: ""
+    title: Add a video by URL
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                url:
+                    label: 'URL:'
+                    type: text
+                    maxlength: 255
+                    note_below: Enter a URL on YouTube or Vimeo, e.g. https://youtu.be/12345. If it's YouTube, press "Fetch" to get its thumbnail and descriptive text.
+                    row_class: zenario_row_full_width_field
+                    onclick: "if ($(this).val()=='') {$(this).val('https://')}"
+                    validation:
+                        required: "Please enter a URL."
+                url_test:
+                    same_row: Yes
+                    type: button
+                    value: Test
+                    onclick: "if ($('#url').val()!='') {window.open($('#url').val())}"
+                fetch_youtube_settings:
+                    type: button
+                    value: Fetch YouTube details
+                    format_onchange: true
+                video_privacy:
+                    label: "Privacy (Vimeo only):"
+                    snippet:
+                        html: ""
+                    hidden: true
+                image:
+                    label: 'Image:'
+                    upload:
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                    row_class: zenario_row_full_width_field
+                title:
+                    label: 'Title:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required: "Please enter a title."
+                    row_class: zenario_row_full_width_field
+                short_description:
+                    label: 'Short description (plain text):'
+                    type: textarea
+                    rows: 3
+                    row_class: zenario_row_full_width_field
+                description:
+                    label: 'Full description (HTML):'
+                    type: editor
+                date:
+                    label: 'Date:'
+                    type: date
+                language_id:
+                    label: "Language:"
+                    type: select
+                    empty_value: '-- Select --'
+                    values: {}
+                    hidden: true
+                    validation:
+                        required_if_not_hidden: "Please select a language."
+                categories:
+                    label: 'Categories:'
+                    type: checkboxes
+                categories_not_found:
+                    label: 'Categories:'
+                    type: text
+                    show_as_a_span: true
+                    read_only: true
+                    hidden: true
+                    value: 'No categories found'

@@ -1,0 +1,23 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: "Fullscreen"
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+
+start_running_on_install: false
+license_info: 'Modified BSD License'
+
+description: >
+    <p>
+        Displays an icon which toggles fullscreen mode in browsers. If a browser does not support fullscreen then nothing will be displayed.
+    </p>
+category: pluggable
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_framework: standard
+default_instance_name: Fullscreen button

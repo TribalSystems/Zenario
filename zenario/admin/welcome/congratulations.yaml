@@ -7,31 +7,18 @@ congratulations:
                 on: true
                 always_on: true
             fields:
-                blurb:
+                blurb2:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Congratulations</h1>
-                            <p>You have installed Zenario!</p>
-                            <p>
-                                An email has been sent to the email address you entered during the installation,
-                                confirming your administrator username and how to log in.
-                            </p>
-                            <p>
-                                If you have not received this then please check your &quot;spam&quot; folder in
-                                case the email has been mis-filed.
-                            </p>
-                            <p>
-                                If you still cannot see the email then you - or your server administrator - should
-                                check that the PHP Mail Extension is installed, enabled, and correctly configured
-                                on your server.
-                            </p>
-                            <p>
-                                It is important that you can receive email from this site. You can configure email
-                                sending in Organizer->Configuration->Site settings->Email.
-                            </p>
-                            <p>Please use this link to access your new site:</p>
-                link:
-                    full_width: true
-                    snippet:
-                        html: "&nbsp;"
+                            <h1>You have successully installed Zenario</h1>
+                            <p>An email has been sent to the email address you entered during the installation, confirming your administrator username and how to log in.</p>
+                            <h2>Make sure you received the email!</h2>
+                            <p>Zenario needs to send emails to you from time to time, so it's important you can receive email from this site.</p>
+                            <p>If you have not received this then check your spam folder in case it's been mis-filed.</p>
+                            <p>If the email didn't arrive, it's possible your server cannot send email. That could be a problem. Ask your server administrator to ensure the &quot;PHP Mail Extension&quot; is installed, enabled, and correctly configured. If that fails, Zenario can be configured to send email through an SMTP gateway.</p>
+                            <p>Configure email in <a href="organizer.php#zenario__administration/panels/site_settings//email" target="_blank">Organizer, Configuration->Site settings->Email</a>.</p>
+                            <h2>How to access your site</h2>
+                            <p>To access your new site:</p>
+                            <p class="align_center"><a class="link_like_button" href="[[site_url]]">Click here</a></p>
+                            <p>Your site's URL will be: <a class="link_color" href="[[site_url]]">[[site_url]]</a></p>&nbsp;

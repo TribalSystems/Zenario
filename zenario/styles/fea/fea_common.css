@@ -685,13 +685,6 @@ table.table_list tr th.zfea_col_sorted {
 }
 
 
-/* Slide info box
---------------------------------------------------------------------------------------------------*/
-
-.zfea_popout.zenario_slide_info .zfea_popout_inner {
-	width: 560px;
-}
-
 /* Edit box
 --------------------------------------------------------------------------------------------------*/
 
@@ -1232,11 +1225,161 @@ table.table_list tr th.zfea_col_sorted {
 /* Videos
 --------------------------------------------------------------------------------------------------*/
 
+.zenario_videos_fea .view_toggle_wrap {
+	overflow:hidden;
+	margin-bottom:15px;
+	text-align:right;
+}
+
+.zenario_videos_fea .view_toggle_wrap > div {
+	display:inline-block;
+	width:26px;
+	height:26px;
+	margin-left:3px;
+	text-align:center;
+	background:#777;
+	color:#FFF;
+	text-indent:-99;
+	font-size:0;
+	line-height:0;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	-o-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+	cursor:pointer;
+}
+
+.zenario_videos_fea .view_toggle_wrap > div:before {
+	font-family: 'FontAwesome';
+	text-indent:0;
+	font-size:16px;
+	line-height:26px;
+	content: "\f0ca";
+}
+
+.zenario_videos_fea .view_toggle_wrap > div:first-child:before {
+	content: "\f009";
+}
+
+.zenario_videos_fea .view_toggle_wrap > div.on {
+	background:#000;
+}
+
+.zenario_videos_fea .view_toggle_wrap > div:not(.on):hover {
+	opacity:0.85;
+}
+
+/* Block */
+
+.zenario_videos_fea .zfea_block {
+	overflow:hidden;
+	padding:15px;
+	margin-bottom:15px;
+}
+
+.zenario_videos_fea .zfea_block div.column_image a {
+	overflow:hidden;
+	display:block;
+}
+	
+.zenario_videos_fea .zfea_block div.column_image a img {
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.zenario_videos_fea .zfea_block div.column_image a:hover img {
+	opacity:0.85;
+}
+
+.zenario_videos_fea .zfea_block .buttons {
+	overflow:hidden;
+}
+
+.zenario_videos_fea .zfea_block .buttons a:before {
+	font-family: 'FontAwesome';
+  	content: "\f03d";
+  	padding-right:4px;
+}
+
+/* List view */
+
+.zfea_block_list_like_table .zfea_block_list_wrap .zfea_block {
+	width:calc(100% - 40px);
+	padding:20px;
+	margin-left:0;
+	margin-right:0;
+}
+
+.zfea_block_list_like_table .zfea_block_list_wrap .zfea_block > div.column_image {
+	float:left;
+	padding-right:2%;
+}
+
+body.mobile .zfea_block_list_like_table .zfea_block_list_wrap .zfea_block > div.column_image {
+	width:28%;
+	padding-right:2%;
+	float:left;
+}
+
+body.mobile .zenario_videos_fea .zfea_block_list_like_table.zfea_blocks .zfea_block_list_wrap .zfea_block {
+	width:calc(100% - 40px);
+}
+
+body.mobile .zfea_block_list_like_table .zfea_block_list_wrap .zfea_block > div {
+	width:calc(70%);
+	float:right;
+}
+
+.zfea_block_list_like_table .zfea_block_list_wrap .zfea_block div.buttons {
+	text-align:left;
+	padding:10px 0;
+}
+
+/* Grid view */
+
+body.desktop .zenario_videos_fea .zfea_block_like_block .zfea_block {
+	padding-bottom:40px;
+	position:relative;
+}
+
+body.desktop .zenario_videos_fea .zfea_block_like_block .zfea_block {
+	float:left;
+}
+
+body.desktop .zenario_videos_fea .zfea_block_like_block .zfea_block_list_wrap .zfea_block {
+	width:calc(32% - 30px);
+	margin:0 0 20px;
+}
+
+body.desktop .zenario_videos_fea .zfea_block_like_block .zfea_block_list_wrap .zfea_block:nth-child(3n+2) {
+	margin-left:2%;
+	margin-right:2%;
+}
+
+body.desktop .zenario_videos_fea .zfea_block_like_block .zfea_block .buttons {
+	position: absolute;
+	bottom: 15px;
+	left: 0;
+	right: 0;
+	margin:auto;
+}
+
+.zenario_videos_fea .zfea_block_like_block .zfea_block .buttons {
+	text-align:center;
+}
+
+.zenario_videos_fea .zfea_block_like_block .zfea_block .column_image {
+	padding-bottom:8px;
+}
+
 .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a {
+	text-align:center;
 	position:relative;
 }
 
 .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a img {
+	margin:auto;
 	position:relative;
 	z-index:1;
 }
@@ -1264,6 +1407,75 @@ table.table_list tr th.zfea_col_sorted {
 
 .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a:hover:after {
 	opacity:0.8;
+}
+
+body.mobile .zfea_block_like_block .zfea_block_list_wrap .zfea_block > div.buttons {
+	width:calc(100%);
+	float:none;
+	text-align:center;
+}
+
+body.mobile .zenario_videos_fea .zfea_block_like_block .zfea_block .buttons {
+	padding:15px 0 0;
+}
+
+/* List view and block view */
+
+.zfea_block_list_like_table .zfea_block_list_wrap .zfea_block,
+.zenario_videos_fea .zfea_block_like_block .zfea_block {
+	border:0;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
+	background:#efefef;
+}
+
+.zenario_videos_fea .zfea_block .column_title {
+	font-size: 1.1em;
+	font-weight:600;
+}
+
+.zenario_videos_fea .zfea_block .column_description {
+	font-size:0.875em;
+	margin-bottom:5px;
+}
+
+.zenario_videos_fea .zfea_block .column_date {
+	font-size:0.75em;
+	font-style:italic;
+}
+
+/* View video */
+
+.zenario_videos_fea .view_video {
+	max-width:1024px;
+	margin:auto;
+}
+
+.zenario_videos_fea .view_video .video {
+	position: relative;
+    padding-bottom: 56.25%;
+    padding-top: 25px;
+    height: 0;
+    margin:15px auto;
+}
+
+.zenario_videos_fea .view_video .video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.zenario_videos_fea .view_video .description {
+	padding:15px 0;
+	line-height:1.4em;
+}
+
+.zenario_videos_fea .view_video p.date {
+	font-size:0.75em;
+	font-style:italic;
 }
 
 /* Search buttons, filters buttons
@@ -3501,19 +3713,6 @@ x-zenario-superuser-slide-info {
 
 x-zenario-superuser-slide-info:hover {
 	background-color:#b1e6fd;
-}
-
-
-/* A couple of tweaks to the "Slide info" popout
---------------------------------------------------------------------------------------------------*/
-
-.zfea_popout.zenario_slide_info .zfea_row_fields > div {
-	float: left;
-	margin-right: 5px;
-}
-
-.zfea_popout.zenario_slide_info #row__slide_designer .zfea_row_fields > div {
-	width: 100%;
 }
 
 

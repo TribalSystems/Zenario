@@ -2,13 +2,16 @@
 ---
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
-editions: ProBusiness, Enterprise
+editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Advanced Search
 description: |
-    <p>This module provides a plugin that's used to search through HTML and News content items. 
-       Search results can be refined by category, language and a text search.</p>
+    <p>This pluggable module can be used to put a search system on a website, and it has support for both a full-page and a simple search box interface.</p>
+    <p>There are two modes: the full page/results mode supports a text entry box, and options for filtering by category and by language; the search entry box mode is simpler and shows just a text box, as it's designed to go in a slot near the top of a layout, thus appearing throughout a website.</p>
+    <p>Both modes are predictive, showing results as the visitor types. The full-page mode shows tabs containing results separated by content type, while the search entry box mode shows up to three columns.</p>
+    <p>Depending on which content types are enabled on the site, the search can run on HTML, Document and News content items.</p>
+    <p>The search algorithm scans the various areas of each content item, including alias, title, meta tags, summary, WYSIWYG areas, and for Document content items filename and file extract. Weightings can be adjusted to fine-tune the results in the internal scoring system, with additional emphasis on more recently published items.</p>
 category: pluggable
 keywords: find, lookup, search, advanced
 
@@ -17,6 +20,7 @@ keywords: find, lookup, search, advanced
 vlp_class_name: zenario_advanced_search
 css_class_name: zenario_advanced_search
 is_pluggable: true
+nestable: true
 can_be_version_controlled: false
 default_framework: standard
 default_instance_name: Advanced Search

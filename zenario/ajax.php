@@ -108,13 +108,11 @@ if ($methodCall == 'refreshPlugin'
 	if ($instanceId || $slotName) {
 	
 		$overrideSettings = false;
-		if (!empty($_REQUEST['overrideSettings'])
-		 && (ze\priv::check('_PRIV_CREATE_REVISION_DRAFT') || ze\priv::check('_PRIV_EDIT_DRAFT'))) {
+		if (!empty($_REQUEST['overrideSettings']) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
 		}
 		$overrideFrameworkAndCSS = false;
-		if (!empty($_REQUEST['overrideFrameworkAndCSS'])
-		 && (ze\priv::check('_PRIV_CREATE_REVISION_DRAFT') || ze\priv::check('_PRIV_EDIT_DRAFT'))) {
+		if (!empty($_REQUEST['overrideFrameworkAndCSS']) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
 		}
 		
@@ -650,8 +648,14 @@ if ($methodCall == 'showFile') {
 		
 		ze\escape::flag('CSS_CLASS', $cssClass);
 		
-		if (empty(ze::$slotContents[$slotName]['instance_id'])) {
-			ze\plugin::showError($slotName);
+		if (empty(ze::$slotContents[$slotName]['instance_id'])
+		 || !empty(ze::$slotContents[$slotName]['isSuspended'])) {
+			
+			if (empty(ze::$slotContents[$slotName]['error'])) {
+				echo ze\admin::phrase('[Empty Slot]');
+			} else {
+				echo '<em>', htmlspecialchars(ze::$slotContents[$slotName]['error']), '</em>';
+			}
 		
 		} else {
 			$module->showSlot();

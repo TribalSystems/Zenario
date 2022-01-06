@@ -1,0 +1,95 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+	panels:
+		writer_profiles:
+			title: Writer profiles
+			no_items_message: There are no writer profiles available
+
+			notice:
+				show: true
+				type: ''
+				html: true
+				message: ''
+			
+			db_items:
+				table: |
+					[[DB_PREFIX]]writer_profiles AS wp
+				id_column: wp.id
+			
+			panel_type: multi_line_list_or_grid
+			css_class: three_line_list_panel
+			use_tall_rows: true
+
+			default_sort_column: name
+			columns:
+				id:
+					title: ID
+					searchable: true
+					db_column: wp.id
+					show_by_default: false
+					align_right: true
+					width: xxsmall
+				name:
+					title: Name
+					always_show: true
+					width: xlarge
+				first_name:
+					title: First name
+					searchable: true
+					db_column: wp.first_name
+					hidden: true
+				last_name:
+					title: Last name
+					searchable: true
+					db_column: wp.last_name
+					hidden: true
+				type:
+					title: Writer type
+					parent: name
+					db_column: wp.type
+					show_by_default: true
+				email:
+					title: Email
+					parent: name
+					db_column: wp.email
+					show_by_default: true
+					css_class: no_italics
+				photo:
+					title: Photo
+					db_column: wp.photo
+					hidden: true
+				post_count:
+					title: Posts
+					show_by_default: true
+					width: xxsmall
+					align_right: true
+			
+			item:
+				css_class: writer_profile
+				name: Writer profile
+				names: Writer profiles
+
+			collection_buttons:
+				add:
+					label: Create writer profile
+					hide_in_select_mode: true
+					priv: _PRIV_PUBLISH_CONTENT_ITEM
+					css_class: zenario_create_a_new
+					admin_box:
+						path: zenario_writer_profile
+						create_another: true
+
+			item_buttons:
+				edit:
+					label: Edit writer profile
+					hide_in_select_mode: true
+					priv: _PRIV_PUBLISH_CONTENT_ITEM
+					admin_box:
+						path: zenario_writer_profile
+				delete:
+					label: Delete writer profile
+					hide_in_select_mode: true
+					priv: _PRIV_PUBLISH_CONTENT_ITEM
+					admin_box:
+						path: zenario_delete_writer_profile

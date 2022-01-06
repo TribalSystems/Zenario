@@ -28,6 +28,75 @@ site_settings:
                         html: |
                             <p>Zenario can log emails that it sends (to visitors, users or administrators). It can log when extranet users log in and access content, and it can log data submitted through forms.</p>
                             <p>Note that data will not be deleted immediately when you save this box, but according to the rules described below.</p>
+        security:
+            ord: 15
+            label: Security
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: This tab contains settings for security.
+                new_admin_email_expiry:
+                    site_setting:
+                        name: new_admin_email_expiry
+                    label: Expiry time for new admin notifications
+                    type: select
+                    values:
+                        1:
+                            label: 1 day
+                        3:
+                            label: 3 days
+                        7:
+                            label: 7 days
+                    value: 7
+                    side_note: When a new admin is created they are sent a link that they can use to access the site and set a password for their accounts. Choose how long it takes before this link expires.
+                
+                zenario_site_description:
+                    type: grouping
+                    name: zenario_site_description
+                
+                enable_two_factor_authentication_for_admin_logins:
+                    legend: Set in the <code>zenario_custom/site_description.yaml</code> file
+                    grouping: zenario_site_description
+                    
+                    label: Require two-factor authentication on login
+                    type: checkbox
+                    readonly: true
+                    post_field_html: |
+                        (<code>enable_two_factor_authentication_for_admin_logins</code>)
+                    note_below: |
+                        If enabled, an admin must verify access to their email when logging into the site.
+                
+                two_factor_authentication_timeout:
+                    indent: 1
+                    grouping: zenario_site_description
+                    label: Timeout for two-factor authentication
+                    pre_field_post_label_html: |
+                        (<code>two_factor_authentication_timeout</code>)
+                    type: text
+                    readonly: true
+                    style: |
+                        width: 4em;
+                    note_below: |
+                        The length of time (in days) before an administrator
+                        needs to verify access to their email again.
+                    visible_if: lib.value('enable_two_factor_authentication_for_admin_logins')
+                
+                apply_two_factor_authentication_by_ip:
+                    indent: 1
+                    grouping: zenario_site_description
+                    label: Apply two-factor authentication on a per-IP basis
+                    type: checkbox
+                    readonly: true
+                    post_field_html: |
+                        (<code>apply_two_factor_authentication_by_ip</code>)
+                    note_below: |
+                        If enabled, an admin must verify access for each IP address they use to access the site.
+                    visible_if: lib.value('enable_two_factor_authentication_for_admin_logins')
+                
         backup:
             ord: 20
             label: Backups

@@ -6,7 +6,7 @@ zenario__content:
             collection_buttons:
                 privacy:
                     hidden: true
-                    priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+                    priv: _PRIV_EDIT_DRAFT
                     label: Change permissions
                     admin_box:
                         path: zenario_content_privacy

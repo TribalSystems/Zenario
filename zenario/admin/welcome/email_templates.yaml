@@ -1,63 +1,48 @@
 email_templates:
     installed_cms:
-        subject: "Zenario is installed successfully!"
+        subject: "Zenario has been successfully installed"
         from: Zenario Installer
         body: |
             <table style="table-layout: auto; width: 860px; height: 656px;" border="0" width="100%" cellspacing="0" cellpadding="0">
                 <tbody>
                     <tr>
-                        <td style="vertical-align: top; width: 860px; background: #f0f0f0;">
+                        <td style="vertical-align: top; width: 860px;>
                             <table style="table-layout: auto; margin: 30px auto;" border="0" width="620" cellspacing="0" cellpadding="0" align="center">
                                 <tbody>
                                     <tr>
-                                        <td style="background: #FFFFFF; vertical-align: top;">
+                                        <td style="vertical-align: top;">
                                             <table style="table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0">
                                                 <tbody>
                                                     
-                                                    <!-- HEADER -->
-                                                    <tr>
-                                                        <td style="background: #3c3c3b; color: #fff; padding: 35px 0; border-bottom: 3px solid  #132833; text-align: center;">Company Logo</td>
-                                                    </tr>
             <tr>
-            <td style="font-family: Arial, Helvetica; padding: 0px 20px 0px; font-size: 14px; line-height: 22px; color: #132833;">
+            <td style="font-family: Arial, Helvetica; padding: 0px 20px 0px; font-size: 14px; line-height: 22px;">
             <p>&nbsp;</p>                                                    
+                <h1>Welcome to Zenario</h1>
+
                 <p>Congratulations! You have successfully installed Zenario.</p>
                 
                 <p>Your site's home page is <a href = "[[URL]][[SUBDIRECTORY]]">[[URL]][[SUBDIRECTORY]]</a>.</p>
+
+                <h2>Logging in as an administrator</h2>
                 
-                <p>To administer your site, please go to <a href = "[[URL]][[SUBDIRECTORY]]zenario/admin">[[URL]][[SUBDIRECTORY]]zenario/admin</a> and log in with your admin username, [[USERNAME]].</p>
+                <p>Your site's administator access is at <a href = "[[URL]][[SUBDIRECTORY]]zenario/admin">[[URL]][[SUBDIRECTORY]]admin</a>. Log in with your admin username [[USERNAME]] and the password you chose.</p>
+               
+                <h2>Free Support</h2>
+
+                <p>You can get free support and documentation at <a href = "https://zenar.io">https://zenar.io</a>. Check the <a href="https://zenar.io/video-tutorials">video tutorial</a> section.</p>
                 
-                <p>You can get free support and documentation at <a href = "https://zenar.io">https://zenar.io</a>.</p>
+                <h2>Commercial Services</h2>
+
+                <p>Zenario is written by Tribal Systems, and who have great in-house designers and developers. Zenario can manage simple brochure websites, multi-language sites, extranet sites, location-related sites, and be a platform for custom applications. Tribal offers Zenario on managed hosting.</p>
                 
                 <p>For commercial support, hosting, design and development services, please visit <a href = "http://tribalsystems.uk" >http://tribalsystems.uk</a>.</p>
                 
                 <p>Thank you for choosing Zenario!</p>
                 
-                <p> -- Your friendly team at Tribal Systems</p>
+                <p> &nbsp;-- The team at Tribal Systems</p>
             <p>&nbsp;</p>
                                                                     
             </td>
-            </tr>
-            <!-- FOOTER -->
-            <tr>
-                <td style="padding: 0px;">
-                    <table style="font-family: Tahoma, Geneva, sans-serif; table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0" bgcolor="#3c3c3b">
-                        <tbody>
-                            <tr>
-                                <td>&nbsp;</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <br>
-                                    <p style="text-align: center; color: #fff; font-size: 13px; line-height: 18px;">© Your company<br> <span style="font-size: 11px;">Contact details</span></p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="color: #3c3c3b;">&nbsp;.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
             </tr>
             </tbody>
             </table>
@@ -81,20 +66,18 @@ email_templates:
             
             Here are your administrator login details:
             
-            Your admin username:           [[USERNAME]]
+            Your administrator username:   [[USERNAME]]
             Your temporary password:       [[PASSWORD]]
             
             What to do now:
             
-            1) Please follow this link to the Admin area of your site: [[URL]][[SUBDIRECTORY]]admin
+            1) Go to the admin area of your site: [[URL]][[SUBDIRECTORY]]admin
             
-            2) Enter your admin username and temporary password.
+            2) Enter your administrator username and temporary password as above.
             
             3) Choose a new password.
             
             You can then continue administering your site in the normal way.
-            
-            Didn't ask for password assistance?
             
             This request was made from IP address [[IP]].
             
@@ -103,7 +86,6 @@ email_templates:
             
             This is an automated email, please do not try to reply.
             
-            Thank you.
     reset_password_multisite_admin:
         subject: Your Zenario Admin Username
         from: false
@@ -126,6 +108,53 @@ email_templates:
             This is an automated email, please do not try to reply.
             
             Thank you.
+    change_email_local_admin_edit_self:
+        subject: Verify your new email address
+        from: false
+        body: |
+            Dear [[NAME]]
+            
+            It looks like you requested a change of your email address.
+
+            To confirm your new email address, please use the following code:
+
+            <p style="text-align: center;"><strong>[[CODE]]</strong></p>
+
+            Didn't ask for email change?
+
+            This request was made from IP address [[IP]].
+
+            If this was not you, then your website's security may have been compromised and you should immediately change your password.
+
+            
+            This is an auto-generated email from [[URL]][[SUBDIRECTORY]].
+    change_email_local_admin_edit_self_no_code:
+        subject: Verify your new email address
+        from: false
+        body: |
+            Dear [[NAME]]
+            
+            It looks like you requested a change of your email address.
+
+            A confirmation email with a code has been sent to the new address.
+
+            Didn't ask for email change?
+
+            This request was made from IP address [[IP]].
+
+            If this was not you, then your website's security may have been compromised and you should immediately change your password.
+
+            
+            This is an auto-generated email from [[URL]][[SUBDIRECTORY]].
+    change_email_complete_local_admin_edit_self:
+        subject: Email change successful
+        from: false
+        body: |
+            Dear [[NAME]]
+
+            Your email address has been changed from "[[OLD_EMAIL]]" to "[[NEW_EMAIL]]".
+
+            This is an auto-generated email from [[URL]][[SUBDIRECTORY]].
     security_code:
         subject: Your administrator login at [[URL]][[SUBDIRECTORY]]
         from: false
@@ -148,3 +177,25 @@ email_templates:
 
             
             This is an auto-generated email from [[URL]][[SUBDIRECTORY]].
+    notification_to_new_admin_no_password:
+        subject: 'Your Zenario administrator account'
+        from: false
+        body: |
+            <h1>Administrator account created</h1>
+            Dear&nbsp;[[first_name]] [[last_name]],
+            
+            You have been created an administrator account on [[cms_url]].
+            Your username is <strong>[[username]]</strong>.
+            
+            What to do now:
+            1) Follow this link to create a password:
+            
+            <p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[new_admin_cms_url]]">CREATE A PASSWORD</a></p>
+            
+            2) Login and start administering your site!
+            
+            Remember that you can always log in with administrator access by putting "/admin" after your site's domain name. Also please note that this is an Administrator login, not an Extranet User login (if the site has a password-protected area for visitors).
+            
+            This is an auto-generated email from [[cms_url]]&nbsp;, please do not try to reply.
+            
+            Thank you.

@@ -89,7 +89,7 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                When an administrator uploads a PDF, Zenario will attempt to scan the file and create a thumbnail from its first page, then make this a feature image for the document content item or other kind of document.
+                                When an administrator uploads a PDF, Zenario will attempt to scan the file and create a thumbnail from its first page, then make this a featured image for the document content item or other kind of document.
                             </p><p>
                                 To do this, Zenario needs the help of a program called "gs" (ghostscript).
                             </p><p>
@@ -597,7 +597,7 @@ site_settings:
                             <p>
                                Zenario can perform antivirus scanning for file uploads, and makes use of ClamAV. To install on Ubuntu, use the following (but adjust for your OS):
                             </p><p>
-                                <code>&nbsp; &nbsp; sudo apt install clamav clamav-base clamav-daemon clamav-freshclam clamdscan libclamav7</code>
+                                <code>&nbsp; &nbsp; sudo apt install clamav clamav-base clamav-daemon clamav-freshclam</code>
                             </p><p>
                                 Then ensure ClamAV is not blocked by Apparmor, so edit <code>/etc/apparmor.d/local/usr.sbin.clamd</code> and add the lines:
                             </p><p>

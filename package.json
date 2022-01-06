@@ -19,12 +19,14 @@
 		"jquery-lazy": "*",
 		"jquery-multiselect": "*",
 		"mdn-polyfills": "*",
+		"rcrop": "aewebsolutions\/rcrop",
 		"respond.js": "*",
 		"spectrum-colorpicker": "*",
 		"toastr": "*",
 		"underscore.string": "*",
 		"vimeo-upload": "*",
-		"wowjs": "*"
+		"wowjs": "*",
+		"zxcvbn": "^4.4.2"
 	},
-	"version": "9.1.55619"
+	"version": "9.2.55622"
 }

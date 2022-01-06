@@ -1,0 +1,251 @@
+{% if mode == 'view_video' %}
+	{% if no_video_id %}
+		<p class="error">{{'The videoId parameter has not been provided. Please provide it in the GET request of the URL.'|trans}}</p>
+	{% elseif not_found %}
+		<p class="error">{{'Video not found.'|trans}}</p>
+	{% else %}
+		{% if video.last_updated %}
+			<div class="zfea_form_row__last_edited" >{{video.last_updated}}</div>
+		{% endif %}
+		
+		{% if edit_video_button or delete_video_button %}
+			<div class="zfea_top_buttons">
+				{% if edit_video_button %}
+					{% set editVideoOnclick = "zenario_conductor.go(" ~ json_encode(slotName) ~ ", 'edit_video', " ~ json_encode({videoId: videoId}) ~ "); return false;" %}
+					<a class="zfea_button small_button edit" href="{{edit_video_button_link|e}}" onclick="{{editVideoOnclick|e}}">{{'Edit'|trans}}</a>
+				{% endif %}
+		
+				{% if delete_video_button %}
+					{% set deleteVideoOnclick = "
+						zenario_videos_fea.deleteVideoConfirm(
+							" ~ json_encode(slotName) ~ ",
+							" ~ json_encode(containerId) ~ ",
+							" ~ json_encode(Ajax_link) ~ ",
+							" ~ json_encode(Video_id) ~ ",
+							" ~ json_encode(this.phrase("Delete video")) ~ ",
+							" ~ json_encode(this.phrase("Are you sure you want to delete this video?")) ~ ",
+							" ~ json_encode(this.phrase("Delete")) ~ ",
+							" ~ json_encode(this.phrase("Cancel")) ~ "
+							);
+						"
+					%}
+					<a class="zfea_button small_button delete" onclick="{{deleteVideoOnclick|e}}">{{'Delete'|trans}}</a>
+				{% endif %}
+			</div>
+		{% endif %}
+		
+		<div class="view_video">
+			<div class="video">
+				{% if video.embed %}
+					{{video.embed}}
+					
+					{% if Logged_in_user_is_admin and Video_organizer_href_start %}
+						<a
+							class="zenario_front_end_picked_item_info"
+							href="
+								{{Video_organizer_href_start}}{{Video_id}}
+								{{Video_organizer_href_middle}}{{Video_id}}
+								{{Video_organizer_href_end}}"
+							target="_blank">i</a>
+					{% endif %}
+				{% else %}
+					<p class="error">{{'Video failed to load. If this video has been uploaded in the past few minutes, it may still be being processed.'|trans}}</p>
+				{% endif %}
+			</div>
+	
+			{% if show_video_title %}
+				<{{video_title_tags}}>{{video.title|e}}</{{video_title_tags}}>
+			{% endif %}
+
+			{% if videoHasNoThumbnail %}
+				<p>{{'This video has no thumbnail, click Edit to fix'|trans}}</p>
+			{% endif %}
+
+			<div class="description">{{video.description}}</div>
+			<p class="date">{{video.date|e}}</p>
+			{% if video.privacy %}
+				<div class="privacy">{{video.privacy}}</div>
+				{% if video.shareable_link %}
+					<div class="shareable_link">
+						<div class="shareable_link_label">{{'Shareable:'|trans}}</div>
+						<div class="shareable_link_input" onmouseover="videoLinkOnMouseover();" onmouseout="videoLinkOnMouseout();">
+							<input type="text" value="{{video.url}}" id="videoLink" readonly="readonly" onfocus="videoLinkOnFocus();">
+							<span id="copyLinkButton" class="zenario_copy" onclick="copyLinkButtonOnclick();" onmouseover="copyLinkButtonOnMouseover();" onmouseout="copyLinkButtonOnMouseout();" style="display: none;">
+								📋
+							</span>
+							
+							<div id="noteCopyLink" class="zenario_visitor_tooltip tooltip_top_center" style="display: none;">
+								<div class="ui-tooltip-content">{{"Copy to clipboard"|trans}}</div>
+								<span class="tooltip_arrow"></span>
+							</div>
+							
+							<div id="noteCopied" class="zenario_visitor_tooltip tooltip_top_center" style="display: none;">
+								<div class="ui-tooltip-content">{{"Copied"|trans}}</div>
+								<span class="tooltip_arrow"></span>
+							</div>
+						</div>
+					</div>
+				{% endif %}
+			{% endif %}
+			{% if video.language %}
+				<div class="language">{{video.language}}</div>
+			{% endif %}
+		</div>
+	{% endif %}
+
+{% elseif mode == 'new_video' or mode == 'edit_video' %}
+	{% do requireJsLib(module_loc ~ 'js/new_video_edit_video.js') %}
+	
+	<div class="zfea_edit_box">
+		{% if last_updated %}
+			<div class="zfea_form_row__last_edited" >{{last_updated}}</div>
+		{% endif %}
+		
+		<h1>{{title}}</h1>
+
+		{% if mode == 'edit_video' and videoThumbnailHref %}
+			{% if thumbnailNotSavedYet %}
+				<p>{{'Thumbnail fetched.'|trans}}</p>
+			{% endif %}
+
+			<img src="{{videoThumbnailHref}}">
+
+			{% if thumbnailNotSavedYet %}
+				<p>{{'Click Save to save this thumbnail.'|trans}}</p>
+			{% endif %}
+		{% endif %}
+		
+		{% if mode == 'new_video' %}
+			<div id="uploadSuccessfulContainer" {% if not show_success_message %}style="display: none;"{% endif %}>
+				<p id="uploadSuccessful" class="success">
+					{% if uploaded_or_added_by_url == "upload_a_video" %}
+						{{"Video successfully uploaded."|trans}}
+						{{"It may take a few minutes for the video to be processed, and the video will not be visible until the processing is complete."|trans}}
+					{% elseif uploaded_or_added_by_url == "add_video_by_url" %}
+						{{"Video added successfully"|trans}}
+					{% endif %}
+				</p>
+			</div>
+			<div id="selection_buttons">
+				<button type="button" id="upload_a_video" onclick="selectionButtonsOnclick(event);">{{"Upload a video"|trans}}</button>
+				<button type="button" id="add_video_by_url" onclick="selectionButtonsOnclick(event);">{{"Add a video by URL"|trans}}</button>
+			</div>
+		{% endif %}
+		
+		{{openForm}}
+			<input type="text" id="uploaded_or_added_by_url" name="uploaded_or_added_by_url" value="" style="display: none;">
+			
+			<div id="url_div" {% if mode == 'new_video' %} style="display: none;" {% endif %}>
+				<label for="url">{{"URL"|trans}}:</label><br />
+				<input type="text" id="url" name="url" {% if mode == 'edit_video' and url %} value="{{url|e}}" {% endif %}>
+				<div id="urlErrorContainer"><p id="urlError" class="error" style="display: {% if no_url_error %}block;{% else %}none;{% endif %}">{{"Please enter the URL."|trans}}</p></div>
+			</div>
+			
+			<div>
+				<label for="title">{{"Title"|trans}}:</label><br />
+				<input type="text" id="title" name="title" {% if title %} value="{{video_title|e}}" {% endif %}>
+				<div id="titleErrorContainer"><p id="titleError" class="error" style="display: {% if no_title_error %}block;{% else %}none;{% endif %}">{{"Please enter the title."|trans}}</p></div>
+			</div>
+			
+			<div>
+				<label for="short_description">{{"Short description (plain text)"|trans}}:</label><br />
+				<textarea rows="3" cols="50" id="short_description" name="short_description">{% if short_description %}{{short_description|e}}{% endif %}</textarea>
+			</div>
+			
+			<div>
+				<label for="date">Date:</label><br />
+				{{this.frameworkField({'type': "date", 'name': "date", 'id': "date", 'class': "input_date zenario_datepicker"})}}
+			</div>
+			
+			{% if languages_are_available and language_id_values %}
+				<div>
+					<select id="language_id" name="language_id" onchange="languagePickerOnChange();">
+						{% for language_key, language in language_id_values %}
+							<option value="{{language_key}}" {% if language_key == language_id %} selected {% endif %}>{{language.label|e}}</option>
+						{% endfor %}
+					</select>
+					
+					{# When the video file picker is shown, all attributes become readonly. As there is no readonly parameter for select lists, #}
+					{# it has to be disabled and its value has to be copied to the hidden input below. #}
+					<input type="text" id="language_id_value" name="language_id_value" value="" style="display: none;">
+				</div>
+				
+				{% if language_is_mandatory %}
+					<div id="languageIsMandatory" style="display: none;"></div>
+					<div id="languageIsMandatoryContainer"><p id="languageIsMandatoryError" class="error" style="display: {% if no_language_selected %}block;{% else %}none;{% endif %}">{{"Please select a language."|trans}}</p></div>
+				{% endif %}
+			{% endif %}
+			
+			{% if mode == 'edit_video' %}
+				{% if video_privacy %}
+					<div class="privacy">{{video_privacy}}</div>
+				{% endif %}
+			{% elseif mode == 'new_video' %}
+				{% if vimeo_privacy_settings %}
+					<div id="vimeoPrivacySettingsContainer">
+						<p>{{"Privacy"|trans}}:</p>
+						{% for privacy_setting_key, privacy_setting in vimeo_privacy_settings %}
+							<label>
+								<input type="radio" name="vimeoPrivacy" value="{{privacy_setting_key|e}}" {% if number_of_vimeo_privacy_settings == 1 %} checked {% endif %}>{{privacy_setting.label|trans}}
+							</label>
+							<div class="note_to_user">{{privacy_setting.note|trans}}</div>
+						{% endfor %}
+					</div>
+					
+					<div id="privacySettingErrorContainer"><p id="privacySettingError" class="error" style="display: none;">Please select the privacy setting.</p></div>
+				{% endif %}
+			{% endif %}
+			
+			{% if video_categories %}
+				<fieldset id="video_categories">
+    				<legend>{{"Categories"|trans}}:</legend>
+					{% for video_category_id, video_category_label in video_categories %}
+						<label>
+							<input type="checkbox" name="current_video_category[{{video_category_id}}]" value="{{video_category_id}}"
+								{% if mode == 'edit_video' and current_video_categories %}
+									{% if video_category_id in current_video_categories %}
+										checked
+									{% endif %}
+								{% endif %}
+							>{{video_category_label|e}}<br />
+						</label>
+					{% endfor %}
+				</fieldset>
+			{% endif %}
+			
+			<div class="zfea_row_for_button">
+				<input id="submit" type="submit" name="submit" class="input_button" value="{{'Save'|trans}}" />
+			</div>
+			
+			{% if mode == 'new_video' %}
+				<button type="button" id="showFilePickerButton" onclick="showFilePickerButtonOnclick();">{{"Finish editing and show the file picker"|trans}}</button>
+				
+				<div id="results" style="display: none;"></div>
+				<div id="progress_container" class="progress" style="display: none;">
+					<div id="progress" class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar" aria-valuenow="46" aria-valuemin="0" aria-valuemax="100" style="width: 0%">&nbsp;0%
+					</div>
+				</div>
+			
+				<div class="col-md-4" id="filePicker" style="display: none;">
+					<div id="drop_zone">{{"Drop video files here"|trans}}</div>
+					<br/>
+					<label class="btn btn-block btn-info">
+						{{"Browse"|trans}}&hellip; <input id="browse" type="file" style="display: none;">
+					</label>
+				</div>
+			{% endif %}
+		{{closeForm}}
+		
+		{% if mode == 'new_video' %}
+			<div id="cancelButtonDiv" style="display: none;">
+				<button type="button" onclick="cancelButtonOnclick();">{{"Cancel"|trans}}</button>
+			</div>
+		{% endif %}
+	</div>
+	
+	{% do requireJsLib('zenario/libs/yarn/vimeo-upload/vimeo-upload.js') %}
+	<script>
+		{% set token = ze('', 'setting', 'vimeo_access_token') %}
+		var token = "{{token}}";
+	</script>
+{% endif %}

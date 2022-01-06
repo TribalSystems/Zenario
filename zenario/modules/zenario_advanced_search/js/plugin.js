@@ -14,3 +14,23 @@ zenario_advanced_search.onKeyUp = function(field, delay) {
 	
 	}, delay);
 };
+
+zenario_advanced_search.searchButtonOnClick = function(containerId) {
+	el = $('#' + containerId + '_search_entry_box_panel');
+	el.stop().slideToggle(175);
+
+	el = $('#' + containerId + '_search_button_panel');
+	el.toggleClass('active');
+
+	$('#' + containerId + '_search_input_box').focus();
+};
+
+zenario_advanced_search.closeButtonOnClick = function(containerId) {
+	el = $('#' + containerId + '_search_entry_box_panel');
+	if (el.is(":visible")) {
+		el.stop().slideToggle(175);
+	}
+
+	el = $('#' + containerId + '_search_button_panel');
+	el.toggleClass('active');
+};

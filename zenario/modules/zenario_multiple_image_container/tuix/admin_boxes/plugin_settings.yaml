@@ -24,7 +24,7 @@ plugin_settings:
                         target_path: zenario__content/panels/mic_image_library
                         multiple_select: true
                         select_phrase: Select from Organizer...
-                    format_onchange: false
+                    format_onchange: true
                     upload:
                         multi: true
                         accept: 'image/*'
@@ -35,8 +35,6 @@ plugin_settings:
                             - .png
                         drag_and_drop: true
                         reorder_items: true
-                    validation:
-                        required_if_not_hidden: false
                 
                 show_link_to_download_original:
                     type: checkbox
@@ -69,7 +67,16 @@ plugin_settings:
                         rather than loading them all at once.
                 show_caption_on_image:
                     #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
-                    value: true
+                    redraw_onchange: true
+                show_caption_above_thumbnail:
+                    indent: 2
+                    ord: show_caption_on_image.1
+                    plugin_setting:
+                        name: show_caption_above_thumbnail
+                    label: "Show caption above thumbnail"
+                    type: checkbox
+                    visible_if: lib.value('show_caption_on_image')
+                    side_note: "Captions normally appear below the thumbnail; check here for captions to appear first."
                 show_caption_on_enlarged_image:
                     #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
                     value: true
@@ -104,17 +111,19 @@ plugin_settings:
 
                 image_thumb_znz: 
                     type: grouping
-                    name: 'image_thumb image_thumb_znz'
+                    name: image_thumb_znz
+                    grouping_css_class: zenario_grouping__image_thumb
+                    #row_class: image_grouping
                 
                 image_znz:
-                    grouping: 'image_thumb image_thumb_znz'
+                    grouping: image_thumb_znz
                     row_class: zfab_just_show_image_thumb
                     readonly: true
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__content/panels/mic_image_library
+                        min_path: zenario__content/panels/mic_image_library
+                        max_path: zenario__content/panels/mic_image_library
+                        target_path: zenario__content/panels/mic_image_library
                     value: znz
                     upload:
                         multi: true
@@ -124,20 +133,30 @@ plugin_settings:
                             - .jpg
                             - .jpeg
                             - .png
+                    values: {}
                 
                 image_link_znz: 
                     type: grouping
-                    name: 'image_link image_link_znz'
+                    name: image_link_znz
+                    grouping_css_class: zenario_grouping__image_link
                 
                 image_title_znz:
-                    grouping: 'image_link image_link_znz'
+                    grouping: image_link_znz
                     plugin_setting:
                         name: image_title_znz
                     label: 'Caption:'
                     type: text
                 
+                alt_tag_znz:
+                    #This field is not editable, and has no plugin setting value.
+                    grouping: image_link_znz
+                    label: 'Alt-tag:'
+                    type: text
+                    read_only: true
+                    side_note: 'To edit ALT tag, go to Organizer.'
+                
                 link_type_znz:
-                    grouping: 'image_link image_link_znz'
+                    grouping: image_link_znz
                     plugin_setting:
                         name: link_type_znz
                     type: select
@@ -157,7 +176,7 @@ plugin_settings:
                     indent: 1
                     visible_if: |
                         zenario.IN(zenarioAB.value('link_type_znz'), '_CONTENT_ITEM', '_EXTERNAL_URL')
-                    grouping: 'image_link image_link_znz'
+                    grouping: image_link_znz
                     plugin_setting:
                         name: target_blank_znz
                     type: select
@@ -173,7 +192,7 @@ plugin_settings:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('link_type_znz') == '_CONTENT_ITEM'
-                    grouping: 'image_link image_link_znz'
+                    grouping: image_link_znz
                     plugin_setting:
                         name: hyperlink_target_znz
                         foreign_key_to: content
@@ -188,7 +207,7 @@ plugin_settings:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('link_type_znz') == '_EXTERNAL_URL'
-                    grouping: 'image_link image_link_znz'
+                    grouping: image_link_znz
                     plugin_setting:
                         name: url_znz
                     type: url
@@ -197,7 +216,7 @@ plugin_settings:
                 
                 link_to_anchor_znz:
                     indent: 1
-                    grouping: 'image_link image_link_znz'
+                    grouping: image_link_znz
                     plugin_setting:
                         name: link_to_anchor_znz
                     label: Link to anchor
@@ -208,7 +227,7 @@ plugin_settings:
                   
                 hyperlink_anchor_znz:
                     indent: 2
-                    grouping: 'image_link image_link_znz'
+                    grouping: image_link_znz
                     plugin_setting:
                         name: hyperlink_anchor_znz
                     label: 'Anchor name:'

@@ -164,9 +164,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 						if ($this->setting('show_event_titles') != "nothing") {
 							$dayEvents[] = [
 								'Title' => $event['title'],
-								'SUBDIR' => SUBDIRECTORY . DIRECTORY_INDEX_FILENAME, 
-								'Event_id' => (int) $event['id'], 
-								'Content_type' => 'event',
+								'Link' => ze\link::toItem((int) $event['id'], 'event')
 							];
 						}
 						
@@ -269,9 +267,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 							if ($this->setting('show_event_titles') != "nothing") {
 								$monthEvents[] = [
 									'Title' => $event['title'],
-									'SUBDIR' => SUBDIRECTORY . DIRECTORY_INDEX_FILENAME, 
-									'Event_id' => (int) $event['id'], 
-									'Content_type' => 'event',
+									'Link' => ze\link::toItem((int) $event['id'], 'event')
 								];
 							}
 
@@ -819,9 +815,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 				$arr = [	
 					'Event_title' => (htmlspecialchars($event['title']) ?: ''),
 					'Event_summary'=> ($this->setting('show_summary') ? $event['content_summary'] :''),
-					'SUBDIR' => SUBDIRECTORY . DIRECTORY_INDEX_FILENAME, 
-					'Event_id' => (int) $event['id'], 
-					'Content_type' => 'event',
+					'Event_link' => ze\link::toItem((int) $event['id'], 'event'),
 					'StickyImage' => $htmlStickyImage
 				];
 

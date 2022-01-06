@@ -51,9 +51,9 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 		
 		
 		//If a branding logo is set, change the icon of "Logos and branding" to that logo
-		if (ze::setting('brand_logo') == 'custom' && ze::setting('custom_logo')) {
+		if ($ogImage = ze::setting('default_icon')) {
 			$width = $height = $url = false;
-			ze\file::imageLink($width, $height, $url, ze::setting('custom_logo'), 48, 46);
+			ze\file::imageLink($width, $height, $url, $ogImage, 48, 46);
 			$panel['items']['logos_and_branding']['image'] = $url;
 		}
 		

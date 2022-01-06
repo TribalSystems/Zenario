@@ -59,7 +59,7 @@ class zenario_access_key_map extends ze\moduleBaseClass {
 		$cachingRestrictions = 0;
 		$mergeFields = [];
 		$subSections = [];
-		$mergeFields['Access_Key_Map'] = $this->phrase( '_ACCESS_KEY_MAP' );
+		$mergeFields['Access_Key_Map'] = $this->phrase('Access Key Map');
 		$notFound = true;
 		$menus = [];
 		
@@ -109,7 +109,7 @@ class zenario_access_key_map extends ze\moduleBaseClass {
 		}
 		
 		if (empty($menus)) {
-			$mergeFields['No_Access_Keys_Found'] = $this->phrase( '_NO_ACCESS_KEYS_FOUND' );
+			$mergeFields['No_Access_Keys_Found'] = $this->phrase('No Access Keys Found');
 			$subSections['No_Access_Keys_Section'] = true;
 			$this->framework( 'Outer', $mergeFields, $subSections );
 		

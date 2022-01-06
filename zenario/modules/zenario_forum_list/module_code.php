@@ -114,7 +114,7 @@ class zenario_forum_list extends zenario_content_list {
 			
 			$mergeFields['Updated_By'] = $this->getUserScreenNameLink($row['forum_updater_id']);
 			
-			$mergeFields['Updated_By_On'] = $this->phrase('_BY_ON', ['by' => $mergeFields['Updated_By'], 'on' => $mergeFields['Date_Updated']]);
+			$mergeFields['Updated_By_On'] = $this->phrase('by [[by]] on [[on]]', ['by' => $mergeFields['Updated_By'], 'on' => $mergeFields['Date_Updated']]);
 		}
 		
 		if (!$row['forum_post_count'] || zenario_forum::markThreadCheckUserHasReadForum($row['forum_id'])) {
@@ -133,7 +133,7 @@ class zenario_forum_list extends zenario_content_list {
 	//Get a user's screen_name, if we're showing screennames
 	function getUserScreenName($userId) {
 		if (!$userId) {
-			return $this->phrase('_ANONYMOUS');
+			return $this->phrase('Anonymous');
 		} elseif ($this->showScreennames) {
 			return ze\user::screenName($userId);
 		} else {

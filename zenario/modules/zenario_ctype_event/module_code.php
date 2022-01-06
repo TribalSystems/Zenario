@@ -48,12 +48,12 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	}
 	
 	function showSlot() {
-		if ($this->setting('show_details_and_link')=='another_content_item'){
+		if ($this->setting('show_details_and_link')=='another_content_item') {
 			$item = $this->setting('another_event');
-			if (count($arr = explode("_",$item))==2){
+			if (count($arr = explode("_", $item)) == 2) {
 				$this->targetID = $arr[1];
 				$this->targetType = $arr[0];
-				if (!$this->targetVersion = ze\content::showableVersion($this->targetID,$this->targetType)){
+				if (!$this->targetVersion = ze\content::showableVersion($this->targetID, $this->targetType)){
 					return;
 				}
 			}
@@ -67,18 +67,22 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 		
 		if ($this->targetType!='event') {
 			if ((int)($_SESSION['admin_userid'] ?? false)){
-				echo "This Plugin needs to be placed on an Event-type Content Item or configured to point to another Event-type Content Item. Please check your Plugin Settings.";
+				echo "This plugin will only work when placed on an Event content item, or when configured to point to another Event content item. Please check your plugin settings.";
 			}
 			return;
 		}
 		
-		
 		$weekdays = [];
-		if ($event=$this->getEventDetails($this->targetID,$this->targetVersion)){
+		if ($event=$this->getEventDetails($this->targetID,$this->targetVersion)) {
 
-			$this->data['title']=htmlspecialchars(ze\content::title($this->targetID, $this->targetType, $this->targetVersion));
+			if ($this->setting('show_title')) {
+				$this->data['show_title'] = true;
+				$this->data['title'] = htmlspecialchars(ze\content::title($this->targetID, $this->targetType, $this->targetVersion));
+				$this->data['title_tags'] = $this->setting('title_tags');
+			}
+			
 
-			if (($event['start_date'] ?? false)==($event['end_date'] ?? false)){
+			if (($event['start_date'] ?? false) == ($event['end_date'] ?? false)) {
 				$this->data['dates_range'] = $this->phrase('[[date]]', ['date'=> ze\date::format($event['start_date'] ?? false, $this->setting('date_format'), false, false)]);
 			} else {
 				$this->data['dates_range'] = $this->phrase(
@@ -90,8 +94,8 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				);
 			}
 			
-			if (ze\module::inc('zenario_event_days_and_dates')){
-				foreach (['sun','mon','tue','wed','thu','fri','sat'] as $K=>$day){
+			if (ze\module::inc('zenario_event_days_and_dates')) {
+				foreach (['sun','mon','tue','wed','thu','fri','sat'] as $K => $day) {
 					if (($event['day_' . $day . '_on']) && ($event['day_' . $day . '_start_time']) && ($event['day_' . $day . '_start_time']!='00:00:00'))   {
 						$weekdays[] = [
 							'weekday' => ze\lang::phrase('_WEEKDAY_' . $K ),
@@ -114,28 +118,29 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 					}
 				}
 			}
+
 			if ($weekdays){
 				$data['Event_On_Weekday_Details'] = $weekdays;
 			} else {
-				if (!empty($event['start_time']) && (($event['start_time'] ?? false)!='00:00:00')){
-					if (!empty($event['end_time']) && (($event['start_time'] ?? false)!=($event['end_time'] ?? false))){
-						$this->data['dates_range'] .= " " . $this->phrase('[[start_time]] to [[end_time]]',['start_time'=> ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),''),
-																									'end_time'=> ze\date::formatTime($event['end_time'],ze::setting('vis_time_format'),'')]);
+				if (!empty($event['start_time']) && (($event['start_time'] ?? false) != '00:00:00')) {
+					if (!empty($event['end_time']) && (($event['start_time'] ?? false) != ($event['end_time'] ?? false))){
+						$this->data['dates_range'] .= " " . $this->phrase('[[start_time]] to [[end_time]]', ['start_time' => ze\date::formatTime($event['start_time'], ze::setting('vis_time_format'),''),
+																									'end_time'=> ze\date::formatTime($event['end_time'], ze::setting('vis_time_format'),'')]);
 					} else {
-						$this->data['dates_range'] .= " " .  $this->phrase('[[time]]',['time'=> ze\date::formatTime($event['start_time'],ze::setting('vis_time_format'),'')]);
+						$this->data['dates_range'] .= " " .  $this->phrase('[[time]]', ['time'=> ze\date::formatTime($event['start_time'], ze::setting('vis_time_format'),'')]);
 					}
 				}
 			}
 			
 			$stopDates = explode(',',$event['stop_dates']);
-			if ($event['stop_dates'] && count($stopDates)){
+			if ($event['stop_dates'] && count($stopDates)) {
 				foreach ($stopDates as $K=>$stopDate){
-					$stopDates[$K] = ze\date::format($stopDate,$this->setting('date_format'),false,false);
+					$stopDates[$K] = ze\date::format($stopDate, $this->setting('date_format'), false, false);
 				}
 				$this->data['stop_dates'] = implode(', ',$stopDates);
 			}
 			
-			if ($event['url']){
+			if ($event['url']) {
 				$this->data['More_Info_Url'] = true;
 				$this->data['event_url'] = htmlspecialchars($event['url']);
 			}
@@ -167,7 +172,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'zenario_content':
 				if ($box['key']['cType'] == 'event' && ($box['key']['source_cID'] ?? false) && ($box['key']['source_cVersion'] ?? false) ) {
-					$eventDetails = $this->getEventDetails($box['key']['source_cID'],$box['key']['source_cVersion']);
+					$eventDetails = $this->getEventDetails($box['key']['source_cID'], $box['key']['source_cVersion']);
 					
 					$values['zenario_ctype_event__when_and_where/start_date'] = $eventDetails['start_date'];
 					
@@ -180,8 +185,8 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 					$values['zenario_ctype_event__when_and_where/specify_time'] = $eventDetails['specify_time'];
 					$values['zenario_ctype_event__when_and_where/late_evening_event'] = $eventDetails['next_day_finish'];
 					
-					$startTime = explode(":",$eventDetails['start_time']);
-					$endTime = explode(":",$eventDetails['end_time']);
+					$startTime = explode(":", $eventDetails['start_time']);
+					$endTime = explode(":", $eventDetails['end_time']);
 					
 					$values['zenario_ctype_event__when_and_where/start_time_hours'] = $startTime[0] ?? false;
 					$values['zenario_ctype_event__when_and_where/start_time_minutes'] = $startTime[1] ?? false;
@@ -253,10 +258,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						['modules_panel_link' => $moduleLink]
 					);
 
-					$values['zenario_ctype_event__location_field'] = ze::setting('zenario_ctype_event__location_field');
-					if (!$values['zenario_ctype_event__location_field']) {
-						$values['zenario_ctype_event__location_field'] = 'optional';
-					}
+					$values['zenario_ctype_event__location_field'] = ze::setting('zenario_ctype_event__location_field') != 'hidden';
 					$values['zenario_ctype_event__location_text'] = ze::setting('zenario_ctype_event__location_text');
 				}
 				break;
@@ -315,7 +317,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				}
 				break;
 			case 'plugin_settings':
-		        $fields['first_tab/another_event']['hidden'] = !(($values['first_tab/show_details_and_link'] ?? false)=='another_content_item');
+		        $fields['first_tab/another_event']['hidden'] = !(($values['first_tab/show_details_and_link'] ?? false) =='another_content_item');
 				break;
 		}
 	}
@@ -328,6 +330,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						if (!$values['zenario_ctype_event__when_and_where/start_date']) {
 							$box['tabs']['zenario_ctype_event__when_and_where']['errors']['incomplete_dates'] = ze\admin::phrase("Please enter start and end dates for the event. They can be the same for a single-day event.");
 						}
+
 						if ($values['zenario_ctype_event__when_and_where/start_date']) {
 							$start_time_hours = $values['zenario_ctype_event__when_and_where/start_time_hours'] ?: '00';
 							$start_time_minutes = $values['zenario_ctype_event__when_and_where/start_time_minutes'] ?: '00';
@@ -350,7 +353,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 									> ($end_time_hours * 100 + $end_time_minutes)
 							) && (!$values['zenario_ctype_event__when_and_where/late_evening_event'])) {
 	
-							$box['tabs']['zenario_ctype_event__when_and_where']['errors']['incorrect_time'] = ze\admin::phrase('The Event cannot finish earlier than it starts. Please set the "Late evening Event" flag the Event runs past midnight.');
+							$box['tabs']['zenario_ctype_event__when_and_where']['errors']['incorrect_time'] = ze\admin::phrase('The event cannot finish earlier than it starts. Please set the "Late evening Event" flag the Event runs past midnight.');
 						}							
 					}
 				}
@@ -422,7 +425,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				break;
 			case 'zenario_content_type_details':
 				if ($box['key']['id'] == 'event') {
-					ze\site::setSetting('zenario_ctype_event__location_field', $values['zenario_ctype_event__location_field']);
+					ze\site::setSetting('zenario_ctype_event__location_field', $values['zenario_ctype_event__location_field']? 'optional' : 'hidden');
 					ze\site::setSetting('zenario_ctype_event__location_text', $values['zenario_ctype_event__location_text']);
 				}
 				break;
@@ -441,99 +444,100 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 
 	public static function getEventDetails ($id,$version) {
 		return ze\row::get(
-					ZENARIO_CTYPE_EVENT_PREFIX . "content_event",
-					[
-						"id",
-						"version",
-						"start_date",
-						"start_time",
-						"end_date",
-						"end_time",
-						"specify_time",
-						"next_day_finish",
-						"day_sun_on",
-						"day_sun_start_time",
-						"day_sun_end_time",
-						"day_mon_on",
-						"day_mon_start_time",
-						"day_mon_end_time",
-						"day_tue_on",
-						"day_tue_start_time",
-						"day_tue_end_time",
-						"day_wed_on",
-						"day_wed_start_time",
-						"day_wed_end_time",
-						"day_thu_on",
-						"day_thu_start_time",
-						"day_thu_end_time",
-						"day_fri_on",
-						"day_fri_start_time",
-						"day_fri_end_time",
-						"day_sat_on",
-						"day_sat_start_time",
-						"day_sat_end_time",
-						"location_id",
-						"location",
-						"url",
-						"stop_dates",
-						'online'
-					],
-					[
-						"id" => $id,
-						"version" => $version
-					]
-				);
+			ZENARIO_CTYPE_EVENT_PREFIX . "content_event",
+			[
+				"id",
+				"version",
+				"start_date",
+				"start_time",
+				"end_date",
+				"end_time",
+				"specify_time",
+				"next_day_finish",
+				"day_sun_on",
+				"day_sun_start_time",
+				"day_sun_end_time",
+				"day_mon_on",
+				"day_mon_start_time",
+				"day_mon_end_time",
+				"day_tue_on",
+				"day_tue_start_time",
+				"day_tue_end_time",
+				"day_wed_on",
+				"day_wed_start_time",
+				"day_wed_end_time",
+				"day_thu_on",
+				"day_thu_start_time",
+				"day_thu_end_time",
+				"day_fri_on",
+				"day_fri_start_time",
+				"day_fri_end_time",
+				"day_sat_on",
+				"day_sat_start_time",
+				"day_sat_end_time",
+				"location_id",
+				"location",
+				"url",
+				"stop_dates",
+				'online'
+			],
+			[
+				"id" => $id,
+				"version" => $version
+			]
+		);
 	}	
 
 	public static function eventDraftCreated($cIDTo, $cIDFrom, $cTypeTo, $cVersionTo, $cVersionFrom, $cTypeFrom) {
 		if ($cTypeFrom == 'event' && $cTypeTo == 'event') {
-			$sql = "INSERT INTO " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
-					SELECT " . (int) $cIDTo . " AS id,
-						" . (int) $cVersionTo . " AS version,
-						start_date,
-						start_time,
-						end_date,
-						end_time,
-						specify_time,
-						next_day_finish,
-						day_sun_on,
-						day_sun_start_time,
-						day_sun_end_time,
-						day_mon_on,
-						day_mon_start_time,
-						day_mon_end_time,
-						day_tue_on,
-						day_tue_start_time,
-						day_tue_end_time,
-						day_wed_on,
-						day_wed_start_time,
-						day_wed_end_time,
-						day_thu_on,
-						day_thu_start_time,
-						day_thu_end_time,
-						day_fri_on,
-						day_fri_start_time,
-						day_fri_end_time,
-						day_sat_on,
-						day_sat_start_time,
-						day_sat_end_time,
-						location_id,
-						location,
-						url,
-						stop_dates,
-						online
-					FROM " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
-					WHERE id = " . (int) $cIDFrom . "
-						AND version = " . (int) $cVersionFrom;
+			$sql = "
+				INSERT INTO " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
+				SELECT " . (int) $cIDTo . " AS id,
+					" . (int) $cVersionTo . " AS version,
+					start_date,
+					start_time,
+					end_date,
+					end_time,
+					specify_time,
+					next_day_finish,
+					day_sun_on,
+					day_sun_start_time,
+					day_sun_end_time,
+					day_mon_on,
+					day_mon_start_time,
+					day_mon_end_time,
+					day_tue_on,
+					day_tue_start_time,
+					day_tue_end_time,
+					day_wed_on,
+					day_wed_start_time,
+					day_wed_end_time,
+					day_thu_on,
+					day_thu_start_time,
+					day_thu_end_time,
+					day_fri_on,
+					day_fri_start_time,
+					day_fri_end_time,
+					day_sat_on,
+					day_sat_start_time,
+					day_sat_end_time,
+					location_id,
+					location,
+					url,
+					stop_dates,
+					online
+				FROM " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
+				WHERE id = " . (int) $cIDFrom . "
+					AND version = " . (int) $cVersionFrom;
 			$result = ze\sql::update($sql);
 		}
 	}
 	
 	public static function eventContentDeleted($cID,$cType,$cVersion) {
-		$sql = "DELETE
-				FROM " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
-				WHERE id = " . (int) $cID . "
-					AND version = " . (int) $cVersion;
+		$sql = "
+			DELETE FROM " . DB_PREFIX . ZENARIO_CTYPE_EVENT_PREFIX . "content_event
+			WHERE id = " . (int) $cID . "
+				AND version = " . (int) $cVersion;
 				
 		$result = ze\sql::update($sql);
 	}
@@ -557,5 +561,4 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 			}
 		}
 	}
-
 }

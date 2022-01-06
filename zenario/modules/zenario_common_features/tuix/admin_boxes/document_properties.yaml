@@ -77,8 +77,6 @@ zenario_document_properties:
                     grouping: thumbnail_grouping
                     dataset_label: '[Thumbnail image]'
                     full_width: true
-                    snippet:
-                        html: ''
             
                 delete_thumbnail_image:
                     grouping: thumbnail_grouping

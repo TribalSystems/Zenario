@@ -1,0 +1,34 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+license_info: 'Modified BSD License'
+display_name: Menu for Mobile with Push-Pull
+description: |
+  <p>This plugin creates a vertical mobile menu opened by a hamburger icon.</p>
+  <p>To use it, start the module and create a plugin. Put the plugin on a slot near the top of every layout for which you want to have it available.</p>
+
+category: pluggable
+keywords: menu, navigation, mobile
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+css_class_name: zenario_menu_responsive_push_pull
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Mobile Push-Pull Menu
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+  module: zenario_menu
+inheritance:
+  inherit_settings_from_module: zenario_menu

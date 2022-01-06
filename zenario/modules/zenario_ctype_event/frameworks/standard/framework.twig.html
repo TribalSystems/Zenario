@@ -1,11 +1,14 @@
 {% if Error_no_event_content_type %}
-	{{"Error. You can only use this Plugin with the Event Content Type."|trans}}
+	{{"Error. This plugin will only work when placed on an Event content item."|trans}}
 {% endif %}
 
 
 {% if Event_Details %}
 	<div class="Event_details">
-		<h1>{{title}}</h1>
+		{% if show_title %}
+			<{{title_tags|e}}>{{title}}</{{title_tags|e}}>
+		{% endif %}
+
 		<h3>{{dates_range}}</h3>
 		<div class="event_weekdays_details_wrap">
 			{% for day in Event_On_Weekday_Details %}

@@ -147,20 +147,20 @@ zenarioAT.clickTab = function(toolbar) {
 			}
 			
 			//Show empty slots on the item/layout tabs
-			sbcFun(newPageMode == 'item' || newPageMode == 'layout', 'zenario_slotWand_on', 'zenario_slotWand_off');
+			sbcFun(newPageMode == 'edit' || newPageMode == 'layout', 'zenario_slotWand_on', 'zenario_slotWand_off');
 			
 			//For layouts, add the old class name for this for backwards compatability
 			sbcFun(newPageMode == 'layout', 'zenario_pageMode_template', 'zenario_pageModeIsnt_template');
 			
 			//Show empty slots on the item/layout tabs
-			if (newPageMode == 'item' || newPageMode == 'layout') {
+			if (newPageMode == 'edit' || newPageMode == 'layout') {
 				$('body').addClass('zenario_slotWand_on').removeClass('zenario_slotWand_off');
 			} else {
 				$('body').addClass('zenario_slotWand_off').removeClass('zenario_slotWand_on');
 			}
 					
 			//Toggle the Grid on the item/layout tabs
-			if ((newPageMode == 'item' || newPageMode == 'layout') && zenarioA.showGridOn) {
+			if ((newPageMode == 'edit' || newPageMode == 'layout') && zenarioA.showGridOn) {
 				zenarioAT.showGridOnOff(true);
 			} else {
 				zenarioAT.showGridOnOff(false);
@@ -248,6 +248,8 @@ zenarioAT.organizerQuick = function(navPath, tagPath, lockMaxPath, slotName, rel
 		}};
 
 		zenarioAT.action(object);
+		
+		zenarioA.suspendStopWrapperClicks();
 	}
 	return false;
 
@@ -478,12 +480,16 @@ zenarioAT.draw = function() {
 					}
 					
 					buttons[++bi] = {
-							id: buttonId,
-							css_class: button.css_class || 'label_without_icon',
-							label: button.label || button.name,
-							parent: button.parent,
-							tuix: button
-						};
+						id: buttonId,
+						css_class: button.css_class || 'label_without_icon',
+						featured_image_container: button.featured_image_container,
+						featured_image_src: button.featured_image_src,
+						featured_image_alt: button.featured_image_alt,
+						inline_images_count: button.inline_images_count,
+						label: button.label || button.name,
+						parent: button.parent,
+						tuix: button
+					};
 					buttonsPos[buttonId] = bi;
 					
 					

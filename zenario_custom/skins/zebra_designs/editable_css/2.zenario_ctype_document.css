@@ -1,0 +1,45 @@
+.zenario_ctype_document h1 {
+	font-size:3em;
+}
+
+.zenario_ctype_document h2 {
+	font-size:2.8em;
+}
+
+.zenario_ctype_document .document_details_content_download h3 {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1.2em;
+}
+
+.zenario_ctype_document .document_details_content_download a,
+.zenario_ctype_document .document_details_content_download h3 {
+	color:#2a98ce;
+}
+
+.zenario_ctype_document a.document_download:hover {
+	text-decoration:none;
+}
+
+.zenario_ctype_document .document_details_content_panel {
+	overflow:hidden;
+}
+
+.zenario_ctype_document .document_details_content_panel .document_details_content_sticky_image {
+	float:left;
+	margin-right:20px;
+}
+
+.zenario_ctype_document .document_details_content_panel .document_details_content_sticky_image img {
+	border:1px solid #333;
+}
+
+.zenario_ctype_document .document_details_content_download h3 {
+	color:#525151;
+}
+
+
+.zenario_ctype_document .document_details_content_download a,
+.zenario_ctype_document .document_details_content_download a:hover {
+	text-decoration:underline;
+	color:#2a98ce;
+}

@@ -28,7 +28,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_title
                     grouping: filters
-                    label: 'Show title'
+                    label: "Show content item's title"
                     type: checkbox
                     value: "1"
                     format_onchange: true
@@ -37,7 +37,7 @@ plugin_settings:
                     plugin_setting:
                         name: title_html_tag
                     grouping: filters
-                    label: Title tags
+                    label: "Title tags:"
                     value: h1
                     visible_if:
                         lib.value: show_title
@@ -68,13 +68,13 @@ plugin_settings:
                     plugin_setting:
                         name: show_icon_when_pinned
                     grouping: filters
-                    label: "Show an icon when pinned"
+                    label: "Show an icon when content item is pinned"
                     type: checkbox
                 show_text_when_pinned:
                     plugin_setting:
                         name: show_text_when_pinned
                     grouping: filters
-                    label: "Show text when pinned"
+                    label: "Show text when content item is pinned"
                     type: checkbox
                     redraw_onchange: true
                 pinned_text_html_tag:
@@ -82,7 +82,7 @@ plugin_settings:
                     plugin_setting:
                         name: pinned_text_html_tag
                     grouping: filters
-                    label: Pinned text tags
+                    label: "Pinned text tags:"
                     value: h2
                     visible_if:
                         lib.value: show_text_when_pinned
@@ -92,7 +92,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_date
                     grouping: filters
-                    label: "Show item's release date"
+                    label: "Show content item's release date"
                     type: checkbox
                     value: "1"
                     format_onchange: true
@@ -117,7 +117,7 @@ plugin_settings:
                     plugin_setting:
                         name: date_html_tag
                     grouping: filters
-                    label: Date tags
+                    label: "Date tags:"
                     value: h2
                     visible_if:
                         lib.value: show_date
@@ -127,7 +127,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_published_date
                     grouping: filters
-                    label: " Show item's date published"
+                    label: "Show content item's date published"
                     type: checkbox
                     note_below: "Warning: this shows information only normally visible to administrators."
                     value: "0"
@@ -153,7 +153,7 @@ plugin_settings:
                     plugin_setting:
                         name: published_date_html_tag
                     grouping: filters
-                    label: Date tags
+                    label: "Date tags:"
                     value: h2
                     visible_if:
                         lib.value: show_published_date
@@ -163,7 +163,8 @@ plugin_settings:
                     plugin_setting:
                         name: show_description
                     grouping: filters
-                    label: 'Show description'
+                    label: "Show content item's description"
+                    side_note: "Show the meta data description."
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -172,8 +173,8 @@ plugin_settings:
                     plugin_setting:
                         name: description_html_tag
                     grouping: filters
-                    label: Description tags
-                    value: h2
+                    label: "Description tags:"
+                    value: p
                     visible_if:
                         lib.value: show_description
                     type: select
@@ -182,7 +183,8 @@ plugin_settings:
                     plugin_setting:
                         name: show_summary
                     grouping: filters
-                    label: 'Show summary'
+                    label: "Show content item's summary"
+                    side_note: "Show the summary of the content item."
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -191,8 +193,8 @@ plugin_settings:
                     plugin_setting:
                         name: summary_html_tag
                     grouping: filters
-                    label: Summary tags
-                    value: h2
+                    label: "Summary tags:"
+                    value: p
                     visible_if:
                         lib.value: show_summary
                     type: select
@@ -201,9 +203,9 @@ plugin_settings:
                     plugin_setting:
                         name: show_categories
                     grouping: filters
-                    label: 'Show public categories'
+                    label: "List the content item's categories"
                     type: checkbox
-                    note_below: "Categories not marked as Public will not be shown to visitors."
+                    side_note: "Show names of categories that the content item is in. Only categories marked as Public will be shown to visitors."
                     value: ""
                     format_onchange: true
                 categories_html_tag:
@@ -211,8 +213,8 @@ plugin_settings:
                     plugin_setting:
                         name: categories_html_tag
                     grouping: filters
-                    label: Categories tags
-                    value: h2
+                    label: "Categories tags:"
+                    value: p
                     visible_if:
                         lib.value: show_categories
                     type: select
@@ -221,7 +223,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_keywords
                     grouping: filters
-                    label: 'Show keywords'
+                    label: "Show content item's keywords"
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -230,8 +232,8 @@ plugin_settings:
                     plugin_setting:
                         name: keywords_html_tag
                     grouping: filters
-                    label: Keywords tags
-                    value: h2
+                    label: "Keywords tags:"
+                    value: p
                     visible_if:
                         lib.value: show_keywords
                     type: select
@@ -240,7 +242,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_language_name
                     grouping: filters
-                    label: 'Show language name'
+                    label: "Show content item's language (name)"
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -249,7 +251,7 @@ plugin_settings:
                     plugin_setting:
                         name: language_name_html_tag
                     grouping: filters
-                    label: 'Language name tags:'
+                    label: "Language name tags:"
                     value: h2
                     visible_if:
                         lib.value: show_language_name
@@ -259,7 +261,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_language
                     grouping: filters
-                    label: 'Show language ISO code'
+                    label: "Show content item's language (ISO code)"
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -268,7 +270,7 @@ plugin_settings:
                     plugin_setting:
                         name: language_html_tag
                     grouping: filters
-                    label: 'Language ISO code tags:'
+                    label: "Language ISO code tags:"
                     value: h2
                     visible_if:
                         lib.value: show_language
@@ -278,7 +280,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_writer_name
                     grouping: filters
-                    label: 'Show writer name'
+                    label: "Show content item's writer name"
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -287,26 +289,29 @@ plugin_settings:
                     plugin_setting:
                         name: writer_name_html_tag
                     grouping: filters
-                    label: Writer name tags
+                    label: "Writer name tags:"
                     value: h2
                     visible_if:
                         lib.value: show_writer_name
                     type: select
                     values: *tags
                 show_writer_image:
+                    indent: 1
                     plugin_setting:
                         name: show_writer_image
                     grouping: filters
-                    label: 'Show writer image'
+                    label: "Show content item's writer's photo"
                     type: checkbox
                     value: '0'
                     format_onchange: true
+                    visible_if:
+                        lib.value: show_writer_name
                 writer_image_label_html_tag:
-                    indent: 1
+                    indent: 2
                     plugin_setting:
                         name: writer_image_label_html_tag
                     grouping: filters
-                    label: Writer image label tags
+                    label: "Writer's photo label tags:"
                     value: h2
                     #visible_if: (controlled in module code)
                     type: select
@@ -336,7 +341,7 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: true
-                    indent: 1
+                    indent: 2
                 width:
                     plugin_setting:
                         name: width
@@ -350,7 +355,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 2
+                    indent: 3
                 height:
                     plugin_setting:
                         name: height
@@ -364,7 +369,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 2
+                    indent: 3
                 offset:
                     plugin_setting:
                         name: offset
@@ -381,13 +386,66 @@ plugin_settings:
                     side_note: |
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
+                    indent: 3
+                
+                show_writer_email:
+                    indent: 1
+                    plugin_setting:
+                        name: show_writer_email
+                    grouping: filters
+                    label: "Show writer's email"
+                    type: checkbox
+                    value: "0"
+                    format_onchange: true
+                    visible_if:
+                        lib.value: show_writer_name
+                writer_email_html_tag:
                     indent: 2
+                    plugin_setting:
+                        name: writer_email_html_tag
+                    grouping: filters
+                    label: "Writer's email tags:"
+                    value: p
+                    visible_if: (lib.value('show_writer_name') && lib.value('show_writer_email'))
+                    type: select
+                    values: *tags
+                writer_email_label_html_tag:
+                    indent: 2
+                    plugin_setting:
+                        name: writer_email_label_html_tag
+                    grouping: filters
+                    label: "Writer's email label tags:"
+                    value: h2
+                    #visible_if: (controlled in module code)
+                    type: select
+                    values: *tags
+                show_writer_profile:
+                    indent: 1
+                    plugin_setting:
+                        name: show_writer_profile
+                    grouping: filters
+                    label: "Show writer's profile"
+                    type: checkbox
+                    value: "0"
+                    format_onchange: true
+                    visible_if:
+                        lib.value: show_writer_name
+                writer_profile_label_html_tag:
+                    indent: 2
+                    plugin_setting:
+                        name: writer_profile_label_html_tag
+                    grouping: filters
+                    label: "Writer's profile label tags:"
+                    value: h2
+                    #visible_if: (controlled in module code)
+                    type: select
+                    values: *tags
                 
                 show_sticky_image:
                     plugin_setting:
                         name: show_sticky_image
                     grouping: filters
-                    label: 'Show feature image'
+                    label: "Show content item's featured image"
                     type: checkbox
                     format_onchange: true
                 sticky_image_label_html_tag:
@@ -395,7 +453,7 @@ plugin_settings:
                     plugin_setting:
                         name: sticky_image_label_html_tag
                     grouping: filters
-                    label: Feature image label tags
+                    label: "Featured image label tags:"
                     value: h2
                     #visible_if: (controlled in module code)
                     type: select
@@ -405,7 +463,7 @@ plugin_settings:
                     plugin_setting:
                         name: sticky_image_canvas
                     grouping: filters
-                    label: 'Image canvas:'
+                    label: "Image canvas:"
                     type: select
                     value: unlimited
                     values:
@@ -476,7 +534,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_feature_image_fallback
                     grouping: filters
-                    label: 'Show a fallback image'
+                    label: "Show a fallback image, if content item doesn't have a featured image"
                     type: checkbox
                     format_onchange: true
                     visible_if: lib.value('show_sticky_image')
@@ -505,8 +563,7 @@ plugin_settings:
                             - .png
                         drag_and_drop: true
                         reorder_items: false
-                    visible_if: |
-                        visible_if: lib.value('show_sticky_image') && lib.value('show_feature_image_fallback')
+                    visible_if: lib.value('show_sticky_image') && lib.value('show_feature_image_fallback')
                     validation:
                         required_if_not_hidden: Please select an image.
         order_tab:
@@ -525,4 +582,3 @@ plugin_settings:
                         hide_select_button: true
                         hide_info_button: true
                         reorder_items: true
-                    #values:

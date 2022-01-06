@@ -40,6 +40,16 @@
 			</{{meta_data.html_tag}}>
 		</div>
 	
+	{% elseif key == "show_writer_profile" %}
+		<div class="{{meta_data.class}}">
+			{% if show_labels %}
+				<{{meta_data.html_tag}}>
+				<span>{{meta_data.label}}:</span>
+				</{{meta_data.html_tag}}>
+			{% endif %}
+			<span>{{meta_data.value}}</span>
+		</div>
+	
 	{% else %}
 		<div class="{{meta_data.class}}">
 			<{{meta_data.html_tag}}>

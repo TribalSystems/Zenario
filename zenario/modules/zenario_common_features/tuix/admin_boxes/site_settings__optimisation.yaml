@@ -81,10 +81,12 @@ site_settings:
                     ord: 999
                     label: 'Defer JavaScript in visitor mode'
                     type: checkbox
+                    value: 1
                     note_below: |
-                        Deferring JavaScript may make your pages load more quickly on mobile devices,
-                        but may cause issues for visitors using Internet Explorer versions 9 and earlier.
-                        Certain plugins may also stop working properly if this option is enabled.
+                        Deferring JavaScript will make your pages load more quickly, and is recommended in most cases.
+                        <br/>
+                        It may cause custom or third-party JavaScript to break. If you have a script from a third-party
+                        that is not working, you may need to turn this setting off.
                         
         
         clear_cache:

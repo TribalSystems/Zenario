@@ -955,7 +955,7 @@ _sql
 );	ze\dbAdm::revision(50530
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/blackdog/js/animation_load.js'></script>", '')
+	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/zebra_designs/js/animation_load.js'></script>", '')
 	WHERE name = 'sitewide_foot'
 	  AND value IS NOT NULL
 	  AND value != ''
@@ -963,7 +963,7 @@ _sql
 	
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/blackdog/js/css3-animate-it.js'></script>", '')
+	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/zebra_designs/js/css3-animate-it.js'></script>", '')
 	WHERE name = 'sitewide_foot'
 	  AND value IS NOT NULL
 	  AND value != ''
@@ -979,7 +979,7 @@ _sql
 	
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]layouts`
-	SET foot_html = CONCAT(IFNULL(foot_html, ''), '\n<script type="text/javascript" src="zenario/libs/yarn/wowjs/dist/wow.min.js"></script>\n<script type="text/javascript" src="zenario_custom/templates/grid_templates/skins/blackdog/js/animation_load.js"></script>')
+	SET foot_html = CONCAT(IFNULL(foot_html, ''), '\n<script type="text/javascript" src="zenario/libs/yarn/wowjs/dist/wow.min.js"></script>\n<script type="text/javascript" src="zenario_custom/templates/grid_templates/skins/zebra_designs/js/animation_load.js"></script>')
 	WHERE family_name = 'grid_templates'
 	  AND file_base_name = 'L02'
 	  AND (foot_html IS NULL OR foot_html NOT LIKE '%wow.min.js%')
@@ -1414,7 +1414,64 @@ _sql
 	ADD COLUMN `apply_noindex_meta_tag` tinyint(1) NOT NULL default 0 AFTER `in_sitemap`
 _sql
 
-);	ze\dbAdm::revision( 53903
+
+
+//Remove the old "slide designer" feature.
+//This was never fully finished, has now been replaced by something much more simple, and we no longer want to maintain it
+);  ze\dbAdm::revision(54400
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]slide_layouts`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	DROP COLUMN `use_slide_layout`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]group_link`
+	MODIFY COLUMN `link_from` enum('chain', 'slide') NOT NULL
+_sql
+
+);  ze\dbAdm::revision(54401
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `when_creating_put_title_in_body` tinyint(1) NOT NULL default 0
+_sql
+
+);  ze\dbAdm::revision(54402
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_types`
+	SET `when_creating_put_title_in_body` = 1
+	WHERE content_type_id = 'html'
+_sql
+
+);  ze\dbAdm::revision(54403
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]writer_profiles`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]writer_profiles` (
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`admin_id` int(10) unsigned default NULL,
+		`first_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`last_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`type` enum('administrator', 'external_writer') default NULL,
+		`email` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`photo` int(10) unsigned DEFAULT NULL,
+		`profile` blob,
+		`created` datetime DEFAULT NULL,
+		`created_admin_id` int(10) unsigned DEFAULT NULL,
+		`last_edited` datetime DEFAULT NULL,
+		`last_edited_admin_id` int(10) unsigned DEFAULT NULL,
+		PRIMARY KEY (`id`),
+		UNIQUE KEY (`admin_id`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] default CHARSET=utf8 
+_sql
+
+//Feature implemented in 9.2 and backpatched to 9.1. Check before attempting to add the column twice.
+);	if (ze\dbAdm::needRevision(54601) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'special_pages LIKE "allow_search"')) ze\dbAdm::revision(54601
 
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]special_pages`
@@ -1427,19 +1484,121 @@ _sql
 	WHERE page_type = "zenario_privacy_policy"
 _sql
 
+);  ze\dbAdm::revision(54650
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `auto_set_release_date` tinyint(1) NOT NULL default 0
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name IN("create_draft_warning", "lock_item_upon_draft_creation", "auto_set_release_date")
+_sql
+
+);  ze\dbAdm::revision(54710
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	CHANGE COLUMN `width` `width` smallint(5) unsigned DEFAULT NULL,
+	CHANGE COLUMN `height` `height` smallint(5) unsigned DEFAULT NULL
+_sql
+
+
+//Add a table to store crop-settings for images
+);  ze\dbAdm::revision(54790
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]cropped_images`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]cropped_images` (
+		`image_id` int(10) unsigned NOT NULL,
+		`aspect_ratio_width` mediumint(6) NOT NULL,
+		`aspect_ratio_height` mediumint(6) NOT NULL,
+		`aspect_ratio_angle` float NOT NULL,
+		`ui_crop_x` mediumint(6) NOT NULL,
+		`ui_crop_y` mediumint(6) NOT NULL,
+		`ui_crop_width` mediumint(6) NOT NULL,
+		`ui_crop_height` mediumint(6) NOT NULL,
+		`ui_image_width` mediumint(6) NOT NULL,
+		`ui_image_height` mediumint(6) NOT NULL,
+		`crop_x` mediumint(6) NOT NULL,
+		`crop_y` mediumint(6) NOT NULL,
+		`crop_width` mediumint(6) NOT NULL,
+		`crop_height` mediumint(6) NOT NULL,
+		PRIMARY KEY (`image_id`, `aspect_ratio_width`, `aspect_ratio_height`),
+		KEY (`image_id`, `aspect_ratio_angle`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] default CHARSET=utf8 
+_sql
+
+
+//Switch every banner and CSL plugin that previously used "resize and crop" mode to using
+//"crop and zoom" mode.
+//Note: This is just for banners, CSLs, nests and slideshows for now.
+//More plugins may come soon!
+);	ze\dbAdm::revision( 54800
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ps.instance_id
+	INNER JOIN `[[DB_PREFIX]]modules` AS m
+	   ON m.id = pi.module_id
+	SET ps.value = 'crop_and_zoom'
+	WHERE ps.egg_id = 0
+	  AND m.class_name IN ('zenario_banner', 'zenario_content_list', 'zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple')
+	  AND (m.class_name, ps.name) IN (
+		('zenario_banner', 'canvas'),
+		('zenario_banner', 'mobile_canvas'),
+		('zenario_content_list', 'canvas'),
+		('zenario_plugin_nest', 'banner_canvas'),
+		('zenario_plugin_nest', 'mobile_canvas'),
+		('zenario_slideshow', 'banner_canvas'),
+		('zenario_slideshow', 'mobile_canvas'),
+		('zenario_slideshow_simple', 'banner_canvas'),
+		('zenario_slideshow_simple', 'mobile_canvas')
+	  )
+	  AND ps.value = 'resize_and_crop'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_PREFIX]]nested_plugins` AS np
+	   ON np.id = ps.egg_id
+	INNER JOIN `[[DB_PREFIX]]modules` AS m
+	   ON m.id = np.module_id
+	SET ps.value = 'crop_and_zoom'
+	WHERE ps.egg_id != 0
+	  AND m.class_name IN ('zenario_banner', 'zenario_content_list')
+	  AND (m.class_name, ps.name) IN (
+		('zenario_banner', 'canvas'),
+		('zenario_banner', 'mobile_canvas'),
+		('zenario_content_list', 'canvas')
+	  )
+	  AND ps.value = 'resize_and_crop'
+_sql
+
 
 //Remove any "HTML" files from the allowed file types table
-);	ze\dbAdm::revision( 53904
+);	ze\dbAdm::revision( 55000
 , <<<_sql
 	DELETE FROM `[[DB_PREFIX]]document_types`
 	WHERE `type` IN ('htm', 'html', 'htt', 'mhtml', 'stm', 'xhtml')
 _sql
 
 
+//Remove any excessively large crop ratio numbers from the cropped_images table.
+//There will also be a UI change to prevent these from being used.
+);  ze\dbAdm::revision(55050
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]cropped_images`
+	WHERE aspect_ratio_width > 100
+	   OR aspect_ratio_height > 100
+_sql
+
+
 //Update the "alias" column to use utf8mb4.
 //However also cut the length down to 250 characters, just in case anyone is limited to 1,000 bytes in their key lengths.
 //Please note: this was backpatched to 9.1 and 9.2. However, this code should be safe to use more than once.
-);	ze\dbAdm::revision( 53905
+);	ze\dbAdm::revision( 55051
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]spare_aliases`
 	SET `alias` = SUBSTRING(`alias`, 1, 250)

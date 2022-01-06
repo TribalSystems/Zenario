@@ -10,6 +10,7 @@ return [
 	'da' => ['Danish', 'dk', 'Dansk'],
 	'de' => ['German', 'de', 'Deutsch'],
 	'el' => ['Greek', 'gr', 'Ελληνικά'],
+	'en' => ['English', 'en', 'English'],
 	'en-gb' => ['English', 'en', 'English'],
 	'en-us' => ['English', 'us', 'English'],
 	'es' => ['Spanish', 'es', 'Español'],

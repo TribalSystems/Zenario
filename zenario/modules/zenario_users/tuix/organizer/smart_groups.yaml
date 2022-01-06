@@ -4,6 +4,8 @@ zenario__users:
     panels:
         smart_groups:
             priv: _PRIV_VIEW_USER
+            panel_type: multi_line_list_or_grid
+            use_tall_rows: true
             view_mode: list
             disable_grid_view: true
             
@@ -21,9 +23,6 @@ zenario__users:
                 id_column: sg.id
                 client_side: true
             refiners:
-                #intended_usage:
-                #    sql: |
-                #        sg.intended_usage = [[REFINER__INTENDED_USAGE]]
                 smart_newsletter_group:
                     title: Smart newsletter groups
                     select_mode_title: Select a smart newsletter group
@@ -45,25 +44,33 @@ zenario__users:
                     searchable: true
                     width: large
                     always_show: true
-                members:
-                    title: Members
-                    width: small
-                    show_by_default: true
-                    align_right: true
+                intended_usage_formatted_nicely:
+                    title: Intended usage
+                    parent: name
+                    always_show: true
                 intended_usage:
                     db_column: sg.intended_usage
+                members_formatted_nicely:
+                    title: Members
+                    always_show: true
+                    parent: name
+                members:
+                    title: Members (sortable)
+                    width: small
+                    align_right: true
                 created_on:
-                    title: Date/Time Created
+                    title: Date/time created
                     db_column: sg.created_on
                     format: datetime
                 last_modified_on:
-                    title: Date/Time Last Modified
+                    title: Date/time last modified
                     db_column: sg.last_modified_on
                     format: datetime
                 description:
                     title: Description
                     width: xxlarge
                     show_by_default: true
+                    disallow_sorting: true
             
             collection_buttons:
                 create_dropdown:
@@ -114,6 +121,20 @@ zenario__users:
                     label: View
                     multiple_select: true
                     hide_when_children_are_not_visible: true
+                action_dropdown:
+                    label: Actions
+                    hide_in_select_mode: true
+                    hide_when_children_are_not_visible: true
+                    multiple_select: true
+                duplicate:
+                    priv: _PRIV_VIEW_USER
+                    parent: action_dropdown
+                    hide_in_select_mode: true
+                    label: Duplicate
+                    admin_box:
+                        path: zenario_smart_group
+                        key:
+                            duplicate: true
                 group_members:
                     parent: view_dropdown
                     label: Members
@@ -130,13 +151,9 @@ zenario__users:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you want to delete the smart group "[[name]]"?
-                                No users will be deleted.
-                                This action cannot be undone.
+                                Are you sure you want to delete the smart group "[[name]]"? No users will be deleted.
                             multiple_select_message: |
-                                Are you sure you wish to delete all of the selected smart groups?
-                                No users will be deleted.
-                                This action cannot be undone.
+                                Are you sure you wish to delete all of the selected smart groups? No users will be deleted.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

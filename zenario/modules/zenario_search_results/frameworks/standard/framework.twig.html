@@ -4,7 +4,7 @@
 		<form class="search_box" onsubmit="{{Search_Submit}}" action="{{Search_Target}}" method="get">
 			<div>
 				{% if Search_Label %}
-					<label>{{"_SEARCH"|trans}}</label>
+					<label>{{"Search"|trans}}</label>
 				{% endif %}
 				<input type="hidden" name="cID" value="{{Search_Page_Alias}}" />
 				<input type="hidden" name="cType" value="{{Search_Page_cType}}" />
@@ -13,7 +13,7 @@
 						placeholder="{{Placeholder_Phrase|trans}}"
 					{% endif %}
 				/>
-				<input type="submit" class="search_entry_button" value="{{"_SEARCH"|trans}}" />
+				<input type="submit" class="search_entry_button" value="{{"Search"|trans}}" />
 			</div>
 		</form>
 	{% endif %}
@@ -89,19 +89,19 @@
 	
 	{% if Search_No_Results %}
 		<div class="search_no_results">
-			<p>{{"_SEARCH_RETURNED_NO_HTML_RESULTS"|trans}}</p>
+			<p>{{"Your search returned no results."|trans}}</p>
 		</div>
 	{% endif %}
 	
 	{% if Search_No_Results_document %}
 		<div class="search_no_results">
-			<p>{{"_SEARCH_RETURNED_NO_DOCUMENT_RESULTS"|trans}}</p>
+			<p>{{"Your search returned no results from Documents."|trans}}</p>
 		</div>
 	{% endif %}
 	
 	{% if Search_No_Results_news %}
 		<div class="search_no_results">
-			<p>{{"_SEARCH_RETURNED_NO_NEWS_RESULTS"|trans}}</p>
+			<p>{{"Your search returned no results from News."|trans}}</p>
 		</div>
 	{% endif %}
 </div>
@@ -109,9 +109,9 @@
 
 {% if Search_Categories %}
 	<div class="search_categories">
-		<h1>{{"_SEARCH_CATEGORIES"|trans}}</h1>
+		<h1>{{"Refine Search by Category"|trans}}</h1>
 		<ul class="all_categories"><li>
-			<a class="search_category{{Category_On}}" {{All_Categories_Onclick}}>{{"_ALL_CATEGORIES"|trans}}</a>
+			<a class="search_category{{Category_On}}" {{All_Categories_Onclick}}>{{"All Categories"|trans}}</a>
 		</li></ul>
 		{{Search_Categories_Tree}}
 	</div>

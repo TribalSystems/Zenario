@@ -1,0 +1,54 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_videos_manager:
+    panels:
+        categories:
+            title: Categories
+            no_items_message: No categories found
+            item: 
+                css_class: zenario_category_icon
+            db_items:
+                table: '[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]categories AS c'
+                id_column: c.id
+            columns:
+                name:
+                    title: Name
+                    db_column: c.name
+                    width: xlarge
+                    always_show: true
+                number_of_videos:
+                    title: No. of videos
+                    table_join: |
+                        [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]video_categories AS vc
+                        ON c.id = vc.category_id
+                    db_column: COUNT(vc.video_id)
+                    always_show: true
+                    align_right: true
+            item_buttons:
+                edit:
+                    hide_in_select_mode: true
+                    label: Edit
+                    admin_box:
+                        path: zenario_videos_manager__category
+                delete:
+                    hide_in_select_mode: true
+                    label: Delete
+                    multiple_select_tooltip: Delete these categories?
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: Are you sure you want to delete the category "[[name]]"?
+                            multiple_select_message: Are you sure you wish to delete these categories?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_category: 1
+            collection_buttons:
+                create:
+                    hide_in_select_mode: true
+                    css_class: zenario_create_a_new
+                    label: Create a category
+                    admin_box:
+                        path: zenario_videos_manager__category
+            

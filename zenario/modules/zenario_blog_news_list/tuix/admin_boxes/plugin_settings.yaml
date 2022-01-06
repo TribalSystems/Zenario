@@ -1,0 +1,56 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_blog_news_list
+    tabs:
+        first_tab:
+            fields:
+                enable_user_category_filter:
+                    plugin_setting:
+                        name: enable_user_category_filter
+                    grouping: category_filters
+                    label: 'Allow visitors to filter by categories'
+                    type: checkbox
+                    ord: 21.5
+                    redraw_onchange: true
+                    
+                show_count_on_user_category_filter:
+                    indent: 1
+                    plugin_setting:
+                        name: show_count_on_user_category_filter
+                    grouping: category_filters
+                    label: "Show content item count in user's category filter"
+                    type: checkbox
+                    ord: 21.6
+                    visible_if: |
+                        zenarioAB.value('enable_user_category_filter')
+                only_show_category_with_items:
+                    indent: 1
+                    plugin_setting:
+                        name: only_show_category_with_items
+                    grouping: category_filters
+                    label: "Only show categories that have content items"
+                    type: checkbox
+                    ord: 21.7
+                    visible_if: |
+                        zenarioAB.value('enable_user_category_filter')
+                        
+                    
+                only_show_child_items:
+                    hidden: true
+                    
+        overall_list:
+            fields:
+                show_headings_if_no_items:
+                    hidden: true
+                    value: 1
+                heading_if_no_items:
+                    hidden: false
+                    indent: 0
+                    visible_if: ""
+                heading_if_items:
+                    note_below: "Use the merge field [[category]] to include the category in the heading."
+        each_item:
+            fields:
+                use_download_page:
+                    hidden: true

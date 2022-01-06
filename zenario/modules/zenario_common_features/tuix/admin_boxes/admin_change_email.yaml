@@ -1,0 +1,54 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_admin_change_email:
+    hide_tab_bar: true
+    title: Change your email
+    key:
+        id: ""
+        code_already_sent: false
+    identifier:
+        css_class: admin_item
+        label: Admin ID
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: false
+            notices:
+                code_send_success:
+                    show: false
+                    type: success
+                    message: ""
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                <p>Enter your new email address, then press "Send code".</p>
+                            </div>
+                email:
+                    label: 'Current email address:'
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+                new_email:
+                    label: 'New email address:'
+                    type: text
+                    maxlength: "200"
+                    validation:
+                        required: Please enter an email address.
+                        email: That email address doesn't look valid.
+                send_email_change_request:
+                    same_row: true
+                    type: submit
+                    format_onchange: true
+                    can_be_pressed_in_view_mode: true
+                    value: Send code
+                    class: 'submit_selected'
+                code:
+                    label: 'Enter the code:'
+                    type: text
+                    style: "width: 10em;"
+                    maxlength: 5
+                    hidden: true

@@ -51,7 +51,7 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 		
 		//Get the details of this slide
 		$slide = ze\row::get('nested_plugins',
-			['id', 'slide_num', 'use_slide_layout', 'request_vars', 'hierarchical_var'],
+			['id', 'slide_num', 'request_vars', 'hierarchical_var'],
 			['instance_id' => $box['key']['instanceId'], 'states' => [$box['key']['state']]]
 		);
 		$box['key']['slideNum'] = $slide['slide_num'];
@@ -90,34 +90,6 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 			
 			$moduleDescs[$moduleClassName] = [];
 			$modulesAndModes[$moduleClassName. '-'. $mode] = [$moduleClassName, $mode];
-		}
-		
-		//Check which slide layouts are used on this slide, of any
-		$slKey = false;
-		switch ($slide['use_slide_layout']) {
-			case 'asset_schema':
-			case 'datapool_schema':
-				if (ze\module::inc('assetwolf_2')) {
-					$slKey = assetwolf_2::getAllPossibleSlideLayoutsForSlide($slide);
-				}
-				break;
-		}
-		
-		//If there were some used, check which plugins/modes are there and note those down as well
-		if (!empty($slKey)) {
-			foreach (ze\row::getValues('slide_layouts', 'data', $slKey) as $data) {
-				if ($data = json_decode($data, true)) {
-					if (!empty($data) && is_array($data)) {
-						foreach ($data as $plugin) {
-							if (($moduleClassName = $plugin['class_name'] ?? false)
-							 && ($mode = $plugin['settings']['mode'] ?? false)) {
-								$moduleDescs[$moduleClassName] = [];
-								$modulesAndModes[$moduleClassName. '-'. $mode] = [$moduleClassName, $mode];
-							}
-						}
-					}
-				}
-			}
 		}
 		
 		//Load the description.yaml file of all of the modules used

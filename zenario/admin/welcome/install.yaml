@@ -11,10 +11,11 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Welcome to Zenario</h1>
+                            <h1>Welcome to the Zenario installer</h1>
+                            <p>This installer will take you through the steps to install Zenario. For installation help, please <a href="https://zenar.io/how-to-install-zenario" target="_blank">click here</a>.</p>
                             <p>It looks like Zenario has not yet been installed.</p>
                 why:
-                    pre_field_html: "Why?"
+                    pre_field_html: "Why does this message appear?"
                     type: toggle
                     redraw_onchange: true
                     full_width: true
@@ -29,7 +30,7 @@ install:
                         </div>
                     visible_if: zenarioAW.togglePressed(field)
                 next:
-                    value: Begin Installation
+                    value: Start installation
                     type: submit
                     class: begin_installation
                     full_width: true
@@ -43,7 +44,8 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 1: BSD Open Source License</h1>
+                            <h1>Step 1: License</h1>
+                            <p>Zenario can be used for free and distributed under the <a href="https://zenar.io/licensing" target="_blank">BSD Open Source License</a>.</p>
                             <p>Please read the following carefully:</p>
                 license:
                     pre_field_html: |
@@ -63,13 +65,13 @@ install:
                     full_width: true
                     post_field_html: |
                         <label for="i_agree">
-                            I agree to the license
+                            I agree to the terms of the license.
                         </label>
                     note_below: |
                         Zenario comes bundled with several third-party software libraries, under the 
                             <a href="http://opensource.org/licenses/Apache-2.0" target="_blank">
                                 Apache</a>,
-                            <a href="http://opensource.org/licenses/BSD-3-Clause" target="_blank">
+                            <a href="http://opensource.org/licenses/terms of the BSD-3-Clause" target="_blank">
                                 BSD</a>,
                             <a href="http://opensource.org/licenses/LGPL-2.1" target="_blank">
                                 LGPL</a>,
@@ -84,17 +86,22 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Installation Method</h1>
-                            <p>To get your site running you may either perform a fresh install or restore from a backup
-                                that you have previously taken.</p>
+                            <h1>Restore a backup, or make a new site</h1>
+                            <p>You may create a new site, restore from a Zenario backup, or upgrade an existing Zenario database.</p>
                 fresh_install:
-                    value: Fresh Install
+                    value: Create a new site
                     type: submit
                     full_width: true
                     disabled_if: |
                         !zenarioAW.value('i_agree')
                 restore:
-                    value: Restore from Backup
+                    value: Restore from a backup
+                    type: submit
+                    same_row: true
+                    disabled_if: |
+                        !zenarioAW.value('i_agree')
+                restore:
+                    value: Upgrade existing
                     type: submit
                     same_row: true
                     disabled_if: |
@@ -109,8 +116,9 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 2: Database</h1>
-                            <p>You will need access to a MySQL database. Please enter information about your database here.</p>
+                            <h1>Step 2: Your database</h1>
+                            <p>You will need access to a MySQL database. This needs to be created outside of this installer, such as <a href="https://zenar.io/prepare-the-database" target="_blank">described here</a>.</p>
+                            <p>Please enter connection details to your MySQL database below.</p>
                 host:
                     label: "Hostname, and optional port number:"
                     type: text
@@ -125,22 +133,22 @@ install:
                     #note_below: 'You can leave this blank to use the default value'
                     return_key_presses_button: next
                 name:
-                    label: "Database Name:"
+                    label: "Database name:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                 user:
-                    label: "Database User:"
+                    label: "Database username:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                 password:
-                    label: "Database Password:"
+                    label: "Database password:"
                     type: password
                     row_class: row_form
                     return_key_presses_button: next
                 prefix:
-                    label: "Table Prefix:"
+                    label: "Create tables with a prefix to their name (optional):"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
@@ -181,28 +189,28 @@ install:
                         lib.value('multi_db') == "zenario_multisite"
                     return_key_presses_button: next
                 multi_db_name:
-                    label: "Global Database Name:"
+                    label: "Global database name:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                     visible_if:
                         lib.value('multi_db') == "zenario_multisite"
                 multi_db_user:
-                    label: "Global Database User:"
+                    label: "Global database username:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                     visible_if:
                         lib.value('multi_db') == "zenario_multisite"
                 multi_db_password:
-                    label: "Global Database Password:"
+                    label: "Global database password:"
                     type: password
                     row_class: row_form
                     return_key_presses_button: next
                     visible_if:
                         lib.value('multi_db') == "zenario_multisite"
                 multi_db_prefix:
-                    label: "Global Table Prefix:"
+                    label: "Global table prefix:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
@@ -231,10 +239,10 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 3: Your Site's Content</h1>
-                            <p>
-                                Please choose the initial language, date format and skin of your site.
-                            </p>
+                            <h1>Step 3: Basic info about your site</h1>
+                            <p>Please choose the default language, date format and initial appearance of your site.</p>
+
+                            <p>For more help, <a href="https://zenar.io/run-the-zenario-installer" target="_blank">click here</a>.</p>
                 
                 # Old code for sample sites, commented out as we don't currently use them
                 #sample:
@@ -244,10 +252,10 @@ install:
                 #    value: "0"
                 
                 language_id:
-                    label: 'Primary website language:'
+                    label: 'Default language for the site:'
                     type: select
-                    empty_value: ' -- None -- '
-                    value: 'en-us'
+                    empty_value: '-- Decide later --'
+                    value: 'en'
                 
                 vis_date_format_short:
                     site_setting:
@@ -339,6 +347,12 @@ install:
                     post_field_html: |
                         </div></div>
                 
+                organisation_name:
+                    label: "Your site's name (e.g. your organisation's name):"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                
                 logo:
                     label: |
                             Your site's logo (optional); if adding this, please ensure the directories "cache", "public" and "private" are writeable by the web server:
@@ -354,12 +368,6 @@ install:
                         drag_and_drop: true
                         reorder_items: false
                     value: ''
-                organisation_name:
-                    label: "Your organisation name (optional):"
-                    type: text
-                    row_class: row_form
-                    return_key_presses_button: next
-                
                 previous:
                     value: Back
                     type: submit
@@ -383,18 +391,33 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 4: Your Admin Account</h1>
-                            <p>Please enter your details so we can make your first administrator account.</p>
+                            <h1>Step 4: Your administrator account</h1>
+                            <p>Please enter your details so we can make your administrator account.</p>
+                            <p>You can add more accounts later.</p>
                 first_name:
                     label: "Your first name:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
+                    onchange: |
+                        var fName = $('#first_name').val();
+                        var lName = $('#last_name').val();
+                        var lastChar = lName.charAt(0)
+                        var userFName = fName.toLowerCase();
+                        var userLName = lastChar.toLowerCase();
+                        $('#username').val(userFName + userLName);
                 last_name:
                     label: "Your last name:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
+                    onchange: |
+                        var fName = $('#first_name').val();
+                        var lName = $('#last_name').val();
+                        var lastChar = lName.charAt(0)
+                        var userFName = fName.toLowerCase();
+                        var userLName = lastChar.toLowerCase();
+                        $('#username').val(userFName + userLName);
                 email:
                     label: "Your email address:"
                     type: text
@@ -409,7 +432,7 @@ install:
                     label: "Choose a password:"
                     type: password
                     oninput: |
-                        zenario.updatePasswordNotifier('#password', '#snippet_password_message');
+                        zenario.updatePasswordNotifier('#password', '#snippet_password_message', true);
                     onmouseover: |
                         $('#snippet__password_requirements').show();
                     onmouseout: |
@@ -461,7 +484,7 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 4: Restore a Backup</h1>
+                            <h1>Step 4: Restore from a backup</h1>
                             <p>Please enter the path and filename of a backup file to restore.</p>
                 path:
                     label: "Path:"
@@ -500,21 +523,29 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 5: Site Configuration File</h1>
-                            <p>
-                                Zenario requires a configuration file to contain its various settings.
-                            </p>
-                            <p>
-                                This installer can populate the file for you,
-                                but to be able to do this you must first make the file writeable by the web server.
-                                If you can't do this, you can copy from the box below
-                                and paste it into the file manually.
-                            </p>
+                            <h1>Step 5: Great! Now let's save the configuration and make the database...</h1>
+                            <p>Zenario needs the settings to be written to a configuration file. After this, the database will be created (this takes a few moments), and the site will be running. It can be live immediately, or you can keep it only visible in administrator mode while you work on it.</p>
+                            <p>This installer can populate the config file for you: to do this the file must be writeable by the web server. Alternatively, copy the text from the box below and paste it into the file manually.</p>
+                            <p>The file must be located at:</p>
                 zenario_siteconfig:
                     type: textarea
                     row_class: row_form
                     full_width: true
                     readonly: readonly
+                copy_siteconfig_data:
+                    type: button
+                    value: Copy siteconfig
+                    onclick: |
+                        $("textarea").select();
+                        document.execCommand('copy');
+                        $("#copy_siteconfig_data").val("Copied");
+                site_enabled:
+                    type: select
+                    values:
+                        enabled:
+                            label: 'Enable the site for immediate viewing'
+                        disabled:
+                            label: 'Keep site disabled for the time being (only administrators may access it)'
                 previous:
                     value: Back
                     type: submit
@@ -522,7 +553,7 @@ install:
                     style: |
                         float: left;
                 ive_done_it:
-                    value: "I've done it myself"
+                    value: "I've pasted it"
                     type: submit
                     same_row: true
                     style: |

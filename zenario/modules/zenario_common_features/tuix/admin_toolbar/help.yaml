@@ -6,7 +6,7 @@ sections:
             preview:
                 appears_in_toolbars:
                     preview: true
-                label: You're browsing
+                label: Browsing
                 help:
                     html: true
                     message: |
@@ -25,7 +25,8 @@ sections:
             edit:
                 appears_in_toolbars:
                     edit: true
-                label: You're in Edit mode
+                #label: You're in Edit mode
+                label: Editing
                 help:
                     html: true
                     message: |
@@ -36,7 +37,25 @@ sections:
                             Pages are called "content items", and they are version-controlled. When you start editing, Zenario makes a draft that you can work on without your changes being seen by visitors.
                         </p>
                         <p>
-                            Content items have slots, which contain plugins. These are colour-coded:<ul>
+                            <strong>Slots</strong>
+                        </p>
+                        <p>
+                            The rectangular areas of a page are called "slots". A slot can a contain a plugin, a nests or a slideshow, or it can be empty.
+                        </p>
+                        <p>
+                            Plugins are instances of a Zenario module that a visitor can see. They can have a range of uses, from simple Banners (that have an image, words and a link) to those with custom functionality.
+                        </p>
+                        <p>
+                            A nest is a combination of multiple plugins arranged together. A slideshow is a combination of several Banner plugins to show an animated display.
+                        </p>
+                        <p>
+                            You can click the slot inspector in the top-right of a slot to access the settings of a plugin, nest or slideshow.
+                        </p>
+                        <p>
+                            The same plugin, nest or slideshow can be used in many places. So if you make changes, beware that the change may have effect on more than one content item.
+                        </p>
+                        <p>
+                            Slots are colour-coded:<ul>
                             <li>Green slots are version-controlled, and any changes can be previewed before publishing</li>
                             <li>Pink slots are plugins on this content item (but a plugin can be used in more than one place)</li>
                             <li>Purple slots are plugins on the layout, so they appear on every content item using that layout.</li>
@@ -70,35 +89,35 @@ sections:
                         <p>
                             This mode allows you to view details of a previous version of this content item.
                         </p>
-            item:
-                appears_in_toolbars:
-                    item: true
-                label: You're in Slot mode
-                help:
-                    html: true
-                    message: |
-                        <p>
-                            <strong>Slot mode</strong>
-                        </p>
-                        <p>
-                            The rectangular areas of a page are called "slots". A slot can a contain a plugin, a nests or a slideshow, or it can be empty.
-                        </p>
-                        <p>
-                            Plugins are instances of a Zenario module that a visitor can see. They can have a range of uses, from simple Banners (that have an image, words and a link) to those with custom functionality.
-                        </p>
-                        <p>
-                            A nest is a combination of multiple plugins arranged together. A slideshow is a combination of several Banner plugins to show an animated display.
-                        </p>
-                        <p>
-                            You can click the slot inspector in the top-right of a slot to access the settings of a plugin, nest or slideshow.
-                        </p>
-                        <p>
-                            The same plugin, nest or slideshow can be used in many places. So if you make changes, beware that the change may have effect on more than one content item.
-                        </p>
+            #item:
+            #    appears_in_toolbars:
+            #        item: true
+            #    label: You're in Slot mode
+            #    help:
+            #        html: true
+            #        message: |
+            #            <p>
+            #                <strong>Slot mode</strong>
+            #            </p>
+            #            <p>
+            #                The rectangular areas of a page are called "slots". A slot can a contain a plugin, a nests or a slideshow, or it can be empty.
+            #            </p>
+            #            <p>
+            #                Plugins are instances of a Zenario module that a visitor can see. They can have a range of uses, from simple Banners (that have an image, words and a link) to those with custom functionality.
+            #            </p>
+            #            <p>
+            #                A nest is a combination of multiple plugins arranged together. A slideshow is a combination of several Banner plugins to show an animated display.
+            #            </p>
+            #            <p>
+            #                You can click the slot inspector in the top-right of a slot to access the settings of a plugin, nest or slideshow.
+            #            </p>
+            #            <p>
+            #                The same plugin, nest or slideshow can be used in many places. So if you make changes, beware that the change may have effect on more than one content item.
+            #            </p>
             layout:
                 appears_in_toolbars:
                     layout: true
-                label: You're in Layout mode
+                label: Layout mode
                 help:
                     html: true
                     message: |
@@ -137,7 +156,7 @@ sections:
             menu1:
                 appears_in_toolbars:
                     menu1: true
-                label: You're in Menu mode
+                label: Menu mode
                 help:
                     html: true
                     message: |

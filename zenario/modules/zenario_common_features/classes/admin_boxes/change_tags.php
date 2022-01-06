@@ -56,7 +56,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 				$link = 'organizer.php?#zenario__content/panels/image_tags';
 				$fields['no_tags_warning']['hidden'] = false;
 				$fields['no_tags_warning']['snippet']['html'] = 
-					'No tags have been created. To create or edit image tags click <a href="' . $link . '">this link</a>.';
+					'No image tags have been created. <a href="' . $link . '">Create tags</a>.';
 				return false;
 			}
 			while ($row = ze\sql::fetchAssoc($result)) {
@@ -93,7 +93,7 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 					'ord' => $counter + 0.1,
 					'type' => 'select',
 					'values' => $fieldValues,
-					'empty_value' => 'Do nothing'];
+					'empty_value' => '-'];
 				$box['tabs']['details']['fields']['image_count_' . $row['id']] = [
 					'same_row' => true,
 					'full_width' => true,

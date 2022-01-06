@@ -66,11 +66,11 @@ zenario_menu:
                         target_path: zenario__content/panels/image_library
                         select_phrase: Select image...
                 zenario_promo_menu__feature_image_checkbox:
-                    label: 'Show a feature image'
+                    label: 'Show promotional image'
                     ord: 1.01
                     type: checkbox
                     format_onchange: true
-                    side_note: "A feature image appears as a large image on a promotional menu during hover over this menu node. Only supported if the menu plugin supports images (e.g. Menu with Promo Images, zenario_promo_menu)"
+                    side_note: "A promotional image can appear in the drop-down area when a user hovers over this menu node. Only supported by Menu with Promo Images plugin (zenario_promo_menu)."
                 zenario_promo_menu__feature_image:
                     indent: 1
                     ord: 1.02

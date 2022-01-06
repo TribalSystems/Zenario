@@ -1,0 +1,367 @@
+body.popup_active {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+}
+
+.zenario_country_language_picker__default_style .user_form_click_here,
+.zenario_country_language_picker__default_style .user_form_click_here > h3 {
+	display:inline-block;
+}
+
+.zenario_country_language_picker__default_style .user_form_click_here > h3 {
+	cursor:pointer;
+	font-family:'roboto',Arial, Helvetica, sans-serif;
+	text-transform:uppercase;
+	font-size:1em;
+	margin:0;
+	-webkit-transition : all 200ms ease-in-out;
+  	-moz-transition : all 200ms ease-in-out;
+  	transition : all 200ms ease-in-out;
+}
+
+.zenario_country_language_picker__default_style .user_form_click_here > h3:hover {
+	color:#2a98ce;
+}
+
+.zenario_country_language_picker__default_style .user_form_click_here > h3:before {
+	font-family:"FontAwesome";
+	content:"\f041";
+	padding-right:5px;
+}
+
+/* Countries list
+------------------------------------------------------------------------------------------------- */
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker {
+	position:fixed;
+	width:100%;
+	height:100%;
+	top:0;
+	left:0;
+	z-index:999;
+	background:rgba(0,0,0,0.8);
+}
+
+.zenario_adminLoggedIn .zenario_country_language_picker__default_style .zenario_country_language_picker {
+	top:129px;
+	height:calc(100% - 129px);
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap {
+	width:920px;
+	height:calc(100% - 50px);
+	max-width:1366px;
+	max-height:800px;
+	box-shadow:none;
+	border:0;
+	padding:30px 0 20px;
+	
+	overflow-y:auto;
+
+	position: absolute;
+  	top: 50%; 
+  	left: 50%;
+  	transform: translate(-50%,-50%);
+	background:#FFF;
+	-webkit-box-shadow: 0px 0px 5px 0px;
+	box-shadow: 0px 0px 5px 0px;
+}
+	
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap::-webkit-scrollbar-track {
+	border: 1px solid #777;
+	background-color: #777;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap::-webkit-scrollbar {
+	width: 10px;
+	background-color: #F5F5F5;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap::-webkit-scrollbar-thumb {
+	background-color: #333;	
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_header,
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_body {
+	max-width:1200px;
+	margin:auto;
+	padding-left:40px;
+	padding-right:40px;
+}
+
+body.mobile .zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_header,
+body.mobile .zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_body {
+	padding-left:20px;
+	padding-right:20px;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_header {
+	text-align:center;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_header h4 {
+	font-size:1.25em;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_body {
+	overflow: hidden;
+	overflow-y: auto;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .zenario_country_language_picker_body > p {
+	text-align:center;
+	margin:auto;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns {
+	overflow:hidden;
+	padding-top:30px;
+}
+
+body.desktop .zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column {
+	width:26.33%;
+	max-width:300px;
+	margin:0 3.5%;
+	float:left;
+	text-align:left;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column > h3 {
+	padding-bottom:5px;
+	margin-bottom:10px;
+	border-bottom:1px solid #000;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul,
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul li {
+	list-style:none;
+	padding:0;
+	margin:0;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul {
+	padding-bottom:15px;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul li {
+	position:relative;
+	padding-left:15px;
+	margin-bottom:5px;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul li:before {
+	font-family:"FontAwesome";
+	content:"\f041";
+	position:absolute;
+	left:0;
+	top:0;
+	color:#777;
+}
+
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul li a {
+	display:block;
+	text-decoration:none;
+	-webkit-transition : all 200ms ease-in-out;
+  	-moz-transition : all 200ms ease-in-out;
+  	transition : all 200ms ease-in-out;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul li a:hover {
+	text-decoration:underline;
+}
+
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul li a:hover,
+.zenario_country_language_picker__default_style .zenario_country_language_picker_wrap .columns .column ul li:hover:before {
+	color:#2a98ce;
+}
+
+/* Countries list
+------------------------------------------------------------------------------------------------- */
+
+.country_accordions .continent {
+	margin:5px 0 3px;
+}
+
+.country_accordions .continent > h3 {
+	position:relative;
+	margin:0;
+	padding:8px 15px 10px;
+	background:#688697;
+	color:#FFF;
+	font-size:1.1em;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1em;
+}
+
+.country_accordions .continent > h3:before {
+	position:absolute;
+	right:15px;
+	top:8px;
+	color:#FFF;
+	font-family:"FontAwesome";
+	content:"\f107";
+}
+
+.country_accordions .continent.on > h3:before {
+	content:"\f106";
+}
+
+.country_accordions .continent:hover > h3,
+.country_accordions .continent.on > h3 {
+	background:#2a98ce;
+	cursor:pointer;
+}
+
+body.mobile .country_accordions .continent > h3 {
+	font-size:1em !important;
+}
+
+.country_accordions .continent .countries_columns {
+	overflow:hidden;
+	padding:5px 0;
+	display:none;
+}
+
+.country_accordions .continent .countries_columns ul {
+	width:25%;
+	float:left;
+	margin:0;
+	padding:0;
+}
+
+.country_accordions .continent .countries_columns ul li {
+	list-style:none;
+	position:relative;
+	padding:0 0 0 15px;
+	margin:5px 0 5px 15px;
+	font-size:95%;
+}
+
+body.mobile .country_accordions .continent .countries_columns ul li {
+	font-size:85%;
+}
+
+.country_accordions .continent .countries_columns ul li:before {
+	font-family:"FontAwesome";
+	content:"\f041";
+	position:absolute;
+	left:0;
+	top:0;
+	color:#777;
+}
+
+.country_accordions .continent .countries_columns ul li:hover a,
+.country_accordions .continent .countries_columns ul li:hover:before {
+	color:#2a98ce;
+}
+
+.country_accordions .continent > h3,
+.country_accordions .continent .countries_columns ul li a,
+.country_accordions .continent .countries_columns ul li:before {
+	-webkit-transition : all 200ms ease-in-out;
+  	-moz-transition : all 200ms ease-in-out;
+  	transition : all 200ms ease-in-out;
+}
+
+/* Confirmation msg - popup
+------------------------------------------------------------------------------------------------- */
+
+#colorbox.zenario_country_language_picker,
+#colorbox.zenario_country_language_picker__default_style #cboxWrapper {	
+	width:540px !important;
+}
+
+#colorbox.zenario_country_language_picker__default_style #cboxContent,
+#colorbox.zenario_country_language_picker__default_style #cboxLoadedContent {	
+	width:520px !important;
+}
+
+#colorbox.zenario_country_language_picker__default_style #cboxTitle {
+	display:none !important;
+}
+
+#colorbox.zenario_country_language_picker__default_style #cboxContent {
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border-radius: 0;
+	margin:0;
+	border:3px solid #333;
+}
+
+#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap {
+	width:400px;
+	padding:40px 60px;
+	font-size:16px;
+	text-align:center;
+}
+
+#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap h4 {
+	padding-bottom:10px;
+}
+
+#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap h4:before {
+	font-family:"FontAwesome";
+	content:"\f0ac";
+	padding-right:10px;
+}
+
+#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap .message_bottom {
+	padding-top:20px;
+}
+
+#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap .message_bottom .message_button {
+	display:inline-block;
+	height:30px;
+	line-height:30px;
+	margin:0 5px;
+	padding:0 15px;
+	background:#000;
+	border:1px solid #000;
+	color:#FFF;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	-webkit-transition : color 200ms ease-in-out;
+  	-moz-transition : color 200ms ease-in-out;
+  	-o-transition : color 200ms ease-in-out;
+  	transition : color 200ms ease-in-out;
+	cursor:pointer;
+}
+
+#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap .message_bottom .message_button.cancel {
+	background:#7F7F7F;
+	border-color:#7F7F7F;
+}
+
+#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap .message_bottom .message_button:hover {
+	background:#b8babc;
+	color:#282e35;
+}
+
+body.mobile .zenario_country_language_picker__default_style .user_form_click_here > h3 {
+	font-size:1em;
+}
+
+/* Layout min-width: 960px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 961px) {
+
+	body.mobile .zenario_country_language_picker__default_style .zenario_country_language_picker_wrap {
+		width:90%
+	}
+}
+
+/* Layout max-width: 650px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 651px) {
+	
+	#colorbox .zenario_country_language_picker_change_country_confirmation .message_wrap {
+		width: calc(100% - 30px);
+    	padding: 25px 15px;
+	}
+
+}

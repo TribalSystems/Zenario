@@ -61,7 +61,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		if (!ze\cookie::canSet('required') && ze::setting('cookie_consent_for_extranet') == 'required') {
 			ze\cookie::requireConsent();
-			$this->message = $this->phrase('_PLEASE_ACCEPT_COOKIES');
+			$this->message = $this->phrase('This site needs to place a cookie on your computer before you can register. Please accept cookies from this site to continue.');
 			$this->mode = 'modeCookiesNotEnabled';
 			return true;
 		
@@ -127,7 +127,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			if ($this->setting('requires_terms_and_conditions'))	{
 			    $userContentItem = $this->setting('terms_and_conditions_page');
 				$useExternalLink = $this->setting('url');
-				if($userContentItem || $useExternalLink) {
+				if ($userContentItem || $useExternalLink) {
 					if ($userContentItem){
 						$cID = $cType = false;
 						$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
@@ -136,11 +136,11 @@ class zenario_extranet_registration extends zenario_extranet {
 					} elseif ($useExternalLink) {
 						$TCLink = $this->setting('url');
 					}
-				$this->subSections['Ts_And_Cs_Section'] = true;
-				$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
-				$linkEnd = '</a>';
+					$this->subSections['Ts_And_Cs_Section'] = true;
+					$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+					$linkEnd = '</a>';
 
-					$this->objects['Ts_And_Cs_Link'] =  $this->phrase ("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+					$this->objects['Ts_And_Cs_Link'] = $this->phrase ("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 				}
 			}
 			
@@ -208,10 +208,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 	}
 	
-	protected function enableCaptcha() {
-		return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
-	}
-	
+	//Override the equivalent method in the base module and always show Captcha.
 	public function addToPageHead() {
 		if ($this->enableCaptcha()) {
 			$this->loadCaptcha2Lib();
@@ -251,7 +248,7 @@ class zenario_extranet_registration extends zenario_extranet {
         		//Make sure that the dataset field picker points to the users dataset
         		$dataset = ze\dataset::details('users');
         		
-        		if(!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')){
+        		if (!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {
 				    //Show warning
 					$recaptchaLink = "<a href='organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
 					$fields['use_captcha']['side_note'] = $this->phrase(
@@ -259,7 +256,7 @@ class zenario_extranet_registration extends zenario_extranet {
 						['recaptcha_link' => $recaptchaLink]
 					);
 					$fields['use_captcha']['readonly'] = true;
-                    $fields['use_captcha']['value'] = 0; 
+                    $fields['use_captcha']['value'] = 0;
 				}
 				        
 				$fields['custom_fields/user_custom_fields']['pick_items']['info_button_path'] =
@@ -292,8 +289,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				$fields['first_tab/user_signup_notification_email_template']['hidden'] = !$values['first_tab/enable_notifications_on_user_signup'];
 				$fields['first_tab/user_signup_notification_email_address']['hidden'] = !$values['first_tab/enable_notifications_on_user_signup'];
 				$fields['first_tab/select_characteristics_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users'];
-				$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users']
-					|| !$values['first_tab/select_characteristics_for_new_users'];
+				$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = (!$values['first_tab/set_characteristics_on_new_users'] || !$values['first_tab/select_characteristics_for_new_users']);
 				$fields['first_tab/timer_for_new_users']['hidden'] = !$values['first_tab/set_timer_on_new_users'];
 				$fields['first_tab/terms_and_conditions_page']['hidden'] = !$values['first_tab/requires_terms_and_conditions'];
 				$fields['first_tab/url']['hidden'] = !$values['first_tab/requires_terms_and_conditions'];
@@ -307,15 +303,13 @@ class zenario_extranet_registration extends zenario_extranet {
 					}
 				}
 				
-				$fields['user_activation/welcome_email_template']['hidden'] = !($values['user_activation/verified_account_status'] == 'active' 
-					|| $values['user_activation/verified_account_status'] == 'contact');
+				$fields['user_activation/welcome_email_template']['hidden'] = !($values['user_activation/verified_account_status'] == 'active' || $values['user_activation/verified_account_status'] == 'contact');
 				$fields['user_activation/trusted_email_domains']['hidden'] = $values['user_activation/verified_account_status'] != 'check_trusted';
 	
 				$fields['user_activation/user_activation_notification_email_template']['hidden'] = !$values['user_activation/user_activation_notification_email_enable'];
 				$fields['user_activation/user_activation_notification_email_address']['hidden'] = !$values['user_activation/user_activation_notification_email_enable'];
 				
-				$fields['user_activation/welcome_page']['hidden'] = $values['user_activation/show_welcome_page'] != '_ALWAYS' 
-					&& $values['user_activation/show_welcome_page'] != '_IF_NO_PREVIOUS_PAGE';
+				$fields['user_activation/welcome_page']['hidden'] = $values['user_activation/show_welcome_page'] != '_ALWAYS' && $values['user_activation/show_welcome_page'] != '_IF_NO_PREVIOUS_PAGE';
 				
 				
 				// Screen name error hidden if screen names not enabled and no user forms or user forms and screen name on form
@@ -407,15 +401,20 @@ class zenario_extranet_registration extends zenario_extranet {
 				$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),false,get_class($this));
 				if (count($errors)) {
 					$this->errors = array_merge ($this->errors, $errors);
+					unset($_SESSION['captcha_passed__'. $this->instanceId]);
 					return false;
 				}
 			}
 
+			if (!empty($this->errors)) {
+				unset($_SESSION['captcha_passed__'. $this->instanceId]);
+			}
+			
 			if ($this->enableCaptcha()) {
 				if ($this->checkCaptcha2()) {
 					$_SESSION['captcha_passed__'. $this->instanceId] = true;
 				} else {
-					$this->errors[] = ['Error' => $this->phrase('_CAPTCHA_INVALID')];
+					$this->errors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
 				}
 			}
 		}
@@ -459,7 +458,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				$fields['screen_name'] = $_POST['screen_name'] ?? false;
 				$fields['screen_name_confirmed'] = 1;
 			} else {
-				$this->errors[] = ['Error' => $this->phrase('_ERROR_SCREEN_NAME')];
+				$this->errors[] = ['Error' => $this->phrase('Please choose a screen name, this can be similar to your name, or can be different entirely.')];
 				return false;
 			}
 		}
@@ -524,12 +523,13 @@ class zenario_extranet_registration extends zenario_extranet {
 			//Record user consent if terms and conditions were accepted
 			if (!empty($fields2['terms_and_conditions_accepted'])) {
 				ze\user::recordConsent(
-				'extranet_registration',
-				$this->instanceId, 
-				$userId, 
-				$fields2['email'] ?? false, $fields2['first_name'] ?? false, 
-				$fields2['last_name'] ?? false, 
-				$this->phrase("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]));
+					'extranet_registration',
+					$this->instanceId, 
+					$userId, 
+					$fields2['email'] ?? false, $fields2['first_name'] ?? false, 
+					$fields2['last_name'] ?? false, 
+					$this->phrase("I have read and accept the Terms and Conditions.")
+				);
 			}
 			
 			if (!empty($userId)) {

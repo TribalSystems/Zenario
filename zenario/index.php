@@ -244,15 +244,13 @@ if (($methodCall == 'showSingleSlot' || $methodCall == 'showIframe')
 		}
 	}
 	
-	if ($fakeLayout
-	 && !empty($_REQUEST['overrideSettings'])
-	 && (ze\priv::check('_PRIV_CREATE_REVISION_DRAFT') || ze\priv::check('_PRIV_EDIT_DRAFT'))) {
+	if ($fakeLayout && !empty($_REQUEST['overrideSettings']) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 		$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
 	}
 	
 	if ($fakeLayout
 	 && !empty($_REQUEST['overrideFrameworkAndCSS'])
-	 && (ze\priv::check('_PRIV_CREATE_REVISION_DRAFT') || ze\priv::check('_PRIV_EDIT_DRAFT') || ze\priv::check('_PRIV_EDIT_CSS'))) {
+	 && (ze\priv::check('_PRIV_EDIT_DRAFT') || ze\priv::check('_PRIV_EDIT_CSS'))) {
 		$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
 	}
 

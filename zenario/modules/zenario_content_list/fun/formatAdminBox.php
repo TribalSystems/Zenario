@@ -30,8 +30,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'plugin_settings':
-		$fields['each_item/author_retina']['hidden'] = 
-			!$values['each_item/show_author_image'];
+		//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
+		//Commenting out the code in case we want it back in the future.
+
+		// $fields['each_item/author_retina']['hidden'] = 
+		// 	!$values['each_item/show_author_image'];
 		
 		$retinaSideNote = "If the source image is large enough,
                             the resized image will be output at twice its displayed width &amp; height
@@ -40,13 +43,15 @@ switch ($path) {
                             <br/>
                             If the source image is not large enough this will have no effect.";
 		
-		$hidden = !$values['each_item/show_author_image'];
-		$this->showHideImageOptions($fields, $values, 'each_item', $hidden, 'author_');
-		if ($values['each_item/author_canvas'] != "unlimited") {
-			$fields['each_item/author_canvas']['side_note'] = $retinaSideNote;
-		} else {
-			$fields['each_item/author_canvas']['side_note'] = "";
-		}
+		//See the comment above.
+		
+		// $hidden = !$values['each_item/show_author_image'];
+		// $this->showHideImageOptions($fields, $values, 'each_item', $hidden, 'author_');
+		// if ($values['each_item/author_canvas'] != "unlimited") {
+		// 	$fields['each_item/author_canvas']['side_note'] = $retinaSideNote;
+		// } else {
+		// 	$fields['each_item/author_canvas']['side_note'] = "";
+		// }
 		
 		$fields['overall_list/heading_if_items']['hidden'] = 
 		$fields['overall_list/heading_tags']['hidden'] = 

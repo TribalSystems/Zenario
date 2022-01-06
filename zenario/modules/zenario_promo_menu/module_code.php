@@ -116,7 +116,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		while ($row = ze\sql::fetchAssoc($result)) {
 			// Set image links:
 			
-			//Feature image...
+			//Featured image...
 			$url = $width = $height = false;
 			ze\file::imageLink($width, $height, $url, $row['feature_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset'], $row['feature_image_is_retina']);
 			if ($row['feature_image_is_retina']) {
@@ -126,7 +126,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			$row['feature_image_height'] = $height;
 			$row['feature_image_link'] = $url;
 			
-			//Feature image rollover...
+			//Featured image rollover...
 			if ($row['use_rollover_image'] && $row['feature_rollover_image_id']) {
 				$url = $width = $height = false;
 				ze\file::imageLink($width, $height, $url, $row['feature_rollover_image_id'], $row['width'], $row['height'], $row['canvas'], $row['offset'], $row['feature_image_is_retina']);

@@ -114,6 +114,12 @@ if (!empty($_GET['openedInIframe'])) {
 	
 } else {
 	$topLeftHTML = '
+		<div class="zenario_website_button top_left_button">
+			<a id="zenario_website_button_link" data-position="right" data-intro="<p><strong>Link to Zenar.io</strong></p><p>Go to the zenar.io for information and support.</p>"
+				href="https://zenar.io" target="_blank"
+				title="Zenar.io"></a>
+		</div>
+	
 		<div class="home_page_button top_left_button">
 			<a id="home_page_button_link" data-step="1" data-position="right" data-highlightClass="step_1" data-intro="<p><strong>Home page link</strong></p><p>Go to the front-end at your website’s homepage.</p>"
 				href="'. htmlspecialchars(($homeLink = ze\link::toItem($homePageCID, $homePageCType, true)) ?: 'index.php'). '"
@@ -131,13 +137,13 @@ if (!empty($_GET['openedInIframe'])) {
 	$wipCount = ze\row::count('content_items', ['status' => ['first_draft','published_with_draft','hidden_with_draft','trashed_with_draft']]);
 	$topLeftHTML .= '
 		<div
-			class="zenario_ywip top_left_button" data-step="2" data-position="right" data-intro="<p><strong>Work in progress</strong></p><p>Content items (web pages etc.) which are in draft form.</p>"
+			class="zenario_ywip top_left_button zenario_item_record_count_parent" data-step="2" data-position="right" data-intro="<p><strong>Work in progress</strong></p><p>Content items (web pages etc.) which are in draft form.</p>"
 			onclick="zenarioO.updateYourWorkInProgress();"
 			onmouseover="zenarioO.updateYourWorkInProgress();"
 		>
 			<a></a><div id="zenario_ywip_dropdown" class="zenario_ywip_loading"></div>';
 			if($wipCount > 0) {
-				$topLeftHTML .= '<span id="zenario_wip_recordCount" class="zenario_wip_recordCount">'.$wipCount.'</span>';
+				$topLeftHTML .= '<span id="zenario_wip_recordCount" class="zenario_wip_recordCount zenario_item_record_count">'.$wipCount.'</span>';
 			}
 			$topLeftHTML .= '</div>';
 	

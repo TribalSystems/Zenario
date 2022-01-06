@@ -442,12 +442,12 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 	
 	//This function allows to completely override an email template body and subject line.
 	public static function sendEmailsUsingTemplateNoMerge(
-		$rcpts, $templateCode, $emailSubject = '', $emailBody = '',
+		$rcpts, $templateId, $emailSubject = '', $emailBody = '',
 		$attachments = [], $attachmentFilenameMappings = [],
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false,
 		$makeURLsNotClickable = false
 	) {
-		if ($template = self::getTemplateByCode($templateCode)) {
+		if ($template = self::getTemplateById($templateId)) {
 			if (!$emailSubject) {
 				$emailSubject = $template['subject'];
 			}

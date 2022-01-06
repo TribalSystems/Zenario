@@ -20,7 +20,17 @@ top_right_buttons:
         label: Your profile
         onclick: |
             zenarioAB.open(
-                'zenario_admin',
+                'zenario_admin_edit_self',
+                {id: zenario.adminId}
+            ).after(function() {
+                document.location.reload(true);
+            });
+    change_email:
+        parent: admin_name
+        label: Change email address
+        onclick: |
+            zenarioAB.open(
+                'zenario_admin_change_email',
                 {id: zenario.adminId}
             ).after(function() {
                 document.location.reload(true);

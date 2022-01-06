@@ -13,11 +13,36 @@ site_settings:
                 desc:
                     snippet:
                         html: >
-                            You may upload an image to use as a Favicon, and an image to use as a Home Screen Icon for mobile devices.
+                            You may set an image to use as a favicon, an image that visitors save as a home screen icon on mobile devices, and an OG image when the site is mentioned on social media.
+                default_icon:
+                    site_setting:
+                        name: default_icon
+                    label: "Open Graph (OG) image for the site:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .png
+                        drag_and_drop: false
+                    pick_items: 
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    note_below: >
+                        When a content item doesn’t have a featured image, this image will be used for the content item's <code>og:image</code> meta data tags.<br>
+                        You should upload a <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
+                        We recommend that the image should be at least 200x200 pixels in size;
+                        larger images will be auto-downsized.
+                    validation:
+                        must_be_gif_or_png: >
+                            The default icon must be a .gif or a .png file.
                 favicon: 
                     site_setting:
                         name: favicon
-                    label: "Favicon:"
+                    label: |
+                        Browser favicon:
                     upload: 
                         accept: "image/*"
                         extensions: 
@@ -25,19 +50,16 @@ site_settings:
                             - .ico
                             - .png
                         drag_and_drop: false
-                    note_below: >
-                        You can upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file (<code>.svg</code> files are not supported).<br/>
-                        If you wish to support visitors using Internet Explorer 10 or earlier, you should
-                        upload a <code>.ico</code> file that is either 16×16, 32×32, 48×48 or 64×64 pixels in size.
+                    note_below: |
+                        You may upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.)
                     validation:
-                        must_be_gif_ico_or_png: >
-                            The favicon must be a .gif, .ico or a .png file.
-                
-                
+                        must_be_gif_ico_or_png: |
+                            The favicon must be a file with format <code>.gif</code>, <code>.ico</code> or a <code>.png</code>.
                 mobile_icon: 
                     site_setting:
                         name: mobile_icon
-                    label: "Mobile device home screen icon:"
+                    label: |
+                        Mobile device "home screen" icon:
                     upload: 
                         accept: "image/*"
                         extensions: 
@@ -51,36 +73,11 @@ site_settings:
                         target_path: zenario__content/panels/image_library
                         select_phrase: Select image...
                     note_below: >
-                        You should upload a <code>.gif</code> or a <code>.png</code> file for a home-screen icon (<code>.svg</code> files are not supported).
-                        We recommend that the image should be 144×144 pixels in size;
-                        the image will be auto-downsized.
+                        You may upload a <code>.gif</code> or a <code>.png</code> file. (<code>.svg</code> files are not supported.)
+                        We recommend that the image be 144×144 pixels in size; larger images will be auto-downsized.
                     validation:
                         must_be_gif_or_png: >
                             The home screen icon must be a .gif or a .png file.
-                default_icon:
-                    site_setting:
-                        name: default_icon
-                    label: "Default og:image:"
-                    upload: 
-                        accept: "image/*"
-                        extensions: 
-                            - .gif
-                            - .png
-                        drag_and_drop: false
-                    pick_items: 
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
-                    note_below: >
-                        If a content item doesn’t have a feature image set, this image will be used for the content item's og:image meta data tags.<br>
-                        You should upload a <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
-                        We recommend that the image should be at least 200x200 pixels in size;
-                        the image will be auto-downsized.
-                    validation:
-                        must_be_gif_or_png: >
-                            The default icon must be a .gif or a .png file.
         admin_login:
             label: Admin login
             edit_mode:
@@ -207,7 +204,7 @@ site_settings:
                     style: |
                         width: 3em;
                     post_field_html: px
-                    value: 30
+                    value: 125
                     validation:
                         numeric: The offset must be a number
         og:

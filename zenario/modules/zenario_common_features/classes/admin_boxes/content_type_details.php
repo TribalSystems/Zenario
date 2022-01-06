@@ -52,23 +52,36 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		
 		$values['details/content_type_name_en'] = $details['content_type_name_en'];
 		$values['details/content_type_plural_en'] = $details['content_type_plural_en'];
-		$values['details/description_field'] = $details['description_field'];
 		$values['details/tooltip_text'] = $details['tooltip_text'];
-		$values['details/keywords_field'] = $details['keywords_field'];
-		$values['details/writer_field'] = $details['writer_field'];
-		$values['details/summary_field'] = $details['summary_field'];
-		$values['details/release_date_field'] = $details['release_date_field'];
-		$values['details/auto_flag_feature_image'] = $details['auto_flag_feature_image'];
 		$values['details/enable_summary_auto_update'] = $details['enable_summary_auto_update'];
-		$values['details/enable_categories'] = $details['enable_categories'] ? 'enabled' : 'disabled';
 		$values['details/default_layout_id'] = $details['default_layout_id'];
 		$values['details/default_permissions'] = $details['default_permissions'];
 		$values['details/hide_private_item'] = $details['hide_private_item'];
 		$values['details/hide_menu_node'] = $details['hide_menu_node'];
+		
+		//Always boolean
+		$values['details/auto_flag_feature_image'] = $details['auto_flag_feature_image'];
+		$values['details/enable_categories'] = $details['enable_categories'];
 		$values['details/allow_pinned_content'] = $details['allow_pinned_content'];
+		$values['details/when_creating_put_title_in_body'] = $details['when_creating_put_title_in_body'];
+		
+		//Three-way options that are displayed as two booleans
+		$values['details/writer_field'] = $details['writer_field'] != 'hidden';
+		$values['details/description_field'] = $details['description_field'] != 'hidden';
+		$values['details/keywords_field'] = $details['keywords_field'] != 'hidden';
+		$values['details/summary_field'] = $details['summary_field'] != 'hidden';
+		$values['details/release_date_field'] = $details['release_date_field'] != 'hidden';
+		
+		$values['details/writer_field_mandatory'] = $details['writer_field'] == 'mandatory';
+		$values['details/description_field_mandatory'] = $details['description_field'] == 'mandatory';
+		$values['details/keywords_field_mandatory'] = $details['keywords_field'] == 'mandatory';
+		$values['details/summary_field_mandatory'] = $details['summary_field'] == 'mandatory';
+		$values['details/release_date_field_mandatory'] = $details['release_date_field'] == 'mandatory';
 		
 		$values['details/prompt_to_create_a_menu_node'] = $details['prompt_to_create_a_menu_node']? 'prompt' : 'dont_prompt';
 		$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
+
+		$values['details/auto_set_release_date'] = $details['auto_set_release_date'];
 		
 		
 		if (!$details['module_id']
@@ -93,16 +106,25 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			case 'video':
 			case 'audio':
 				//HTML, Document, Picture, Video and Audio fields cannot currently be mandatory
-				foreach (['description_field', 'keywords_field', 'summary_field', 'release_date_field'] as $field) {
-					$box['tabs']['details']['fields'][$field]['values']['mandatory']['hidden'] = true;
-				}
-				
+				$fields['details/description_field_mandatory']['hidden'] =
+				$fields['details/keywords_field_mandatory']['hidden'] =
+				$fields['details/summary_field_mandatory']['hidden'] =
+				$fields['details/release_date_field_mandatory']['hidden'] =
+				$fields['details/description_field_mandatory']['hidden'] =
+				$fields['details/description_field_mandatory']['readonly'] =
+				$fields['details/keywords_field_mandatory']['readonly'] =
+				$fields['details/summary_field_mandatory']['readonly'] =
+				$fields['details/release_date_field_mandatory']['readonly'] =
+				$fields['details/description_field_mandatory']['readonly'] = true;
 				break;
 				
 			
 			case 'event':
 				//Event release dates must be hidden as it is overridden by another field
-				$box['tabs']['details']['fields']['release_date_field']['hidden'] = true;
+				$fields['details/release_date_field']['hidden'] =
+				$fields['details/release_date_field_mandatory']['hidden'] = true;
+				$values['details/release_date_field'] =
+				$values['details/release_date_field_mandatory'] = '';
 		}
 		
 		
@@ -161,46 +183,33 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			$vals = [
 				'content_type_name_en' => $values['details/content_type_name_en'],
 				'content_type_plural_en' => $values['details/content_type_plural_en'],
-				'description_field' => $values['details/description_field'],
 				'tooltip_text' => $values['details/tooltip_text'],
-				'keywords_field' => $values['details/keywords_field'],
-				'writer_field' => $values['details/writer_field'],
-				'summary_field' => $values['details/summary_field'],
-				'release_date_field' => $values['details/release_date_field'],
-				'auto_flag_feature_image' => $values['details/auto_flag_feature_image'],
-				'enable_summary_auto_update' => 0,
-				'enable_categories' => ($values['details/enable_categories'] == 'enabled') ? 1 : 0,
 				'default_layout_id' => $values['details/default_layout_id'],
 				'prompt_to_create_a_menu_node' => (int) ($values['details/prompt_to_create_a_menu_node'] == 'prompt'),
 				'menu_node_position_edit' => $values['details/menu_node_position_edit'] ?: 'suggest',
 				'default_permissions' => $values['details/default_permissions'],
 				'hide_private_item' => $values['details/hide_private_item'],
 				'hide_menu_node' => $values['details/hide_menu_node'],
-				'allow_pinned_content' => $values['details/allow_pinned_content']
 			];
 			
-			if ($values['details/summary_field'] != 'hidden') {
-				$vals['enable_summary_auto_update'] = $values['details/enable_summary_auto_update'];
-			}
 			
-			switch ($box['key']['id']) {
-				case 'document':
-				case 'picture':
-				case 'html':
-					//HTML/Document/Picture fields cannot currently be mandatory
-					foreach (['description_field', 'keywords_field', 'summary_field', 'release_date_field'] as $field) {
-						if ($vals[$field] == 'mandatory') {
-							$vals[$field] = 'optional';
-						}
-					}
-					
-					break;
-					
-				
-				case 'event':
-					//Event release dates must be hidden as it is overridden by another field
-					$vals['release_date_field'] = 'hidden';
-			}
+
+		
+			//Always boolean
+			$vals['auto_flag_feature_image'] = $values['details/auto_flag_feature_image'];
+			$vals['enable_categories'] = $values['details/enable_categories'];
+			$vals['allow_pinned_content'] = $values['details/allow_pinned_content'];
+			$vals['when_creating_put_title_in_body'] = $values['details/when_creating_put_title_in_body'];
+			$vals['auto_set_release_date'] = ($values['details/auto_set_release_date'] && !$values['details/release_date_field_mandatory'] && $values['details/release_date_field']);
+		
+			//Three-way options that are displayed as two booleans
+			$vals['writer_field'] = $values['details/writer_field']? ($values['details/writer_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
+			$vals['description_field'] = $values['details/description_field']? ($values['details/description_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
+			$vals['keywords_field'] = $values['details/keywords_field']? ($values['details/keywords_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
+			$vals['summary_field'] = $values['details/summary_field']? ($values['details/summary_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
+			$vals['release_date_field'] = $values['details/release_date_field']? ($values['details/release_date_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
+			
+			$vals['enable_summary_auto_update'] = $values['details/summary_field'] && $values['details/enable_summary_auto_update'];
 			
 			ze\row::update('content_types', $vals, $box['key']['id']);
 		}

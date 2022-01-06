@@ -249,7 +249,7 @@ zenario__menu:
                             id_is_parent_menu_node_id: 1
                 edit_menu_text:
                     priv: _PRIV_EDIT_MENU_TEXT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Edit menu text
@@ -269,7 +269,7 @@ zenario__menu:
                         ghost: true
                 define_menu_text:
                     priv: _PRIV_EDIT_MENU_TEXT
-                    visible_if: |
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Define menu text in this language
@@ -280,8 +280,8 @@ zenario__menu:
                     without_columns_set:
                         can_duplicate: true
                 duplicate:
-                    priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
-                    visible_if: |
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     label: Create a translation
                     admin_box:
@@ -452,7 +452,7 @@ zenario__menu:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 citem:
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    priv: _PRIV_EDIT_DRAFT
                     label: Content item properties
                     parent: linked_content_item_dropdown
                     hide_when_children_are_not_visible: true

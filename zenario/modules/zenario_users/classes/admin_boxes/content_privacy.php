@@ -32,9 +32,24 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze\module::isRunning('zenario_extranet')) {
+			foreach ($fields['privacy/privacy']['values'] as $name => $setting) {
+				if ($name != 'public') {
+					$fields['privacy/privacy']['values'][$name]['hidden'] = true;
+				}
+			}
+
+			$fields['privacy/privacy_settings_disabled_note']['hidden'] = false;
+		}
+		
 		//Set up the primary key from the requests given
 		if ($box['key']['id'] && empty($box['key']['cID'])) {
 			ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
+		}
+
+		//Check admin permission, including specific content item/type permission.
+		if (!ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
+			$box['tabs']['privacy']['edit_mode']['enabled'] = false;
 		}
 		
 		$content =
@@ -251,8 +266,8 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		
 		if (!empty($tagIds)
 		 && empty($box['tabs']['privacy']['hidden'])
-		 && ze\ring::engToBoolean($box['tabs']['privacy']['edit_mode']['on'] ?? false)
-		 && ze\priv::check('_PRIV_EDIT_CONTENT_ITEM_PERMISSIONS')) {
+		 && ze\ring::engToBoolean($box['tabs']['privacy']['edit_mode']['enabled'] ?? false)
+		 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 			
 			$this->savePrivacySettings($tagIds, $values);
 		}

@@ -75,6 +75,7 @@ echo '
 	\ze\escape::js(\ze\content::currentLangId()), '","',
 	\ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","',
 	\ze\escape::js(\ze::setting('min_extranet_user_password_length')), '","',
+	\ze\escape::js(\ze::setting('min_extranet_user_password_score')), '","',
 	\ze\escape::js(\ze::setting('a_z_lowercase_characters')), '","',
 	\ze\escape::js(\ze::setting('a_z_uppercase_characters')), '","',
 	\ze\escape::js(\ze::setting('0_9_numbers_in_user_password')), '","',
@@ -112,6 +113,9 @@ if ($isAdmin) {
 	
 	//Note down that we need various extra libraries in admin mode...
 	\ze::requireJsLib('zenario/js/ace.wrapper.js.php');
+	\ze::requireJsLib('zenario/libs/yarn/rcrop/dist/rcrop.min.js', 'zenario/libs/yarn/rcrop/dist/rcrop.min.css');
+	//Debug version of the above line
+	//\ze::requireJsLib('zenario/libs/yarn/rcrop/src/js/rcrop.js', 'zenario/libs/yarn/rcrop/dist/rcrop.css');
 }
 
 if (\ze::$cID && \ze::$visLang && !$isWelcomeOrWizard) {
@@ -127,6 +131,8 @@ if ($isAdmin || $isWelcomeOrWizard) {
 	\ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
 	\ze::requireJsLib('zenario/js/admin.wrapper.js.php');
 }
+
+\ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 
 
 //Loop through all of the libraries we're trying to include

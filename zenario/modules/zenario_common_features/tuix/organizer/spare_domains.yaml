@@ -8,6 +8,11 @@ zenario__administration:
                 When a domain name redirect is defined visitors to that domain name are redirected
                 to a specified content item under the primary domain.
             view_mode: list
+
+            notice:
+                show: true
+                type: ''
+                message: ""
             db_items:
                 table: '[[DB_PREFIX]]spare_domain_names AS sdn'
                 id_column: sdn.requested_url
@@ -40,14 +45,6 @@ zenario__administration:
                     admin_box:
                         path: zenario_spare_domains
                         create_another: true
-            inline_buttons:
-                view_frontend:
-                    css_class: view_frontend
-                    tooltip: Go to content item in front-end window
-                    frontend_link:
-                        exists: Yes
-                    visible_if: >
-                        zenario.engToBoolean(item.frontend_link)
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME

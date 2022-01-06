@@ -30,11 +30,11 @@ zenario_layout:
                     readonly: true
                     hidden: true
                 name:
-                    label: 'Layout description:'
+                    label: 'Layout name:'
                     type: text
                     maxlength: "255"
                     validation:
-                        required: Please enter a name for this layout.
+                        required: Please enter a unique name for this layout.
                 content_item_count:
                     hidden: true
                 status:
@@ -44,9 +44,11 @@ zenario_layout:
                         active:
                             label: Available
                         suspended:
-                            label: Archived
+                            label: Retired
+                    side_note: |
+                        "Available" layouts may be chosen when creating or editing content items. "Retired" layouts are not available, but they cannot be deleted while some content items depend on them.
                 content_type:
-                    label: 'Content type:'
+                    label: 'Used for content type:'
                     type: text
                     pick_items:
                         path: zenario__content/panels/content_types
@@ -62,7 +64,9 @@ zenario_layout:
                         required: Please select a content type.
                 layout_is_detault_for_ctype:
                     indent: 1
-                    label: 'Default for this content type'
+                    label: 'Default layout for this content type'
+                    side_note: |
+                        When creating content items of this type, the default layout will be picked automatically.
                     type: checkbox
                 skin_id:
                     label: 'Skin:'
@@ -79,9 +83,8 @@ zenario_layout:
                     validation:
                         required_if_not_hidden: Please select a skin
                     format_onchange: true
-                    note_below: |
-                        Changing the skin of this layout will immediately effect
-                        the style of all content items that use it.
+                    side_note: |
+                        A "skin" is a set of CSS files that determine the appearance of this layout and thereby content items using it. If you change the skin of this layout, it will immediately effect the appearance of all content items that use it.
         css:
             label: Background & CSS
             edit_mode:

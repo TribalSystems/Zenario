@@ -1,0 +1,67 @@
+.zenario_skin .zfea_button,
+.zenario_skin .nest_buttons a,
+.zenario_skin .icon_button,
+.zenario_skin div[class*="fea"] input[type="submit"], 
+.zenario_skin div[class*="fea"] input[type="button"] {
+    background-color:#2a98ce;
+    color:#fff;
+}
+
+.zenario_skin div[class*="fea"] input[type="submit"], 
+.zenario_skin div[class*="fea"] input[type="button"] {
+	height:36px;
+	line-height:1em;
+}
+
+.zenario_skin div[class*="fea"] input[type="text"], 
+.zenario_skin div[class*="fea"] input[type="password"], 
+.zenario_skin div[class*="fea"] input[type="email"], 
+.zenario_skin div[class*="fea"] input[type="search"], 
+.zenario_skin div[class*="fea"] textarea, 
+.zenario_skin div[class*="fea"] select {
+	max-width:450px;
+}
+
+.zenario_skin .zfea .search_form input[type="submit"] {
+	height:41px;
+	background-color:#2a98ce;
+	border-color:#2a98ce;
+	color:#FFF;
+}
+
+.zenario_skin .zfea .search_form input[type="submit"]:hover {
+	opacity:0.8;
+}
+
+.zenario_skin .zfea_table_list_wrap table tr th, 
+.zenario_skin .zfea_table_list_wrap table tr td {
+	border:0;
+	border-bottom:1px solid #ccc;
+}
+
+.zenario_skin table.table_list tr th {
+	background:#AAA;
+}
+
+.zfea_form_row__last_edited {
+    font-size: 0.857em;
+    font-style: italic;
+    text-align: right;
+    padding-right: 2px;
+}
+
+/* Videos ZFEA
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_videos_fea .view_toggle_wrap > div.on {
+	background:#2a98ce;
+}
+
+.zenario_videos_fea .zfea_zenario_list_videos .column_image .field_value a:after {
+	color:#2a98ce;
+}
+
+.zfea_block_list_like_table .zfea_block_list_wrap .zfea_block,
+.zenario_videos_fea .zfea_block_like_block .zfea_block {
+	background:#eaf0f4;
+}

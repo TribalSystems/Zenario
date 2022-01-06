@@ -274,8 +274,8 @@ plugin_settings:
                             label: Constrain by height
                         fixed_width_and_height:
                             label: Constrain by width and height
-                        resize_and_crop:
-                            label: Resize and crop
+                        crop_and_zoom:
+                            label: Crop and zoom
                     format_onchange: true
                 banner_width:
                     plugin_setting:

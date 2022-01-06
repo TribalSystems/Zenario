@@ -105,6 +105,7 @@ switch (\ze::setting('cookie_require_consent')) {
 	
 		echo '
 <!--googleoff: all-->
+<div id="zenario_cookie_consent" class="zenario_cookie_consent"></div>
 <script type="text/javascript" src="zenario/cookie_message.php?type=implied"></script>
 <!--googleon: all-->';
 	
@@ -123,11 +124,13 @@ switch (\ze::setting('cookie_require_consent')) {
 		if (\ze::setting('cookie_consent_type') == 'message_accept_reject' && ze::$cookieConsent != 'require') {
 			echo '
 <!--googleoff: all-->
+<div id="zenario_cookie_consent" class="zenario_cookie_consent"></div>
 <script type="text/javascript" src="zenario/cookie_message.php?type=accept_reject"></script>
 <!--googleon: all-->';
 		} else {
 			echo '
 <!--googleoff: all-->
+<div id="zenario_cookie_consent" class="zenario_cookie_consent"></div>
 <script type="text/javascript" src="zenario/cookie_message.php?type=accept"></script>
 <!--googleon: all-->';
 		}

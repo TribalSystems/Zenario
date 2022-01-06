@@ -1,0 +1,17 @@
+.zenario_breadcrumbs {
+	margin-bottom:20px;
+}
+
+.zenario_breadcrumbs__default_style {
+	font-size:0.813em;
+}
+
+.zenario_breadcrumbs__default_style .current a {
+	color:#2a98ce;
+}
+
+.zenario_breadcrumbs__default_style span:not(.level1_1_on):before {
+	font-family:"FontAwesome";
+	content:"\f105";
+	padding:0 4px;
+}

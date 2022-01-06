@@ -29,11 +29,23 @@
 
 {% set hasChildren = false %}
 
-<div class="wrap_menu">
+<div class="wrap_menu {% if limit_initial_level_1_menu_nodes %} menu_with_more_button {% endif %}">
 <div class="wrap_menu_outer">
 <div class="wrap_menu_inner">
+	{% set currentNode = 0 %}
 	{% for node in nodes %}
 		{% if not node.Conditionally_Hidden %}
+			
+			{% if limit_initial_level_1_menu_nodes %}
+				{% set currentNode = currentNode + 1 %}
+				{% if currentNode - limit_initial_level_1_menu_nodes == 1 %}
+					<ul>
+						<li class="zenario_menu_node_more">
+							<span class="menu_more_text">{{text_for_more_button|trans}}</span>
+							<div class="menu_more_div">
+				{% endif %}
+			{% endif %}
+
 			<ul>
 				<li class="{{node.Class}}">
 					<div class="left_end"></div>
@@ -49,15 +61,20 @@
 						{% endif %}
 					
 						{% if node.children and not node.All_Children_Are_Hidden %}
-							{{ self.childNodes(node.children) }}
-						
-							{% set hasChildren = true %}
+							{% if not limit_initial_level_1_menu_nodes or (limit_initial_level_1_menu_nodes and (currentNode - limit_initial_level_1_menu_nodes <= 0 and node.depth <= menu_max_number_of_levels)) %}
+								{{ self.childNodes(node.children) }}
+								{% set hasChildren = true %}
+							{% endif %}
 						{% endif %}
 					<div class="right_end"></div>
 				</li>
 			</ul>
 		{% endif %}
 	{% endfor %}
+
+	{% if limit_initial_level_1_menu_nodes and (currentNode > limit_initial_level_1_menu_nodes) %}
+		</div></li></ul>
+	{% endif %}
 </div>
 </div>
 </div>

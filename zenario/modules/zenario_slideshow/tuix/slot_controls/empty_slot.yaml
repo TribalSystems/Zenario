@@ -6,10 +6,10 @@ empty_slot:
             priv: _PRIV_MANAGE_ITEM_SLOT
             label: Insert slideshow...
             page_modes:
-                item: true
+                edit: true
             onclick: |
                 if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('item');
+                    zenarioAT.clickTab('edit');
                     zenarioA.pickNewPlugin(this, slotName, 1, 'slideshow');
                 }
                 return false;

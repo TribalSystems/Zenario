@@ -32,7 +32,7 @@ class file {
 
 	//Formerly "trackFileDownload()"
 	public static function trackDownload($url) {
-		return "if (window.ga) ga('send', 'pageview', {'page' : '".\ze\escape::js($url)."'});";
+		return "if (window.gtag) gtag('event', 'pageview', {'page_path' : '".\ze\escape::js($url)."'});";
 	}
 
 	//Formerly "addFileToDocstoreDir()"
@@ -966,21 +966,18 @@ class file {
 		unset($filename[count($filename) - 1]);
 		return implode('.', $filename);
 	}
+	
 	//Formerly "imageLink()"
 	public static function imageLink(
-		&$width, &$height, &$url, $fileId, $widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
+		&$width, &$height, &$url, $fileId, $maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto',
 		$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
 	) {
 		$url =
-		$width = $height =
-		$widthOut = $heightOut =
-		$newWidth = $newHeight =
-		$cropWidth = $cropHeight =
-		$cropNewWidth = $cropNewHeight = false;
-	
-		$widthLimit = (int) $widthLimit;
-		$heightLimit = (int) $heightLimit;
+		$width = $height = false;
+		
+		$maxWidth = (int) $maxWidth;
+		$maxHeight = (int) $maxHeight;
 	
 		//Check the $privacy variable is set to a valid option
 		if ($privacy != 'auto'
@@ -1010,56 +1007,56 @@ class file {
 	
 		$imageWidth = (int) $image['width'];
 		$imageHeight = (int) $image['height'];
+		
+		$cropX = $cropY = $cropWidth = $cropHeight = $finalImageWidth = $finalImageHeight = false;
 	
 		//Special case for the "unlimited, but use a retina image" option
-		if ($retina && !$widthLimit && !$heightLimit) {
-			$newWidth =
+		if ($retina && !$maxWidth && !$maxHeight) {
+			$cropX = $cropY = 0;
+			$maxWidth =
 			$cropWidth =
-			$cropNewWidth = $imageWidth;
-			$newHeight =
+			$finalImageWidth = $imageWidth;
+			$maxHeight =
 			$cropHeight =
-			$cropNewHeight = $imageHeight;
-		
-			$widthOut =
-			$widthLimit = (int) ($imageWidth / 2);
-			$heightOut =
-			$heightLimit = (int) ($imageHeight / 2);
+			$finalImageHeight = $imageHeight;
 	
 		} else {
 			//If no limits were set, use the image's own width and height
-			if (!$widthLimit) {
-				$widthLimit = $imageWidth;
+			if (!$maxWidth) {
+				$maxWidth = $imageWidth;
 			}
-			if (!$heightLimit) {
-				$heightLimit = $imageHeight;
+			if (!$maxHeight) {
+				$maxHeight = $imageHeight;
 			}
 			
-			//Work out what size the resized image should actually be
-			\ze\file::resizeImageByMode(
-				$mode, $imageWidth, $imageHeight,
-				$widthLimit, $heightLimit,
-				$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight,
-				$image['mime_type']);
-	
-			$widthOut = $cropNewWidth;
-			$heightOut = $cropNewHeight;
+			\ze\file::scaleImageDimensionsByMode(
+				$image['mime_type'], $imageWidth, $imageHeight,
+				$maxWidth, $maxHeight, $mode, $offset,
+				$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight,
+				$fileId
+			);
 			
 			//Try to use a retina image if requested
 			if ($retina
-			 && (2 * $newWidth <= $imageWidth)
-			 && (2 * $newHeight <= $imageHeight)
-			 && (2 * $cropNewWidth <= $imageWidth)
-			 && (2 * $cropNewHeight <= $imageHeight)) {
-				$newWidth *= 2;
-				$newHeight *= 2;
-				$cropNewWidth *= 2;
-				$cropNewHeight *= 2;
+			 && (2 * $finalImageWidth <= $imageWidth)
+			 && (2 * $finalImageHeight <= $imageHeight)) {
+				$finalImageWidth *= 2;
+				$finalImageHeight *= 2;
+			
+			} else {
+				$retina = false;
 			}
 		}
+		
+		$imageNeedsToBeCropped =
+			$cropX != 0
+		 || $cropY != 0
+		 || $cropWidth != $imageWidth
+		 || $cropHeight != $imageHeight;
 	
-		$imageNeedsToBeResized = $imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight;
+		$imageNeedsToBeResized = $imageNeedsToBeCropped || $imageWidth != $finalImageWidth || $imageHeight != $finalImageHeight;
 		$pregeneratedThumbnailUsed = false;
-	
+		
 	
 		//Check the privacy settings for the image
 		//If the image is set to auto, check the settings here
@@ -1095,15 +1092,28 @@ class file {
 	
 	
 		//Combine the resize options into a string
-		$settingCode = $mode. '_'. $widthLimit. '_'. $heightLimit;
-		
-		if ($retina) {
-			$settingCode .= '_2x';
+		switch ($mode) {
+			case 'unlimited':
+			case 'stretch':
+			case 'adjust':
+			case 'fixed_width':
+			case 'fixed_height':
+			case 'resize':
+				//For any mode that shows the whole image without cropping it, there's no need to record the mode's name,
+				//as any two images at the same dimensions will be the same
+				$settingCode = $finalImageWidth. '_'. $finalImageHeight;
+				break;
+			case 'crop_and_zoom':
+				//For crop and zoom mode, we need the crop-settings in the URL, so users don't see cached copies of old crop-settings
+				$settingCode = $mode. '_'. $finalImageWidth. 'x'. $finalImageHeight. '_'. $cropX. 'x'. $cropY. '_'. $cropWidth. 'x'. $cropHeight;
+				break;
+			case 'resize_and_crop':
+				$settingCode = $mode. '_'. $finalImageWidth. 'x'. $finalImageHeight. '_'. $offset;
+				break;
+			default:
+				$settingCode = $mode. '_'. $finalImageWidth. 'x'. $finalImageHeight;
 		}
 		
-		if ($offset) {
-			$settingCode .= '_offset_'. $offset;
-		}
 	
 		//If the $useCacheDir variable is set and the public/private directories are writable,
 		//try to create this image on the disk
@@ -1153,9 +1163,14 @@ class file {
 					$url = \ze\link::absoluteIfNeeded();
 				}
 				$url .= $path. rawurlencode($safeName);
-			
-				$width = $widthOut;
-				$height = $heightOut;
+				
+				if ($retina) {
+					$width = (int) $finalImageWidth / 2;
+					$height = (int) $finalImageHeight / 2;
+				} else {
+					$width = $finalImageWidth;
+					$height = $finalImageHeight;
+				}
 				return true;
 			}
 		}
@@ -1169,46 +1184,54 @@ class file {
 			} else {
 				$wcit = 0.66;
 			}
-		
-			foreach ([
-				['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height'],
-				['custom_thumbnail_1_data', 'custom_thumbnail_1_width', 'custom_thumbnail_1_height'],
-				['custom_thumbnail_2_data', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height']
-			] as $c) {
 			
-				$xOK = !empty($image[$c[1]]) && $newWidth == $image[$c[1]] || ($newWidth < $image[$c[1]] * $wcit);
-				$yOK = !empty($image[$c[1]]) && $newHeight == $image[$c[2]] || ($newHeight < $image[$c[2]] * $wcit);
+			//Work out what size the image will need to be before being cropped.
+			//(If we're not cropping, this is the same as the final size.)
+			if ($imageNeedsToBeCropped) {
+				$widthPreCrop = $finalImageWidth * $imageWidth / $cropWidth;
+				$heightPreCrop = $finalImageHeight * $imageHeight / $cropHeight;
+			} else {
+				$widthPreCrop = $finalImageWidth;
+				$heightPreCrop = $finalImageHeight;
+			}
 			
-				if ($mode == 'resize_and_crop' && (($yOK && $cropNewWidth >= $image[$c[1]]) || ($xOK && $cropNewHeight >= $image[$c[2]]))) {
-					$xOK = $yOK = true;
-				}
+			//If resizing, check to see if we can use a pregenerated thumbnail.
+			if ($imageNeedsToBeResized) {
+				foreach ([
+					['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height'],
+					['custom_thumbnail_1_data', 'custom_thumbnail_1_width', 'custom_thumbnail_1_height'],
+					['custom_thumbnail_2_data', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height']
+				] as $c) {
 			
-				if ($xOK && $yOK) {
-					$imageWidth = $image[$c[1]];
-					$imageHeight = $image[$c[2]];
-					$image['data'] = \ze\row::get('files', $c[0], $fileId);
-					$pregeneratedThumbnailUsed = true;
+					//Ideally there'll be a thumbnail with exactly the right size already.
+					//Alternately, grab a thumbnail that's smaller than the full image, but big enough to not cause artifacts when
+					//resized down.
+					$xOK = !empty($image[$c[1]]) && $widthPreCrop == $image[$c[1]] || ($widthPreCrop < $image[$c[1]] * $wcit);
+					$yOK = !empty($image[$c[1]]) && $heightPreCrop == $image[$c[2]] || ($heightPreCrop < $image[$c[2]] * $wcit);
+			
+					if ($xOK && $yOK) {
+						$thumbWidth = $image[$c[1]];
+						$thumbHeight = $image[$c[2]];
+						$image['data'] = \ze\row::get('files', $c[0], $fileId);
+						$pregeneratedThumbnailUsed = true;
+						
+						//Adjust the crop settings down to the same scale factor as the thumbnail
+						if ($cropX != 0) {
+							$cropX = $cropX * $thumbWidth / $imageWidth;
+						}
+						if ($cropY != 0) {
+							$cropY = $cropY * $thumbHeight / $imageHeight;
+						}
+						if ($cropWidth != 0) {
+							$cropWidth = $cropWidth * $thumbWidth / $imageWidth;
+						}
+						if ($cropHeight != 0) {
+							$cropHeight = $cropHeight * $thumbHeight / $imageHeight;
+						}
 					
-					//Repeat the call to \ze\file::resizeImageByMode() to resize the thumbnail to the correct size again
-					\ze\file::resizeImageByMode(
-						$mode, $imageWidth, $imageHeight,
-						$widthLimit, $heightLimit,
-						$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight,
-						$image['mime_type']);
-	
-					if ($retina
-					 && (2 * $newWidth <= $imageWidth)
-					 && (2 * $newHeight <= $imageHeight)
-					 && (2 * $cropNewWidth <= $imageWidth)
-					 && (2 * $cropNewHeight <= $imageHeight)) {
-						$newWidth *= 2;
-						$newHeight *= 2;
-						$cropNewWidth *= 2;
-						$cropNewHeight *= 2;
+						$imageNeedsToBeResized = $imageNeedsToBeCropped || $thumbWidth != $finalImageWidth || $thumbHeight != $finalImageHeight;
+						break;
 					}
-	
-					$imageNeedsToBeResized = $imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight;
-					break;
 				}
 			}
 			
@@ -1229,7 +1252,10 @@ class file {
 			}
 		
 			if ($imageNeedsToBeResized) {
-				\ze\file::resizeImageStringToSize($image['data'], $image['mime_type'], $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset);
+				\ze\file::scaleImageToSize(
+					$image['data'], $image['mime_type'],
+					$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight
+				);
 			}
 			
 			//If $useCacheDir is set, attempt to store the image in the cache directory
@@ -1273,8 +1299,13 @@ class file {
 					$url .= $path. rawurlencode($safeName);
 				}
 			
-				$width = $widthOut;
-				$height = $heightOut;
+				if ($retina) {
+					$width = (int) $finalImageWidth / 2;
+					$height = (int) $finalImageHeight / 2;
+				} else {
+					$width = $finalImageWidth;
+					$height = $finalImageHeight;
+				}
 				return true;
 		
 			//Otherwise just return the data if $returnImageStringIfCacheDirNotWorking is set
@@ -1300,14 +1331,19 @@ class file {
 		
 			$_SESSION['zenario_allowed_files'][$hash] =
 				[
-					'width' => $widthLimit, 'height' => $heightLimit,
+					'width' => $maxWidth, 'height' => $maxHeight,
 					'mode' => $mode, 'offset' => $offset,
 					'id' => $fileId, 'useCacheDir' => $useCacheDir];
 		
 			$url = 'zenario/file.php?usage=resize&c='. $hash. ($retina? '&retina=1' : ''). '&filename='. rawurlencode($safeName);
 		
-			$width = $widthOut;
-			$height = $heightOut;
+			if ($retina) {
+				$width = (int) $finalImageWidth / 2;
+				$height = (int) $finalImageHeight / 2;
+			} else {
+				$width = $finalImageWidth;
+				$height = $finalImageHeight;
+			}
 			return true;
 		}
 	}
@@ -1317,7 +1353,7 @@ class file {
 	const imageLinkArrayFromTwig = true;
 	//Formerly "imageLinkArray()"
 	public static function imageLinkArray(
-		$imageId, $widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
+		$imageId, $maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
 	) {
 		$details = [
@@ -1327,7 +1363,7 @@ class file {
 			'height' => ''];
 	
 		if (self::imageLink(
-			$details['width'], $details['height'], $details['src'], $imageId, $widthLimit, $heightLimit, $mode, $offset,
+			$details['width'], $details['height'], $details['src'], $imageId, $maxWidth, $maxHeight, $mode, $offset,
 			$retina, $fullPath, $privacy, $useCacheDir
 		)) {
 			$details['alt'] = \ze\row::get('files', 'alt_tag', $imageId);
@@ -1349,15 +1385,23 @@ class file {
 	
 		return \ze\row::get('content_item_versions', 'feature_image_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
+	
+	public static function retinaImageLink(
+		&$width, &$height, &$url, $imageId,
+		$maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
+		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
+	) {
+		return self::imageLink($width, $height, $url, $imageId, $maxWidth, $maxHeight, $mode, $offset, true, $fullPath, $privacy, $useCacheDir);
+	}
 
 	//Formerly "itemStickyImageLink()"
 	public static function itemStickyImageLink(
 		&$width, &$height, &$url, $cID, $cType, $cVersion = false,
-		$widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
+		$maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
 	) {
 		if ($imageId = self::itemStickyImageId($cID, $cType, $cVersion)) {
-			return self::imageLink($width, $height, $url, $imageId, $widthLimit, $heightLimit, $mode, $offset, $retina, $fullPath, $privacy, $useCacheDir);
+			return self::imageLink($width, $height, $url, $imageId, $maxWidth, $maxHeight, $mode, $offset, $retina, $fullPath, $privacy, $useCacheDir);
 		}
 		return false;
 	}
@@ -1365,11 +1409,11 @@ class file {
 	//Formerly "itemStickyImageLinkArray()"
 	public static function itemStickyImageLinkArray(
 		$cID, $cType, $cVersion = false,
-		$widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
+		$maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
 	) {
 		if ($imageId = self::itemStickyImageId($cID, $cType, $cVersion)) {
-			return self::imageLinkArray($imageId, $widthLimit, $heightLimit, $mode, $offset, $retina, $fullPath, $privacy, $useCacheDir);
+			return self::imageLinkArray($imageId, $maxWidth, $maxHeight, $mode, $offset, $retina, $fullPath, $privacy, $useCacheDir);
 		}
 		return false;
 	}
@@ -1627,9 +1671,49 @@ class file {
 		}
 		return $result;
 	}
-
-
-
+	
+	const ASPECT_RATIO_LIMIT_DEG = 10.0;
+	public static function aspectRatioToDegrees($width, $height) {
+		return atan2($width, $height) * 180 / M_PI;
+	}
+	
+	//Quick and dirty little function to remove the the common factors from two numbers.
+	//The numbers won't be very large so it needn't be super efficient
+	public static function aspectRatioRemoveFactors($a, $b, $sensibleLimit) {
+		
+		$step = 1;
+		$limit = min((int) floor(sqrt($a)), (int) floor(sqrt($b)));
+		
+		for ($i = 2; $i <= $limit; $i += $step) {
+			while (($a % $i === 0) && ($b % $i === 0)) {
+				$a = (int) ($a / $i);
+				$b = (int) ($b / $i);
+			}
+			if ($i === 3) {
+				$step = 2;
+			}
+		}
+		
+		//Have an option not to have crazy mis-matched aspect ratios.
+		//(This can cause a problem in the admin UI.)
+		if ($sensibleLimit) {
+			$max = max($a, $b);
+			
+			//If we see any of the numbers in the aspect ratio go above 100,
+			//adjust it slightly (rounding as needed) so that they are no more than 100.
+			if ($max > 100) {
+				$scale = $max / 100;
+				$a = max(1, (int) round($a / $scale));
+				$b = max(1, (int) round($b / $scale));
+				
+				return \ze\file::aspectRatioRemoveFactors($a, $b, false);
+			}
+		}
+		
+		
+		return [$a, $b];
+	}
+	
 	//Given an image size and a target size, resize the image (maintaining aspect ratio).
 	//Formerly "resizeImage()"
 	public static function resizeImage($imageWidth, $imageHeight, $constraint_width, $constraint_height, &$width_out, &$height_out, $allowUpscale = false) {
@@ -1665,35 +1749,139 @@ class file {
 	}
 
 	//Given an image size and a target size, resize the image by different conditions and return the values used in the calculations
-	//Formerly "resizeImageByMode()"
-	public static function resizeImageByMode(
-		&$mode, $imageWidth, $imageHeight, $maxWidth, $maxHeight,
-		&$newWidth, &$newHeight, &$cropWidth, &$cropHeight, &$cropNewWidth, &$cropNewHeight,
-		$mimeType = ''
+	public static function scaleImageDimensionsByMode(
+		$mimeType, $imageWidth, $imageHeight,
+		$maxWidth, $maxHeight, &$mode, $offset,
+		&$cropX, &$cropY, &$cropWidth, &$cropHeight, &$finalImageWidth, &$finalImageHeight,
+		$fileId = 0
 	) {
 	
 		$maxWidth = (int) $maxWidth;
 		$maxHeight = (int) $maxHeight;
-		$allowUpscale = $mimeType == 'image/svg+xml';
+		
+		//By default, only allow upscaling for SVGs.
+		$allowUpscale = $isSVG = $mimeType == 'image/svg+xml';
+		
+		//Don't allow the "crop" modes for SVGs
+		if ($isSVG) {
+			switch ($mode) {
+				case 'crop_and_zoom':
+				case 'resize_and_crop':
+					$mode = 'stretch';
+			}
+		}
+		
+		//Most modes don't make use of the crop settings.
+		$cropX = $cropY = 0;
+		$cropWidth = $imageWidth;
+		$cropHeight = $imageHeight;
 		
 		switch ($mode) {
+			//No limits, just leave the image size as it is
 			case 'unlimited':
-				$cropNewWidth = $cropWidth = $newWidth = $imageWidth;
-				$cropNewHeight = $cropHeight = $newHeight = $imageHeight;
+				$finalImageWidth = $imageWidth;
+				$finalImageHeight = $imageHeight;
 				break;
 			
-			//Catch a mode name that got renamed
-			case 'stretch':
-				$mode = 'adjust';
-			
+			//"adjust" is an alternate name for stretch
 			case 'adjust':
+			
+			//Stretch the image to meet the requested width and height, without worrying
+			//about maintaining aspect ratio, or DPI/resolution.
+			//You might also use this mode if you've previously called the
+			//scaleImageDimensionsByMode() or resizeImageString() function, and already
+			//know the correct numbers, thus don't need to check them again.
+			case 'stretch':
 				$allowUpscale = true;
-				$cropWidth = $imageWidth;
-				$cropHeight = $imageHeight;
-				$cropNewWidth = $newWidth = $maxWidth;
-				$cropNewHeight = $newHeight = $maxHeight;
+				$finalImageWidth = $maxWidth;
+				$finalImageHeight = $maxHeight;
 				break;
 			
+			//Crop and zoom mode. WiP.
+			case 'crop_and_zoom':
+				$allowUpscale = true;
+				$finalImageWidth = $maxWidth;
+				$finalImageHeight = $maxHeight;
+				
+				//
+				//To do - if this image has some pre-determined crops,
+				//pick the best fit here.
+				//
+				$bestCropX = 0;
+				$bestCropY = 0;
+				$bestCropWidth = $imageWidth;
+				$bestCropHeight = $imageHeight;
+				
+				//Attempt to prevent "division by zero" error
+				if (empty($maxWidth)) {
+					$maxWidth = 1;
+				}
+				if (empty($maxHeight)) {
+					$maxHeight = 1;
+				}
+				if (empty($bestCropWidth)) {
+					$bestCropWidth = 1;
+				}
+				if (empty($bestCropHeight)) {
+					$bestCropHeight = 1;
+				}
+				
+				if (!empty($fileId)) {
+					$desiredAspectRatioAngle = \ze\file::aspectRatioToDegrees($maxWidth, $maxHeight);
+					$bestAspectRatioAngle = \ze\file::aspectRatioToDegrees($bestCropWidth, $bestCropHeight);
+					
+					$sql = "
+						SELECT crop_x, crop_y, crop_width, crop_height, aspect_ratio_angle
+						FROM ". DB_PREFIX. "cropped_images
+						WHERE aspect_ratio_angle
+							BETWEEN ". (float) ($desiredAspectRatioAngle - \ze\file::ASPECT_RATIO_LIMIT_DEG). "
+								AND ". (float) ($desiredAspectRatioAngle + \ze\file::ASPECT_RATIO_LIMIT_DEG). "
+						  AND image_id = ". (int) $fileId. "
+						  AND ABS (aspect_ratio_angle - ". (float) $desiredAspectRatioAngle. ") <= ". (float) $bestAspectRatioAngle. "
+						ORDER BY ABS (aspect_ratio_angle - ". (float) $desiredAspectRatioAngle. ") ASC
+						LIMIT 1";
+					
+					if ($row = \ze\sql::fetchAssoc($sql)) {
+						$bestCropX = $row['crop_x'];
+						$bestCropY = $row['crop_y'];
+						$bestCropWidth = $row['crop_width'];
+						$bestCropHeight = $row['crop_height'];
+						$bestAspectRatioAngle = $row['aspect_ratio_angle'];
+					}
+					
+					//var_dump($sql, $row);
+				}
+				
+				//Slightly reduce either the width or the height of the cropped section
+				//to make sure that the resulting aspect ratio matches the aspect ratio requested.
+				if (($maxWidth / $bestCropWidth) < ($maxHeight / $bestCropHeight)) {
+					$desiredCropWidth = (int) ($bestCropHeight * $maxWidth / $maxHeight);
+					$chipOffLeft = (int) (($bestCropWidth - $desiredCropWidth) / 2);
+					$chipOffRight = $bestCropWidth - $desiredCropWidth - $chipOffLeft;
+					
+					$cropX = $bestCropX + $chipOffLeft;
+					$cropY = $bestCropY;
+					$cropWidth = $bestCropWidth - $chipOffLeft - $chipOffRight;
+					$cropHeight = $bestCropHeight;
+					
+				} else {
+					$desiredCropHeight = (int) ($bestCropWidth * $maxHeight / $maxWidth);
+					$chipOffTop = (int) (($bestCropHeight - $desiredCropHeight) / 2);
+					$chipOffBottom = $bestCropHeight - $desiredCropHeight - $chipOffTop;
+					
+					$cropX = $bestCropX;
+					$cropY = $bestCropY + $chipOffBottom;
+					$cropWidth = $bestCropWidth;
+					$cropHeight = $bestCropHeight - $chipOffTop - $chipOffBottom;
+				}
+				break;
+			
+			//The resize and crop mode is what we used before we implemented
+			//the crop and zoom mode.
+			//It's basically a (mostly) unguided crop that tried to trim off the edge of the image
+			//to fit the requested aspect ratio.
+			//Also, another difference here is we care about DPI/resolution, whereas
+			//crop and zoom mode doesn't.
 			case 'resize_and_crop':
 				//Attempt to prevent "division by zero" error
 				if (empty($imageWidth)) {
@@ -1705,23 +1893,33 @@ class file {
 				}
 			
 				if (($maxWidth / $imageWidth) < ($maxHeight / $imageHeight)) {
-					$newWidth = (int) ($imageWidth * $maxHeight / $imageHeight);
-					$newHeight = $maxHeight;
+					$widthPreCrop = (int) ($imageWidth * $maxHeight / $imageHeight);
+					$heightPreCrop = $maxHeight;
 					$cropWidth = (int) ($maxWidth * $imageHeight / $maxHeight);
 					$cropHeight = $imageHeight;
-					$cropNewWidth = $maxWidth;
-					$cropNewHeight = $maxHeight;
+					$finalImageWidth = $maxWidth;
+					$finalImageHeight = $maxHeight;
 		
 				} else {
-					$newWidth = $maxWidth;
-					$newHeight = (int) ($imageHeight * $maxWidth / $imageWidth);
+					$widthPreCrop = $maxWidth;
+					$heightPreCrop = (int) ($imageHeight * $maxWidth / $imageWidth);
 					$cropWidth = $imageWidth;
 					$cropHeight = (int) ($maxHeight * $imageWidth / $maxWidth);
-					$cropNewWidth = $maxWidth;
-					$cropNewHeight = $maxHeight;
+					$finalImageWidth = $maxWidth;
+					$finalImageHeight = $maxHeight;
 				}
+				
+				if ($widthPreCrop != $finalImageWidth) {
+					$cropX = (int) (((10 - $offset) / 20) * ($imageWidth - $cropWidth));
+
+				} elseif ($heightPreCrop != $finalImageHeight) {
+					$cropY = (int) ((($offset + 10) / 20) * ($imageHeight - $cropHeight));
+				}
+				
 				break;
 			
+			//Max width/height mode are actually implemented by changing the settings,
+			//then using resize mode.
 			case 'fixed_width':
 				$maxHeight = $allowUpscale? 999999 : $imageHeight;
 				$mode = 'resize';
@@ -1734,57 +1932,64 @@ class file {
 			default:
 				$mode = 'resize';
 		}
-	
+		
+		//For "resize" mode, scale the image whilst maintaining aspect ratio
 		if ($mode == 'resize') {
-			$newWidth = false;
-			$newHeight = false;
-			\ze\file::resizeImage($imageWidth, $imageHeight, $maxWidth, $maxHeight, $newWidth, $newHeight, $allowUpscale);
-			$cropWidth = $imageWidth;
-			$cropHeight = $imageHeight;
-			$cropNewWidth = $newWidth;
-			$cropNewHeight = $newHeight;
+			$finalImageWidth = false;
+			$finalImageHeight = false;
+			\ze\file::resizeImage($imageWidth, $imageHeight, $maxWidth, $maxHeight, $finalImageWidth, $finalImageHeight, $allowUpscale);
 		}
 	
-		if ($newWidth < 1) {
-			$newWidth = 1;
-		}
 		if ($cropWidth < 1) {
 			$cropWidth = 1;
 		}
-		if ($cropNewWidth < 1) {
-			$cropNewWidth = 1;
+		if ($finalImageWidth < 1) {
+			$finalImageWidth = 1;
 		}
 	
-		if ($newHeight < 1) {
-			$newHeight = 1;
-		}
 		if ($cropHeight < 1) {
 			$cropHeight = 1;
 		}
-		if ($cropNewHeight < 1) {
-			$cropNewHeight = 1;
+		if ($finalImageHeight < 1) {
+			$finalImageHeight = 1;
 		}
 	}
 
 	//Formerly "resizeImageString()"
-	public static function resizeImageString(&$image, $mime_type, &$imageWidth, &$imageHeight, $maxWidth, $maxHeight, $mode = 'resize', $offset = 0) {
+	public static function resizeImageString(
+		&$image, $mimeType, &$imageWidth, &$imageHeight,
+		$maxWidth, $maxHeight, $mode = 'resize', $offset = 0
+	) {
 		//Work out the new width/height of the image
-		$newWidth = $newHeight = $cropWidth = $cropHeight = $cropNewWidth = $cropNewHeight = false;
-		\ze\file::resizeImageByMode($mode, $imageWidth, $imageHeight, $maxWidth, $maxHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $mime_type);
+		$cropX = $cropY = $cropWidth = $cropHeight = $finalImageWidth = $finalImageHeight = false;
+		\ze\file::scaleImageDimensionsByMode(
+			$mimeType, $imageWidth, $imageHeight,
+			$maxWidth, $maxHeight, $mode, $offset,
+			$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight
+		);
 	
-		\ze\file::resizeImageStringToSize($image, $mime_type, $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset);
+		\ze\file::scaleImageToSize(
+			$image, $mimeType,
+			$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight
+		);
 	
 		if (!is_null($image)) {
-			$imageWidth = $cropNewWidth;
-			$imageHeight = $cropNewHeight;
+			$imageWidth = $finalImageWidth;
+			$imageHeight = $finalImageHeight;
 		}
 	}
 
-	//Formerly "resizeImageStringToSize()"
-	public static function resizeImageStringToSize(&$image, $mime_type, $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset = 0) {
+	public static function scaleImageToSize(
+		&$image, $mimeType,
+		$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight
+	) {
 		//Check if the image needs to be resized
-		if ($imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight) {
-			if (\ze\file::isImage($mime_type)) {
+		if ($cropX != 0
+		 || $cropY != 0
+		 || $cropWidth != $finalImageWidth
+		 || $cropHeight != $finalImageHeight) {
+			
+			if (\ze\file::isImage($mimeType)) {
 				
 				\ze::ignoreErrors();
 					
@@ -1792,10 +1997,10 @@ class file {
 					if ($image = @imagecreatefromstring($image)) {
 						//Make a new blank canvas
 						$trans = -1;
-						$resized_image = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
+						$resized_image = imagecreatetruecolor($finalImageWidth, $finalImageHeight);
 		
 						//Transparent gifs need a few fixes. Firstly, we need to fill the new image with the transparent colour.
-						if ($mime_type == 'image/gif' && ($trans = imagecolortransparent($image)) >= 0) {
+						if ($mimeType == 'image/gif' && ($trans = imagecolortransparent($image)) >= 0) {
 							$colour = imagecolorsforindex($image, $trans);
 							$trans = imagecolorallocate($resized_image, $colour['red'], $colour['green'], $colour['blue']);				
 			
@@ -1803,43 +2008,34 @@ class file {
 							imagecolortransparent($resized_image, $trans);
 		
 						//Transparent pngs should also be filled with the transparent colour initially.
-						} elseif ($mime_type == 'image/png') {
+						} elseif ($mimeType == 'image/png') {
 							imagealphablending($resized_image, false); // setting alpha blending on
 							imagesavealpha($resized_image, true); // save alphablending \ze::setting (important)
 							$trans = imagecolorallocatealpha($resized_image, 255, 255, 255, 127);
-							imagefilledrectangle($resized_image, 0, 0, $cropNewWidth, $cropNewHeight, $trans);
-						}
-		
-						$xOffset = 0;
-						$yOffset = 0;
-						if ($newWidth != $cropNewWidth) {
-							$xOffset = (int) (((10 - $offset) / 20) * ($imageWidth - $cropWidth));
-		
-						} elseif ($newHeight != $cropNewHeight) {
-							$yOffset = (int) ((($offset + 10) / 20) * ($imageHeight - $cropHeight));
+							imagefilledrectangle($resized_image, 0, 0, $finalImageWidth, $finalImageHeight, $trans);
 						}
 		
 						//Place a resized copy of the original image on the canvas of the new image
-						imagecopyresampled($resized_image, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
+						imagecopyresampled($resized_image, $image, 0, 0, $cropX, $cropY, $finalImageWidth, $finalImageHeight, $cropWidth, $cropHeight);
 		
 						//The resize algorithm doesn't always respect the transparent colour nicely for gifs.
 						//Solve this by resizing using a different algorithm which doesn't do any anti-aliasing, then using
 						//this to create a transparent mask. Then use the mask to update the new image, ensuring that any pixels
 						//that should be transparent actually are.
-						if ($mime_type == 'image/gif') {
+						if ($mimeType == 'image/gif') {
 							if ($trans >= 0) {
-								$mask = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
+								$mask = imagecreatetruecolor($finalImageWidth, $finalImageHeight);
 								imagepalettecopy($image, $mask);
 				
 								imagefill($mask, 0, 0, $trans);				
 								imagecolortransparent($mask, $trans);
 				
 								imagetruecolortopalette($mask, true, 256); 
-								imagecopyresampled($mask, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
+								imagecopyresampled($mask, $image, 0, 0, $cropX, $cropY, $finalImageWidth, $finalImageHeight, $cropWidth, $cropHeight);
 				
 								$maskTrans = imagecolortransparent($mask);
-								for ($y = 0; $y < $cropNewHeight; ++$y) {
-									for ($x = 0; $x < $cropNewWidth; ++$x) {
+								for ($y = 0; $y < $finalImageHeight; ++$y) {
+									for ($x = 0; $x < $finalImageWidth; ++$x) {
 										if (imagecolorat($mask, $x, $y) === $maskTrans) {
 											imagesetpixel($resized_image, $x, $y, $trans);
 										}
@@ -1850,26 +2046,19 @@ class file {
 		
 		
 						$temp_file = tempnam(sys_get_temp_dir(), 'Img');
-							if ($mime_type == 'image/gif') imagegif($resized_image, $temp_file);
-							if ($mime_type == 'image/png') imagepng($resized_image, $temp_file);
-							if ($mime_type == 'image/jpeg') imagejpeg($resized_image, $temp_file, $jpeg_quality = 100);
+							if ($mimeType == 'image/gif') imagegif($resized_image, $temp_file);
+							if ($mimeType == 'image/png') imagepng($resized_image, $temp_file);
+							if ($mimeType == 'image/jpeg') imagejpeg($resized_image, $temp_file, $jpeg_quality = 100);
 			
 							imagedestroy($resized_image);
 							unset($resized_image);
 							$image = file_get_contents($temp_file);
 						unlink($temp_file);
-
-						//$imageWidth = $cropNewWidth;
-						//$imageHeight = $cropNewHeight;
 					} else {
 						$image = null;
 					}
 					
 				\ze::noteErrors();
-				
-			} else {
-				//$imageWidth = $cropNewWidth;
-				//$imageHeight = $cropNewHeight;
 			}
 		}
 	}
@@ -1972,7 +2161,15 @@ class file {
 				imagesavealpha($img, true);
 			}
 			
-			imagewebp($img, $newFullPath, 100);
+			//In 9.2, a WebP quality slider was introduced.
+			//Set a fallback value before the DB update is applied
+			//to avoid a bug with very poor quality images.
+			$quality = (int) \ze::setting('webp_quality');
+			if (!$quality) {
+				$quality = 90;
+			}
+			
+			imagewebp($img, $newFullPath, $quality);
 			\ze\cache::chmod($newFullPath, 0666);
 
 			if (filesize($newFullPath) % 2 == 1) {

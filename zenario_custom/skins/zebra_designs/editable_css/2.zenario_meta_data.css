@@ -1,0 +1,49 @@
+.zenario_meta_data {
+	overflow:hidden;
+}
+
+.zenario_meta_data .writer_image {
+	display:inline-block;
+	float:left;
+	margin-right:20px;
+}
+
+.zenario_meta_data > div {
+	clear:both;
+}
+
+.zenario_meta_data div.sticky_image + div.page_title {
+	margin-top:15px;
+}
+
+.zenario_meta_data > div[class*='writer_'] {
+	overflow:hidden;
+	clear:none;
+}
+
+.zenario_meta_data > div[class*='writer_'] *,
+.zenario_meta_data > div[class*='writer_'] a {
+	color:#354153;
+}
+
+.zenario_meta_data > div h1,
+.zenario_meta_data > div h2,
+.zenario_meta_data > div[class*='writer_'] h3,
+.zenario_meta_data > div[class*='writer_'] h4,
+.zenario_meta_data > div[class*='writer_'] h5,
+.zenario_meta_data > div[class*='writer_'] h6,
+.zenario_meta_data > div[class*='writer_'] p {
+	margin-bottom:5px;
+}
+
+.zenario_meta_data > div.writer_image img {
+	padding-top:5px;
+}
+
+/* For shaded background add the class 'shaded_bg' to the Meta Data plugin */
+
+.zenario_meta_data.shaded_bg {
+	overflow:hidden;
+	padding:20px;
+	background:#eaf0f4;
+}

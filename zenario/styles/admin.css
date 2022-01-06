@@ -357,7 +357,6 @@ div.zenario_show_on_open {
 .zenario_admin_tooltip {
 	font-size: 11px !important;
 	line-height:1.4em;
-	line-height
 	padding: 8px 10px !important;
 }
 
@@ -369,7 +368,6 @@ div.zenario_show_on_open {
 	border-color: #BDBDBD !important;
 	font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif !important;
 	-webkit-border-radius: 4px !important;
-	-moz-border-radius: 4px !important;
 	border-radius: 4px !important;
 	z-index: 400000;
 }
@@ -915,14 +913,14 @@ div.ace_editor[readonly] .ace_content {
 }
 
 /*
-	Hide empty slots
+	Hide empty slots 
 */
 
 x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
 	display:none;
 }
 
-body.zenario_show_empty_slots x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
+body.zenario_show_empty_slots_and_mobile_only_slots x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
 	display:block;
 }
 
@@ -933,4 +931,26 @@ body.zenario_show_empty_slots x-zenario-admin-slot-wrapper.zenario_slotWithNoCon
 .zenario_slot span.red {
 	color:red;
 	font-style: italic;
+}
+
+/*
+	Image properties icon
+*/
+
+.zenario_image_properties_button {
+	display: none;
+}
+
+x-zenario-admin-slot-wrapper:hover .zenario_image_properties_button {
+	position: absolute;
+	display: block;
+	width: 25px;
+	height: 25px;
+	cursor: pointer;
+	background: url('../admin/images/icon-edit-image-properties.svg') no-repeat center / 25px 25px;
+	z-index: 4;
+}
+
+body.zenario_showing_plugin_preview .zenario_image_properties_button {
+	display: none;
 }

@@ -59,13 +59,19 @@ class cached_plugin extends \ze\moduleBaseClass {
 
 class plugin {
 	
-	public static function codeName($instanceId, $className = '') {
+	public static function codeName($instanceId, $className = null) {
+		
+		if ($className === null) {
+			$moduleId = \ze\row::get('plugin_instances', 'module_id', $instanceId);
+			$className = \ze\row::get('modules', 'class_name', $moduleId);
+		}
 		
 		switch ($className) {
 			case 'zenario_plugin_nest':
 				$p = 'N';
 				break;
 			case 'zenario_slideshow':
+			case 'zenario_slideshow_simple':
 				$p = 'S';
 				break;
 			default:
@@ -95,6 +101,15 @@ class plugin {
 	
 		$slots = [];
 		$modules = \ze\module::runningModules();
+		
+		//Allow admins to see that plugins from suspended modules exist
+		if (\ze::isAdmin()) {
+			$suspendedModules = \ze\module::modules(false, true, false, false);
+		} else {
+			$suspendedModules = [];
+		}
+		
+		
 	
 		$whereSlotName = '';
 		if ($specificSlotName && !$specificInstanceId) {
@@ -251,6 +266,28 @@ class plugin {
 				$slotContents[$row['slot_name']]['clear_cache_by'] = [];
 			
 				$slots[$row['slot_name']] = true;
+		
+			//Suspended modules in admin mode
+			} elseif (!empty($suspendedModules[$row['module_id']])) {
+				$slotContents[$row['slot_name']] = $suspendedModules[$row['module_id']];
+				$slotContents[$row['slot_name']]['level'] = $row['level'];
+				$slotContents[$row['slot_name']]['module_id'] = $row['module_id'];
+				$slotContents[$row['slot_name']]['instance_id'] = $row['instance_id'];
+				$slotContents[$row['slot_name']]['css_class'] = $suspendedModules[$row['module_id']]['css_class_name'];
+			
+				if ($isVersionControlled) {
+					$slotContents[$row['slot_name']]['content_id'] = $cID;
+					$slotContents[$row['slot_name']]['content_type'] = $cType;
+					$slotContents[$row['slot_name']]['content_version'] = $cVersion;
+					$slotContents[$row['slot_name']]['slot_name'] = $row['slot_name'];
+				}
+			
+				$slotContents[$row['slot_name']]['cache_if'] = [];
+				$slotContents[$row['slot_name']]['clear_cache_by'] = [];
+				
+				$slotContents[$row['slot_name']]['isSuspended'] = true;
+			
+				$slots[$row['slot_name']] = true;
 			}
 		}
 	
@@ -268,22 +305,29 @@ class plugin {
 			}
 				
 			foreach ($slots as $slotName => $dummy) {
-				if (!empty($slotContents[$slotName]['class_name']) && !empty($slotContents[$slotName]['instance_id'])) {
+				if (!empty($slotContents[$slotName]['class_name'])
+				 && !empty($slotContents[$slotName]['instance_id'])) {
 					
-					$thisSettings = $thisFrameworkAndCSS = false;
-					if ($overrideSettings !== false && $slotName == \ze::request('slotName')) {
-						$thisSettings = $overrideSettings;
-					}
-					if ($overrideFrameworkAndCSS !== false && $slotName == \ze::request('slotName')) {
-						$thisFrameworkAndCSS = $overrideFrameworkAndCSS;
-					}
+					if (empty($slotContents[$slotName]['isSuspended'])) {
+						$thisSettings = $thisFrameworkAndCSS = false;
+						if ($overrideSettings !== false && $slotName == \ze::request('slotName')) {
+							$thisSettings = $overrideSettings;
+						}
+						if ($overrideFrameworkAndCSS !== false && $slotName == \ze::request('slotName')) {
+							$thisFrameworkAndCSS = $overrideFrameworkAndCSS;
+						}
 					
-					\ze\plugin::loadInstance(
-						$slotContents, $slotName,
-						$cID, $cType, $cVersion,
-						$layoutId,
-						$specificInstanceId, $specificSlotName, $ajaxReload,
-						$runPlugins, $thisSettings, $thisFrameworkAndCSS);
+						\ze\plugin::loadInstance(
+							$slotContents, $slotName,
+							$cID, $cType, $cVersion,
+							$layoutId,
+							$specificInstanceId, $specificSlotName, $ajaxReload,
+							$runPlugins, $thisSettings, $thisFrameworkAndCSS);
+					
+					} else {
+						\ze\plugin::setupNewBaseClass($slotName);
+						$slotContents[$slotName]['error'] = \ze\admin::phrase('[This module is suspended]');
+					}
 		
 				} elseif (!empty($slotContents[$slotName]['level'])) {
 					\ze\plugin::setupNewBaseClass($slotName);
@@ -1029,11 +1073,6 @@ class plugin {
 			\ze::$slotContents[$slotName]['class']->setInstance(
 				[\ze::$cID, \ze::$cType, \ze::$cVersion, $slotName, false, false, false, false, false, false, false, false, false]);
 		}
-	}
-
-	//Formerly "showPluginError()"
-	public static function showError($slotName) {
-		echo \ze\ray::value(\ze::$slotContents, $slotName, 'error') ?: \ze\admin::phrase('[Empty Slot]');
 	}
 
 

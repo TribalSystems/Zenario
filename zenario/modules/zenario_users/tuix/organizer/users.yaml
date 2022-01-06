@@ -151,18 +151,18 @@ zenario__users:
                     label: 'All'
                     column: status
                     remove_filter: true
-                pending:
-                    label: 'Pending'
-                    column: status
-                    value: pending
-                active:
-                    label: 'Active'
-                    column: status
-                    value: active
                 contact:
-                    label: 'Contact'
+                    label: 'Contacts'
                     column: status
                     value: contact
+                active:
+                    label: 'Users'
+                    column: status
+                    value: active
+                pending:
+                    label: 'Pending Users'
+                    column: status
+                    value: pending
 
             item:
                 css_class: user

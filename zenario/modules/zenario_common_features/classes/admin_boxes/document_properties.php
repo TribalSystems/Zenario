@@ -31,6 +31,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__document_properties extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze\module::isRunning('zenario_extranet')) {
+			$fields['details/privacy']['values']['private']['disabled'] = true;
+		}
+		
 		if ($documentId = $box['key']['id']) {
 			$documentTagsString = '';
 
@@ -66,14 +70,33 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			
 			// Add a preview image for JPEG/PNG/GIF images 
 			if (!empty($documentDetails['thumbnail_id'])) {
-				$this->getImageHtmlSnippet($documentDetails['thumbnail_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
+				
+				unset($fields['upload_image/thumbnail_image']['snippet']);
+				$width = $height = $url = false;
+				\ze\file::retinaImageLink($width, $height, $url, $documentDetails['thumbnail_id'], $widthLimit = 700, $heightLimit = 200);
+				$fields['upload_image/thumbnail_image']['image'] = [
+					'width' => $width,
+					'height' => $height,
+					'url' => $url
+				];
+			
 			} else {
 				$fields['upload_image/delete_thumbnail_image']['hidden'] = true;
 				$mimeType = $fileInfo['mime_type'];
 				if ($mimeType == 'image/gif' || $mimeType == 'image/png' || $mimeType == 'image/jpeg' || $mimeType == 'image/pjpeg') {
-					$this->getImageHtmlSnippet($documentDetails['file_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
+					
+					unset($fields['upload_image/thumbnail_image']['snippet']);
+					$width = $height = $url = false;
+					\ze\file::retinaImageLink($width, $height, $url, $documentDetails['file_id'], $widthLimit = 700, $heightLimit = 200);
+					$fields['upload_image/thumbnail_image']['image'] = [
+						'width' => $width,
+						'height' => $height,
+						'url' => $url
+					];
+				
 				} else {
-					$fields['upload_image/thumbnail_image']['snippet']['html'] = ze\admin::phrase('No thumbnail avaliable');
+					unset($fields['upload_image/thumbnail_image']['image']);
+					$fields['upload_image/thumbnail_image']['snippet'] = ['html' => ze\admin::phrase('No thumbnail available')];
 				}
 			}
 			
@@ -99,7 +122,8 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (!empty($fields['upload_image/delete_thumbnail_image']['pressed'])) {
-			$fields['upload_image/thumbnail_image']['snippet']['html'] = ze\admin::phrase('No thumbnail available');
+			unset($fields['upload_image/thumbnail_image']['image']);
+			$fields['upload_image/thumbnail_image']['snippet'] = ['html' => ze\admin::phrase('No thumbnail available')];
 			$box['key']['delete_thumbnail'] = true;
 		}
 	}

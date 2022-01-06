@@ -520,18 +520,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 									$imageSize = getimagesize($newName);
 									$imageWidth = $cropWidth = $imageSize[0];
 									$imageHeight = $cropHeight = $imageSize[1];
-									$widthLimit = $newWidth = $cropNewWidth = 64;
-									$heightLimit = $newHeight = $cropNewHeight = 64;
+									$widthLimit = 64;
+									$heightLimit = 64;
 									
-									$mode = 'resize';
-									ze\file::resizeImageByMode(
-										$mode, $imageWidth, $imageHeight,
-										$widthLimit, $heightLimit,
-										$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight,
-										$imageMimeType
-									);
-									
-									ze\file::resizeImageStringToSize($imageString, $imageMimeType, $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight);
+									ze\file::resizeImageString($imageString, $imageMimeType, $imageWidth, $imageHeight, $widthLimit, $heightLimit);
 									
 									$privateCacheDir = ze\cache::createRandomDir(15, 'private/images');
 									$thumbnailPath = $privateCacheDir . 'thumbnail-' . $file['name'][$j];

@@ -6,6 +6,7 @@ zenario_smart_group:
         id: ""
         intended_usage: smart_newsletter_group
         num_rules: 1
+        duplicate: false
         
         # Flags for whether certain types of user-field exist
         checkboxesExist: false
@@ -41,6 +42,17 @@ zenario_smart_group:
                         width: 25em;
                     validation: 
                         required: "Please enter a smart group name."
+                intended_usage:
+                    hidden: true
+                    label: "Intended usage:"
+                    type: select
+                    values:
+                        smart_permissions_group:
+                            ord: 1
+                            label: "Smart group"
+                        smart_newsletter_group:
+                            ord: 2
+                            label: "Smart newsletter group"
                 must_match:
                     full_width: true
                     pre_field_html: |

@@ -1,0 +1,24 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_videos_manager__category:
+    key:
+        id: ""
+    identifier:
+        css_class: zenario_category_icon
+        label: Category ID
+    title: Create a category
+    hide_tab_bar: true
+    max_height: 150
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                name:
+                    label: 'Name:'
+                    type: text
+                    maxlength: 250
+                    validation:
+                        required: "Please enter a name."

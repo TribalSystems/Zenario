@@ -110,12 +110,12 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 				
 				//Don't allow archiving a layout that is the default for a content item.
 				$box['tabs']['template']['fields']['status']['values']['suspended']['disabled'] = true;
-				$box['tabs']['template']['fields']['status']['values']['suspended']['side_note'] = ze\admin::phrase('You cannot archive a layout that is the default layout for a content type.');
+				$box['tabs']['template']['fields']['status']['values']['suspended']['side_note'] = ze\admin::phrase('You cannot retired the default layout for a content type. To retire this layout, create a new one for this content type and make it the default.');
 			}
 		} elseif ($details['status'] == 'suspended') {
 			//Don't allow using archived layouts as defaults.
 			$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['disabled'] = true;
-			$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['side_note'] = ze\admin::phrase('You cannot set an archived layout as the default.');
+			$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['side_note'] = ze\admin::phrase('A retired layout cannot be the default layout.');
 			$box['identifier']['css_class'] = 'archived_layout';
 		}		
 		

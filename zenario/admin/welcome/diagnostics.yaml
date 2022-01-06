@@ -239,7 +239,8 @@ diagnostics:
                     full_width: true
                     row_class: sub_level
                     snippet:
-                        html: Other server programs
+                        html: |
+                            Other server programs (more details in <a href="zenario/admin/organizer.php#zenario__administration/panels/site_settings//external_programs" target="_blank">site settings</a>)
                     visible_if: zenarioAW.togglePressed(field, 2)
                 show_os: *show_subsection
                 
@@ -250,7 +251,7 @@ diagnostics:
                     snippet:
                         html: |
                             PDF->text
-                            <br/><small>pdftotext is working successfully.</small>
+                            <br/><small>pdftotext is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 os_2:
                     grouping: sub_table
@@ -259,7 +260,7 @@ diagnostics:
                     snippet:
                         html: |
                             PDF->image
-                            <br/><small>ghostscript is working successfully.</small>
+                            <br/><small>ghostscript is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 os_7:
                     grouping: sub_table
@@ -277,7 +278,7 @@ diagnostics:
                     snippet:
                         html: |
                             Word->text
-                            <br/><small>Antiword is working successfully.</small>
+                            <br/><small>Antiword is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 os_6:
                     grouping: sub_table
@@ -296,8 +297,8 @@ diagnostics:
                     snippet:
                         html: | 
                             Compress JPEGs
-                            <br/><small>jpegtran is working successfully.</small>
-                            <br/><small>jpegoptim is working successfully.</small>
+                            <br/><small>jpegtran is correctly set up.</small>
+                            <br/><small>jpegoptim is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 os_4:
                     grouping: sub_table
@@ -306,8 +307,8 @@ diagnostics:
                     snippet:
                         html: | 
                             Backup/restore
-                            <br/><small>mysql is working successfully.</small>
-                            <br/><small>mysqldump is working successfully.</small>
+                            <br/><small>mysql is correctly set up.</small>
+                            <br/><small>mysqldump is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
 
                 os_av:
@@ -317,7 +318,7 @@ diagnostics:
                     snippet:
                         html: |
                             Antivirus
-                            <br/><small>ClamAV is working successfully.</small>
+                            <br/><small>ClamAV is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
 
                 
@@ -609,8 +610,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site is in production mode, but you are showing PHP Notices.<br/>
-                            This means that any PHP program errors may be seen by website visitors.<br/>
+                            Your site is in production mode, but its configuration file is set to show "Notices" raised by PHP programs. These minor PHP program errors may be seen by website visitors. Notices are normally intended for Zenario software developers.<br/>
                             To change this, edit the <code>zenario_siteconfig.php</code> file and ensure the following line is not commented out:<br/>
                             <code>define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE & ~E_STRICT));</code><br>
                     hide_on_install: true

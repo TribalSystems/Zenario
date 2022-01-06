@@ -15,7 +15,7 @@
 	<div class="banner_images"> 
 		{% for Image in Images %}
 			<div class="banner_image"> 
-				{% if Show_caption_on_image and Image.Text %}
+				{% if Show_caption_above_thumbnail and Show_caption_on_image and Image.Text %}
 					<div class="title">{{Image.Text}}</div>
 				{% endif %}
 				{% if Image.Floating_Box %} 
@@ -56,6 +56,10 @@
 					</a>
 				{% elseif Image.Image_Link_Href %} 
 					</a>
+				{% endif %}
+
+				{% if not Show_caption_above_thumbnail and Show_caption_on_image and Image.Text %}
+					<div class="title">{{Image.Text}}</div>
 				{% endif %}
 
 				{% if Show_image_uploaded_date and Image.Uploaded_Date %}

@@ -136,7 +136,7 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 							$renameSlotsInDatabase = false;
 						}
 						if ($layoutId) {
-							//If using "Save a copy" from grid maker remember the old id
+							//If using "Save a copy" from Gridmaker remember the old id
 							$oldLayoutId = $layoutId;
 						}
 						
@@ -310,7 +310,6 @@ if (is_array($data) && ze\gridAdm::validateData($data)) {
 			<html>
 				<head>
 					<title>', ('Grid Preview'), '</title>
-					<link rel="stylesheet" type="text/css" href="../../styles/grid.min.css" media="screen" />
 					<link rel="stylesheet" type="text/css" href="../../styles/admin_grid_maker.min.css" media="screen" />
 					<style type="text/css">';
 			

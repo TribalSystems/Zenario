@@ -1,0 +1,45 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_delete_writer_profile:
+    key:
+        id: ''
+    max_height: 160
+    hide_tab_bar: true
+    save_button_message: Delete
+    cancel_button_message: Cancel
+
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+            notices:
+                delete:
+                    type: warning
+                    show: false
+                    message: |
+                        Are you sure you wish to delete the writer profile "[[name]]"?
+                        This person has [[post_count]] post(s), last one published [[last_published]].
+                        Those articles will no longer have a writer associated with them.
+                        Proceed?
+                delete_post_count_1:
+                    type: warning
+                    show: false
+                    message: |
+                        Are you sure you wish to delete the writer profile "[[name]]"?
+                        This person has 1 post, published [[last_published]].
+                        The article will no longer have a writer associated with it.
+                        Proceed?
+                delete_no_post_count:
+                    type: warning
+                    show: false
+                    message: |
+                        Are you sure you wish to delete the writer profile "[[name]]"?
+                        This person has no posts.
+                        Proceed?
+            fields:
+                post_count:
+                    type: text
+                    hidden: true

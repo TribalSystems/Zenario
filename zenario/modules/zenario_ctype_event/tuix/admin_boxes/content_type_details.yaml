@@ -7,34 +7,28 @@ zenario_content_type_details:
                 zenario_ctype_event__location_field:
                     visible_if: zenarioAB.key('id') == 'event'
                     label: 'Location field:'
-                    type: radios
-                    cols: 3
-                    values:
-                        hidden:
-                            label: 'Disabled'
-                        optional:
-                            label: 'Enabled'
-                    value: optional
+                    type: checkbox
+                    onoff: true
                     redraw_onchange: true
                 zenario_ctype_event__location_online:
-                    hide_with_previous_field: true
-                    visible_if: zenarioAB.value('zenario_ctype_event__location_field') == 'optional'
                     indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
                     label: Enable "Online" option
                     type: checkbox
                     value: true
                     readonly: true
                 zenario_ctype_event__location_picker:
-                    hide_with_previous_field: true
-                    visible_if: zenarioAB.value('zenario_ctype_event__location_field') == 'optional'
                     indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
                     label: Enable location picker (Location Manager is [[running_or_not_running]])
                     type: checkbox
                     readonly: true
                 zenario_ctype_event__location_text:
-                    hide_with_previous_field: true
-                    visible_if: zenarioAB.value('zenario_ctype_event__location_field') == 'optional'
                     indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
                     label: Enable text entry field for address
                     type: checkbox
                     value: true

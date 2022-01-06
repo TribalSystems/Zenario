@@ -27,29 +27,23 @@ zenario__administration:
                 names: Settings
                 css_class: setting
             items:
-                administration:
-                    name: Administration
-                    desc: Settings that affect administering the site.
-                    keywords: >
-                        page size auto-lock drafts autolock drafts default permissions for new content items
-                        release date minimum admin password strength
                 api_keys:
-                    name: API Keys
-                    desc: API Keys and settings for third party services.
+                    name: API keys
+                    desc: API keys and settings for third party services.
                     keywords: key keys api dropbox captcha recaptcha google map maps translate translation tools
                 categories:
                     name: Categories
                     desc: Settings for categories.
                 cookies:
-                    name: Cookies
+                    name: Cookie control
                     desc: "Settings that control when cookies are placed on a visitor's computer."
                     keywords: implied consent explicit consent message
                 data_protection:
                     name: Data Protection
                     desc: "Settings that control how long data is stored and shows what data is encrypted."
-                    keywords: data protection recording deletion encryption consent log
+                    keywords: data protection recording deletion encryption consent log two 2 factor authentication
                 date_and_time:
-                    name: Date and Time
+                    name: Date and time
                     desc: Set the formats used when displaying dates and times.
                     keywords: date format date-picker format time timezone zone
                 dirs:
@@ -72,7 +66,7 @@ zenario__administration:
                         embed site iframe
                         X-Frame-Options ALLOWALL SAMEORIGIN
                 email:
-                    name: Email and Newsletter
+                    name: Email and newsletter
                     desc: Settings for sending emails and newsletters from this website.
                     keywords: smtp mail test send debug mode system email address from
                 errors:
@@ -91,14 +85,14 @@ zenario__administration:
                 logos_and_branding:
                     css_class: favicon
                     priv: _PRIV_VIEW_SITE_SETTING
-                    name: Site logos and branding
+                    name: Logos and branding
                     desc: >
                         Upload or remove the favicon, and the logo used on the site-disabled and
                         admin login screen.
                     keywords: >
                         favicon mobile icon home screen icon
                 files_and_images:
-                    name: Documents, Images and File Handling
+                    name: Documents, images and file handling
                     desc: Settings for how documents, files and images are managed.
                     keywords: >
                         image thumbnail working copy jpeg file upload sizes

@@ -125,6 +125,9 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		$this->registerGetRequest('comm_page', 1);
 		$this->page = (int) ($_REQUEST['comm_page'] ?? 1) ?: 1;
+
+		//Require the phrases
+		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. \ze::$visLang);
 		
 		$this->runCheckPrivs();
 		
@@ -402,7 +405,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	//Get a user's screen_name, if we're showing screennames
 	function getUserScreenName($userId) {
 		if (!$userId) {
-			return $this->phrase('_ANONYMOUS');
+			return $this->phrase('Anonymous');
 		} elseif (ze::setting('user_use_screen_name')) {
 			return ze\user::screenName($userId);
 		} else {
@@ -835,7 +838,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$postScreen = empty($post);
 		if (!$postScreen) {
 			if ($this->setting('show_name')) {
-				$mergeFields['Username_Link'] = htmlspecialchars($post['poster_name'] ?: $this->phrase('_ANONYMOUS'));
+				$mergeFields['Username_Link'] = htmlspecialchars($post['poster_name'] ?: $this->phrase('Anonymous'));
 			}
 			if ($this->setting('show_email')) {
 				$mergeFields['Email'] = str_replace('@', '<span class="zenario_dn">ie</span>@<span class="zenario_dn">the</span>', htmlspecialchars($post['poster_email']));
@@ -857,43 +860,43 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		if ($_REQUEST['comm_confirm'] ?? false) {
 			if (($_REQUEST['comm_request'] ?? false) == 'delete_post' && $this->canDeletePost($this->post)) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_DELETE_POST'), $this->phrase('_SUBMIT_DELETE_POST'));
+				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this comment?'), $this->phrase('Delete Comment'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'approve_post' && $this->canApprovePost()) {
 				if (($_REQUEST['checksum'] ?? false) == md5($this->post['message_text'] ?? $this->thread['title'])) {
-					$this->showConfirmBox($this->phrase('_CONFIRM_APPROVE_POST'), $this->phrase('_SUBMIT_APPROVE_POST'));
+					$this->showConfirmBox($this->phrase('Are you sure that you wish to approve this comment?'), $this->phrase('Approve Comment'));
 				} else {
-					$this->showConfirmBox($this->phrase('_CONFIRM_APPROVE_MODIFIED_POST'), $this->phrase('_SUBMIT_APPROVE_MODIFIED_POST'));
+					$this->showConfirmBox($this->phrase('The comment has just been edited. Please review it again.'), $this->phrase('Approve modified Comment'));
 				}
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'delete_thread' && $this->canDeleteThread()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_DELETE_THREAD'), $this->phrase('_SUBMIT_DELETE_THREAD'));
+				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this thread?'), $this->phrase('Delete Thread'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'lock_thread' && $this->canLockThread()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_LOCK_THREAD'), $this->phrase('_SUBMIT_LOCK_THREAD'));
+				$this->showConfirmBox($this->phrase('Are you sure that you wish to disallow further comments?'), $this->phrase('Disallow further comments'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'unlock_thread' && $this->canUnlockThread()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_UNLOCK_THREAD'), $this->phrase('_SUBMIT_UNLOCK_THREAD'));
+				$this->showConfirmBox($this->phrase('Are you sure that you wish to allow further comments?'), $this->phrase('Allow further comments'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'subs_thread' && $this->canSubsThread()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_THREAD', ['email' => htmlspecialchars(ze\user::email())]), $this->phrase('_SUBMIT_SUBS_THREAD'));
+				$this->showConfirmBox($this->phrase('Are you sure you wish to subscribe? A notification email will be sent to &quot;[[email]]&quot; when a new comment is made on this page.', ['email' => htmlspecialchars(ze\user::email())]), $this->phrase('Subscribe'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_thread' && $this->canSubsThread()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_UNSUBS_THREAD'), $this->phrase('_SUBMIT_UNSUBS_THREAD'));
+				$this->showConfirmBox($this->phrase('Are you sure you wish to unsubscribe, and no longer be notified of new comments on this page?'), $this->phrase('Unsubscribe'));
 			}
 			
 		} elseif ($_REQUEST['comm_enter_text'] ?? false) {
 			if (($_REQUEST['comm_request'] ?? false) == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
-				$this->showPostScreen($this->phrase('_EDIT_MESSAGE:'), $this->phrase('_SAVE_POST'), 'edit', $this->phrase('_EDIT_TITLE:'));
+				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save Comment'), 'edit', $this->phrase('Edit Title:'));
 			
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
-				$this->showPostScreen($this->phrase('_EDIT_MESSAGE:'), $this->phrase('_SAVE_POST'), 'edit');
+				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save Comment'), 'edit');
 			
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
-				$this->showPostScreen($this->phrase('_ADD_REPLY:'), $this->phrase('_ADD_REPLY'), 'quote');
+				$this->showPostScreen($this->phrase('Enter a comment:'), $this->phrase('Add comment'), 'quote');
 			
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'report_post' && $this->canReportPost()) {
-				$this->showPostScreen($this->phrase('_REPORT_MESSAGE:'), $this->phrase('_REPORT_POST'), 'none');
+				$this->showPostScreen($this->phrase('Report the comment above as offensive:'), $this->phrase('Report as Offensive'), 'none');
 			}
 			
 		} else {

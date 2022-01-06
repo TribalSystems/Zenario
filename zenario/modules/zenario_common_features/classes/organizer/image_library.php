@@ -54,10 +54,31 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		
 				$panel['title'] = ze\admin::phrase('Images attached to the content item [[tag]], version [[version]]', $mrg);
 				$panel['no_items_message'] = ze\admin::phrase('There are no images attached to the content item [[tag]], version [[version]]', $mrg);
+
+				//Display notices when the content item has or hasn't got a featured image.
+				$panel['notice']['show'] = true;
+				$hasFeaturedImage = ze\row::get('content_item_versions', 'feature_image_id', ['id' => $cID, 'type' => $cType, 'version' => $mrg['version']]);
+				if ($hasFeaturedImage) {
+					$panel['notice']['type'] = 'information';
+					$panel['notice']['message'] = ze\admin::phrase("This content item has a featured image. The featured image will appear in content summary lists and in OG tags (used by social media).");
+				} else {
+					$href = 'organizer.php#zenario__administration/panels/site_settings//logos_and_branding~.site_settings~tfavicon~k{"id"%3A"logos_and_branding"}';
+					$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+					$linkEnd = '</a>';
+
+					$panel['notice']['type'] = 'warning';
+					$panel['notice']['message'] = ze\admin::phrase(
+						"This content item has no featured image. The OG tag (used by social media) will be the one in the [[link_start]]site logos and branding[[link_end]] setting.",
+						[
+							'link_start' => $linkStart,
+							'link_end' => $linkEnd
+						]
+					);
+				}
 				
 				//If we're showing images for content items, remove all of the action-buttons if the current admin doesn't
 				//have access to this content item
-				if (!ze\priv::check('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $cID, $cType)) {
+				if (!ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 					unset(
 						$panel['collection_buttons']['add'],
 						$panel['collection_buttons']['upload'],
@@ -324,8 +345,8 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 	}
 	
 	//If this is an image upload, or an image was picked from the library,
-	//and the "Flag the first-uploaded image as feature image" option is enabled for this content type,
-	//make the first image the feature image if there wasn't already a feature image
+	//and the "Flag the first-uploaded image as featured image" option is enabled for this content type,
+	//make the first image the featured image if there wasn't already a featured image
 	protected static function setFirstUploadedImageAsFeatureImage($content, $imageId) {
 		if (ze\row::get('content_types', 'auto_flag_feature_image', ['content_type_id' => $content['type']])
 		 && !ze\row::get('content_item_versions', 'feature_image_id', ['id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version']])) {
@@ -341,11 +362,11 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				if (!$content = ze\row::get('content_items', ['id', 'type', 'admin_version'], ['tag_id' => $refinerId])) {
 					exit;
 
-				} elseif (($_POST['flag_as_feature'] ?? false) && ze\priv::check('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
+				} elseif (($_POST['flag_as_feature'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
 					self::setFeatureImage($content, $ids);
 					return;
 
-				} elseif (($_POST['unflag_as_feature'] ?? false) && ze\priv::check('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE', $content['id'], $content['type'])) {
+				} elseif (($_POST['unflag_as_feature'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
 					self::setFeatureImage($content, 0);
 					return;
 
@@ -543,7 +564,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 							'full' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars(ze\link::absolute(). $url). '"/>',
 							'internal' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars($url). '"/>'
 					]), '</p>',
-					'<p>', ze\admin::phrase('If you later make this image private, these links will stop working.'), '</p>';
+					'<p>', ze\admin::phrase('If this image is made private, these links will stop working.'), '</p>';
 
 			} else {
 				echo

@@ -36,7 +36,7 @@ class zenario_common_features__admin_boxes__delete_language extends ze\moduleBas
 		$box['tabs']['site']['fields']['username']['value'] = $_SESSION['admin_username'] ?? false;
 		$box['tabs']['site']['notices']['are_you_sure']['message'] =
 			ze\admin::phrase(
-				'Are you sure that you wish to delete the Language "[[lang]]"? All Content Items and Menu Node text in this Language will also be deleted. THIS CANNOT BE UNDONE!',
+				'Are you sure that you wish to delete the Language "[[lang]]"? All content items in this language will also be deleted. THIS CANNOT BE UNDONE!',
 				['lang' => ze\lang::name($box['key']['id'])]);
 	}
 

@@ -78,6 +78,8 @@ removeUnwantedCode('jquery/dist/jquery.slim.js');
 removeUnwantedCode('jquery/dist/jquery.slim.min.js');
 removeUnwantedCode('jquery/dist/jquery.slim.min.map');
 removeUnwantedCode('jquery-lazy/node_modules');
+removeUnwantedCode('rcrop/demos');
+removeUnwantedCode('rcrop/libs');
 removeUnwantedCode('respond.js/cross-domain');
 removeUnwantedCode('respond.js/src');
 removeUnwantedCode('respond.js/test');

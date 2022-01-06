@@ -130,6 +130,61 @@ class miscAdm {
 		$includeLinks = $usageLinks !== false;
 		
 		
+		//Check if banner plugins are specifically mentioned (no support for usage links)
+		if (!empty($usage['banners'])) {
+			$instanceId = $usage['banner'];
+			$name = \ze\plugin::name($instanceId);
+			
+			if ($includeLinks) {
+				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span class="listicon organizer_item_image plugin_album_instance">
+						</span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['banners'];
+			if ($count > 1) {
+				$text = \ze\admin::nphrase(
+					'[[name]] and 1 other banner', 
+					'[[name]] and [[count]] other banners',
+					$count - 1, 
+					['name' => $name]
+				);
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		//Check if banner plugins are specifically mentioned (no support for usage links)
+		if (!empty($usage['csls'])) {
+			$instanceId = $usage['csl'];
+			$name = \ze\plugin::name($instanceId);
+			
+			if ($includeLinks) {
+				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span class="listicon organizer_item_image plugin_album_instance">
+						</span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['csls'];
+			if ($count > 1) {
+				$text = \ze\admin::nphrase(
+					'[[name]] and 1 other content summary list', 
+					'[[name]] and [[count]] other content summary lists',
+					$count - 1, 
+					['name' => $name]
+				);
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
 		
 		//Check if this links to any plugins
 		if (!empty($usage['plugins'])) {
@@ -308,7 +363,6 @@ class miscAdm {
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
 						<span
 							class="listicon organizer_item_image template"
-							style="background-image: url(\''. htmlspecialchars(\ze\link::absolute(). 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=14&height=16&loadDataFromLayout='. $layoutId). '\');"
 						></span>'. htmlspecialchars($name). '</a>';
 			}
 			
@@ -1260,54 +1314,6 @@ class miscAdm {
 							}
 						}
 					}
-				}
-			}
-		}
-	}
-	
-	//Ensure that the "all access" slide layout is always last, and the "all users" slide layout is always just before that
-	public static function checkSlideLayoutOrdinals($for, $forId) {
-		
-		$public = \ze\row::get('slide_layouts', ['id', 'ord'], ['privacy' => 'public', 'layout_for' => $for, 'layout_for_id' => $forId]);
-		$allUsers = \ze\row::get('slide_layouts', ['id', 'ord'], ['privacy' => 'logged_in', 'layout_for' => $for, 'layout_for_id' => $forId]);
-		$maxOrd = \ze\row::max('slide_layouts', 'ord', ['layout_for' => $for, 'layout_for_id' => $forId]);
-		
-		if ($maxOrd) {
-			//If the "public" slide layout isn't last, make it last and move all others back
-			if ($public) {
-				if ($public['ord'] != $maxOrd) {
-					\ze\row::update('slide_layouts', ['ord' => $maxOrd + 1], $public['id']);
-					
-					\ze\sql::update("
-						UPDATE ". DB_PREFIX. "slide_layouts
-						SET ord = ord - 1
-						WHERE layout_for = '". \ze\escape::sql($for). "'
-						  AND layout_for_id = ". (int) $forId. "
-						  AND ord > ". (int) $public['ord']. "
-						ORDER BY ord"
-					);
-				
-					\ze\row::update('slide_layouts', ['ord' => $maxOrd], $public['id']);
-				}
-				--$maxOrd;
-			}
-			
-			//If the "all users" slide layout isn't second-last, make it second-last and move all others back
-			if ($allUsers) {
-				if ($allUsers['ord'] != $maxOrd) {
-					\ze\row::update('slide_layouts', ['ord' => $maxOrd + 2], $allUsers['id']);
-					
-					\ze\sql::update("
-						UPDATE ". DB_PREFIX. "slide_layouts
-						SET ord = ord - 1
-						WHERE layout_for = '". \ze\escape::sql($for). "'
-						  AND layout_for_id = ". (int) $forId. "
-						  AND ord > ". (int) $allUsers['ord']. "
-						  AND ord <= ". (int) $maxOrd. "
-						ORDER BY ord"
-					);
-				
-					\ze\row::update('slide_layouts', ['ord' => $maxOrd], $allUsers['id']);
 				}
 			}
 		}

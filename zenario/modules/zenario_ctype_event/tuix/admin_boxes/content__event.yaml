@@ -3,7 +3,7 @@
 zenario_content:
     tabs:
         zenario_ctype_event__when_and_where:
-            ord: "35"
+            ord: 24
             label: 'When & Where'
             edit_mode:
                 enabled: ""
@@ -21,9 +21,11 @@ zenario_content:
                 end_date:
                     label: 'End date:'
                     type: date
+                    side_note: Set this if it's a multi-day event, otherwise leave it the same as the start date.
                 specify_time:
                     label: 'Specify a time'
                     type: checkbox
+                    side_note: Set this if you want to show the start and end time of the event, as well as the date.
                     format_onchange: Yes
                 start_time_hours:
                     indent: 1
@@ -127,9 +129,9 @@ zenario_content:
                         59: "59"
                 late_evening_event:
                     indent: 1
-                    label: 'Late evening Event'
+                    label: 'Night-time event'
                     type: checkbox
-                    note_below: Check this if your Event runs past midnight.
+                    side_note: Check this if your event runs past midnight and its end time is on the following day.
                 locations_snippet:
                     snippet:
                         html: '<span class="title">Where it's on:</span>'

@@ -42,7 +42,7 @@ class fileAdm {
 			//to the image library straight away, and return the id.
 			if (!empty($_REQUEST['path'])
 			 && $_REQUEST['path'] == 'plugin_settings'
-			 && (\ze\priv::check('_PRIV_MANAGE_MEDIA') || \ze\priv::check('_PRIV_EDIT_DRAFT') || \ze\priv::check('_PRIV_CREATE_REVISION_DRAFT') || \ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN'))
+			 && (\ze\priv::check('_PRIV_MANAGE_MEDIA') || \ze\priv::check('_PRIV_EDIT_DRAFT') || \ze\priv::check('_PRIV_EDIT_DRAFT') || \ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN'))
 			 && \ze\file::isImageOrSVG(\ze\file::mimeType($_FILES['Filedata']['name']))) {
 				
 				\ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');

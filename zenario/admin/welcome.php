@@ -306,7 +306,10 @@ echo '
 	</script>';
 
 
-if (ze\welcome::enableCaptchaForAdminLogins()) {
+if (ze::setting('google_recaptcha_site_key')
+    && ze::setting('google_recaptcha_secret_key')
+    && ze\site::description('enable_captcha_for_admin_logins')
+) {
 	echo '
 		<script defer async src="https://www.google.com/recaptcha/api.js?onload=recaptchaCallback&render=explicit"></script>
 		<script type="text/javascript">

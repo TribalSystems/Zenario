@@ -490,13 +490,20 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					if ($file) {
 						$lineNumber = 0;
 						while ($line = fgets($file)) {
+							$lineIsEmpty = true;
+							
+							if (trim(str_replace([',', ' '], '', $line)) != '') {
+								$lineIsEmpty = false;
+							}
+
 							++$lineNumber;
 							//Add line to preview
-							if ($lineNumber <= $previewLinesLimit) {
+							if ($lineNumber <= $previewLinesLimit && !$lineIsEmpty) {
 								$previewString .= $line;
 							}
+
 							//Validate line
-							if ($lineNumber > $values['headers/key_line']) {
+							if ($lineNumber > $values['headers/key_line'] && !$lineIsEmpty) {
 								$line = str_getcsv($line);
 								$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount);
 								
@@ -510,11 +517,13 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								}
 								
 								$totalErrorCount += $errorCount;
-								if (!$errorCount) {
+								if (!$lineIsEmpty && !$errorCount) {
 									++$totalReadableLinesWithoutErrors;
 								} else {
 									$linesToSkip[] = $lineNumber;
 								}
+							} else {
+								$linesToSkip[] = $lineNumber;
 							}
 						}
 					}
@@ -536,23 +545,31 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						++$lineNumber;
 						$cellIterator = $row->getCellIterator();
 						$line = [];
+						$lineIsEmpty = true;
 						foreach ($cellIterator as $cell) {
 							$cellValue = $cell->getCalculatedValue();
 							$line[] = $cellValue;
+
+							if (!empty($cellValue)) {
+								$lineIsEmpty = false;
+							}
 						}
 						//Add line to preview
-						if ($lineNumber <= $previewLinesLimit) {
+						if ($lineNumber <= $previewLinesLimit && !$lineIsEmpty) {
 							fputcsv($csv, $line);
 						}
+
 						//Validate line
-						if ($lineNumber > $values['headers/key_line']) {
+						if ($lineNumber > $values['headers/key_line'] && !$lineIsEmpty) {
 							$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount);
 							$totalErrorCount += $errorCount;
-							if (!$errorCount) {
+							if (!$lineIsEmpty && !$errorCount) {
 								++$totalReadableLinesWithoutErrors;
 							} else {
 								$linesToSkip[] = $lineNumber;
 							}
+						} else {
+							$linesToSkip[] = $lineNumber;
 						}
 					}
 					rewind($csv);
@@ -562,7 +579,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				$totalReadableLines = $totalReadableLinesWithoutErrors + count($linesToSkip);
 				$values['preview/csv_preview'] = $previewString;
 				$fields['preview/problems']['label'] = ze\admin::nphrase('Problems (1 error)', 'Problems ([[n]] errors):', $totalErrorCount, ['n' => $totalErrorCount]);
-				$fields['preview/total_readable_lines']['snippet']['html'] = '<b>' . ze\admin::phrase('Total readable lines:') . '</b> '. $totalReadableLines;
+				$fields['preview/total_readable_lines']['snippet']['html'] = '<b>' . ze\admin::phrase('Total readable lines (header and data):') . '</b> '. $totalReadableLines;
 				
 				$box['key']['lines_to_skip'] = implode(',', $linesToSkip);
 				

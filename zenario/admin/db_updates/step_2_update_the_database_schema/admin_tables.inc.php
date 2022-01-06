@@ -83,4 +83,15 @@ _sql
 	AFTER `specific_content_items`
 _sql
 
+
+//
+//	Zenario 9.2
+//
+
+//Drop the "All content items in these languages" admin permission option
+);	ze\dbAdm::revision(54250
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	DROP COLUMN `specific_languages`
+_sql
 );

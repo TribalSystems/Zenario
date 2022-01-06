@@ -56,7 +56,7 @@ sections:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to add this content item to the chain?
+                                Add this content item to the translation chain?
                             button_message: Add
                             cancel_button_message: Cancel
                             message_type: warning

@@ -63,10 +63,16 @@ class zenario_menu extends ze\moduleBaseClass {
 		$this->sectionId = ze\menu::sectionId($this->sectionId);
 		
 		$this->startFrom				= $this->setting('menu_start_from');
-		$this->numLevels				= (int) $this->setting('menu_number_of_levels');
+
+		if ($this->moduleClassName == 'zenario_menu_responsive_push_pull') {
+			$this->numLevels = 0;
+		} else {
+			$this->numLevels = (int) $this->setting('menu_number_of_levels');
+		}
+		
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
-		$this->onlyFollowOnLinks		= !$this->setting('menu_show_all_branches');
+		$this->onlyFollowOnLinks		= !($this->setting('menu_show_all_branches') && ($this->setting('menu_number_of_levels') > 1));
 		$this->onlyIncludeOnLinks		= false;
 		$this->showInvisibleMenuItems	= false;
 		$this->showMissingMenuNodes		= $this->setting('show_missing_menu_nodes');
@@ -161,14 +167,16 @@ class zenario_menu extends ze\moduleBaseClass {
 		//Get the menu structure from the database.
 		$cachingRestrictions = 0;
 		$menuArray =
-			ze\menu::getStructure($cachingRestrictions,
-							 $this->sectionId, $this->currentMenuId, $this->parentMenuId,
-							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
-							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
-							 $this->showInvisibleMenuItems,
-							 $this->showMissingMenuNodes,
-							 $this->requests,
-							 ze\content::showUntranslatedContentItems());
+			ze\menu::getStructure(
+				$cachingRestrictions,
+				$this->sectionId, $this->currentMenuId, $this->parentMenuId,
+				$this->numLevels, $this->maxLevel1MenuItems, $this->language,
+				$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
+				$this->showInvisibleMenuItems,
+				$this->showMissingMenuNodes,
+				$this->requests,
+				ze\content::showUntranslatedContentItems()
+			);
 							 
 		switch ($cachingRestrictions) {
 			case ze\menu::privateItemsExist:
@@ -216,8 +224,16 @@ class zenario_menu extends ze\moduleBaseClass {
 		}
 
 		$this->mergeFields['containerId'] = $this->containerId;
+
+		if ((ze::in($this->setting('menu_number_of_levels'), '1', '2', '3')) && $this->setting('limit_initial_level_1_menu_nodes_checkbox')) {
+			$this->mergeFields['limit_initial_level_1_menu_nodes'] = $this->setting('limit_initial_level_1_menu_nodes');
+			$this->mergeFields['menu_max_number_of_levels'] = $this->setting('menu_number_of_levels');
+			$this->mergeFields['text_for_more_button'] = $this->setting('text_for_more_button');
+		}
 		
-		$this->twigFramework($this->mergeFields);
+		if ($this->moduleClassName != 'zenario_menu_responsive_push_pull') {
+			$this->twigFramework($this->mergeFields);
+		}
 	}
 	
 	function getStartNode() {
@@ -260,7 +276,7 @@ class zenario_menu extends ze\moduleBaseClass {
 	}
 	
 	//Recursive function to draw Menu Nodes from the database
-	function getMenuMergeFields(&$menuArray, $depth = 1) {
+	function getMenuMergeFields(&$menuArray, $depth = 1, $parentId = false) {
 	
 		if ($depth>1000) {
 			echo "Function aborted due to infinite recursion loop";
@@ -280,7 +296,8 @@ class zenario_menu extends ze\moduleBaseClass {
 				if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $row)) {
 					
 					if (!empty($row['children']) && is_array($row['children'])) {
-						$menuNodeMergeFields['children'] = $this->getMenuMergeFields($row['children'], $depth + 1);
+						$parentId = $row['mID'];
+						$menuNodeMergeFields['children'] = $this->getMenuMergeFields($row['children'], $depth + 1, $parentId);
 						
 						$menuNodeMergeFields['All_Children_Are_Hidden'] = true;
 						foreach ($menuNodeMergeFields['children'] as $child) {
@@ -289,6 +306,10 @@ class zenario_menu extends ze\moduleBaseClass {
 								break;
 							}
 						}
+					}
+
+					if ($parentId) {
+						$menuNodeMergeFields['parentId'] = (int) $parentId;
 					}
 					
 					$menuMergeFields[] = $menuNodeMergeFields;
@@ -304,6 +325,8 @@ class zenario_menu extends ze\moduleBaseClass {
 		$theme = 'Level_X_Link';
 		
 		$objects = [];
+		$objects['depth'] = (int) $depth;
+		$objects['mID'] = $row['mID'];
 		$objects['Hyperlink'] = $this->drawMenuItem($row);
 		
 		$objects['Class'] = 'level'. $depth. ' level'. $depth. '_'. $i;
@@ -315,9 +338,19 @@ class zenario_menu extends ze\moduleBaseClass {
 		if (!empty($row['name'])) {
 			$objects['Name'] = htmlspecialchars($row['name']);
 		}
+
 		if (!empty($row['id'])) {
 			$objects['id'] = $row['id'];
 		}
+
+		if (!empty($row['privacy'])) {
+			$objects['privacy'] = $row['privacy'];
+
+			if ($objects['privacy'] != 'public') {
+				$objects['Class'] .= ' private';
+			}
+		}
+
 		if (!empty($row['accesskey'])) {
 			$objects['Access_Key'] = htmlspecialchars($row['accesskey']);
 		}
@@ -340,14 +373,6 @@ class zenario_menu extends ze\moduleBaseClass {
 		if ($row['current']) {
 			$objects['Class'] .= ' current';
 		}
-		
-		
-		$sections = [];
-		//if (!empty($row['descriptive_text'])) {
-		//	if ($this->checkFrameworkSectionExists('Sub_Text')) {
-		//		$sections['Sub_Text'] = ['Sub_Text' => htmlspecialchars($row['descriptive_text'])];
-		//	}
-		//}
 		
 		$width = $height = $url = false;
 		if (!empty($row['image_id']) && ze\file::imageLink($width, $height, $url, $row['image_id'])) {
@@ -537,13 +562,33 @@ class zenario_menu extends ze\moduleBaseClass {
 		switch ($path) {
 			case "plugin_settings":
 				if (isset($box['tabs']['first_tab']['fields']['specific_menu_node'])) {
-					$box['tabs']['first_tab']['fields']['specific_menu_node']['hidden'] = !($values['first_tab/menu_generation_current_or_specific']=="_SPECIFIC");
+					$box['tabs']['first_tab']['fields']['specific_menu_node']['hidden'] = !($values['first_tab/menu_generation_current_or_specific'] == "_SPECIFIC");
 					
 					if ($values['first_tab/menu_generation_current_or_specific']=="_SPECIFIC") {
 						$box['tabs']['first_tab']['fields']['specific_menu_node']['pick_items']['path'] = "zenario__menu/panels/sections/item//" . $values['first_tab/menu_section'] . "//";
 						$box['tabs']['first_tab']['fields']['menu_start_from']['hidden'] = true;
 					} else {
 						$box['tabs']['first_tab']['fields']['menu_start_from']['hidden'] = false;
+					}
+				}
+
+				if ($box['module_class_name'] == 'zenario_menu') {
+					if ($values['first_tab/menu_number_of_levels'] == 1) {
+						$values['first_tab/menu_show_all_branches'] = false;
+						$fields['first_tab/menu_show_all_branches']['note_below'] = ze\admin::phrase('Only available when the number of levels to display is set to more than 1.');
+					} else {
+						unset($fields['first_tab/menu_show_all_branches']['note_below']);
+					}
+
+					if (ze::in($values['first_tab/menu_number_of_levels'], 1, 2, 3)) {
+						unset($fields['first_tab/limit_initial_level_1_menu_nodes_checkbox']['note_below']);
+					} else {
+						$values['first_tab/limit_initial_level_1_menu_nodes_checkbox'] = false;
+						$fields['first_tab/limit_initial_level_1_menu_nodes_checkbox']['note_below'] = ze\admin::phrase('Only available when the number of levels to display is set to 1, 2 or 3.');
+					}
+
+					if (!$values['first_tab/text_for_more_button']) {
+						$values['first_tab/text_for_more_button'] = 'More';
 					}
 				}
 				

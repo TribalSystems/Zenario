@@ -58,9 +58,12 @@ class zenario_pro_features extends zenario_common_features {
 	}
 	
 	public function fillAdminToolbar(&$adminToolbar, $cID, $cType, $cVersion) {
-		/*if ($c = $this->runSubClass(static::class)) {
-			return $c->fillAdminToolbar($adminToolbar, $cID, $cType, $cVersion);
-		}*/
+		$languagesEnabledOnSite = ze\lang::getLanguages();
+		$numLanguageEnabled = count($languagesEnabledOnSite);
+
+		if ($numLanguageEnabled == 1) {
+			unset($adminToolbar['sections']['edit']['buttons']['translate']);
+		}
 	}
 	
 	
@@ -92,7 +95,7 @@ class zenario_pro_features extends zenario_common_features {
 					ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
 				}
 		
-				if (!ze\priv::check('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType'])) {
+				if (!ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 					echo ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
 					exit;
 				}
@@ -131,7 +134,7 @@ class zenario_pro_features extends zenario_common_features {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {
 			case 'zenario_pro_features__google_translate':
-				if (!ze\priv::check('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType'])) {
+				if (!ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 					$box['tabs']['import']['errors'][] = ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
 				}
 				
@@ -147,7 +150,7 @@ class zenario_pro_features extends zenario_common_features {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'zenario_pro_features__google_translate':
-				ze\priv::exitIfNot('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType']);
+				ze\priv::exitIfNot('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType']);
 				
 				$post = ['q' => ''];
 				$post['format'] = 'html';

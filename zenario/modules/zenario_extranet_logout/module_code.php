@@ -41,7 +41,7 @@ class zenario_extranet_logout extends zenario_extranet {
 			$this->logout();
 			$this->manageCookies();
 			$this->redirectToPage(false, (bool) $this->setting('redirect'), (bool) $this->setting('redirect_if_private'));
-			$this->message = $this->phrase('_LOGGED_OUT');
+			$this->message = $this->phrase('You have been logged out.');
 		}
 		
 		return true;

@@ -11,3 +11,5 @@ zenario_content:
                         lib.value('create_menu_node')
                     label: 'Invisible in the menu tree'
                     type: checkbox
+                    side_note: |
+                        If checked, the content item will have a breadcrumb trail but it will not appear in the regular menu navigation.

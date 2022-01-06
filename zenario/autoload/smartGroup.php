@@ -38,16 +38,16 @@ class smartGroup {
 	//Formerly "getSmartGroupDetails()"
 	public static function details($smartGroupId) {
 		return \ze\row::get('smart_groups',
-				[
-						'name',
-						'intended_usage',
-						'must_match',
-						'created_on',
-						'created_by',
-						'last_modified_on',
-						'last_modified_by'
-				]
-				, $smartGroupId);
+			[
+				'name',
+				'intended_usage',
+				'must_match',
+				'created_on',
+				'created_by',
+				'last_modified_on',
+				'last_modified_by'
+			]
+			, $smartGroupId);
 	}
 
 

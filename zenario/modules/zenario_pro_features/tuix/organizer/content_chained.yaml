@@ -5,8 +5,8 @@ zenario__content:
         chained:
             item_buttons:
                 zenario_pro_features__translate:
-                    priv: _PRIV_IMPORT_CONTENT_ITEM
-                    visible_if: |
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
                         traits.not_locked: true

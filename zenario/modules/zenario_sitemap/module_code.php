@@ -27,10 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
-
-
-
 //This Plugin is used to create a Sitemap
 
 //Rather than start from the ground up, the Sitemap Plugin uses code from an existing Plugin called zenario_menu: Note that the
@@ -52,9 +48,10 @@ class zenario_sitemap extends zenario_menu {
 		//(This will usually be set to "main")
 		$this->sectionId				= $this->setting('menu_section');
 		
-		//Start from the top of the menu tree, and have no real limits on the depth or the number of menu items
+		//Start from the top of the menu tree, and have no real limit on the number of menu items.
+		//However, as of 02/08/2021, there should be a limit on the depth of menu items.
 		$this->startFrom				= '_MENU_LEVEL_1';
-		$this->numLevels				= 999;
+		$this->numLevels				= (int) $this->setting('menu_number_of_levels');
 		$this->maxLevel1MenuItems		= 999;
 		
 		//Auto-detect the visitors current language

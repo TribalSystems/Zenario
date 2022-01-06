@@ -571,7 +571,15 @@ body.ie9 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.z
 	font-style: italic;
 	font-family: "open-sans",Arial,Verdana,Helvetica;
 	font-size: 12px;
+	margin-top:5px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_admin_box_with_tabs_shown #zenario_fbMain #zenario_fabLastUpdated {
 	margin-top:-10px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_admin_box_with_tabs_hidden #zenario_fbMain #zenario_fbAdminInner #zenario_abtab {
+	padding-top:15px;
 }
 
 #zenario_fbAdminFloatingBox #zenario_fbMain #zenario_fbAdminInner {
@@ -1192,7 +1200,8 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 }
 
 #zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_hidden,
-#zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_hidden .zfab_row_inner {
+#zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_hidden .zfab_row_inner,
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__special_page_message {
 	padding:0;
 }
 
@@ -1338,6 +1347,79 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	font-weight:bold;
 	padding-bottom:3px;
 }
+
+/* Module description */
+
+#zenario_fbAdminInner .div_table .zfab_row .zfab_row_inner #snippet__module_description_or_help {
+	display:block;
+	background-color: #efefef;
+	padding: 15px 20px 20px 20px;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row .zfab_row_inner #snippet__module_description_or_help .zenario_fbInfo {
+	height: auto;
+	background-size: 30px;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row .zfab_row_inner #snippet__module_description_or_help p {
+	padding:5px 0;
+}
+
+/* Toggles checkboxes onoffswitch for FABs */
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .zenario_input_checkbox label[for]::before,
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .zenario_input_checkbox label[for]::after {
+	display:none;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .zenario_field_widget_wrap > label[for] {
+	padding-left:8px;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .zenario_input_checkbox label[for] {
+	padding-left:0;
+	display:block;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .zenario_field_widget_wrap > .onoffswitch,
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .zenario_field_widget_wrap > label {
+	float:left;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch {
+	width:53px;
+	margin-top:-2px;
+	margin-right:8px;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch .onoffswitch-switch {
+	margin:1px;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch .onoffswitch-label,
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch .onoffswitch-switch {
+	border-width:1px;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch .onoffswitch-inner::before, 
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch .onoffswitch-inner::after {
+	height:20px;
+	line-height:20px;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch .onoffswitch-inner::before {
+	background-color:#027dc9;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch .onoffswitch-inner::after {
+	line-height:18px;
+	color:#333;
+    content: "×";
+    font-weight: normal;
+    font-family: 'Verdana';
+}
+
+/* End - Toggles checkboxes for FABs */
 
 #zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_radios .zfab_row_fields .zenario_radio_or_checkbox {
 	margin-bottom:5px;
@@ -1529,7 +1611,6 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 #zenario_fbAdminInner .zfab_row_with_pre_or_post_field_html .input_field,
 #zenario_fbAdminInner .zfab_row_with_pre_or_post_field_html .form_field,
 #zenario_fbAdminInner .zfab_row_with_pre_or_post_field_html .form_field_focused,
-#zenario_fbAdminFloatingBox .zfab_row_with_pre_or_post_field_html .input_text,
 #zenario_fbAdminFloatingBox .zfab_row_with_pre_or_post_field_html .input_url,
 #zenario_fbAdminFloatingBox .zfab_row_with_pre_or_post_field_html .input_password {
 	width:410px;
@@ -1784,7 +1865,7 @@ textarea.zenario_breadcrumb_preview {
 }
 
 .zenario_fab_plugin #zenario_fbAdminInner .zfab_inline_error {
-	color:red;
+	color:#ffaa3d;
 }
 
 /*
@@ -2024,18 +2105,11 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .zfab_error,
 #zenario_fbAdminInner .thickbox_table .messageDisplay {
 	width:auto;
-	min-height: 20px;
-	padding:6px 10px 0 10px;
 	margin: 0;
 	line-height:1.4em;
-	background-color:#F5F5F5;
 	vertical-align:middle;
 	font-size:12px;
-	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
-	border-radius: 2px;
 	color:#343434;
-	border:2px solid #343434;
 }
 
 #content_form .zfab_error .zfab_error_inner,
@@ -2046,17 +2120,35 @@ div.mandatory_field {
 	padding-bottom:6px;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings #content_form .zfab_error,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings #zenario_fbAdminInner .thickbox_table .zfab_error,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings #zenario_fbAdminInner .thickbox_table .messageDisplay {
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	background-color:#F5F5F5;
+	min-height: 20px;
+	padding:6px 10px 0 10px;
+}
+
 #content_form .zfab_error,
 #zenario_fbAdminInner .thickbox_table .zfab_error,
 #zenario_fbAdminInner .thickbox_table .errorDisplayRow .messageDisplay {
 	color:#E4080A;
-	border:2px solid #E4080A;
+	border:0;
+}
+
+#zenario_fbAdminInner .thickbox_table .zfab_error,
+#zenario_fbAdminInner .thickbox_table .warningDisplayRow,
+#zenario_fbAdminInner .thickbox_table .questionDisplayRow,
+#zenario_fbAdminInner .thickbox_table .successDisplayRow,
+#zenario_fbAdminInner .thickbox_table .informationDisplayRow {
+	padding-top:5px;
 }
 
 #zenario_fbAdminInner .thickbox_table .warningDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-warning.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
-	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .warningDisplayRow .messageDisplay {
@@ -2067,34 +2159,28 @@ div.mandatory_field {
 #zenario_fbAdminInner .thickbox_table .questionDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-question.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
-	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .questionDisplayRow .messageDisplay {
-	color:#027DC9;	
-	border-color:#027DC9;
+	color:#027DC9;
 }
 
 #zenario_fbAdminInner .thickbox_table .successDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-tick-green-circle.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
-	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .successDisplayRow .messageDisplay {
-	color:#01AC02;	
-	border-color:#01AC02;
+	color:#01AC02;
 }
 
 #zenario_fbAdminInner .thickbox_table .informationDisplayRow .messageDisplay div {
 	background:url('../admin/images/icon-information.svg') no-repeat left 0 / 16px 16px;
 	padding-left:25px;
-	padding-bottom:6px;
 }
 
 #zenario_fbAdminInner .thickbox_table .informationDisplayRow .messageDisplay {
 	color:#23B8E0;
-	border-color:#23B8E0;
 }
 
 #zenario_fbAdminInner .input_text_error {
@@ -2705,13 +2791,11 @@ body.ie9 #zenario_fbAdminInner .div_table .zfab_row:hover .zenario_side_note_wra
 	width:135px;
 }
 
-#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap,
-#zenario_fbAdminInner .div_table .zenario_row_for_upload .zenario_side_note_wrap {
+#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap {
 	text-align:center;
 }
 
-#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note,
-#zenario_fbAdminInner .div_table .zenario_row_for_upload .zenario_side_note_wrap .zenario_side_note {
+#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note {
 	top:-28px;
 	-webkit-border-top-left-radius: 4px;
 	-moz-border-radius-topleft: 4px;
@@ -2722,8 +2806,7 @@ body.ie9 #zenario_fbAdminInner .div_table .zfab_row:hover .zenario_side_note_wra
 	top:-41px;
 }
 
-#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note:after,
-#zenario_fbAdminInner .div_table .zenario_row_for_upload .zenario_side_note_wrap .zenario_side_note:after {
+#zenario_fbAdminInner .div_table #row__category.zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note:after {
 	right:50%;
 	top:100%;
 	border-right-color:rgba(224,224,224,0);
@@ -2739,24 +2822,61 @@ body.ie9 #zenario_fbAdminInner .div_table .zfab_row:hover .zenario_side_note_wra
 
 /* Tooltips bottom */
 
-#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zenario_side_note_wrap {
-	top:25px;
+#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zfab_row_inner,
+#zenario_fbAdminInner .div_table .zenario_row_for_upload .zfab_row_inner,
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zfab_row_inner,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_text.zfab_row_with_1_field .zfab_row_inner,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_pick_items.zfab_row_with_1_field {
+	position:relative;
 }
 
-#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zenario_side_note_wrap,
-#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note {
-	top:55px;
+#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zfab_row_inner .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zfab_row_inner .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .zenario_row_for_upload .zfab_row_inner .zenario_side_note_wrap,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_text.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_pick_items.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap {
+	position:absolute;
 }
 
-#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note,
-#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zenario_side_note_wrap .zenario_side_note  {
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zfab_row_inner .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .zenario_row_for_upload .zfab_row_inner .zenario_side_note_wrap,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_text.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_pick_items.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap {
+	bottom:0;
+	right:0;
+}
+
+#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zfab_row_inner .zenario_side_note_wrap {
+	bottom:-5px;
+	left:0;
+}
+
+#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zfab_row_inner .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zfab_row_inner .zenario_side_note_wrap .zenario_side_note,
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zfab_row_inner .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zfab_row_inner .zenario_side_note_wrap .zenario_side_note,
+#zenario_fbAdminInner .div_table .zenario_row_for_upload .zfab_row_inner .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .zenario_row_for_upload .zfab_row_inner .zenario_side_note_wrap .zenario_side_note,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_text.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_text.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap .zenario_side_note,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_pick_items.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_pick_items.zfab_row_with_1_field .zfab_row_inner .zenario_side_note_wrap .zenario_side_note {
+	top:auto;
+}
+
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zfab_row_inner .zenario_side_note_wrap .zenario_side_note,
+#zenario_fbAdminInner .div_table .zenario_row_for_upload .zfab_row_inner .zenario_side_note_wrap .zenario_side_note,
+#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zenario_side_note_wrap .zenario_side_note,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_text.zfab_row_with_1_field .zenario_side_note_wrap .zenario_side_note  {
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	border-radius:4px;
 }
 
-#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zenario_side_note_wrap .zenario_side_note::after,
-#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zenario_side_note_wrap .zenario_side_note:after {
+#zenario_fbAdminInner .div_table .zenario_row_for_pick_items .zfab_row_inner .zenario_side_note_wrap .zenario_side_note::after,
+#zenario_fbAdminInner .div_table .zenario_row_for_upload .zfab_row_inner .zenario_side_note_wrap .zenario_side_note:after,
+#zenario_fbAdminInner .div_table .zenario_single_line.zenario_row_for_checkbox .zenario_side_note_wrap .zenario_side_note:after,
+.zenario_fab_plugin_settings #zenario_fbAdminInner .div_table .zenario_row_for_text.zfab_row_with_1_field .zenario_side_note_wrap .zenario_side_note:after {
 	right: auto;
 	top: auto;
 	bottom: 100%;
@@ -3046,17 +3166,13 @@ body.ie6 .zenario_now h1 {
 
 
 #label_for__perm_author,
-#label_for__perm_author_permissions____PRIV_VIEW_CONTENT_ITEM_SETTINGS,
 #label_for__perm_author_permissions____PRIV_EDIT_DRAFT,
-#label_for__perm_author_permissions____PRIV_CREATE_FIRST_DRAFT,
-#label_for__perm_author_permissions____PRIV_CREATE_TRANSLATION_FIRST_DRAFT,
-#label_for__perm_author_permissions____PRIV_CREATE_REVISION_DRAFT,
-#label_for__perm_author_permissions____PRIV_DELETE_DRAFT,
-#label_for__perm_author_permissions____PRIV_EDIT_CONTENT_ITEM_CATEGORIES,
-#label_for__perm_author_permissions____PRIV_EDIT_CONTENT_ITEM_PERMISSIONS,
-#label_for__perm_author_permissions____PRIV_EDIT_CONTENT_ITEM_TEMPLATE,
-#label_for__perm_author_permissions____PRIV_SET_CONTENT_ITEM_STICKY_IMAGE,
 #label_for__perm_author_permissions____PRIV_MANAGE_MEDIA,
+
+#label_for__perm_editmenu_disabled,
+#label_for__perm_publish_disabled,
+#label_for__perm_designer_disabled,
+
 #label_for__perm_editmenu,
 #label_for__perm_editmenu_permissions____PRIV_VIEW_MENU_ITEM,
 #label_for__perm_editmenu_permissions____PRIV_EDIT_MENU_TEXT,
@@ -3080,7 +3196,6 @@ body.ie6 .zenario_now h1 {
 #label_for__perm_publish_permissions____PRIV_MANAGE_REUSABLE_PLUGIN,
 #label_for__perm_publish_permissions____PRIV_MANAGE_SPARE_ALIAS,
 #label_for__perm_publish_permissions____PRIV_MANAGE_DOCUMENTS,
-#label_for__perm_publish_permissions____PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS,
 #label_for__perm_designer,
 #label_for__perm_designer_permissions____PRIV_VIEW_TEMPLATE,
 #label_for__perm_designer_permissions____PRIV_EDIT_TEMPLATE,
@@ -4286,9 +4401,21 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename {
 	overflow:hidden;
-	padding:5px 10px 10px !important;
-	border:1px solid orange;
+	padding:5px 10px 0 !important;
 	background:#313330;
+	
+	color:#f6833e;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename.zfab_row.zenario_indent_level_1 {	
+	width:calc(90% - 9px) !important;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename div.zenario_group_2_cols {
+	min-width:auto;
+	display:inline-block;
+	margin-right:10px;
+	color:#FFF;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin_settings .zenario_ab_row__duplicate_or_rename .zfab_plugin_rename_warning {
@@ -5084,6 +5211,30 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	right:0;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container .zenario_ab__plugin_settings .zenario_ab_tab__links > .zfab_row {
+	padding-bottom:10px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container .zenario_ab__plugin_settings .zenario_ab_tab__links .zfab_row > div.zfab_row_inner,
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container .zenario_ab__plugin_settings .zenario_ab_tab__links .zfab_row > div.zfab_row {
+	padding:0;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container #zenario_fbAdminInner .div_table.zenario_ab_tab__links .zfab_row.zenario_ab_row__url,
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container #zenario_fbAdminInner .div_table.zenario_ab_tab__links .zfab_row.zenario_row_for_url {
+	padding-top:10px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container #zenario_fbAdminInner .div_table.zenario_ab_tab__links .zfab_row.zenario_ab_row__url span.zenario_field_widget_wrap .input_url, 
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container #zenario_fbAdminInner .div_table.zenario_ab_tab__links .zfab_row.zenario_row_for_url span.zenario_field_widget_wrap .input_url {
+	width:77%;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_multiple_image_container .zenario_fabMain #zenario_fbMain .zenario_ab__plugin_settings .zenario_ab_tab__links select {
+	margin-left:0;
+	margin-top:8px;
+}
+
 /*
 	Styles for the global area that's always visible at the top right
 */
@@ -5540,6 +5691,14 @@ body.ie10 #zenario_fabBox_readonlyMarker {
 	float:left;
 }
 
+#zenario_fbAdminInner .zenario_image_in_form {
+	text-align: center;
+}
+
+#zenario_fbAdminInner .zenario_image_in_form img {
+	border: 1px solid black;
+}
+
 #zenario_fbAdminInner #row__file .Tokenize .zenario_row_input_button .zenario_picked_file_wrapper,
 #zenario_fbAdminInner #row__s3_file .Tokenize .zenario_row_input_button .zenario_picked_file_wrapper {
 	width:65px;
@@ -5780,6 +5939,12 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 	display: none;
 }
 
+/* Styles crop tool
+--------------------------------------------------------------------------------------------------*/
+
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__crop_tool .zenario_image_in_form {
+	background:url('../admin/images/checkered.gif') repeat;
+}
 
 /* Styles for content privacy FAB
 --------------------------------------------------------------------------------------------------*/
@@ -5884,7 +6049,7 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 }
 
 #zenario_fbAdminFloatingBox fieldset.zenario_grouping__image_thumb {
-	clear: left;
+	clear: both;
 	float: left;
 	width: calc(100% - 500px);
 }
@@ -6288,7 +6453,8 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-widget-cont
 	#zenario_fbAdminInner .form_field, 
 	#zenario_fbAdminInner .form_field_focused, 
 	#zenario_fbAdminFloatingBox .input_text, 
-	#zenario_fbAdminFloatingBox .input_password {
+	#zenario_fbAdminFloatingBox .input_password,
+	#zenario_fbAdminFloatingBox .zfab_row_with_pre_or_post_field_html .input_textarea {
 		width:calc(100% - 62px);
 	}
 	

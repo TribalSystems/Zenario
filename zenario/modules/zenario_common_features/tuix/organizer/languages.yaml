@@ -103,7 +103,7 @@ zenario__languages:
             collection_buttons:
                 add:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
-                    label: Add a language
+                    label: Enable another language
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     hide_in_select_mode: true
@@ -115,13 +115,18 @@ zenario__languages:
                         disallow_refiners_looping_on_min_path: true
                         request:
                             enable_language: '1'
+                advanced:
+                    priv: _PRIV_MANAGE_LANGUAGE_CONFIG
+                    label: Advanced
+                    hide_in_select_mode: true
                 create:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     label: Define a language
+                    parent: advanced
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     hide_in_select_mode: true
-                    tooltip: "Define a language that's not listed here"
+                    tooltip: "Define a language that's not listed when you try to enable one"
                     admin_box:
                         path: zenario_create_vlp
                 default_language:
@@ -143,7 +148,7 @@ zenario__languages:
                             
                             One language must be defined as the "default", and that language's home page is the one to which Zenario directs visitors when they arrive at your site (if they don't request a URL of a specific page).
                             
-                            To add a language to your site, click "Add a language" and select the language from the list in order to enable it. If you don't see the language you want, you can define a new language with a few parameters.
+                            To add a language to your site, click "Enable another language" and select the language from the list in order to enable it. If you don't see the language you want, you can define a new language with a few parameters.
             item_buttons:
                 edit:
                     label: Edit settings for this language

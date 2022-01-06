@@ -4,15 +4,10 @@ empty_slot:
     css_class: zenario_slotOuter zenario_slotWithNoContents
     info:
         edit_sc_title:
-            label: 'Slot inspector: editing'
+            label: 'Slot inspector'
             css_class: zenario_slotControl_title
             page_modes:
                 edit: true
-        item_sc_title:
-            label: Slot inspector
-            css_class: zenario_slotControl_title
-            page_modes:
-                item: true
         layout_sc_title:
             label: Layout slot inspector
             css_class: zenario_slotControl_title
@@ -21,17 +16,12 @@ empty_slot:
         locked:
             css_class: zenario_slotControl_locked
             page_modes:
-                item: true
                 edit: true
             label: This content item is locked by another administrator.
         slot_name_in_edit_mode:
             css_class: zenario_slotControl_slotName
             page_modes:
                 edit: true
-        slot_name_in_item_mode:
-            css_class: zenario_slotControl_slotName
-            page_modes:
-                item: true
         slot_name_in_layout_mode:
             css_class: zenario_slotControl_slotName
             page_modes:
@@ -40,13 +30,13 @@ empty_slot:
         #grid_css_class:
         #    css_class: zenario_slotControl_cssClass
         #    page_modes:
-        #        item: true
+        #        edit: true
         #        layout: true
         #    label: 'CSS classes: <span></span>'
         #grid_width:
         #    css_class: zenario_slotControl_width
         #    page_modes:
-        #        item: true
+        #        edit: true
         #        layout: true
         #    label: 'Width: <span></span>'
         in_this_slot:
@@ -57,31 +47,28 @@ empty_slot:
             label: 'Version-controlled'
             page_modes:
                 edit: true
-                item: true
                 layout: true
         mobile:
             css_class: zenario_slotControl_onlyMobile
             label: Only shown on mobile
             page_modes:
                 edit: true
-                item: true
                 layout: true
         desktop:
             css_class: zenario_slotControl_onlyDesktop
             label: Only shown on desktop
             page_modes:
                 edit: true
-                item: true
                 layout: true
     actions:
         insert_reusable_on_item_layer:
             priv: _PRIV_MANAGE_ITEM_SLOT
             label: Insert plugin on this content item...
             page_modes:
-                item: true
+                edit: true
             onclick: |
                 if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('item');
+                    zenarioAT.clickTab('edit');
                     zenarioA.pickNewPlugin(this, slotName, 1, false);
                 }
                 return false;
@@ -106,29 +93,29 @@ empty_slot:
             css_class: zenario_slotControl_inThisSlot
             label: 'This slot on this layout (overridden):'
             page_modes:
-                item: true
+                edit: true
                 layout: true
         vc:
             css_class: zenario_slotControl_vc
             label: 'Version-controlled'
             page_modes:
-                item: true
+                edit: true
                 layout: true
         module_name:
             css_class: zenario_slotControl_module
             page_modes:
-                item: true
+                edit: true
                 layout: true
         reusable_plugin_details:
             css_class: zenario_slotControl_reusable zenario_slotControl_reusablePluginDetails
             page_modes:
-                item: true
+                edit: true
                 layout: true
     overridden_actions:
         show_plugin:
             ord: 89
             page_modes:
-                item: true
+                edit: true
             onclick: >
                 if (zenarioA.draft(this.id, false, 'Are you sure you wish to stop hiding ~plugin~ on this content item?', 'Show')) {
                     zenarioA.showPlugin(this, slotName);
@@ -141,3 +128,9 @@ empty_slot:
                 layout: true
             onclick: return zenarioA.removePlugin(this, slotName, 2);
             label: Remove ~plugin~ from this layout
+    no_perms:
+        cant_design:
+            page_modes:
+                edit: true
+            css_class: zenario_slotControl_no_perms
+            label: 'Limited options: you lack Designer permission'

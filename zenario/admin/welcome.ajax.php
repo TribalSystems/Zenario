@@ -185,6 +185,7 @@ if ($systemRequirementsMet && $installed) {
 	if ($freshInstall) {
 		//ze\admin::setSession($adminId);
 		$loggedIn = true;
+		$_SESSION['admin_ip_at_login'] = \ze\user::ip();
 	
 	//Check that the local and global databases are not set to the same database and table prefix
 	} else

@@ -44,20 +44,20 @@ special_pages:
     zenario_not_found:
         page_type: zenario_not_found
         default_alias: not-found
-        default_title: Not Found
+        default_title: Not found
         default_content: |
-            <h1>Error 404: Page or CMS Item Not Found</h1>
-            <p>The requested Item was not found on this server or may not be accessed.</p>
+            <h1>Error 404: Page not found</h1>
+            <p>The requested content item was not found on this server or may not be accessed.</p>
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
     zenario_no_access:
         page_type: zenario_no_access
         default_alias: no-access
-        default_title: No Access
+        default_title: No access
         default_content: |
-            <h1>Access Permission Denied (401)</h1>
-            <p>Sorry, you have tried to access an item that requires a higher level of permissions than you currently possess.</p>
+            <h1>Error 401: Access permission denied</h1>
+            <p>Sorry, you have tried to access a content item that requires a higher level of permissions than you currently possess.</p>
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
@@ -104,6 +104,7 @@ special_pages:
             <p>Include information about any cookies you may use, how you process confidential data, or any other relevant information.</p>
         logic: create_and_maintain_in_default_language
         allow_hide: true
+        allow_search: true
 pagination_types:
     pagSelectList:
         function_name: pagSelectList
@@ -153,7 +154,7 @@ jobs:
         days: mon,tue,wed,thr,fri,sat,sun
         hours: >
             0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
-        minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m,59m
+        minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m
         log_on_action: true
         log_on_no_action: false
         email_on_action: false

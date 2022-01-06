@@ -395,7 +395,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 			
 			switch ($values[$tabName . '/action'. $suffix]) {
 				case 'delete':
-					if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_DELETE_DRAFT', $cID, $cType)) {
+					if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 						if (ze::in($cType, 'audio', 'document', 'picture', 'video')) {
 							ze\contentAdm::deleteContentItem($cID, $cType);
 						} else {

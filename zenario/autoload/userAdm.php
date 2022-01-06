@@ -29,6 +29,8 @@
 
 namespace ze;
 
+use ZxcvbnPhp\Zxcvbn;
+
 class userAdm {
 
 
@@ -176,13 +178,13 @@ class userAdm {
 		if (!empty($values['screen_name'])) {
 			//...has no special characters...
 			if (!\ze\ring::validateScreenName($values['screen_name'])) {
-				$e->add('screen_name', '_ERROR_SCREEN_NAME_INVALID');
+				$e->add('screen_name', 'The screen name can contain only alphanumeric characters.');
 			//...and is not already taken by a different row.
 			} elseif (\ze\row::exists('users', ['screen_name' => $values['screen_name'], 'id' => ['!' => $id]])) {
-				$e->add('screen_name', '_ERROR_SCREEN_NAME_IN_USE');
+				$e->add('screen_name', 'This screen name is already in use.');
 			//...and is not too long.
 			} elseif (strlen($values['screen_name']) > 50) {
-				$e->add('screen_name', 'Your Screen Name cannot be more than 50 characters long.');
+				$e->add('screen_name', 'Your screen name cannot be more than 50 characters long.');
 			}
 		}
 	
@@ -190,17 +192,17 @@ class userAdm {
 		//Ensure salutation first_name, last_name are not too long
 		if (!empty($values['salutation'])) {
 			if (strlen($values['salutation']) > 25) {
-				$e->add('salutation', 'Your Salutation cannot be more than 25 characters long.');
+				$e->add('salutation', 'Your salutation cannot be more than 25 characters long.');
 			}
 		}
 		if (!empty($values['first_name'])) {
 			if (strlen($values['first_name']) > 100) {
-				$e->add('first_name', 'Your First Name cannot be more than 100 characters long.');
+				$e->add('first_name', 'Your first name cannot be more than 100 characters long.');
 			}
 		}
 		if (!empty($values['last_name'])) {
 			if (strlen($values['last_name']) > 100) {
-				$e->add('last_name', 'Your Last Name cannot be more than 100 characters long.');
+				$e->add('last_name', 'Your last name cannot be more than 100 characters long.');
 			}
 		}
 	
@@ -219,7 +221,7 @@ class userAdm {
 		//Validate the email field if it is not empty.
 		if (!empty($values['email'])) {
 			if (!\ze\ring::validateEmailAddress($values['email'])) {
-				$e->add('email', '_ERROR_EMAIL_INVALID');
+				$e->add('email', 'Please enter a valid email address.');
 		
 			//...and is not already taken by a different row.
 			} else {
@@ -228,11 +230,11 @@ class userAdm {
 						if ($exsitingUser['status'] == "contact") {
 							$id = $exsitingUser['id'];
 						} else {
-							$e->add('email', '_ERROR_EMAIL_NAME_IN_USE');
+							$e->add('email', 'This email address is already in use by another user.');
 						}
 					}
 				} elseif (\ze\row::exists('users', ['email' => $values['email'], 'id' => ['!' => $id]])) {
-					$e->add('email', '_ERROR_EMAIL_NAME_IN_USE');
+					$e->add('email', 'This email address is already in use by another user.');
 				}
 			}
 		}
@@ -295,64 +297,73 @@ class userAdm {
 
 	//Formerly "createPassword()"
 	public static function createPassword() {
-	
 		$numbers = "0,1,2,3,4,5,6,7,8,9";
 		$letters = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z";
 		$symbols = "!,#,$,%,<,>,(,),*,+,-,@,?,{,},_";
 	
-		$lowercase = explode(',',$letters);
-		$uppercase = explode(',',strtoupper($letters));
-		$symbolsArray = explode(',',$symbols);
-		$numbersArray = explode(',',$numbers);
+		$lowercase = explode(',', $letters);
+		$uppercase = explode(',', strtoupper($letters));
+		$symbolsArray = explode(',', $symbols);
+		$numbersArray = explode(',', $numbers);
 	
 		$password = "";
-		$passwordLength = max(8, (int) \ze::setting('min_extranet_user_password_length'));
+
+		$passwordMinScore = (int) \ze::setting('min_extranet_user_password_score');
+		$passwordMinLength = max(8, (int) \ze::setting('min_extranet_user_password_length'));
+		
+		//If the min score is 3 or 4, then make the password suggestions longer to be able to match.
+		if ($passwordMinScore == 4 && $passwordMinLength < 12) {
+			$passwordMinLength = 12;
+		} elseif ($passwordMinScore == 3 && $passwordMinLength < 9) {
+			$passwordMinLength = 9;
+		}
+		
+		$passwordLength = $passwordMinLength;
 	
 		$passwordCharacters = [];
-	
-		if($passwordLength){
-	
-			//Build an array of all required characters. It will be used later on to generate a password.
-			//Also, make sure at least 1 character of all the mandatory types is present...
-			if(\ze::setting('a_z_uppercase_characters')){
-				$passwordCharacters = array_merge($passwordCharacters,$uppercase);
-				$password .=\ze\userAdm::addCharacterToPassword($uppercase);
-				$passwordLength--;
-			}
+		$numIterations = 0;
+		$passwordEasilyGuessable = true;
 		
-			if(\ze::setting('a_z_lowercase_characters')){
-				$passwordCharacters = array_merge($passwordCharacters,$lowercase);
-				$password .=\ze\userAdm::addCharacterToPassword($lowercase);
-				$passwordLength--;
-			}
-		
-			if(\ze::setting('0_9_numbers_in_user_password')){
-				$passwordCharacters = array_merge($passwordCharacters,$numbersArray);
-				$password .=\ze\userAdm::addCharacterToPassword($numbersArray);
-				$passwordLength--;
-			}
-		
-			if(\ze::setting('symbols_in_user_password')){
-				$password .=\ze\userAdm::addCharacterToPassword($symbolsArray);
-				$passwordLength--;
-			}
-		
-			//...then continue adding any characters from passwordCharacters array.
-			if($passwordCharacters){
-				for($i=1; $i<=$passwordLength; $i++){
-					$password .=\ze\userAdm::addCharacterToPassword($passwordCharacters);
+		do {
+			$numIterations++;
+			$password = "";
+			$passwordLength = $passwordMinLength;
+
+			if ($passwordLength) {
+				//Build an array of all required characters. It will be used later on to generate a password.
+				$passwordCharacters = array_merge($passwordCharacters, $uppercase);
+				$passwordCharacters = array_merge($passwordCharacters, $lowercase);
+				$passwordCharacters = array_merge($passwordCharacters, $numbersArray);
+				$passwordCharacters = array_merge($passwordCharacters, $symbolsArray);
+			
+				if ($passwordCharacters) {
+					for ($i = 1; $i <= $passwordLength; $i++) {
+						$password .=\ze\userAdm::addCharacterToPassword($passwordCharacters);
+					}
+					
+					$password = str_shuffle($password);
 				}
-				
-				$password = str_shuffle($password);
 			}
-	
-		}
-	
-		if ($password) {
-			return $password;
-		} else {
-			return \ze\ring::random($passwordLength);
-		}	
+
+			if (!$password) {
+				$password = \ze\ring::random($passwordLength);
+			}
+
+			//Check if the password is easily guessable or not.
+			$zxcvbn = new \ZxcvbnPhp\Zxcvbn();
+			$result = $zxcvbn->passwordStrength($password);
+
+			if ($result && !empty($result['score'])) {
+				if (\ze::in($result['score'], 3, 4)) {
+					if ($passwordMinScore == 3) {
+						$passwordEasilyGuessable = false;
+					}
+				}
+			}
+
+		} while ($numIterations <= 10 && $passwordEasilyGuessable);
+
+		return $password;
 	}
 	
 	public static function addCharacterToPassword($charactersArray) {

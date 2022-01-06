@@ -48,7 +48,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 	protected $hasLoginForm = true;
 	
 	public function init() {
-		
 		//This is a little hack to try and work around the fact that the checkFrameworkSectionExists() method does not exist for Twig-based frameworks
 		if ($this->framework == 'login_logout_box' ) {
 			$this->hasLoginForm = false;
@@ -141,7 +140,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 				if ($this->hasLoginForm) {
 					if (!ze\cookie::canSet('required') && ze::setting('cookie_consent_for_extranet') == 'required') {
 						ze\cookie::requireConsent();
-						$this->message = $this->phrase('_PLEASE_ACCEPT_COOKIES');
+						$this->message = $this->phrase('This site needs to place a cookie on your computer before you can log in. Please accept cookies from this site to continue.');
 						$this->mode = 'modeCookiesNotEnabled';
 						$manageCookies = false;
 					
@@ -190,6 +189,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 				if ($_POST['extranet_login'] ?? false) {
 					//Check if the login was successful and redirect the user if so, or move the user to a change password page
 					if ($this->checkLogin()) {
+						unset($_SESSION['extranet_user_failed_logins_count']);
+						unset($_SESSION['captcha_passed__'. $this->instanceId]);
+
 						if (ze::setting('cookie_consent_for_extranet') == 'granted') {
 							ze\cookie::setConsent();
 						}
@@ -233,7 +235,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	
 	public function showSlot() {
-		
 		//A message if given
 		if ($this->message) {
 			$this->subSections['Message_Display'] = true;
@@ -249,6 +250,13 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		$mode = $this->mode;
 		if (!empty($mode) && is_string($mode)) {
+			if ($mode == 'modeLogin') {
+				if ($this->enableCaptcha(true)) {
+				    $this->subSections['Captcha'] = true;
+					$this->objects['Captcha'] = $this->captcha2();
+				}
+			}
+
 			$this->$mode();
 		}
 	}
@@ -398,7 +406,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	protected function addLoggedInLinks() {
 		$this->subSections['Welcome_Message_Section'] = true;
-		$this->objects['Welcome_Message'] = $this->phrase('_WELCOME', ['user' => htmlspecialchars($_SESSION['extranetUser_firstname'] ?? false)]);
+		$this->objects['Welcome_Message'] = $this->phrase('Welcome, [[user]]', ['user' => htmlspecialchars($_SESSION['extranetUser_firstname'] ?? false)]);
 		
 		if ($link = ze\link::toPluginPage('zenario_extranet_change_password')) {
 			$this->subSections['Change_Password_Link_Section'] = true;
@@ -543,6 +551,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 					if (ze\user::isPasswordExpired($userId)) {
 						$errorMessage = $this->setting('password_expired_message');
 						$this->errors[] = ['Error' => $this->phrase($errorMessage)];
+
+						
+						$_SESSION['extranet_user_failed_logins_count']++;
+						$this->unsetCaptchaPassedVariableIfNeeded();
 					
 					} elseif (ze\user::checkPassword($user['id'], ($_POST['extranet_password'] ?? false))) {
 						//password correct
@@ -621,6 +633,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 						//password incorrect
 						$errorMessage = $this->setting('wrong_password_message');
 						$this->errors[] = ['Error' => $this->phrase($errorMessage)];
+
+						$_SESSION['extranet_user_failed_logins_count']++;
+						$this->unsetCaptchaPassedVariableIfNeeded();
 					}
 				} else {
 					//User is not externet user just a contact
@@ -638,7 +653,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 					$errorMessage = $this->setting('screen_name_not_in_db_message');
 					$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 				}
-			
+				
+				//As this is a failed login, if Captcha is enabled, do not treat it as a pass.
+				$_SESSION['extranet_user_failed_logins_count']++;
+				$this->unsetCaptchaPassedVariableIfNeeded();
 			}
 		}
 		
@@ -692,7 +710,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 	}
 	
 	protected function getDetailsFromEmail($email) {
-		return ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'password', 'password_salt', 'email', 'hash'], ['email' => $email]);
+		return ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'password', 'password_salt', 'email', 'hash', 'status'], ['email' => $email]);
 	}
 	
 	function validatePassword($newPassword,$confirmation,$oldPassword=false,$vlpClass=false,$userId = false) {
@@ -710,20 +728,21 @@ class zenario_extranet extends ze\moduleBaseClass {
 		}
 	
 		if (!$newPassword) {
-			$errors[] = ['Error' => ze\lang::phrase('_ERROR_NEW_PASSWORD', false, $vlpClass)];
+			$errorMessage = $this->setting('no_new_password_error_text') ? $this->setting('no_new_password_error_text') : 'Please enter a new password.';
+			$errors[] = ['Error' => ze\lang::phrase($errorMessage, false, $vlpClass)];
 		
 		} elseif ($oldPassword && ($newPassword === $oldPassword)) {
 			//new password is the same as old
-			$errorMessage = $this->setting('new_password_same_as_old_message') ? $this->setting('new_password_same_as_old_message') : '_ERROR_NEW_PASSWORD_SAME_AS_OLD';
+			$errorMessage = $this->setting('new_password_same_as_old_message') ? $this->setting('new_password_same_as_old_message') : 'Your new password is the same as your old password.';
 			$errors[] = ['Error' => $this->phrase($errorMessage)];
 		
 		} elseif (!$confirmation) {
 			//no repeat password
-			$errors[] = ['Error' => ze\lang::phrase('_ERROR_REPEAT_NEW_PASSWORD', false, $vlpClass)];
+			$errors[] = ['Error' => ze\lang::phrase('Please repeat your new password.', false, $vlpClass)];
 		
 		} elseif ($newPassword !== $confirmation) {
 			//passwords don't match
-			$errorMessage = $this->setting('new_passwords_do_not_match') ? $this->setting('new_passwords_do_not_match') : '_ERROR_NEW_PASSWORD_MATCH';
+			$errorMessage = $this->setting('new_passwords_do_not_match') ? $this->setting('new_passwords_do_not_match') : 'Your repeated password does not match.';
 			$errors[] = ['Error' => $this->phrase($errorMessage)];
 	
 		//checkPasswordStrength now returns an array instead of just a boolean.
@@ -765,6 +784,62 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$deleteButtonCodeName = 'remove__znz'
 		);
 	}
+
+	protected function enableCaptcha($checkCaptchaFrequency = false) {
+		if ($checkCaptchaFrequency) {
+			switch ($this->setting('captcha_frequency')) {
+				case 'after_1_failed_login_attempt':
+					$failedLoginsRequired = 1;
+					break;
+				case 'after_2_failed_login_attempts':
+					$failedLoginsRequired = 2;
+					break;
+				case 'after_3_failed_login_attempts':
+					$failedLoginsRequired = 3;
+					break;
+				case 'always':
+				default:
+					$failedLoginsRequired = 0;
+					break;
+			}
+
+			if (empty($_SESSION['extranet_user_failed_logins_count'])) {
+				$_SESSION['extranet_user_failed_logins_count'] = 0;
+			}
+
+			return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key') && $_SESSION['extranet_user_failed_logins_count'] >= $failedLoginsRequired;
+		} else {
+			return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
+		}
+	}
+
+	protected function unsetCaptchaPassedVariableIfNeeded() {
+		switch ($this->setting('captcha_frequency') ?? false) {
+			case 'after_1_failed_login_attempt':
+				$failedLoginsRequired = 1;
+				break;
+			case 'after_2_failed_login_attempts':
+				$failedLoginsRequired = 2;
+				break;
+			case 'after_3_failed_login_attempts':
+				$failedLoginsRequired = 3;
+				break;
+			case 'always':
+			default:
+				$failedLoginsRequired = 0;
+				break;
+		}
+
+		if ($_SESSION['extranet_user_failed_logins_count'] >= $failedLoginsRequired) {
+			unset($_SESSION['captcha_passed__'. $this->instanceId]);
+		}
+	}
+	
+	public function addToPageHead() {
+		if ($this->enableCaptcha(true)) {
+			$this->loadCaptcha2Lib();
+		}
+	}
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
@@ -778,13 +853,18 @@ class zenario_extranet extends ze\moduleBaseClass {
 				foreach ([
 					'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
 					'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		
-					'error_messages/email_address_required_error_text' => '_ERROR_EXTRANET_EMAIL',			
+					'error_messages/email_address_required_error_text' => 'Please enter your email address.',			
 					'error_messages/password_required_error_text' => '_ERROR_EXTRANET_PASSWORD',		
 					'error_messages/no_new_password_error_text' => '_ERROR_NEW_PASSWORD',
 					'error_messages/no_new_repeat_password_error_text' => '_ERROR_REPEAT_NEW_PASSWORD'
 				] as $fieldName => $code) {
 					if (isset($fields[$fieldName])) {
-						$values[$fieldName] = ze\row::get('visitor_phrases', 'local_text', ['code' => $code, 'language_id' => $defaultLangId]);
+						$visitorPhrase = ze\row::get('visitor_phrases', 'local_text', ['code' => $code, 'language_id' => $defaultLangId]);
+						
+						//If the lookup returns nothing, don't override the default phrase.
+						if ($visitorPhrase) {
+							$values[$fieldName] = $visitorPhrase;
+						}
 					}
 				}
 		
@@ -830,6 +910,20 @@ class zenario_extranet extends ze\moduleBaseClass {
 				$fields['action_after_login/welcome_page']['value'] = ze::$specialPages['zenario_home'] ?? '';
 
 				$fields['first_tab/password_reset_page']['value'] = ze::$specialPages['zenario_password_reset'] ?? '';
+
+				//Disable Captcha feature if not set up in the API keys
+				if (!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {
+				    //Show warning
+					$recaptchaLink = "<a href='organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
+					$fields['use_captcha']['side_note'] = $this->phrase(
+						"Recaptcha keys are not set. To show a captcha you must set the recaptcha [[recaptcha_link]].",
+						['recaptcha_link' => $recaptchaLink]
+					);
+					$fields['use_captcha']['readonly'] = true;
+                    $fields['use_captcha']['value'] = 0;
+
+					unset($fields['captcha_frequency']);
+				}
 				
 				break;
 		}
@@ -870,21 +964,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$defaultLangId = ze::$defaultLang;
-				
-				foreach ([
-					'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
-					'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		
-					'error_messages/email_address_required_error_text' => '_ERROR_EXTRANET_EMAIL',			
-					'error_messages/password_required_error_text' => '_ERROR_EXTRANET_PASSWORD',		
-					'error_messages/no_new_password_error_text' => '_ERROR_NEW_PASSWORD',
-					'error_messages/no_new_repeat_password_error_text' => '_ERROR_REPEAT_NEW_PASSWORD'
-				] as $fieldName => $code) {
-					if (isset($fields[$fieldName])) {
-						ze\row::set('visitor_phrases', ['local_text' => $values[$fieldName]], ['code' => $code, 'language_id' => $defaultLangId]);
-					}
-				}
-				
+								
 				break;
 		}
 	}

@@ -62,17 +62,6 @@ zenario_slide:
                         If hidden, the tab-link to this slide will not appear,
                         but the slide may still be accessed.
                 
-                use_slide_layout:
-                    visible_if: tuix.key.usesConductor
-                    label: Use a slide layout
-                    type: select
-                    empty_value: " -- Don't use a slide layout -- "
-                    values:
-                        asset_schema:
-                            label: Use the slide layout for the schema of the asset on this slide
-                        datapool_schema:
-                            label: Use the slide layout for the schema of the datapool on this slide
-                
                 show_refresh:
                     visible_if: tuix.key.usesConductor
                     label: Show a Refresh button

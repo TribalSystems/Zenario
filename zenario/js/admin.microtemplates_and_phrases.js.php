@@ -246,22 +246,22 @@ _help
 	,
 	
 	
-	//Phrases used by the grid maker
+	//Phrases used by Gridmaker
 	'gridAdd' => 'Add...',
-	'growlSlotAdded' => 'A slot has been added',
+	'growlSlotAdded' => 'A slot has been added, use the resize handle in the lower right corner to change its size',
 	'growlSlotDeleted' => 'The slot has been deleted',
 	'growlSlotMoved' => 'The slot has been moved',
 	'growlSpaceAdded' => 'Whitespace has been added; drag the bottom-right resize tool to change its width',	
 	'growlChildrenAdded' => 'Slots have been added; drag the bottom-right resize tool to change their width',	
-	'growlGridBreakAdded' => 'A grid break has been added',	
-	'gridAddChildren' => 'Add multiple slots in a grouping',
-	'gridAddGridBreak' => 'Add a grid break',
-	'gridAddGridBreakWithSlot' => 'Add a slot outside the grid',
-	'gridAddSlot' => 'Add a slot',
-	'gridAddSpace' => 'Add whitespace',
+	'growlGridBreakAdded' => 'A gridbreak has been added',	
+	'gridAddChildren' => 'Multiple slots in a grouping',
+	'gridAddGridBreak' => 'Gridbreak',
+	'gridAddGridBreakWithSlot' => 'Slot outside the grid',//Changed "Add a slot outside the grid" to "Slot outside the grid"
+	'gridAddSlot' => 'Slot',//Changed "Add a slot" to "Slot"
+	'gridAddSpace' => 'Whitespace',//Changed "Add whitespace" to "Whitespace"
 	//Removed as no longer needed; fixed anf fluid grids now work the same way!
 	//'gridChangeGridWarning' => '<p>You are changing a grid which already has slots. This may disrupt the placement of the slots.</p><p>If you proceed you should check and if need be adjust all of your slots, or undo.</p>',
-	'gridBreak1' => 'Cust. bps:',//Changed "Custom breakpoints:" to "Cust. bps:"--JS
+	'gridBreak1' => 'Addl breaks:',//Changed "Cust. bps:" to "Addl breaks:"--JS
 	'gridBreak2' => ',',
 	'gridCols' => 'Cols:',//Changed "Columns:" to "Cols:"--JS
 	'gridConfirmClose' => 'You have unsaved changes. Are you sure you wish to close and abandon these changes?',
@@ -290,13 +290,13 @@ _help
 	'gridFluid' => 'Fluid',
 	'gridFluidTooltip' => 'Fluid|In a fluid grid, all of the widths are specified in percentages, and the size of your columns and gutters will vary depending on the screen size. Fluid grids can be prone to pixel rounding errors, especially in Internet Explorer 6 and 7.',
 	'gridFullWidth' => 'Full w:',//Changed "Full width:" to "Full w:"--JS
-	'gridGridBreak' => 'Grid break|Drag to move',
+	'gridGridBreak' => 'Gridbreak|Drag to move',
 	'gridGridBreakWithSlot' => 'Slot outside the grid|Drag to move',
-	'gridGridCSSClass' => 'CSS class name(s) for the next grid:',
+	'gridGridCSSClass' => 'CSS class name(s):',
 	'gridGutter' => 'G:', //Changed "Gutter:" to "G:"--JS
 	'gridGutterAndWidth' => 'Col / g:', //Changed "Column / gutter:" to "Col / g:"--JS
-	'gridGutterLeftEdge' => 'L g:',//Changed "L gutter:" to "L g"--JS
-	'gridGutterRightEdge' => 'R g:',//Changed "R gutter:" to "R g"--JS
+	'gridGutterLeftEdge' => 'LM:',//Changed "L g:" to "LM"--JS
+	'gridGutterRightEdge' => 'RM:',//Changed "L g:" to "RM"--JS
 	'gridHtml' => 'Custom HTML:',
 	'gridIncNestedRules' => 'CSS rules for nested cells:',
 	'gridIncNestedRulesTooltip' => "Include CSS rules for cells with nested cells|Cells with nested cells need additional CSS rules. If you're not using nested cells, you can omit these rules for a smaller download.",
@@ -307,13 +307,13 @@ _help
 	'gridMirrorTooltip' => 'Display right-to-left|Check this option to display slots from the right to the left, e.g. for creating an Arabic, Hebrew or Urdu language version of an English language site.<br/><br/>The slots will appear right-to-left rather than left-to-right, and the <code>direction: rtl;</code> rule will be added. (This effect is not displayed when managing slots in &quot;Slots&quot;.)',
 	'gridMobile' => 'Mobile',
 	'gridNewSkinMessage' => 'You have created a new Grid Skin. Before you can see this Skin on a page, you must edit the settings of a Layout and select it. All content items using that Layout will then use your new Skin.',
+	'gridPlusAdd' => '+ Add',
 	'gridPreviewGrid' => 'Preview',//Changed "Grid view" to "Preview"--JS
-	'gridProperties' => 'Slot properties',
 	'gridRedo' => 'Redo',
 	'gridSaveProperties' => 'Save',
 	'gridSlotHtmlBefore' => 'HTML before slot:',
 	'gridSlotHtmlAfter' => 'HTML after slot:',
-	'gridSlotName' => 'Slot name (CSS class name):',
+	'gridSlotName' => 'Name (which is also its CSS class name):',
 	'gridResizeNestedCells' => 'Resize the boundary for these nested cells',
 	'gridResizeSlot' => 'Resize slot',
 	'gridResponsive' => 'Responsive',

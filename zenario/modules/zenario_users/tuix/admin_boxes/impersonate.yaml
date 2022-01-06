@@ -30,11 +30,11 @@ zenario__impersonate:
                 options:
                     type: radios
                     values:
-                        logout:
-                            label: 'Log out as an admin'
                         stay_logged_in:
-                            label: 'Maintain your login'
-                    value: logout
+                            label: 'Stay logged in as administrator'
+                        logout:
+                            label: 'Log out as administrator'
+                    value: stay_logged_in
                 
                 remember_me:
                     label: Remember me as this extranet user
@@ -44,7 +44,7 @@ zenario__impersonate:
                     label: Log me in automatically as this extranet user
                     type: checkbox
     
-    max_height: 190
+    max_height: 200
     hide_tab_bar: true
     save_button_message: Impersonate this user
     cancel_button_message: Cancel

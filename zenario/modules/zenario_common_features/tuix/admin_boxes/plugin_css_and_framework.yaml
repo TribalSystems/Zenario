@@ -54,6 +54,11 @@ plugin_settings:
         all_css_tab:
             parent: advanced_dropdown
             label: CSS (all ~plugin~s of this type)
+            notices:
+                css_permissions_problem:
+                    show: false
+                    type: warning
+                    message: "Cannot edit the required CSS file in editable_css folder, it is not writeable by the web server."
             fields:
                 css_class:
                     label: 'CSS class for all ~plugin~s of this type:'
@@ -113,12 +118,12 @@ plugin_settings:
             fields:
                 desc:
                     snippet:
-                        label: Frameworks are based on HTML and Twig and determine the output that is displayed to visitors.
+                        label: Frameworks determine the visitor-facing output. They contain HTML and Twig code (simple server-side executable code). They are only editable on the file system.
                 framework:
                     label: 'Framework:'
                     type: select
                     format_onchange: true
-                    side_note: "The selected framework file is displayed below (editing may be available via your server's file system):"
+                    side_note: "Select framework to view file contents in the box below."
                 framework_path:
                     indent: 1
                     snippet:

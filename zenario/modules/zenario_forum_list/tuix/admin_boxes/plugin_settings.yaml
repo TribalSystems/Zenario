@@ -48,13 +48,13 @@ plugin_settings:
                         none:
                             label: Do not show a summary
                         content_summary:
-                            label: "Item's Summary"
+                            label: "Item's summary"
                         description:
-                            label: "Item's Description"
+                            label: "Item's meta description"
                 show_sticky_images:
                     plugin_setting:
                         name: show_sticky_images
-                    label: "Show content item's feature image"
+                    label: "Show featured image of content item"
                     type: checkbox
                     value: ""
                     format_onchange: Yes

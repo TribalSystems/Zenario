@@ -34,10 +34,28 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		
 		$n = 0;
 		if ($box['key']['id'] && ($details = ze\smartGroup::details($box['key']['id']))) {
+			$lastUpdatedDetails = [
+				'created' => $details['created_on'],
+				'created_admin_id' => $details['created_by'],
+				'created_user_id' => '',
+				'created_username' => '',
+				
+				'last_edited' => $details['last_modified_on'],
+				'last_edited_admin_id' => $details['last_modified_by'],
+				'last_edited_user_id' => '',
+				'last_edited_username' => ''
+			];
+			$box['last_updated'] = ze\admin::formatLastUpdated($lastUpdatedDetails);
 			
 			$values['smart_group/name'] = $details['name'];
 			$values['smart_group/must_match'] = $details['must_match'];
 			$box['key']['intended_usage'] = $details['intended_usage'];
+
+			if ($box['key']['duplicate']) {
+				$values['smart_group/intended_usage'] = $details['intended_usage'];
+				$fields['smart_group/intended_usage']['hidden'] = false;
+				$box['max_height'] = 220;
+			}
 			
 			//Load all of the created rules
 			$rules = ze\row::getAssocs('smart_group_rules', true, ['smart_group_id' => $box['key']['id']], 'ord');
@@ -116,13 +134,25 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				}
 			}
 			
-			switch ($box['key']['intended_usage']) {
-				case 'smart_newsletter_group':
-					$box['title'] = ze\admin::phrase('Editing the smart newsletter group "[[name]]".', $details);
-					break;
-				case 'smart_permissions_group':
-					$box['title'] = ze\admin::phrase('Editing the smart group "[[name]]".', $details);
-					break;
+			if ($box['key']['duplicate']) {
+				unset($box['identifier']);
+				switch ($box['key']['intended_usage']) {
+					case 'smart_newsletter_group':
+						$box['title'] = ze\admin::phrase('Duplicating the smart newsletter group "[[name]]".', $details);
+						break;
+					case 'smart_permissions_group':
+						$box['title'] = ze\admin::phrase('Duplicating the smart group "[[name]]".', $details);
+						break;
+				}
+			} else {
+				switch ($box['key']['intended_usage']) {
+					case 'smart_newsletter_group':
+						$box['title'] = ze\admin::phrase('Editing the smart newsletter group "[[name]]".', $details);
+						break;
+					case 'smart_permissions_group':
+						$box['title'] = ze\admin::phrase('Editing the smart group "[[name]]".', $details);
+						break;
+				}
 			}
 		
 		} else {
@@ -169,7 +199,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		//Keep track of which things have parents
 		$unsets = [];
 		$optGroups = [
-			'checkboxs' => [],
+			'checkboxes' => [],
 			'consents' => [],
 			'groups' => [],
 			'lists' => []
@@ -282,8 +312,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				}
 			}
 		}
-		unset($field);
-		
+		unset($field);		
 		
 		return;
 	}
@@ -331,6 +360,26 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				//Set list of values
 				if (ze::in($field['type'], 'radios', 'select', 'centralised_radios', 'centralised_select')) {
 					$lov = ze\dataset::fieldLOV($field, $flat = false);
+
+					//If this is the user status field, and the Extranet Base Login module is not running,
+					//then only show "Contact" as a possible status.
+					//Only when creating a new group.
+					
+					if (!$box['key']['id']) {
+						$usersDataset = ze\dataset::details('users');
+
+						if ($field['dataset_id'] == $usersDataset['id']) {
+							$statusField = ze\dataset::fieldDetails('status', $field['dataset_id']);
+							
+							if ($field['id'] == $statusField['id']) {
+								if (!ze\module::isRunning('zenario_extranet')) {
+									unset($lov['pending'], $lov['active'], $lov['suspended']);
+									$lov['contact']['ord'] = 1;
+								}
+							}
+						}
+					}
+
 					$box['tabs']['smart_group']['fields']['value__'. $n]['values'] = $lov;
 					$box['tabs']['smart_group']['fields']['value__'. $n]['hidden'] = empty($lov);
 						
@@ -363,8 +412,15 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		$fields['smart_group/members']['hidden'] = empty($rules);
 		
 		if (!empty($rules)) {
-			
-				$values['smart_group/members'] = ze\smartGroup::countMembers($rules);
+			$values['smart_group/members'] = ze\smartGroup::countMembers($rules);
+		}
+
+		if ($box['key']['duplicate']) {
+			foreach ($box['tabs']['smart_group']['fields'] as $fieldId => &$field) {
+				if (!ze::in($fieldId, 'name', 'intended_usage')) {
+					$field['hidden'] = true;
+				}
+			}
 		}
 	}
 
@@ -372,7 +428,12 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_GROUP');
 		
-		if (ze\row::exists('smart_groups', ['name' => $values['smart_group/name'], 'id' => ['!' => $box['key']['id']]])) {
+		$where = ['name' => $values['smart_group/name']];
+		if (!$box['key']['duplicate']) {
+			$where['id'] = ['!' => $box['key']['id']];
+		}
+
+		if (ze\row::exists('smart_groups', $where)) {
 			$fields['smart_group/name']['error'] = ze\admin::phrase('A smart group with the name "[[smart_group/name]]" already exists. Please choose a different name.', $values);
 		}
 	}
@@ -491,13 +552,19 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		$details = [];
 		$details['name'] = $values['smart_group/name'];
 		$details['must_match'] = $values['smart_group/must_match'];
-		$details['last_modified_on'] = ze\date::now();
-		$details['last_modified_by'] = ze\admin::id();
 		
 		if (!$box['key']['id']) {
 			$details['created_on'] = ze\date::now();
 			$details['created_by'] = ze\admin::id();
 			$details['intended_usage'] = $box['key']['intended_usage'];
+		} else {
+			$details['last_modified_on'] = ze\date::now();
+			$details['last_modified_by'] = ze\admin::id();
+		}
+
+		if ($box['key']['duplicate']) {
+			$box['key']['id'] = '';
+			$details['intended_usage'] = $values['smart_group/intended_usage'];
 		}
 		
 		$box['key']['id'] = ze\row::set('smart_groups', $details, $box['key']['id']);

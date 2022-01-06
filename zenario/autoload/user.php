@@ -29,6 +29,8 @@
 
 namespace ze;
 
+use ZxcvbnPhp\Zxcvbn;
+
 class user {
 
 
@@ -429,25 +431,29 @@ class user {
 		 && \ze::$dbL
 		 && \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', true)) {
 			$minPassLength = \ze::setting('min_extranet_user_password_length');
+			$minPassScore = \ze::setting('min_extranet_user_password_score');
 			$passwordMustContainLowerCaseCharacters = \ze::setting('a_z_lowercase_characters');
 			$passwordMustContainUpperCaseCharacters = \ze::setting('a_z_uppercase_characters');
 			$passwordMustContainNumbers = \ze::setting('0_9_numbers_in_user_password');
 			$passwordMustContainSymbols = \ze::setting('symbols_in_user_password');
 		} else {
-			$minPassLength = 8;
+			$minPassLength = 10;
+			$minPassScore = 2;
 			$passwordMustContainLowerCaseCharacters = 
 			$passwordMustContainUpperCaseCharacters = 
 			$passwordMustContainNumbers = true;
 			$passwordMustContainSymbols = false;
 		}
 		
+		//As of 18 Oct 2021, the character type requirements are being removed.
 		return $passwordRequirements = 	[
-											'min_length' => $minPassLength,
-											'require_lowercase_chars' => $passwordMustContainLowerCaseCharacters,
-											'require_uppercase_chars' => $passwordMustContainUpperCaseCharacters,
-											'require_numbers' => $passwordMustContainNumbers,
-											'require_symbols' => $passwordMustContainSymbols
-										];
+			'min_length' => $minPassLength,
+			'min_score' => $minPassScore,
+			'require_lowercase_chars' => false,//$passwordMustContainLowerCaseCharacters,
+			'require_uppercase_chars' => false,//$passwordMustContainUpperCaseCharacters,
+			'require_numbers' => false,//$passwordMustContainNumbers,
+			'require_symbols' => false,//$passwordMustContainSymbols
+		];
 	}
 
 	//Show a note explaining the password requirements
@@ -1197,7 +1203,7 @@ class user {
 
 	//Check if a given password meets the strength requirements.
 	//Formerly "checkPasswordStrength()"
-	public static function checkPasswordStrength($password) {
+	public static function checkPasswordStrength($password, $checkIfEasilyGuessable = false) {
 		$passwordRequirements = \ze\user::getPasswordRequirements();
 
 		//Count the number of lower case, upper case, numeric and non-alphanumeric characters.
@@ -1208,6 +1214,8 @@ class user {
 
 		//Validate password: match the min length, and follow any character requirements.
 		$passwordMatchesRequirements = true;
+		$passLength = strlen($password);
+
 		if (	(strlen($password) < $passwordRequirements['min_length'])
 				|| ($passwordRequirements['require_lowercase_chars'] && $lower == 0)
 				|| ($passwordRequirements['require_uppercase_chars'] && $upper == 0)
@@ -1217,14 +1225,45 @@ class user {
 					$passwordMatchesRequirements = false;
 		}
 
-		$validation = 	[
-							'min_length' => strlen($password) >= $passwordRequirements['min_length'],
-							'lowercase' => $lower != 0,
-							'uppercase' => $upper != 0,
-							'numbers' => $numbers != 0,
-							'symbols' => $symbols != 0,
-							'password_matches_requirements' => $passwordMatchesRequirements
-						];
+		if ($passwordMatchesRequirements && $checkIfEasilyGuessable) {
+			$minScore = $passwordRequirements['min_score'];
+
+			$zxcvbn = new \ZxcvbnPhp\Zxcvbn();
+			$result = $zxcvbn->passwordStrength($password);
+
+			if ($result && isset($result['score'])) {
+				switch ($result['score']) {
+					case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+						//Do nothing, it's a pass
+						break;
+					case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
+						if ($minScore == 4) {
+							$passwordMatchesRequirements = false;
+						}
+						break;
+					case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+						if ($minScore > 2) {
+							$passwordMatchesRequirements = false;
+						}
+						break;
+					case 1: //is still very guessable (guesses < 10^6)
+					case 0: //s extremely guessable (within 10^3 guesses)
+					default:
+						$passwordMatchesRequirements = false;
+						break;
+				}
+			}
+		}
+
+		$validation = [
+			'password_length' => $passLength,
+			'min_length' => strlen($password) >= $passwordRequirements['min_length'],
+			'lowercase' => $lower != 0,
+			'uppercase' => $upper != 0,
+			'numbers' => $numbers != 0,
+			'symbols' => $symbols != 0,
+			'password_matches_requirements' => $passwordMatchesRequirements
+		];
 
 		return $validation;
 	}

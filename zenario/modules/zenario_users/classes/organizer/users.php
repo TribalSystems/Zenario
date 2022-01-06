@@ -85,9 +85,10 @@ class zenario_users__organizer__users extends zenario_users {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
-		
-		
+		if (!ze\module::isRunning('zenario_extranet')) {
+			$panel['collection_buttons']['add']['label'] = ze\admin::phrase('Create a contact');
+			unset($panel['item_buttons']['convert_to_user']);
+		}
 		
 		$hasUserTimersRunning = ze\module::inc('zenario_user_timers');
 		
@@ -101,9 +102,7 @@ class zenario_users__organizer__users extends zenario_users {
 		// If no users, hide export button
 		if (count($panel['items']) <= 0) {
 			$panel['collection_buttons']['export']['hidden'] = true;
-		}
-		
-		
+		}		
 		
 		//Add user images to each user, if they have an image
 		foreach ($panel['items'] as $id => &$item) {
@@ -192,12 +191,12 @@ class zenario_users__organizer__users extends zenario_users {
 	
 		//Don't show the "Create User" or "Delete User" or "Import" buttons on a refiner
 		if ($refinerName) {
-			if($refinerName == 'suspended_users'){
+			if ($refinerName == 'suspended_users') {
 				unset($panel['collection_buttons']['add']);
 				unset($panel['collection_buttons']['import_dropdown']);
 				unset($panel['quick_filter_buttons']);
 				
-			}else{
+			} else {
 				unset($panel['collection_buttons']['add']);
 				if ($refinerName == 'group_members' || $refinerName == 'smart_group') {
 					//unset($panel['item_buttons']['delete']);

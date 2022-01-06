@@ -1,0 +1,47 @@
+zenario_list_videos:
+    fea_type: list
+    key:
+        id: ''
+    microtemplate: fea_list_blocks
+    css_class: zfea_block_like_block
+    title: Videos
+    no_items_message: No videos found
+    hide_search_bar: true
+    columns:
+        image:
+            tag: div
+            html: true
+        title:
+            title: Title
+            html: true
+        description:
+            title: Description
+            html: true
+        date:
+            title: Date
+    item_buttons:
+        view:
+            visible_if: |
+                tuix.enable.view_video && lib.navigationEnabled('view_video')
+            css_class: small_button
+            label: View
+            go:
+                command: view_video
+        edit:
+            visible_if: |
+                tuix.enable.edit_video && lib.navigationEnabled('edit_video') && tuix.perms.manage
+            css_class: small_button edit
+            label: Edit
+            go:
+                command: edit_video
+    collection_buttons:
+        new:
+            visible_if: |
+                tuix.enable.new_video && lib.navigationEnabled('new_video') && tuix.perms.manage
+            css_class: small_button create
+            icon_left: fa fa-plus
+            location: top
+            label: New video
+            go:
+                mode: new_video
+                command: new_video

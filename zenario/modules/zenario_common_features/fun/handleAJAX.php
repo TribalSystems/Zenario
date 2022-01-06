@@ -105,6 +105,12 @@ if (ze\priv::check()) {
 		$section['fields'][] = ['label' => ze\admin::phrase('Edition:'), 'value' => ze\site::description('edition')];
 		$section['fields'][] = ['label' => ze\admin::phrase('License:'), 'value' => ze\site::description('license_info')];
 		$section['fields'][] = ['label' => ze\admin::phrase('Version:'), 'value' => ze\site::versionNumber()];
+
+		if (ZENARIO_CHANGELOG_URL) {
+			$section['fields'][] = ['label' => ze\admin::phrase('Change log:'), 'type' => 'url', 'href' => ZENARIO_CHANGELOG_URL, 'value' => ZENARIO_CHANGELOG_URL];
+		} else {
+			$section['fields'][] = ['label' => ze\admin::phrase('Change log:'), 'value' => ze\admin::phrase('No changelog found')];
+		}
 		
 		if ($svninfo = ze\welcome::svnInfo()) {
 			$section['fields'][] = ['label' => ze\admin::phrase('SVN revision no:'), 'value' => $svninfo['Revision']];
@@ -430,7 +436,7 @@ if (ze\priv::check()) {
 			
 			
 			
-			//If removing a slot from Grid Maker, also check for any plugins placed on the item layer
+			//If removing a slot from Gridmaker, also check for any plugins placed on the item layer
 			if (ze::get('removeSlot')) {
 				if (!empty($contentItemsUsingThisLayout)) {
 					$contentItemsWithPluginsInThisSlot = ze\layoutAdm::usage($layoutId, false, $countItems = false, $checkWhereItemLayerIsUsed = true, $slotName);

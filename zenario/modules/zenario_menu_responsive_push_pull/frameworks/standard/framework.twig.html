@@ -1,0 +1,131 @@
+{# This <nav> element will be moved to the top of the <body> on page load. #}
+<nav id="{{containerId}}_push_pull_menu" class="zenario_push_pull-menu zenario_push_pull-menu_offcanvas" aria-hidden="true" style="display:block;">
+	<div class="zenario_push_pull-panels">
+
+			{% set currentDepth = 0 %}
+			{% set currentParent = 0 %}
+			{% set topLevelParent = 0 %}
+			{% set makeNewDiv = false %}
+			{% set divNumber = 0 %}
+
+			{% for depth, parents in nodes %}
+				{% for parentId, children in parents %}
+					{% for node in children %}
+						{% if topLevelParent == 0 and loop.first %}
+							{% set topLevelParent = node.mID %}
+						{% endif %}
+
+						{% if currentDepth != depth %}
+							{% set currentDepth = depth %}
+							{% set makeNewDiv = true %}
+						{% else %}
+							{% set makeNewDiv = false %}
+						{% endif %}
+
+						{% if currentParent != parentId %}
+							{% set currentParent = parentId %}
+							{% set makeNewDiv = true %}
+						{% endif %}
+
+						{% if makeNewDiv %}
+							{% if parentId == 0 %}
+								{% set divId = 'node_' ~ node.mID %}
+							{% else %}
+								{% set divId = 'child_of_node_' ~ node.parentId %}
+							{% endif %}
+
+							<div id="zz_{{divId}}" class="zenario_push_pull-panel {% if divNumber == '0' %} zenario_push_pull-panel_opened  {% else %} zenario_push_pull-hidden {% endif %} ">
+								{% if (divNumber == '0' and Show_menu_title) or divNumber != '0' %}
+									<div class="zenario_push_pull-navbar">
+										{% if divNumber != '0' %}
+											<a
+												class="zenario_push_pull-btn zenario_push_pull-btn_prev zenario_push_pull-navbar__btn"
+												onclick="zenario_menu_responsive_push_pull.menuNodeToggleOnclick('{{node.parentDivForPrevButton}}', '{{node.childDivForPrevButton}}', 'close');"
+											>
+												<span class="zenario_push_pull-sronly">Close submenu</span>
+											</a>
+										{% endif %}
+
+										<a class="zenario_push_pull-navbar__title">
+											{% if divNumber == '0' and Show_menu_title %}
+												{{Menu_title|trans}}
+											{% else %}
+												{{node.parentName}}
+											{% endif %}
+										</a>
+
+										{% if divNumber != '0' %}
+											<span class="zenario_push_pull-btn zenario_push_pull-navbar__btn"></span>
+										{% endif %}
+									</div>
+								{% endif %}
+								<ul class="zenario_push_pull-listview">
+							{% set makeNewDiv = false %}
+							
+							{# If is the first panel and home setting is enabled, show it here  #}
+							{% if divNumber == '0' and Home_Link %}
+								<li class="level1 zenario_menu_node zenario_menu_node_special home"><a {{Home_Link}}>{{"Home"|trans}}</a></li>
+							{% endif %}
+							
+						{% endif %}
+							
+						<li id="{{containerId}}_node_{{node.mID}}" class="{{node.Class}} zenario_push_pull-listitem">
+							{{node.Hyperlink}}
+						
+							{% if node.hasChildren %}
+								<a
+									class="zenario_push_pull-btn zenario_push_pull-btn_next zenario_push_pull-listitem__btn"
+									id="{{containerId}}_node_{{node.mID}}_toggle}}"
+									onclick="zenario_menu_responsive_push_pull.menuNodeToggleOnclick('{{node.parentDivForNextButton}}', '{{node.childDivForNextButton}}', 'open');"
+								>
+									<span class="zenario_push_pull-sronly">Open submenu</span>
+								</a>
+							{% endif %}
+						</li>
+
+						{# If is the first panel and any of these settings are enabled, show them here  #}
+						{% if divNumber == '0' and loop.last %}
+							{% if Search_Box or Registration_Link or Login_Link %}
+								{% if Login_Link %}
+									<li class="level1 zenario_menu_node zenario_menu_node_special log_in"><a {{Login_Link}}>{{"Log in"|trans}}</a></li>
+								{% endif %}
+								
+								{% if Registration_Link %}
+									<li class="level1 zenario_menu_node zenario_menu_node_special sign_up"><a {{Registration_Link}}>{{"Sign up"|trans}}</a></li>
+								{% endif %}
+							
+								{% if Search_Box %}
+									<li id="push_pull_search_box" class="level1 zenario_menu_node zenario_menu_node_special search_box">
+										<form class="search_entry_box" action="{{Search_Target}}" method="post">
+											<input type="text" class="search_entry_input_box" id="{{Search_Field_ID}}" name="searchString" value="{{Search_String}}"
+												{% if Placeholder %}
+													placeholder="{{Placeholder_Phrase|trans}}"
+												{% endif %}
+											/>
+											<input type="submit" class="search_entry_button" value="{{'Search'|trans}}" />
+										</form>
+									</li>
+								{% endif %}
+							
+							{% endif %}
+						{% endif %}
+
+						{% if makeNewDiv or loop.last %}
+								</ul>
+							</div>
+						{% endif %}
+						
+					{% endfor %}
+
+					{% set divNumber = divNumber+1 %}
+				{% endfor %}
+			{% endfor %}
+
+	</div>
+</nav>
+
+<a id="{{containerId}}_mmenu-hamburger" class="zenario_push_pull-hamburger preventScrolling" onclick="zenario_menu_responsive_push_pull.hamburgerOnclick('{{containerId}}', 'open')">
+	<span class="top-bar"></span>
+	<span class="middle-bar"></span>
+	<span class="bottom-bar"></span>
+</a>

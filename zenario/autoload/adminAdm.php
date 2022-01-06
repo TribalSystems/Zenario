@@ -65,7 +65,7 @@ class adminAdm {
 				$clearAllOthers = false;
 				break;
 			case 'specific_areas':
-				//Admins who use specific_languages or specific_menu_areas have certain set permissions.
+				//Admins who use specific content types or items have certain set permissions.
 				//These are checked using PHP logic, but for backwards compatability with anything else
 				//we'll also insert them into the database.
 				$actions = \ze\admin::privsForTranslators();
@@ -187,7 +187,6 @@ class adminAdm {
 		
 		if (\ze\row::exists('local_revision_numbers', $adminTablesUpToDate)
 		 && \ze\row\g::exists('local_revision_numbers', $adminTablesUpToDate)) {
-			$colsToSync[] = 'specific_languages';
 			$colsToSync[] = 'specific_content_types';
 		}
 		

@@ -45,7 +45,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				$box['tabs']['password']['hidden'] = true;
 				$box['tabs']['permissions']['edit_mode']['enabled'] = false;
 
-			} elseif (ze\priv::check('_PRIV_EDIT_ADMIN')) {
+			} elseif (ze\priv::check('_PRIV_EDIT_ADMIN') || ($path == 'zenario_admin_edit_self' && (ze\admin::id() == $box['key']['id']))) {
 				$box['tabs']['details']['edit_mode']['enabled'] = true;
 				$box['tabs']['permissions']['edit_mode']['enabled'] = true;
 			}
@@ -86,12 +86,15 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$values['details/first_name'] = $details['first_name'];
 			$values['details/last_name'] = $details['last_name'];
 			$values['details/email'] = $details['email'];
-			$values['details/image'] = $details['image_id'];
 			$values['details/is_client_account'] = $details['is_client_account'];
 			$values['permissions/permissions'] = $details['permissions'];
-			$values['permissions/specific_languages'] = $details['specific_languages'];
 			$values['permissions/specific_content_items'] = $details['specific_content_items'];
 			$values['permissions/specific_content_types'] = $details['specific_content_types'];
+
+			if ($box['key']['id'] && $path == 'zenario_admin_edit_self') {
+				$fields['details/email']['read_only'] = true;
+				$fields['details/email']['note_below'] = ze\admin::phrase('To change this, close this box and click the "Change email address" button.');
+			}
 			
 			$allPerms = $details['permissions'] == 'all_permissions';
 			$isCurrentAdmin = $box['key']['id'] == ze\admin::id();
@@ -223,11 +226,6 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$box['tabs']['password']['notices']['new_admin']['show'] = true;
 		}
 		
-		$fields['permissions/specific_languages']['values'] = [];
-		foreach (ze\lang::getLanguages(false, true, true) as $langId => $lang) {
-			$fields['permissions/specific_languages']['values'][$langId] = $lang['english_name']. ' ('. $lang['id']. ')';
-		}
-		
 		$fields['permissions/specific_content_types']['values'] = ze\row::getValues('content_types', 'content_type_name_en', [], 'content_type_name_en');
 		
 		$adminAuthType = ze\row::get('admins', 'authtype', ze\admin::id());
@@ -240,15 +238,10 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$limit = 'unlimited';
 		}
 		$fields['details/is_client_account']['note_below'] = ze\admin::nPhrase(
-			'If checked, the Administrator is a client account. This site allows for [[limit]] local administrator.', 
-			'If checked, the Administrator is a client account. This site allows for [[limit]] local administrators.', 
+			'If checked, the administrator is a client account. This site allows for [[limit]] local administrator.', 
+			'If checked, the administrator is a client account. This site allows for [[limit]] local administrators.', 
 			$limitCount,
 			['limit' => $limit]);
-		
-		$fields['permissions/specific_languages']['side_note'] =
-			ze\admin::phrase($fields['permissions/specific_languages']['side_note'],
-				['default_language' => (ze::$defaultLang ?: 'en')]);
-		
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -377,7 +370,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				exit;
 			}
 
-			if ($editing && ($details['authtype'] != 'local' || !ze\priv::check('_PRIV_EDIT_ADMIN'))) {
+			if ($editing && ($details['authtype'] != 'local' || (!ze\priv::check('_PRIV_EDIT_ADMIN') && !($path == 'zenario_admin_edit_self' && (ze\admin::id() == $box['key']['id']))))) {
 				exit;
 			}
 			
@@ -389,7 +382,20 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			ze\priv::exitIfNot('_PRIV_CREATE_ADMIN');
 		}
 
-		if (ze\ring::engToBoolean($box['tabs']['details']['edit_mode']['on'] ?? false) && (!$box['key']['id'] || ze\priv::exitIfNot('_PRIV_EDIT_ADMIN'))) {
+		//Exit if any of these:
+		//Edit mode is off,
+		//No admin ID,
+		//Admin without permissions is trying to edit another admin's details.
+
+		//PLEASE NOTE: An admin with no permissions can still edit their own profile (First name, Last name),
+		//though the Username/Email fields and the "Is client account" checkbox are all read-only.
+		if (ze\ring::engToBoolean($box['tabs']['details']['edit_mode']['on'] ?? false)
+			&& (
+				!$box['key']['id']
+				|| ($path == 'zenario_admin_edit_self' && (ze\admin::id() == $box['key']['id']))
+				|| ze\priv::exitIfNot('_PRIV_EDIT_ADMIN')
+			)
+		) {
 
 			//Attempt to ensure that username and email are unique.
 			//However if the Admin is not trying to change the username/email, then apply a "grandfather rule" and let existing bad data stay as it is.
@@ -407,7 +413,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				if (ze\row::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
 						&& ze\row\g::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
-					$box['tabs']['details']['errors'][] = ze\admin::phrase('An Administrator with this Email Address already exists. Please choose a different Email Address.');
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('A Zenario administrator with this already exists with this email address. Please either edit that administrtor or enter a different email address.');
 				}
 			}
 		}
@@ -416,7 +422,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		if ($box['key']['id'] && ze\ring::engToBoolean($box['tabs']['password']['edit_mode']['on'] ?? false)) {
 			$passwordValidation = \ze\user::checkPasswordStrength($values['password/password']);
 			if (!$values['password/password']) {
-				$box['tabs']['password']['errors'][] = ze\admin::phrase('Please enter a Password.');
+				$box['tabs']['password']['errors'][] = ze\admin::phrase('Please enter a password.');
 
 			} elseif (!$passwordValidation['password_matches_requirements']) {
 				$box['tabs']['password']['errors'][] = ze\admin::phrase('The password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters.');
@@ -431,8 +437,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		
 		if (!empty($box['tabs']['permissions']['edit_mode']['on'])) {
 			if ($values['permissions/permissions'] == 'specific_areas') {
-				if (!$values['permissions/specific_languages']
-				 && !$values['permissions/specific_content_items']
+				if (!$values['permissions/specific_content_items']
 				 && !$values['permissions/specific_content_types']) {
 					$box['tabs']['permissions']['errors'][] = ze\admin::phrase('Please select at least one content item.');
 
@@ -462,22 +467,18 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		if (ze\ring::engToBoolean($box['tabs']['details']['edit_mode']['on'] ?? false)) {
 			
 			$details = [
-					'username' => $values['details/username'],
-					'first_name' => $values['details/first_name'],
-					'last_name' => $values['details/last_name'],
-					'email' => $values['details/email']];
+				'username' => $values['details/username'],
+				'first_name' => $values['details/first_name'],
+				'last_name' => $values['details/last_name']
+			];
+
+			if ($path != 'zenario_admin_edit_self') {
+				$details['email'] = $values['details/email'];
+			}
 			
 			$adminAuthType = ze\row::get('admins', 'authtype', ze\admin::id());
 			if ($adminAuthType == 'super') {
 				$details['is_client_account'] = $values['details/is_client_account'];
-			}
-			
-			if ($values['details/image'] && ($filepath = ze\file::getPathOfUploadInCacheDir($values['details/image']))) {
-				$image_id = ze\file::addToDatabase('admin', $filepath, false, true);
-				$details['image_id'] = $image_id;
-			
-			} else {
-				$details['image_id'] = $values['details/image'];
 			}
 			
 			if ($newAdmin) {
@@ -496,7 +497,29 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		}
 		
 		//send email if inform by email checked
-		if ($newAdmin && ze\module::inc('zenario_email_template_manager')) {
+		if ($newAdmin) {
+			$source = [];
+			$dir = CMS_ROOT. 'zenario/admin/welcome/';
+			$file = 'email_templates.yaml';
+			if (substr($file, 0, 1) != '.') {
+				$tagsToParse = ze\tuix::readFile($dir. $file);
+				ze\tuix::parse($source, $tagsToParse, 'welcome');
+				unset($tagsToParse);
+			}
+			
+			$addressToOverriddenBy = false;
+			$emailTemplateName = 'notification_to_new_admin_no_password';
+			$emailTemplate = $source['welcome']['email_templates'][$emailTemplateName];
+
+			$message = $emailTemplate['body'];
+			$message = nl2br($message);
+		
+			if (ze\module::inc('zenario_email_template_manager')) {
+				zenario_email_template_manager::putBodyInTemplate($message);
+			}
+
+			$subject = $emailTemplate['subject'];
+
 			$hash = ze\row::get('admins', 'hash', $box['key']['id']);
 			$email_details = [
 				'username' => $values['details/username'],
@@ -506,8 +529,25 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				'cms_url' => ze\link::absolute(),
 				'new_admin_cms_url' => ze\link::absolute() . 'admin.php?task=new_admin&hash=' . $hash
 			];
+
+			$nameTo = ze::ifNull(trim($email_details['first_name'] . ' ' . $email_details['last_name']), $email_details['username']);
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate($email_details['email'], ze::setting('notification_to_new_admin'), $email_details, []);
+			foreach ($email_details as $pattern => $replacement) {
+				$message = str_replace('[['. $pattern. ']]', $replacement, $message);
+			};
+
+			ze\server::sendEmail(
+				$subject, $message,
+				$email_details['email'],
+				$addressToOverriddenBy,
+				$nameTo,
+				$addressFrom = false,
+				$nameFrom = $emailTemplate['from'],
+				false, false, false,
+				$isHTML = true,
+				false, false, false, false, '', '', 'To',
+				$ignoreDebugMode = true);	//New admin emails should always be sent to the intended recipient,
+											//even if debug mode is on.
 		}
 		
 		//Set a password
@@ -521,18 +561,33 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			//Look for checkboxes set up as permission fields
 			$perms = [];
 			
+			$isEditingThemselves = $box['key']['id'] == ze\admin::id();
+			$isAuthor = ($values['permissions/perm_author_permissions'] ?? '')
+					 && strpos($values['permissions/perm_author_permissions'], '_PRIV_EDIT_DRAFT') !== false;
+			
 			foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
 				//Ignore info tags, non-fields and anything that's not a checkbox/checkboxes.
 				if (is_array($field)
 				 && !empty($field['type'])
 				 && !empty($field['is_admin_permission'])
 				 && ze\ring::engToBoolean($field['is_admin_permission'])) {
-
+					
+					$isEditingThemselvesHere = $isEditingThemselves && ze::in($fieldName,
+						'perm_manage', 'perm_manage_permissions'
+					);
+					$isntAuthorHere = !$isAuthor && ze::in($fieldName,
+						'perm_editmenu', 'perm_editmenu_permissions',
+						'perm_publish', 'perm_publish_permissions',
+						'perm_designer', 'perm_designer_permissions'
+					);
+					
 					//For single checkboxes, just save one permission
 					if ($field['type'] == 'checkbox') {
 						//Don't let an Admin change their own management rights.
-						if ($box['key']['id'] == ze\admin::id() && ze::in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
+						if ($isEditingThemselvesHere) {
 							$perms[$fieldName] = ze\priv::check($fieldName);
+						} elseif ($isntAuthorHere) {
+							$perms[$fieldName] = false;
 						} else {
 							$perms[$fieldName] = !empty($values['permissions'. '/'. $fieldName]);
 						}
@@ -541,8 +596,10 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 					} else
 					if ($field['type'] == 'checkboxes' && !empty($field['values'])) {
 						foreach ($field['values'] as $valueName => &$value) {
-							if ($box['key']['id'] == ze\admin::id() && ze::in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
+							if ($isEditingThemselvesHere) {
 								$perms[$valueName] = ze\priv::check($valueName);
+							} elseif ($isntAuthorHere) {
+								$perms[$valueName] = false;
 							} else {
 								$perms[$valueName] = in_array($valueName, ze\ray::explodeAndTrim($values['permissions'. '/'. $fieldName]));
 							}
@@ -552,12 +609,10 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			}
 			
 			$details = [
-				'specific_languages' => '',
 				'specific_content_items' => '',
 				'specific_content_types' => ''];
 			
 			if ($values['permissions/permissions'] == 'specific_areas') {
-				$details['specific_languages'] = $values['permissions/specific_languages'];
 				$details['specific_content_items'] = $values['permissions/specific_content_items'];
 				$details['specific_content_types'] = $values['permissions/specific_content_types'];
 			}

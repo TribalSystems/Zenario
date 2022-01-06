@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__administrators extends ze\moduleBaseClass {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__users/panels/administrators') return;
+		if ($path != 'zenario__administration/panels/administrators') return;
 		
 		if (!$refinerName && !ze::in($mode, 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
@@ -39,7 +39,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__users/panels/administrators') return;
+		if ($path != 'zenario__administration/panels/administrators') return;
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
@@ -134,8 +134,8 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		
 		if ($refinerName == 'trashed') {
 			$panel['trash'] = false;
-			$panel['title'] = ze\admin::phrase('Trashed Administrators');
-			$panel['no_items_message'] = ze\admin::phrase('No Administrators have been Trashed.');
+			$panel['title'] = ze\admin::phrase('Trashed administrator accounts');
+			$panel['no_items_message'] = ze\admin::phrase('There are no trashed administrator accounts.');
 		
 		} else {
 			$panel['trash']['empty'] = !ze\row::exists('admins', ['status' => 'deleted']);
@@ -169,7 +169,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($path != 'zenario__users/panels/administrators') return;
+		if ($path != 'zenario__administration/panels/administrators') return;
 		
 		if (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_DELETE_ADMIN') && zenario_common_features::canCreateAdditionalAdmins()) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {

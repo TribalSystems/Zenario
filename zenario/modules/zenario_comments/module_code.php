@@ -76,7 +76,7 @@ class zenario_comments extends zenario_anonymous_comments {
 	//Show detailed information on one user, to appear next to their post
 	function showUserInfo(&$mergeFields, &$sections, $userId, $post = false) {
 		if (!$userId || !ze::setting('user_use_screen_name')) {
-			$mergeFields['Username'] = $mergeFields['Username_Link'] = htmlspecialchars($this->phrase('_ANONYMOUS'));
+			$mergeFields['Username'] = $mergeFields['Username_Link'] = htmlspecialchars($this->phrase('Anonymous'));
 		
 			if ($this->setting('show_user_avatars')) {
 				$sections['No_Avatar'] = $sections['Posting_No_Avatar'] = true;
@@ -125,13 +125,13 @@ class zenario_comments extends zenario_anonymous_comments {
 		if ($this->setting('show_user_post_counts')) {
 			$sections['Show_Post_Count'] = $sections['Posting_Show_Post_Count'] = true;
 			$mrg = ['post_count' => $forumDetails['post_count']];
-			$mergeFields['Post_Count'] = $this->phrase('_POST_COUNT', $mrg);
+			$mergeFields['Post_Count'] = $this->phrase('Post Count: [[post_count]]', $mrg);
 		}
 		
 		if ($this->setting('show_user_join_dates')) {
 			$sections['Show_Join_Date'] = $sections['Posting_Show_Join_Date'] = true;
 			$mrg = ['date' => ze\date::format($coreDetails['created_date'], $this->setting('date_format'))];
-			$mergeFields['Join_Date'] = $this->phrase('_JOIN_DATE', $mrg);
+			$mergeFields['Join_Date'] = $this->phrase('Join Date: [[date]]', $mrg);
 		}
 	}
 	

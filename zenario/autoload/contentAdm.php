@@ -245,8 +245,8 @@ class contentAdm {
 		$version['publisher_id'] = $adminId;
 		$version['published_datetime'] = \ze\date::now();
 	
-		if (!$version['release_date']
-		 && \ze::setting('auto_set_release_date') == 'on_publication_if_not_set') {
+		$autoSetReleaseDate = \ze\row::get('content_types', 'auto_set_release_date', ['content_type_id' => $cType]);
+		if ($autoSetReleaseDate && !$version['release_date']) {
 			$version['release_date'] = \ze\date::now();
 		}
 
@@ -1367,23 +1367,23 @@ class contentAdm {
 	
 		if ($alias!="") {
 			if (preg_match('/\s/', $alias)) {
-				$error[] = \ze\admin::phrase("An alias or spare alias cannot contain spaces. Why not use a - (hyphen) as a word separator?");
+				$error[] = \ze\admin::phrase("An alias or spare alias cannot contain spaces. Use a - (hyphen) as a word separator.");
 			}
 		
 			if ($alias == 'admin' || is_dir(CMS_ROOT. $alias)) {
-				$error[] = \ze\admin::phrase("An alias or spare alias cannot contain a directory name (e.g. 'admin', 'cache', 'private', 'public', or 'zenario').");
+				$error[] = \ze\admin::phrase("Your alias/spare alias should not contain a directory name (e.g. 'admin', 'cache', 'private', 'public', or 'zenario'). The alias itself is enough for it to be unique.");
 		
 			} elseif (is_numeric($alias)) {
-				$error[] = \ze\admin::phrase("An alias or spare alias must start with a letter.");
+				$error[] = \ze\admin::phrase("An alias or spare alias must start with a letter, not a digit or special character.");
 		
 			} elseif (preg_match('/[^a-zA-Z 0-9_-]/', $alias)) {
 				$error[] = \ze\admin::phrase("An alias or spare alias can only contain: a-z, A-Z, 0-9, - (hyphen) and _ (underscore).");
 		
 			} elseif (\ze\row::exists('visitor_phrases', ['language_id' => $alias])) {
-				$error[] = \ze\admin::phrase("Don't incude a language code (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr')");
+				$error[] = \ze\admin::phrase("Don't incude a language code (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr').");
 		
 			} elseif (\ze\content::getCIDAndCTypeFromTagId($dummy1, $dummy2, $alias)) {
-				$error[] = \ze\admin::phrase("An alias or spare alias cannot be in the same form as a content item ID (e.g. 'html_1', 'news_2').");
+				$error[] = \ze\admin::phrase("Your alias/spare alias looks like a content item ID (e.g. 'html_1', 'news_2'), which isn't allowed. Use a - (hyphen) as a word separator.");
 			}
 		
 		

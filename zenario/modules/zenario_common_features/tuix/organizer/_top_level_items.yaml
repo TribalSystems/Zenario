@@ -36,6 +36,7 @@ zenario__content:
             no_items_message: Loading...
     nav:
         special:
+            ord: 20
             css_class: special_content_published
             label: Special pages
             tooltip: HTML pages including the home page, not-found (404) and other essential content items that cannot be trashed.
@@ -43,6 +44,7 @@ zenario__content:
                 path: zenario__content/panels/content
                 refiner: special_pages
         work_in_progress:
+            ord: 21
             css_class: content_draft
             label: Draft content items
             tooltip: View all draft content items, being editing by any administrator
@@ -50,6 +52,7 @@ zenario__content:
                 path: zenario__content/panels/content
                 refiner: work_in_progress
         by_language:
+            ord: 22
             hidden: true
             label: Content by language
             tooltip: View content items by language
@@ -57,33 +60,39 @@ zenario__content:
                 path: zenario__content/panels/content
                 refiner: filter_by_lang
         content:
+            ord: 23
             label: All content items
             tooltip: All content items of all types in a flat view
             link:
                 path: zenario__content/panels/content
         trash:
+            ord: 24
             css_class: content_trashed zenario_separator_after_this
             label: Trashed content
             tooltip: Trashed content items
             link:
                 path: zenario__content/panels/content/refiners/trash////
         categories:
+            ord: 25
             label: Categories
             tooltip: When listing content items in a Content Summary List, they can be filtered by category. Create categories & sub-categories.
             link:
                 path: zenario__content/panels/categories
         image_library:
+            ord: 26
             label: Image library
             tooltip: |
                 Images on all content items are stored in a central library, even if not currently used. Manage images here.
             link:
                 path: zenario__content/panels/image_library
-        mic_image_library:
-            label: MIC images
+        writer_profiles:
+            #MIC images has ord 27 if enabled. Writer profiles panel goes after it.
+            ord: 28
+            label: Writer profiles
             tooltip: |
-                View and manage images used by Multiple Image Container plugins.
+                Manage writer profiles
             link:
-                path: zenario__content/panels/mic_image_library
+                path: zenario__content/panels/writer_profiles
     data-step: 11
     data-position: right
     data-intro: >
@@ -131,26 +140,6 @@ zenario__documents:
             link:
                 path: zenario__content/panels/document_tags
 
-zenario__users:
-    ord: -790
-    priv:
-        - _PRIV_VIEW_ADMIN
-        - _PRIV_VIEW_USER
-    visible_if: >
-        zenarioA.siteSettings.default_language
-    css_class: zenario_cms_core_users
-    label: Users & contacts
-    tooltip: |
-        Manage users, contacts and administrators
-    nav:
-        administrators:
-            ord: 99
-            priv: _PRIV_VIEW_ADMIN
-            label: Administrators
-            tooltip: 'Manage Zenario administrators - people who can edit this site'
-            link:
-                path: zenario__users/panels/administrators
-
 zenario__layouts:
     ord: 9100
     visible_if: >
@@ -168,9 +157,9 @@ zenario__layouts:
             link:
                 path: zenario__layouts/panels/layouts
         archived_layouts:
-            label: Archived layouts
+            label: Retired layouts
             tooltip: |
-                Layouts that shouldn't be used for new content items, but which may still be in use
+                Layouts that are used by live content items, but cannot be chosen for new ones
             link:
                 path: zenario__layouts/panels/layouts
                 refiner: archived
@@ -288,6 +277,12 @@ zenario__administration:
                 caching cache stats statistics clear
             link:
                 path: zenario__administration/panels/site_settings
+        administrators:
+            priv: _PRIV_VIEW_ADMIN
+            label: Administrators
+            tooltip: 'Manage Zenario administrators - people who can edit this site'
+            link:
+                path: zenario__administration/panels/administrators
         backups:
             priv: _PRIV_BACKUP_SITE
             #css_class: backups

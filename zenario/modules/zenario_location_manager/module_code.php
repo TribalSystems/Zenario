@@ -718,6 +718,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 				break;
 			case "zenario_location_manager__sector":
+				ze\priv::exitIfNot('_PRIV_MANAGE_LOCATIONS');
 				if ($_GET["refiner__sub_sectors"] ?? false) {
 					$box['key']['parent_id'] = $_GET["refiner__sub_sectors"] ?? false;
 				}
@@ -2159,22 +2160,22 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			
 			if (ze\fileAdm::isUploadedFile($_FILES[$filename]['tmp_name'])) {
 				if ($_FILES[$filename]['size'] > $maxSize) {
-					$error['document'] = ze\admin::phrase('_FILE_UPLOAD_ERROR_SIZE', ['size' => $maxSize]);
+					$error['document'] = ze\admin::phrase('Your file must be less than [[size]]', ['size' => $maxSize]);
 				}
 			
 			} else {
 				switch ($_FILES[$filename]['error']) {
 					case 1:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_SIZE', [ 'size' => $maxSize ] );
+						$error['document'] = ze\admin::phrase( 'Your file must be less than [[size]]', [ 'size' => $maxSize ] );
 						break;
 					case 2:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_SIZE', [ 'size' => $maxSize ] );
+						$error['document'] = ze\admin::phrase( 'Your file must be less than [[size]]', [ 'size' => $maxSize ] );
 						break;
 					case 3:
 						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_PARTIAL_UPLOAD', [ 'size' => $maxSize ] );
 						break;
 					default:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_EMPTY', [ 'size' => $maxSize ] );
+						$error['document'] = ze\admin::phrase( 'Please select a file.');
 				}		
 			}
 		

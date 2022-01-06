@@ -129,4 +129,16 @@ _sql
 	WHERE `code` = "zenario_common_features__notification_to_new_admin_no_password"
 _sql
 
+); ze\dbAdm::revision(246,
+<<<_sql
+	DELETE FROM [[DB_PREFIX]]email_templates
+	WHERE `code` = "zenario_common_features__notification_to_new_admin_no_password"
+_sql
+,
+
+<<<_sql
+	DELETE FROM [[DB_PREFIX]]site_settings
+	WHERE name = "notification_to_new_admin"
+_sql
+
 );

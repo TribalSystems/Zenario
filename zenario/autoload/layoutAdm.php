@@ -78,7 +78,7 @@ class layoutAdm {
 			$box['confirm']['show'] = true;
 			$box['confirm']['message'] .= $box['confirm']['message']? '<br/><br/>' : '';
 			$box['confirm']['message'] .=
-				\ze\admin::phrase('When you want to edit a content item, the CMS makes a draft version. This won\'t be seen by site visitors until it is published.');
+				\ze\admin::phrase('When you start editing a content item, Zenario makes a draft version. This won\'t be seen by site visitors until it is published.');
 		}
 
 		if ($saving && ($warnings = \ze\layoutAdm::changeContentItemLayout(

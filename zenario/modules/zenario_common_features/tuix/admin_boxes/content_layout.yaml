@@ -1,7 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_content_layout:
-    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+    priv: _PRIV_EDIT_DRAFT
     key:
         id: ""
         cID: ""
@@ -39,7 +39,7 @@ zenario_content_layout:
                 archived_template:
                     show: false
                     type: warning
-                    message: The chosen layout is archived.
+                    message: The chosen layout is retired, and should not be used for new content items.
             edit_mode:
                 enabled: false
             fields:

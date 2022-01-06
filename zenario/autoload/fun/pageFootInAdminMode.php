@@ -115,6 +115,7 @@ if (!empty(\ze::$siteConfig)) {
 	}
 }
 $adminSettings = [];
+
 if (!empty(\ze::$adminSettings)) {
 	foreach (\ze::$adminSettings as $setting => &$value) {
 		
@@ -209,10 +210,23 @@ if (!empty($_SESSION['zenario__deleted_so_home'])) {
 	echo '
 		zenarioA.longToast(', json_encode(ze\admin::phrase("Content item deleted, you've been taken to the home page.")), ', "zenario_content_item_deleted");';
 }
+
 if (!empty($_SESSION['zenario__deleted_so_up'])) {
 	unset($_SESSION['zenario__deleted_so_up']);
 	echo '
 		zenarioA.longToast(', json_encode(ze\admin::phrase("Content item deleted, you've been taken to the page above in the menu.")), ', "zenario_content_item_deleted");';
+}
+
+if (!empty($_SESSION['zenario__content_item_created'])) {
+	unset($_SESSION['zenario__content_item_created']);
+	echo '
+		zenarioA.longToast(', json_encode(ze\admin::phrase("New content item created! Now in Edit mode.")), ', "zenario_content_item_deleted");';
+}
+
+if (!empty($_SESSION['zenario__content_item_duplicated'])) {
+	unset($_SESSION['zenario__content_item_duplicated']);
+	echo '
+		zenarioA.longToast(', json_encode(ze\admin::phrase("Content item duplicated! Now in Edit mode.")), ', "zenario_content_item_deleted");';
 }
 
 

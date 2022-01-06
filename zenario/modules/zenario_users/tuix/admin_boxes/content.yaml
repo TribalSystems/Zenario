@@ -4,23 +4,33 @@ zenario_content:
     tabs:
         privacy:
             hidden: false
+            ord: 35
             label: Permissions
             edit_mode:
                 enabled: ""
-                priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+                priv: _PRIV_EDIT_DRAFT
             fields:
                 desc:
                     full_width: Yes
                     snippet:
-                        html: Use this screen to edit permissions for this content item.
+                        html: Set access permissions for this content item when published.
+                
+                privacy_settings_disabled_note:
+                    pre_field_html: '<div class="zenario_fbInfo">'
+                    snippet:
+                        html: 'Privacy options are disabled. Start the Extranet Base Module to make content items that are private.'
+                    post_field_html: '</div>'
+                    hidden: true
                 
                 privacy:
-                    label: 'Visibility:'
+                    label: 'Access permission:'
                     type: radios
                     value: public
+                    side_note: |
+                        Content items are always accessible by Zenario administrators, even when in draft form or when private.
                     values:
                         public:
-                            label: Public, visible to everyone
+                            label: Public (access for all visitors)
                         logged_in:
                             label: Private, only show to extranet users
                         group_members:
@@ -129,5 +139,3 @@ zenario_content:
                 privacy_part_2:
                     snippet:
                         show_split_values_from: privacy
-                    note_below: |
-                        Content items are always visible to logged in administrators.

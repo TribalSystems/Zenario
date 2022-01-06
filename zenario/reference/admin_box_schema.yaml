@@ -589,6 +589,9 @@ additionalProperties:
                                         - pick_items
                                 -
                                     required:
+                                        - image
+                                -
+                                    required:
                                         - snippet
                                 -
                                     required:
@@ -820,7 +823,14 @@ additionalProperties:
                                 pre_field_html:
                                     type: string
                                     description: >
-                                        Some HTML code to be placed just before the field.
+                                        Some HTML code to be placed just before the field and the field's label.
+                                pre_field_post_label_html:
+                                    type: string
+                                    description: >
+                                        Some HTML code to be placed just before the field, but after the field's label.
+                                        Does not work for checkbox or radio-type fields, where the label is after the field.
+                                        
+                                        This works from version 9.2 onwards.
                                 post_field_label:
                                     type: string
                                     description: >
@@ -1432,6 +1442,35 @@ additionalProperties:
                                                 If no values were split, then this field will be auto-hidden.
                                                 
                                                 This works from version 7.4 onwards.
+                                image:
+                                    type: object
+                                    description: >
+                                        This lets you add an image in the middle of your form, by setting a width, height and URL.
+                                        
+                                        This works from version 9.2 onwards.
+                                    properties:
+                                        url:
+                                            type: string
+                                            description: >
+                                                A URL (either relative or absolute) to the image.
+                                        width:
+                                            type: integer
+                                            description: >
+                                                The width to display the image at.
+                                        height:
+                                            type: integer
+                                            description: >
+                                                The height to display the image at.
+                                
+                                image_crop_tool:
+                                    type: object
+                                    description: >
+                                        The image crop tool lets you show an image and display a tool that lets the user
+                                        select an area of the image.
+                                        
+                                        This is powered by the Responsive Cropper Jquery Plugin from https://github.com/aewebsolutions/rcrop
+                                        
+                                        This works from version 9.2 onwards.
                                 
                                 use_button_tag:
                                     type: boolean
@@ -1732,8 +1771,8 @@ additionalProperties:
                                         
                                         This uses code from https://proto.io/freebies/onoff/.
                                         
-                                        Note that this option will add the HTML, but not the styles needed.
-                                        You'll need to add the CSS yourself!
+                                        Note that this option will add the HTML, but the styles needed may not
+                                        be present. If they're not there, you may need to add them!
                                         
                                         This works from version 9.0 onwards.
                                 indeterminate:

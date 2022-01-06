@@ -308,12 +308,12 @@ class zenario_banner extends ze\moduleBaseClass {
 					$banner_canvas = 'fixed_width_and_height';
 				
 				//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
-				//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
+				//crop_and_zoom settings on the banner, and vice versa. So do an XOR and only update the settings if
 				//they're not both different
 				} else
 				if (!$banner_canvas
 				 || $banner_canvas == 'unlimited'
-				 || !(($this->parentNest->banner_canvas == 'resize_and_crop') XOR ($banner_canvas == 'resize_and_crop'))) {
+				 || !(($this->parentNest->banner_canvas == 'crop_and_zoom') XOR ($banner_canvas == 'crop_and_zoom'))) {
 					$banner_canvas = $this->parentNest->banner_canvas;
 				
 				} else {
@@ -322,14 +322,14 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				if ($inheritDimensions && $this->parentNest->banner_width) {
 					if (!$banner_width
-					 || !ze::in($banner_canvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
+					 || !ze::in($banner_canvas, 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom')) {
 						$banner_width = $this->parentNest->banner_width;
 					}
 				}
 				
 				if ($inheritDimensions && $this->parentNest->banner_height) {
 					if (!$banner_height
-					 || !ze::in($banner_canvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
+					 || !ze::in($banner_canvas, 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
 						$banner_height = $this->parentNest->banner_height;
 					}
 				}
@@ -362,12 +362,12 @@ class zenario_banner extends ze\moduleBaseClass {
 					$banner__enlarge_canvas = 'fixed_width_and_height';
 				
 				//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
-				//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
+				//crop_and_zoom settings on the banner, and vice versa. So do an XOR and only update the settings if
 				//they're not both different
 				} else
 				if (!$banner__enlarge_canvas
 				 || $banner__enlarge_canvas == 'unlimited'
-				 || !(($this->parentNest->banner__enlarge_canvas == 'resize_and_crop') XOR ($banner__enlarge_canvas == 'resize_and_crop'))) {
+				 || !(($this->parentNest->banner__enlarge_canvas == 'crop_and_zoom') XOR ($banner__enlarge_canvas == 'crop_and_zoom'))) {
 					$banner__enlarge_canvas = $this->parentNest->banner__enlarge_canvas;
 				
 				} else {
@@ -376,14 +376,14 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				if ($inheritDimensions && $this->parentNest->banner__enlarge_width) {
 					if (!$banner__enlarge_width
-					 || !ze::in($banner__enlarge_canvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
+					 || !ze::in($banner__enlarge_canvas, 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom')) {
 						$banner__enlarge_width = $this->parentNest->banner__enlarge_width;
 					}
 				}
 				
 				if ($inheritDimensions && $this->parentNest->banner__enlarge_height) {
 					if (!$banner__enlarge_height
-					 || !ze::in($banner__enlarge_canvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
+					 || !ze::in($banner__enlarge_canvas, 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
 						$banner__enlarge_height = $this->parentNest->banner__enlarge_height;
 					}
 				}
@@ -434,7 +434,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				//If this was a retina image, get a normal version of the image as well for standard displays
 				if ($banner_retina) {
 					$sWidth = $sHeight = $sURL = false;
-					if (ze\file::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'adjust', $banner_offset, false)) {
+					if (ze\file::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'crop_and_zoom'? 'crop_and_zoom' : 'adjust', $banner_offset, false)) {
 						
 						if ($url != $sURL) {
 							$this->mergeFields['Image_Retina_Srcset'] = $url. ' 2x';
@@ -471,6 +471,11 @@ class zenario_banner extends ze\moduleBaseClass {
 				$this->mergeFields['Image_Height'] = $height;
 				$this->mergeFields['Image_Width'] = $width;
 				$this->mergeFields['Image_Style'] = 'id="'. $this->containerId. '_img"';
+					
+				if (ze::isAdmin()) {
+					$this->mergeFields['Image_Class'] = ' zenario_image_properties zenario_image_id__'. $imageId. '__';
+				}
+				
 				$addWidthAndHeight = $addWidthAndHeightInline = true;
 				
 				//Deprecated merge field for old frameworks
@@ -587,7 +592,7 @@ class zenario_banner extends ze\moduleBaseClass {
 						//If this was a retina image, get a normal version of the image as well for standard displays
 						if ($banner_retina) {
 							$sWidth = $sHeight = $sURL = false;
-							if (ze\file::imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'resize_and_crop'? 'resize_and_crop' : 'adjust', $banner_offset, false)) {
+							if (ze\file::imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'crop_and_zoom'? 'crop_and_zoom' : 'adjust', $banner_offset, false)) {
 								if ($rollURL != $sURL) {
 									$rollSrcset = $rollURL. ' 2x';
 									$rollSrcset = 'srcset="'. htmlspecialchars($rollSrcset). '"';
@@ -611,6 +616,10 @@ class zenario_banner extends ze\moduleBaseClass {
 						$normalSrcset = 'srcset="'. htmlspecialchars($this->mergeFields['Image_Retina_Srcset']). '"';
 					}
 					
+					//Do not allow mobile images to use a rollover.
+					//Mobile images have a "media" attribute set in the framework.
+					//Non-mobile images do not have that attribute.
+					//The onmouseover event will skip images with the "media" attribute.
 					$this->mergeFields['Wrap'] =
 						'onmouseover="
 							var
@@ -623,8 +632,10 @@ class zenario_banner extends ze\moduleBaseClass {
 							y.srcset = z.srcset;
 							
 							while (y = document.getElementById(x + \'_source_\' + ++i)) {
-								z = document.getElementById(x + \'_rollover_source_\' + i);
-								y.srcset = z.srcset;
+								if (!y.media) {
+									z = document.getElementById(x + \'_rollover_source_\' + i);
+									y.srcset = z.srcset;
+								}
 							}"
 					
 						onmouseout="

@@ -38,7 +38,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			if ($box['key']['cVersion'] != $latestVersion) {
 				return false;
 			
-			} else if (!ze\content::isDraft($box['key']['cID'], $box['key']['cType']) && !ze\priv::check('_PRIV_CREATE_REVISION_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
+			} else if (!ze\content::isDraft($box['key']['cID'], $box['key']['cType']) && !ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 				return false;
 				
 			} else {
@@ -107,24 +107,24 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			if ($box['key']['level'] == 'item') {
 				$box['title'] = ze\admin::phrase('<head> HTML for the content item "[[tag]]", version [[version]]', ['tag' => $formatTag, 'version' => $box['key']['cVersion']]);
 				$fields['slot/description']['snippet']['html'] =
-					ze\admin::phrase('Add HTML within the <code>&lt;head&gt;</code> tag for this content item (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
+					ze\admin::phrase('HTML within the <code>&lt;head&gt;</code> tag for this content item (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
 				
 			} elseif ($box['key']['level'] == 'layout') {
-				$box['title'] = ze\admin::phrase('<head> HTML for the layout "[[id_and_name]]"', $layout);
+				$box['title'] = ze\admin::phrase('<head> HTML for content items using "[[id_and_name]]"', $layout);
 				$fields['slot/description']['snippet']['html'] =
-					ze\admin::phrase('Add HTML within <code>&lt;head&gt;</code> that affects all content items using this layout (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
+					ze\admin::phrase('Affects all content items using this layout (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
 			}
 	
 		} else {
 			if ($box['key']['level'] == 'item') {
 				$box['title'] = ze\admin::phrase('HTML before </body> for the content item "[[tag]]", version [[version]]', ['tag' => $formatTag, 'version' => $box['key']['cVersion']]);
 				$fields['slot/description']['snippet']['html'] =
-					ze\admin::phrase('Add HTML immediately before the <code>&lt;/body&gt;</code> tag for this content item (can include &lt;script&gt; tags for JavaScript):');
+					ze\admin::phrase('HTML immediately before the <code>&lt;/body&gt;</code> tag for this content item (can include &lt;script&gt; tags for JavaScript):');
 				
 			} elseif ($box['key']['level'] == 'layout') {
 				$box['title'] = ze\admin::phrase('HTML before </body> for the layout "[[id_and_name]]"', $layout);
 				$fields['slot/description']['snippet']['html'] =
-					ze\admin::phrase('Add HTML immediately before the <code>&lt;/body&gt;</code> tag for this layout (can include &lt;script&gt; tags for JavaScript):');
+					ze\admin::phrase('HTML immediately before the <code>&lt;/body&gt;</code> tag for this layout (can include &lt;script&gt; tags for JavaScript):');
 			}
 		}
 		

@@ -509,24 +509,41 @@ zenario.lib(function(
 	};
 	
 	zenario.checkPasswordStrength = function(password, settings) {
-		var min_pass_length;
+		var min_pass_length,
+			min_pass_score;
 		
 		if (!_.isString(password)) {
 			password = '';
 		}
 		
 		settings = settings || zenario.passVars;
-		
-		if (settings && settings.min_extranet_user_password_length > 0) {
-			min_pass_length = settings.min_extranet_user_password_length;
+		if (settings) {
+			if (settings.min_extranet_user_password_length > 0) {
+				min_pass_length = settings.min_extranet_user_password_length;
+			} else {
+				min_pass_length = 10;
+			}
+
+			if (settings.min_extranet_user_password_score >= 2) {
+				min_pass_score = settings.min_extranet_user_password_score;
+			} else {
+				min_pass_score = 2;
+			}
 		} else {
 			settings = {};
-			min_pass_length = 8;
-			settings['a_z_lowercase_characters'] = 
-			settings['a_z_uppercase_characters'] = 
-			settings['0_9_numbers_in_user_password'] = true;
-			settings['symbols_in_user_password'] = false;
+			min_pass_length = 10;
+			min_pass_score = 2;
+			// settings['a_z_lowercase_characters'] = 
+			// settings['a_z_uppercase_characters'] = 
+			// settings['0_9_numbers_in_user_password'] = true;
+			// settings['symbols_in_user_password'] = false;
 		}
+
+		//The settings are being removed now. Setting everything to false.
+		settings['a_z_lowercase_characters'] =
+		settings['a_z_uppercase_characters'] =
+		settings['0_9_numbers_in_user_password'] =
+		settings['symbols_in_user_password'] = false;
 	
 		var validation = [],
 			lower = password.match(/[a-z]/g) ? true : false,
@@ -544,7 +561,9 @@ zenario.lib(function(
 					password_requirement_match = false;
 		}
 	
+		validation['password_length'] = password.length;
 		validation['min_length'] = (password.length >= min_pass_length);
+		validation['min_pass_score'] = min_pass_score;
 		validation['lowercase'] = lower;
 		validation['uppercase'] = upper;
 		validation['numbers'] = numbers;
@@ -554,8 +573,9 @@ zenario.lib(function(
 		return validation;
 	};
 	
-	zenario.updatePasswordNotifier = function(passwordField, passwordMessageField) {
-		var validation = zenario.checkPasswordStrength($(passwordField).val());
+	zenario.updatePasswordNotifier = function(passwordField, passwordMessageField, isInstaller) {
+		var password = $(passwordField).val();
+		var validation = zenario.checkPasswordStrength(password);
 						
 		$('#min_length').attr('class', validation['min_length'] ? 'pass' : 'fail');
 		$('#lowercase').attr('class', validation['lowercase'] ? 'pass' : 'fail');
@@ -563,29 +583,97 @@ zenario.lib(function(
 		$('#numbers').attr('class', validation['numbers'] ? 'pass' : 'fail');
 		$('#symbols').attr('class', validation['symbols'] ? 'pass' : 'fail');
 
+		var result = zxcvbn(password);
+		
 		//Update the password message field if there is one...
 		if (passwordMessageField) {
 			passwordMessageField = $(passwordMessageField);
 			
 			if (validation['password_matches_requirements']) {
-				passwordMessageField.addClass('title_green');
+				
 				passwordMessageField.removeClass('title_red');
-				passwordMessageField.text('Password matches the requirements');
-			} else {
-				passwordMessageField.addClass('title_red');
+				passwordMessageField.removeClass('title_orange');
 				passwordMessageField.removeClass('title_green');
-				passwordMessageField.text('Password does not match the requirements');
+
+				if (result) {
+					switch (result.score) {
+						case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+							if (validation.min_pass_score < 4) {
+								passwordMessageField.addClass('title_green');	
+								passwordMessageField.text('Password is very strong and exceeds requirements (score 4, max)');
+							} else if (validation.min_pass_score == 4) {
+								passwordMessageField.addClass('title_green');	
+								passwordMessageField.text('Password matches the requirements (score 4, max)');
+							}
+							break;
+						case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
+							if (validation.min_pass_score == 4) {
+								passwordMessageField.addClass('title_red');
+								passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
+							} else if (validation.min_pass_score < 4) {
+								passwordMessageField.addClass('title_green');	
+								passwordMessageField.text('Password matches the requirements (score 3)');
+							}
+							break;
+						case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+							if (validation.min_pass_score == 2) {
+								passwordMessageField.addClass('title_orange');
+								if (isInstaller) {
+									passwordMessageField.text('Password is easy to guess. Make your password stronger if this will be a production site.');
+								} else {
+									passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
+								}
+							} else if (validation.min_pass_score > 2) {
+								passwordMessageField.addClass('title_red');
+								passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
+							}
+							break;
+						case 1: //is still very guessable (guesses < 10^6)
+						case 0: //s extremely guessable (within 10^3 guesses)
+						default:
+							passwordMessageField.addClass('title_red');
+							passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
+					}
+				}
+			} else {
+				passwordMessageField.removeClass('title_red');
+				passwordMessageField.removeClass('title_orange');
+				passwordMessageField.removeClass('title_green');
+
+				if (validation['password_length'] > 0) {
+					passwordMessageField.text('Password does not match the requirements');
+					passwordMessageField.addClass('title_red');
+				} else {
+					passwordMessageField.text('Please enter a password');
+					passwordMessageField.addClass('title_orange');
+				}
 			}
 		} else {
 			//...otherwise change the password input field border colour.
 			passwordField = $(passwordField);
+
+			passwordField.removeClass('border_red');
+			passwordField.removeClass('border_orange');
+			passwordField.removeClass('border_green');
 			
 			if (validation['password_matches_requirements']) {
-				passwordField.addClass('border_green');
-				passwordField.removeClass('border_red');
+				if (result) {
+					switch (result.score) {
+						case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+						case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
+							passwordField.addClass('border_green');
+							break;
+						case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+							passwordField.addClass('title_orange');
+							break;
+						case 1: //is still very guessable (guesses < 10^6)
+						case 0: //s extremely guessable (within 10^3 guesses)
+						default:
+							passwordField.addClass('title_red');
+					}
+				}
 			} else {
 				passwordField.addClass('border_red');
-				passwordField.removeClass('border_green');
 			}
 		}
 	}
@@ -3219,6 +3307,11 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 		zenario.tooltips(path + ' ' + TOOTIPS_SELECTOR);
 	}
 	
+	//Image properties buttons
+	if (zenario.inAdminMode) {
+		zenarioA.addImagePropertiesButtons(path);
+	}
+	
 	//clickablebox class
 	$('.clickablebox').click(function() {
 		var $a = $(this).find('a');
@@ -3819,6 +3912,7 @@ zenario.init = function(
 	
 	datePickerFormat,
 	minPasswordLength,
+	minPasswordScore,
 	lowercaseCharsInPassword,
 	uppercaseCharsInPassword,
 	numbersInPassword,
@@ -3847,6 +3941,7 @@ zenario.init = function(
 	
 	zenario.passVars = {
 		min_extranet_user_password_length: minPasswordLength,
+		min_extranet_user_password_score: minPasswordScore,
 		a_z_lowercase_characters: lowercaseCharsInPassword,
 		a_z_uppercase_characters: uppercaseCharsInPassword,
 		"0_9_numbers_in_user_password": numbersInPassword,

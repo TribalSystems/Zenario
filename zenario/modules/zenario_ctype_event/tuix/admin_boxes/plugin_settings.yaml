@@ -5,6 +5,32 @@ plugin_settings:
         first_tab:
             label: Event
             fields:
+                show_title:
+                    plugin_setting:
+                        name: show_title
+                    label: "Show title"
+                    type: checkbox
+                    value: true
+                    redraw_onchange: true
+                title_tags:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('show_title')
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tag:'
+                    type: select
+                    values:
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: h1
+                    side_note: |
+                        Choose which HTML tags the title will be displayed in
+                    indent: 1
                 show_details_and_link:
                     label: 'Show Event details from:'
                     type: radios
@@ -13,15 +39,17 @@ plugin_settings:
                     values:
                         current_content_item:
                             ord: "1"
-                            label: Current Content Item (this must be an Event Content Item)
+                            label: Current Event content item
                         another_content_item:
                             ord: "2"
-                            label: Another Event Content Item
+                            label: A specifc Event content item
+                    side_note: |
+                        This plugin may be on the layout for Event content items; alternatively it may be on another type of content item (e.g. HTML, News) and then link to an Event content item.
                     value: current_content_item
                     format_onchange: Yes
                 another_event:
                     indent: 1
-                    label: 'Select Event Content Item:'
+                    label: 'Select Event content item:'
                     plugin_setting:
                         name: another_event
                         foreign_key_to: content
@@ -30,9 +58,9 @@ plugin_settings:
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
-                        select_phrase: Select Content Item...
+                        select_phrase: Select Event content item...
                     validation:
-                        required_if_not_hidden: Please select Content Item.
+                        required_if_not_hidden: Please select a content item.
                 show_online_when_event_is_online:
                     label: 'Show "Online" when event is online'
                     type: checkbox

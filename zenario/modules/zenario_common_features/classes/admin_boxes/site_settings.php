@@ -562,7 +562,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				ze\site::setSetting('pdftotext_path', $values['pdftotext/pdftotext_path'], $updateDB = false);
 		
 				if ((ze\file::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))
-				 && ($extract == 'Test')) {
+				 && (trim($extract, "\0\t..\r ") == 'Test')) {
 					$box['tabs']['pdftotext']['notices']['success']['show'] = true;
 				} else {
 					$box['tabs']['pdftotext']['notices']['error']['show'] = true;
@@ -922,6 +922,10 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					$box['tabs'][$dir]['fields'][$dir]['current_value'] = preg_replace('/[\\\\\\/]+$/', '', $box['tabs'][$dir]['fields'][$dir]['current_value']);
 				}
 			}
+		}
+
+		if (isset($values['webp_images/webp_quality']) && !ctype_digit($values['webp_images/webp_quality'])) {
+			$fields['webp_images/webp_quality']['error'] = ze\admin::phrase('The value must be an integer.');
 		}
 	}
 	

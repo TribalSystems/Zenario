@@ -292,18 +292,14 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase('The minimum password length must be between [[min_password_length]] and [[max_password_length]].',
 						['min_password_length' => 8, 'max_password_length' => 32]);
 				}
-				
-				//Require at least one character requirement checkbox to be selected.
-				if (!$values['passwords/a_z_lowercase_characters_in_user_password']
-					&& !$values['passwords/a_z_uppercase_characters_in_user_password']
-					&& !$values['passwords/0_9_numbers_in_user_password']
-					&& !$values['passwords/symbols_in_user_password']) {
-					
-					$fields['passwords/a_z_lowercase_characters_in_user_password']['error'] =
-					$fields['passwords/a_z_uppercase_characters_in_user_password']['error'] =
-					$fields['passwords/0_9_numbers_in_user_password']['error'] = true;
-					$fields['passwords/symbols_in_user_password']['error'] = ze\admin::phrase('Please select at least one password character requirement.');
+
+				if ($values['passwords/min_extranet_user_password_score'] < 2 || $values['passwords/min_extranet_user_password_score'] > 4){
+					$fields['passwords/min_extranet_user_password_score']['error'] = ze\admin::phrase('The minimum password score must be between [[min_password_score]] and [[max_password_score]].',
+						['min_password_score' => 2, 'max_password_score' => 4]);
+				} elseif (!ctype_digit($values['passwords/min_extranet_user_password_score'])) {
+					$fields['passwords/min_extranet_user_password_score']['error'] = ze\admin::phrase('The value must be an integer.');
 				}
+				
 				break;
 		}
 	}

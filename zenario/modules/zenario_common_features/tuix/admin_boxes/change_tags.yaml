@@ -1,7 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_change_tags:
-    title: Add/remove tags
+    title: Add tags to selected images
     key:
         id: ''
     hide_tab_bar: true
@@ -13,7 +13,7 @@ zenario_change_tags:
             fields: 
                 desc:
                     snippet:
-                        html: Add and remove tags from selected images using the dropdowns below.
+                        html: Add tags to the selected images using the dropdowns below.
                     hidden: false
                 no_tags_warning:
                     snippet:

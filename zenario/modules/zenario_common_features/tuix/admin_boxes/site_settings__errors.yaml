@@ -10,12 +10,52 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
-                #description:
-                #    full_width: true
-                #    snippet:
-                #        html: This tab contains settings for handling errors in PHP.
-                
-                
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Settings shown in pink boxes are determined in the <code>zenario_siteconfig.php</code> file.
+                            Ask your Zenario system administrator to make changes.
+                zenario_siteconfig:
+                    type: grouping
+                    name: zenario_siteconfig
+                show_notices:
+                    grouping: zenario_siteconfig
+                    legend: Set in the <code>zenario_siteconfig.php</code> file
+                    
+                    label: 'Show PHP notices'
+                    type: checkbox
+                    readonly: true
+                    post_field_html: |
+                        (<code>E_NOTICE</code>)
+                    note_below: |
+                        This should be turned <strong>on</strong> for <strong>development</strong> and <strong>staging</strong> sites,
+                        and turned <strong>off</strong> for <strong>live</strong> sites.
+                        If enabled, Zenario and running modules will show messages whenever there is a warning
+                        or error.
+                show_strict:
+                    grouping: zenario_siteconfig
+                    label: 'Show strict PHP warnings'
+                    type: checkbox
+                    readonly: true
+                    post_field_html: |
+                        (<code>E_STRICT</code>)
+                    note_below: |
+                        This should be turned <strong>on</strong> for <strong>development</strong> and <strong>staging</strong> sites,
+                        and turned <strong>off</strong> for <strong>live</strong> sites.
+                        If enabled, Zenario and running modules will show messages whenever they
+                        encounter PHP code that is no longer compatible with the latest version of PHP, or not complying with
+                        good coding standards.
+                show_all:
+                    grouping: zenario_siteconfig
+                    label: 'Show all other PHP errors'
+                    type: checkbox
+                    readonly: true
+                    post_field_html: |
+                        (<code>E_ALL</code>)
+                    note_below: |
+                        Recommended. If enabled, Zenario and running modules will show messages whenever a PHP error occurs.
+ 
                 show_sql_errors_to_visitors:
                     site_setting:
                         name: show_sql_errors_to_visitors
@@ -23,45 +63,12 @@ site_settings:
                     type: checkbox
                     value: ""
                     note_below: |
-                        If this is enabled, your site will show technical details of error messages to any visitor.
-                        This can be helpful while your site is under construction, but should usually be left off for security reasons.
+                        This should be turned <strong>on</strong> for <strong>development</strong> and <strong>staging</strong> sites,
+                        and turned <strong>off</strong> for <strong>live</strong> sites.
+                        If enabled, the site will show errors from database (SQL) queries, and errors from
+                        Twig Snippet and other Twig-based plugins, on visitor-facing pages. This can be helpful for development 
+                        work, but should usually be left off for security reasons.
                 
-                
-                zenario_siteconfig:
-                    type: grouping
-                    name: zenario_siteconfig
-                    
-                show_notices:
-                    grouping: zenario_siteconfig
-                    legend: Set in the <code>zenario_siteconfig.php</code> file
-                    
-                    label: 'Show PHP run-time notices'
-                    type: checkbox
-                    readonly: true
-                    note_below: |
-                        If run-time notices are enabled, Zenario and any enabled modules will show messages whenever they hit an error.
-                        These messages may also appear in the normal course of running of your site.
-                        <br/>
-                        These messages can be useful for websites in development, but should never be enabled for a live site.
-
-                show_strict:
-                    grouping: zenario_siteconfig
-                    label: 'Show PHP strict errors'
-                    type: checkbox
-                    readonly: true
-                    note_below: |
-                        If strict errors are enabled, Zenario and any enabled modules enabled will show messages whenever they
-                        encounter any PHP code that is no longer compatible with the latest version of PHP.
-                        <br/>
-                        These messages can be useful for websites in development, but should never be enabled for a live site.
-                show_all:
-                    grouping: zenario_siteconfig
-                    label: 'Show all other PHP errors'
-                    type: checkbox
-                    readonly: true
-                    note_below: |
-                        You should normally leave these messages enabled.
-
 
         mysql:
             label: Handling errors
@@ -69,12 +76,12 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
-                #description:
-                #    full_width: true
-                #    snippet:
-                #        html: This tab contains settings for handling errors in MySQL.
-                
-                
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Settings shown in pink boxes are determined in the <code>zenario_siteconfig.php</code> file.
+                            Ask your Zenario system administrator to make changes.
                 zenario_siteconfig:
                     type: grouping
                     name: zenario_siteconfig
@@ -83,23 +90,34 @@ site_settings:
                     grouping: zenario_siteconfig
                     legend: Set in the <code>zenario_siteconfig.php</code> file
                     
-                    label: 'Use MySQL in "strict" mode'
+                    label: 'Run MySQL queries in strict mode'
                     type: checkbox
                     readonly: true
+                    post_field_html: |
+                        (<code>DEBUG_USE_STRICT_MODE</code>)
                     note_below: |
-                        Running MySQL in &quot;stritch&quot; mode is recommended for all newly created sites.
-                        <br/>
-                        If you have an old site that is not running in &quot;stritch&quot; mode then we do not
-                        recommend turning this on.
+                        Recommended. If enabled, MySQL database queries will be run in "strict" mode. 
+                        Should only be disabled if this site has old modules that don't obey modern, strict
+                        SQL query standards.
 
                 debug_send_email:
                     grouping: zenario_siteconfig
-                    label: 'Send an email if there is a SQL or Twig error, or if a layout is missing'
+                    label: 'Report SQL, PHP or Twig errors by email'
                     type: checkbox
                     readonly: true
+                    note_below: |
+                        Recommended. If enabled, Zenario will report errors via email which result from database (SQL) queries,
+                        PHP errors, and errors from Twig Snippet and other Twig-based plugins.
+                    post_field_html: |
+                        (<code>DEBUG_SEND_EMAIL</code>)
                 email_address_global_support:
                     grouping: zenario_siteconfig
-                    label: 'Email address:'
+                    label: 'Support email address:'
+                    pre_field_post_label_html: |
+                        (<code>EMAIL_ADDRESS_GLOBAL_SUPPORT</code>)
+                    note_below: |
+                        Specify the email address of someone who will be able to address errors. They should ideally have
+                        access to the server file system.
                     type: text
                     readonly: true
                     indent: 1

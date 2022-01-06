@@ -1,0 +1,243 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_ctype_document
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                show_title:
+                    plugin_setting:
+                        name: show_title
+                    label: "Show title"
+                    type: checkbox
+                    value: true
+                    redraw_onchange: true
+                title_tags:
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('show_title')
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tags'
+                    type: select
+                    values:
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h1
+                    side_note: |
+                        Choose which HTML tags the title will be displayed in.
+                    indent: 1
+                show_filename_local_file:
+                    plugin_setting:
+                        name: show_filename_local_file
+                    label: 'Show filename of local file if it exists'
+                    type: checkbox
+                    value: true
+                show_filename_s3_file:
+                    plugin_setting:
+                        name: show_filename_s3_file
+                    label: 'Show filename of S3 file if it exists'
+                    type: checkbox
+                    value: true
+                    hidden: true
+                show_default_stick_image:
+                    plugin_setting:
+                        name: show_default_stick_image
+                    label: 'Show image'
+                    type: checkbox
+                    value: ""
+                    side_note: Show the featured image or default icon.
+                    format_onchange: Yes
+                    
+                use_sticky_image:
+                    plugin_setting:
+                        name: use_sticky_image
+                    label: 'Show featured image'
+                    type: checkbox
+                    value: ""
+                    side_note: Display the featured image of the content item if it exists.
+                    format_onchange: Yes
+                    indent: 1
+                sticky_image_canvas:
+                    plugin_setting:
+                        name: sticky_image_canvas
+                    label: 'Featured image canvas:'
+                    type: select
+                    value: fixed_width_and_height
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: Yes
+                    indent: 2
+
+                sticky_image_width:
+                    plugin_setting:
+                        name: sticky_image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width for listing photo.
+                        numeric: The width must be a number.
+                    value: 200
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+
+                sticky_image_height:
+                    plugin_setting:
+                        name: sticky_image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height for listing photo.
+                        numeric: The height must be a number.
+                    value: 300
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                show_permalink:
+                    label: 'Show permalink'
+                    plugin_setting:
+                        name: show_permalink
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
+                permalink_target:
+                    indent: 1
+                    plugin_setting:
+                        name: permalink_target
+                    type: radios
+                    value: to_doc_content_item
+                    values:
+                        to_doc_content_item:
+                            label: "To document download content item"
+                        to_file_itself:
+                            label: "To file itself (only available on public content items)"
+                    visible_if: zenarioAB.value('show_permalink')
+                show_release_datetime:
+                    label: "Show item's release date/time"
+                    plugin_setting:
+                        name: show_release_datetime
+                    type: checkbox
+                    value: "1"
+                    format_onchange: Yes
+                date_format:
+                    label: 'Date format:'
+                    plugin_setting:
+                        name: date_format
+                    type: radios
+                    values:
+                        _SHORT:
+                            ord: "1"
+                            label: Short
+                        _MEDIUM:
+                            ord: "2"
+                            label: Medium
+                        _LONG:
+                            ord: "3"
+                            label: Long
+                    value: _MEDIUM
+                    indent: 1
+                show_time:
+                    label: 'Show time'
+                    plugin_setting:
+                        name: show_time
+                    type: checkbox
+                    value: "0"
+                    indent: 1
+                
+                show_details_and_link:
+                    label: 'Target content item:'
+                    type: radios
+                    plugin_setting:
+                        name: show_details_and_link
+                    values:
+                        current_content_item:
+                            ord: "1"
+                            label: Automatic
+                            side_note: This plugin should be in a slot on the layout for the Document content type. Creates a web page with summary details, from which the file can be downloaded.
+                        another_content_item:
+                            ord: "2"
+                            label: Specific document content item...
+                            side_note: Use this to show a specific document content item to the visitor. The plugin can be placed on any content item or layout.
+                    value: current_content_item
+                    format_onchange: Yes
+                another_document:
+                    label: 'Select document content item:'
+                    plugin_setting:
+                        name: another_document
+                        foreign_key_to: content
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/content_type//document//
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select...
+                    validation:
+                        required_if_not_hidden: Please select content item.
+                    indent: 1
+                show_view_link:
+                    label: "Show a View button (view local file in new browser tab/window)"
+                    plugin_setting:
+                        name: show_view_link
+                    type: checkbox
+                show_document_download_page_link:
+                    label: "Show link to document download page"
+                    plugin_setting:
+                        name: show_document_download_page_link
+                    type: checkbox
+                download_source:
+                    label: 'Sources for download:'
+                    hidden: true
+                local_file:
+                    label: 'Show Download button to download local file if it exists'
+                    plugin_setting:
+                        name: local_file
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                show_local_file_type_and_size:
+                    indent: 1
+                    label: 'Show file type and size'
+                    plugin_setting:
+                        name: show_local_file_type_and_size
+                    type: checkbox
+                    value: 1
+                    visible_if: zenarioAB.value('local_file')
+                    hide_with_previous_outdented_field: true
+                s3_file:
+                    label: 'Show Download button to download S3 file if it exists'
+                    plugin_setting:
+                        name: s3_file
+                    type: checkbox
+                    hidden: true
+                    redraw_onchange: true
+                show_s3_file_type_and_size:
+                    indent: 1
+                    label: 'Show file type and size'
+                    plugin_setting:
+                        name: show_s3_file_type_and_size
+                    type: checkbox
+                    value: 1
+                    visible_if: zenarioAB.value('s3_file')
+                    hide_with_previous_outdented_field: true

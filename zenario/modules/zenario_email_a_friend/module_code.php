@@ -53,7 +53,7 @@ class zenario_email_a_friend extends ze\moduleBaseClass {
 		$errStr = '';
 		if ($_POST[$varName] ?? false) {
 			if (strlen($_POST[$varName] ?? false) > $len){
-				$errStr = $this->phrase('_FIELD_LENGTH_EXCEEDED',['field_name'=>$varLabel]) . '<br/>';
+				$errStr = $this->phrase('The following field exceed its allowed length: [[field_name]]',['field_name'=>$varLabel]) . '<br/>';
 				$this->mergeFields[$varName]='';
 			}
 		} else {
@@ -71,7 +71,7 @@ class zenario_email_a_friend extends ze\moduleBaseClass {
 		$errStr = '';
 		if ($this->checkVar($varName,$varLabel,$len)) {
 			if (!ze\ring::validateEmailAddress($_POST[$varName] ?? false)){
-				$errStr = $this->phrase('_INVALID_EMAIL_ADDRESS',['field_name'=>$varLabel]) . '<br/>';
+				$errStr = $this->phrase('Please enter a valid email address.',['field_name'=>$varLabel]) . '<br/>';
 			}
 		}
 		if ($errStr){
@@ -91,10 +91,10 @@ class zenario_email_a_friend extends ze\moduleBaseClass {
 			$this->mergeFields['msg'] = $_POST['msg'] ?? false;
 			$this->mergeFields['email_to'] = $_POST['email_to'] ?? false;
 			
-			$this->checkEmailVar('email_to',$this->phrase('_EMAIL_ADDRESS'),100);
-			$this->checkEmailVar('email',$this->phrase('_EMAIL_FROM'),100);
-			$this->checkVar('msg',$this->phrase('_MESSAGE'),1000);
-			$this->checkVar('name',$this->phrase('_SENDER_NAME'),100);
+			$this->checkEmailVar('email_to',$this->phrase("Your friend's email address"),100);
+			$this->checkEmailVar('email',$this->phrase('Your email address'),100);
+			$this->checkVar('msg',$this->phrase('Message for your friend'),1000);
+			$this->checkVar('name',$this->phrase('Your name'),100);
 			
 			if ((!$this->errors) && $this->setting('email_template') ) {
 				$mergeFields = ['sender_name'=>ze::post('name'), 

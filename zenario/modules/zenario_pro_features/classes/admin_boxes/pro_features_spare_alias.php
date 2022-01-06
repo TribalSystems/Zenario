@@ -46,8 +46,15 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 				$box['title'] = ze\admin::phrase('Fixing the 404 error "[[alias]]"', ['alias' => ($brokenAlias)]);
 			}
 			
-			$fields['spare_alias/delete_error_log']['label'] = ze\admin::phrase('Delete all instances of "[[alias]]" from error log', ['alias' => $brokenAlias]);
 			$values['spare_alias/delete_alias'] = $brokenAlias;
+
+			$logCount = ze\row::count(ZENARIO_ERROR_LOG_PREFIX . 'error_log', ['page_alias' => ze\escape::sql($values['spare_alias/delete_alias'])]);
+			
+			$fields['spare_alias/delete_error_log']['label'] =
+				ze\admin::phrase(
+					'Delete all instances of "[[alias]]" from error log ([[log_count]] in log) ',
+					['alias' => $brokenAlias, 'log_count' => (int) $logCount]
+				);
 		}
 		
 		if (!$box['key']['id']) {

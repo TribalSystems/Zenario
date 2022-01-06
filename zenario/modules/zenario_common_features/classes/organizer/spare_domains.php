@@ -31,15 +31,20 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__spare_domains extends ze\moduleBaseClass {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if (ze::setting('primary_domain')) {
-			$panel['no_items_message'] .= ' '.
-				ze\admin::phrase('No Spare Domain Names have been defined.');
+		$panel['no_items_message'] .= ' '.
+			ze\admin::phrase('No Spare Domain Names have been defined.');
+
+		$primaryDomainSetting = ze::setting('primary_domain');
+		if ($primaryDomainSetting) {
+			$panel['notice']['type'] = 'information';
+			$panel['notice']['message'] = ze\admin::phrase('Primary domain: [[primary_domain]]', ['primary_domain' => $primaryDomainSetting]);
 		} else {
-			$panel['no_items_message'] .= ' '.
-				ze\admin::phrase('You currently cannot use Spare Domain Names on your site as you have not set a primary domain. Please go to Configuration -> Site settings -> Domains to set a primary domain.');
+			$link = ze\link::absolute(). 'organizer.php#zenario__administration/panels/site_settings//domains~.site_settings~tprimary_domain~k{"id"%3A"domains"}';
+			$siteSettingLink = '<a href="' . htmlspecialchars($link) . '" target="_blank">View Domains settings</a>';
 			
-			unset($panel['db_items']);
-			unset($panel['collection_buttons']['create']);
+			$panel['notice']['type'] = 'warning';
+			$panel['notice']['html'] = true;
+			$panel['notice']['message'] = ze\admin::phrase('You currently cannot use Spare Domain Names on your site as you have not set a primary domain. [[site_setting_link]]', ['site_setting_link' => $siteSettingLink]);
 		}
 	}
 	

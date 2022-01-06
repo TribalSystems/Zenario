@@ -5,25 +5,21 @@ sections:
         buttons:
             show_grid_off:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
-                label: Show grid
-                tooltip: Show the layout's gridlines
+                tooltip: Show gridlines
                 visible_if: '!zenarioA.showGridOn'
                 onclick: zenarioA.toggleShowGrid();
             show_grid_on:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
-                label: Hide grid
-                tooltip: Hide the layout's gridlines
+                tooltip: Hide gridlines
                 visible_if: zenarioA.showGridOn
                 onclick:  zenarioA.toggleShowGrid();
             show_empty_slots_off:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
-                label: Show empty slots
-                tooltip: Show slots with no plugins
+                tooltip: Show mobile & empty slots
                 visible_if: '!zenarioA.showEmptySlotsOn'
                 onclick: zenarioA.toggleShowEmptySlots();
             show_empty_slots_on:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
-                label: Hide empty slots
-                tooltip: Hide slots with no plugins
+                tooltip: Hide mobile & empty slots
                 visible_if: zenarioA.showEmptySlotsOn
                 onclick: zenarioA.toggleShowEmptySlots();

@@ -48,7 +48,7 @@ if (\ze\priv::check()) {
 			$bodyTag .= ' zenario_adminLoggedIn';
 		}
 		
-		$bodyTag .= ' zenario_pageMode_preview zenario_pageModeIsnt_edit zenario_pageModeIsnt_edit_disabled zenario_pageModeIsnt_menu zenario_pageModeIsnt_layout zenario_pageModeIsnt_item';
+		$bodyTag .= ' zenario_pageMode_preview zenario_pageModeIsnt_edit zenario_pageModeIsnt_edit_disabled zenario_pageModeIsnt_menu zenario_pageModeIsnt_layout';
 	}
 } else {
 	$includeAdminToolbar = false;

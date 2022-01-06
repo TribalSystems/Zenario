@@ -1912,6 +1912,79 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			});
 		}
 		
+		
+	} else if (field.image) {
+		
+		//Have an "image" property that allow as a field to be an image displayed on the form.
+		html += 
+			_$div(
+				'class', 'zenario_image_in_form',
+				_$html('img',
+					'id', '_image_for__' + id,
+					'src', zenario.addBasePath(field.image.url),
+					'width', field.image.width,
+					'height', field.image.height
+				)
+			);
+		
+		//However if the "image_crop_tool" property is also set, we'll use the "rcrop" tool
+		//to turn this into an actual field that uses a list of comma-separated numbers
+		//as crop settings.
+		if (field.image_crop_tool) {
+			cb.after(function() {
+				var values,
+					cbImageLoaded, cbCropReady, cbBothReady,
+					currentWidth, currentHeight, prevWidth, prevHeight,
+					$image = $(thus.get('_image_for__' + id));
+				
+				$image.rcrop(field.image_crop_tool);
+				
+				//If the field previously had a value, we'll need to load it into the image
+				if (value) {
+					values = ('' + value).split(',');
+					
+					//There are two "on readies" we need to watch out for, and they can come in any order.
+					//This means we need some callback black magic to make sure they've both fired, before
+					//we can continue!
+					cbImageLoaded = new zenario.callback();
+					cbCropReady = new zenario.callback();
+					cbBothReady = new zenario.callback();
+					
+					$image.on('load', function() {
+						cbImageLoaded.done();
+					});
+					$image.on('rcrop-ready', function() {
+						cbCropReady.done();
+					});
+					
+					cbBothReady
+						.add(cbImageLoaded)
+						.add(cbCropReady)
+						.after(function() {
+							if ((prevWidth = 1*values[4])
+							 && (prevHeight = 1*values[5])) {
+						
+								//Get what dimensions the image is being displayed at in the UI for resizing.
+								currentWidth = $image[0].naturalWidth || $image[0].width;
+								currentHeight = $image[0].naturalHeight || $image[0].height;
+						
+								//Check this matches what the previous value was expecting. If not, try and adjust.
+								if (currentWidth != prevWidth) {
+									values[0] = Math.floor(values[0] * currentWidth / prevWidth);
+									values[2] = Math.floor(values[2] * currentWidth / prevWidth);
+								}
+								if (currentHeight != prevHeight) {
+									values[1] = Math.floor(values[1] * currentHeight / prevHeight);
+									values[3] = Math.floor(values[3] * currentHeight / prevHeight);
+								}
+							}
+						
+							$image.rcrop('resize', 1*values[2], 1*values[3], 1*values[0], 1*values[1]);
+						});
+				}
+			});
+		}
+		
 	
 	} else if (fieldType) {
 		if (lov) {
@@ -4406,6 +4479,7 @@ methods.isButton = function(field) {
 methods.isFormField = function(field) {
 	return !(!field
 			|| field.snippet
+			|| (field.image && !field.image_crop_tool)
 			|| field.type == 'grouping'
 			|| field.type == 'submit'
 			|| field.type == 'toggle'
@@ -4607,6 +4681,26 @@ methods.readField = function(f) {
 			return field.current_value;
 		}
 	
+	
+	//Image crop fields
+	} else if (field.image && field.image_crop_tool) {
+		
+		var $image = $(thus.get('_image_for__' + f)),
+			cropping = $image.rcrop('getValues'),
+			currentWidth, currentHeight;
+		
+		if (cropping) {
+			//Get what dimensions the image is being displayed at in the UI for resizing.
+			currentWidth = $image[0].naturalWidth || $image[0].width;
+			currentHeight = $image[0].naturalHeight || $image[0].height;
+			
+			//field.current_value = value = cropping.x + ',' + cropping.y + ',' + cropping.width + ',' + cropping.height + ',' + currentWidth + ',' + currentHeight;
+			field.current_value = value = [cropping.x, cropping.y, cropping.width, cropping.height, currentWidth, currentHeight].join(',');
+		} else {
+			delete field.current_value;
+			value = field.value;
+		}
+		
 	
 	//Normal fields
 	} else if (!readOnly && (el = thus.get(f))) {

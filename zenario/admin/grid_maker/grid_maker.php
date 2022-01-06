@@ -21,7 +21,6 @@ ze\skinAdm::checkForChangesInFiles($runInProductionMode = true);
 $v = ze\db::codeVersion();
 
 echo '
-	<link rel="stylesheet" type="text/css" href="../../styles/grid.min.css?v=', $v, '" media="screen"/>
 	<link rel="stylesheet" type="text/css" href="../../styles/admin_grid_maker.min.css?v=', $v, '" media="screen"/>';
 
 
@@ -38,7 +37,6 @@ ze\content::pageFoot($prefix, false, false, false);
 
 echo '
 <script type="text/javascript" src="../../libs/manually_maintained/mit/jquery/jquery-ui.spinner.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="../../js/grid.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/admin_grid_maker.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	window.zenarioAdminHasZipPerms = ', ze\ring::engToBoolean(ze\priv::check('_PRIV_VIEW_TEMPLATE')), ';
@@ -83,6 +81,18 @@ echo '
 			
 			//Pass the Skin Id if one was successfully loaded, and also pass the Filename
 			echo ", ". (int) $layoutId,  ", '". ze\layoutAdm::codeName($layoutId),  "'";
+			
+			$content = $dummyContentItem = ['id' => -1, 'type' => 'x', 'admin_version' => -1, 'head_html' => null, 'head_overwrite' => 0, 'foot_html' => null, 'foot_overwrite' => 0];
+			$slotContents = [];
+			ze\plugin::slotContents(
+				$slotContents,
+				$content['id'], $content['type'], $content['admin_version'],
+				$layout['layout_id'],
+				$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
+				$runPlugins = false);
+			
+			echo ', ', json_encode($slotContents, JSON_FORCE_OBJECT);
+
 		
 		} else {
 			//When creating a new layout, these will be the default values.

@@ -263,7 +263,7 @@ class zenario_content_notifications extends ze\moduleBaseClass {
 		$record['url'] = $url = ze\link::adminDomain() . SUBDIRECTORY;
 		$record['admin_name'] = ze\admin::formatName();
 		$record['admin_profile_url'] = 
-			ze\link::absolute(). 'organizer.php?#zenario__users/panels/administrators';
+			ze\link::absolute(). 'organizer.php?#zenario__administration/panels/administrators';
 		$record['datetime_when'] = ze\admin::formatDateTime(ze\date::now());
 	}
 	

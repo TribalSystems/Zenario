@@ -7,11 +7,11 @@
 			{% endif %}
 			
 			{% if Verification_Failed %}
-				<div class="confirm_email_text">{{"_ERROR_VERIFICATION_FAILED"|trans}}</div>
+				<div class="confirm_email_text">{{"We are sorry, but we were unable to find your registration. Please check whether the verification link is correct."|trans}}</div>
 			{% endif %}
 
 			{% if Verification_Already_Done %}
-				<div class="confirm_email_text">{{"_ERROR_EMAIL_VERIFIED"|trans}}</div>
+				<div class="confirm_email_text">{{"This email address has already been verified."|trans}}</div>
 			{% endif %}
 
 			{% if Registered_Not_Verified %}
@@ -39,13 +39,13 @@
 					
 					{% if Choose_Screen_Name %}
 						<div class="extranet_field">
-							<div class="label"><label for="screen_name">{{"_SCREEN_NAME:"|trans}}</label></div>
+							<div class="label"><label for="screen_name">{{"Screen name:"|trans}}</label></div>
 							{{this.frameworkField({'type': "text", 'name': "screen_name", 'id': "screen_name", 'pattern': "new_screen_name", 'required': "true", 'class': "extranet_text"})}}
 						</div>
 					{% endif %}
 					
 					<div class="extranet_field">
-						<div class="label"><label for="email">{{"_EMAIL:"|trans}}</label></div>
+						<div class="label"><label for="email">{{"Email:"|trans}}</label></div>
 						{{this.frameworkField({'type': "email", 'name': "email", 'id': "email", 'pattern': "new_email", 'required': "true", 'class': "extranet_text"})}}
 					</div>
 					
@@ -57,17 +57,17 @@
 					{% endif %}
 					
 					<div class="extranet_field">
-						<div class="label"><label for="first_name">{{"_FIRST_NAME:"|trans}}</label></div>
+						<div class="label"><label for="first_name">{{"First name:"|trans}}</label></div>
 						{{this.frameworkField({'type': "text", 'name': "first_name", 'id': "first_name", 'maxlength': "100", 'required': "true"})}}
 					</div>
 					<div class="extranet_field">
-						<div class="label"><label for="last_name">{{"_LAST_NAME:"|trans}}</label></div>
+						<div class="label"><label for="last_name">{{"Last name:"|trans}}</label></div>
 						{{this.frameworkField({'type': "text", 'name': "last_name", 'id': "last_name", 'maxlength': "100", 'required': "true"})}}
 					</div>
 					
 					{% if User_passwords %}
 						<div class="extranet_field zenario_visitor_tooltip_wrap">
-							<div class="label"><label for="extranet_new_password">{{"_PASSWORD:"|trans}}</label></div>
+							<div class="label"><label for="extranet_new_password">{{"Password:"|trans}}</label></div>
 							{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true",
 								'class': "extranet_password", oninput: " zenario.updatePasswordNotifier('#extranet_new_password', false)",
 								'onmouseover': "$('#note_password').show()", 'onmouseout': "$('#note_password').hide()"})}}
@@ -78,7 +78,7 @@
 						</div>
 						
 						<div class="extranet_field">
-							<div class="label"><label for="extranet_new_password_confirm">{{"_PASSWORD_CONFIRMATION:"|trans}}</label></div>
+							<div class="label"><label for="extranet_new_password_confirm">{{"Repeat password:"|trans}}</label></div>
 							{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
 						</div>
 					{% endif %}
@@ -93,8 +93,8 @@
 					{% if Captcha %}
 						<div class="extranet_field">
 							<div class="captcha">
-							{{"_CAPTCHA:"|trans}}
-							{{Captcha}}
+								{{"Please help us combat form submissions by spam devices:"|trans}}
+								{{Captcha}}
 							</div>
 						</div>
 					{% endif %}
@@ -115,23 +115,23 @@
 			{% endif %}
 			
 			{% if Resend_Form %}
-				<h1>{{"_RESEND_VERIFICATION_EMAIL_TITLE"|trans}}</h1>
+				<h1>{{"Resend verification email"|trans}}</h1>
 				<div>
 					{% for item in Error_Display %}
 						<div class="extranet_error">{{item.Error}}</div>
 					{% endfor %}
 					
 					<div class="extranet_field">
-						<div class="label"><label for="email">{{"_EMAIL:"|trans}}</label></div>
+						<div class="label"><label for="email">{{"Email:"|trans}}</label></div>
 						{{this.frameworkField({'type': "email", 'name': "email", 'id': "email", 'pattern': "unverified_email", 'required': "true", 'class': "extranet_text"})}}
 					</div>
 					
 					<div class="extranet_btn"><div class="r">
-						<input type="submit" name="extranet_register" class="extranet_submit i" value="{{'_RESEND_VERIFICATION_EMAIL'|trans}}" />
+						<input type="submit" name="extranet_register" class="extranet_submit i" value="{{'Resend verification email'|trans}}" />
 					</div></div>
 				</div>
 				<div class="extranet_links">
-					<div><a {{Registration_Link}}>{{"_REGISTER"|trans}}</a></div>
+					<div><a {{Registration_Link}}>{{"Register"|trans}}</a></div>
 					{% if Login_Link_Section %}
 						<div><a {{Login_Link}}>{{Go_Back_To_Login_Text}}</a></div>
 					{% endif %}
@@ -144,19 +144,19 @@
 				{% endif %}
 				{% if Destination_url_section %} 
 				<div class="extranet_requested_link">
-					{{"_REQUESTED_LINK:"|trans}}
+					{{"Your requested page:"|trans}}
 					<a href="{{destURL_Link}}">{{destURL_Title}}</a>
 				</div>
 				{% endif %}
 				<div class="extranet_links">
 					{% if Change_Password_Link_Section %}
 						<div>
-							<a {{Change_Password_Link}}>{{"_CHANGE_PASSWORD"|trans}}</a>
+							<a {{Change_Password_Link}}>{{"Change your password"|trans}}</a>
 						</div>
 					{% endif %}
 					{% if Logout_Link_Section %}
 						<div>
-							<a {{Logout_Link}}>{{"_LOGOUT"|trans}}</a>
+							<a {{Logout_Link}}>{{"Logout"|trans}}</a>
 						</div>
 					{% endif %}
 				</div>

@@ -16,7 +16,13 @@
 	{% endif %}
 	
 	{% if Background_Image %}
-		<a {{Image_Link_Href}}{{Target_Blank}} id="{{Image_css_id}}"></a>
+		<a
+			id="{{Image_css_id}}" 
+			{{Image_Link_Href}}{{Target_Blank}}
+			{% if Image_Class %}
+				class="{{Image_Class|e}}"
+			{% endif %}
+		></a>
 	{% elseif Image %}
 		<div class="banner_image">
 			{% include this.frameworkBaseDir() ~ 'includes/image_link_href_start.twig.html' %}

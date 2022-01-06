@@ -136,47 +136,82 @@ site_settings:
                     snippet:
                         label: "User password requirements"
                         label_class: subheading
+                zenario_extranet:
+                    type: grouping
                 min_extranet_user_password_length:
                     label: 'Minimum length:'
                     grouping: password_requirements
                     site_setting:
                         name: min_extranet_user_password_length
                     type: text
+                    note_below: |
+                        Length must be between 8 and 32 characters. We recommend 10 or longer.
                     style: "width:50px;"
                     validation:
                         numeric: true
-            
-                info:
-                    grouping: password_requirements
-                    label: 'Character requirements:'
-                a_z_lowercase_characters_in_user_password:
-                    label: 'Passwords must contain a lowercase letter (a-z)'
+                    note_below: Length must be between 8 and 32 characters.
+                min_extranet_user_password_score:
+                    label: 'Minimum score:'
                     grouping: password_requirements
                     site_setting:
-                        name: a_z_lowercase_characters
-                    type: checkbox
-                    value: true
-                a_z_uppercase_characters_in_user_password:
-                    label: 'Passwords must contain an uppercase letter (A-Z)'
+                        name: min_extranet_user_password_score
+                    type: text
+                    value: 3
+                    style: 'width: 50px;'
+                    slider:
+                        range: min
+                        min: 2
+                        max: 4
+                        before_field: true
+                    validation:
+                        numeric: true
+                user_password_score_info:
                     grouping: password_requirements
-                    site_setting:
-                        name: a_z_uppercase_characters
-                    type: checkbox
-                    value: true
-                0_9_numbers_in_user_password:
-                    label: 'Passwords must contain a number (0-9)'
-                    grouping: password_requirements
-                    site_setting:
-                        name: 0_9_numbers_in_user_password
-                    type: checkbox
-                    value: true
-                symbols_in_user_password:
-                    label: 'Passwords must contain a symbol'
-                    grouping: password_requirements
-                    site_setting:
-                        name: symbols_in_user_password
-                    type: checkbox
-                    value: false
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                Password score:<br />
+                                4: Very strong password, very unguessable and provides strong protection from offline slow-hash scenario.<br />
+                                3: Strong password, safely unguessable, offers moderate protection from offline slow-hash scenario.<br />
+                                2: Moderate password, somewhat guessable, provides some protection from unthrottled online attacks.<br />
+                                1: Weak password, very guessable.<br />
+                                0: Very weak password, extremely guessable.<br />
+                            </div><br /><br /><br />
+                    # The <br /> tags above are required, as Extranet Base module adds its own field
+                    # with pre- and post-field HTML, which blends with the snippet above.
+                
+                # As of 18 Oct 2021, the character type requirements are being removed.
+                # info:
+                #     grouping: password_requirements
+                #     label: 'Character requirements:'
+                # a_z_lowercase_characters_in_user_password:
+                #     label: 'Passwords must contain a lowercase letter (a-z)'
+                #     grouping: password_requirements
+                #     site_setting:
+                #         name: a_z_lowercase_characters
+                #     type: checkbox
+                #     value: true
+                # a_z_uppercase_characters_in_user_password:
+                #     label: 'Passwords must contain an uppercase letter (A-Z)'
+                #     grouping: password_requirements
+                #     site_setting:
+                #         name: a_z_uppercase_characters
+                #     type: checkbox
+                #     value: true
+                # 0_9_numbers_in_user_password:
+                #     label: 'Passwords must contain a number (0-9)'
+                #     grouping: password_requirements
+                #     site_setting:
+                #         name: 0_9_numbers_in_user_password
+                #     type: checkbox
+                #     value: true
+                # symbols_in_user_password:
+                #     label: 'Passwords must contain a symbol'
+                #     grouping: password_requirements
+                #     site_setting:
+                #         name: symbols_in_user_password
+                #     type: checkbox
+                #     value: false
         groups:
             label: Groups
             edit_mode:

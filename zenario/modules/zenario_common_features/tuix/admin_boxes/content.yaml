@@ -91,7 +91,7 @@ zenario_content:
                             seo_message_title = 'This is a good title length for SEO.';
                         } else {
                             $('#snippet__title_length').attr('class','title_yellow');
-                            seo_message_title = 'The title is a little long for good SEO as it may not be fully visible.';
+                            seo_message_title = 'The title may not be fully visible in search engine results.';
                         }
                         $('#snippet__title_counter').html(cnt);
                         $('#row__title .zenario_note_content').text(seo_message_title);
@@ -154,15 +154,20 @@ zenario_content:
                     type: select
                     values:
                         suggested:
-                            label: Suggested position
+                            label: |
+                                Suggested position in the menu
                         before:
-                            label: Just before current position
+                            label: |
+                                Just before current item in the menu
                         after:
-                            label: Just after current position
+                            label: |
+                                Just after current item in the menu
                         under:
-                            label: Underneath current position
+                            label: |
+                                Below current item in the menu
                         specific:
-                            label: Specific position (advanced)...
+                            label: |
+                                Choose position in the menu...
                     redraw_onchange: true
                 menu_pos_suggested:
                     grouping: menu
@@ -221,6 +226,8 @@ zenario_content:
                     onchange: zenarioAB.tuix.___menu_text_changed = true;
                     validation:
                         required_if_not_hidden: Please enter some text for the menu node.
+                    side_note: |
+                        The title of this content item as you want it to appear in the menu navigation. We suggest the same as browser title, or shorter.
                 menu_id_when_editing:
                     type: hidden
                     hidden: true
@@ -276,7 +283,7 @@ zenario_content:
                     grouping: menu
                     hide_if_empty: true
                     ord: 1003
-                    label: 'Path preview:'
+                    label: 'Menu path preview:'
                     type: textarea
                     disabled: disabled
                     css_class: zenario_textbox_noborder zenario_breadcrumb_preview
@@ -295,8 +302,8 @@ zenario_content:
                     onchange: |
                         zenarioAB.tuix.___alias_changed = true;
                         $('#alias_changed').val(1);
-                    note_below: |
-                        Content items in a translation chain may each have a different alias (see site settings). So you can make an alias in the language of this content item.
+                    side_note: |
+                        A unique name for the page, which appears at the end of the URL. Cannot have spaces or special characters.
                 suggest_alias_from_title:
                     ord: alias.01
                     type: button
@@ -327,12 +334,14 @@ zenario_content:
                     label: 'Description meta tag:'
                     type: textarea
                     style: height:45px
+                    side_note: |
+                        The meta description to be embedded within the head of the page. May be visible in search engine result listings.
                     note_below: 'description'
                     oninput: |
                         cnt = $('#description').val().length;
                         if(cnt<1) {
                             $('#snippet__description_length').attr('class','description_red');
-                            seo_message_description = 'For good SEO, enter a description. If this field is left blank, search engines will autogenerate descriptions which may not always be accurate.';
+                            seo_message_description = 'For good SEO, enter a description. If this field is left blank, search engines will auto-generate a description which may not be as well-worded.';
                         } else if (cnt<50) {
                             $('#snippet__description_length').attr('class','description_orange');
                             seo_message_description = 'For good SEO, make the description longer to entice people to click through from a result list.';
@@ -438,19 +447,12 @@ zenario_content:
                     ord: 100
                     label: 'Writer:'
                     pick_items:
-                        path: zenario__users/panels/administrators
-                        target_path: zenario__users/panels/administrators
-                        min_path: zenario__users/panels/administrators
-                        select_phrase: Select an administrator...
+                        path: zenario__content/panels/writer_profiles
+                        target_path: zenario__content/panels/writer_profiles
+                        min_path: zenario__content/panels/writer_profiles
+                        select_phrase: Select a writer...
                         nothing_selected_phrase: Nobody selected
                     format_onchange: true
-                writer_name:
-                    ord: 110
-                    label: 'Writer name:'
-                    type: text
-                    hidden: true
-                    note_below: >
-                        You may edit this name (it doesn't have to be the administrator's usual name).
                 pinned:
                     label: 'Pin'
                     ord: 135
@@ -465,6 +467,8 @@ zenario_content:
                         exists: true
                     style: |
                         height: 12em;
+                    side_note: >
+                        2-3 lines describing the page. Content Summary List plugins usually list Titles and Summaries.
                 lock_summary_view_mode:
                     label: 'Protected'
                     ord: 140
@@ -492,8 +496,8 @@ zenario_content:
                         min_path: zenario__layouts/panels/layouts
                         max_path: zenario__layouts/panels/layouts
                         disallow_refiners_looping_on_min_path: true
-                        one_to_one_choose_phrase: Choose this Layout
-                        select_phrase: Select a Layout...
+                        one_to_one_choose_phrase: Choose this layout
+                        select_phrase: Select a layout...
                         hide_remove_button: true
                     format_onchange: true
         content_dropdown:
@@ -617,11 +621,11 @@ zenario_content:
                     language: html
                     tall_as_possible: true
         css:
-            ord: 31
-            label: Background & CSS
+            ord: 36
+            label: CSS
             edit_mode:
                 enabled: false
-                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                priv: _PRIV_EDIT_DRAFT
             fields:
                 desc:
                     full_width: true
@@ -725,7 +729,7 @@ zenario_content:
                 enabled: false
             label: History
             hidden: true
-            ord: 36
+            ord: 37
             fields:
                 no_history_recorded:
                     snippet:
@@ -811,7 +815,7 @@ zenario_content:
                     </td></tr>:
 
         file:
-            ord: 35
+            ord: 31
             label: File
             edit_mode:
                 enabled: true
@@ -871,16 +875,16 @@ zenario_content:
         
         # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
         privacy:
-            ord: 40
+            ord: 50
             hidden: true
             fields: {}
         
         categories:
-            ord: 50
+            ord: 33
             label: Categories
             edit_mode:
                 enabled: false
-                priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                priv: _PRIV_EDIT_DRAFT
             fields:
                 desc:
                     full_width: true

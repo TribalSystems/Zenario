@@ -27,9 +27,16 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+use ZxcvbnPhp\Zxcvbn;
+
 class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze\module::isRunning('zenario_extranet')) {
+			$fields['details/status']['values']['active']['hidden'] = true;
+			$fields['details/status']['side_note'] = ze\admin::phrase("Creation of extranet users is disabled. Start the Extranet Base Module to create users.");
+		}
+		
 		if ($box['key']['id']) {
 			ze\priv::exitIfNot('_PRIV_VIEW_USER');
 			
@@ -157,6 +164,9 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$box['title'] = ze\admin::phrase('Creating a user or contact');
 			
 			$fields['details/password_needs_changing']['label'] = "Ask user to change password when first logging in";
+			$values['details/password_needs_changing'] = true;
+			$fields['details/password_needs_changing']['read_only'] = true;
+			
 			$fields['details/send_activation_email_to_user']['hidden'] = false;
 			$fields['details/email_to_send']['hidden'] = false;
 	
@@ -204,19 +214,92 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			//Validate password: show whether it matches the requirements or not,
 			//but don't show an admin box error if it doesn't.
 			//Errors will be shown when validating.
-			$passwordValidation = ze\user::checkPasswordStrength($values['details/password']);
-			if (!$passwordValidation['password_matches_requirements']) {
-				//Set the post-html field to display "FAIL" highlighted in red.
+
+			$passwordMessageSnippet = '';
+			if (!$values['details/password']) {
 				$passwordMessageSnippet = 
 					'<div>
-						<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+						<span id="snippet_password_message" class="title_orange">' . ze\admin::phrase('Please enter a password') . '</span>
 					</div>';
 			} else {
-				//Set the post-html field to display "PASS" highlighted in green.
-				$passwordMessageSnippet = 
-					'<div>
-						<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
-					</div>';
+				$passwordLengthValidation = ze\user::checkPasswordStrength($values['details/password']);
+				if (!$passwordLengthValidation['password_matches_requirements']) {
+					$passwordMessageSnippet = 
+						'<div>
+							<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+						</div>';
+				} else {
+					$minScore = (int) ze::setting('min_extranet_user_password_score');
+
+					$zxcvbn = new ZxcvbnPhp\Zxcvbn();
+					$result = $zxcvbn->passwordStrength($values['details/password']);
+
+					if ($result && isset($result['score'])) {
+						switch ($result['score']) {
+							case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+								if ($minScore < 4) {
+									$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
+								} elseif ($minScore == 4) {
+									$phrase = 'Password matches the requirements (score 4)';
+								}
+
+								$passwordMessageSnippet = 
+									'<div>
+										<span id="snippet_password_message" class="title_green">' . ze\admin::phrase($phrase) . '</span>
+									</div>';
+								break;
+							case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
+								if ($minScore == 4) {
+									$passwordMessageSnippet = 
+									'<div>
+										<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+									</div>';
+								} elseif ($minScore < 4) {
+									$passwordMessageSnippet = 
+										'<div>
+											<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
+										</div>';
+								}
+								break;
+							case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+								if ($minScore == 2) {
+									$passwordMessageSnippet = 
+										'<div>
+											<span id="snippet_password_message" class="title_orange">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+										</div>';
+								} elseif ($minScore > 2) {
+									$passwordMessageSnippet = 
+										'<div>
+											<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+										</div>';
+								}
+								break;
+							case 1: //is still very guessable (guesses < 10^6)
+							case 0: //s extremely guessable (within 10^3 guesses)
+							default:
+								$passwordMessageSnippet = 
+									'<div>
+										<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+									</div>';
+								break;
+						}
+					}
+				}
+
+				// $passwordValidation = ze\user::checkPasswordStrength($values['details/password']);
+				// if (!$passwordValidation['password_matches_requirements']) {
+				// 	//Set the post-html field to display "FAIL" highlighted in red.
+				// 	$passwordMessageSnippet = 
+				// 		'<div>
+				// 			<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+				// 		</div>';
+				// } else {
+				// 	//Set the post-html field to display "PASS" highlighted in green.
+				// 	$passwordMessageSnippet = 
+				// 		'<div>
+				// 			<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
+				// 		</div>';
+				// }
 			}
 			$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
 		}
@@ -295,11 +378,28 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 									<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
 								</div>';
 						} else {
-							//Set the post-html field to display "PASS" highlighted in green.
-							$passwordMessageSnippet = 
-								'<div>
-									<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
-								</div>';
+							$minScore = (int) ze::setting('min_extranet_user_password_score');
+							$zxcvbn = new ZxcvbnPhp\Zxcvbn();
+							$result = $zxcvbn->passwordStrength($values['details/password']);
+
+							if ($result && isset($result['score'])) {
+								if ($result['score'] < $minScore) {
+									$box['tabs']['details']['errors'][] = ze\admin::phrase('Password is too easy to guess (score [[score]]).', ['score' => (int) $result['score']]);
+									$fields['details/password']['error'] = true;
+
+									//Set the post-html field to display "FAIL" highlighted in red.
+									$passwordMessageSnippet = 
+										'<div>
+											<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+										</div>';
+								} else {
+									//Set the post-html field to display "PASS" highlighted in green.
+									$passwordMessageSnippet = 
+									'<div>
+										<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
+									</div>';
+								}
+							}
 						}
 						$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
 					}

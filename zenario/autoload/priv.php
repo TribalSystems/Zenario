@@ -60,11 +60,10 @@ class priv {
 			if (!$welcomePage
 			 && $editCID && $editCType
 		
-			//Permissions to view languages, menu nodes, plugins and export content items are exceptions and
+			//Permissions to view languages, menu nodes and plugins are exceptions and
 			//should be granted even if the admin could not edit a content item
 			 && $action != '_PRIV_VIEW_LANGUAGE'
 			 && $action != '_PRIV_VIEW_MENU_ITEM'
-			 && $action != '_PRIV_EXPORT_CONTENT_ITEM'
 			 && $action != '_PRIV_VIEW_REUSABLE_PLUGIN') {
 			
 				//If this is a check on the current content item, there's no need to query the
@@ -74,7 +73,6 @@ class priv {
 					$status = \ze::$status;
 					$equivId = \ze::$equivId;
 					$adminVersion = \ze::$adminVersion;
-					$langId = \ze::$langId;
 					$locked = \ze::$locked;
 			
 				//Otherwise look up the details from the database
@@ -90,7 +88,6 @@ class priv {
 					$status = $content['status'];
 					$equivId = $content['equiv_id'];
 					$adminVersion = $content['admin_version'];
-					$langId = $content['language_id'];
 					$locked = $content['lock_owner_id'] && $content['lock_owner_id'] != $_SESSION['admin_userid'];
 				}
 			
@@ -114,8 +111,7 @@ class priv {
 					//or can only edit content items of a specific content type,
 					//or can only edit content items of a specific language,
 					//check that this is one of those content items.
-					if (empty($_SESSION['admin_specific_languages'][$langId])
-					 && empty($_SESSION['admin_specific_content_types'][$editCType])
+					if (empty($_SESSION['admin_specific_content_types'][$editCType])
 					 && empty($_SESSION['admin_specific_content_items'][$editCType. '_'. $editCID])) {
 						return false;
 					}
@@ -145,17 +141,8 @@ class priv {
 							case 'perm_editmenu':
 							case 'perm_publish':
 							case '_PRIV_VIEW_SITE_SETTING':
-							case '_PRIV_VIEW_CONTENT_ITEM_SETTINGS':
 							case '_PRIV_VIEW_MENU_ITEM':
 							case '_PRIV_EDIT_MENU_TEXT':
-							case '_PRIV_CREATE_TRANSLATION_FIRST_DRAFT':
-							case '_PRIV_EDIT_DRAFT':
-							case '_PRIV_CREATE_REVISION_DRAFT':
-							case '_PRIV_DELETE_DRAFT':
-							case '_PRIV_EDIT_CONTENT_ITEM_TEMPLATE':
-							case '_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE':
-							case '_PRIV_IMPORT_CONTENT_ITEM':
-							case '_PRIV_EXPORT_CONTENT_ITEM':
 							case '_PRIV_HIDE_CONTENT_ITEM':
 							case '_PRIV_PUBLISH_CONTENT_ITEM':
 							case '_PRIV_VIEW_LANGUAGE':
@@ -163,8 +150,8 @@ class priv {
 								return true;
 							
 							//Allow admins to create content items of certain types, if they have that content type enabled
-							case '_PRIV_CREATE_FIRST_DRAFT':
-								if ($editCType) {
+							case '_PRIV_EDIT_DRAFT':
+								if (!$editCID && $editCType) {
 									return !empty($_SESSION['admin_specific_content_types'][$editCType]);
 								} else {
 									return true;
@@ -205,12 +192,6 @@ class priv {
 					return true;
 			
 				case 'specific_areas':
-					//If an admin can only edit certain languages, allow them to edit the menu text if it
-					//is specificially for this language
-					if (!empty($_SESSION['admin_specific_languages'][$langId])) {
-						return true;
-					}
-				
 					//If an admin can only edit certain content items, allow them to edit the menu text if it
 					//is for this one
 					foreach (\ze\sql::select("
@@ -232,26 +213,26 @@ class priv {
 	
 		return false;
 	}
-
+	
+	
+	
 	//Check to see if an admin can edit a specific language
+	
+	//We used to have the ability for limited admins to have permissions on a specific language.
+	//This would let them create translations in languages they had permissions for.
+	//However this option was not being used and has been removed as of 9.2.
+	
+	//Now the only thing this function does is stop limited admins from making new translations,
+	//or editing anything to do with languages.
+	
 	//Formerly "checkPrivForLanguage()"
 	public static function onLanguage($action, $langId) {
 	
-		//Run the usual \ze\priv::check() function first
-		if (\ze\priv::check($action)) {
-			switch ($_SESSION['admin_permissions']) {
-				case 'all_permissions':
-				case 'specific_actions':
-					//Most normal administrators can edit menu text if \ze\priv::check() says they can
-					return true;
-			
-				case 'specific_areas':
-					//If an admin can only edit certain languages, allow them to edit the menu text if it
-					//is specificially for this language
-					if (!empty($_SESSION['admin_specific_languages'][$langId])) {
-						return true;
-					}
-			}
+		switch ($_SESSION['admin_permissions']) {
+			case 'all_permissions':
+			case 'specific_actions':
+				//Most normal administrators can edit menu text if \ze\priv::check() says they can
+				return \ze\priv::check($action);
 		}
 	
 		return false;

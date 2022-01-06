@@ -31,6 +31,7 @@ zenario_admin:
                     type: checkbox
                     full_width: true
                     post_field_label: Author
+                    redraw_onchange: true
                 perm_author_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -38,47 +39,36 @@ zenario_admin:
                     full_width: true
                     checking_child_checks_parents: true
                     values:
-                        _PRIV_VIEW_CONTENT_ITEM_SETTINGS:
-                            label: View a content item's metadata
                         _PRIV_EDIT_DRAFT:
-                            parent: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                             label: Edit a content item
-                        _PRIV_CREATE_FIRST_DRAFT:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Create a content item
-                        _PRIV_CREATE_TRANSLATION_FIRST_DRAFT:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Create a translation of a content item
-                        _PRIV_CREATE_REVISION_DRAFT:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Create a draft of a content item
-                        _PRIV_DELETE_DRAFT:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Delete the draft of a content item
-                        _PRIV_EDIT_CONTENT_ITEM_CATEGORIES:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Set a content item's categories
-                        _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Set a content item's permissions
-                        _PRIV_EDIT_CONTENT_ITEM_TEMPLATE:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Change a content item's layout
-                        _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE:
-                            parent: _PRIV_EDIT_DRAFT
-                            label: Set a content item's feature image
                         _PRIV_MANAGE_MEDIA:
                             label: Manage images
-                    value: "_PRIV_VIEW_CONTENT_ITEM_SETTINGS,_PRIV_EDIT_DRAFT,_PRIV_CREATE_FIRST_DRAFT,_PRIV_CREATE_TRANSLATION_FIRST_DRAFT,_PRIV_CREATE_REVISION_DRAFT,_PRIV_DELETE_DRAFT,_PRIV_EDIT_CONTENT_ITEM_CATEGORIES,_PRIV_EDIT_CONTENT_ITEM_PERMISSIONS,_PRIV_EDIT_CONTENT_ITEM_TEMPLATE,_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE,_PRIV_MANAGE_MEDIA"
+                    value: "_PRIV_EDIT_DRAFT,_PRIV_MANAGE_MEDIA"
+                    redraw_onchange: true
+                
+                perm_editmenu_disabled:
+                    is_admin_permission: false
+                    grouping: specific_actions
+                    visible_if: |
+                        !lib.value('perm_author_permissions').match(/_PRIV_EDIT_DRAFT/)
+                    type: checkbox
+                    disabled: true
+                    full_width: true
+                    post_field_label: Menu (requires Author permissions)
+                    row_class: zenario_perms
                 perm_editmenu:
                     is_admin_permission: true
                     grouping: specific_actions
+                    visible_if: |
+                        lib.value('perm_author_permissions').match(/_PRIV_EDIT_DRAFT/)
                     type: checkbox
                     full_width: true
                     post_field_label: Menu
                 perm_editmenu_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
+                    hide_with_previous_field: true
+                    hide_with_previous_previous_field: true
                     type: checkboxes
                     full_width: true
                     checking_child_checks_parents: true
@@ -109,15 +99,30 @@ zenario_admin:
                             label: Delete a menu section
                             label_class: zfab_scary_option
                     value: "_PRIV_VIEW_MENU_ITEM,_PRIV_EDIT_MENU_TEXT,_PRIV_EDIT_MENU_ITEM,_PRIV_ADD_MENU_ITEM,_PRIV_DELETE_MENU_ITEM,_PRIV_REORDER_MENU_ITEM"
+                
+                perm_publish_disabled:
+                    is_admin_permission: false
+                    grouping: specific_actions
+                    visible_if: |
+                        !lib.value('perm_author_permissions').match(/_PRIV_EDIT_DRAFT/)
+                    type: checkbox
+                    disabled: true
+                    full_width: true
+                    post_field_label: Publish (requires Author permissions)
+                    row_class: zenario_perms
                 perm_publish:
                     is_admin_permission: true
                     grouping: specific_actions
+                    visible_if: |
+                        lib.value('perm_author_permissions').match(/_PRIV_EDIT_DRAFT/)
                     type: checkbox
                     full_width: true
                     post_field_label: Publisher
                 perm_publish_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
+                    hide_with_previous_field: true
+                    hide_with_previous_previous_field: true
                     type: checkboxes
                     full_width: true
                     checking_child_checks_parents: true
@@ -155,15 +160,30 @@ zenario_admin:
                         _PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST:
                             label: May receive content notifications
                     value: "_PRIV_PUBLISH_CONTENT_ITEM,_PRIV_HIDE_CONTENT_ITEM,_PRIV_CANCEL_CHECKOUT,_PRIV_DELETE_TRASHED_CONTENT_ITEMS,_PRIV_MANAGE_CATEGORY,_PRIV_MANAGE_EMAIL_TEMPLATE,_PRIV_VIEW_LANGUAGE,_PRIV_MANAGE_LANGUAGE_CONFIG,_PRIV_MANAGE_LANGUAGE_PHRASE,_PRIV_VIEW_REUSABLE_PLUGIN,_PRIV_MANAGE_REUSABLE_PLUGIN,_PRIV_MANAGE_SPARE_ALIAS,_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST"
+                
+                perm_designer_disabled:
+                    is_admin_permission: false
+                    grouping: specific_actions
+                    visible_if: |
+                        !lib.value('perm_author_permissions').match(/_PRIV_EDIT_DRAFT/)
+                    type: checkbox
+                    disabled: true
+                    full_width: true
+                    post_field_label: Designer (requires Author permissions)
+                    row_class: zenario_perms
                 perm_designer:
                     is_admin_permission: true
                     grouping: specific_actions
+                    visible_if: |
+                        lib.value('perm_author_permissions').match(/_PRIV_EDIT_DRAFT/)
                     type: checkbox
                     full_width: true
                     post_field_label: Designer
                 perm_designer_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
+                    hide_with_previous_field: true
+                    hide_with_previous_previous_field: true
                     type: checkboxes
                     full_width: true
                     checking_child_checks_parents: true

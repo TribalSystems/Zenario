@@ -13,7 +13,8 @@
 		"ps/image-optimizer": "*",
 		"smottt/wideimage": "*",
 		"twig/twig": "^2.0",
-		"geoip2/geoip2": "~2.0"
+		"geoip2/geoip2": "~2.0",
+		"bjeavons/zxcvbn-php": "^1.0"
 	},
 	"autoload": {
 		"psr-4": { "ze\\": "zenario/autoload" }

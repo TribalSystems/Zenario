@@ -3,20 +3,22 @@
 plugin_settings:
     tabs:
         first_tab:
-            label: Sitemap Settings
+            label: Sitemap settings
             fields:
                 menu_section:
                     plugin_setting:
                         name: menu_section
                         foreign_key_to: menu_section
                         dangling_cross_references: delete_instance
-                    label: 'Menu Section:'
+                    label: 'Menu section:'
+                    side_note: |
+                        This should usually be set to the menu section "Main" to show main site navigation. Change this to show a different part of the site's navigation.
                     pick_items:
                         path: zenario__menu/panels/sections
                         min_path: zenario__menu/panels/sections
                         max_path: zenario__menu/panels/sections
                         target_path: zenario__menu/panels/sections
-                        select_phrase: Select Menu Section...
+                        select_phrase: Select menu section...
                         hide_remove_button: Yes
                     value: "1"
                     validation:
@@ -24,7 +26,20 @@ plugin_settings:
                 show_invisible_menu_items:
                     plugin_setting:
                         name: show_invisible_menu_items
-                    label: 'Show Menu Items that are Invisible:'
+                    label: |
+                        Show menu items even if marked "invisible" (not recommended)
+                    side_note: |
+                        Menu items marked as "invisible" are hidden from menus and sitemaps, but still appear in breadcrumb trails. Check this to override the usual behaviour and make them visible in the sitemap.
                     type: checkbox
                     value: ""
+                menu_number_of_levels:
+                    plugin_setting:
+                        name: menu_number_of_levels
+                    label: 'Number of levels to display:'
+                    type: select
+                    values:
+                        1: "1 level"
+                        2: "2 levels"
+                        3: "3 levels"
+                    value: 3
     module_class_name: zenario_sitemap

@@ -3,14 +3,14 @@
         <div class="extranet_inner_wrap">
         
         {% if Message_Display %}
-            <h1>{{"_CHANGE_EMAIL_TITLE"|trans}}</h1>
+            <h1>{{"Change your email address"|trans}}</h1>
             
             <div class="extranet_message">{{Message}}</div>
         {% endif %}
         
 
         {% if Change_Email_Form %}
-            <h1>{{"_CHANGE_EMAIL_TITLE"|trans}}</h1>
+            <h1>{{"Change your email address"|trans}}</h1>
             
 			{% for item in Error_Display %}
 				<div class="extranet_error">{{item.Error}}</div>
@@ -22,11 +22,11 @@
             
             <div>
                 <div class="extranet_field">
-                    <div class="label"><label for="extranet_email">{{"_NEW_EMAIL_ADDRESS:"|trans}}</label></div>
+                    <div class="label"><label for="extranet_email">{{"New email address:"|trans}}</label></div>
                     {{this.frameworkField({'type': "email", 'name': "extranet_email", 'id': "extranet_email", 'pattern': "email", 'required': "true", 'class': "extranet_field"})}}
                 </div>
                 <div class="extranet_field">
-                    <div class="label"><label for="extranet_password">{{"_PASSWORD:"|trans}}</label></div>
+                    <div class="label"><label for="extranet_password">{{"Your password:"|trans}}</label></div>
                     {{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_field"})}}
                 </div>
                 {{this.frameworkField({'type': "hidden", 'name': "action", 'value': "prepare_email_change"})}}
@@ -40,7 +40,7 @@
                     </div>
                 {% endif %}
                 
-                <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_email" class="extranet_submit i" value="{{'_CHANGE_EMAIL'|trans}}" /></div></div>
+                <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_email" class="extranet_submit i" value="{{'Change'|trans}}" /></div></div>
             </div>
         {% endif %}
 

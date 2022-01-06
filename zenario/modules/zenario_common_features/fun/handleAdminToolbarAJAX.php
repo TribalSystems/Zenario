@@ -56,7 +56,7 @@ if (($_REQUEST['mID'] ?? false) && ($_POST['menu_item'] ?? false)) {
 
 //Delete the draft of a Content Item
 } elseif ($_POST['delete'] ?? false) {
-	if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_DELETE_DRAFT', $cID, $cType)) {
+	if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 		$menu = ze\menu::getFromContentItem($cID, $cType);
 		
 		ze\contentAdm::deleteDraft($cID, $cType);
@@ -90,7 +90,7 @@ if (($_REQUEST['mID'] ?? false) && ($_POST['menu_item'] ?? false)) {
 	}
 
 } elseif (ze::post('add_existing_translation_to_chain')) {
-	if (ze\priv::check('_PRIV_CREATE_TRANSLATION_FIRST_DRAFT')) {
+	if (ze\priv::check('_PRIV_EDIT_DRAFT')) {
 		
 		$cID = $cType = false;
 		if ((ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids))

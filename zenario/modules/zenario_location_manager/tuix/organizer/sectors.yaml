@@ -4,6 +4,7 @@ zenario__locations:
     nav:
         sectors:
             panel:
+                priv: _PRIV_MANAGE_LOCATIONS
                 title: Sectors (top level)
                 no_items_message: No sectors defined, click "Define a sector" to create one.
                 view_mode: list
@@ -72,6 +73,7 @@ zenario__locations:
                         admin_box:
                             path: zenario_location_manager__sector
                     add_sector:
+                        priv: _PRIV_MANAGE_LOCATIONS
                         ord: "1"
                         label: Add a sector
                         pick_items:
@@ -83,6 +85,7 @@ zenario__locations:
                                 action: add_sector
                 item_buttons:
                     view_sector_locations:
+                        priv: _PRIV_MANAGE_LOCATIONS
                         ord: "1"
                         label: View locations in this sector
                         link:
@@ -94,12 +97,14 @@ zenario__locations:
                         multiple_select: Yes
                         hide_when_children_are_not_visible: Yes
                     rename_sector:
+                        priv: _PRIV_MANAGE_LOCATIONS
                         parent: action_dropdown
                         label: Rename
                         hide_in_select_mode: Yes
                         admin_box:
                             path: zenario_location_manager__sector
                     delete_sector:
+                        priv: _PRIV_MANAGE_LOCATIONS
                         parent: action_dropdown
                         label: Delete
                         hide_in_select_mode: Yes
@@ -112,6 +117,7 @@ zenario__locations:
                             request:
                                 action: delete_sector
                     remove_sector:
+                        priv: _PRIV_MANAGE_LOCATIONS
                         ord: "2"
                         css_class: delete
                         tooltip: Remove this sector

@@ -118,12 +118,48 @@ plugin_settings:
                         5: "5"
                     value: 1
                     visible_if: lib.value('menu_number_of_levels') == "1_full_width"
+                limit_initial_level_1_menu_nodes_checkbox:
+                    plugin_setting:
+                        name: limit_initial_level_1_menu_nodes_checkbox
+                    label: |
+                        Divide the menu with a "More" button
+                    type: checkbox
+                    side_note: 'Check this option to limit how many level 1 menu nodes are shown, so that the user must click the More button to reveal the remaining menu nodes.'
+                    redraw_onchange: true
+                    disabled_if: lib.valueNotIn('menu_number_of_levels', '1', '2', '3')
+                limit_initial_level_1_menu_nodes:
+                    indent: 1
+                    plugin_setting:
+                        name: limit_initial_level_1_menu_nodes
+                    type: select
+                    values:
+                        1: "1 item"
+                        2: "2 items"
+                        3: "3 items"
+                        4: "4 items"
+                        5: "5 items"
+                    value: 5
+                    visible_if: lib.value('limit_initial_level_1_menu_nodes_checkbox')
+                    disabled_if: lib.valueNotIn('menu_number_of_levels', '1', '2', '3')
+                text_for_more_button:
+                    indent: 1
+                    plugin_setting:
+                        name: text_for_more_button
+                    type: text
+                    label: 'Text for "More" button:'
+                    value: "More"
+                    show_phrase_icon: true
+                    visible_if: lib.value('limit_initial_level_1_menu_nodes_checkbox')
+                    disabled_if: lib.valueNotIn('menu_number_of_levels', '1', '2', '3')
+                    validation:
+                        required_if_not_hidden: 'This field is required.'
                 menu_show_all_branches:
                     plugin_setting:
                         name: menu_show_all_branches
                     label: 'Generate distant branches'
                     type: checkbox
                     value: "1"
+                    disabled_if: lib.value('menu_number_of_levels') == 1
                     side_note: >
                         Generate parts of the menu hierarchy not including the current page. Normally used to support a mouseover effect when all parts of the menu need to be displayed.
                 show_missing_menu_nodes:

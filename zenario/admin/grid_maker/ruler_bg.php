@@ -23,7 +23,7 @@ foreach ([50 => $height - 2, 10 => 5, 5 => 3] as $step => $tall) {
 $canvas = $img->getCanvas();
 for ($x = 0; $x + 2 < $width; $x += 50) {
 	$canvas->useFont(CMS_ROOT. 'zenario/libs/manually_maintained/ofl/Marvel/Marvel-Bold.ttf', 8, $img->allocateColor(0x30, 0x30, 0x30));
-	$canvas->writeText($x + 2, 'top', $x);
+	$canvas->writeText($x + 2, 4, $x);
 }
 
 

@@ -8,14 +8,13 @@ license_info: 'Modified BSD License'
 display_name: Multiple Image Container
 class_name: zenario_multiple_image_container
 description: |
-    <p>A Multiple Image Container plugin allows you to display one or multiple images
-        on a page in a content-managed way.</p>
+    <p>The Multiple Image Container (MIC) module allows you to display multiple images on a page in the form of a gallery. Create a plugin from the MIC module for each gallery page.</p>
     
-    <p>Images can be in JPG, PNG and GIF formats. The CMS can automatically resize large images
-        down to a size of your choice.</p>
+    <p>Images can be uploaded in JPG, PNG format (best quality), or GIF (lesser quality but may be animated). When the module is running, there will be an MIC Images panel in Organizer, underneath the Content Items area, in which administrators can manage all such images in one place.</p>
+   
+    <p>When uploading images, you may upload as large a version as you like (which means you can decide on the final output size later), and Zenario automatically resizes and caches images at whatever size is set in the plugin settings.</p>
     
-    <p>There is the option to show a larger copy of each image when clicked in a floating box
-        above the current page. These can also be displayed at a size of your choice.</p>
+    <p>Various gallery styles are possible, and these are determined in CSS. When visitors view the gallery, the usual behaviour is that they see thumbnails initially, and can click on a thumbnail to see it at a larger size.</p>
 category: pluggable
 keywords: >
     mic, gallery, image, picture, gif, jpg, jpeg, png

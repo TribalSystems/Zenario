@@ -27,80 +27,78 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-	switch($path) {
-		case 'zenario_country_manager__country':
-			ze\priv::exitIfNot('_PRIV_MANAGE_COUNTRY');
-			
-			ze\row::set(
-				ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
-				['english_name' => $values['details/name']], 
-				['id' => $values['details/code']]
-			);
-						
-			if ($values['details/update_phrase'] || !$box['key']['id']) {
-				$languages = ze\lang::getLanguages();
-				foreach ($languages as $language) {
-					ze\row::set(
-						"visitor_phrases", 	
-						[
-							'local_text' => $values['details/name'],
-							'protect_flag' => 1
-							], 
-						[
-							'language_id' => $language['id'],
-							'module_class_name' => 'zenario_country_manager',
-							'code' => '_COUNTRY_NAME_' . $values['details/code']
-						]
-					); 
-				}
+switch($path) {
+	case 'zenario_country_manager__country':
+		ze\priv::exitIfNot('_PRIV_MANAGE_COUNTRY');
+		
+		ze\row::set(
+			ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
+			['english_name' => ze\escape::sql($values['details/name'])], 
+			['id' => ze\escape::asciiInSQL($values['details/code'])]
+		);
+					
+		if ($values['details/update_phrase'] || !$box['key']['id']) {
+			$languages = ze\lang::getLanguages();
+			foreach ($languages as $language) {
+				ze\row::set(
+					"visitor_phrases", 	
+					[
+						'local_text' => $values['details/name'],
+						'protect_flag' => 1
+						], 
+					[
+						'language_id' => $language['id'],
+						'module_class_name' => 'zenario_country_manager',
+						'code' => '_COUNTRY_NAME_' . $values['details/code']
+					]
+				); 
 			}
+		}
 
-			$box['key']['id'] = $values['details/code'];
-			
-			break;
-	
-	
-		case 'zenario_country_manager__region':
-			ze\priv::exitIfNot('_PRIV_MANAGE_COUNTRY');
-			
-			$updateArray['name'] = ($values['details/name'] ?? false);
-			if (ze::setting('zenario_country_manager__region_type_management')) {
-				$updateArray['region_type'] = ($values['details/region_type'] ?? false);
-			}
-			$updateArray['active'] = 1;
-			$updateArray['parent_id'] = 0;
-			$updateArray['country_id'] = '';
-			
-			if ($box['key']['parent_id']) {
-				$updateArray['parent_id'] = $box['key']['parent_id'];
-			} elseif ($box['key']['country_id']) {
-				$updateArray['country_id'] = $box['key']['country_id'];
-			}
-			
-			if (!$box['key']['id']) {
-				$languages = ze\lang::getLanguages();
-				foreach ($languages as $language) {
-					ze\row::set(
-						"visitor_phrases", 	
-						[
-							'local_text' => $values['details/name'],
-							'protect_flag' => 1
-							], 
-						[
-							'language_id' => $language['id'],
-							'module_class_name' => 'zenario_country_manager',
-							'code' => $values['details/name']
-						]
-					); 
-				}
-			}
+		$box['key']['id'] = $values['details/code'];
+		
+		break;
 
-			$box['key']['id'] = ze\row::set(
-				ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions',
-				$updateArray,
-				['id' => ($box['key']['id'] ?? false)]
-			);
-			break;
-	}
 
-?>
+	case 'zenario_country_manager__region':
+		ze\priv::exitIfNot('_PRIV_MANAGE_COUNTRY');
+		
+		$updateArray['name'] = ($values['details/name'] ?? false);
+		if (ze::setting('zenario_country_manager__region_type_management')) {
+			$updateArray['region_type'] = ($values['details/region_type'] ?? false);
+		}
+		$updateArray['active'] = 1;
+		$updateArray['parent_id'] = 0;
+		$updateArray['country_id'] = '';
+		
+		if ($box['key']['parent_id']) {
+			$updateArray['parent_id'] = $box['key']['parent_id'];
+		} elseif ($box['key']['country_id']) {
+			$updateArray['country_id'] = $box['key']['country_id'];
+		}
+		
+		if (!$box['key']['id']) {
+			$languages = ze\lang::getLanguages();
+			foreach ($languages as $language) {
+				ze\row::set(
+					"visitor_phrases", 	
+					[
+						'local_text' => $values['details/name'],
+						'protect_flag' => 1
+						], 
+					[
+						'language_id' => $language['id'],
+						'module_class_name' => 'zenario_country_manager',
+						'code' => $values['details/name']
+					]
+				); 
+			}
+		}
+
+		$box['key']['id'] = ze\row::set(
+			ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions',
+			$updateArray,
+			['id' => ($box['key']['id'] ?? false)]
+		);
+		break;
+}

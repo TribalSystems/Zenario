@@ -1,7 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_delete_media_content_item:
-    priv: _PRIV_DELETE_DRAFT
+    priv: _PRIV_EDIT_DRAFT
     key:
         id: ""
         cID: ""

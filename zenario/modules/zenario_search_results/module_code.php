@@ -164,7 +164,7 @@ class zenario_search_results extends ze\moduleBaseClass {
 		
 		if ($this->searchString) {
 			$this->sections['Search_Result_Heading'] = true;
-			$this->mergeFields['Search_Results_For'] = $this->phrase( '_SEARCH_RESULTS_FOR', ['term' => htmlspecialchars('"'. $this->searchString. '"')]);
+			$this->mergeFields['Search_Results_For'] = $this->phrase('Search results for [[term]]:', ['term' => htmlspecialchars('"'. $this->searchString. '"')]);
 		}
 		
 		if ($this->setting('search_label')) {

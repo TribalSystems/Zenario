@@ -71,6 +71,7 @@ zenarioCI.box = function(slotName, type, cantCache) {
 	
 	if (slotName && (slot = zenario.slots[slotName])) {
 		
+		//N.b. similar logic to the following is also used inline in zenario/js/admin_grid_maker.js
 		pluginDesc = ', ';
 		
 		if (slot.isVersionControlled) {

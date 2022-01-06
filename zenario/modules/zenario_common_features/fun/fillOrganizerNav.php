@@ -43,13 +43,13 @@ $sql = "
 		ct.content_type_name_en";
 
 //Add links to every content type to the navigation
-$ord = 0.1;
+$ord = 0;
 foreach (ze\sql::fetchAssocs($sql) as $details) {
-	$thisOrd = $ord = $ord + 0.0001;
+	$ord++;
 	$cType = $details['content_type_id'];
 	
 	$nav['zenario__content']['nav']['content_type_'. $cType] = [
-		'ord' => $thisOrd,
+		'ord' => $ord,
 		'label' => ($details['content_type_plural_en'] ?: $details['content_type_name_en']),
 		'css_class' => 'content_type_'. $cType,
 		'tooltip' => $details['tooltip_text'],

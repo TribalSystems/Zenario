@@ -155,13 +155,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 
 
 if (isset($tags['priv']) && !ze\priv::check($tags['priv'])) {
-	echo ze\admin::phrase('You do not have permissions to see this Admin Box.');
+	echo ze\admin::phrase('You do not have permission to access this.');
 	exit;
 }
 
 
 if (!ze\tuix::includeModule($modules, $tags, $type, $requestedPath, $settingGroup)) {
-	echo ze\admin::phrase('Could not activate the [[class_name]] Module.', ['class_name' => $tags['class_name']]);
+	echo ze\admin::phrase('Could not activate the [[class_name]] module.', ['class_name' => $tags['class_name']]);
 	exit;
 }
 

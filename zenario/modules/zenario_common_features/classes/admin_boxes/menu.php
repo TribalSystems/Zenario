@@ -62,15 +62,25 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$warning = '';
 				$tag = $menu['content_type']. '_'. $menu['equiv_id'];
 				$mergeFields = ['tag' => $tag];
+
 				if ($menu['redundancy'] == 'primary') {
 					$warning = 'This is a primary menu node. This means that there are other menu nodes that link to the content item [[tag]].';
+					$mergeFields['div_start'] = '<div class="zenario_fbInfo">';
 				} elseif ($menu['redundancy'] == 'secondary') {
 					$primaryNodeId = ze\row::get('menu_nodes', 'id', ['equiv_id' => $menu['equiv_id'], 'content_type' => $menu['content_type'], 'redundancy' => 'primary']);
 					$node_path = ze\menuAdm::path($primaryNodeId);
 					$warning = 'This is a secondary menu node. This means that it links to the same content item ([[tag]]) as the menu node "[[node_path]]"';
 					$mergeFields['node_path'] = $node_path;
+					$mergeFields['div_start'] = '<div class="zenario_fbWarning">';
 				}
-				$fields['text/warning']['snippet']['html'] = ze\admin::phrase($warning, $mergeFields);
+
+				if ($warning) {
+					//Add HTML tags around the warning to show "info" or "warning" icon.
+					$warning = '[[div_start]]' . $warning . '[[div_end]]';
+					$mergeFields['div_end'] = '</div>';
+
+					$fields['text/warning']['snippet']['html'] = ze\admin::phrase($warning, $mergeFields);
+				}
 		
 			} elseif ($menu['target_loc'] == 'doc' && $menu['document_id']) {
 				$values['text/target_loc'] = 'doc';
@@ -191,7 +201,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 					$lastMenuURL = $text['ext_url'];
 				}
 		
-				//Set the title using the name of the Menu Node in the current language, or in the default language,
+				//Set the title using the name of the menu node in the current language, or in the default language,
 				//or in any language if neither of those present.
 				//(Note that I'm relying on the default language being first in this loop for this logic to work.)
 				if (!$box['title'] || $lang['id'] == $box['key']['languageId']) {
@@ -245,7 +255,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		//For top-level menu modes, add a note to the "path" field to make it clear that it's
 		//at the top level
 		if (!$values['text/parent_path_of__menu_title']) {
-			$fields['text/path_of__menu_title']['label'] = ze\admin::phrase('Path preview (top level):');
+			$fields['text/path_of__menu_title']['label'] = ze\admin::phrase('Menu path preview (top level):');
 		}
 		
 		//If there are any custom GET requests, load them from the DB
@@ -442,7 +452,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			
 					if (($result = ze\sql::select($sql)) && ($row = ze\sql::fetchAssoc($result))) {
 						$box['tabs']['advanced']['errors'][] =
-							ze\admin::phrase('The access key "[[accesskey]]" is in use! It is currently assigned to the Menu Node "[[menuitem]]".',
+							ze\admin::phrase('The access key "[[accesskey]]" is in use! It is currently assigned to the menu node "[[menuitem]]".',
 								['accesskey' => $values['advanced/accesskey'], 'menuitem' => ze\menu::name($row['id'], $box['key']['languageId'])]);
 					}
 				}
@@ -581,7 +591,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			if (ze\ring::engToBoolean($box['tabs']['text']['edit_mode']['on'] ?? false)) {
 				$submission = [];
 		
-				//Remove a Menu Node without any text.
+				//Remove a menu node without any text.
 				if (!$values['text/menu_title__'. $lang['id']]) {
 					ze\menuAdm::removeText($box['key']['id'], $lang['id']);
 					continue;

@@ -20,14 +20,14 @@ sections:
                 css_class: zenario_at_icon_categories_some
                 tooltip: Content Item Categories|
                 admin_box:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    priv: _PRIV_EDIT_DRAFT
                     path: zenario_content_categories
             item_categories_none:
                 ord: 11.2
                 css_class: zenario_at_icon_categories_none
                 tooltip: Content Item Categories|None
                 admin_box:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    priv: _PRIV_EDIT_DRAFT
                     path: zenario_content_categories
             layout_id: 
                 ord: 18
@@ -56,7 +56,6 @@ sections:
                 parent: alias_dropdown
                 tooltip: This content item does not have an alias
             alias:
-                priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                     && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
@@ -64,13 +63,14 @@ sections:
                 parent: alias_dropdown
                 label: Edit alias
                 admin_box:
+                    priv: _PRIV_EDIT_DRAFT
                     path: zenario_alias
             title:
                 ord: 40
                 css_class: zenario_at_icon_title
                 tooltip: ""
                 admin_box:
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    priv: _PRIV_EDIT_DRAFT
                     path: zenario_content
             version_3:
                 ord: 50

@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__users:
+zenario__administration:
     panels:
         administrators:
             priv: _PRIV_VIEW_ADMIN
@@ -59,7 +59,6 @@ zenario__users:
                             WHEN 'specific_areas' THEN
                                 CONCAT(
                                     'specific',
-                                    IF (a.specific_languages != '', '_languages', ''),
                                     IF (a.specific_content_items != '', '_content_items', ''),
                                     IF (a.specific_content_types != '', '_content_types', '')
                                 )
@@ -70,13 +69,9 @@ zenario__users:
                         all_permissions: All permissions
                         no_actions: No permissions
                         specific_actions: Specific actions
-                        specific_languages: Specific languages
                         specific_content_items: Specific content items
-                        specific_languages_content_items: Specific languages and content items
                         specific_content_types: Specific content types
-                        specific_languages_content_types: Specific languages and content types
                         specific_content_items_content_types: Specific content items and content types
-                        specific_languages_content_items_content_types: Specific languages, content items and content types
                     show_by_default: true
                     always_show: true
                     disallow_sorting: true
@@ -230,6 +225,6 @@ zenario__users:
             
             trash:
                 link:
-                    path: zenario__users/panels/administrators
+                    path: zenario__administration/panels/administrators
                     refiner: trashed
                     branch: true

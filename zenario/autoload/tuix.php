@@ -864,6 +864,7 @@ class tuix {
 			$orderItems = $parentKey == 'info'
 						|| $parentKey == 'notes'
 						|| $parentKey == 'actions'
+						|| $parentKey == 'no_perms'
 						|| $parentKey == 're_move_place'
 						|| $parentKey == 'overridden_info'
 						|| $parentKey == 'overridden_actions';
@@ -1402,6 +1403,7 @@ class tuix {
 							isset($field['upload'])
 						 || isset($field['pick_items'])
 						 || isset($field['captcha'])
+						 || (isset($field['image']) && isset($field['image_crop_tool']))
 						 || (!empty($field['type']) && $field['type'] != 'submit' && $field['type'] != 'toggle' && $field['type'] != 'button');
 
 					

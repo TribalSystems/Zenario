@@ -1,0 +1,35 @@
+display_name: Combined Blog and News list
+inheritance:
+    inherit_settings_from_module: zenario_content_list
+dependencies:
+    zenario_content_list: true
+    
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+description: |
+    <p>This module makes a front-end plugin in which visitors can read both Blog and News articles.</p>
+
+    <p>One or both of these "ctype" (Content Type) modules will need to be running. This is intended for sites which display news and blog articles in a list, organised by category rather by the internal content type.</p>
+    <p>This module creates a plugin which you should place on a page, and in its settings the administrator can choose which content types are shown. You should enable the use of categories for both content types, for best effect.</p>
+
+    <p>Categories are supported, and you can show a list of categories in a list on one side, beside each article. A user can conveniently click to switch between categories.</p>
+
+    <p>By default the page loads up with no category filtering, but if you link to it with ?category=[category-name] at the end of the URL, you can view just posts from that category.</p>
+
+    <p>In the main column, the most recent articles are shown (typically by release date of the News/Blog item, but you can adjust this in the plugin settings), and the title, featured image and summary are shown (again you can adjust this). A user can click a link to the listed content item and view it in full.</p>
+
+    <p>Supports pinned content items so as to give them priority over other items.</p>
+category: pluggable
+keywords: >
+    list, category, summary, summaries, archive, library, blog, news
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_content_list
+css_class_name: zenario_content_list
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_framework: image_title_text_more
+default_instance_name: Untitled Blog/News List

@@ -39,26 +39,26 @@ function imageWithBars(&$img, $gCols, $gColWidth, $gGutter, $gGutterLeftEdge, $r
 }
 
 $img = WideImage\WideImage::createTrueColorImage($width, $minHeight);
-imagefilledrectangle($img->getHandle(), 0, 0, $width, $minHeight, $img->getExactColorAlpha(0xfc, 0xac, 0xac, 0x40));
+imagefilledrectangle($img->getHandle(), 0, 0, $width, $minHeight, $img->getExactColorAlpha(0x8b, 0xa9, 0xba, 0x40));
 
 if ($fluid) {
 	$gColWidthMax = $maxWidth * (100 - ($gCols - 1) * $gGutter - $gGutterLeftEdge - $gGutterRightEdge) / $gCols / 100;
 	$gGutterLeftEdge = $gGutterLeftEdge * $maxWidth / 100;
 	$gGutterRightEdge = $gGutterRightEdge * $maxWidth / 100;
 	
-	imageWithBars($img, $gCols, $gColWidthMax, $gGutter * $maxWidth / 100, $gGutterLeftEdge, 0xca, 0x54, 0x60, 0x40);
+	imageWithBars($img, $gCols, $gColWidthMax, $gGutter * $maxWidth / 100, $gGutterLeftEdge, 0xce, 0xd7, 0xdd, 0x40);
 	
 } else {
-	imageWithBars($img, $gCols, $gColWidth, $gGutter, $gGutterLeftEdge, 0xca, 0x54, 0x60, 0x40);
+	imageWithBars($img, $gCols, $gColWidth, $gGutter, $gGutterLeftEdge, 0xce, 0xd7, 0xdd, 0x40);
 }
 
 
 if ($gGutterLeftEdge > 0) {
-	imagefilledrectangle($img->getHandle(), 0, 0, round($gGutterLeftEdge - 1), $minHeight, $img->getExactColorAlpha(0x7c, 0, 0, 0x40));
+	imagefilledrectangle($img->getHandle(), 0, 0, round($gGutterLeftEdge - 1), $minHeight, $img->getExactColorAlpha(0x37, 0x4f, 0x5d, 0x40));
 }
 
 if ($gGutterRightEdge > 0) {
-	imagefilledrectangle($img->getHandle(), round($width - $gGutterRightEdge), 0, $width - 1, $minHeight, $img->getExactColorAlpha(0x7c, 0, 0, 0x40));
+	imagefilledrectangle($img->getHandle(), round($width - $gGutterRightEdge), 0, $width - 1, $minHeight, $img->getExactColorAlpha(0x37, 0x4f, 0x5d, 0x40));
 }
 
 

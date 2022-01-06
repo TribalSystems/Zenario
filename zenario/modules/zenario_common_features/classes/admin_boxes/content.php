@@ -416,14 +416,23 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['file/s3_file_id'] = $version['s3_file_id'];
 				$values['file/s3_file_name'] = $version['s3_filename'];
 
-				if ($values['file/s3_file_id'] && ze\module::inc('zenario_ctype_document')) {
-					$s3FileDetails = zenario_ctype_document::getS3FileDetails($values['file/s3_file_id']);
+				if ($values['meta_data/writer_name']) {
+					$fields['meta_data/writer_id']['note_below'] = ze\admin::phrase(
+						"Zenario 9.2 migration: please note the previous writer name was [[writer_name]].",
+						['writer_name' => $values['meta_data/writer_name']]
+					);
+				}
 
-					if (!empty($s3FileDetails) && isset($s3FileDetails['ContentType'])) {
-						$values['file/s3_mime_type'] = $s3FileDetails['ContentType'];
+				if (ze::setting('aws_s3_support')) {
+					if ($values['file/s3_file_id'] && ze\module::inc('zenario_ctype_document')) {
+						$s3FileDetails = zenario_ctype_document::getS3FileDetails($values['file/s3_file_id']);
+
+						if (!empty($s3FileDetails) && isset($s3FileDetails['ContentType'])) {
+							$values['file/s3_mime_type'] = $s3FileDetails['ContentType'];
+						}
+
+						$fields['file/s3_mime_type']['show_as_a_span'] = true;
 					}
-
-					$fields['file/s3_mime_type']['show_as_a_span'] = true;
 				}
 
 				$values['meta_data/pinned'] = $version['pinned'];
@@ -480,11 +489,14 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				//T10208, Creating content items: auto-populate release date and author where used
 				$contentTypeDetails = ze\contentAdm::cTypeDetails($box['key']['target_cType']);
 
-				if ($contentTypeDetails['writer_field'] != 'hidden'
-				 && isset($fields['meta_data/writer_id'])
-				 && ($adminDetails = ze\admin::details(ze\admin::id()))) {
-					$values['meta_data/writer_id'] = ze\admin::id();
-					$values['meta_data/writer_name'] = $adminDetails['first_name']. ' '. $adminDetails['last_name'];
+				if ($contentTypeDetails['writer_field'] != 'hidden' && isset($fields['meta_data/writer_id'])) {
+					$currentAdminId = ze\admin::id();
+
+					//Check if this admin has a writer profile.
+					$writerProfile = ze\row::get('writer_profiles', ['id'], ['admin_id' => (int) $currentAdminId]);
+					if ($writerProfile) {
+						$values['meta_data/writer_id'] = $writerProfile['id'];
+					}
 				}
 
 				if ($contentTypeDetails['release_date_field'] != 'hidden'
@@ -498,18 +510,17 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//We should have loaded or found the cID by now, if this was for editing an existing content item.
 		//If there's no cID then we're creating a new content item
 		if ($box['key']['cID']) {
-			//Require _PRIV_VIEW_CONTENT_ITEM_SETTINGS for viewing an existing content item's settings
-			ze\priv::exitIfNot('_PRIV_VIEW_CONTENT_ITEM_SETTINGS');
+			//Any admin can at least view a content item's details
 
 		} elseif ($box['key']['translate']) {
-			//Require _PRIV_CREATE_TRANSLATION_FIRST_DRAFT for creating a translation
-			if (!ze\priv::onLanguage('_PRIV_CREATE_TRANSLATION_FIRST_DRAFT', $box['key']['target_language_id'])) {
+			//When making a translation, check if the admin is allowed to make a translation in this language
+			if (!ze\priv::onLanguage('_PRIV_EDIT_DRAFT', $box['key']['target_language_id'])) {
 				exit;
 			}
 
 		} else {
-			//Otherwise require _PRIV_CREATE_FIRST_DRAFT for creating a new content item
-			ze\priv::exitIfNot('_PRIV_CREATE_FIRST_DRAFT', false, $box['key']['cType']);
+			//Otherwise require _PRIV_EDIT_DRAFT for creating a new content item
+			ze\priv::exitIfNot('_PRIV_EDIT_DRAFT', false, $box['key']['cType']);
 		}
 
 
@@ -867,6 +878,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			$box['tabs']['file']['fields']['s3_document_desc']['snippet']['html'] =
 				ze\admin::phrase('You can upload a related file for storage on AWS S3, maximum size [[maxS3UploadSize]].', ['maxS3UploadSize' => $maxS3UploadSize]);
+		} else {
+			$fields['file/s3_file_upload']['hidden'] = true;
+			$fields['file/s3_mime_type']['hidden'] = true;
 		}
 	}
 	
@@ -940,32 +954,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 			if ($details['writer_field'] == 'hidden') {
 				$fields['meta_data/writer_id']['hidden'] = true;
-				$fields['meta_data/writer_name']['hidden'] = true;
 			}
 			if ($details['summary_field'] == 'hidden') {
 				$fields['meta_data/content_summary']['hidden'] = true;
 			}
-		}
-
-		if (isset($box['tabs']['meta_data']['fields']['writer_id'])
-		 && !ze\ring::engToBoolean($box['tabs']['meta_data']['fields']['writer_id']['hidden'] ?? false)) {
-			if ($values['meta_data/writer_id']) {
-				if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
-					if (empty($box['tabs']['meta_data']['fields']['writer_name']['current_value'])
-					 || empty($box['tabs']['meta_data']['fields']['writer_id']['last_value'])
-					 || $box['tabs']['meta_data']['fields']['writer_id']['last_value'] != $values['meta_data/writer_id']) {
-						$adminDetails = ze\admin::details($values['meta_data/writer_id']);
-						$box['tabs']['meta_data']['fields']['writer_name']['current_value'] = $adminDetails['first_name'] . " " . $adminDetails['last_name'];
-					}
-				}
-		
-				$fields['meta_data/writer_name']['hidden'] = false;
-			} else {
-				$fields['meta_data/writer_name']['hidden'] = true;
-				$box['tabs']['meta_data']['fields']['writer_name']['current_value'] = "";
-			}
-	
-			$box['tabs']['meta_data']['fields']['writer_id']['last_value'] = $values['meta_data/writer_id'];
 		}
 
 
@@ -1014,7 +1006,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$fields['meta_data/title']['note_below'] = 'This is a good title length for SEO.';
 		} else {
 			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_yellow', $titleCounterHTML);
-			$fields['meta_data/title']['note_below'] = 'The title is a little long for good SEO as it may not be fully visible.';
+			$fields['meta_data/title']['note_below'] = 'The title may not be fully visible in search engine results.';
 		}
 		$titleCounterHTML = str_replace('[[initial_characters_count]]', strlen($values['meta_data/title']), $titleCounterHTML);
 		$box['tabs']['meta_data']['fields']['title']['post_field_html'] = $titleCounterHTML;
@@ -1022,7 +1014,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		if (strlen($values['meta_data/description'])<1) {
 			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_red', $descriptionCounterHTML);
-			$fields['meta_data/description']['note_below'] = 'For good SEO, enter a description. If this field is left blank, search engines will autogenerate descriptions which may not always be accurate.';
+			$fields['meta_data/description']['note_below'] = 'For good SEO, enter a description. If this field is left blank, search engines will auto-generate a description which may not be as well-worded.';
 		} elseif (strlen($values['meta_data/description'])<50)  {
 			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_orange', $descriptionCounterHTML);
 			$fields['meta_data/description']['note_below'] = 'For good SEO, make the description longer to entice people to click through from a result list.';
@@ -1310,7 +1302,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					 || !($existingText = trim(str_replace('&nbsp;', ' ', strip_tags($values['content1/content']))))
 					 || ($existingText == $box['key']['last_title'])
 					 || ($existingText == htmlspecialchars($box['key']['last_title']))) {
-						$values['content1/content'] = '<h1>'. htmlspecialchars($values['meta_data/title']). '</h1>';
+						
+						$whenCreatingPutTitleInBody = ze\row::get('content_types', 'when_creating_put_title_in_body', $box['key']['cType'] ?: $box['key']['target_cType']);
+						if ($whenCreatingPutTitleInBody) {
+							$values['content1/content'] = '<h1>'. htmlspecialchars($values['meta_data/title']). '</h1>';
+						}
 					}
 				}
 				
@@ -1396,10 +1392,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 
-		if (ze\ray::issetArrayKey($values,'meta_data/writer_id') && !ze\ray::issetArrayKey($values,'meta_data/writer_name')) {
-			$fields['meta_data/writer_name']['error'] = ze\admin::phrase('Please enter a writer name.');
-		}
-
 		if ($box['key']['translate'] || ($box['key']['cID'] && $values['meta_data/language_id'] != $values['meta_data/language_id_on_load'])) {
 			$equivId = ze\content::equivId($box['key']['source_cID'], $box['key']['cType']);
 	
@@ -1442,10 +1434,16 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$newLayoutId = false;
 		
 		//If we're creating a new content item in the front-end, try to start off in Edit mode
-		if ($isNewContentItem && !$box['key']['create_from_content_panel']) {
+		if (($isNewContentItem && !$box['key']['create_from_content_panel']) || $box['key']['duplicate']) {
 			$_SESSION['page_toolbar'] = 'edit';
 			$_SESSION['page_mode'] = 'edit';
 			$_SESSION['last_item'] = $box['key']['cType'].  '_'. $box['key']['cID'];
+
+			if ($box['key']['duplicate']) {
+				$_SESSION['zenario__content_item_duplicated'] = true;
+			} else {
+				$_SESSION['zenario__content_item_created'] = true;
+			}
 		}
 
 
@@ -1465,7 +1463,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$version['keywords'] = $values['meta_data/keywords'];
 			$version['release_date'] = $values['meta_data/release_date'];
 			$version['writer_id'] = $values['meta_data/writer_id'];
-			$version['writer_name'] = $values['meta_data/writer_name'];
 			$version['in_sitemap'] = !$values['meta_data/exclude_from_sitemap'];
 			$version['apply_noindex_meta_tag'] = ($values['meta_data/exclude_from_sitemap'] && $values['meta_data/apply_noindex_meta_tag']);
 			$version['pinned'] = $values['meta_data/pinned'];
@@ -1482,7 +1479,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		//Set the Layout
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)
-		 && ze\priv::check('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $box['key']['cID'], $box['key']['cType'])) {
+		 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 			$newLayoutId = $values['meta_data/layout_id'];
 		}
 		
@@ -1513,7 +1510,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		//Save the CSS and background
 		if (ze\ring::engToBoolean($box['tabs']['css']['edit_mode']['on'] ?? false)
-		 && ze\priv::check('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $box['key']['cID'], $box['key']['cType'])) {
+		 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 			$version['css_class'] = $values['css/css_class'];
 	
 			//Only save background if "customise background" checkbox is ticked.
@@ -1643,7 +1640,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (empty($box['tabs']['categories']['hidden'])
 		 && ze\ring::engToBoolean($box['tabs']['categories']['edit_mode']['on'] ?? false)
 		 && isset($values['categories/categories'])
-		 && ze\priv::check('_PRIV_EDIT_CONTENT_ITEM_CATEGORIES')) {
+		 && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			ze\categoryAdm::setContentItemCategories($box['key']['cID'], $box['key']['cType'], ze\ray::explodeAndTrim($values['categories/categories']));
 		}
 
@@ -1665,6 +1662,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//the equiv ID of the entire chain will be changed to this content item's one.
 			//Otherwise, nothing will happen.
 			ze\contentAdm::resyncEquivalence($box['key']['cID'], $box['key']['cType']);
+		}
+
+		if ($version['file_id']) {
+			if ($box['key']['cType'] && $box['key']['cType'] == 'document' && ze\module::inc('zenario_ctype_document')) {
+				zenario_ctype_document::rescanExtract($box['key']['cType'] . '_' . $box['key']['cID']);
+			}
 		}
 		
 		$this->saveMenu($box, $fields, $values, $changes, $equivId);
@@ -1760,7 +1763,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				//For top-level menu nodes, add a note to the "path" field to make it clear that it's
 				//at the top level
 				if ($menu['parent_id'] == 0) {
-					$fields['meta_data/path_of__menu_text_when_editing']['label'] = ze\admin::phrase('Path preview (top level):');
+					$fields['meta_data/path_of__menu_text_when_editing']['label'] = ze\admin::phrase('Menu path preview (top level):');
 					
 				}
                 //To show multilevel menu nodes "path"				

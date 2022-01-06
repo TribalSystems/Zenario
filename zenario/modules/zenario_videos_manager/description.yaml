@@ -1,0 +1,13 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+license_info: 'Modified BSD License'
+
+display_name: Videos Manager
+description: |
+    <p>Allows you to create a library of videos, which are stored on Youtube or Vimeo, but managed in Zenario.</p>
+    <p>This is a nice way to have a number of videos displayed to visitors on your Zenario site, and managed in Organizer. You can define video categories, so as to present pages which filter by a given category.</p>
+    <p>See also Videos FEA (zenario_videos_fea), which handles front-end display and administration.</p>
+is_pluggable: false

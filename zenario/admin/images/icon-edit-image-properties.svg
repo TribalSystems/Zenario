@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xl="http://www.w3.org/1999/xlink" viewBox="-2172 -83 289 287" width="289" height="287">
+  <defs/>
+  <metadata> Produced by OmniGraffle 7.18.2\n2021-09-16 09:17:29 +0000</metadata>
+  <g id="Canvas_1" stroke="none" stroke-opacity="1" fill="none" stroke-dasharray="none" fill-opacity="1">
+    <title>Canvas 1</title>
+    <g id="Canvas_1_Layer_1">
+      <title>Layer 1</title>
+      <g id="Group_17">
+        <g id="Graphic_14">
+          <rect x="-2094.8152" y="-11.203704" width="142.51172" height="142.51172" fill="white"/>
+        </g>
+        <g id="Line_5">
+          <line x1="-2094.926" y1="129.28906" x2="-1939.6369" y2="129.28906" stroke="#045c93" stroke-linecap="square" stroke-linejoin="miter" stroke-width="17"/>
+        </g>
+        <g id="Graphic_8">
+          <rect x="-1969.961" y="120.726" width="20.5" height="17.063633" fill="white"/>
+          <rect x="-1969.961" y="120.726" width="20.5" height="17.063633" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        </g>
+        <g id="Line_3">
+          <path d="M -2115 -7.5 L -1959.711 -7.5 L -1959.711 147.78906" stroke="#045c93" stroke-linecap="square" stroke-linejoin="miter" stroke-width="17"/>
+        </g>
+        <g id="Group_11">
+          <g id="Graphic_9">
+            <path d="M -2037.29 112.1422 L -2057.645 73.70044 L -2078 112.1422 Z" fill="#04598f"/>
+          </g>
+          <g id="Graphic_10">
+            <path d="M -1984.5 112.1422 L -2020.8347 43.52187 L -2057.1694 112.1422 Z" fill="#04598f"/>
+          </g>
+        </g>
+        <g id="Graphic_16">
+          <rect x="-2105.2857" y="-16.5" width="20.5" height="17.063633" fill="white"/>
+          <rect x="-2105.2857" y="-16.5" width="20.5" height="17.063633" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        </g>
+        <g id="Line_6">
+          <line x1="-2095.0223" y1="-26" x2="-2095.0223" y2="129.28906" stroke="#045c93" stroke-linecap="square" stroke-linejoin="miter" stroke-width="17"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -8,12 +8,12 @@ plugin_settings:
 				show_sticky_images:
 					plugin_setting:
 						name: show_sticky_images
-					label: "Show feature image"
+					label: "Show featured image"
 					type: checkbox
 					value: ""
 					format_onchange: Yes
 					side_note: |
-						The feature image for the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no feature image exists.
+						The featured image for the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no featured image exists.
 				canvas:
 					visible_if: "zenarioAB.value('show_sticky_images')"
 					plugin_setting:

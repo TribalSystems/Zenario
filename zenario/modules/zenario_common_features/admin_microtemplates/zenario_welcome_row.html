@@ -36,6 +36,7 @@
 		zenario_ab_row__{{ff._id|escape}}
 		{{ff.row_class|escape}}
 		{{ff.pressed? 'zenario_row_pressed' : ''}}
+		{{ff.onoff? 'zenario_onoffswitch zenario_onoffswitch_welcome' : ''}}
 		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
 		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
 	">

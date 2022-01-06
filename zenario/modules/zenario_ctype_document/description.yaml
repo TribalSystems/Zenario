@@ -1,0 +1,43 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: 'Content Type Document: Download'
+description: |
+    <p>This is the base module for Document content items.</p>
+    <p>This module creates the Document content type, such that administrators can create documents, i.e. files with meta data, that are downlable from the site.</p>
+    <p>The usual configuration of a Document is to have a title, file, release date, description and summary.</p>
+    <p>Like other content items, Documents need to be published before visitors can see them. There is an associated plugin of this module, which should be placed on the layout for this content type, and it should have a Meta Data plugin to display the title, the link to the file, and other data.</p>
+    <p>It's also typical to have documents articles appearing on a document listing page, which can be achieved by putting a Content Summary List plugin in a slot on an HTML page, and selecting a filter content type of Document.</p>
+    <p>There is multiple language support, and if you have versions of a document content item in several languages, these can be linked together in a translation chain for easier management.</p>
+    <p>Note that when removing a Document, it can only be deleted and not trashed, unlike other content items. This frees up disk space by deleting the attached file.</p>
+category: content_type
+keywords: >
+    document, file, download, pdf, word, doc, docx, excel, xls,
+    xlsx, powerpoint, ppt, mime
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+vlp_class_name: zenario_ctype_document
+css_class_name: zenario_ctype_document
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_framework: standard
+content_types:
+    content_type:
+        content_type_id: document
+        content_type_name_en: Document content item
+        content_type_plural_en: Document content items
+        default_template_name: Document Layout
+        enable_summary_auto_update: false
+        description_field: optional
+        tooltip_text: Documents, for version-controlled creation of downloads, optionally categorised and private
+        keywords_field: hidden
+        summary_field: optional
+        release_date_field: optional
+        writer_field: hidden
+default_instance_name: Document details viewer

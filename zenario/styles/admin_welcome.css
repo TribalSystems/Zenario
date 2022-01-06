@@ -1,3 +1,15 @@
+.welcome div.thickbox_table input[type="submit"],
+.welcome div.thickbox_table input[type="button"],
+.welcome div.thickbox_table button {
+	-webkit-appearance: none; /*Safari/Chrome*/
+    -moz-appearance: none; /*Firefox*/
+    -ms-appearance: none; /*IE*/
+    -o-appearance: none; /*Opera*/
+    appearance: none;
+
+    -webkit-border-radius: 0;
+}
+
 html, body  {
 	height: 100%;
 	overflow:auto;
@@ -22,6 +34,7 @@ body.webkit input {
 
 .welcome {
 	padding-top:35px;
+	padding-bottom:35px;
 }
 
 .welcome .zenario_version p.version {
@@ -234,7 +247,7 @@ body.webkit input {
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning
 {
-	background:#FFF !important;
+	background:#FFF;
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
@@ -245,6 +258,10 @@ body.webkit input {
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
 {
 	padding:5px 5px 5px 40px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning {
+	padding:5px 5px 5px 25px;
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
@@ -260,9 +277,14 @@ body.webkit input {
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning
 {
 	background:url('../admin/images/icon-warning.svg') no-repeat 15px 5px / 16px 16px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning {
+	background-position:0 5px;
 }
 
 /* Diagnostics */
@@ -373,15 +395,25 @@ body.webkit input {
 }
 
 .welcome div.thickbox_table input.username {
-	background-image:url('../admin/images/welcome/user-icon.png');
+	background-image:url('../admin/images/icon-users-and-contacts.svg');
 	background-repeat:no-repeat;
 	background-position:10px center;
+	background-size:16px 16px;
 }
 
 .welcome div.thickbox_table input.password {
-	background:#FFF url('../admin/images/welcome/password-icon.png');
+	background:#FFF url('../admin/images/welcome/icon-key-dark.svg');
 	background-repeat:no-repeat;
 	background-position:10px center;
+	background-size:20px auto;
+}
+
+input:-webkit-autofill.password,
+input:-webkit-autofill.password:hover,
+input:-webkit-autofill.password:focus,
+input:-webkit-autofill.password:active {
+	-webkit-text-fill-color: #646464 !important;
+	-webkit-box-shadow: 0 0 0px 1000px #fff inset;
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table input.input_text {
@@ -391,12 +423,12 @@ body.webkit input {
 
 .welcome .zenario_ab_row__host input#host,
 .welcome .zenario_ab_row__multi_db_host #multi_db_host {
-	width: 300px;
+	width: calc(100% - 140px);
 }
 
 .welcome .zenario_ab_row__host input#port,
 .welcome .zenario_ab_row__multi_db_host #multi_db_port {
-	width: 80px;
+	width: 60px;
 	margin-left: 12px;
 }
 
@@ -579,7 +611,8 @@ body.webkit input {
 
 .welcome div.thickbox_table input.input_submit,
 .welcome div.thickbox_table input.pressed,
-.welcome div.thickbox_table input.not_pressed
+.welcome div.thickbox_table input.not_pressed,
+.welcome div.thickbox_table a.link_like_button
 {
 	border:1px solid #007FA4;
 	-moz-border-radius: 3px;
@@ -606,7 +639,8 @@ body.webkit input {
 	font-size:12px;
 }
 
-.welcome div.thickbox_table input.begin_installation {
+.welcome div.thickbox_table input.begin_installation,
+.welcome div.thickbox_table a.link_like_button {
 	-moz-border-radius:20px 20px 20px 20px;
 	-moz-box-shadow:0 1px 5px #999999;
 	border:1px solid #ABB4BB;
@@ -634,11 +668,27 @@ body.webkit input {
 	padding:0 !important;
 }
 
-.welcome div.thickbox_table input.input_submit
+.welcome div.thickbox_table input.input_submit,
+.welcome div.thickbox_table a.link_like_button
 {
 	background:#0398C3;
 	color:#FFF;
 	font-weight:bold;
+}
+
+.welcome div.thickbox_table a.link_like_button {
+	display:inline-block;
+	margin:auto;
+	margin-bottom:10px;
+}
+
+.welcome div.thickbox_table a.link_like_button,
+.welcome div.thickbox_table a.link_like_button:hover {
+	text-decoration:none;
+}
+
+.welcome div.thickbox_table p.align_center {
+	text-align:center;
 }
 /*
 .welcome div.thickbox_table input#previous
@@ -743,7 +793,7 @@ body.webkit input {
 .welcome div.thickbox_table input.return_front_end {
 	color:#333;
 	font-size:13px;
-	background:url('../admin/images/welcome/arrow-return-front-end.png') no-repeat 0 center;
+	background:url('../admin/images/welcome/icon-arrow-back-grey.svg') no-repeat 0 center / 8px auto;
 	padding-left:12px;
 }
 
@@ -847,23 +897,17 @@ body.webkit input {
 .welcome div.thickbox_table .zfab_error_wrap .zfab_error_inner
 {
 	margin-left:25px;
-	padding:5px;
-	border:1px solid #D49699;
-	background:#FCE7E6;
-	font-size:11.5px;
+	padding:1px 0;
 	margin-bottom: 10px;
+	font-size:12px;
 }
 
 .welcome div.thickbox_table .successDisplayRow .messageDisplay {
 	min-height: 20px;
-	padding:6px 10px 6px 10px;
-	margin-bottom:20px;
+	margin-bottom:10px;
 	line-height:1.4em;
-	vertical-align:middle;
 	font-size:12px;
-	background-color:#F5F5F5;
-	color:#01AC02;	
-	border:2px solid #01AC02;
+	color:#01AC02;
 }
 
 .welcome div.thickbox_table .successDisplayRow .messageDisplay div {
@@ -920,6 +964,22 @@ body.webkit input {
 	font-weight:normal;
 }
 
+.welcome h1,
+.welcome h2,
+.welcome h3 {
+	margin-bottom:5px;
+}
+
+.welcome p + h2,
+.welcome p + h3 {
+	padding-top:5px;
+}
+
+.welcome p {
+	margin-bottom:15px;
+	line-height:1.5em;
+}
+
 .welcome div.thickbox_table #row__path_status div {
 	font-size:14px;
 }
@@ -950,10 +1010,13 @@ body.webkit input {
 }
 
 .welcome h1,
+.welcome h2,
 .welcome h3,
 .welcome #snippet__link a,
 .welcome .zenario_note_below a,
-.welcome div.thickbox_table #row__path_status div
+.welcome div.thickbox_table #row__path_status div,
+.welcome div.thickbox_table a.link_color,
+.welcome div.thickbox_table p a 
 {
 	color:#007FA3;
 }
@@ -1024,11 +1087,20 @@ body.webkit input {
 	line-height: 1.4em;
 }
 /* System requirements */
-.welcome .zenario_ab_row__description span#snippet__description h1{
-	margin-bottom: 5px;
+
+.welcome .zenario_ab_row__description span#snippet__description p.secure_connection,
+.welcome .zenario_ab_row__description span#snippet__description p.not_secure_connection {
+	padding:2px 0 0 20px;
 }
-.welcome .zenario_ab_row__description span#snippet__description p{
-	margin-bottom: 15px;
+
+.welcome .zenario_ab_row__description span#snippet__description p.secure_connection {
+	background:url('../admin/images/welcome/icon-padlock-green.svg') no-repeat 0 0 / 12px 15px;
+	color:#259b37;
+}
+
+.welcome .zenario_ab_row__description span#snippet__description p.not_secure_connection {
+	background:url('../admin/images/welcome/icon-padlock-open-red.svg') no-repeat 0 0 / 12px 15px;
+	color:#b91111;
 }
 .welcome .zenario_ab_row .title{
 	margin-bottom: 5px;

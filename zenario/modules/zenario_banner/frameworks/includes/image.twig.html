@@ -1,5 +1,13 @@
 {% if Lazy_Load %} 
-    <img class="lazy" data-src="{{Image_URL|e}}" alt="{{Image_Alt}}" {{Image_Style}} {% if Image_Retina_Srcset %} data-srcset="{{Image_Retina_Srcset|e}}" {% endif %} />
+    <img
+    	data-src="{{Image_URL|e}}"
+    	alt="{{Image_Alt}}"
+    	{{Image_Style}}
+    	class="lazy {{Image_Class|e}}"
+    	{% if Image_Retina_Srcset %}
+    		data-srcset="{{Image_Retina_Srcset|e}}"
+    	{% endif %}
+    />
 {% else %}
     <picture>
         {% set i = 0 %}
@@ -28,6 +36,9 @@
             src="{{Image_URL|e}}"
             alt="{{Image_Alt}}"
             {{Image_Style}}
+			{% if Image_Class %}
+				class="{{Image_Class|e}}"
+			{% endif %}
         />
     </picture>
 

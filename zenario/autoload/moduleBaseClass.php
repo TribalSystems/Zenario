@@ -907,29 +907,6 @@ class moduleAPI {
 		
 		return \ze\link::toItem($this->cID, $this->cType, true, $request, \ze::$alias, false, true);
 	}
-
-
-	/**
-	 * Utility function to show an thumbnail image as an html snippet.
-	 * @param unknown $image_id
-	 * @param unknown $snippet_field
-	 * @param number $widthLimit
-	 * @param number $heightLimit
-	 */
-	protected function getImageHtmlSnippet($image_id, &$snippet_field, $widthLimit = 700, $heightLimit = 200){
-		if($image_id) {
-			$width = $height = $url = $widthR = $heightR = $urlR = false;
-			\ze\file::imageLink($widthR, $heightR, $urlR, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $retina = true, $fullPath = false, $privacy = 'auto', $useCacheDir = false);
-	
-			$snippet_field = '
-			<p style="text-align: center;">
-				<a>
-					<img src="'. htmlspecialchars(\ze\link::absolute(). $urlR). '"
-						width="'. $widthR. '" height="'. $heightR. '" style="border: 1px solid black;"/>
-				</a>
-			</p>';
-		}
-	}
 	
 	
 	
@@ -1270,7 +1247,7 @@ class moduleAPI {
 		 && $this->slotLevel == 2
 		 && \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			if ((bool)\ze\admin::id()) {
-				echo '<div id="'. $this->containerId. '-layout_preview" onclick="zenarioA.adminSlotWrapperClick(\''. htmlspecialchars($this->slotName). '\');" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
+				echo '<div id="'. $this->containerId. '-layout_preview" onclick="return zenarioA.adminSlotWrapperClick(\'', htmlspecialchars($this->slotName), '\', event, ', $this->eggId? 1 : 0, ');" class="zenario_slot_layout_preview zenario_slot ', $this->cssClass. '"';
 			}	else {
 				echo '<div id="'. $this->containerId. '-layout_preview" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
 			}		
@@ -1345,7 +1322,10 @@ class moduleAPI {
 		
 		$slot = &\ze::$slotContents[$this->slotNameNestId];
 		
-		if (empty($slot['init'])) {
+		if (!empty($slot['isSuspended'])) {
+			return \ze\admin::phrase('This module is suspended');
+		
+		} elseif (empty($slot['init'])) {
 			if (empty($slot['error'])) {
 				if (empty($slot['module_id'])) {
 					return \ze\admin::phrase('This is an empty slot');
@@ -1414,7 +1394,7 @@ class moduleAPI {
 					<div id="'. $this->containerId. '"  class="zenario_slot '. $this->wrapperClass(). '"';
 		
 		if (\ze::isAdmin()) {
-			$html .= ' onclick="zenarioA.adminSlotWrapperClick(\''. htmlspecialchars($this->slotName). '\');"';
+			$html .= ' onclick="return zenarioA.adminSlotWrapperClick(\''. htmlspecialchars($this->slotName). '\', event, '. ($this->eggId? 1 : 0). ');"';
 		}
 		
 		return $html. '>';

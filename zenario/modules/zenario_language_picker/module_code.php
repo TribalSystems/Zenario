@@ -108,7 +108,7 @@ class zenario_language_picker extends ze\moduleBaseClass {
 				continue;
 			}
 			
-			$lang['View_This_Page_In_Lang'] = ze\lang::phrase('_VIEW_THIS_PAGE_IN_LANG', false, 'zenario_language_picker', $langId);
+			$lang['View_This_Page_In_Lang'] = ze\lang::phrase('View this page in English', false, 'zenario_language_picker', $langId);
 			$this->langs[$langId] = $lang;
 		}
 		

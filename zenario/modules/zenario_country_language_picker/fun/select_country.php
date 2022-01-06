@@ -56,12 +56,21 @@ if (!empty($_REQUEST['country_id']) && !empty($_REQUEST['user_lang'])) {
 	
 	//Redirect to the target page if it exists
 	if (!empty($_REQUEST['cID']) && !empty($_REQUEST['cType'])) {
-		$cID = $_REQUEST['cID'];
+		$cID = (int) $_REQUEST['cID'];
 		$cType = $_REQUEST['cType'];
 		$targetLang = $_REQUEST['user_lang'];
+
+		$langSanitised = ze\lang::sanitiseLanguageId($targetLang);
+		$enabledContentTypes = ze\content::getContentTypes();
 	
-		ze\content::langEquivalentItem($cID, $cType, $targetLang);
-		header('Location: '. ze\link::toItem($cID, $cType, true));
+		//Validation:
+		//cID needs to be an integer
+		//cType should only be one of the enabled types
+		//Language ID can only contain CAPITAL/lower case letters and dashes, and can only be up to 15 chars long.
+		if ($targetLang == $langSanitised && array_key_exists($cType, $enabledContentTypes)) {
+			ze\content::langEquivalentItem($cID, $cType, $targetLang);
+			header('Location: '. ze\link::toItem($cID, $cType, true));
+		}
 		exit;
 	}
 }

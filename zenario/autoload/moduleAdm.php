@@ -746,7 +746,8 @@ class moduleAdm {
 								'logic' => $logic,
 								'allow_hide' => \ze\ring::engToBoolean($page['allow_hide'] ?? 0),
 								'publish' => \ze\ring::engToBoolean($page['publish'] ?? 0),
-								'page_type' => $page['page_type']
+								'page_type' => $page['page_type'],
+								'allow_search' => \ze\ring::engToBoolean($page['allow_search'] ?? 0)
 							]
 						);
 			
@@ -758,7 +759,8 @@ class moduleAdm {
 								'module_class_name' => $moduleClassName,
 								'logic' => $logic,
 								'allow_hide' => \ze\ring::engToBoolean($page['allow_hide'] ?? 0),
-								'publish' => \ze\ring::engToBoolean($page['publish'] ?? 0)
+								'publish' => \ze\ring::engToBoolean($page['publish'] ?? 0),
+								'allow_search' => \ze\ring::engToBoolean($page['allow_search'] ?? 0)
 							],
 							[
 								'page_type' => $page['page_type']

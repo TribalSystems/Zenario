@@ -5,7 +5,7 @@ zenario__content:
         image_tags:
             panel_type: multi_line_list
             title: Image tags
-            no_items_message: No tags have been created.
+            no_items_message: No image tags found.
             db_items:
                 table: '[[DB_PREFIX]]image_tags AS it'
                 id_column: it.name
@@ -47,7 +47,7 @@ zenario__content:
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_MEDIA
-                    label: Properties
+                    label: Edit tag
                     admin_box:
                         path: zenario_image_tag
                 view_images:

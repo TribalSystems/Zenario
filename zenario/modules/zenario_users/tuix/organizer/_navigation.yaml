@@ -1,4 +1,14 @@
 zenario__users:
+    ord: -790
+    priv:
+        - _PRIV_VIEW_ADMIN
+        - _PRIV_VIEW_USER
+    visible_if: >
+        zenarioA.siteSettings.default_language
+    css_class: zenario_cms_core_users
+    label: Users & contacts
+    tooltip: |
+        Manage contacts and extranet users
     nav:
         users:
             priv: _PRIV_VIEW_USER
@@ -15,6 +25,7 @@ zenario__users:
             link:
                 path: zenario__users/panels/users
                 refiner: suspended_users
+            visible_if: zenarioA.module.zenario_extranet && zenarioA.module.zenario_extranet.running
         groups:
             priv: _PRIV_VIEW_USER
             label: Groups
@@ -43,3 +54,4 @@ zenario__users:
             tooltip: Log of extranet users and the private content items they have accessed
             link:
                 path: zenario__users/panels/access_log
+            visible_if: zenarioA.module.zenario_extranet && zenarioA.module.zenario_extranet.running

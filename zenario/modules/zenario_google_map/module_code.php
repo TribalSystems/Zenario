@@ -46,7 +46,7 @@ class zenario_google_map extends ze\moduleBaseClass {
 				'initMap', 
 				$this->setting("address"),
 				'object_in_' . $this->containerId,
-				$this->phrase( "_GOOGLE_COULD_NOT_FIND_ADDRESS", [ 'address' => $this->setting( 'address' )]),
+				$this->phrase( "Google Maps could not find the address `[[address]]`.", [ 'address' => $this->setting( 'address' )]),
 				'https://maps.googleapis.com/maps/api/js?key=' . urlencode($apiKey)
 			);
 		} else {

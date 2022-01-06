@@ -322,6 +322,11 @@ body.ie label#search_term_placeholder {
 	cursor:pointer;
 }
 
+.organizer_wrapOuter .top_left_button.zenario_website_button,
+.organizer_wrapOuter .top_left_button.zenario_website_button:hover {
+	background:#333;
+}
+
 .organizer_wrapOuter .logout_button a,
 .organizer_wrapOuter .top_left_button a,
 .organizer_wrapOuter .top_right_button li a {
@@ -955,6 +960,14 @@ body.ie6 .headerPanel .secondToolbar {
 
 .organizer_wrapOuter .home_page_button:hover a {
 	background: url('../admin/images/icon-back-to-home-hover.svg') no-repeat center / auto 24px;
+}
+
+.organizer_wrapOuter .zenario_website_button a {
+	background: url('../admin/images/zenario-logo-diamond.svg') no-repeat center / auto 18px;
+}
+
+.organizer_wrapOuter .zenario_website_button:hover a {
+	background: url('../admin/images/zenario-logo-diamond-white-grey.svg') no-repeat center / auto 18px;
 }
 
 .organizer_wrapOuter .zenario_ywip > a {
@@ -1630,7 +1643,7 @@ div.organizer_pageSize {
 
 #organizer_topRightIcons .organizer_enabled_disabled.site_enabled_development,
 .zenario_at_dev_icon.site_enabled_development {
-	background: url('../admin/images/icon-footer-site-enabled.png') no-repeat center / 18px 18px;
+	background: url('../admin/images/icon-site-enabled.png') no-repeat center / 18px 18px;
 }
 
 #zenario_at_top_left_menu .organizer_item_image.all_languages {
@@ -1973,12 +1986,12 @@ div.organizer_pageSize {
 }
 
 .organizer_top_level_image.zenario_cms_core_organizer {
-	background: url('../admin/images/icon-zenario-diamond-grey.svg') no-repeat center / 20px 20px;
+	background: url('../admin/images/icon-house-grey.svg') no-repeat center / 20px 20px;
 }
 
 .organizer_top_level_image.zenario_cms_core_organizer:hover,
 #organizer_leftColumn .legend_on .organizer_top_level_image.zenario_cms_core_organizer {
-	background: url('../admin/images/icon-zenario-diamond-white.svg') no-repeat center / 20px 20px;
+	background: url('../admin/images/icon-house-white.svg') no-repeat center / 20px 20px;
 }
 
 
@@ -3601,6 +3614,10 @@ body.ff .organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_imag
 	background-position: 30% center;
 }
 
+#organizer_rightColumn div.organizer_item_image.organizer_list_view_image.organizer_item_with_image {
+	background-position:center;
+}
+
 #organizer_rightColumn div.organizer_item_image.organizer_list_view_image,
 #organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon > div.organizer_item_with_image {
 	background-size:contain;
@@ -3698,8 +3715,17 @@ body.ff .organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_imag
 	width:100%;
 }
 
+#organizer_rightColumnContent div.organizer_row div.organizer_cell table.item_link tr td {
+	width:auto !important; /* overwrite inline css */
+}
+
+#organizer_rightColumnContent div.organizer_row div.organizer_cell table.item_link tr td:first-child {
+	width:25px !important; /* overwrite rule above */
+}
+
 #organizer_rightColumnContent div.organizer_row div.organizer_cell table.item_link tr td .listicon {
 	margin: 2px 0 0 2px;
+	width:20px;
 }
 
 #organizer_rightColumnContent div.organizer_row div.organizer_cell table.item_link td.organizer_item_link_text {
@@ -3793,11 +3819,11 @@ body.ie8 #organizer_rightColumnContent div.organizer_row .ghost table.item_link 
 }
 
 .organizer_item_image.zenario_menunode_internal {
-	background:url('../admin/images/icon-menu-node-1-dark.svg') no-repeat center center / 16px 16px;
+	background:url('../admin/images/icon-menu-node-1-blue-v3.svg') no-repeat center center / 14px 14px;
 }
 
 .organizer_item_image.zenario_menunode_internal_unique {
-	background:url('../admin/images/icon-menu-node-main.svg') no-repeat center center / 16px 16px;
+	background:url('../admin/images/icon-menu-node-blue-v2.svg') no-repeat center center / 14px 14px;
 }
 
 .organizer_item_image.zenario_menunode_internal_secondary {
@@ -3816,6 +3842,10 @@ body.ie8 #organizer_rightColumnContent div.organizer_row .ghost table.item_link 
 
 .organizer_item_image.zenario_menunode_external {
 	background:url('../admin/images/icon-external-url.svg') no-repeat center center / 16px 16px;
+}
+
+#organizer_rightColumn div.organizer_hierarchy_view .listicon > div.organizer_item_image.zenario_menunode_internal_secondary {
+	background:url('../admin/images/icon-menu-node-2-blue.svg') no-repeat center center / 16px 16px;
 }
 
 .organizer_item_image.no_icon {
@@ -3957,17 +3987,21 @@ body.ie8 .organizer_item_image.ghost {
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.pinned a,
 #organizer_rightColumn div.organizer_row div.organizer_cells_items div.pinned a {
-	background: #333 url('../admin/images/icon-pin-green.svg') no-repeat center center / 11px 11px;
+	background: #e40606 url('../admin/images/icon-thumbtack-white.svg') no-repeat center center / 11px 11px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.not_pinned a,
 #organizer_rightColumn div.organizer_row div.organizer_cells_items div.not_pinned a {
-	background: #6F6F6E url('../admin/images/icon-pin-grey.svg') no-repeat center center / 11px 11px;
+	background: #6F6F6F url('../admin/images/icon-thumbtack-white.svg') no-repeat center center / 10px 10px;
 }
 
 
 .organizer_item_image.user {
 	background: url('../admin/images/icon-users-and-contacts.svg') no-repeat center center / 16px;
+}
+
+.organizer_item_image.writer_profile {
+	background: url('../admin/images/icon-writer-profile.svg') no-repeat center center / 16px;
 }
 
 .organizer_item_image.zenario_suspended_users {
@@ -4191,6 +4225,10 @@ body.ie8 .organizer_item_image.ghost {
 	background: url('../admin/images/icon-skins.svg') no-repeat left center / 18px auto;
 }
 
+.organizer_item_image.skin {
+	background-position:5px center;
+}
+
 .organizer_item_image.zenario_plugins {
 	/* to add */
 }
@@ -4319,8 +4357,7 @@ body.ie8 .organizer_item_image.ghost {
 	background: url('../admin/images/icon-menu-sections-edit-dark.svg') no-repeat center center / auto 16px;
 }
 
-.organizer_item_image.menu_node,
-.organizer_item_image.zenario_menunode_internal_unique {
+.organizer_item_image.menu_node {
 	background: url('../admin/images/icon-menu-node-dark.svg') no-repeat center center / auto 16px;
 }
 
@@ -4520,11 +4557,11 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_at_menu_unique a {
-	background: #e2e2e2 url('../admin/images/icon-menu-node-blue-small.svg') no-repeat center center / auto 100%;
+	background: #e2e2e2 url('../admin/images/icon-menu-node-blue-v2.svg') no-repeat center center / 10px 10px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_at_menu_primary a {
-	background: #e2e2e2 url('../admin/images/icon-menu-node-1-blue.svg') no-repeat center center / auto 100%;
+	background: #e2e2e2 url('../admin/images/icon-menu-node-1-blue-v3.svg') no-repeat center center / 10px 10px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_not_at_menu a {
@@ -4838,7 +4875,7 @@ div#organizer_previous_next a {
 	overflow: hidden;
 }
 
-/* Grid maker popup  */
+/* Gridmaker popup  */
 
 body #cboxOverlay,
 body #colorbox.zenario_grid_maker #cboxOverlay {
@@ -4950,7 +4987,7 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 #organizer_rightColumn .organizer_hierarchy_view .organizer_drag_handle,
 #organizer_rightColumn .organizer_hierarchy_view .organizer_drag_handle:hover,
 #organizer_rightColumn .organizer_hierarchy_view .dd3-handle {
-	background:url('../admin/images/icon-drag-handle.png') no-repeat left center;
+	background:url('../admin/images/icon-drag-handle.svg') no-repeat left center / 30px 30px;
 }
 
 #organizer_rightColumn .organizer_hierarchy_view .dd3-handle:before {
@@ -5452,7 +5489,7 @@ table.table-bordered td
 #organizer_rightColumn .organizer_hierarchy_view .organizer_drag_handle.document:hover, 
 #organizer_rightColumn .organizer_hierarchy_view .dd3-handle.document {
 	height: 60px;
-	background:url('../admin/images/icon-drag-handle.png') no-repeat left center;
+	background:url('../admin/images/icon-drag-handle.svg') no-repeat left center / 30px 30px;
 }
 
 /* ---------- Styles for tour intro.js  ------------*/
@@ -5812,7 +5849,7 @@ table.table-bordered td
 	margin: 3px 2px;
 }
 
-#organizer__box_inner #organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organizer_list_view_icon {
+#organizer__box_inner #organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organizer_list_view_icon:not(.organizer_item_with_image) {
 	background-size:70% 70%;
 }
 
@@ -5845,6 +5882,7 @@ table.table-bordered td
 	background-size: 14px 16px;
 	padding-right: 2px;
 	background-position: left center;
+	float:left;
 }
 
 
@@ -7919,13 +7957,11 @@ div.ui-tooltip.zenario_link_status_tooltip .ui-tooltip-content {
 	background-position:center;
 }
 
-.organizer_wrapOuter .zenario_ywip,
-#organizer_rightColumnContent .organizer_start_page .organizer_start_page_section .organizer_start_page_item#organizer_start_page_item__wip_page {
+.zenario_item_record_count_parent {
 	position:relative;
 }
 
-#organizer_rightColumnContent .organizer_start_page .organizer_start_page_section .organizer_start_page_item#organizer_start_page_item__wip_page .organizer_start_page_item_recordCount,
-.organizer_wrapOuter .zenario_ywip .zenario_wip_recordCount {
+.zenario_item_record_count {
 	display:inline-block;
 	width:20px;
 	height:20px;
@@ -7944,7 +7980,7 @@ div.ui-tooltip.zenario_link_status_tooltip .ui-tooltip-content {
 	border-radius:50%;
 }
 
-.organizer_wrapOuter .zenario_ywip .zenario_wip_recordCount {
+.organizer_wrapOuter .zenario_ywip .zenario_wip_recordCount.zenario_item_record_count {
 	top:2px;
 	right:-20px;
 }
@@ -8052,7 +8088,7 @@ div.ui-tooltip.zenario_link_status_tooltip .ui-tooltip-content {
 
 @media all and (max-width: 1281px) {
 
-	.organizer_toolbar .toolbar .toolbarButtons ul li.tuix_object_with_children.tuix_object_last ul {
+	.organizer_toolbar .toolbar .toolbarButtons ul li.tuix_object_with_children.tuix_object_last:not(.tuix_object_first) ul {
 		left:auto;
 		right:0;
 	}

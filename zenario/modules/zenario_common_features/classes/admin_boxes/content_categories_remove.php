@@ -152,7 +152,7 @@ class zenario_common_features__admin_boxes__content_categories_remove extends ze
 	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		ze\priv::exitIfNot('_PRIV_EDIT_CONTENT_ITEM_CATEGORIES');
+		ze\priv::exitIfNot('_PRIV_EDIT_DRAFT');
 		
 		$cID = $cType = false;
 		

@@ -65,28 +65,25 @@ switch ($_GET['type']) {
 	//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
 	case 'implied':
 		echo '
-document.write(\'', ze\escape::js('
-	<div class="zenario_cookie_consent">
-		<div class="zenario_cookie_consent_wrap">
-			<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_CONSENT_IMPLIED_MESSAGE'). '</div>
-			<div class="zenario_cc_buttons">
-				<div class="zenario_cc_continue">
-					<a href="" onclick="$(\'div.zenario_cookie_consent\').slideUp(\'slow\'); return false;">'.
-						ze\lang::phrase('_COOKIE_CONSENT_CONTINUE').
-					'</a>
-				</div>
+document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js('
+	<div class="zenario_cookie_consent_wrap">
+		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_CONSENT_IMPLIED_MESSAGE'). '</div>
+		<div class="zenario_cc_buttons">
+			<div class="zenario_cc_continue">
+				<a href="" onclick="$(\'div.zenario_cookie_consent\').slideUp(\'slow\'); return false;">'.
+					ze\lang::phrase('_COOKIE_CONSENT_CONTINUE').
+				'</a>
 			</div>
 		</div>
 	</div>
-'), '\');';
+'), '\';';
 		break;
 		
 	//Explicit consent - show the cookie message until it is accepted
 	case 'accept':
 		echo '
-document.write(\'', ze\escape::js('
-	<div class="zenario_cookie_consent">
-		<div class="zenario_cookie_consent_wrap">
+document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js('
+	<div class="zenario_cookie_consent_wrap">
 		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_CONSENT_MESSAGE'). '</div>
 		<div class="zenario_cc_close">
 			<a href="#" onclick="$(\'div.zenario_cookie_consent\').fadeOut(\'slow\'); return false;">'.
@@ -100,16 +97,14 @@ document.write(\'', ze\escape::js('
 			' . $manageButtonHTML . '
 		</div>
 	</div>
-</div>
-'), '\');';
+'), '\';';
 		break;
 		
 	//Explicit consent - show the cookie message until it is accepted or rejected
 	case 'accept_reject':
 		echo '
-document.write(\'', ze\escape::js('
-	<div class="zenario_cookie_consent">
-		<div class="zenario_cookie_consent_wrap">
+document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js('
+	<div class="zenario_cookie_consent_wrap">
 		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_CONSENT_MESSAGE'). '</div>
 		<div class="zenario_cc_close">
 			<a href="#" onclick="$(\'div.zenario_cookie_consent\').fadeOut(\'slow\'); return false;">'.
@@ -126,7 +121,6 @@ document.write(\'', ze\escape::js('
 			' . $manageButtonHTML . '
 		</div>
 	</div>
-</div>
-'), '\');';
+'), '\';';
 		break;
 }

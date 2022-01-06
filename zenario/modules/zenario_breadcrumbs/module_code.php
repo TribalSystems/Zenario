@@ -105,7 +105,7 @@ class zenario_breadcrumbs extends zenario_menu {
 	}
 	
 	//Recursive function to draw Menu Nodes from the database
-	function getMenuMergeFields(&$menuArray, $depth = 1) {
+	function getMenuMergeFields(&$menuArray, $depth = 1, $parentId = false) {
 		
 		
 		//Convert from a nested arrays to a flat array

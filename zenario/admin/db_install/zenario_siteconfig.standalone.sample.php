@@ -1,5 +1,5 @@
 <?php
-// This file should be called zenario_siteconfig.php and located in your CMS directory.
+// This file should be called zenario_siteconfig.php and located in Zenario's home directory.
 
   /////////////////////////////
  // MySQL database settings //
@@ -125,13 +125,3 @@ define('SESSION_TIMEOUT', 900);
 define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE & ~E_STRICT));
 // This shows all errors except notices and strict errors.
 // We recommend using this level of reporting on live/production sites.
-
-
-  ////////////////////////////
- // Forwarded IP addresses //
-////////////////////////////
-
-// Normally, a visitor's IP Address is read from the $_SERVER['REMOTE_ADDR'] variable.
-// If you are using a load balancer and/or a proxy, you must set this to true so that
-// Zenario will read from the $_SERVER['HTTP_X_FORWARDED_FOR'] variable instead.
-define('USE_FORWARDED_IP', false);

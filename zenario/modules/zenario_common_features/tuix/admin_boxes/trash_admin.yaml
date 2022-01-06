@@ -3,7 +3,7 @@
 zenario_trash_admin:
     key:
         id: ''
-    title: "Trashing admin [[adminString]]"
+    title: "Trashing account for administrator [[adminString]]"
     tabs:
         trash_admin:
             edit_mode:
@@ -17,8 +17,9 @@ zenario_trash_admin:
                     message: |
                         Are you sure you wish to trash the administrator account "[[adminString]]"?
                         
-                        Once trashed, the admin account will be disabled but preserved for audit trail purposes.
-                        (You can view trashed accounts via the trash can icon.)
+                        Once trashed, login will be prevented, but the account will be preserved for audit trail purposes.
+
+                        You can view trashed accounts via the "trash can" icon.
             fields:
                 dummy_field:
                     #This field exists to prevent a bug where the admin box does not load correctly, because there are no fields.

@@ -29,7 +29,7 @@ zenario_menu_text:
                     readonly: true
                 path_of__text_in_default_language:
                     grouping: left_column
-                    label: 'Path preview:'
+                    label: 'Menu path preview:'
                     type: textarea
                     disabled: disabled
                     css_class: zenario_textbox_noborder zenario_breadcrumb_preview

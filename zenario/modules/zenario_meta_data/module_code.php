@@ -68,34 +68,53 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$this->showSections['show_published_date'] = true;
 			}
 		}
-		if ($this->setting('show_writer_name')){
-			if ($writerName = ze\row::get('content_item_versions', 'writer_name', ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion])){
+		if ($this->setting('show_writer_name')) {
+			if ($writerId = ze\row::get('content_item_versions', 'writer_id', ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion])){
+				$writerArray = ze\row::get('writer_profiles', ['first_name', 'last_name', 'email', 'profile'], ['id' => (int) $writerId]);
+
+				$writerName = $writerArray['first_name'];
+				if ($writerArray['last_name']) {
+					$writerName .= ' ' . $writerArray['last_name'];
+				}
 				$this->mergeFields['Writer_name'] = ['value' => htmlspecialchars($writerName), 'html_tag' => $this->setting('writer_name_html_tag'), 'label' => $this->phrase('Writer name'), 'class' => 'writer_name'];
 				$this->showSections['show_writer_name'] = true;
-			}
-		}
-		if ($this->setting('show_writer_image')){
-			$sql = '
-				SELECT f.id, f.width, f.height, f.alt_tag
-				FROM '.DB_PREFIX.'content_item_versions v
-				INNER JOIN '.DB_PREFIX.'admins a
-					ON v.writer_id = a.id
-				INNER JOIN '.DB_PREFIX.'files f
-					ON a.image_id = f.id
-				WHERE v.id = '.(int)$this->cID.'
-					AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
-					AND v.version = '.(int)$this->cVersion;
-			$result = ze\sql::select($sql);
-			$file = ze\sql::fetchAssoc($result);
-			if (!empty($file)) {
-				$width = $height = $url = false;
-				ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
-				if ($url) {
-					$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => $this->phrase('Writer image'), 'class' => 'writer_image'];
-					$this->showSections['show_writer_image'] = true;
+
+				if ($this->setting('show_writer_email')) {
+					$emailFormatted = '<a href="mailto:' . htmlspecialchars($writerArray['email']) . '">' . htmlspecialchars($writerArray['email']) . '</a>';
+					$this->mergeFields['Writer_email'] = ['value' => $emailFormatted, 'html_tag' => $this->setting('writer_email_html_tag'), 'label' => $this->phrase('Writer\'s email'), 'class' => 'writer_email'];
+					$this->showSections['show_writer_email'] = true;
+				}
+
+				if ($this->setting('show_writer_profile')) {
+					$this->mergeFields['Writer_profile'] = ['value' => $writerArray['profile'], 'label' => $this->phrase('Writer\'s profile'), 'class' => 'writer_profile'];
+					$this->showSections['show_writer_profile'] = true;
+				}
+				
+				if ($this->setting('show_writer_image')) {
+					$sql = '
+						SELECT f.id, f.width, f.height, f.alt_tag
+						FROM '.DB_PREFIX.'content_item_versions v
+						INNER JOIN '.DB_PREFIX.'writer_profiles wp
+							ON v.writer_id = wp.id
+						INNER JOIN '.DB_PREFIX.'files f
+							ON wp.photo = f.id
+						WHERE v.id = '.(int)$this->cID.'
+							AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
+							AND v.version = '.(int)$this->cVersion;
+					$result = ze\sql::select($sql);
+					$file = ze\sql::fetchAssoc($result);
+					if (!empty($file)) {
+						$width = $height = $url = false;
+						ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
+						if ($url) {
+							$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => $this->phrase('Writer image'), 'class' => 'writer_image'];
+							$this->showSections['show_writer_image'] = true;
+						}
+					}
 				}
 			}
 		}
+		
 		if ($this->setting('show_sticky_image')) {
 			$sql = '
 				SELECT f.id, f.alt_tag
@@ -108,7 +127,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			$result = ze\sql::select($sql);
 			$file = ze\sql::fetchAssoc($result);
 
-			//If there is no feature image, try to use the fallback image.
+			//If there is no featured image, try to use the fallback image.
 			if (empty($file) && $this->setting('show_feature_image_fallback')) {
 				$file = ze\row::get('files', ['id', 'alt_tag'], $this->setting('feature_image_fallback'));
 			}
@@ -243,17 +262,29 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$fields['first_tab/date_format']['hidden'] = !$values['first_tab/show_date'];
 				$fields['first_tab/published_date_format']['hidden'] = !$values['first_tab/show_published_date'];
 				
-				$hidden = !$values['first_tab/show_writer_image'];
+				$hidden = !$values['show_writer_name'] || !$values['first_tab/show_writer_image'];
 				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
 				
 				$hidden = !$values['first_tab/show_sticky_image'];
 				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'sticky_image_');
 				
-				//Control visibility of "Writer image label html tag" setting & "Feature image label html tag" setting
-				if ($values['show_writer_image'] == 1 && $values['show_labels'] == 1) {
+				//Control visibility settings
+				if ($values['show_writer_name'] == 1 && $values['show_writer_image'] == 1 && $values['show_labels'] == 1) {
 					$fields['first_tab/writer_image_label_html_tag']['hidden'] = false;
 				} else {
 					$fields['first_tab/writer_image_label_html_tag']['hidden'] = true;
+				}
+
+				if ($values['show_writer_name'] == 1 && $values['show_writer_email'] == 1 && $values['show_labels'] == 1) {
+					$fields['first_tab/writer_email_label_html_tag']['hidden'] = false;
+				} else {
+					$fields['first_tab/writer_email_label_html_tag']['hidden'] = true;
+				}
+
+				if ($values['show_writer_name'] == 1 && $values['show_writer_profile'] == 1 && $values['show_labels'] == 1) {
+					$fields['first_tab/writer_profile_label_html_tag']['hidden'] = false;
+				} else {
+					$fields['first_tab/writer_profile_label_html_tag']['hidden'] = true;
 				}
 				
 				if ($values['show_sticky_image'] == 1 && $values['show_labels'] == 1) {
@@ -275,6 +306,8 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					'show_language',
 					'show_writer_name',
 					'show_writer_image',
+					'show_writer_email',
+					'show_writer_profile',
 					'show_sticky_image',
 					'show_text_when_pinned'
 				];

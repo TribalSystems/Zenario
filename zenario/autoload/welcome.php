@@ -29,6 +29,8 @@
 
 namespace ze;
 
+use ZxcvbnPhp\Zxcvbn;
+
 class welcome {
 
 
@@ -52,21 +54,85 @@ class welcome {
 
 
 
-	public static function passwordMessageSnippet($password) {
+	public static function passwordMessageSnippet($password, $isInstaller = false) {
 		$passwordValidation = \ze\user::checkPasswordStrength($password);
+
+		$passwordMessageSnippet = '';
 		if (!$passwordValidation['password_matches_requirements']) {
 			
+			if ($passwordValidation['password_length'] > 0) {
+				$passPhrase = 'Password does not match the requirements';
+				$class = "title_red";
+			} else {
+				$passPhrase = 'Please enter a password';
+				$class = "title_orange";
+			}
 			//Set the post-html field to display "FAIL" highlighted in red.
 			$passwordMessageSnippet = 
 				'<div>
-					<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password does not match the requirements') . '</span>
+					<span id="snippet_password_message" class="' . $class . '">' . \ze\admin::phrase($passPhrase) . '</span>
 				</div>';
 		} else {
-			//Set the post-html field to display "PASS" highlighted in green.
-			$passwordMessageSnippet = 
-				'<div>
-					<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements') . '</span>
-				</div>';
+			$minScore = (int) (\ze::setting('min_extranet_user_password_score') ?: 2);
+
+			$zxcvbn = new \ZxcvbnPhp\Zxcvbn();
+			$result = $zxcvbn->passwordStrength($password);
+
+			if ($result && isset($result['score'])) {
+				switch ($result['score']) {
+					case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+						if ($minScore < 4) {
+							$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
+						} elseif ($minScore == 4) {
+							$phrase = 'Password matches the requirements (score 4)';
+						}
+
+						$passwordMessageSnippet = 
+							'<div>
+								<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase($phrase) . '</span>
+							</div>';
+						break;
+					case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
+						if ($minScore == 4) {
+							$passwordMessageSnippet = 
+							'<div>
+								<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+							</div>';
+						} elseif ($minScore < 4) {
+							$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
+								</div>';
+						}
+						break;
+					case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+						if ($minScore == 2) {
+							if ($isInstaller) {
+								$phrase = \ze\admin::phrase('Password is easy to guess. Make your password stronger if this will be a production site.');
+							} else {
+								$phrase = \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]);
+							}
+							$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_orange">' . $phrase . '</span>
+								</div>';
+						} elseif ($minScore > 2) {
+							$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+								</div>';
+						}
+						break;
+					case 1: //is still very guessable (guesses < 10^6)
+					case 0: //s extremely guessable (within 10^3 guesses)
+					default:
+						$passwordMessageSnippet = 
+							'<div>
+								<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+							</div>';
+						break;
+				}
+			}
 		}
 		
 		return $passwordMessageSnippet;
@@ -1169,7 +1235,7 @@ class welcome {
 				} else {
 					\ze::$dbL = null;
 					$tags['tabs'][3]['errors'][] = 
-						\ze\admin::phrase('The database name, username and/or password are invalid.');
+						\ze\admin::phrase('Cannot connect to MySQL. It looks like the hostname, database name, username or password are invalid.');
 				} 
 			}
 			
@@ -1220,7 +1286,7 @@ class welcome {
 				if (!$merge['PASSWORD'] = $values['5/password']) {
 					$tags['tabs'][5]['errors'][] = \ze\admin::phrase('Please choose a password.');
 			
-				} elseif (!\ze\user::checkPasswordStrength($values['5/password'])['password_matches_requirements']) {
+				} elseif (!\ze\user::checkPasswordStrength($values['5/password'], $checkIfEasilyGuessable = true)['password_matches_requirements']) {
 					$tags['tabs'][5]['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
 				} elseif ($merge['PASSWORD'] != $values['5/re_password']) {
 					$tags['tabs'][5]['errors'][] = \ze\admin::phrase('The password fields do not match.');
@@ -1428,7 +1494,7 @@ class welcome {
 			
 				if ($installStatus == 0) {
 					$fields['0/reason']['snippet']['html'] = 
-						\ze\admin::phrase('The config file "[[file]]" is empty.',
+						\ze\admin::phrase('The Zenario configuration file [[file]] is empty or missing.',
 							['file' => '<code>zenario_siteconfig.php</code>']);
 			
 				} elseif ($installStatus == 1) {
@@ -1447,7 +1513,7 @@ class welcome {
 					$fields['1/license']['snippet']['url'] = 'license.txt';
 			
 				} else {
-					echo \ze\admin::phrase('The license file "license.txt" could not be found. This installer cannot proceed.');
+					echo \ze\admin::phrase('The license file "license.txt" could not be found. Please add the license file, so this installer can proceed.');
 					exit;
 				}
 			
@@ -1515,7 +1581,7 @@ class welcome {
 				$db = \ze::$dbL;
 				\ze::$dbL = null;
 				
-					$fields['5/password_message']['snippet']['html'] = self::passwordMessageSnippet($fields['5/password']['current_value'] ?? false);
+					$fields['5/password_message']['snippet']['html'] = self::passwordMessageSnippet(($fields['5/password']['current_value'] ?? false), $isInstaller = true);
 					$fields['5/password_requirements']['snippet']['html'] = \ze\admin::displayPasswordRequirementsNoteAdmin($fields['5/password']['current_value'] ?? false);
 				
 				//Restore the connection
@@ -1663,6 +1729,7 @@ class welcome {
 							$translatePhrases = 1;
 							$searchType = 'full_text';
 							switch ($merge['LANGUAGE_ID']) {
+								case 'en':
 								case 'en-gb':
 								case 'en-us':
 									$translatePhrases = 0;
@@ -1785,6 +1852,12 @@ class welcome {
 								\ze\site::setSetting('default_icon', $imageId);
 							}
 						}
+
+						if ($values['7/site_enabled'] == 'enabled') {
+							\ze\site::setSetting('site_enabled', 1);
+						} else {
+							\ze\site::setSetting('site_enabled', '');
+						}
 					
 						\ze\welcome::postInstallTasks();
 					}
@@ -1851,6 +1924,9 @@ class welcome {
 		//	-they haven't entered CAPTCHA before
 		//	-the cookie value doesn't match the value stored in the DB
 		//	(e.g. someone is trying to hack the site).
+
+		//Please note: before Captcha can be used, the JS library needs to be loaded.
+		//For the admin login screen, this is done in zenario/admin/welcome.php.
 		
 		$acsn = \ze\welcome::adminCaptchaSettingName();
 		$time = false;
@@ -1878,11 +1954,20 @@ class welcome {
 			);
 	}
 
-	//Formerly "loginAJAX()"
 	public static function loginAJAX(&$source, &$tags, &$fields, &$values, $changes, $getRequest) {
 		$passwordReset = false;
 		$tags['tabs']['login']['errors'] = [];
 		$tags['tabs']['forgot']['errors'] = [];
+
+		//Secure/not secure connection
+		if (\ze\link::protocol() == 'https://') {
+			$class = '';
+			$fields['login/description']['snippet']['html'] .= '<p class="secure_connection">Secure connection</p>';
+		} else {
+			$class = '';
+			$fields['login/description']['snippet']['html'] .= '<p class="not_secure_connection">Warning, you are connecting via http and so your credentials will not be sent securely.</p>';
+		}
+		\ze\lang::applyMergeFields($fields['login/description']['snippet']['html'], ['http_or_https_padlock' => htmlspecialchars($class)]);
 	
 		if ($tags['tab'] == 'login' && !empty($fields['login/previous']['pressed'])) {
 			$tags['go_to_url'] = \ze\welcome::redirectAdmin($getRequest);
@@ -1897,19 +1982,38 @@ class welcome {
 	
 		//Check a login attempt
 		} elseif ($tags['tab'] == 'login' && !empty($fields['login/login']['pressed'])) {
-			
+			//0.5 second delay between login attempts if there are no errors
+			//Please note: usleep uses microseconds. There is no PHP function that accepts milliseconds.
+			usleep(500000);
+
+			if (empty($_SESSION['admin_failed_logins_count'])) {
+				$_SESSION['admin_failed_logins_count'] = 0;
+			}
+
+			$errorsExist = false;
+
 			//Call the standard TUIX validation, as there's a captcha on this screen that needs validating,
 			//and this function has the logic to handle it.
 			\ze\tuix::applyValidation($tags['tabs']['login'], true);
 			
 			if (!$values['login/username']) {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator username or registered email.');
+				
+				if (!$errorsExist) {
+					$_SESSION['admin_failed_logins_count']++;
+					$errorsExist = true;
+				}
 			}
 			
 			if (!$values['login/password']) {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator password.');
+				
+				if (!$errorsExist) {
+					$_SESSION['admin_failed_logins_count']++;
+					$errorsExist = true;
+				}
 			}
-			
+
 			if (\ze\welcome::enableCaptchaForAdminLogins() && !$values['login/admin_login_captcha']) {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please complete the CAPTCHA.');
 			}
@@ -1920,13 +2024,26 @@ class welcome {
 				$adminIdL = \ze\admin::checkPassword($values['login/username'], $details, $values['login/password'], $checkViaEmail = false, $checkBoth = true);
 			
 				if (!$adminIdL || \ze::isError($adminIdL)) {
+					//Further 2.5 second delay between login attempts if there are errors
+					usleep(2500000);
+
 					$tags['tabs']['login']['errors']['details_wrong'] = \ze\admin::phrase('_ERROR_ADMIN_LOGIN_USERNAME');
 					
+					if (!$errorsExist) {
+						$_SESSION['admin_failed_logins_count']++;
+						$errorsExist = true;
+					}
+					
 					//Be nasty and reset the captcha if they got the username or password wrong!
+					//Also invalidate the "Captcha passed" cookie and admin setting.
+					\ze\welcome::clearLastLoggedInAdminCookieAfter3FailedLogins();
+
 					if (\ze\welcome::enableCaptchaForAdminLogins()) {
 						$values['login/admin_login_captcha'] = '';
+						$fields['login/admin_login_captcha']['hidden'] = false;
 					}
-			
+
+					return false;
 				} else {
 					\ze\admin::logIn($adminIdL, $values['login/remember_me']);
 					
@@ -1948,6 +2065,13 @@ class welcome {
 					
 					return true;
 				}
+			} else {
+				\ze\welcome::clearLastLoggedInAdminCookieAfter3FailedLogins();
+				$fields['login/admin_login_captcha']['hidden'] = !\ze\welcome::enableCaptchaForAdminLogins();
+				
+				//Further 2.5 second delay between login attempts if there are errors
+				usleep(2500000);
+				return false;
 			}
 	
 		//Reset a password
@@ -2280,6 +2404,15 @@ class welcome {
 		\ze\sql::update($sql, false, false);
 	}
 
+	public static function clearLastLoggedInAdminCookieAfter3FailedLogins() {
+		if ($_SESSION['admin_failed_logins_count'] >= 3) {
+			$cookieName = \ze\welcome::adminCaptchaCookieName();
+			\ze\cookie::clear($cookieName);
+			$acsn = \ze\welcome::adminCaptchaSettingName();
+			\ze\row::delete('admin_settings', ['name' => $acsn]);
+		}
+	}
+
 	//Formerly "securityCodeAJAX()"
 	public static function securityCodeAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $getRequest, $time) {
 	
@@ -2490,7 +2623,7 @@ class welcome {
 			} elseif ($newPassword == $currentPassword) {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('_MSG_PASS_NOT_CHANGED');
 		
-			} elseif (!\ze\user::checkPasswordStrength($newPassword)['password_matches_requirements']) {
+			} elseif (!\ze\user::checkPasswordStrength($newPassword, $checkIfEasilyGuessable = true)['password_matches_requirements']) {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
 		
 			} elseif (!$newPasswordConfirm) {
@@ -2528,7 +2661,7 @@ class welcome {
 			if (!$password) {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please enter a password.');
 				
-			} elseif (!\ze\user::checkPasswordStrength($password)['password_matches_requirements']) {
+			} elseif (!\ze\user::checkPasswordStrength($password, $checkIfEasilyGuessable = true)['password_matches_requirements']) {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
 				
 			} elseif (!$passwordConfirm) {
@@ -2582,26 +2715,65 @@ class welcome {
 		if ($row = \ze\sql::fetchAssoc($sql)) {
 			if (\ze::request('task') == 'diagnostics' && $row['last_login']) {
 				$adminhtml .= '<h2>This login</h2>';
-				$adminhtml .= '<p>You logged in: '. htmlspecialchars(\ze\admin::formatDateTime($row['last_login'], '_MEDIUM')). '</p>';
+				$adminhtml .= '<p>You logged in '. htmlspecialchars(\ze\admin::formatDateTime($row['last_login'], '_MEDIUM'));
 			
 			} elseif (!empty($_SESSION['admin_last_login'])) {
 				$adminhtml .= '<h2>Your last login</h2>';
-				$adminhtml .= '<p>You last logged in: '. htmlspecialchars(\ze\admin::formatDateTime($_SESSION['admin_last_login'], '_MEDIUM')). '</p>';
+				$adminhtml .= '<p>You last logged in '. htmlspecialchars(\ze\admin::formatDateTime($_SESSION['admin_last_login'], '_MEDIUM'));
 			}		
 			
-			if ($row['last_login_ip']) {	
-				$adminhtml .= '<p>IP address: '. htmlspecialchars($row['last_login_ip']);
+			if ($adminhtml && $row['last_login_ip']) {	
+				if (!empty($_SESSION['admin_last_login']) && !empty($_SESSION['admin_last_login_ip'])) {
+					$lastLoginIp = $_SESSION['admin_last_login_ip'];
+				} else {
+					$lastLoginIp = $row['last_login_ip'];
+				}
+
+				$adminhtml .= ' from IP address '. htmlspecialchars($lastLoginIp);
 				
 				if (\ze\module::inc("zenario_geoip_lookup")) {
 					if ($userCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($row['last_login_ip'])) {
 						if (\ze\module::inc("zenario_country_manager")
-						 && ($userCountryName = \zenario_country_manager::getCountryName($userCountry))) {
+							&& ($userCountryName = \zenario_country_manager::getCountryName($userCountry))
+						) {
 							$adminhtml .= ' ('. htmlspecialchars($userCountryName). ')';
-						
 						} else {
 							$adminhtml .= ' ('. htmlspecialchars($userCountry). ')';
 						}
 					}
+				}
+				$adminhtml .= '.';
+
+				$currentIp = \ze\user::ip();
+				if ($currentIp != $lastLoginIp) {
+					$adminhtml .= '</p>';
+
+					$lastIpString = $lastLoginIp;
+					$currentIpString = $currentIp;
+
+					if (\ze\module::inc("zenario_geoip_lookup")) {
+						if ($lastLoginCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($lastLoginIp)) {
+							if (\ze\module::inc("zenario_country_manager")
+								&& ($lastLoginUserCountryName = \zenario_country_manager::getCountryName($lastLoginCountry))
+							) {
+								$lastIpString .= ' ('. htmlspecialchars($lastLoginUserCountryName). ')';
+							} else {
+								$lastIpString .= ' ('. htmlspecialchars($lastLoginCountry). ')';
+							}
+						}
+
+						if ($currentLoginCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($currentIp)) {
+							if (\ze\module::inc("zenario_country_manager")
+								&& ($currentLoginUserCountryName = \zenario_country_manager::getCountryName($currentLoginCountry))
+							) {
+								$currentIpString .= ' ('. htmlspecialchars($currentLoginUserCountryName). ')';
+							} else {
+								$currentIpString .= ' ('. htmlspecialchars($currentLoginCountry). ')';
+							}
+						}
+					}
+
+					$adminhtml .= '<p class="warning">Your last login from ' . htmlspecialchars($lastIpString) . ' differs from your current IP address ' . htmlspecialchars($currentIpString) . '.</p>';
 				}
 			}
 
@@ -2609,13 +2781,12 @@ class welcome {
 				$adminhtml .= '</p>';
 			}
 		}
-
+		
 		$fields['0/show_administrators_logins']['hidden'] = empty($adminhtml);
 		$fields['0/show_administrators_logins']['snippet']['html'] = $adminhtml;
 		$fields['0/show_administrators_logins']['row_class'] = 'section_valid';
 		
 		
-		$fields['0/template_dir']['value']	= $tdir = CMS_ROOT. 'zenario_custom/templates/grid_templates';
 		$fields['0/cache_dir']['value']	= CMS_ROOT. 'cache';
 		$fields['0/private_dir']['value']	= CMS_ROOT. 'private';
 		$fields['0/public_dir']['value']	= CMS_ROOT. 'public';
@@ -2742,18 +2913,18 @@ class welcome {
 					if ($fileWritable) {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in the <code>[[2dir]]</code> directory are not writable by the web server (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in directory <code>[[2dir]]</code> are not writable by the web server. Use <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
 					} else {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the <code>[[2dir]]</code> directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the directory <code>[[2dir]]</code> are not writable by the web server. Use <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
 					}
 		
 				} elseif ($fileNotWritable !== false) {
 					$skinDirsValid = false;
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] =
-						\ze\admin::phrase('<code>[[short_path]]</code> is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).',
+						\ze\admin::phrase('<code>[[short_path]]</code> is not writable by the web server. Use <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make it writeable.',
 							['short_path' => htmlspecialchars('editable_css/'. $fileNotWritable), 'file' => htmlspecialchars($fileNotWritable)]);
 		
 				} else {
@@ -2925,6 +3096,7 @@ class welcome {
 		    $fields['0/dirs']['row_class'] = 'section_valid';
 			$fields['0/dir_8']['row_class'] = 'sub_section_valid';
 		}
+		
 		$fields['0/site']['row_class'] = 'section_valid';
 		$fields['0/content']['row_class'] = 'section_valid';
 		$fields['0/administrators']['row_class'] = 'section_valid';
@@ -3731,7 +3903,7 @@ class welcome {
 						}
 						
 						if (++$inactiveAdminCount <= 5) {
-							$row['link'] = 'organizer.php#zenario__users/panels/administrators//' . $row['id'];
+							$row['link'] = 'organizer.php#zenario__administration/panels/administrators//' . $row['id'];
 
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
 							$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
@@ -3753,7 +3925,7 @@ class welcome {
 				}
 				
 				if ($inactiveAdminCount > 5) {
-					$merge = ['link' => 'organizer.php#zenario__users/panels/administrators'];
+					$merge = ['link' => 'organizer.php#zenario__administration/panels/administrators'];
 				
 					$fields['0/administrator_more_inactive']['hidden'] = false;
 					$fields['0/administrator_more_inactive']['row_class'] = 'warning';
@@ -3938,8 +4110,7 @@ class welcome {
 
 	//Formerly "congratulationsAJAX()"
 	public static function congratulationsAJAX(&$source, &$tags, &$fields, &$values, $changes) {
-		$fields['0/link']['snippet']['html'] =
-			'<a href="'. \ze\link::protocol(). $_SERVER['HTTP_HOST']. SUBDIRECTORY. '">'. \ze\link::protocol(). $_SERVER['HTTP_HOST']. SUBDIRECTORY. '</a>';
+		\ze\lang::applyMergeFields($fields['0/blurb2']['snippet']['html'], ['site_url' => \ze\link::protocol(). $_SERVER['HTTP_HOST']. SUBDIRECTORY]);
 	}
 
 	//Formerly "redirectAdmin()"
@@ -3970,7 +4141,7 @@ class welcome {
 	
 		if ($cID && \ze\content::checkPerm($cID, $cType)) {
 		
-			unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion'], $getRequest['verification_code']);
+			unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion'], $getRequest['verification_code'], $getRequest['change_email_code']);
 		
 			return \ze\link::toItem($cID, $cType, true, http_build_query($getRequest), false, false, $forceAliasInAdminMode);
 		} else {

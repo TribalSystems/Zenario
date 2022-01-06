@@ -2,21 +2,24 @@
 ---
 zenario_image:
     key:
-        id: ""
+        id: ''
+        mic_image: ''
+        slotName: ''
+        instanceId: ''
+        eggId: ''
     identifier:
         css_class: media_image
         value: ''
-    hide_tab_bar: true
+    #hide_tab_bar: true
     tabs:
         details:
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_MEDIA
+            label: Image properties
             fields:
                 image:
-                    full_width: true
-                    snippet:
-                        html: ""
+                    image: {}
                 
                 privacy_public: &privacy
                     hidden: true
@@ -95,6 +98,41 @@ zenario_image:
                         This will be used to add a table under the image when
                         displayed in a floating box.
             show_errors_after_field: image
+        
+        crops:
+            hide_when_children_are_not_visible: true
+        
+        crop:
+            edit_mode:
+                enabled: true
+                on: true
+                priv: _PRIV_MANAGE_MEDIA
+            label: Crop and zoom
+            fields:
+                description:
+                    snippet:
+                        html: |
+                            <p>
+                                Crop and zoom is available for this image size (defined in plugin settings). Adjust the visible area using the handles, for this aspect ratio.
+                            </p>
+                usage:
+                    snippet:
+                        html: ''
+                
+                crop_tool:
+                    image: {}
+                    image_crop_tool:
+                        grid: true
+                        full: true
+                        preserveAspectRatio: true
+                
+                aspect_ratio_width:
+                    type: hidden
+                    hidden: true
+                
+                aspect_ratio_height:
+                    type: hidden
+                    hidden: true
     
     confirm:
         show: false

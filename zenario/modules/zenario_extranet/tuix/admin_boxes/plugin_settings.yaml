@@ -19,6 +19,35 @@ plugin_settings:
                                 Screen Name (requires the "user_use_screen_name" site
                                 setting enabled)
                     value: Email
+                use_captcha:
+                    plugin_setting:
+                        name: use_captcha
+                    label: 'Show a captcha'
+                    type: checkbox
+                    redraw_onchange: true
+                    side_note: >
+                        Require completion of a captcha to ensure we're dealing with a human.
+                captcha_frequency:
+                    indent: 1
+                    plugin_setting:
+                        name: captcha_frequency
+                    label: 'Show:'
+                    type: select
+                    value: always
+                    values:
+                        always:
+                            ord: 1
+                            label: "Always"
+                        after_1_failed_login_attempt:
+                            ord: 2
+                            label: "After 1 failed login attempt"
+                        after_2_failed_login_attempts:
+                            ord: 3
+                            label: "After 2 failed login attempts"
+                        after_3_failed_login_attempts:
+                            ord: 4
+                            label: "After 3 failed login attempts"
+                    visible_if: lib.value('use_captcha')
                 enable_remember_me:
                     plugin_setting:
                         name: enable_remember_me
@@ -359,101 +388,99 @@ plugin_settings:
                     full_width: Yes
                     snippet:
                         html: >
-                            These settings control what the user sees if the login 
-                            process fails.
-                email_address_required_error_text:
-                    label: 'If no email address is entered:'
-                    type: text
-                    value: "Please enter your email address."
-                    show_phrase_icon: true
-                password_required_error_text:
-                    label: 'If no password is entered:'
-                    type: text
-                    value: "Please enter your password."
-                    show_phrase_icon: true
-                screen_name_required_error_text:
-                    label: 'If no screen name is entered:'
-                    type: text
-                    show_phrase_icon: true
-                    value: "Please enter your screen name."
-                invalid_email_error_text:
-                    label: 'If email entered is not in a vaild format:'
-                    type: text
-                    show_phrase_icon: true
-                    value: "Please enter a valid email address"
+                            The following messages may appear when the user tries to log in, edit them to customise.
                 email_not_in_db_message:
                     plugin_setting:
                         name: email_not_in_db_message
-                        dont_save_default_value: true
-                    label: 'If email address is not in the database:'
+                    label: 'Email address was not registered:'
                     type: text
-                    value: "This email address is not associated with any account."
+                    value: "Your login details are not associated with any account, or the password is incorrect."
                     show_phrase_icon: true
                     redraw_onchange: true
                 screen_name_not_in_db_message:
                     plugin_setting:
                         name: screen_name_not_in_db_message
-                        dont_save_default_value: true
-                    label: 'If screen name is not in the database:'
+                    label: 'Screen name was not registered:'
                     type: text
-                    value: "This screen name is not associated with any account."
+                    value: "Your login details are not associated with any account, or the password is incorrect."
                     show_phrase_icon: true
                     redraw_onchange: true
+                contact_not_extranet_message:
+                    plugin_setting:
+                        name: contact_not_extranet_message
+                    label: 'Account is a contact, not an extranet user:'
+                    type: text
+                    value: "Your login details are not associated with any account, or the password is incorrect."
+                    show_phrase_icon: true
+                    redraw_onchange: true
+                email_address_required_error_text:
+                    plugin_setting:
+                        name: email_address_required_error_text
+                    label: 'No email address was entered:'
+                    type: text
+                    value: "Please enter your email address."
+                    show_phrase_icon: true
+                screen_name_required_error_text:
+                    plugin_setting:
+                        name: screen_name_required_error_text
+                    label: 'No screen name was entered:'
+                    type: text
+                    value: "Please enter your screen name."
+                    show_phrase_icon: true
+                password_required_error_text:
+                    plugin_setting:
+                        name: password_required_error_text
+                    label: 'No password was entered:'
+                    type: text
+                    value: "Please enter your password."
+                    show_phrase_icon: true
+                invalid_email_error_text:
+                    plugin_setting:
+                        name: invalid_email_error_text
+                    label: 'Email was not entered in a vaild format:'
+                    type: text
+                    value: "Your email address didn't appear to be in a valid format."
+                    show_phrase_icon: true
                 wrong_password_message:
                     plugin_setting:
                         name: wrong_password_message
-                        dont_save_default_value: true
-                    label: 'If email address is in the database but the password is incorrect:'
+                    label: 'Email address was registered but password was incorrect:'
                     type: text
-                    value: "The password you have entered is incorrect."
+                    value: "Your login details are not associated with any account, or the password is incorrect."
                     show_phrase_icon: true
                     redraw_onchange: true
                 password_expired_message:
                     plugin_setting:
                         name: password_expired_message
-                        dont_save_default_value: true
-                    label: 'If a new user was given a password that needed to be changed, and the password expired:'
+                    label: 'Temporary password has expired:'
                     type: text
                     value: "Your temporary password has expired. You will need to reset your password before you can log in."
                     show_phrase_icon: true
                 account_suspended_message:
                     plugin_setting:
                         name: account_suspended_message
-                        dont_save_default_value: true
-                    label: 'If user account is suspended:'
+                    label: 'User account is suspended:'
                     type: text
                     value: "Your account is suspended. Please contact the site administrator for assistance."
                     show_phrase_icon: true
                 account_pending_message:
                     plugin_setting:
                         name: account_pending_message
-                        dont_save_default_value: true
-                    label: 'If user account is pending (email verified):'
+                    label: 'User account is pending (email address has been verified, but account needs activation by adminstrator):'
                     type: text
                     value: "Your account has not yet been activated by the site administator. Please contact us for further assistance."
                     show_phrase_icon: true
                 account_not_verified_message:
                     plugin_setting:
                         name: account_not_verified_message
-                        dont_save_default_value: true
-                    label: 'If user account is pending and email address not verified:'
+                    label: 'User account is pending but email address not verified:'
                     type: text
                     value: "It looks like you have not yet verified your email address. If you have not received a verification email, please <a [[resend_verification_email]]>click here to have this site send you a new verification email</a>."
                     show_phrase_icon: true
-                contact_not_extranet_message:
-                    plugin_setting:
-                        name: contact_not_extranet_message
-                        dont_save_default_value: true
-                    label: 'If email entered is a contact not a extranet user:'
-                    type: text
-                    value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
-                    show_phrase_icon: true
-                    redraw_onchange: true
                 accept_terms_and_conditions_message:
                     plugin_setting:
                         name: accept_terms_and_conditions_message
-                        dont_save_default_value: true
-                    label: "If user hasn't accepted terms and conditions:"
+                    label: "User hasn't accepted terms and conditions:"
                     type: text
                     value: "It looks like you have not yet accepted our terms and conditions, please accept these to continue using our site."
                     show_phrase_icon: true
@@ -462,15 +489,19 @@ plugin_settings:
                 sub_description:
                     full_width: Yes
                     snippet:
-                        html: "Error messages for changing password:"
+                        html: "Error messages while changing password:"
                 
                 no_new_password_error_text:
-                    label: 'If no new password is entered:'
+                    plugin_setting:
+                        name: no_new_password_error_text
+                    label: 'A new password was not entered:'
                     type: text
                     value: "Please enter new password."
                     show_phrase_icon: true
                 no_new_repeat_password_error_text:
-                    label: 'If no new repeat password is entered:'
+                    plugin_setting:
+                        name: no_new_repeat_password_error_text
+                    label: 'The repeat password was not entered:'
                     type: text
                     value: "Please repeat your new password."
                     show_phrase_icon: true
@@ -478,15 +509,15 @@ plugin_settings:
                     plugin_setting:
                         name: new_passwords_do_not_match
                         dont_save_default_value: true
-                    label: 'If the new password and repeat new password fields do not match:'
+                    label: 'New password and repeat do not match:'
                     type: text
-                    value: "The two passwords do not match."
+                    value: "The passwords you entered do not match."
                     show_phrase_icon: true
                 new_password_length_message:
                     plugin_setting:
                         name: new_password_length_message
                         dont_save_default_value: true
-                    label: 'If new password is not over min length:'
+                    label: 'New password not long enough:'
                     type: text
                     value: "Please ensure that your new password is at least [[min_password_length]] characters long."
                     show_phrase_icon: true
@@ -494,7 +525,7 @@ plugin_settings:
                     plugin_setting:
                         name: new_password_not_strong_enough_message
                         dont_save_default_value: true
-                    label: 'If new password is not stong enough:'
+                    label: 'New password not strong enough:'
                     type: text
                     value: "The new password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
                     show_phrase_icon: true
@@ -502,7 +533,7 @@ plugin_settings:
                     plugin_setting:
                         name: new_password_same_as_old_message
                         dont_save_default_value: true
-                    label: 'If new password is the same as the old password:'
+                    label: 'New password same as old password:'
                     type: text
                     value: "Your new password is the same as your old password."
                     show_phrase_icon: true

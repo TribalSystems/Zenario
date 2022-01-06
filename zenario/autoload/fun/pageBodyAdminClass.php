@@ -55,9 +55,6 @@ if (\ze::$cVersion != \ze::$adminVersion || \ze::$status == 'trashed') {
 //Only show slot/layout on the current version
 if (\ze::$cVersion == \ze::$adminVersion) {
 	
-	if (\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
-		$toolbars['item'] = ['ord' => 50, 'label' => \ze\admin::phrase('Item')];
-	}
 	if (\ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 		$toolbars['layout'] = ['ord' => 51, 'label' => \ze\admin::phrase('Layout')];
 	}
@@ -74,10 +71,10 @@ if (empty($_SESSION['page_mode'])
 //In 9.0, we're experiementing with disabling the feature that remembers the page mode/admin toolbar mode.
 //However we wish to test it out first, so rather than going to all of the effort to rip it out straight
 //away, I've added this line to try and counteract it, just so we can try it out.
+
+//Commented out as of 12 Jul 2021 -- Marcin
 //$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
-	//This caused a few things to break, e.g. when making a draft from a published page.
-	//It's been removed on HEAD by Marcin, 12 Jul 2021.
-	//This removal has also been patched back by Chris, 21 Jul 2021.
+
 
 
 $_SESSION['last_item'] = \ze::$cType. '_'. \ze::$cID;
@@ -120,7 +117,6 @@ foreach ([
 	'edit_disabled',
 	'edit',
 	'rollback',
-	'item',
 	'menu',
 	'layout'
 ] as $possiblePageMode) {
@@ -132,18 +128,18 @@ foreach ([
 }
 
 
-if ($_SESSION['page_mode'] == 'item' || $_SESSION['page_mode'] == 'layout') {
-	$class .= ' zenario_slotWand_on';
-} else {
+#if ($_SESSION['page_mode'] == 'edit' || $_SESSION['page_mode'] == 'layout') {
+#	$class .= ' zenario_slotWand_on';
+#} else {
 	$class .= ' zenario_slotWand_off';
-}
+#}
 
 //Add the old class name for this for backwards compatability
-if ($_SESSION['page_mode'] == 'layout') {
-	$class .= ' zenario_pageMode_template';
-} else {
+#if ($_SESSION['page_mode'] == 'layout') {
+#	$class .= ' zenario_pageMode_template';
+#} else {
 	$class .= ' zenario_pageModeIsnt_template';
-}
+#}
 
 //Add a class when locked
 if (ze::$locked) {

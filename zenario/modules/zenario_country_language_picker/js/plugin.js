@@ -10,14 +10,14 @@
 	};
 
 	window.onload = function(){
-		var allCountriesLists = $('.zenario_country_language_picker.country_language_picker_full .continents_list .continent .countries_columns').hide();
+		var allCountriesLists = $('.continents_list.country_accordions .continent .countries_columns').hide();
 		
-		$('.zenario_country_language_picker.country_language_picker_full .continents_list .continent h3').click(function() {
+		$('.continents_list.country_accordions .continent h3').click(function() {
 			if ($( this ).parent().hasClass("on")) {
 				$( this ).parent().find( ".countries_columns").slideUp("slow");
 				$( this ).parent().removeClass('on');
 			} else {
-				$('.zenario_country_language_picker.country_language_picker_full .continents_list .continent').removeClass('on');
+				$('.continents_list.country_accordions .continent').removeClass('on');
 				allCountriesLists.slideUp("slow");
 				$( this ).parent().addClass('on');
 				$( this ).parent().find( ".countries_columns").slideDown("slow");

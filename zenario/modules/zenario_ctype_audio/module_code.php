@@ -144,7 +144,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'zenario__content/panels/content':
 				//Handle creating multiple Audios at once in Storekeeper
-				if (($_POST['create_multiple'] ?? false) && ze\priv::check('_PRIV_CREATE_FIRST_DRAFT', false, 'audio')) {
+				if (($_POST['create_multiple'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', false, 'audio')) {
 					$newIds = [];
 					
 					//This sholud only be allowed if we know what the language will be

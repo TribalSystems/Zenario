@@ -5,7 +5,7 @@ zenario_create_vlp:
     title: Defining a language
     key:
         id: ""
-    max_height: 410
+    max_height: 550
     hide_tab_bar: Yes
     tabs:
         details:
@@ -18,13 +18,14 @@ zenario_create_vlp:
                     label: 'Language code:'
                     type: text
                     maxlength: "15"
-                    side_note: |
+                    note_below: |
                         The language code for this language, e.g. <code>en</code>, <code>en-us</code> or <code>en-gb</code>. See
-                                                        <a href="http://www.w3.org/International/articles/language-tags/" target="_blank">
-                                                            http://www.w3.org/International/articles/language-tags/
-                                                        </a> for more information.
-                                                        <br/>
-                                                        The code must be entered in lower-case, and you are restricted to using tags that are no longer than 15 characters.
+                        <a href="http://www.w3.org/International/articles/language-tags/" target="_blank">
+                            http://www.w3.org/International/articles/language-tags/
+                        </a> for more information.
+                        <br/>
+                        The code must be entered in lower-case, and you are restricted to using tags that are no longer than 15 characters.
+                    style: "width: 20em;"
                 english_name:
                     label: 'Language English name:'
                     type: text
@@ -33,6 +34,7 @@ zenario_create_vlp:
                         required: Please enter an English name.
                     side_note: >
                         The name of the language in English, as will be seen by admnistrators.
+                    style: "width: 20em;"
                 language_local_name:
                     label: 'Language local name:'
                     type: text
@@ -42,6 +44,7 @@ zenario_create_vlp:
                     side_note: >
                         The name of the language, in its local tongue. This will be
                         displayed to visitors.
+                    style: "width: 20em;"
                 flag_filename:
                     label: 'Flag CSS class name:'
                     type: text

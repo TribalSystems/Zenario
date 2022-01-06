@@ -68,7 +68,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 	}
 
 	public function modeLogin(){
-		echo $this->phrase("_PLEASE_LOGIN");
+		echo $this->phrase("Please login to continue.");
 	}
 
 	public function changeEmailAndLogUserIn(){
@@ -124,12 +124,12 @@ class zenario_extranet_change_email extends zenario_extranet {
 				ze\sql::update($sql);
 				
 				ze\user::logIn($row['user_id']);
-				$this->message = $this->phrase('_EMAIL_CHANGED');
+				$this->message = $this->phrase('Thank you, your email address has been changed.');
 				//Set email verified flag
 				ze\row::update('users', ['email_verified' => 1], ['id' => $row['user_id']]);
 				return true;
 			} else {
-				$this->message = $this->phrase('_INVALID_LINK');
+				$this->message = $this->phrase('The verification link that you provided is either invalid or has already been used.');
 				return true;
 			}
 		}
@@ -161,7 +161,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 		if (!$this->errors){
 			
 			if (!ze\user::checkPassword(ze\user::id(), ($_POST['extranet_password'] ?? false))) {
-				$this->errors[] = ['Error'=>$this->phrase('_INCORRECT_PASSWORD')];
+				$this->errors[] = ['Error'=>$this->phrase('Error. The password you entered was incorrect.')];
 			}
 
 
@@ -169,7 +169,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				if ($loggedInUserData['email'] == $_POST['extranet_email']) {
 					$this->errors[] = ['Error'=>$this->phrase('Error. The new email address is the same as the current one.')];
 				} else {
-					$this->errors[] = ['Error'=>$this->phrase('_EMAIL_ALREADY_IN_USE')];
+					$this->errors[] = ['Error'=>$this->phrase('Error. The email address you entered is already in use.')];
 				}
 			}
 
@@ -201,15 +201,15 @@ class zenario_extranet_change_email extends zenario_extranet {
 					$userDetails['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&action=confirm_email&hash='. $hash);
 					
 					if (!zenario_email_template_manager::sendEmailsUsingTemplate($_POST['extranet_email'] ?? false,$this->setting('confirmation_email_template'),$userDetails,[])){
-						$this->errors[] = ['Error'=>$this->phrase('_COULD_NOT_SEND_CONFIRMATION_EMAIL')];
+						$this->errors[] = ['Error'=>$this->phrase('Sorry, a system error occurred. Our website has been unable to send you a verification email. Please contact the site administrator.')];
 						return false;
 					}
 
-					$this->message = $this->phrase('_EMAIL_CHANGE_PREPARED');
+					$this->message = $this->phrase('You have been sent a verification email with a confirmation link. You should check your spam/bulk mail if it you do not see it soon. Please click the link in the email to confirm your email address changes.');
 					$this->mode = 'modeLoggedIn';
 					return true;
 				} else {
-					$this->errors[] = ['Error'=>$this->phrase('_COULD_NOT_SEND_CONFIRMATION_EMAIL')];
+					$this->errors[] = ['Error'=>$this->phrase('Sorry, a system error occurred. Our website has been unable to send you a verification email. Please contact the site administrator.')];
 					return false;
 				}
 			} else {
@@ -233,10 +233,6 @@ class zenario_extranet_change_email extends zenario_extranet {
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//...
-	}
-	
-	protected function enableCaptcha() {
-		return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
 	}
 
 	public function addToPageHead() {

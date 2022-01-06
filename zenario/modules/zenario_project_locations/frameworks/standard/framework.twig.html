@@ -2,15 +2,15 @@
 	<h1>Project Locations</h1>
 	<div class="project_plocations_search_criteria">
 		{{Open_Form}}
-		<h2>{{"_PANEL_INTRO"|trans}}</h2>
+		<h2>{{"Search our projects"|trans}}</h2>
 
-		{{"_CHOOSE_COUNTRY:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "country_id", 'source_method': "getCountryOptions", 'onchange': "this.form.region_id &&
+		{{"Location:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "country_id", 'source_method': "getCountryOptions", 'onchange': "this.form.region_id &&
 		(this.form.region_id.value=0);this.form.doSearch.click()"})}}
 
-		{% if HasRegions %} {{"_CHOOSE_REGION:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "region_id", 'source_method': "getRegionOptions", 'onchange': "this.form.doSearch.click()"})}} {% endif %} 
+		{% if HasRegions %} {{"Region:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "region_id", 'source_method': "getRegionOptions", 'onchange': "this.form.doSearch.click()"})}} {% endif %} 
 
-		{{"_CHOOSE_SERVICE:"|trans}}
-		{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "service_id", 'source_method': "getServicesOptions", 'onchange': "this.form.doSearch.click()"})}} {{"_CHOOSE_SECTOR:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "sector_id", 'source_method': "getSectorsOptions", 'onchange': "this.form.doSearch.click()"})}}
+		{{"Service:"|trans}}
+		{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "service_id", 'source_method': "getServicesOptions", 'onchange': "this.form.doSearch.click()"})}} {{"Sector:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "sector_id", 'source_method': "getSectorsOptions", 'onchange': "this.form.doSearch.click()"})}}
 		<div class="form_button">
 			<div class="nice_btn">
 				<div class="r">
@@ -27,9 +27,9 @@
 			{% if HasResults %}
 				<div class="project_search_results_tabs">
 					<ul>
-						<li class="tab_on">{{"_TAB_RESULTS_MAP"|trans}}</li>
+						<li class="tab_on">{{"Results by map"|trans}}</li>
 						<!--<li class="tab_map" onclick="showPanel('project_map','project_list');">Results by map</li>-->
-						<li class="tab_map">{{"_TAB_RESULTS_LISTING"|trans}}</li>
+						<li class="tab_map">{{"Results by listing"|trans}}</li>
 					</ul>
 				</div>
 				<div class="project_search_results_panel">
@@ -37,15 +37,15 @@
 				</div>
 			{% endif %}
 			{% if No_Rows %}
-				<div class="project_search_results_panel">{{"_NO_PROJECTS_FOUND"|trans}}</div>
+				<div class="project_search_results_panel">{{"Sorry, no projects could be found matching your criteria. Perhaps you should try broadening your search?"|trans}}</div>
 			{% endif %}
 		</div>
 		<div id="project_map" class="search_results_map">
 			<div class="project_search_results_tabs">
 				<ul>
 					<!--<li class="tab_list" onclick="showPanel('project_list','project_map');">Results by listing</li>-->
-					<li class="tab_list">{{"_TAB_RESULTS_MAP"|trans}}</li>
-					<li class="tab_on">{{"_TAB_RESULTS_LISTING"|trans}}</li>
+					<li class="tab_list">{{"Results by map"|trans}}</li>
+					<li class="tab_on">{{"Results by listing"|trans}}</li>
 				</ul>
 			</div>
                         <!--ListResults-start-->

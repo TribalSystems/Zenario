@@ -31,6 +31,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__document_upload extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze\module::isRunning('zenario_extranet')) {
+			$fields['upload_document/privacy']['values']['private']['disabled'] = true;
+		}
+		
 		$folderDetails= ze\row::get('documents', ['id','folder_name'], ['id' => $box['key']['id'],'type'=>'folder']);
 		if ($folderDetails) {
 			$box['title'] = 'Uploading document for the folder "'.$folderDetails['folder_name'].'"';

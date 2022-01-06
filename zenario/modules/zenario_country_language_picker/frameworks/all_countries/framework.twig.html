@@ -1,0 +1,499 @@
+{% if Change_country_button %}
+	<div class="user_form_click_here" {{Button_js}}>
+		<h3>{{Country_name}}</h3>
+	</div>
+	<div id="country_id" class="{{Country_id}}" style="display:none;"></div>
+{% elseif Show_picker %}
+	<div class="zenario_country_language_picker">
+		<div class="zenario_country_language_picker_wrap">
+			<div class="zenario_country_language_picker_header">
+				<h4>Please choose your country so we can show you the most relevant content.</h4>
+				
+				{% if Detected_country and (Detected_country in Active_countries|keys) %}
+					{% set Detected_language = Default_language %}
+					<h4>It looks like you are in <span class="your_country">{{Active_countries[Detected_country]}}</span>? <a class="accept_button" href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id={{Detected_country|e}}&user_lang={{Detected_language|e}}&cID={{cID}}&cType={{cType}}">Accept</a></h4>
+				{% endif %}
+			</div>
+			<div class="zenario_country_language_picker_body">
+				<div class="continents_list country_accordions">
+					<div class="continent">
+						<h3>Africa</h3>
+						<div class="countries_columns">
+							<ul>
+							
+								{% if "DZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'DZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=DZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Algeria</a></li>{% endif %}
+							
+								{% if "AO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Angola</a></li>{% endif %}
+
+								{% if "BJ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BJ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BJ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Benin</a></li>{% endif %}
+							
+								{% if "BW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Botswana</a></li>{% endif %}
+							
+								{% if "BF" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BF' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BF&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Burkina Faso</a></li>{% endif %}
+							
+								{% if "BI" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BI' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BI&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Burundi</a></li>{% endif %}
+
+								{% if "CV" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CV' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CV&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Cabo Verde</a></li>{% endif %}
+							
+								{% if "CM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Cameroon</a></li>{% endif %}
+							
+								{% if "CF" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CF' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CF&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Central African Republic</a></li>{% endif %}
+							
+								{% if "TD" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TD' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TD&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Chad</a></li>{% endif %}
+
+								{% if "KM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Comoros</a></li>{% endif %}
+							
+								{% if "CG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Congo</a></li>{% endif %}
+								
+								{% if "CI" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CI' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CI&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Côte d'Ivoire</a></li>{% endif %}
+							
+								{% if "DJ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'DJ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=DJ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Djibouti</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "CD" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CD' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CD&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">DR Congo</a></li>{% endif %}
+							
+								{% if "GQ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GQ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GQ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Equatorial Guinea</a></li>{% endif %}
+							
+								{% if "ER" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ER' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ER&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Eritrea</a></li>{% endif %}
+
+								{% if "SZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Eswatini</a></li>{% endif %}
+							
+								{% if "ET" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ET' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ET&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Ethiopia</a></li>{% endif %}
+							
+								{% if "GA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Gabon</a></li>{% endif %}
+							
+								{% if "GM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Gambia</a></li>{% endif %}
+
+								{% if "GH" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GH' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GH&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Ghana</a></li>{% endif %}
+							
+								{% if "GN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Guinea</a></li>{% endif %}
+								
+								{% if "GW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Guinea-Bissau</a></li>{% endif %}
+							
+								{% if "KE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Kenya</a></li>{% endif %}
+
+								{% if "LS" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LS' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LS&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Lesotho</a></li>{% endif %}
+							
+								{% if "LR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Liberia</a></li>{% endif %}
+							</ul>
+							<ul>
+							
+								{% if "MG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Madagascar</a></li>{% endif %}
+
+								{% if "MW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Malawi</a></li>{% endif %}
+							
+								{% if "ML" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ML' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ML&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Mali</a></li>{% endif %}
+							
+								{% if "MR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Mauritania</a></li>{% endif %}
+							
+								{% if "MU" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MU' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MU&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Mauritius</a></li>{% endif %}
+
+								{% if "MA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Morocco</a></li>{% endif %}
+							
+								{% if "MZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Mozambique</a></li>{% endif %}
+							
+								{% if "NA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Namibia</a></li>{% endif %}
+								
+								{% if "NG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Nigeria</a></li>{% endif %}
+								
+								{% if "RW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'RW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=RW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Rwanda</a></li>{% endif %}
+
+								{% if "ST" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ST' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ST&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Sao Tome & Principe</a></li>{% endif %}
+							
+								{% if "SN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Senegal</a></li>{% endif %}
+
+								{% if "SC" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SC' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SC&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Seychelles</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "SL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Sierra Leone</a></li>{% endif %}
+							
+								{% if "SO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Somalia</a></li>{% endif %}
+							
+								{% if "ZA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ZA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ZA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">South Africa</a></li>{% endif %}
+							
+								{% if "SS" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SS' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SS&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">South Sudan</a></li>{% endif %}
+
+								{% if "SD" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SD' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SD&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Sudan</a></li>{% endif %}
+							
+								{% if "TZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Tanzania</a></li>{% endif %}
+														
+								{% if "TG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Togo</a></li>{% endif %}
+							
+								{% if "TN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Tunisia</a></li>{% endif %}
+
+								{% if "UG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'UG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=UG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Uganda</a></li>{% endif %}
+							
+								{% if "ZM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ZM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ZM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Zambia</a></li>{% endif %}
+							
+								{% if "ZW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ZW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ZW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Zimbabwe</a></li>{% endif %}
+							</ul>
+						</div>
+					</div>
+					<div class="continent">
+						<h3>Asia</h3>
+						<div class="countries_columns">
+							<ul>								
+								{% if "AF" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AF' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AF&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Afghanistan</a></li>{% endif %}
+							
+								{% if "AM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Armenia</a></li>{% endif %}
+
+								{% if "AZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Azerbaijan</a></li>{% endif %}
+							
+								{% if "BD" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BD' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BD&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Bangladesh</a></li>{% endif %}
+							
+								{% if "BT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Bhutan</a></li>{% endif %}
+
+								{% if "BN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Brunei </a></li>{% endif %}
+							
+								{% if "KH" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KH' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KH&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Cambodia</a></li>{% endif %}
+
+								{% if "CN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">China</a></li>{% endif %}
+							
+								{% if "CY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Cyprus</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "GE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Georgia</a></li>{% endif %}
+							
+								{% if "HK" in Active_countries|keys %}<li {% if (Detected_country|e) == 'HK' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=HK&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Hong Kong</a></li>{% endif %}
+								
+								{% if "IN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'IN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">India</a></li>{% endif %}
+			
+								{% if "ID" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ID' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ID&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Indonesia</a></li>{% endif %}
+			
+								{% if "JP" in Active_countries|keys %}<li {% if (Detected_country|e) == 'JP' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=JP&user_lang=ja&cID={{cID}}&cType={{cType}}">Japan</a></li>{% endif %}
+								
+								{% if "KZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Kazakhstan</a></li>{% endif %}
+								
+								{% if "KG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Kyrgyzstan</a></li>{% endif %}
+								
+								{% if "LA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Laos</a></li>{% endif %}
+							
+								{% if "MY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Malaysia</a></li>{% endif %}		
+							</ul>
+							<ul>
+								{% if "MV" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MV' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MV&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Maldives</a></li>{% endif %}
+							
+								{% if "MN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Mongolia</a></li>{% endif %}
+
+								{% if "MM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Myanmar</a></li>{% endif %}
+							
+								{% if "NP" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NP' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NP&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Nepal</a></li>{% endif %}
+							
+								{% if "KP" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KP' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KP&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">North Korea</a></li>{% endif %}
+
+								{% if "PK" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PK' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PK&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Pakistan</a></li>{% endif %}
+							
+								{% if "PH" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PH' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PH&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Philippines</a></li>{% endif %}
+			
+								{% if "SG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Singapore</a></li>{% endif %}
+							
+								{% if "KR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">South Korea</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "LK" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LK' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LK&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Sri Lanka</a></li>{% endif %}
+			
+								{% if "TW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Taiwan</a></li>{% endif %}
+							
+								{% if "TJ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TJ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TJ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Tajikistan</a></li>{% endif %}
+			
+								{% if "TH" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TH' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TH&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Thailand</a></li>{% endif %}
+							
+								{% if "TL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Timor-Leste</a></li>{% endif %}
+							
+								{% if "TM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Turkmenistan</a></li>{% endif %}
+							
+								{% if "UZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'UZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=UZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Uzbekistan</a></li>{% endif %}
+							
+								{% if "VN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'VN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=VN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Vietnam</a></li>{% endif %}
+							</ul>
+						</div>
+					</div>
+					<div class="continent">	
+						<h3>Australasia</h3>
+						<div class="countries_columns">
+							<ul>
+								{% if "AU" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AU' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AU&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Australia</a></li>{% endif %}
+								
+								{% if "FJ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'FJ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=FJ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Fiji</a></li>{% endif %}
+								
+								{% if "KI" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KI' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KI&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Kiribati</a></li>{% endif %}
+								
+								{% if "MH" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MH' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MH&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Marshall Islands</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "FM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'FM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=FM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Micronesia</a></li>{% endif %}
+								
+								{% if "NR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Nauru</a></li>{% endif %}
+
+								{% if "NZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">New Zealand</a></li>{% endif %}
+								
+								{% if "PW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Palau</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "PG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Papua New Guinea</a></li>{% endif %}
+								
+								{% if "WS" in Active_countries|keys %}<li {% if (Detected_country|e) == 'WS' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=WS&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Samoa</a></li>{% endif %}
+								
+								{% if "SB" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SB' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SB&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Solomon Islands</a></li>{% endif %}
+								
+								{% if "TO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Tonga</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "TV" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TV' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TV&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Tuvalu</a></li>{% endif %}
+								
+								{% if "VU" in Active_countries|keys %}<li {% if (Detected_country|e) == 'VU' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=VU&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Vanuatu</a></li>{% endif %}
+							</ul>
+						</div>
+					</div>
+					<div class="continent">
+						<h3>Europe</h3>
+						<div class="countries_columns">
+							<ul>
+								{% if "AL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Albania</a></li>{% endif %}
+
+								{% if "AD" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AD' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AD&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Andorra</a></li>{% endif %}
+
+								{% if "AT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Austria</a></li>{% endif %}
+								
+								{% if "BY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Belarus</a></li>{% endif %}
+							
+								{% if "BE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Belgium</a></li>{% endif %}
+								
+								{% if "BA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Bosnia and Herzegovina</a></li>{% endif %}
+
+								{% if "BG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Bulgaria</a></li>{% endif %}
+
+								{% if "HR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'HR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=HR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Croatia</a></li>{% endif %}
+
+								{% if "CZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Czechia</a></li>{% endif %}
+							
+								{% if "DK" in Active_countries|keys %}<li {% if (Detected_country|e) == 'DK' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=DK&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Denmark</a></li>{% endif %}
+		
+								{% if "EE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'EE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=EE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Estonia</a></li>{% endif %}
+					
+								{% if "FI" in Active_countries|keys %}<li {% if (Detected_country|e) == 'FI' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=FI&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Finland</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "FR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'FR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=FR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">France</a></li>{% endif %}
+			
+								{% if "DE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'DE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=DE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Germany</a></li>{% endif %}
+			
+								{% if "GR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Greece</a></li>{% endif %}
+			
+								{% if "GL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Greenland</a></li>{% endif %}
+							
+								{% if "VA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'VA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=VA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Holy See</a></li>{% endif %}
+
+								{% if "HU" in Active_countries|keys %}<li {% if (Detected_country|e) == 'HU' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=HU&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Hungary</a></li>{% endif %}
+			
+								{% if "IS" in Active_countries|keys %}<li {% if (Detected_country|e) == 'IS' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IS&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Iceland</a></li>{% endif %}
+			
+								{% if "IE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'IE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Ireland</a></li>{% endif %}
+			
+								{% if "IT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'IT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Italy</a></li>{% endif %}
+			
+								{% if "LV" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LV' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LV&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Latvia</a></li>{% endif %}
+								
+								{% if "LI" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LI' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LI&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Liechtenstein</a></li>{% endif %}
+								
+								{% if "LT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Lithuania</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "LU" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LU' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LU&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Luxembourg</a></li>{% endif %}
+								
+								{% if "MT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Malta</a></li>{% endif %}
+								
+								{% if "MD" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MD' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MD&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Moldova</a></li>{% endif %}
+								
+								{% if "MC" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MC' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MC&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Monaco</a></li>{% endif %}
+								
+								{% if "ME" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ME' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ME&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Montenegro</a></li>{% endif %}
+			
+								{% if "NL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Netherlands</a></li>{% endif %}
+
+								{% if "MK" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MK' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MK&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">North Macedonia</a></li>{% endif %}
+
+								{% if "NO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Norway</a></li>{% endif %}
+			
+								{% if "PL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Poland</a></li>{% endif %}
+
+								{% if "PT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Portugal</a></li>{% endif %}
+
+								{% if "RO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'RO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=RO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Romania</a></li>{% endif %}
+
+								{% if "RU" in Active_countries|keys %}<li {% if (Detected_country|e) == 'RU' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=RU&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Russia</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "SM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">San Marino</a></li>{% endif %}
+
+								{% if "RS" in Active_countries|keys %}<li {% if (Detected_country|e) == 'RS' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=RS&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Serbia</a></li>{% endif %}
+
+								{% if "SK" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SK' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SK&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Slovakia</a></li>{% endif %}
+
+								{% if "ES" in Active_countries|keys %}<li {% if (Detected_country|e) == 'ES' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ES&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Spain</a></li>{% endif %}
+			
+								{% if "SE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SE&user_lang=sv&cID={{cID}}&cType={{cType}}">Sweden</a></li>{% endif %}
+			
+								{% if "CH" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CH' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CH&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Switzerland</a></li>{% endif %}
+							
+								{% if "TR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Turkey</a></li>{% endif %}
+								
+								{% if "UA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'UA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=UA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Ukraine</a></li>{% endif %}
+
+								{% if "GB" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GB' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GB&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">United Kingdom</a></li>{% endif %}
+	
+							</ul>
+						</div>
+					</div>
+					<div class="continent">
+						<h3>North America</h3>
+						<div class="countries_columns">
+							<ul>								
+							
+								{% if "AG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Antigua and Barbuda</a></li>{% endif %}
+								
+								{% if "BS" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BS' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BS&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Bahamas</a></li>{% endif %}
+								
+								{% if "BB" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BB' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BB&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Barbados</a></li>{% endif %}
+								
+								{% if "BZ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BZ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BZ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Belize</a></li>{% endif %}
+			
+								{% if "CA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Canada</a></li>{% endif %}
+								
+								{% if "CR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Costa Rica</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "CU" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CU' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CU&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Cuba</a></li>{% endif %}
+								
+								{% if "DM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'DM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=DM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Dominica</a></li>{% endif %}
+								
+								{% if "DO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'DO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=DO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Dominican Republic</a></li>{% endif %}
+								
+								{% if "SV" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SV' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SV&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">El Salvador</a></li>{% endif %}
+								
+								{% if "GD" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GD' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GD&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Grenada</a></li>{% endif %}
+								
+								{% if "GT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Guatemala</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "HT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'HT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=HT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Haiti</a></li>{% endif %}
+								
+								{% if "HN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'HN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=HN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Honduras</a></li>{% endif %}
+								
+								{% if "JM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'JM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=JM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Jamaica</a></li>{% endif %}
+			
+								{% if "MX" in Active_countries|keys %}<li {% if (Detected_country|e) == 'MX' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MX&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Mexico</a></li>{% endif %}
+								
+								{% if "NI" in Active_countries|keys %}<li {% if (Detected_country|e) == 'NI' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=NI&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Nicaragua</a></li>{% endif %}
+								
+								{% if "PA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Panama</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "KN" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KN' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KN&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Saint Kitts and Nevis</a></li>{% endif %}
+								
+								{% if "LC" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LC' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LC&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Saint Lucia</a></li>{% endif %}
+								
+								{% if "VC" in Active_countries|keys %}<li {% if (Detected_country|e) == 'VC' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=VC&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Saint Vincent</a></li>{% endif %}
+								
+								{% if "TT" in Active_countries|keys %}<li {% if (Detected_country|e) == 'TT' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=TT&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Trinidad and Tobago</a></li>{% endif %}
+
+								{% if "US" in Active_countries|keys %}<li {% if (Detected_country|e) == 'US' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=US&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">USA</a></li>{% endif %}
+							</ul>
+						</div>
+					</div>
+					<div class="continent">
+						<h3>Middle East</h3>
+						<div class="countries_columns">
+							<ul>
+				
+								{% if "BH" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BH' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BH&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Bahrain</a></li>{% endif %}
+								
+								{% if "EG" in Active_countries|keys %}<li {% if (Detected_country|e) == 'EG' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=EG&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Egypt</a></li>{% endif %}
+								
+								{% if "IR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'IR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Iran</a></li>{% endif %}
+								
+								{% if "IQ" in Active_countries|keys %}<li {% if (Detected_country|e) == 'IQ' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IQ&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Iraq</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "IL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'IL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=IL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Israel</a></li>{% endif %}
+								
+								{% if "JO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'JO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=JO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Jordan</a></li>{% endif %}
+								
+								{% if "KW" in Active_countries|keys %}<li {% if (Detected_country|e) == 'KW' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=KW&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Kuwait</a></li>{% endif %}
+								
+								{% if "LB" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LB' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LB&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Lebanon</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "LY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'LY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=LY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Libya</a></li>{% endif %}
+							
+								{% if "OM" in Active_countries|keys %}<li {% if (Detected_country|e) == 'OM' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=OM&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Oman</a></li>{% endif %}
+							
+								{% if "PS" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PS' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PS&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Palestine</a></li>{% endif %}
+								
+								{% if "QA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'QA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=QA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Qatar</a></li>{% endif %}
+							</ul>
+							<ul>							
+								{% if "SA" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SA' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SA&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Saudi Arabia</a></li>{% endif %}
+							
+								{% if "SY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Syria</a></li>{% endif %}
+		
+								{% if "AE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">United Arab Emirates</a></li>{% endif %}
+							
+								{% if "YE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'YE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=YE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Yemen</a></li>{% endif %}
+							</ul>
+						</div>
+					</div>
+					<div class="continent">	
+						<h3>South America</h3>
+						<div class="countries_columns">
+							<ul>
+								{% if "AR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'AR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Argentina</a></li>{% endif %}
+								
+								{% if "BO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Bolivia</a></li>{% endif %}
+
+								{% if "BR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'BR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Brazil</a></li>{% endif %}
+			
+								{% if "CL" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CL' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CL&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Chile</a></li>{% endif %}
+							</ul>
+							<ul>
+								{% if "CO" in Active_countries|keys %}<li {% if (Detected_country|e) == 'CO' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CO&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Colombia</a></li>{% endif %}
+								
+								{% if "EC" in Active_countries|keys %}<li {% if (Detected_country|e) == 'EC' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=EC&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Ecuador</a></li>{% endif %}
+								
+								{% if "FK" in Active_countries|keys %}<li {% if (Detected_country|e) == 'FK' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=FK&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Falkland Islands</a></li>{% endif %}
+								
+								{% if "GF" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GF' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GF&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">French Guiana</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "GY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'GY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=GY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Guyana</a></li>{% endif %}
+								
+								{% if "PY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Paraguay</a></li>{% endif %}
+								
+								{% if "PE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'PE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=PE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Peru</a></li>{% endif %}
+								
+								{% if "SR" in Active_countries|keys %}<li {% if (Detected_country|e) == 'SR' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=SR&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Suriname</a></li>{% endif %}
+							</ul>
+							<ul>	
+								{% if "UY" in Active_countries|keys %}<li {% if (Detected_country|e) == 'UY' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=UY&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Uruguay</a></li>{% endif %}
+								
+								{% if "VE" in Active_countries|keys %}<li {% if (Detected_country|e) == 'VE' %} class="on" {% endif %}><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=VE&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Venezuela</a></li>{% endif %}
+							</ul>
+						</div>
+					</div>	
+						
+				</div>
+			</div>
+		</div>
+	</div>
+{% else %}
+<div class="zenario_country_language_picker_change_country_confirmation">
+	<div class="message_wrap">
+		<h4>Change country</h4>
+		<p>Are you sure you want to change country?</p>
+		<div class="message_bottom">
+			<span class="message_button cancel" rel="colorbox" onclick="$.colorbox.close();">Cancel</span>
+			<span class="message_button" id="change_country_button" onclick="changeCountryConfirm('{{ajaxURL}}');">Change</span>
+		</div>
+	</div>
+</div>
+{% endif %}

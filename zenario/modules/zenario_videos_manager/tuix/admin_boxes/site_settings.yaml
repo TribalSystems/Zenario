@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: api_keys
+    tabs:
+        zenario_videos_manager__vimeo:
+            label: Vimeo
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                vimeo_access_token:
+                    site_setting:
+                        name: vimeo_access_token
+                    label: 'Vimeo access token:'
+                    type: text
+                    note_below: |
+                        Create an access token here: <a href="https://developer.vimeo.com/apps" target="_blank">https://developer.vimeo.com/apps</a>

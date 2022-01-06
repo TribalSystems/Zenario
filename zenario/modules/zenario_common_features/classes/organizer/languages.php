@@ -280,7 +280,7 @@ _text
 					$sql = "
 						DELETE
 						FROM " . DB_PREFIX . "visitor_phrases
-						WHERE language_id = '" . ze\escape::asciiInSQL($_POST['id']) . "'
+						WHERE language_id = '" . ze\escape::asciiInSQL($_POST['id'] ?? '') . "'
 						  AND '" . ze\escape::asciiInSQL($_POST['id'] ?? '') . "' NOT IN (
 							SELECT id
 							FROM " . DB_PREFIX . "languages

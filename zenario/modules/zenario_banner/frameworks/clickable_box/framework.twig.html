@@ -8,7 +8,13 @@
 	{% include this.frameworkBaseDir() ~ 'includes/privacy_warning.twig.html' %}
 
 	{% if Background_Image %}
-		<div {{Image_Link_Href}}{{Target_Blank}} id="{{Image_css_id}}"></div>
+		<div
+			id="{{Image_css_id}}" 
+			{{Image_Link_Href}}{{Target_Blank}}
+			{% if Image_Class %}
+				class="{{Image_Class|e}}"
+			{% endif %}
+		></div>
 	{% elseif Image %}
 		<div class="banner_image" > 
 			{% include this.frameworkBaseDir() ~ 'includes/image.twig.html' %}

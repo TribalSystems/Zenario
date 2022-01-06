@@ -264,7 +264,7 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 		foreach ($tagIds as $tagId) {
 			if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
 				
-				if (!ze\priv::check('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $cID, $cType)) {
+				if (!ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 					continue;
 				}
 				

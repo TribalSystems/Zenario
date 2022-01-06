@@ -657,46 +657,4 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		}
 	}
 	
-	
-	//
-	//	Slide Designer related functions
-	//
-	
-	
-	//Load the values of any plugin settings passed in from the Slide Designer
-	protected function loadSlotSettings($path, &$tags, &$fields, &$values) {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	
-	public static function setupOverridesForPhrasesInFrameworks($hideExistingFields, &$tags, $data, $moduleClassName, $moduleClassNameForPhrases, $mode, $framework = 'standard') {
-		ze\module::incSubclass('zenario_common_features', 'admin_boxes', 'plugin_settings');
-		zenario_common_features__admin_boxes__plugin_settings::setupOverridesForPhrasesInFrameworks($hideExistingFields, $tags, $data['settings'] ?? [], $moduleClassName, $moduleClassNameForPhrases, $mode, $framework);
-	}
-	
-	//Code to handle navigation between tabs using previous and next buttons
-	public function handleNavigationInValidate(&$tags, &$fields, &$values, $prevButton = 'prev', $nextButton = 'next', $changeButton = 'change_plugin') {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	//Clear the "pressed" status of any prev/next buttons
-	public function handleNavigationInFormat(&$tags, &$fields, &$values, $prevButton = 'prev', $nextButton = 'next', $changeButton = 'change_plugin') {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	//Save the values of any plugin settings back to the Slide Designer
-	protected function saveSlotSettingsAndClose(&$tags, &$fields, &$values, $switchBoxes = false) {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	
-	
-	public final function slideLayoutPrivacyDesc($sl) {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
-	
 }

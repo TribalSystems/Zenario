@@ -46,7 +46,7 @@ x-zenario-admin-slot-wrapper {
 	display: inline;
 }
 
-body.zenario_pageMode_item .zenario_level2 .zenario_slotEggControlBox,
+body.zenario_pageMode_edit .zenario_level2 .zenario_slotEggControlBox,
 body.zenario_pageMode_layout .zenario_level1 .zenario_slotEggControlBox {
 	display: none;
 }
@@ -61,7 +61,7 @@ body.zenario_showing_preview .zenario_slotWithNoContents,
 body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .pluginAdminLinks,
 body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .pluginAdminEditButton,
 
-body.zenario_pageModeIsnt_item.zenario_pageModeIsnt_layout .zenario_missing_slots,
+body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_layout .zenario_missing_slots,
 
 body.zenario_pageMode_preview .zenario_nestSlot:hover .zenario_slotEggControlBox,
 body.zenario_pageMode_preview .zenario_slotNotShownInVisitorMode,
@@ -77,13 +77,11 @@ body.zenario_being_edited .zenario_slotAdminControlBox,
 body.zenario_pageMode_preview .zenario_slotAdminControlBox,
 body.zenario_pageMode_menu .zenario_slotAdminControlBox,
 body.zenario_pageMode_rollback .zenario_slotAdminControlBox,
-body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled.zenario_pageModeIsnt_item.zenario_pageModeIsnt_layout .zenario_slotAdminControlBox,
+body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled.zenario_pageModeIsnt_layout .zenario_slotAdminControlBox,
 body.zenario_pageMode_edit .zenario_hideInEditMode,
 body.zenario_pageMode_edit_disabled .zenario_hideInEditMode,
-body.zenario_pageMode_item .zenario_hideInItemMode,
 body.zenario_pageMode_layout .zenario_hideInLayoutMode,
 body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slotAdminControlBox/*,
-body.zenario_pageMode_item .zenario_hideSlotInItemMode .zenario_slotAdminControlBox,
 body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode .zenario_slotAdminControlBox*/ {
 	display: none;
 }
@@ -128,6 +126,18 @@ body.zenario_pageMode_menu .pluginAdminMenuButton * {
 	cursor: pointer;
 }
 
+body.zenario_pageMode_edit .zenario_slotOuter:not(.zenario_slot_being_edited) .zenario_slot,
+body.zenario_pageMode_layout .zenario_slotOuter:not(.zenario_slot_being_edited) .zenario_slot {
+	cursor: context-menu;
+}
+
+body.zenario_pageMode_edit .zenario_slot .zenario_nestSlot,
+body.zenario_pageMode_layout .zenario_slot .zenario_nestSlot,
+body.zenario_pageMode_edit .zenario_slot .zenario_nestSlot .zenario_slot,
+body.zenario_pageMode_layout .zenario_slot .zenario_nestSlot .zenario_slot {
+	cursor: default;
+}
+
 
 /*  Preview Mode should NOT show non-active menu nodes in italics  */
 
@@ -167,9 +177,8 @@ body.zenario_pageModeIsnt_layout .zenario_slot_layout_preview {
 }
 
 #zenario_citem h1:hover {
-	-webkit-box-shadow:0 0 0 1px blue;
-	-moz-box-shadow:0 0 0 1px blue;
-	box-shadow:0 0 0 1px blue;
+	-webkit-box-shadow:inset 1px 1px 1px blue;
+	box-shadow:inset 1px 1px 1px blue;
 }
 
 #zenario_citem h1:hover:before {
@@ -236,6 +245,12 @@ body.zenario_being_edited .zenario_slotOuter .zenario_slot {
 	outline-width: 0;
 }
 
+/*  When you are on edit mode, hide the library plugins (purple lines). :not the red lines  */
+body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.zenario_level1) .zenario_slot,
+body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.zenario_level1) > .zenario_slot.zenario_plugin_nest {
+	outline-width: 0;
+}
+
 /*  When editing a slot, put a distinct border around the slot you're currently editing.  */
 body.zenario_being_edited .zenario_slot_being_edited .zenario_slot {
 	outline-width: 2px;
@@ -253,7 +268,8 @@ body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot:hover,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover .zenario_slot,
-body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover .zenario_slot {
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover .zenario_slot,
+body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.zenario_level1):hover .zenario_slot {
 	outline-width: 1px;
 }
 
@@ -264,7 +280,8 @@ body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .
 }
 
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover,
-body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover {
+body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.zenario_level1):hover > .zenario_slot.zenario_plugin_nest {
 	outline-style: double;
 	outline-width: medium;
 }
@@ -279,8 +296,7 @@ body.zenario_pageMode_rollback .zenario_reusable > div.zenario_slot,
 body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode > div.zenario_slot,
 body.zenario_pageMode_edit .zenario_hideSlotInEditMode > div.zenario_slot,
 body.zenario_pageMode_menu .zenario_hideSlotInMenuMode > div.zenario_slot,
-body.zenario_pageMode_item .zenario_hideSlotInItemMode > div.zenario_slot,
-body.zenario_pageMode_item .zenario_level2 > div.zenario_slot,
+body.zenario_pageMode_edit .zenario_level2 > div.zenario_slot,
 body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode > div.zenario_slot,
 body.zenario_pageMode_layout .zenario_level1 > div.zenario_slot {
 	/*opacity: 0.2;*/
@@ -294,7 +310,6 @@ body.zenario_pageMode_rollback .zenario_reusable .zenario_slot ,
 body.zenario_pageMode_edit_disabled .zenario_slotWithNoContents .zenario_slot ,
 body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode .zenario_slot /*,
 body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot,
-body.zenario_pageMode_item .zenario_hideSlotInItemMode .zenario_slot,
 body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode .zenario_slot*/ {
 	outline: none;
 }
@@ -369,17 +384,20 @@ div.zenario_missing_slots {
 }
 
 
-/*  Always show "Only show on small screens" slots in Admin Mode on the Menu/Edit/Layout tabs  */
-body.zenario_pageMode_menu .responsive_only,
-body.zenario_pageMode_edit .responsive_only,
-body.zenario_pageMode_edit_disabled .responsive_only,
-body.zenario_pageMode_item .responsive_only,
-body.zenario_pageMode_layout .responsive_only,
-body.zenario_pageMode_menu .container .responsive_only,
-body.zenario_pageMode_edit .container .responsive_only,
-body.zenario_pageMode_edit_disabled .container .responsive_only,
-body.zenario_pageMode_item .container .responsive_only,
-body.zenario_pageMode_layout .container .responsive_only {
+/*  Hide/Show "Only show on small screens" slots in Admin Mode on the Menu/Edit/Layout tabs only when zenario_show_empty_slots_and_mobile_only_slots is on */
+
+.responsive_only {
+	display:none;
+}
+
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .container .responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .container .responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .container .responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .container .responsive_only {
 	display: block;
 }
 
@@ -388,14 +406,13 @@ body.zenario_pageMode_layout .container .responsive_only {
 
 /* START: Opacity rules */
 
-body.zenario_pageMode_item .zenario_versionControlledPlugin,
 body.zenario_pageMode_menu .zenario_versionControlledPlugin,
 body.zenario_pageMode_template .zenario_versionControlledPlugin {
 	/*background-color:rgba(0, 128, 0, 0.1);*/ /* green */
 
 }
 
-body.zenario_pageMode_item .zenario_versionControlledPlugin:hover {
+body.zenario_pageMode_edit .zenario_versionControlledPlugin:hover {
 	background-color:transparent;
 
 }
@@ -416,7 +433,6 @@ body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1:hover {
 }
 
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2,
-body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_showSlotInMenuMode) {
 	/*background-color:rgba(128, 0, 128, 0.1);*/ /* purple */
 
@@ -425,35 +441,30 @@ body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_sh
 	border-radius:5px;
 }
 
-body.zenario_pageMode_item .zenario_versionControlledPlugin > .zenario_slot,
+body.zenario_pageMode_edit .zenario_versionControlledPlugin > .zenario_slot,
 body.zenario_pageMode_menu .zenario_versionControlledPlugin > .zenario_slot,
 body.zenario_pageMode_template .zenario_versionControlledPlugin > .zenario_slot,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1 > .zenario_slot,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1 > .zenario_slot:not(.zenario_showSlotInMenuMode),
 body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1 > .zenario_slot,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2 > .zenario_slot,
-body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2 > .zenario_slot,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_showSlotInMenuMode) > .zenario_slot {
 	/*mix-blend-mode:luminosity;*/
 	/*filter: grayscale(50%);*/
 }
 
-body.zenario_pageMode_item .zenario_versionControlledPlugin:hover,
 body.zenario_pageMode_menu .zenario_versionControlledPlugin:hover,
 body.zenario_pageMode_template .zenario_versionControlledPlugin:hover,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1:hover,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1:hover,
 body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1:hover,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2:hover,
-body.zenario_pageMode_item .zenario_libraryPlugin.zenario_level2:hover,
 body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:hover {
 	
 }
 
-body.zenario_pageMode_item .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
 body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
 body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
-body.zenario_pageMode_item .zenario_libraryPlugin > .zenario_slot.zenario_slideshow,
 body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_slideshow,
 body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_slideshow {
 	outline-style:double;
@@ -576,7 +587,7 @@ body.zenario_pageMode_template .zenario_slotWithNoContents div.zenario_slotAdmin
 	background: url('../admin/images/slots/icon-plugin-cross-purple.svg') no-repeat center 4px / 16px auto;
 }
 
-body.zenario_pageMode_item .zenario_slotWithNoContents div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
+body.zenario_pageMode_edit .zenario_slotWithNoContents div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
 	background: url('../admin/images/slots/icon-plugin-cross-red.svg') no-repeat center 4px / 16px auto;
 }
 
@@ -595,11 +606,6 @@ body.zenario_pageMode_edit_disabled .zenario_wireframe div.zenario_slotAdminCont
 
 body.zenario_pageMode_edit .zenario_showDoubleClickInEditMode div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
 	background: url('../admin/images/slots/icon-edit-double-click.svg') no-repeat center 4px / 16px auto;
-}
-
-body.zenario_pageMode_edit .zenario_reusable.zenario_showSlotInEditMode div.zenario_slotAdminControlBox a.zenario_openSlotControls span,
-body.zenario_pageMode_edit_disabled .zenario_reusable.zenario_showSlotInEditMode div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
-	background: url('../admin/images/slots/author-note-icon.png') no-repeat center 4px;
 }
 
 .zenario_moveSource a.zenario_slotButton,
@@ -734,6 +740,7 @@ body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotCont
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_no_perms,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions {
 	background:#4D4D4D;
@@ -747,6 +754,15 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
 	padding:5px 10px 7px 30px;
 	color:#FFF;
 	position:relative;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_no_perms .zenario_sc {
+	padding: 3px 10px 2px 30px;
+	position:relative;
+	color: #ccc;
+	font-style: italic;
+	font-size: 9px;
+	cursor: not-allowed;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc:before,
@@ -820,7 +836,6 @@ body.zenario_pageMode_rollback			.zenario_slotWithNoContents	div.zenario_slotAdm
 body.zenario_pageMode_edit				.zenario_showInEditMode,
 body.zenario_pageMode_edit_disabled		.zenario_showInEditMode,
 body.zenario_pageMode_rollback			.zenario_showInRollbackMode,
-body.zenario_pageMode_item				.zenario_showInItemMode,
 body.zenario_pageMode_layout			.zenario_showInLayoutMode {
 	display: block;
 }
@@ -909,7 +924,6 @@ body.zenario_pageMode_layout			.zenario_showInLayoutMode {
 body.zenario_pageMode_edit .zenario_slot,
 body.zenario_pageMode_edit_disabled .zenario_slot,
 body.zenario_pageMode_rollback .zenario_slot,
-body.zenario_pageMode_item .zenario_slot,
 body.zenario_pageMode_layout .zenario_slot,
 body.zenario_pageMode_template_family .zenario_slot {
 	min-height: 32px;
@@ -1010,33 +1024,12 @@ body.zenario_pageMode_template_family .zenario_slot {
 
 
 body.zenario_pageMode_edit_disabled div.zenario_slotAdminControlBox a.zenario_slotButton,
-body.zenario_pageMode_item.zenario_pageLocked div.zenario_slotAdminControlBox a.zenario_slotButton {
+body.zenario_pageMode_edit.zenario_pageLocked div.zenario_slotAdminControlBox a.zenario_slotButton {
 	border-top:4px solid #888;
 	background-color:#888;
 }
 
 /* Control button and dropdown background colors depending on modes */
-
-/* Edit mode / green */
-
-body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap,
-body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotAdminControlBox a.zenario_slotButton,
-body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_info, 
-body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
-	background-color:#008000; /* green */
-}
-
-body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap,
-body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotAdminControlBox a.zenario_slotButton {
-	border-color:#008000;
-}
-
-.zenario_plugin_info_tooltip > div span, div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_slotName span, 
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span, 
-div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_copyEmbedLink span,
-body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc {
-	color:#FFF;
-}
 
 /* Layout mode / purple */
 

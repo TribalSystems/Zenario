@@ -6,6 +6,11 @@ zenario__content:
             title: Image library
             no_items_message: There are no images in the library.
             
+            notice:
+                show: false
+                type: ''
+                html: true
+                message: ''
             
             db_items:
                 table: |
@@ -83,7 +88,7 @@ zenario__content:
                     disallow_sorting: true
                 
                 is_featured_image:
-                    title: Feature image
+                    title: Featured image
                     db_column: v.feature_image_id = f.id
                     always_show: true
                     parent: filename
@@ -129,6 +134,7 @@ zenario__content:
                     title: Default alt-tag
                     searchable: true
                     db_column: f.alt_tag
+                    show_by_default: true
                 title:
                     db_column: f.title
                 checksum:
@@ -166,7 +172,15 @@ zenario__content:
                     always_show: true
                     title: Dimensions
                     microtemplate: |
-                        {{m.item.width|e}} × {{m.item.height|e}}px
+                        <% if (m.item.width && m.item.height) { %>
+                            <% if (m.item.mime_type == 'image/svg+xml') { %>
+                                {{m.item.width|e}} × {{m.item.height|e}}px; scalable
+                            <% } else { %>
+                                {{m.item.width|e}} × {{m.item.height|e}}px
+                            <% } %>
+                        <% } else { %>
+                            {{'No dimensions; scalable'}}
+                        <% } %>
                 
                 privacy:
                     title: Privacy
@@ -410,6 +424,11 @@ zenario__content:
                     label: Upload
                     css_class: zenario_create_a_new
                     hide_on_filter: true
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.collectionButtonClick('upload');
                     upload:
                         fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
                         fileDesc: Images
@@ -425,6 +444,11 @@ zenario__content:
                 add_to_content_item:
                     only_show_on_refiner: images_for_content_item
                     label: Add image from image library
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.collectionButtonClick('add_to_content_item');
                     pick_items:
                         path: zenario__content/panels/image_library
                         target_path: zenario__content/panels/image_library
@@ -472,6 +496,11 @@ zenario__content:
             item_buttons:
                 edit:
                     label: Edit image properties
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('edit');
                     admin_box:
                         path: zenario_image
                 actions_dropdown:
@@ -517,6 +546,11 @@ zenario__content:
                     hide_in_select_mode: true
                     visible_if_for_any_selected_items: >
                         item.privacy != 'public'
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('mark_as_public');
                     ajax:
                         confirm:
                             message: |
@@ -542,6 +576,11 @@ zenario__content:
                     hide_in_select_mode: true
                     visible_if_for_any_selected_items: >
                         item.privacy != 'private'
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('mark_as_private');
                     ajax:
                         confirm:
                             message: >
@@ -612,6 +651,7 @@ zenario__content:
                             message_type: warning
                         request:
                             copy_to_mic_images: 1
+                    visible_if: zenarioA.module.zenario_multiple_image_container && zenarioA.module.zenario_multiple_image_container.running
                     
                 delete:
                     priv: _PRIV_MANAGE_MEDIA
@@ -620,6 +660,11 @@ zenario__content:
                     hide_in_select_mode: true
                     visible_if_for_all_selected_items: >
                         !item.in_use_anywhere
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('delete');
                     ajax:
                         confirm:
                             message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
@@ -637,6 +682,11 @@ zenario__content:
                     hide_in_select_mode: true
                     visible_if_for_any_selected_items: >
                         item.in_use_anywhere
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('delete_in_use');
                     ajax:
                         confirm:
                             html: true
@@ -650,34 +700,44 @@ zenario__content:
                 
                 
                 flag_as_feature:
-                    priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
+                    priv: _PRIV_EDIT_DRAFT
                     only_show_on_refiner: images_for_content_item
-                    label: Flag as feature image
+                    label: Flag as featured image
                     hide_in_select_mode: false
                     visible_if: |
                         !zenario.engToBoolean(item.is_featured_image)
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('flag_as_feature');
                     ajax:
                         confirm:
                             message: |
-                                Do you wish to use "[[filename]]" as the feature image for this content item?
+                                Do you wish to use "[[filename]]" as the featured image for this content item?
                                 
-                                The feature image can appear automatically in banners, content summary lists and other managed links to this content item.
-                            button_message: Flag as feature image
+                                The featured image can appear automatically in banners, content summary lists and other plugins that have managed links to this content item.
+                            button_message: Flag as featured image
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             flag_as_feature: true
                 unflag_as_feature:
-                    priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
+                    priv: _PRIV_EDIT_DRAFT
                     only_show_on_refiner: images_for_content_item
-                    label: Unflag as feature image
+                    label: Unflag as featured image
                     hide_in_select_mode: false
                     visible_if_for_all_selected_items: |
                         item.is_featured_image
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('unflag_as_feature');
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to stop using the image "[[filename]]" as the feature image?'
-                            button_message: Unflag as feature image
+                            message: 'Are you sure you wish to stop using the image "[[filename]]" as the featured image?'
+                            button_message: Unflag as featured image
                             cancel_button_message: Cancel
                             message_type: warning
                         request:

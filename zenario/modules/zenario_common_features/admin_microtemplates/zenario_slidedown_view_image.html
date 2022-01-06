@@ -10,8 +10,25 @@
 			<p><strong>Filename:</strong> {{zenarioO.columnValue(m.id, 'filename')|escape}}</p>
 			<p><strong>Alt tag:</strong> {{zenarioO.columnValue(m.id, 'alt_tag')|escape}}</p>
 			<p><strong>Size:</strong> {{zenarioO.columnValue(m.id, 'size')|escape}}</p>
-			<p><strong>Height:</strong> {{zenarioO.columnValue(m.id, 'height')|escape}}px</p>
-			<p><strong>Width:</strong> {{zenarioO.columnValue(m.id, 'width')|escape}}px</p>
+
+			<% var width = zenarioO.columnValue(m.id, 'width'); %>
+			<% var height = zenarioO.columnValue(m.id, 'height'); %>
+			<% var mimeType = zenarioO.columnValue(m.id, 'mime_type'); %>
+
+			<% if (width && height) { %>
+				<% if (mimeType == 'image/svg+xml') { %>
+					<p><strong>Width x Height:</strong> {{width|escape}} x {{height|escape}}px; {{'scalable'}}</p>
+				<% } else { %>
+					<p><strong>Width x Height:</strong> {{width|escape}} x {{height|escape}}px</p>
+				<% } %>
+			<% } else { %>
+				<% if (mimeType == 'image/svg+xml') { %>
+					<p><strong>Width x Height:</strong> {{'No dimensions; scalable'}}</p>
+				<% } else { %>
+					<p><strong>Width x Height:</strong> {{'No dimensions'}}</p>
+				<% } %>
+			<% } %>
+
 			<% if (zenarioO.tuix.columns.in_use_anywhere) { %>
 				<p><strong>In use:</strong> {{zenarioO.columnValue(m.id, 'in_use_anywhere')|escape}}</p>
 			<% } else { %>

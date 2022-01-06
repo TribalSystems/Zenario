@@ -6,6 +6,7 @@ site_settings:
         passwords:
             fields:
                 temp_password_timeout:
+                    grouping: zenario_extranet
                     site_setting:
                         name: temp_password_timeout
                     pre_field_html: |

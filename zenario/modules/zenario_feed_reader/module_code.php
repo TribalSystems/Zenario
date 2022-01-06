@@ -300,7 +300,7 @@ class zenario_feed_reader extends ze\moduleBaseClass {
     		if ( false ===  $breakpoint1 ) { 
 				$string = ''; 
 			} else {
-				$string = substr( $string, 0, $breakpoint1 ) . $this->phrase( '_EXCERPT_CUTOFF' ); 
+				$string = substr( $string, 0, $breakpoint1 ) . $this->phrase('...'); 
 			}
 		}
 		return $string;

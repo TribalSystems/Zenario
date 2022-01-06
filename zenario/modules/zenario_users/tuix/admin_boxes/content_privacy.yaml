@@ -1,7 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_content_privacy:
-    priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+    priv: _PRIV_EDIT_DRAFT
     hide_tab_bar: true
     max_height: 500
     key:
@@ -20,9 +20,10 @@ zenario_content_privacy:
             fields:
                 desc:
                     full_width: Yes
-                    snippet:
-                        html: Use this screen to determine permissions for this content item.
-                
+                    snippet: 
+                        html: |
+                           <p>Use this screen to edit permissions for this content item.</p>
+                           <p>The Extranet Base Module needs to be running in order to show options for making the item private.</p>
                 
                 privacy:
                     label: 'Visibility:'

@@ -20,30 +20,32 @@ zenario__content:
             columns:
                 ord:
                     title: Ordinal
-                    width: xsmall
+                    width: xxsmall
+                    always_show: true
                 slotname:
-                    title: Slot
-                    searchable: true
-                    show_by_default: true
+                    title: Slot name
+                    disallow_sorting: true
+                    always_show: true
                 visitor_sees:
                     title: Visitor sees
                     searchable: true
-                    show_by_default: true
+                    always_show: true
+                    disallow_sorting: true
                     width: large
                 content_item:
-                    title: Slot content on content item
-                    searchable: true
-                    show_by_default: true
+                    title: Slot contents on content item
+                    always_show: true
+                    disallow_sorting: true
                     width: large
                 layout:
-                    title: Slot content on layout
-                    searchable: true
-                    show_by_default: true
+                    title: Slot contents on layout
+                    always_show: true
+                    disallow_sorting: true
                     width: large
                 where_used:
                     title: Usage
-                    searchable: true
-                    show_by_default: true
+                    always_show: true
+                    disallow_sorting: true
                     width: xlarge
                     html: true
                 module_id:

@@ -10,10 +10,10 @@ full_slot:
             label_replace: Replace with a nest on this content item...
             label_replace_like4like: Replace with another nest on this content item...
             page_modes:
-                item: true
+                edit: true
             onclick: |
                 if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('item');
+                    zenarioAT.clickTab('edit');
                     zenarioA.pickNewPlugin(this, slotName, 1, true, [[preselectCurrentChoice]]);
                 }
                 return false;

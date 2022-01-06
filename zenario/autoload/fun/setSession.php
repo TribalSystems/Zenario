@@ -32,7 +32,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Load this admin's details
 $adminCols = [
 	'id', 'username', 'last_login', 'first_name', 'last_name', 'modified_date',
-	'permissions', 'specific_languages', 'specific_content_items', 'specific_content_types'
+	'permissions', 'specific_content_items', 'specific_content_types'
 ];
 
 //During a migration from an earlier version, some of these columns won't be created until
@@ -42,7 +42,6 @@ if ($admin = \ze\row::get('admins', $adminCols, $adminIdL, [], $ignoreMissingCol
 	$privs = [];
 	$contentItems = [];
 	$contentTypes = [];
-	$languages = [];
 	
 	switch ($admin['permissions']) {
 		
@@ -62,13 +61,6 @@ if ($admin = \ze\row::get('admins', $adminCols, $adminIdL, [], $ignoreMissingCol
 			//These are checked using PHP logic, but for backwards compatability with anything else
 			//we'll also insert them into the database.
 			$privs = \ze\admin::privsForTranslators();
-			
-			//Note down the specific languages this admin can edit
-			if (!empty($admin['specific_languages'])) {
-				foreach (\ze\ray::explodeAndTrim($admin['specific_languages']) as $id) {
-					$languages[$id] = $id;
-				}
-			}
 			
 			//Note down the specific content items this admin can edit
 			if (!empty($admin['specific_content_items'])) {
@@ -101,7 +93,6 @@ if ($admin = \ze\row::get('admins', $adminCols, $adminIdL, [], $ignoreMissingCol
 	$_SESSION['admin_server_host'] = \ze\link::host();
 	
 	$_SESSION['admin_permissions'] = $admin['permissions'];
-	$_SESSION['admin_specific_languages'] = $languages;
 	$_SESSION['admin_specific_content_items'] = $contentItems;
 	$_SESSION['admin_specific_content_types'] = $contentTypes;
 	$_SESSION['privs'] = $privs;

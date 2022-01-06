@@ -64,6 +64,7 @@
 		{{ff.row_class|escape}}
 		{{ff.pressed? 'zenario_row_pressed' : ''}}
 		{{ff.type=='checkbox'? 'zenario_single_line' : ''}}
+		{{ff.onoff? 'zenario_onoffswitch zenario_onoffswitch_admin' : ''}}
 		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
 		{{ff.indent? 'zenario_indent_level zenario_indent_level_' +  (1*ff.indent) : ''}}
 		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
@@ -97,6 +98,10 @@
 						<label class="{{ff.label_class|escape}}" for="{{ff._id|escape}}">
 							{{ff.label}}
 						</label>
+						
+						<% if (ff.pre_field_post_label_html) { %>
+							{{ff.pre_field_post_label_html}}
+						<% } %>
 						
 						<% if (ff.encrypted && zenario.IN(ff.type, 'checkboxes', 'radios')) { %>
 							<span class="zfab_encrypted_field">🔑 </span>

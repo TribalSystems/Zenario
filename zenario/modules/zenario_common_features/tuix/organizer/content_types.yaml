@@ -83,6 +83,18 @@ zenario__content:
                     path: zenario__content/panels/languages
                     refiner: content_type
             
+            collection_buttons:
+                settings_dropdown:
+                    css_class: organizer_settings_dropdown
+                    hide_when_children_are_not_visible: true
+                    label: ⚙
+                settings_ctype_list:
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    label: Enable more content types
+                    link:
+                        path: zenario__modules/panels/modules~-zenario_ctype
+
             item_buttons:
                 edit_ctype:
                     label: Edit settings

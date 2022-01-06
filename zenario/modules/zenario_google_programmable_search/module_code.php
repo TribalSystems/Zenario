@@ -33,10 +33,7 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 	protected $data = [];
 	
 	public function init() {
-		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
-		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+		$this->allowCaching($atAll = false);
 		
 		$apiKey = ze::setting('google_custom_search_json_api_key');
 		if ($apiKey) {
@@ -60,7 +57,7 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 				$customSearchEngineId = $this->setting('custom_search_engine_id');
 
 				$url = ze\link::protocol() .'www.googleapis.com/customsearch/v1?key=' . urlencode($apiKey) . '&cx=' . urlencode($customSearchEngineId) . '&q=' . urlencode($searchTerm);
-				$page = ze::get('page') ?: 1;
+				$page = (int) ze::get('page') ?: 1;
 
 				//Google Custom Search will display 10 results per page.
 				//The "start" parameter will be set to 1 on page 1, then to 11 on page 2, and so on.

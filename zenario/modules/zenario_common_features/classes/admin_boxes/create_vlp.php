@@ -41,13 +41,17 @@ class zenario_common_features__admin_boxes__create_vlp extends ze\moduleBaseClas
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if (!$values['details/language_id']) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a Language Code.');
+			$fields['details/language_id']['error'] = ze\admin::phrase('Please enter a Language Code.');
 		
-		} elseif ($values['details/language_id'] != preg_replace('/[^a-z0-9_-]/', '', $values['details/language_id'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('The Language Code can only contain lower-case letters, numbers, underscores or hyphens.');
+		} elseif ($values['details/language_id'] != ze\lang::sanitiseLanguageId($values['details/language_id'])) {
+			$fields['details/language_id']['error'] = ze\admin::phrase('The Language Code can only contain upper-case characters, lower-case letters, numbers or hyphens.');
 		
+		} elseif (!preg_match('/[a-z]{2}/i', substr($values['details/language_id'], 0, 2))) {
+			$fields['details/language_id']['error'] = ze\admin::phrase('The Language Code must start with two letters.');
+
 		} elseif (ze\contentAdm::checkIfLanguageCanBeAdded($values['details/language_id'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('The Language Code [[id]] already exists', ['id' => $values['details/language_id']]);
+			$fields['details/language_id']['error'] = ze\admin::phrase('The Language Code [[id]] already exists', ['id' => $values['details/language_id']]);
+
 		}
 		
 	}

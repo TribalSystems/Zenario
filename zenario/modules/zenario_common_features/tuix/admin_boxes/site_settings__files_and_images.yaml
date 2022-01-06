@@ -225,6 +225,41 @@ site_settings:
                     note_below: |
                         The lower this number the smaller the filesize of the thumbnail will be, however if you set setting it
                         too low then you may see artifacts on your thumbnails for JPEG images.
+        webp_images:
+            label: WebP images
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Zenario makes WebP images from JPG and PNGs that have been uploaded, and saves them in the 'public' cache directory.
+                            WebP images are normally smaller in size than the JPG/PNG from which they are made.
+                            <br/>
+                            <br/>
+
+                            Use the slider to set the quality. 90 is recommended, 100 is better but images that have already been optimised
+                            while JPG/PNG may become larger when converted to WebP.
+                            <br/>
+                            <br/>
+
+                            If changing the setting, this will only have effect on newly created WebP images in the 'public' directory, and will not change existing ones.
+                webp_quality:
+                    site_setting:
+                        name: webp_quality
+                    label: 'WebP image quality:'
+                    type: text
+                    value: 90
+                    style: 'width: 50px;'
+                    slider:
+                        range: min
+                        min: 80
+                        max: 100
+                        before_field: true
+                    validation:
+                        numeric: 'The value must be an integer between 80 and 100.'
         filesizes:
             label: File Upload Sizes
             edit_mode:

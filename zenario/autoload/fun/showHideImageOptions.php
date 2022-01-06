@@ -38,9 +38,9 @@ if ($hasCanvas) {
 }
 
 $fields[$width]['hidden'] = $hidden
-	|| ($hasCanvas && !\ze::in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop'));
+	|| ($hasCanvas && !\ze::in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom', 'resize_and_crop'));
 $fields[$height]['hidden'] = $hidden
-	|| ($hasCanvas && !\ze::in($values[$canvas], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
+	|| ($hasCanvas && !\ze::in($values[$canvas], 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom', 'resize_and_crop'));
 
 if (isset($fields[$retina])) {
 	$fields[$retina]['hidden'] = $hidden || !$fields[$width]['hidden'] || !$fields[$height]['hidden'];

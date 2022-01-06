@@ -1,0 +1,65 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Videos FEA
+category: pluggable
+description: |
+    <p>Allows you to present a library of videos, which are stored on Youtube or Vimeo, but managed in Organizer by the Zenario Videos Manager module (zenario_videos_manager).</p>
+    <p>For a simple video gallery, create a nest, choosing Conductor-type, and place it in a slot on a page. Such a nest will have one or more slides. Insert a Videos FEA plugin onto the first slide, choosing List mode for the plugin. Edit the plugin and make sure the "View video" item-specific checkbox is checked. Make a second slide with a Videos FEA plugin in View mode. Finally use Conductor to set up a path from slide 1 to slide 2 selecting "view_video" as the command, and from slide 2 to slide 1 with "back" as the command.</p>
+    <p>This should allow visitors to then view a gallery-style list or grid of videos, and click on one of them to play it on the second slide. For larger libraries, the first plugin can be edited to filter by a given category.</p>
+    <p>This plugin is powerful enough to support editing of a list of videos by extranet users, such as in a "superuser" group. This way, privileged users can edit the library without needing Organizer access as an administrator.</p>
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Videos FEA
+
+# Warning: adding a new dependency to an existing module will break any existing sites
+# where the dependency is not running.
+# You can fix this on a per-site basis by manually running the dependency, i.e. by running
+#   UPDATE zenario_modules SET status = 'module_running' WHERE class_name = 'dependency'
+# in MySQL and then going to /admin/ to apply database updates.
+# If this is a core module, consider using runNewModuleDependency() in a 
+# database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
+# to fix it automatically for every site.
+dependencies:
+    zenario_abstract_fea: true
+    zenario_videos_manager: true
+inheritance:
+    include_javascript_from_module: zenario_abstract_fea
+
+# Conductor uses paths between slides to control its navigation.
+# When creating a path, the admin can specify a command for that path. The path will then be followed
+# when your plugin issues this command.
+# You should define the command that your plugin uses below. For each command, you should give it a
+# label, and list which modes it's used in (no list means every mode), and the request_vars it uses.
+# Note that you will need to increment the LATEST_REVISION_NO in this module's latest_revision_no.inc.php file
+# every time you add or change the request_vars or hierarchical_var properties, to have them re-read by the CMS.
+path_commands:
+    view_video:
+        label: View video
+        modes:
+            - list_videos
+        request_vars:
+            - videoId
+    
+    edit_video:
+        label: Edit video
+        modes:
+            - list_videos
+            - view_video
+        request_vars:
+            - videoId
+    
+    new_video:
+        label: New video
+        modes:
+            - list_videos
+        request_vars:
+            - videoId

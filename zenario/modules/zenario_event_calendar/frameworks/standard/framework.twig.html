@@ -47,7 +47,7 @@
 												<span class="event">
 													<a
 														class="{{item.Current_month}}"
-														href="{{Event.SUBDIR}}?cID={{Event.Event_id}}&cType={{Event.Content_type}}"
+														href="{{Event.Link}}"
 														target="_blank"
 													>
 														{{Event.Title}}
@@ -148,7 +148,7 @@
 												<span class="event">
 													<a
 														class="{{item.Day_class_name}}"
-														href="{{Event.SUBDIR}}?cID={{Event.Event_id}}&cType={{Event.Content_type}}"
+														href="{{Event.Link}}"
 														target="_blank"
 													>
 														{{Event.Title}}
@@ -197,11 +197,11 @@
 										<p class="day_view_event_time"> {{event.Time_of_event}}</p>
 										{% if event.Event_title %}
 											<h3>
-												<a href="{{event.SUBDIR}}?cID={{event.Event_id}}&cType={{event.Content_type}}" target="_parent">{{event.Event_title}}</a>
+												<a href="{{event.Event_link}}" target="_parent">{{event.Event_title}}</a>
 											</h3>
 										{% endif %}
                                     	<div class="day_view_event_summary"> {{event.Event_summary}}</div>
-                                    	<div class="day_view_event_more"> <a href="{{event.SUBDIR}}?cID={{event.Event_id}}&cType={{event.Content_type}}" target="_parent">{{"View"|trans}}</a></div>
+                                    	<div class="day_view_event_more"> <a href="{{event.Event_link}}" target="_parent">{{"View"|trans}}</a></div>
 									</div>
 								</li>
 							{% endfor %}

@@ -16,7 +16,7 @@ description: |
     There are powerful filtering features, so that you may display things based on categories, either including or excluding based on the categorisation of content items.</p>
     <p>
     Another common use of a CSL is to automatically display content on a landing page, based on the content items beneath the current page in the menu hierarchy. Again the CSL works this out on the fly, so if you create a content item underneath the current one in the menu, the CSL will display it.</p>
-    <p>On the "Each item" tab of this plugin, you can determine how each entry appears in the list. It's common to display the browser title, a short amount of text (usually from the Summary field); if listing News and other date-related things the release date can be displayed; and if the content items have images flagged as a feature image then the CSL will display that image as a thumbnail.</p>
+    <p>On the "Each item" tab of this plugin, you can determine how each entry appears in the list. It's common to display the browser title, a short amount of text (usually from the Summary field); if listing News and other date-related things the release date can be displayed; and if the content items have images flagged as a featured image then the CSL will display that image as a thumbnail.</p>
 category: pluggable
 keywords: >
     CSL, list, auto, news, documents, pages, latest, category,

@@ -13,6 +13,10 @@ zenario_image_tag:
             edit_mode:
                 enabled: true
             fields:
+                description: 
+                    full_width: "1"
+                    snippet: 
+                        html: Image tags are a helpful way to organise your images. They are only seen by administrators, not website visitors.
                 name:
                     label: 'Tag name:'
                     type: text
@@ -33,7 +37,7 @@ zenario_image_tag:
                         screen_name: |
                             Tag names can contain only alphanumeric characters, underscores or hyphens.
                 color:
-                    label: 'Color:'
+                    label: '...and give it a color:'
                     type: radios
                     value: blue
                     values:

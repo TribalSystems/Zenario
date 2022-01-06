@@ -2,7 +2,7 @@
 	<form class="search_entry_box" onsubmit="{{Search_Submit}}" action="{{Search_Target}}" method="get">
 		<div>
 			{% if Search_Label %}
-				<label>{{"_SEARCH"|trans}}</label>
+				<label>{{"Search"|trans}}</label>
 			{% endif %}
 			<input type="hidden" name="cID" value="{{Search_Page_Alias}}" />
 			<input type="hidden" name="cType" value="{{Search_Page_cType}}" />
@@ -11,7 +11,7 @@
 					placeholder="{{Placeholder_Phrase|trans}}"
 				{% endif %}
 			/>
-			<input type="submit" class="search_entry_button" value="{{'_SEARCH'|trans}}" />
+			<input type="submit" class="search_entry_button" value="{{'Search'|trans}}" />
 		</div>
 	</form>
 {% endif %}

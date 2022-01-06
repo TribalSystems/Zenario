@@ -7,7 +7,7 @@ sections:
                 ord: 999
                 appears_in_toolbars:
                     create: true
-                priv: _PRIV_CREATE_FIRST_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 label: Duplicate this content item
                 css_class: zenario_at_big_action_button zenario_duplicate 
                 admin_box:

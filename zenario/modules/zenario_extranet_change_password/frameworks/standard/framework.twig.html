@@ -3,13 +3,13 @@
         <div class="extranet_inner_wrap">
         
         {% if Message_Display %}
-            <h1>{{"_CHANGE_PASSWORD_TITLE"|trans}}</h1>
+            <h1>{{"Change your password"|trans}}</h1>
             
             <div class="extranet_message">{{Message}}</div>
         {% endif %}
         
         {% if Change_Password_Form %}
-            <h1>{{"_CHANGE_PASSWORD_TITLE"|trans}}</h1>
+            <h1>{{"Change your password"|trans}}</h1>
             
 			{% for item in Error_Display %}
 				<div class="extranet_error">{{item.Error}}</div>
@@ -17,11 +17,11 @@
             
             <div>
                 <div class="extranet_field">
-                    <div class="label"><label for="extranet_password">{{"_OLD_PASSWORD:"|trans}}</label></div>
+                    <div class="label"><label for="extranet_password">{{"Your old password:"|trans}}</label></div>
                     {{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_password"})}}
                 </div>
                 <div class="extranet_field zenario_visitor_tooltip_wrap">
-                    <div class="label"><label for="extranet_new_password">{{"_NEW_PASSWORD:"|trans}}</label></div>
+                    <div class="label"><label for="extranet_new_password">{{"Your new password:"|trans}}</label></div>
                     {{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true",
 						'class': "extranet_password", oninput: " zenario.updatePasswordNotifier('#extranet_new_password', false)",
 						'onmouseover': "$('#note_password').show()", 'onmouseout': "$('#note_password').hide()"})}}
@@ -31,10 +31,10 @@
 					</div>
                 </div>
                 <div class="extranet_field">
-                    <div class="label"><label for="extranet_new_password_confirm">{{"_REPEAT_PASSWORD:"|trans}}</label></div>
+                    <div class="label"><label for="extranet_new_password_confirm">{{"Repeat your new password:"|trans}}</label></div>
                     {{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
                 </div>
-                <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'_CHANGE_PASSWORD'|trans}}" /></div></div>
+                <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'Change password'|trans}}" /></div></div>
             </div>
         {% endif %}
         
@@ -42,7 +42,7 @@
             <div class="extranet_links">
                 {% if Logout_Link_Section %}
                     <div>
-                        <a {{Logout_Link}}>{{"_LOGOUT"|trans}}</a>
+                        <a {{Logout_Link}}>{{"Logout"|trans}}</a>
                     </div>
                 {% endif %}
             </div>

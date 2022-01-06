@@ -297,7 +297,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 			$this->data['Pagination']='';
 			$this->pagination('pagination', $this->page, $pages, $this->data['Pagination']);
 		} else {
-			$this->data['Msg_Empty_List']=	$this->phrase('_NO_LOCATIONS_TO_DISPLAY');
+			$this->data['Msg_Empty_List']=	$this->phrase('There are no locations to show.');
 		}
 		$this->twigFramework($this->data);
 		

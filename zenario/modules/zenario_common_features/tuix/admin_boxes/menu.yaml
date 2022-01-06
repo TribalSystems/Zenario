@@ -52,7 +52,7 @@ zenario_menu:
                                 :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " [level"+ (get('parent_path_of__' + this.id).value.split("›").length + 1) + "]";
                 path_of__menu_title:
                     ord: 1003
-                    label: 'Path preview:'
+                    label: 'Menu path preview:'
                     type: textarea
                     disabled: disabled
                     css_class: zenario_textbox_noborder zenario_breadcrumb_preview

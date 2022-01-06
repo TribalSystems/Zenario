@@ -107,6 +107,9 @@ class zenario_forum extends zenario_comments {
 			$this->clearCacheBy(
 				$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = true, $clearByModuleData = true);
 		}
+
+		//Require the phrases
+		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. \ze::$visLang);
 		
 		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found')) {
 			return $this->show = false;
@@ -207,12 +210,12 @@ class zenario_forum extends zenario_comments {
 			if (isset($_POST['comm_title']) && empty($_POST['comm_title'])) {
 				//complain about required fields
 				$failure = true;
-				$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_TITLE')];
+				$this->postingErrors[] = ['Error' => $this->phrase('Please enter a title.')];
 			}
 			if (isset($_POST['comm_message']) && empty($_POST['comm_message'])) {
 				//complain about required fields
 				$failure = true;
-				$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
+				$this->postingErrors[] = ['Error' => $this->phrase('Please enter a message.')];
 			}
 			
 			if (!empty($_POST['comm_title']) && !empty($_POST['comm_message'])) {
@@ -229,7 +232,7 @@ class zenario_forum extends zenario_comments {
 				//Show the form again and get the User to enter the required fields
 			}
 			
-			$this->showPostScreen($this->phrase('_MESSAGE:'), $this->phrase('_ADD_THREAD'), 'none', $this->phrase('_TITLE:'));
+			$this->showPostScreen($this->phrase('Enter a Message:'), $this->phrase('Add Thread'), 'none', $this->phrase('Enter a Title for this new Thread:'));
 		
 		} elseif ($this->mode == 'showThreads') {
 			
@@ -597,7 +600,7 @@ class zenario_forum extends zenario_comments {
 		if($this->allow_uploads){
 			$onSubmit .= "
 				if (!zenario.tinyMCEGetContent(tinyMCE.get('". ze\escape::js($this->getEditorId()). "'))) {
-					alert('". ze\escape::js($this->phrase('_ERROR_MESSAGE')). "');
+					alert('". ze\escape::js($this->phrase('Please enter a message.')). "');
 					return false;
 				}";
 		}
@@ -1120,10 +1123,13 @@ class zenario_forum extends zenario_comments {
 			$this->scrollToTopOfSlot(false);
 			
 			if (($_REQUEST['comm_request'] ?? false) == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_SUBS_FORUM', ['email' => htmlspecialchars(ze\user::email())]), $this->phrase('_SUBMIT_SUBS_FORUM'));
+				$this->showConfirmBox($this->phrase(
+					'Are you sure you wish to subscribe? A notification email will be sent to &quot;[[email]]&quot; when a new thread is created in this forum.',
+					['email' => htmlspecialchars(ze\user::email())]), $this->phrase('Subscribe to this forum')
+				);
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_forum' && $this->canSubsForum() && $this->hasSubsForum()) {
-				$this->showConfirmBox($this->phrase('_CONFIRM_UNSUBS_FORUM'), $this->phrase('_SUBMIT_UNSUBS_FORUM'));
+				$this->showConfirmBox($this->phrase('Are you sure you wish to unsubscribe, and no longer be notified of new threads created in this forum?'), $this->phrase('Unsubscribe from this forum'));
 			}
 			
 		} else {
@@ -1201,7 +1207,7 @@ class zenario_forum extends zenario_comments {
 				
 				$mergeFields['Date_Posted'] = ze\date::formatDateTime($thread['updater_id'], $this->setting('date_format'));
 				$mergeFields['Posted_By'] = $this->getUserScreenNameLink($thread['poster_id']);
-				$mergeFields['Posted_By_On'] = $this->phrase('_BY_ON', ['by' => $mergeFields['Posted_By'], 'on' => $mergeFields['Date_Posted']]);
+				$mergeFields['Posted_By_On'] = $this->phrase('by [[by]] on [[on]]', ['by' => $mergeFields['Posted_By'], 'on' => $mergeFields['Date_Posted']]);
 				$mergeFields['Title'] = htmlspecialchars($thread['title']);
 				$mergeFields['Post_Count'] = $thread['post_count'];
 				$mergeFields['Replies_Count'] = $thread['post_count']-1;
@@ -1210,7 +1216,7 @@ class zenario_forum extends zenario_comments {
 				if ($mergeFields['Updated'] = (bool) $thread['updater_id']) {
 					$mergeFields['Date_Updated'] = ze\date::formatDateTime($thread['date_updated'], $this->setting('date_format'));
 					$mergeFields['Updated_By'] = $this->getUserScreenNameLink($thread['updater_id']);
-					$mergeFields['Updated_By_On'] = $this->phrase('_BY_ON', ['by' => $mergeFields['Updated_By'], 'on' => $mergeFields['Date_Updated']]);
+					$mergeFields['Updated_By_On'] = $this->phrase('by [[by]] on [[on]]', ['by' => $mergeFields['Updated_By'], 'on' => $mergeFields['Date_Updated']]);
 				}
 				
 				if (zenario_forum::markThreadCheckUserHasReadThread($thread['last_updated_order'], $this->forumId)) {

@@ -3,14 +3,14 @@
 toolbars:
     create:
         ord: 20
-        priv: _PRIV_CREATE_FIRST_DRAFT
+        priv: _PRIV_EDIT_DRAFT
         label: New...
         page_mode: preview
         toolbar_tab_grouping: create
         toolbar_microtemplate: zenario_toolbar_create_tab
     edit_disabled:
         ord: 30
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        priv: _PRIV_EDIT_DRAFT
         label: Edit
         tooltip: ''
         page_mode: edit_disabled
@@ -18,7 +18,7 @@ toolbars:
         toolbar_microtemplate: zenario_toolbar_edit_tab
     edit:
         ord: 31
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        priv: _PRIV_EDIT_DRAFT
         label: Edit
         tooltip: ''
         page_mode: edit
@@ -26,7 +26,7 @@ toolbars:
         toolbar_microtemplate: zenario_toolbar_edit_tab
     rollback:
         ord: 32
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        priv: _PRIV_EDIT_DRAFT
         label: Edit
         tooltip: You are viewing a previous version of this content item
         page_mode: rollback
@@ -34,21 +34,13 @@ toolbars:
         toolbar_microtemplate: zenario_toolbar_edit_tab
     restricted_editing:
         ord: 33
-        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        priv: _PRIV_EDIT_DRAFT
         label: Restricted editing
         tooltip: Editing this content item is restricted
         page_mode: preview
         toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_restricted_editing_tab
         
-    item:
-        ord: 40
-        priv: _PRIV_MANAGE_ITEM_SLOT
-        label: Edit slots
-        page_mode: item
-        toolbar_tab_grouping: edit
-        toolbar_microtemplate: zenario_toolbar_item_tab
-        visible_if: zenarioA.toolbar != 'preview' && zenarioA.toolbar != 'create'
     menu1:
         ord: 50
         priv: _PRIV_EDIT_MENU_TEXT
@@ -164,75 +156,69 @@ sections:
     
     slot_controls:
         buttons:
-            slot_control_dropdown:
-                css_class: zenario_at_slot_control_dropdown
-                label: Slots
-                hide_when_children_are_not_visible: true
-                        
+            head_foot_dropdown:
+                label: Head/Foot
+                hide_when_children_are_not_visible: false
             item_head:
-                parent: slot_control_dropdown
+                parent: head_foot_dropdown
                 priv: _PRIV_MANAGE_ITEM_SLOT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    item: true
+                    edit: true
                 label: <head> HTML
-                onmouseover: zenarioA.closeSlotControls();
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
                         mode: head
                         level: item
             item_foot:
-                ord: 9999
-                parent: slot_control_dropdown
+                parent: head_foot_dropdown
                 priv: _PRIV_MANAGE_ITEM_SLOT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    item: true
+                    edit: true
                 label: HTML before </body>
-                onmouseover: zenarioA.closeSlotControls();
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
                         mode: foot
                         level: item
-            
             global:
-                parent: slot_control_dropdown
+                parent: head_foot_dropdown
                 appears_in_toolbars:
                     layout: true
                 label: Site-wide <head> and <body>
-                onmouseover: zenarioA.closeSlotControls();
                 admin_box:
                     path: site_settings
                     key:
                         id: head_and_foot
             layout_head:
-                parent: slot_control_dropdown
+                parent: head_foot_dropdown
                 appears_in_toolbars:
                     layout: true
                 label: Layout-wide <head> HTML
-                onmouseover: zenarioA.closeSlotControls();
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
                         mode: head
                         level: layout
             layout_foot:
-                ord: 9999
-                parent: slot_control_dropdown
+                parent: head_foot_dropdown
                 appears_in_toolbars:
                     layout: true
                 label: Layout-wide HTML before </body>
-                onmouseover: zenarioA.closeSlotControls();
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
                         mode: foot
                         level: layout
-
+                        
+            slot_control_dropdown:
+                css_class: zenario_at_slot_control_dropdown
+                label: Slots
+                hide_when_children_are_not_visible: true
     
     status_button:
         buttons:
@@ -247,7 +233,6 @@ sections:
                     edit: true
                     rollback: true
                     restricted_editing: true
-                    item: true
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
@@ -261,13 +246,12 @@ sections:
                 # works. If this button is missing then zenarioA.draft() won't attempt to make
                 # a draft!
                 appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Make a draft
                 css_class: zenario_at_big_action_button zenario_at_start_editing
                 ajax:
-                    priv: _PRIV_CREATE_REVISION_DRAFT
                     confirm:
                         message: |
                             This is a content item that's published. To edit it, Zenario will make a new version as a draft. This won't be seen by site visitors until it is published.
@@ -286,7 +270,7 @@ sections:
                         switch_to_edit_mode: 1
             cant_start_editing:
                 appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: "Can't edit"
@@ -297,7 +281,7 @@ sections:
             
             delete_draft:
                 appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_DELETE_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Delete draft
@@ -317,7 +301,7 @@ sections:
                         delete: 1
             republish:
                 appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Re-publish
@@ -326,7 +310,7 @@ sections:
                     path: zenario_publish
             redraft:
                 appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_CREATE_REVISION_DRAFT
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Re-draft

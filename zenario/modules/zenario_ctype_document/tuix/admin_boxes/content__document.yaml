@@ -1,0 +1,13 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content:
+    tabs:
+        file:
+            fields:
+                document_desc:
+                    ord: 0.1
+                    visible_if: |
+                        zenarioAB.tuix.key.cType == 'document'
+                    snippet:
+                        html: |
+                            Use this screen to set a document.

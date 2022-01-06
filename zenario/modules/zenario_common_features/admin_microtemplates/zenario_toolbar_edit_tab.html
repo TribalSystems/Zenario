@@ -5,6 +5,16 @@
 				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.edit)}}
 			</div>
 		<% } %>
+		<% if (!zenarioT.hidden(m.sections.slot_controls)) { %>
+			<div class="zenario_at_slot_controls">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.slot_controls)}}
+			</div>
+		<% } %>
+		<% if (!zenarioT.hidden(m.sections.slot_wand)) { %>
+			<div class="zenario_at_slot_wand">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.slot_wand)}}
+			</div>
+		<% } %>
 		<% if (!zenarioT.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
 				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.help)}}

@@ -1,0 +1,53 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        content:
+            collection_buttons:
+                zenario_ctype_document__create_multiple:
+                    ord: 2
+                    priv: _PRIV_EDIT_DRAFT
+                    # For limited admins: if the create button is not enabled, don't enable
+                    # the create-multiple button either
+                    visible_if: |
+                        !zenarioA.adminHasSpecificPerms
+                        || zenarioO.tuix.collection_buttons.create
+                    css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    label: Create multiple
+                    upload:
+                        multi: true
+                        drag_and_drop: true
+                        request:
+                            create_multiple: 1
+            item_buttons:
+                zenario_ctype_document__rescan_extract:
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
+                    parent: action_dropdown
+                    label: Rescan text/image extract
+                    multiple_select: true
+                    with_columns_set:
+                        traits.is_document: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to rescan and update the text extract for the document "[[tag]]"?
+                                
+                                This action will read the contents of a Microsoft Word or PDF document
+                                (subject to external server programs being available).
+                                
+                                If the file is a PDF document also a screenshot of the first page will be extracted and attached as a featured image.
+                            multiple_select_message: |
+                                Are you sure you wish to rescan and update the text extracts for the selected documents?
+                                
+                                This action will read the contents of any Microsoft Word or PDF documents
+                                (subject to external server programs being available).
+                                
+                                If the files are PDF documents a screenshot of the first page will be extracted and attached as a featured image.
+                            button_message: Rescan text extract
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            rescan_extract: 1

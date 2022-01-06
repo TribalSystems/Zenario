@@ -33,7 +33,7 @@ zenario__content:
                 view_content_no_requests:
                     css_class: view_content_no_requests
                     tooltip: "No requests on this item; click to create a request"
-                    ord: 9
+                    ord: privacy.3
                     admin_box:
                         path: zenario_content_requests
                     visible_if: >
@@ -41,7 +41,7 @@ zenario__content:
                 view_content_has_requests:
                     css_class: view_content_has_requests
                     tooltip: "View requests on this content item"
-                    ord: 9
+                    ord: privacy.3
                     admin_box:
                         path: zenario_content_requests
                     visible_if: >

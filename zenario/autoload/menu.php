@@ -467,7 +467,8 @@ class menu {
 				m.rel_tag,
 				m.image_id,
 				m.rollover_image_id,
-				m.css_class";
+				m.css_class,
+				tc.privacy";
 	
 		if ($getFullMenu
 		 && $language != \ze::$defaultLang) {
@@ -509,6 +510,11 @@ class menu {
 			$sql .= "
 				AND c.status IN ('published', 'published_with_draft')";
 		}
+
+		$sql .= "
+			LEFT JOIN ".DB_PREFIX."translation_chains AS tc
+			   ON tc.equiv_id = c.equiv_id
+			  AND tc.type = c.type";
 		
 		if ($byParent) {
 			$sql .= "

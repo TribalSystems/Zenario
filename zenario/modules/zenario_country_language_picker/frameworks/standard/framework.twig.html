@@ -8,15 +8,15 @@
 		<div class="zenario_country_language_picker_wrap">
 			<div class="zenario_country_language_picker_header"></div>
 			<div class="zenario_country_language_picker_body">
-				<p>Please select the country that you are interested in purchasing products for.<br>This will enable us to show you products which comply with local safety regulations.</p>
+				<p>Please select your country, or the one nearest to you.</p>
 				<div class="columns">
 				<div class="column column_1">
-					<h3>Africa:</h3>
+					<h3>Africa</h3>
 					<ul>
 						{% if "ZA" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=ZA&user_lang={% if "en-za" in Active_languages|keys %}en-za{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">South Africa</a></li>{% endif %}
 					</ul>
 		
-					<h3>Asia:</h3>
+					<h3>Asia</h3>
 					<ul>
 						{% if "CN" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CN&user_lang={% if "cn" in Active_languages|keys %}cn{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">China</a></li>{% endif %}
 	
@@ -35,12 +35,12 @@
 				</div>
 
 				<div class="column column_2">
-					<h3>Australasia:</h3>
+					<h3>Australasia</h3>
 					<ul>
 						{% if "AU" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AU&user_lang={% if "en-au" in Active_languages|keys %}en-au{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">Australia</a></li>{% endif %}
 					</ul>
 		
-					<h3>Europe:</h3>
+					<h3>Europe</h3>
 					<ul>
 						{% if "FR" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=FR&user_lang={% if "fr" in Active_languages|keys %}fr{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">France</a></li>{% endif %}
 	
@@ -57,20 +57,25 @@
 				</div>
 
 				<div class="column column_3">
-					<h3>North America:</h3>
+					<h3>North America</h3>
 					<ul>
 						{% if "US" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=US&user_lang={% if "en-us" in Active_languages|keys %}en-us{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">USA</a></li>{% endif %}
 	
 						{% if "CA" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=CA&user_lang={% if "en-ca" in Active_languages|keys %}en-ca{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">Canada</a></li>{% endif %}
 					</ul>
 		
-					<h3>South America:</h3>
+					<h3>South America</h3>
 					<ul>
 						{% if "AR" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=AR&user_lang={% if "es" in Active_languages|keys %}es{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">Argentina</a></li>{% endif %}
 	
 						{% if "BR" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=BR&user_lang={% if "pt" in Active_languages|keys %}pt{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">Brazil</a></li>{% endif %}
 	
 						{% if "MX" in Active_countries|keys %}<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=MX&user_lang={% if "es" in Active_languages|keys %}es{% else %}{{Default_language}}{% endif %}&cID={{cID}}&cType={{cType}}">Mexico</a></li>{% endif %}
+					</ul>
+		
+					<h3>Not listed?</h3>
+					<ul>
+						<li><a href="zenario/modules/zenario_country_language_picker/fun/select_country.php?country_id=xx&user_lang={{Default_language}}&cID={{cID}}&cType={{cType}}">Rest of the world</a></li>
 					</ul>
 				</div>
 			</div>
@@ -81,7 +86,7 @@
 <div class="zenario_country_language_picker_change_country_confirmation">
 	<div class="message_wrap">
 		<h4>Change country</h4>
-		<p>Are you sure you want to change country?</p>
+		<p>Change your selected country?</p>
 		<div class="message_bottom">
 			<span class="message_button cancel" rel="colorbox" onclick="$.colorbox.close();">Cancel</span>
 			<span class="message_button" id="change_country_button" onclick="changeCountryConfirm('{{ajaxURL}}');">Change</span>

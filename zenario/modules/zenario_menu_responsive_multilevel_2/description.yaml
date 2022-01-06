@@ -7,7 +7,7 @@ start_running_on_install: true
 license_info: 'Modified BSD License'
 display_name: Menu (Responsive Multilevel v2)
 description: |
-    <p>This Module generates a horizontal &quot;top menu&quot; that appears at the top of a webpage when
+    <p>This module generates a horizontal &quot;top menu&quot; that appears at the top of a webpage when
         viewed on a desktop computer. When viewed on a mobile device, the menu changes to a
         vertical &quot;hamburger&quot; menu.</p>
     
@@ -17,7 +17,7 @@ description: |
         Settings -&gt; File and Image Handling</em>.</p>
     
     <p>If you just wish to use this menu for mobile devices, then you can put it into a slot, edit your layout
-        in grid maker, and then set the &quot;Hide on small screens&quot; option for that slot in grid maker.
+        in Gridmaker, and then set the &quot;Hide on small screens&quot; option for that slot in Gridmaker.
         Likewise, you can set the &quot;Only show on small screens&quot; to only show it on a desktop computer.</p>
     
     <p>It supports multiple menu sections, providing support for different menu trees.</p>
@@ -29,7 +29,7 @@ description: |
     
     
 category: pluggable
-keywords: menu, navigation
+keywords: menu, navigation, mobile
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:

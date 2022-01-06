@@ -68,7 +68,7 @@ if (isset($_POST['comm_message'])) {
 	$this->sections['Post_Message']['Post_Text'] =
 		zenario_anonymous_comments::sanitiseHTML(
 			'<blockquote>'.
-				'<b>'. $this->phrase('_SAID', ['user' => $quotedUserName]). '</b>'.
+				'<b>'. $this->phrase('[[user]] said:', ['user' => $quotedUserName]). '</b>'.
 				"<br/>".
 				$this->post['message_text'].
 			"</blockquote><p>&nbsp;</p>"

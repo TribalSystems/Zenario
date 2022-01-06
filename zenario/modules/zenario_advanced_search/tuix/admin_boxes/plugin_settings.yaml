@@ -3,30 +3,105 @@
 plugin_settings:
     module_class_name: zenario_advanced_search
     tabs:
+        global_area:
+            fields:
+                mode:
+                    plugin_setting:
+                        name: mode
+                        use_value_for_plugin_name: 1
+                    label: Mode
+                    type: select
+                    css_class: iconselectmenu
+                    format_onchange: true
+                    values:
+                        search_entry_box:
+                            label: "Inline search entry box"
+                        search_page:
+                            label: "Full page search and results"
+                    value: search_entry_box
         first_tab:
             ord: "1"
             label: Display
             fields:
-                show_initial_results:
+                search_entry_box_info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">    
+                                Shows a magnifying glass icon, which when clicked reveals a drop-down predictive search box. Can be placed on every layout in a slot (e.g. works well near the top of a page).
+                            </div>
+                    visible_if:
+                        lib.modeIs: search_entry_box
+                search_page_info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">    
+                                Shows a full page advanced search interface, with a panel for search parameters and a panel for results.
+                            </div>
+                    visible_if:
+                        lib.modeIs: search_page
+                
+                let_user_select_language:
                     plugin_setting:
-                        name: show_initial_results
-                    label: 'Show initial result list'
+                        name: let_user_select_language
                     type: checkbox
-                    value: "1"
-                    side_note: >
-                        When the plugin is viewed without any filter options, show the unfiltered results.
-                show_language_next_to_results:
+                    label: 'Let user select language'
+                    visible_if:
+                        lib.modeIs: search_page
+                    side_note: 'If this setting is disabled, the plugin will search for content in all enabled languages.'
+                
+                search_placeholder:
                     plugin_setting:
-                        name: show_language_next_to_results
-                    label: 'Show language next to content items'
+                        name: search_placeholder
+                    label: 'Show placeholder text "Search the site"'
                     type: checkbox
-                    value: '1'
-                    site_note: >
-                        Display the language of a content item next to each result.
+                    value: 0
+                    format_onchange: Yes
+                search_placeholder_phrase:
+                    indent: 1
+                    plugin_setting:
+                        name: search_placeholder_phrase
+                    label: 'Search placeholder phrase:'
+                    type: text
+                    format_onchange: Yes
+                    visible_if:
+                        lib.value: search_placeholder
+                    validation:
+                        required_if_not_hidden: Please enter a phrase.
+                search_label:
+                    plugin_setting:
+                        name: search_label
+                    label: 'Show "Search" label'
+                    type: checkbox
+                    value: 0
+                    format_onchange: Yes
+                    visible_if: 
+                        lib.modeIn: search_entry_box
+                show_clear_search_button:
+                    plugin_setting:
+                        name: show_clear_search_button
+                    label: 'Show button "Clear search"'
+                    type: checkbox
+                    value: false
+                    visible_if: 
+                        lib.modeIn: search_page
+                
+                keyboard_delay_before_submit:
+                    plugin_setting:
+                        name: keyboard_delay_before_submit
+                    label: 'Wait before submit (ms):'
+                    type: text
+                    value: 500
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    validation:
+                        required_if_not_hidden: Please enter the number of miliseconds to wait before send the request.
+                        numeric: The number of miliseconds to wait must be a number.
+                    side_note: |
+                        When the user type words to search wait the above amount of miliseconds before send the request. Default 500 ms.
                 show_private_items:
                     plugin_setting:
                         name: show_private_items
-                    label: 'Show private items'
+                    label: 'Search private items'
                     type: checkbox
                     value: "1"
                     format_onchange: Yes
@@ -38,42 +113,81 @@ plugin_settings:
                     value: "1"
                     values:
                         1:
-                            ord: "1"
-                            label: >
-                                Only show links to private content items to authorized
-                                visitors
+                            ord: 1
+                            label: "Only show links to private content items to authorized visitors"
                         0:
-                            ord: "2"
-                            label: Show links to private content items to all visitors
+                            ord: 2
+                            label: "Show links to private content items to all visitors"
                     indent: 1
-                data_field:
+                
+                limit_num_of_chars_in_title:
                     plugin_setting:
-                        name: data_field
-                    label: 'Show summary from:'
-                    type: select
-                    value: content_summary
-                    values:
-                        none:
-                            ord: "1"
-                            label: Do not show a summary
-                        content_summary:
-                            ord: "2"
-                            label: "Item's summary"
-                        description:
-                            ord: "3"
-                            label: "Item's description"
+                        name: limit_num_of_chars_in_title
+                    label: 'Limit the number of characters in title'
+                    type: checkbox
+                    value: 1
+                    side_note: "Limit the search result title length, breaking on a complete word."
+                    redraw_onchange: Yes
+                title_char_limit_value:
+                    indent: 1
+                    plugin_setting:
+                        name: title_char_limit_value
+                    type: text
+                    value: 50
+                    maxlength: 3
+                    style: 'width: 5em;'
+                    validation:
+                        required_if_not_hidden: 'Please enter a number.'
+                        numeric: 'Please enter a number.'
+                    visible_if: lib.value('limit_num_of_chars_in_title')
+                limit_num_of_chars_in_summary:
+                    plugin_setting:
+                        name: limit_num_of_chars_in_summary
+                    label: 'Limit the number of characters in the summary'
+                    type: checkbox
+                    value: 1
+                    side_note: "Any HTML tags in Summary will be not be output. Limit the search result length, breaking on a complete word."
+                    redraw_onchange: Yes
+                summary_char_limit_value:
+                    indent: 1
+                    plugin_setting:
+                        name: summary_char_limit_value
+                    type: text
+                    value: 50
+                    maxlength: 3
+                    style: 'width: 5em;'
+                    validation:
+                        required_if_not_hidden: 'Please enter a number.'
+                        numeric: 'Please enter a number.'
+                    visible_if: lib.value('limit_num_of_chars_in_summary')
+
+                enable_categories:
+                    plugin_setting:
+                        name: enable_categories
+                    label: 'Enable searching by categories'
+                    type: checkbox
+                    value: ""
+                    side_note: >
+                        Categories containing matching content items will be
+                        displayed to the visitor so that he may refine his search.
+                    visible_if: lib.modeIn('search_page')
+                
                 use_pagination:
                     plugin_setting:
                         name: use_pagination
                     label: 'Paginate'
                     type: checkbox
                     value: "1"
+                    format_onchange: true
+                    visible_if: lib.modeIn('search_page')
                 pagination_style:
                     plugin_setting:
                         name: pagination_style
+                    indent: 1
                     label: 'Pagination style:'
                     type: select
                     value: zenario_common_features::pagCloseWithNPIfNeeded
+                    visible_if: lib.modeIn('search_page') && lib.value('use_pagination')
                 page_size:
                     plugin_setting:
                         name: page_size
@@ -82,8 +196,6 @@ plugin_settings:
                     values:
                         maximum_of:
                             label: Maximum of...
-                        999999:
-                            label: All possible
                     value: maximum_of
                     format_onchange: true
                 maximum_results_number:
@@ -101,39 +213,133 @@ plugin_settings:
                     validation:
                         numeric: The page size must be a number.
                         required_if_not_hidden: Please enter the page size.
-                enable_categories:
+                use_specific_search_results_page:
                     plugin_setting:
-                        name: enable_categories
-                    label: 'Enable searching by categories'
+                        name: use_specific_search_results_page
                     type: checkbox
-                    value: ""
-                    side_note: >
-                        Categories containing matching content items will be
-                        displayed to the visitor so that he may refine his search.
-
-                show_default_stick_image:
+                    label: 'Use a specific search results page'
+                    note_below: |
+                        When a visitor presses the Enter key or clicks the Search button, they will be redirected to a full page of search results. This should contain a plugin of the Advanced Search module in "Full page search and results" mode.
+                    redraw_onchange: true
+                    visible_if: lib.modeIn('search_entry_box')
+                specific_search_results_page:
+                    indent: 1
+                    visible_if: lib.modeIn('search_entry_box') && lib.value('use_specific_search_results_page')
                     plugin_setting:
-                        name: show_default_stick_image
-                    label: 'Show image'
+                        name: specific_search_results_page
+                        foreign_key_to: content
+                        dangling_cross_references: remove
+                    label: 'Search results page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_language_and_content_type//html//
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item that contains or will contain an Advanced Search plugin in full page mode.
+                
+                show_further_search_page_link:
+                    plugin_setting:
+                        name: show_further_search_page_link
                     type: checkbox
-                    value: ""
-                    format_onchange: Yes
+                    label: 'Show a link to a further search page'
+                    redraw_onchange: true
+                    visible_if: lib.modeIn('search_entry_box')
+                additional_search_page_text:
+                    plugin_setting:
+                        name: additional_search_page_text
+                    indent: 1
+                    type: text
+                    label: 'Text for additional search page:'
+                    value: 'To search other areas of this site, click here'
+                    validation:
+                        required_if_not_hidden: 'This field is required.'
+                    visible_if: lib.modeIn('search_entry_box') && lib.value('show_further_search_page_link')
+                further_search_page_target:
+                    indent: 1
+                    visible_if: lib.modeIn('search_entry_box') && lib.value('show_further_search_page_link')
+                    plugin_setting:
+                        name: further_search_page_target
+                        foreign_key_to: content
+                        dangling_cross_references: remove
+                    label: 'Target:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_language_and_content_type//html//
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item.
                     
-                sticky_image_show:
+        content_types:
+            ord: "2"
+            label: Content items to search
+            fields:
+                #################
+                ## Search HTML ##
+                #################
+                search_html:
                     plugin_setting:
-                        name: sticky_image_show
-                    label: 'Show feature image'
+                        name: search_html
+                    label: 'HTML page content items'
                     type: checkbox
-                    value: ""
-                    side_note: Display the content item's feature image if available.
+                    value: "1"
+                    format_onchange: true
+                html_column_heading_text:
+                    plugin_setting:
+                        name: html_column_heading_text
+                    indent: 1
+                    type: text
+                    label: 'Tab/column heading text:'
+                    visible_if: lib.value('search_html')
+                    validation:
+                        required_if_not_hidden: 'Please type in the heading text.'
+                html_show_message_if_no_results:
+                    plugin_setting:
+                        name: html_show_message_if_no_results
+                    indent: 1
+                    label: 'Show message if no results from HTML pages'
+                    side_note: Only appears when other content types are yielding results.
+                    type: checkbox
+                    visible_if: lib.value('search_html')
+                    format_onchange: true
+                html_no_results_text:
+                    plugin_setting:
+                        name: html_no_results_text
+                    indent: 2
+                    label: 'No-results text:'
+                    type: text
+                    visible_if: lib.value('search_html') && lib.value('html_show_message_if_no_results')
+                    validation:
+                        required_if_not_hidden: 'Please type in the phrase.'
+                html_show_title:
+                    indent: 1
+                    label: Show title
+                    type: checkbox
+                    value: true
+                    read_only: true
+                    visible_if: lib.value('search_html')
+                html_show_feature_image:
+                    plugin_setting:
+                        name: html_show_feature_image
+                    label: 'Show featured image'
+                    type: checkbox
+                    value: "1"
+                    side_note: Display the content item's featured image if available.
                     format_onchange: Yes
                     indent: 1
-                sticky_image_canvas:
+                    visible_if: lib.value('search_html')
+                html_feature_image_canvas:
                     plugin_setting:
-                        name: sticky_image_canvas
-                    label: 'Feature image canvas:'
+                        name: html_feature_image_canvas
+                    label: 'Canvas for featured image:'
                     type: select
-                    value: unlimited
                     values:
                         unlimited:
                             ord: "1"
@@ -150,111 +356,389 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
+                    value: fixed_width_and_height
                     format_onchange: Yes
                     indent: 2
-                sticky_image_width:
+                html_feature_image_width:
                     plugin_setting:
-                        name: sticky_image_width
+                        name: html_feature_image_width
                     label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width for listing photo.
                         numeric: The width must be a number.
-                    value: ""
+                    value: "120"
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
-                sticky_image_height:
+                html_feature_image_height:
                     plugin_setting:
-                        name: sticky_image_height
+                        name: html_feature_image_height
                     label: 'Height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a height for listing photo.
                         numeric: The height must be a number.
-                    value: ""
+                    value: "80"
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
-                
-                show_scores:
+                html_show_language:
                     plugin_setting:
-                        name: show_scores
-                    label: 'Show scores'
-                    type: checkbox
-                    value: false
-                    side_note: "Search result scores will be shown in admin mode."
-
-                keyboard_delay_before_submit:
-                    plugin_setting:
-                        name: keyboard_delay_before_submit
-                    label: 'Wait before submit (ms):'
-                    type: text
-                    value: 500
-                    maxlength: 5
-                    style: 'width: 5em;'
-                    validation:
-                        required_if_not_hidden: Please enter the number of miliseconds to wait before send the request.
-                        numeric: The number of miliseconds to wait must be a number.
-                    side_note: |
-                       When the user type words to search wait the above amount of miliseconds before send the request. Default 500 ms.
-                search_placeholder:
-                    plugin_setting:
-                        name: search_placeholder
-                    label: 'Show "Search the site" placeholder'
-                    type: checkbox
-                    value: 0
-                    format_onchange: Yes
-                search_placeholder_phrase:
+                        name: html_show_language
                     indent: 1
+                    label: 'Show language'
+                    type: checkbox
+                    value: '1'
+                    site_note: >
+                        Display the language of a content item next to each result.
+                    visible_if: lib.value('search_html')
+                html_show_summary:
                     plugin_setting:
-                        name: search_placeholder_phrase
-                    label: 'Search placeholder phrase:'
-                    type: text
-                    format_onchange: Yes
-                    visible_if:
-                        lib.value: search_placeholder
+                        name: html_show_summary
+                    indent: 1
+                    label: 'Show summary'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_html')
+                html_show_menu_path_if_available:
+                    plugin_setting:
+                        name: html_show_menu_path_if_available
+                    indent: 1
+                    label: 'Show menu path if available'
+                    type: checkbox
+                    visible_if: lib.value('search_html')
+                html_column_width:
+                    plugin_setting:
+                        name: html_column_width
+                    indent: 1
+                    label: 'Width of column (desktop view only):'
                     validation:
-                        required_if_not_hidden: Please enter a phrase
-                show_clear_search_button:
-                    plugin_setting:
-                        name: show_clear_search_button
-                    label: 'Show "Clear search" button'
-                    type: checkbox
-                    value: false
-                    
-        content_types:
-            ord: "2"
-            label: Content items to search
-            fields:
-                search_html:
-                    plugin_setting:
-                        name: search_html
-                    label: 'HTML page'
-                    type: checkbox
-                    value: "1"
+                        numeric: "The width must be a number."
+                        required_if_not_hidden: 'Please type in the width.'
+                    type: text
+                    maxlength: 5
+                    decimal_places: 2
+                    style: "width: 4em;"
+                    post_field_html: "%"
+                    visible_if: lib.value('search_html') && lib.modeIn('search_entry_box')
+                
+                #####################
+                ## Search document ##
+                #####################
                 search_document:
                     plugin_setting:
                         name: search_document
-                    label: 'Document / File'
+                    label: 'Document content items'
                     type: checkbox
-                    value: "1"
+                    value: "0"
+                    format_onchange: true
+                document_column_heading_text:
+                    plugin_setting:
+                        name: document_column_heading_text
+                    indent: 1
+                    type: text
+                    label: 'Tab/column heading text:'
+                    visible_if: lib.value('search_document')
+                    validation:
+                        required_if_not_hidden: 'Please type in the heading text.'
+                document_show_message_if_no_results:
+                    plugin_setting:
+                        name: document_show_message_if_no_results
+                    indent: 1
+                    label: 'Show message if no results from documents'
+                    side_note: Only appears when other content types are yielding results.
+                    type: checkbox
+                    visible_if: lib.value('search_document')
+                    format_onchange: true
+                document_no_results_text:
+                    plugin_setting:
+                        name: document_no_results_text
+                    indent: 2
+                    label: 'No-results text:'
+                    type: text
+                    visible_if: lib.value('search_document') && lib.value('document_show_message_if_no_results')
+                    validation:
+                        required_if_not_hidden: 'Please type in the phrase.'
+                document_show_title:
+                    indent: 1
+                    label: Show title
+                    type: checkbox
+                    value: true
+                    read_only: true
+                    visible_if: lib.value('search_document')
+                document_show_feature_image:
+                    plugin_setting:
+                        name: document_show_feature_image
+                    label: 'Show featured image'
+                    type: checkbox
+                    value: ""
+                    side_note: Display the content item's featured image if available.
+                    format_onchange: Yes
+                    indent: 1
+                    visible_if: lib.value('search_document')
+                document_feature_image_canvas:
+                    plugin_setting:
+                        name: document_feature_image_canvas
+                    label: 'Canvas for featured image:'
+                    type: select
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    value: fixed_width_and_height
+                    format_onchange: Yes
+                    indent: 2
+                document_feature_image_width:
+                    plugin_setting:
+                        name: document_feature_image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width for listing photo.
+                        numeric: The width must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                document_feature_image_height:
+                    plugin_setting:
+                        name: document_feature_image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height for listing photo.
+                        numeric: The height must be a number.
+                    value: "80"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                document_show_language:
+                    plugin_setting:
+                        name: document_show_language
+                    indent: 1
+                    label: 'Show language'
+                    type: checkbox
+                    value: '1'
+                    site_note: >
+                        Display the language of a content item next to each result.
+                    visible_if: lib.value('search_document')
+                document_show_summary:
+                    plugin_setting:
+                        name: document_show_summary
+                    indent: 1
+                    label: 'Show summary'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_document')
+                document_show_menu_path_if_available:
+                    plugin_setting:
+                        name: document_show_menu_path_if_available
+                    indent: 1
+                    label: 'Show menu path if available'
+                    type: checkbox
+                    visible_if: lib.value('search_document')
+                document_column_width:
+                    plugin_setting:
+                        name: document_column_width
+                    indent: 1
+                    label: 'Width of column (desktop view only):'
+                    validation:
+                        numeric: "The width must be a number."
+                        required_if_not_hidden: 'Please type in the width.'
+                    type: text
+                    maxlength: 5
+                    decimal_places: 2
+                    style: "width: 4em;"
+                    post_field_html: "%"
+                    visible_if: lib.value('search_document') && lib.modeIn('search_entry_box')
+                
+                #################
+                ## Search news ##
+                #################
                 search_news:
                     plugin_setting:
                         name: search_news
-                    label: 'News item'
+                    label: 'News content items'
                     type: checkbox
-                    value: "1"
+                    value: "0"
+                    format_onchange: true
+                news_column_heading_text:
+                    plugin_setting:
+                        name: news_column_heading_text
+                    indent: 1
+                    type: text
+                    label: 'Tab/column heading text:'
+                    visible_if: lib.value('search_news')
+                    validation:
+                        required_if_not_hidden: 'Please type in the heading text.'
+                news_show_message_if_no_results:
+                    plugin_setting:
+                        name: news_show_message_if_no_results
+                    indent: 1
+                    label: 'Show message if no results from news'
+                    side_note: Only appears when other content types are yielding results.
+                    type: checkbox
+                    visible_if: lib.value('search_news')
+                    format_onchange: true
+                news_no_results_text:
+                    plugin_setting:
+                        name: news_no_results_text
+                    indent: 2
+                    label: 'No-results text:'
+                    type: text
+                    visible_if: lib.value('search_news') && lib.value('news_show_message_if_no_results')
+                    validation:
+                        required_if_not_hidden: 'Please type in the phrase.'
+                news_show_title:
+                    indent: 1
+                    label: Show title
+                    type: checkbox
+                    value: true
+                    read_only: true
+                    visible_if: lib.value('search_news')
+                news_show_feature_image:
+                    plugin_setting:
+                        name: news_show_feature_image
+                    label: 'Show featured image'
+                    type: checkbox
+                    value: ""
+                    side_note: Display the content item's featured image if available.
+                    format_onchange: Yes
+                    indent: 1
+                    visible_if: lib.value('search_news')
+                news_feature_image_canvas:
+                    plugin_setting:
+                        name: news_feature_image_canvas
+                    label: 'Canvas for featured image:'
+                    type: select
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    value: unlimited
+                    format_onchange: Yes
+                    indent: 2
+                news_feature_image_width:
+                    plugin_setting:
+                        name: news_feature_image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width for listing photo.
+                        numeric: The width must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                news_feature_image_height:
+                    plugin_setting:
+                        name: news_feature_image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height for listing photo.
+                        numeric: The height must be a number.
+                    value: "80"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                news_show_language:
+                    plugin_setting:
+                        name: news_show_language
+                    indent: 1
+                    label: 'Show language'
+                    type: checkbox
+                    value: '1'
+                    site_note: >
+                        Display the language of a content item next to each result.
+                    visible_if: lib.value('search_news')
+                news_show_summary:
+                    plugin_setting:
+                        name: news_show_summary
+                    indent: 1
+                    label: 'Show summary'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_news')
+                news_show_menu_path_if_available:
+                    plugin_setting:
+                        name: news_show_menu_path_if_available
+                    indent: 1
+                    label: 'Show menu path if available'
+                    type: checkbox
+                    visible_if: lib.value('search_news')
+                news_column_width:
+                    plugin_setting:
+                        name: news_column_width
+                    indent: 1
+                    label: 'Width of column (desktop view only):'
+                    validation:
+                        numeric: "The width must be a number."
+                        required_if_not_hidden: 'Please type in the width.'
+                    type: text
+                    maxlength: 5
+                    decimal_places: 2
+                    style: "width: 4em;"
+                    post_field_html: "%"
+                    visible_if: lib.value('search_news') && lib.modeIn('search_entry_box')
+                
+                ###########
+                ## Other ##
+                ###########
+                show_scores:
+                    plugin_setting:
+                        name: show_scores
+                    label: 'Show scores to administrators when using admin mode'
+                    type: checkbox
+                    value: false
+                    side_note: "Search result scores will be shown in admin mode; useful to debugging and adjusting weightings."
         weightings:
             ord: "3"
             label: Weightings
             fields:
+                pinned_info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                Pinned content items get higher scores:<br />
+                                If a content type allows pinned content, and the content item is pinned,</br />
+                                its score will be multiplied by 10.<br />
+                            </div>
                 published_datetime_info:
                     snippet:
                         html: |
-                            <div class="zenario_fbInfo">    
+                            <div class="zenario_fbInfo">
                                 Recently published content items get higher scores:<br />
                                 Items published in the last 30 days have their scores multiplied by 10.<br />
                                 Items published in the last 90 days have their scores multiplied by 6.<br />

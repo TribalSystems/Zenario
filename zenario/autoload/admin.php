@@ -447,7 +447,6 @@ class admin {
 			$_SESSION['admin_box_sync'],
 			$_SESSION['admin_copied_contents'],
 			$_SESSION['admin_permissions'],
-			$_SESSION['admin_specific_languages'],
 			$_SESSION['admin_specific_content_items'],
 			$_SESSION['admin_specific_content_types'],
 			$_SESSION['privs'],
@@ -475,18 +474,9 @@ class admin {
 			'perm_editmenu' => true,
 			'perm_publish' => true,
 			'_PRIV_VIEW_SITE_SETTING' => true,
-			'_PRIV_VIEW_CONTENT_ITEM_SETTINGS' => true,
 			'_PRIV_VIEW_MENU_ITEM' => true,
 			'_PRIV_EDIT_MENU_TEXT' => true,
-			'_PRIV_CREATE_FIRST_DRAFT' => true,
-			'_PRIV_CREATE_TRANSLATION_FIRST_DRAFT' => true,
 			'_PRIV_EDIT_DRAFT' => true,
-			'_PRIV_CREATE_REVISION_DRAFT' => true,
-			'_PRIV_DELETE_DRAFT' => true,
-			'_PRIV_EDIT_CONTENT_ITEM_TEMPLATE' => true,
-			'_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE' => true,
-			'_PRIV_IMPORT_CONTENT_ITEM' => true,
-			'_PRIV_EXPORT_CONTENT_ITEM' => true,
 			'_PRIV_HIDE_CONTENT_ITEM' => true,
 			'_PRIV_PUBLISH_CONTENT_ITEM' => true,
 			'_PRIV_VIEW_LANGUAGE' => true,
@@ -494,7 +484,7 @@ class admin {
 	}
 	
 	public static function logIn($adminId, $rememberMe = false) {
-		$admin = \ze\row::get('admins', ['username', 'authtype', 'global_id','last_login'], $adminId);
+		$admin = \ze\row::get('admins', ['username', 'authtype', 'global_id', 'last_login', 'last_login_ip'], $adminId);
 		
 		if ($rememberMe) {
 			\ze\cookie::set('COOKIE_LAST_ADMIN_USER', $admin['username']);
@@ -503,8 +493,10 @@ class admin {
 			\ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
 			\ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
 		}
-		//Set admin last login in session variable to access in diagnostic screen
+		//Set admin last login datetime in session variable to access in diagnostic screen
 		$_SESSION['admin_last_login'] = $admin['last_login'];
+		$_SESSION['admin_last_login_ip'] = $admin['last_login_ip'];
+		$_SESSION['admin_ip_at_login'] = \ze\user::ip();
 		
 		if ($admin['authtype'] == 'super') {
 			\ze\admin::setSession($adminId, $admin['global_id']);
@@ -544,6 +536,10 @@ class admin {
 		//Don't offically mark the admin as "logged in" until they've passed all of the
 		//checks in the admin login screen
 		$_SESSION['admin_logged_in'] = false;
+
+		if (isset($_SESSION['admin_failed_logins_count'])) {
+			unset($_SESSION['admin_failed_logins_count']);
+		}
 	}
 	
 	//Check if an administrator is inactive. Only local admins are checked.

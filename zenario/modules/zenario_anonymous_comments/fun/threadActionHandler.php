@@ -37,14 +37,14 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	if ($this->enableCaptcha()) {
 		if (!$this->checkCaptcha2()) {
 			$failure = true;
-			$this->postingErrors[] = ['Error' => $this->phrase('_CAPTCHA_INVALID')];
+			$this->postingErrors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
 		}
 	}
 	
 	if ($this->setting('show_name')) {
 		if (empty($_POST['comm_name'])) {
 			$failure = true;
-			$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_NAME')];
+			$this->postingErrors[] = ['Error' => $this->phrase('Please enter your name.')];
 		} else {
 			$name = $_POST['comm_name'];
 		}
@@ -53,11 +53,11 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	if ($this->setting('show_email')) {
 		if (empty($_POST['comm_email'])) {
 			$failure = true;
-			$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_EMAIL')];
+			$this->postingErrors[] = ['Error' => $this->phrase('Please enter your email address.')];
 		
 		} elseif (!ze\ring::validateEmailAddress($_POST['comm_email'])) {
 			$failure = true;
-			$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_INVALID_EMAIL')];
+			$this->postingErrors[] = ['Error' => $this->phrase('Please enter a valid email address.')];
 		
 		} else {
 			$email = $_POST['comm_email'];
@@ -66,7 +66,7 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	
 	if (empty($_POST['comm_message'])) {
 		$failure = true;
-		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
+		$this->postingErrors[] = ['Error' => $this->phrase('Please enter a message.')];
 	} else {
 		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
 		if (strlen($sanitisedMessage) > 65535) {
@@ -94,13 +94,13 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	if (empty($_POST['comm_title'])) {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_TITLE')];
+		$this->postingErrors[] = ['Error' => $this->phrase('Please enter a title.')];
 	}
 	
 	if (empty($_POST['comm_message'])) {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
+		$this->postingErrors[] = ['Error' => $this->phrase('Please enter a message.')];
 	} else {
 		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
 		if (strlen($sanitisedMessage) > 65535) {
@@ -120,12 +120,12 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 			$failure = true;
 			$this->postingErrors[] = ['Error' => $this->phrase('The message is too long.')];
 		} else {
-			$this->editPost(ze\user::id(), $_POST['comm_message'], $_POST['comm_name']);
+			$this->editPost(ze\user::id(), $_POST['comm_message'], $_POST['comm_name'] ?? '');
 		}
 	} else {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
+		$this->postingErrors[] = ['Error' => $this->phrase('Please enter a message.')];
 	}
 	
 } elseif (($_POST['comm_request'] ?? false) == 'lock_thread' && $this->canLockThread()) {
@@ -156,7 +156,7 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	} else {
 		//complain about required fields
 		$failure = true;
-		$this->postingErrors[] = ['Error' => $this->phrase('_ERROR_MESSAGE')];
+		$this->postingErrors[] = ['Error' => $this->phrase('Please enter a message.')];
 	}
 	
 }

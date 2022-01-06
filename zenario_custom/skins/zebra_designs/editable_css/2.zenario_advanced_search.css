@@ -1,0 +1,436 @@
+.zenario_advanced_search {
+	width:100%;
+}
+
+.zenario_advanced_search .search_button_panel {
+	max-width:1340px;
+	width:100%;
+	height:32px;
+	margin:auto;
+}
+
+/* Search entry button ---------------------------------------------------------------- */
+
+.zenario_advanced_search .search_button_panel .search_button {
+	display:inline-block;
+	float:right;
+	height:22px;
+	font-size:0;
+	line-height:0;
+	cursor:pointer;
+}
+
+body.desktop .zenario_advanced_search .search_button_panel .search_button {
+	margin-right:15px;
+	width:38px;
+}
+
+.zenario_advanced_search .search_button_panel .search_button:before {
+	font-family:"FontAwesome";
+	content:"\f002";
+	font-size:22px;
+	line-height:22px;
+	color:#000;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.zenario_advanced_search .search_button_panel .search_button:hover:before,
+.zenario_advanced_search .search_button_panel.active .search_button:before {
+	color:#00659b;
+}
+
+/* Search entry box panel -------------------------------------------------------------- */
+
+.zenario_advanced_search .search_entry_box_panel {
+	clear:both;
+	width:100%;
+	max-width:1340px;
+	position:absolute;
+	left:0;
+	right:0;
+	margin:auto;
+}
+
+/* Search criteria panel. Mode: Search entry box -------------------------------------- */
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria {
+	height:41px;
+	padding:20px;
+	background:rgba(0,0,0,0.8);
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form > div {
+	overflow:hidden;
+	position:relative;
+	margin: auto;
+	display:flex;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div label,
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input,
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div .further_search {
+	float:left;
+	height:40px;
+	line-height:40px;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div label {
+	padding-right:10px;
+	color:#FFF;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input {
+	-webkit-border-radius: 0;
+	border-radius: 0;
+	border:0;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input,
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input:focus {
+	outline:0;
+	outline:none;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input.search_input_box:focus {
+	box-shadow:inset 0 0 0 2px #0086CE;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input.search_input_box {
+	width:600px;
+	margin-right:10px;
+	color:#000;
+	font-weight:600;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input.search_entry_button { 
+	min-width:auto;
+	padding:0;
+	width:100px;
+	background:#00659b;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div input.search_entry_button:hover { 
+	opacity:1;
+	background:#0086CE;
+	color:#FFF;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .close_button {
+	position:relative;
+	float:left;
+	z-index:9;
+	top:6px;
+	right:0;
+	border-radius:50%;
+	background:#009B84;
+	width:30px;
+	height:30px;
+	margin-left:10px;
+	float:left;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .close_button:hover {
+	background:#0086CE;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .close_button:before, 
+.zenario_advanced_search .search_entry_box_panel .search_area .close_button:after {
+	left:13.5px;
+	top:7px;
+}
+
+.zenario_advanced_search .search_area .close_button {
+	width:20px;
+	height:20px;
+	font-size:0;
+	line-height:0;
+	cursor:pointer;
+}
+
+.zenario_advanced_search .search_area .close_button:before, 
+.zenario_advanced_search .search_area .close_button:after {
+  position: absolute;
+  left: 10px;
+  content: ' ';
+  height: 16px;
+  width: 3px;
+  background-color: #FFF;
+	-webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+}
+
+.zenario_advanced_search .search_area .close_button:before {
+  transform: rotate(45deg);
+}
+.zenario_advanced_search .search_area .close_button:after {
+  transform: rotate(-45deg);
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div a.further_search {
+	color:#eaf0f4;
+	margin-left:15px;
+	font-size:90%;
+	text-decoration:underline;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_criteria form div a.further_search:hover {
+	color:#bdc6cc;
+}
+
+/* Search results panel. Mode: search box  -------------------------------------------- */
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results {
+	text-align:left;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results {
+	position:relative;
+	padding:15px;
+	display:flex;
+	background: #f3f6f8;
+	box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .column_title {
+    display: inline-block;
+    padding: 0 0 15px 10px;
+	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+    font-size: 1.3em;
+    color: #000;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column.column_1 .column_title {
+	padding-left:0;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column .search_no_results {
+	padding-left:10px;
+	font-size:0.938em;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column.column_1 .search_no_results {
+	padding-left:0;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column > a,
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_results .search_results > a {
+	display:block;
+	margin-bottom:8px;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column > a:hover,
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_results .search_results > a:hover {
+	text-decoration:none;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column.column_1 .search_result {
+	margin-left:0;
+}
+
+body.ie .zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column .search_result .search_result_content .search_result_summary p {
+	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+}
+
+body.ff .zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column .search_result .search_result_content .search_result_summary p,
+body.webkit .zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column .search_result .search_result_content .search_result_summary p {
+  overflow : hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results:after {
+	bottom: 100%;
+	left: 50%;
+	border: solid transparent;
+	content: "";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-color: rgba(243, 246, 248, 0);
+	border-bottom-color: #f3f6f8;
+	border-width: 10px;
+	margin-left: -10px;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .search_result_summary {
+    -webkit-line-clamp: 2;
+}
+
+/* Common */
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result {
+	overflow:hidden;
+	padding:10px 15px;
+	margin:0 10px;
+	background:#E3EBF2;
+	-webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result:hover {
+	background:#D3DDE6;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_image {
+	float:left;
+	padding-right:15px;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content {
+	overflow:hidden;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .search_result_title {
+	font-weight:bold;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .search_result_title .title span { 
+    color: #000;
+    font-size: 0.75em;
+    font-weight: normal;
+    font-style: italic;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .search_result_title,
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .search_result_title a {
+	color:#00659b;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .breadcrumb {
+	color:#555;
+	font-size:0.813em;
+	overflow : hidden;
+  	text-overflow: ellipsis;
+  	display: -webkit-box;
+  	-webkit-line-clamp: 3;
+  	-webkit-box-orient: vertical;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .search_result_summary {
+  	font-size:0.875em;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result.private {
+	background:#F2E5E5;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result.private .search_result_content .search_result_title, 
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result.private .search_result_content .search_result_title a {
+	color:#9f0505;
+}
+
+.zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result.private .search_result_content .search_result_title:before {
+	font-family:"FontAwesome";
+	content:"\f023";
+}
+
+/* Search criteria panel. Mode: Search results ---------------------------------------- */
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_criteria,
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_categories {
+	background:#efefef;
+	padding:20px;
+	overflow:hidden;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_criteria form div {
+	display:flex;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_criteria form div div {
+	margin-right:20px;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_criteria form div label {
+	margin-right:8px;
+	line-height:40px;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_criteria form div select {
+	font-size:0.875em;	
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_criteria form div input[type="text"] {
+	width:300px;
+	margin-right:8px;
+	height:38px;
+	font-weight:bold;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_criteria form div input[type="submit"] {
+	min-width:auto;
+	height:40px;
+	line-height:1em;
+	margin-right:8px;
+}
+
+/* Search results. Mode: Search results ---------------------------------------- */
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results {
+	margin-top:20px;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results .search_heading {
+	padding-bottom:20px;
+	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+	font-size: 1.3em;
+	color: #000;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results #search_results_tabs {
+	border-bottom:1px solid #ccc;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results #search_results_tabs > div {
+	display:inline-block;
+	position:relative;
+	bottom: -1px;
+	border-bottom: 1px solid #ccc;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results #search_results_tabs > div a {
+	display:inline-block;
+	padding:10px;
+	margin:0 10px;
+	background:#FFF;
+	border-bottom:2px solid #FFF;
+	color:#888;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results #search_results_tabs > div:first-child a {
+	margin-left:0;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results #search_results_tabs > div a:hover {
+	text-decoration:none;
+	color:#00659b;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results #search_results_tabs > div.search_results_tab_on a {
+	color:#000;
+	border-color:#000;
+}
+
+.zenario_advanced_search.zenario_advanced_search__in_mode__search_page .search_area .zenario_advanced_search_results .search_results { 
+	padding-top:15px;
+}

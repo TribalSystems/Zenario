@@ -33,7 +33,7 @@ plugin_settings:
                     value: all
                     values:
                         all: -- All content types --
-                    format_onchange: Yes
+                    format_onchange: true
         
                 only_show:
                     plugin_setting:
@@ -44,11 +44,11 @@ plugin_settings:
                     value: public
                     values:
                         public:
-                                    label: Public content items only
+                            label: Public content items only
                         all:
-                                    label: Public and private content items
+                            label: Public and private content items
                         private:
-                                    label: Private content items only
+                            label: Private content items only
                 language_selection:
                     plugin_setting:
                         name: language_selection
@@ -58,12 +58,12 @@ plugin_settings:
                     value: visitor
                     values:
                         visitor:
-                                    label: "Show content items in visitor's language"
+                            label: "Show content items in visitor's language"
                         all:
-                                    label: Show content items in all languages enabled
+                            label: Show content items in all languages enabled
                         specific_languages:
-                                    label: Show content items in specific languages...
-                    format_onchange: Yes
+                            label: Show content items in specific languages...
+                    format_onchange: true
                 specific_languages:
                     grouping: content_item_filters
                     label: 'Select languages:'
@@ -82,19 +82,19 @@ plugin_settings:
                     type: select
                     values:
                         ignore:
-                                    label: -- Don't filter --
+                            label: -- Don't filter --
                         date_range:
-                                    label: Date range...
+                            label: Date range...
                         relative_date_range:
-                                    label: Relative date range...
+                            label: Relative date range...
                         prior_to_date:
-                                    label: Prior to...
+                            label: Prior to...
                         on_date:
-                                    label: On...
+                            label: On...
                         after_date:
-                                    label: Later than...
+                            label: Later than...
                     #value: ignore
-                    format_onchange: Yes
+                    format_onchange: true
                     side_note: "If using these filters, any pinned content items will appear irrespective of their release date."
                 start_date:
                     plugin_setting:
@@ -133,7 +133,7 @@ plugin_settings:
                     plugin_setting:
                         name: relative_value
                     type: text
-                    same_row: Yes
+                    same_row: true
                     style: width:50px;
                     pre_field_html: '&nbsp;'
                     post_field_html: '&nbsp;'
@@ -149,7 +149,7 @@ plugin_settings:
                         days: day(s)
                         months: month(s)
                         years: year(s)
-                    same_row: Yes
+                    same_row: true
                     value: "1"
                     validation:
                         required_if_not_hidden: Please specify a relative date range.
@@ -189,7 +189,7 @@ plugin_settings:
                     value: ""
                     side_note: >
                         Only show content items that are in the menu, and are under the current content item in the menu hierarchy.
-                    format_onchange: Yes
+                    format_onchange: true
                 child_item_levels:
                     plugin_setting:
                         name: child_item_levels
@@ -199,15 +199,15 @@ plugin_settings:
                     value: "1"
                     values:
                         1:
-                                    label: Descend one level in the menu
+                            label: Descend one level in the menu
                         2:
-                                    label: Descend 2 levels
+                            label: Descend 2 levels
                         3:
-                                    label: Descend 3 levels
+                            label: Descend 3 levels
                         4:
-                                    label: Descend 4 levels
+                            label: Descend 4 levels
                         99:
-                                    label: Descend to the deepest menu level
+                            label: Descend to the deepest menu level
                     side_note: >
                         You can determine how deep to descend in the menu, relative to the current content item's
                         position in the menu.
@@ -221,9 +221,9 @@ plugin_settings:
                     value: "0"
                     values:
                         - 
-                                    label: Use unique and primary menu nodes
+                            label: Use unique and primary menu nodes
                         - 
-                                    label: Use unique, primary and secondary menu nodes
+                            label: Use unique, primary and secondary menu nodes
                     side_note: >
                         Whether to only use content items' "true" positions in the menu, or to also use
                         secondary menu nodes.
@@ -326,12 +326,12 @@ plugin_settings:
             label: Overall list
             fields:
                 translate_text:
-                     plugin_setting:
-                         name: translate_text
-                     label: 'Make this plugin multilingual using the phrases system'
-                     type: checkbox
-                     value: 1
-                     format_onchange: true
+                    plugin_setting:
+                        name: translate_text
+                    label: 'Make this plugin multilingual using the phrases system'
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
                 
                 show_headings:
                     plugin_setting:
@@ -343,7 +343,7 @@ plugin_settings:
                         1:
                             label: Show a heading
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                     
                 heading_if_items:
                     plugin_setting:
@@ -378,7 +378,7 @@ plugin_settings:
                         1:
                             label: Show a heading
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                     
                 heading_if_no_items:
                     plugin_setting:
@@ -476,7 +476,7 @@ plugin_settings:
                     side_note: >
                         Use this if you wish to show a short list here, and a link
                         to a further page with a longer list.
-                    format_onchange: Yes
+                    format_onchange: true
                 
                 more_link_text:
                     plugin_setting:
@@ -555,8 +555,14 @@ plugin_settings:
                     value: h2
                     same_row: true
                     side_note: |
-                        Choose which HTML tags the title will be displayed in.
+                        Choose the HTML tag for the title.
                     visible_if: zenarioAB.value('show_titles')
+                show_language:
+                    plugin_setting:
+                        name: show_language
+                    label: 'Show content item language'
+                    type: checkbox
+                    value: ""
                 show_text_preview:
                     plugin_setting:
                         name: show_text_preview
@@ -580,12 +586,12 @@ plugin_settings:
                 show_sticky_images:
                     plugin_setting:
                         name: show_sticky_images
-                    label: "Show feature image"
+                    label: "Show featured image"
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                     side_note: |
-                        Show the feature image of each content item, if it has one. For picture content items, a thumbnail will be automatically generated if no feature image exists.
+                        Show the featured image of each content item, if it has one.
                 fall_back_to_default_image:
                     plugin_setting:
                         name: fall_back_to_default_image
@@ -593,7 +599,7 @@ plugin_settings:
                     type: checkbox
                     format_onchange: true
                     side_note: |
-                        If the content item being listed doesn't have a feature image, then display a default image instead.
+                        If the content item being listed doesn't have a featured image, then display a default image instead.
                     indent: 1
                 default_image_id:
                     plugin_setting:
@@ -623,20 +629,30 @@ plugin_settings:
                         name: canvas
                     label: 'Image canvas:'
                     type: select
-                    value: unlimited
                     values:
                         unlimited:
-                                    label: Unlimited size
+                            label: Unlimited size
                         fixed_width:
-                                    label: Constrain by width
+                            label: Constrain by width
                         fixed_height:
-                                    label: Constrain by height
+                            label: Constrain by height
                         fixed_width_and_height:
-                                    label: Constrain by width and height
-                        resize_and_crop:
-                                    label: Resize and crop
-                    format_onchange: Yes
+                            label: Constrain by width and height
+                        crop_and_zoom:
+                            label: Crop and zoom
+                    value: crop_and_zoom
+                    format_onchange: true
                     indent: 1
+                retina:
+                    plugin_setting:
+                        name: retina
+                    label: 'Treat as a retina image'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Display image at double density.
+                    enable_microtemplates_in_properties: true
+                    same_row: true
                 width:
                     plugin_setting:
                         name: width
@@ -645,7 +661,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: ""
+                    value: 240
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
@@ -658,37 +674,38 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
-                    value: ""
+                    value: 160
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                retina:
-                    indent: 2
-                    plugin_setting:
-                        name: retina
-                    label: 'This is a retina image'
-                    type: checkbox
-                    value: ""
-                    side_note: |
-                        Display image at double density.
-                    enable_microtemplates_in_properties: true
                 show_filename:
                     visible_if: |
                         zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture' || zenarioAB.value('content_type', 'first_tab') == 'all'
-                    label: 'Show file name (applies to document and picture content items only)'
+                    label: 'Show file name where relevant'
+                    side_note: |
+                        Applies to Document and Picture content items only.
                     type: checkbox
                     plugin_setting:
                         name: show_filename
                 show_file_size:
                     visible_if: |
                         zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture' || zenarioAB.value('content_type', 'first_tab') == 'all'
-                    label: 'Show file size (applies to document and picture content items only)'
+                    label: 'Show file size where relevant'
+                    side_note: |
+                        Applies to Document and Picture content items only.
                     type: checkbox
                     plugin_setting:
                         name: show_file_size
                     redraw_onchange: true
-                
+                use_download_page:
+                    plugin_setting:
+                        name: use_download_page
+                    label: 'Use a download page for Document content items'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        For Documents, link to the download page; if not checked, direct link to the file.
                 show_permalink:
                     label: 'Show permalink'
                     plugin_setting:
@@ -702,7 +719,7 @@ plugin_settings:
                     label: "Show release date/time"
                     type: checkbox
                     value: "0"
-                    format_onchange: Yes
+                    format_onchange: true
                 date_format:
                     plugin_setting:
                         name: date_format
@@ -711,13 +728,13 @@ plugin_settings:
                     value: _RELATIVE
                     values:
                         _SHORT:
-                                    label: Short
+                            label: Short
                         _MEDIUM:
-                                    label: Medium
+                            label: Medium
                         _LONG:
-                                    label: Long
+                            label: Long
                         _RELATIVE:
-                                    label: Relative date/time
+                            label: Relative date/time
                             
                     requires: show_dates
                     indent: 1
@@ -730,93 +747,101 @@ plugin_settings:
                 show_author:
                     plugin_setting:
                         name: show_author
-                    label: "Show writer name"
+                    label: "Show content item writer name"
                     type: checkbox
                     value: "0"
-                show_author_image:
-                    plugin_setting:
-                        name: show_author_image
-                    label: "Show writer image"
-                    type: checkbox
-                    value: "0"
-                    format_onchange: true
-                author_canvas:
-                    plugin_setting:
-                        name: author_canvas
-                    label: 'Author image canvas'
-                    type: select
-                    value: unlimited
-                    values:
-                        unlimited:
-                                    label: Unlimited size
-                        fixed_width:
-                                    label: Constrain by width
-                        fixed_height:
-                                    label: Constrain by height
-                        fixed_width_and_height:
-                                    label: Constrain by width and height
-                        resize_and_crop:
-                                    label: Resize and crop
-                    format_onchange: true
-                    indent: 1
-                author_width:
-                    plugin_setting:
-                        name: author_width
-                    label: 'Width:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter a width in pixels.
-                        numeric: The width must be a number.
-                    value: ""
-                    maxlength: "5"
-                    style: 'width: 5em;'
-                    post_field_html: '&nbsp;pixels'
-                    indent: 2
-                author_height:
-                    plugin_setting:
-                        name: author_height
-                    label: 'Height:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter a height in pixels.
-                        numeric: The height must be a number.
-                    value: ""
-                    maxlength: "5"
-                    style: 'width: 5em;'
-                    post_field_html: '&nbsp;pixels'
-                    indent: 2
-                author_offset:
-                    plugin_setting:
-                        name: author_offset
-                    label: 'Offset:'
-                    type: text
-                    style: 'width: 50px;'
-                    value: "0"
-                    slider:
-                        min: "-10"
-                        max: "10"
-                        before_field: true
-                        style: 'width: 200px;'
                     side_note: |
-                        Moving the slider to the left will move the image left or down;
-                        moving the slider to the right will move the image right or up.
-                    indent: 2
-                author_retina:
-                    indent: 1
-                    plugin_setting:
-                        name: author_retina
-                    label: 'This is a retina image'
-                    type: checkbox
-                    value: ""
-                    side_note: |
-                        Display image at double density.
-                    enable_microtemplates_in_properties: true
+                        Will display the writer name. Usually only for Blog or News content items, but depends on settings for each content type.
+                
+                #As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
+                #Commenting out the code in case we want it back in the future.
+                
+                # show_author_image:
+                #     plugin_setting:
+                #         name: show_author_image
+                #     label: "Show writer's photo"
+                #     type: checkbox
+                #     value: "0"
+                #     format_onchange: true
+                #     side_note: |
+                #         Will display the writer's photo, if set. Usually only for Blog or News content items, but depends on settings for each content type.
+                # author_canvas:
+                #     plugin_setting:
+                #         name: author_canvas
+                #     label: 'Author image canvas'
+                #     type: select
+                #     value: unlimited
+                #     values:
+                #         unlimited:
+                #             label: Unlimited size
+                #         fixed_width:
+                #             label: Constrain by width
+                #         fixed_height:
+                #             label: Constrain by height
+                #         fixed_width_and_height:
+                #             label: Constrain by width and height
+                #         crop_and_zoom:
+                #             label: Crop and zoom
+                #     format_onchange: true
+                #     indent: 1
+                # author_width:
+                #     plugin_setting:
+                #         name: author_width
+                #     label: 'Width:'
+                #     type: text
+                #     validation:
+                #         required_if_not_hidden: Please enter a width in pixels.
+                #         numeric: The width must be a number.
+                #     value: ""
+                #     maxlength: "5"
+                #     style: 'width: 5em;'
+                #     post_field_html: '&nbsp;pixels'
+                #     indent: 2
+                # author_height:
+                #     plugin_setting:
+                #         name: author_height
+                #     label: 'Height:'
+                #     type: text
+                #     validation:
+                #         required_if_not_hidden: Please enter a height in pixels.
+                #         numeric: The height must be a number.
+                #     value: ""
+                #     maxlength: "5"
+                #     style: 'width: 5em;'
+                #     post_field_html: '&nbsp;pixels'
+                #     indent: 2
+                # author_offset:
+                #     plugin_setting:
+                #         name: author_offset
+                #     label: 'Offset:'
+                #     type: text
+                #     style: 'width: 50px;'
+                #     value: "0"
+                #     slider:
+                #         min: "-10"
+                #         max: "10"
+                #         before_field: true
+                #         style: 'width: 200px;'
+                #     side_note: |
+                #         Moving the slider to the left will move the image left or down;
+                #         moving the slider to the right will move the image right or up.
+                #     indent: 2
+                # author_retina:
+                #     indent: 1
+                #     plugin_setting:
+                #         name: author_retina
+                #     label: 'This is a retina image'
+                #     type: checkbox
+                #     value: ""
+                #     side_note: |
+                #         Display image at double density.
+                #     enable_microtemplates_in_properties: true
                 hide_private_items:
                     plugin_setting:
                         name: hide_private_items
                     label: 'Links to private items:'
                     type: select
-                    format_onchange: Yes
+                    format_onchange: true
                     value: "1"
                     empty_value: "Show to all visitors"
                     values:
@@ -846,15 +871,6 @@ plugin_settings:
                     visible_if: |
                         zenarioAB.value('hide_private_items') == 3
                     indent: 1
-                use_download_page:
-                    plugin_setting:
-                        name: use_download_page
-                    label: 'Use a download page'
-                    type: checkbox
-                    value: ""
-                    side_note: |
-                        Link to the file's download page, rather than a direct link to the file.
-                                                    This option only applies to Document Content Items.
                 show_content_items_lowest_category:
                     plugin_setting:
                         name: show_content_items_lowest_category
@@ -869,7 +885,7 @@ plugin_settings:
                     label: Only link to content item directly if "SIMPLE_ACCESS" cookie is set; otherwise link to gated content form page
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                     side_note: |
                         This feature can be used for gated content. The listing is the "teaser" and the user will be linked to the form initially, whereupon he will be given the cookie. Once he has the cookie, he will be linked to the content item.
                 simple_access_cookie_alternate_page:
@@ -903,18 +919,7 @@ plugin_settings:
                     label: 'Open content item in a new window'
                     type: checkbox
                     value: ""
-                    side_note: >
-                        With this option enabled the content link when clicked will open on a new window.
 
-                show_language:
-                    plugin_setting:
-                        name: show_language
-                    label: 'Show content language'
-                    type: checkbox
-                    value: ""
-                    side_note: >
-                        With this option enabled the content language will be shown next to the document title.
-                        
                 
         pagination:
             label: Pagination
@@ -933,7 +938,7 @@ plugin_settings:
                     label: 'Paginate'
                     type: checkbox
                     value: "1"
-                    format_onchange: Yes
+                    format_onchange: true
                 pagination_style:
                     plugin_setting:
                         name: pagination_style
@@ -947,6 +952,7 @@ plugin_settings:
                     label: 'Maximum number of pages:'
                     type: select
                     values:
+                        3: "3"
                         5: "5"
                         9: "9"
                         20: "20"
@@ -960,26 +966,56 @@ plugin_settings:
                     type: select
                     values:
                         0: 
+                            ord: 0
+                            label: "Don't skip any results"
+                        1: 
                             ord: 1
-                            label: "No offset"
-                        1: "1"
-                        2: "2"
-                        3: "3"
-                        4: "4"
-                        5: "5"
-                        6: "6"
-                        7: "7"
-                        8: "8"
-                        9: "9"
-                        10: "10"
-                        10: "11"
-                        12: "12"
-                        15: "15"
-                        20: "20"
-                        50: "50"
+                            label: Skip 1st result
+                        2:
+                            ord: 2
+                            label: Skip 2 results
+                        3:
+                            ord: 3
+                            label: Skip 3 results
+                        4:
+                            ord: 4
+                            label: Skip 4 results
+                        5:
+                            ord: 5
+                            label: Skip 5 results
+                        6:
+                            ord: 6
+                            label: Skip 6 results
+                        7:
+                            ord: 7
+                            label: Skip 7 results
+                        8:
+                            ord: 8
+                            label: Skip 8 results
+                        9: 
+                            ord: 9
+                            label: Skip 9 results
+                        10:
+                            ord: 10
+                            label: Skip 10 results
+                        11:
+                            ord: 11
+                            label: Skip 11 results
+                        12:
+                            ord: 12
+                            label: Skip 12 results
+                        15:
+                            ord: 15
+                            label: Skip 15 results
+                        20:
+                            ord: 20
+                            label: Skip 20 results
+                        50:
+                            ord: 50
+                            label: Skip 50 results
                     value: "0"
                     side_note: >
-                        e.g. if you select 1, your results will start from the 2nd resulting content item        
+                        Use this feature if you have more than one CSL plugin on a page, for example where one CSL shows more details of top results and this one shows less details of lower results. This could be set up in a nest or slideshow with several tabs, or in different slots.
                 page_size:
                     plugin_setting:
                         name: page_size
@@ -1009,4 +1045,3 @@ plugin_settings:
                     validation:
                         numeric: The maximum number of results must be a number.
                         required_if_not_hidden: Please enter the maximum number of results.
-                

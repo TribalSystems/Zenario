@@ -39,8 +39,6 @@ class zenario_common_features__organizer__tuix_snippets extends ze\moduleBaseCla
 			FROM ". DB_PREFIX. "modules AS m
 			INNER JOIN ". DB_PREFIX. "tuix_file_contents AS tfc
 			   ON tfc.type = 'visitor'
-			  AND tfc.path NOT LIKE 'slot_settings_%'
-			  AND tfc.path NOT IN ('slot_plugin_and_mode', 'zenario_slide_info')
 			  AND tfc.module_class_name = m.class_name
 			WHERE m.status = 'module_running'
 			LIMIT 1

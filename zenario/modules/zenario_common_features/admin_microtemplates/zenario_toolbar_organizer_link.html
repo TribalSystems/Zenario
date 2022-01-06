@@ -12,6 +12,40 @@
 		</span>
 	</a>
 	<% if (m.items && m.items.length) { %>
-		<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link_children', m.items)}}</ul>
+		
+		<% if (m.id == 'zenario__administration') { %>
+			<!-- Show the "Configuration" section using two columns -->
+			<% var hi, hBlock, vi, vBlock, vBlocks = zenarioO.splitCols(m.items); %>
+			<div class="
+				zenario_attld_vertical_blocks
+			
+				<% switch (_.size(vBlocks)) { %>
+					<% case 1: %>
+						zenario_attld_1_vertical_block
+						<% break; %>
+				
+					<% default: %>
+						zenario_attld_multiple_vertical_blocks
+						zenario_attld_{{_.size(vBlocks)}}_vertical_blocks
+				<% } %>
+			">
+				<% foreach (vBlocks as vi => vBlock) { %>
+					<div class="zenario_attld_vertical_block">
+						<div class="zenario_attld_horizontal_blocks">
+							<% foreach (vBlock as hi => hBlock) { %>
+								<% if (!_.isEmpty(hBlock)) { %>
+									<div class="zenario_attld_horizontal_block">
+										<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link_children', hBlock)}}</ul>
+									</div>
+								<% } %>
+							<% } %>
+						</div>
+					</div>
+				<% } %>
+			</div>
+		<% } else { %>
+			<!-- Show all other sections using one column -->
+			<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link_children', m.items)}}</ul>
+		<% } %>
 	<% } %>
 </li>

@@ -1,13 +1,14 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_country_manager__country:
-    title: Creating a Country
-    max_height: "250"
+    title: Creating a country
+    max_height: 300
     key:
         id: ""
     identifier:
         css_class: zenario_country_manager_country
-        label: Country ID
+        label: |
+            Country ID:
     tabs:
         details:
             label: Details
@@ -17,14 +18,13 @@ zenario_country_manager__country:
                 on: true
             fields:
                 code:
-                    label: 'Country code:'
+                    label: 'ISO code:'
                     type: text
                     maxlength: "5"
                     style: width:55px;
                 name:
                     label: 'Country name:'
                     type: text
-                    side_note: for use only in admin mode
                 update_phrase:
-                    label: 'Copy change to localised Phrases:'
+                    label: 'Copy change to localised phrases for translation'
                     type: checkbox

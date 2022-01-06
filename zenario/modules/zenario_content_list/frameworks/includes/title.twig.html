@@ -25,7 +25,7 @@
 			<span class="link_title">{{item.Title|e}}</span>
 			
 			{% if Show_Permalink and item.Local_File_Id %}
-				{% include this.frameworkBaseDir() ~ 'includes/permalink.twig.html' %}
+				<span class="link_permanent_link">{% include this.frameworkBaseDir() ~ 'includes/permalink.twig.html' %}</span>
 			{% endif %}
 		</{{Item_Title_Tags}}>
 		
@@ -70,30 +70,38 @@
 			{% else %}
 				{{item.Title|e}}
 			{% endif %}
-
+			
+			{% if Show_Permalink %}
+				<span class="link_permanent_link">{% include this.frameworkBaseDir() ~ 'includes/permalink.twig.html' %}</span>
+			{% endif %}
+			
+		</{{Item_Title_Tags}}>
+		
+		
 			{% if Show_Filename and item.Filename %}
-				{{item.Filename|e}}
+				<p class="filename">{{item.Filename|e}}</p>
 			{% endif %}
 			
 			{% if Show_File_Size and item.Local_File_Size %}
-				({{item.Local_File_Size}})
-			{% endif %}
-			
-			{% if Show_Permalink %}
-				{% include this.frameworkBaseDir() ~ 'includes/permalink.twig.html' %}
+				<p class="size">({{item.Local_File_Size}})</p>
 			{% endif %}
 			
 			{% if item.Language %}
-				<span>({{item.Language|e}})</span>
+				<p class="language">({{item.Language|e}})</p>
 			{% endif %}
-		</{{Item_Title_Tags}}>
+
 	{% endif %}
 {% endif %}
+
+{# As of 06 Sept 2021, the "Show writer's photo" setting is disabled. #}
+{# Commenting out the code in case we want it back in the future. #}
+
 {% if Show_Author_Image %}
 	<div class="content_list_author_image">
 		<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}" width="{{item.Author_Image_Width|e}}" height="{{item.Author_Image_Height|e}}"/>
 	</div>
 {% endif %}
+
 {% if Show_Author %}
 	<p class="content_list_author">{{item.Author|e}}</p>
 {% endif %}

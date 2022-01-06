@@ -40,7 +40,7 @@ class zenario_menu_multicolumn extends zenario_menu {
 	}
 	
 	//Recursive function to draw Menu Nodes from the database
-	function getMenuMergeFields(&$menuArray, $depth = 0) {
+	function getMenuMergeFields(&$menuArray, $depth = 0, $parentId = false) {
 		$menuMergeFields = [];
 		$maxInCol = $this->setting('max_items_per_column');
 		

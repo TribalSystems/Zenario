@@ -16,9 +16,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            <p>
-                                This tab allows you to control when your site's Modules can place cookies on a visitor's computer.
-                            </p>
+                            <p>This tab allows you to control when your site's modules can place cookies on a visitor's computer.</p>
                 cookie_require_consent:
                     site_setting:
                         name: cookie_require_consent
@@ -81,10 +79,10 @@ site_settings:
                     visible_if: "zenarioAB.value('cookie_require_consent') == 'explicit'"
                     indent: 1
                     values:
-                        message_accept: A consent message with an "Accept" button
-                        message_accept_reject: >
-                            A consent message with an "Accept" button and a "Reject"
-                            button
+                        message_accept_reject: |
+                            A consent message with an "Accept" button and a "Reject" button
+                        message_accept: |
+                            A consent message with an "Accept" button only
                     redraw_onchange: true
                 description__explicit__message_accept:
                     snippet:
@@ -95,13 +93,6 @@ site_settings:
                             </p><p>
                                 Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
                                 (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
-                            </p><p>
-                                HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                gain a new setting, in their floating admin box panels.
-                                Their new setting allows you to declare that the code you have entered for that Plugin or Slot can place
-                                a cookie on a visitor's machine.
-                                You should review the HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                on your site and enable this option where appropriate.
                             </p>
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
@@ -117,13 +108,6 @@ site_settings:
                             </p><p>
                                 Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
                                 (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
-                            </p><p>
-                                HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                gain a new setting, in their floating admin box panels.
-                                Their new setting allows you to declare that the code you have entered for that Plugin or Slot can place
-                                a cookie on a visitor's machine.
-                                You should review the HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                on your site and enable this option where appropriate.
                             </p>
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
@@ -183,7 +167,7 @@ site_settings:
                     indent: 2
                     label: 'Content item for managing cookies:'
                     pick_items:
-                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        path: zenario__content/panels/content/refiners/filter_by_language_and_content_type//html//
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
@@ -191,7 +175,7 @@ site_settings:
                         select_phrase: Select a content item...
                         hide_remove_button: true
                     validation:
-                        required_if_not_hidden: true
+                        required_if_not_hidden: "Please select a content item."
                     note_below: "A content item that should have a cookie consent status plugin to allow visitors to manage their privacy settings."
                 
                 _COOKIE_CONSENT_REJECT:
@@ -236,5 +220,7 @@ site_settings:
                     legend: Set in the <code>zenario_siteconfig.php</code> file
                     
                     label: 'Cookie timeout:'
+                    pre_field_post_label_html: |
+                        (<code>COOKIE_TIMEOUT</code>)
                     readonly: true
                     type: text

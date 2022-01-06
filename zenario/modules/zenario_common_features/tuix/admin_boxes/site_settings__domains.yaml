@@ -136,6 +136,8 @@ site_settings:
                     legend: Set in the <code>zenario_siteconfig.php</code> file
                     
                     label: 'Cookie domain:'
+                    pre_field_post_label_html: |
+                        (<code>COOKIE_DOMAIN</code>)
                     readonly: true
                     type: text
                     style: |

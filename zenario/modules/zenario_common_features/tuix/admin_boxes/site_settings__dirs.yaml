@@ -21,7 +21,7 @@ site_settings:
                         name: check_automated_backups
                     full_width: true
                     type: radios
-                    value: 1
+                    value: 0
                     values:
                         0:
                             label: Don't check if automated backups are running

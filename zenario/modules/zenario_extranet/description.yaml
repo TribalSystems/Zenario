@@ -8,12 +8,12 @@ license_info: 'Modified BSD License'
 display_name: Extranet Base Module and Login
 description: |
     <p>This module is the base module for creating an extranet, a secure area for authorised extranet users.</p>
-    <p>When started, this module automatically creates a Login page on your site.</p>
-    <p>The default behaviour is to have just one login page, but on a multi-language site you may have a login page for each language.</p>
-    <p>You may have multiple login panels around your site (such as in the side bar or footer of a layout).</p>
-    <p>This module contains an option to remember the user's login name with a cookie, and to keep the user logged in.</p>
-    <p>Zenario supports groups and roles (the relationship of users with locations), via the Organization Manager module. This module has a redirection feature based on administrator-defined rules, so that when a user has logged in, if they are in a group or have a role, they can be sent to a specifed page.</p>
-    <p>While this module handles logging users in, it is one of a suite of extranet modules, such as ones that handle Registration, Password Reset, Change Password and Logout functions.</p>
+    <p>When started, this module automatically creates a "Login" special page.</p>
+    <p>The default behaviour is to have a single Login page, but on a multi-language site you may have a login page for each language.</p>
+    <p>This module contains an option to remember the user's login name (by setting a cookie), and to keep the user logged in.</p>
+    <p>Zenario supports groups, and roles (the relationship of users with locations) via the Organization Manager module.</p>
+    <p>There is a User Redirector module, so that when a user logs in they can be redirected to the correct page, based on the User Redirector plugin settings. The redirection is based on group membership and roles.</p>
+    <p>There are further modules, for: Registration, Password Reset, Change Password, Change Email, Edit Profile and Logout.</p>
 category: management
 keywords: base, extranet, login, password, private, user
 

@@ -1,0 +1,27 @@
+plugin_settings:
+	module_class_name: zenario_fullscreen
+	tabs:
+		first_tab:
+			fields:
+				fullscreen_button_label:
+					plugin_setting:
+						name: fullscreen_button_label
+					label: 'Fullscreen button label:'
+					type: text
+					show_phrase_icon: true
+					side_note: "Enter text in the default language. <a href=\"organizer.php#zenario__languages/panels/phrases\" target=\"_blank\">Click here to manage translations in Organizer.</a>."
+					maxlength: "255"
+					value: "Fullscreen"
+					validation:
+						required_if_not_hidden: "Please enter a fullscreen button label."
+				shrink_button_label:
+					plugin_setting:
+						name: shrink_button_label
+					label: 'Shrink button label:'
+					type: text
+					show_phrase_icon: true
+					side_note: "Enter text in the default language. <a href=\"organizer.php#zenario__languages/panels/phrases\" target=\"_blank\">Click here to manage translations in Organizer.</a>."
+					maxlength: "255"
+					value: "Shrink"
+					validation:
+						required_if_not_hidden: "Please enter a shrink button label."

@@ -74,7 +74,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 
 		$result = ze\sql::select($sql);			
 		$options = [];
-		$options[0] =  $this->phrase('_ALL_COUNTRIES');
+		$options[0] =  $this->phrase('All Countries');
 			
 		while($row = ze\sql::fetchAssoc($result)){
 			$options[$row['id']] = htmlspecialchars($row['name']);
@@ -85,7 +85,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 	public function getRegionOptions(){
 	
 		$options = [];
-		$options[0] = $this->phrase('_ALL_REGIONS');		
+		$options[0] = $this->phrase('All Regions');		
 		if($this->country_id){	
 
 			$sql = "SELECT
@@ -103,8 +103,6 @@ class zenario_project_locations extends ze\moduleBaseClass {
 					ORDER BY 2";
 		
 			$result = ze\sql::select($sql);
-//			$options = [];
-//			$options[0] =  $this->phrase('_CHOOSE_REGION');	
 				
 			while($row = ze\sql::fetchAssoc($result)){
 				$options[$row['id']] = htmlspecialchars($row['name']);
@@ -126,7 +124,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 			
 		$options = [];
-		$options[0] = $this->phrase('_ALL_SERVICES');
+		$options[0] = $this->phrase('All Services');
 			
 		while($row = ze\sql::fetchAssoc($result)){
 			$options[$row['id']] = htmlspecialchars($row['name']);
@@ -145,7 +143,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 			
 		$options = [];
-		$options[0] = $this->phrase('_ALL_SECTORS');
+		$options[0] = $this->phrase('All Sectors');
 			
 		while($row = ze\sql::fetchAssoc($result)){
 			$options[$row['id']] = htmlspecialchars($row['name']);
@@ -631,6 +629,25 @@ class zenario_project_locations extends ze\moduleBaseClass {
 				} else {
 					$box['tabs']['image']['fields']['image']['snippet']['html'] = '';
 				}
+		}
+	}
+	
+	//This module uses a deprecated core function.
+	//I'm redefining it here, so the module will still work when this function is removed from the core in version 9.2.
+	//If someone gets a little bit of time to do some code tidying, this can be replaced by the new "image"
+	//option in TUIX, also added in version 9.2.
+	protected function getImageHtmlSnippet($image_id, &$snippet_field, $widthLimit = 700, $heightLimit = 200){
+		if ($image_id) {
+			$width = $height = $url = $widthR = $heightR = $urlR = false;
+			\ze\file::imageLink($widthR, $heightR, $urlR, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $retina = true, $fullPath = false, $privacy = 'auto', $useCacheDir = false);
+	
+			$snippet_field = '
+			<p style="text-align: center;">
+				<a>
+					<img src="'. htmlspecialchars(\ze\link::absolute(). $urlR). '"
+						width="'. $widthR. '" height="'. $heightR. '" style="border: 1px solid black;"/>
+				</a>
+			</p>';
 		}
 	}
 	

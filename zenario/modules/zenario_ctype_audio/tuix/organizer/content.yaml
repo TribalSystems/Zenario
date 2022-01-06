@@ -6,7 +6,7 @@ zenario__content:
             collection_buttons:
                 zenario_ctype_audio__create_multiple:
                     ord: 2
-                    priv: _PRIV_CREATE_FIRST_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     label: Create multiple

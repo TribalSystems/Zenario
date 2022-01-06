@@ -60,15 +60,23 @@ class zenario_content_list extends ze\moduleBaseClass {
 				c.language_id,
 				v.publisher_id,
 				v.writer_id,
-				v.writer_name,
 				IFNULL(v.release_date, c.first_created_datetime) AS `content_table_date`,
 				release_date,
 				". ($this->dataField ?: "''"). " AS `content_table_data`";
-		if ($this->setting('show_author_image')) {
+		
+		if ($this->setting('show_author')) {
 			$sql .= ', 
-				ad.image_id AS writer_image_id,
-				fi.alt_tag';
+				CONCAT(wp.first_name, " ", wp.last_name) AS writer_name';
 		}
+		
+		//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
+		//Commenting out the code in case we want it back in the future.
+		
+		// if ($this->setting('show_author_image')) {
+		// 	$sql .= ', 
+		// 		wp.photo AS writer_image_id,
+		// 		fi.alt_tag';
+		// }
 		
 		if ($this->setting('only_show_child_items')) {
 			$sql .= ",
@@ -174,12 +182,19 @@ class zenario_content_list extends ze\moduleBaseClass {
 			//$this->showInMenuMode();
 		}
 		
-		if ($this->setting('show_author_image')) {
+		if ($this->setting('show_author')/* || $this->setting('show_author_image')*/) {
 			$sql .= '
-				LEFT JOIN '.DB_PREFIX.'admins AS ad
-					ON v.writer_id = ad.id
-				LEFT JOIN '.DB_PREFIX.'files AS fi
-					ON ad.image_id = fi.id';
+				LEFT JOIN ' . DB_PREFIX . 'writer_profiles AS wp
+					ON v.writer_id = wp.id';
+			
+			//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
+			//Commenting out the code in case we want it back in the future.
+
+			// if ($this->setting('show_author_image')) {
+			// 	$sql .= '
+			// 		LEFT JOIN ' . DB_PREFIX . 'files AS fi
+			// 			ON wp.photo = fi.id';
+			// }
 		}
 		
 		return $sql;
@@ -540,17 +555,21 @@ class zenario_content_list extends ze\moduleBaseClass {
 					}
 				}
 				
-				if ($row['writer_id']) {
+				if ($this->setting('show_author') && $row['writer_id'] && !empty($row['writer_name'])) {
 					$item['Author'] = $row['writer_name'];
 				}
-				if (isset($row['writer_image_id']) && !empty($row['writer_image_id'])) {
-					$width = $height = $url = false;
-					ze\file::imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'), $this->setting('author_retina'));
-					$item['Author_Image_Src'] = $url;
-					$item['Author_Image_Alt'] = $row['alt_tag'];
-					$item['Author_Image_Width'] = $width;
-					$item['Author_Image_Height'] = $height;
-				}
+
+				//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
+				//Commenting out the code in case we want it back in the future.
+
+				// if (isset($row['writer_image_id']) && !empty($row['writer_image_id'])) {
+				// 	$width = $height = $url = false;
+				// 	ze\file::imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'), $this->setting('author_retina'));
+				// 	$item['Author_Image_Src'] = $url;
+				// 	$item['Author_Image_Alt'] = $row['alt_tag'];
+				// 	$item['Author_Image_Width'] = $width;
+				// 	$item['Author_Image_Height'] = $height;
+				// }
 				
 				$item['language_id'] = $row['language_id'];
 				$item['equiv_id'] = $row['equiv_id'];
@@ -614,36 +633,65 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$item['Filename'] = $row['filename'] ?? '';
 				
 				
-				$width = $height = $url = false;
+				$canvas = $this->setting('canvas');
+				$retina = $canvas != 'unlimited' || $this->setting('retina');
+
+				$width = $height = $url = $stickyImageId = false;
 				if ($this->setting('show_sticky_images')) {
 					if ($row['type'] == 'picture') {
 						//Legacy code for Pictures
-						if ($imageId = ze\row::get("content_item_versions", "file_id", ["id" => $row['id'], 'type' => $row['type'], "version" => $row['version']])) {
-							ze\file::imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
-						}
+						$stickyImageId = ze\row::get("content_item_versions", "file_id", ["id" => $row['id'], 'type' => $row['type'], "version" => $row['version']]);
 					} else {
-						$foundStickyImage = ze\file::itemStickyImageLink($width, $height, $url, $row['id'], $row['type'], $row['version'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
-						
-						if (!$foundStickyImage && $this->setting('fall_back_to_default_image') && $this->setting('default_image_id')) {
-							$width = $height = $url = false;
-							ze\file::imageLink($width, $height, $url, $this->setting('default_image_id'), $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
-						}
+						$stickyImageId = ze\file::itemStickyImageId($row['id'], $row['type'], $row['version']);
 					} 
+					
+					if (!$stickyImageId && $this->setting('fall_back_to_default_image')) {
+						$stickyImageId = (int) $this->setting('default_image_id');
+					}
+					
+					if ($stickyImageId) {
+						ze\file::imageLink($width, $height, $url, $stickyImageId, $this->setting('width'), $this->setting('height'), $canvas, 0, $retina);
+					}
 				}
 				
 				if ($url) {
-					$item['Sticky_Image'] =
-						'<img class="sticky_image" alt="'. $item['Title']. '"'.
-						' src="'. htmlspecialchars($url). '"'.
-						' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
+					$cssClass = 'sticky_image';
+					
+					if (ze::isAdmin()) {
+						$cssClass .= ' zenario_image_properties zenario_image_id__'. $stickyImageId. '__';
+					}
+					
+					$mimeType = ze\file::mimeType($url);
+
+					$item['Sticky_Image'] = true;
+					
+					if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+						$fileParts = pathinfo($url);
+						$item['Sticky_Image_WebP'] = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+					}
+
+					//If this was a retina image, get a normal version of the image as well for standard displays
+					if ($retina) {
+						$sWidth = $sHeight = $sURL = false;
+						if (ze\file::imageLink($sWidth, $sHeight, $sURL, $stickyImageId, $width, $height, $canvas == 'crop_and_zoom'? 'crop_and_zoom' : 'adjust', 0, false)) {
+							$item['Sticky_Image_Retina_Srcset'] = $sURL;
+
+							if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
+								$fileParts = pathinfo($sURL);
+								$stickyImageWebPRetina = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
+								$item['Sticky_Image_WebP'] = $stickyImageWebPRetina. ' 1x, '. $item['Sticky_Image_WebP']. ' 2x';
+							}
+						}
+					}
 					
 					$item['Sticky_Image_Alt'] = $item['Title'];
-					$item['Sticky_Image_Src'] = $url;
-					$item['Sticky_Image_Width'] = $width;
-					$item['Sticky_Image_Height'] = $height;
-					$item['Sticky_image_class_name']="sticky_image";
+					$item['Sticky_Image_Src'] = htmlspecialchars($url);
+					$item['Sticky_Image_Width'] = (int) $width;
+					$item['Sticky_Image_Height'] = (int) $height;
+					$item['Sticky_Image_Css_Class'] = $cssClass;
+					$item['Sticky_Image_Mime_Type'] = $mimeType;
 				}else{
-					$item['Sticky_image_class_name']="sticky_image_placeholder";
+					$item['Sticky_Image_Css_Class']="sticky_image_placeholder";
 				}
 				
 				$this->getStyledExtensionIcon(pathinfo($row['filename'], PATHINFO_EXTENSION), $item);
@@ -935,7 +983,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 	public function showSlot() {
 		
 		if (!(!empty($this->items) || ((bool)$this->setting('show_headings_if_no_items')))) {
-			if (ze\priv::check()) {
+			if (ze::isAdmin()) {
 				echo ze\admin::phrase('This plugin will not be shown to visitors because there are no results.');
 			}
 			return;
@@ -1133,6 +1181,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$outer = [
 			'More_Link' => $moreLink,
 			'More_Link_Title' => $moreLinkText,
+			'More_Phrase' => $this->phrase('More...'),
 			'Pagination' => $pagination,
 			'Pagination_Data' => $paginationLinks,
 			'Results' => $this->rows,
@@ -1150,7 +1199,11 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Row' => $this->items,
 			'Show_Date' => $this->setting('show_dates'),
 			'Show_Author' => $this->setting('show_author'),
-			'Show_Author_Image' => $this->setting('show_author_image'),
+
+			//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
+			//Commenting out the code in case we want it back in the future.
+			//'Show_Author_Image' => $this->setting('show_author_image'),
+
 			'Show_Excerpt' => (bool) $this->dataField,
 			'Show_Item_Title' => (bool)$this->setting('show_titles'),
 			'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',

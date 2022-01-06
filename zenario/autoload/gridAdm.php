@@ -504,7 +504,7 @@ public static function generateHTML(&$html, &$data, &$slots) {
 public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slots, &$ord, $gCols, $level) {
 	$gridOpen = false;
 	$firstLine = true;
-	$gridCSSClass = 'Grid_A';
+	$gridCSSClass = 'Gridbreak_A';
 	$totalHeight = 0;
 	
 	$nl = "\n". str_pad('', $level + 2, "\t");
@@ -523,7 +523,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 		  && empty($cell['slot'])
 		  && empty($cell['space']))) {
 			
-			//Catch a case when migrating from an older version of Grid Maker
+			//Catch a case when migrating from an older version of Gridmaker
 			if (!empty($cell['name'])
 			 && !empty($cell['width'])) {
 				$cell['slot'] = true;
@@ -1003,7 +1003,7 @@ public static function readCode(&$html, $justCheck = false, $quickCheck = false)
 	if (!empty($parts[1])) {
 		$parts = explode('//', $parts[1], 3);
 		
-		//Don't allow the quick-check option for old versions of Grid Maker
+		//Don't allow the quick-check option for old versions of Gridmaker
 		if (($parts[1] ?? false) != 'v2') {
 			$quickCheck = false;
 		}

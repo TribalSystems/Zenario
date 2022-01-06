@@ -513,5 +513,7 @@ class lang {
 		return \ze\lang::name($languageId, false, false, true);
 	}
 
-
+	public static function sanitiseLanguageId($languageId) {
+		return preg_replace('/[^a-zA-Z0-9\-]/', '', $languageId);
+	}
 }

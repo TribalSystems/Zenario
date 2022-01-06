@@ -582,7 +582,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 						$sql .="
 							AND c.language_id IN ('". implode("','", $arr) . "')";
 					}
-					if ($this->setting('location')=='location_associated_with_content_item'){
+					if ($this->setting('location') == 'location_associated_with_content_item' && ze\module::inc('zenario_location_manager')){
 						if (($locId = zenario_location_manager::getLocationIdFromContentItem($this->cID,$this->cType))){
 							$sql .=" 
 									AND location_id = " . (int) $locId;

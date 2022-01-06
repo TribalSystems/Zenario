@@ -95,19 +95,17 @@ plugin_settings:
                 image_source:
                     plugin_setting:
                         name: image_source
-                    label: 'Image source:'
+                    label: 'Select image for desktop browsers:'
                     type: select
                     value: _NO_IMAGE
                     values:
                         _NO_IMAGE:
                             label: "Don't show an image"
                         _CUSTOM_IMAGE:
-                            label: "Show an image"
+                            label: "Show a fixed image"
                         _STICKY_IMAGE:
-                            label: "Auto-show image from destination content item"
+                            label: "Show featured image from destination content item"
                     format_onchange: true
-                    side_note: |
-                        If you choose auto-show, then the feature image from the destination content item will be used.
 
                 image:
                     indent: 1
@@ -116,7 +114,7 @@ plugin_settings:
                         foreign_key_to: file
                         use_value_for_plugin_name: 2
                         
-                    label: 'Image:'
+                    label: 'Image for desktop browsers:'
                     pick_items:
                         path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library
@@ -146,20 +144,15 @@ plugin_settings:
                     value: unlimited
                     values:
                         unlimited:
-                            ord: "1"
                             label: Unlimited size
                         fixed_width:
-                            ord: "2"
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
                             label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                        crop_and_zoom:
+                            label: Crop and zoom
                     format_onchange: true
                 retina:
                     indent: 2
@@ -187,7 +180,6 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    format_onchange: true
                 height:
                     indent: 2
                     plugin_setting:
@@ -201,23 +193,6 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    format_onchange: true
-                offset:
-                    indent: 2
-                    plugin_setting:
-                        name: offset
-                    label: 'Offset:'
-                    type: text
-                    style: 'width: 50px;'
-                    value: "0"
-                    slider:
-                        min: "-10"
-                        max: "10"
-                        before_field: true
-                        style: 'width: 200px;'
-                    side_note: |
-                        Moving the slider to the left will move the image left or down;
-                        moving the slider to the right will move the image right or up.
                 stretched_image_warning:
                     indent: 2
                     hidden: true
@@ -293,25 +268,26 @@ plugin_settings:
                 mobile_behaviour:
                     plugin_setting:
                         name: mobile_behaviour
-                    label: 'Mobile behaviour:'
+                    label: 'Select image for mobile browsers:'
                     type: select
                     format_onchange: true
                     values:
                         mobile_same_image:
-                            label: 'Same image'
+                            label: 'Same image as for desktop'
                         mobile_same_image_different_size:
                             label: 'Same image, different size'
                         mobile_change_image:
                             label: 'Different image'
                         mobile_hide_image:
-                            label: 'Hide image'
+                            label: |
+                                Don't show an image
                     value: mobile_same_image
 
                 mobile_image:
                     plugin_setting:
                         name: mobile_image
                         foreign_key_to: file
-                    label: 'Mobile image:'
+                    label: 'Image for mobile browsers:'
                     pick_items:
                         path: zenario__content/panels/image_library
                         min_path: zenario__content/panels/image_library
@@ -339,20 +315,15 @@ plugin_settings:
                     value: unlimited
                     values:
                         unlimited:
-                            ord: "1"
                             label: Unlimited size
                         fixed_width:
-                            ord: "2"
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
                             label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                        crop_and_zoom:
+                            label: Crop and zoom
                     format_onchange: true
                     indent: 1
                 mobile_retina:
@@ -393,22 +364,6 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                mobile_offset:
-                    plugin_setting:
-                        name: mobile_offset
-                    label: 'Offset:'
-                    type: text
-                    style: 'width: 50px;'
-                    value: "0"
-                    slider:
-                        min: "-10"
-                        max: "10"
-                        before_field: true
-                        style: 'width: 200px;'
-                    side_note: |
-                        Move slider to the left to move the image left/down;
-                        move the slider to the right to move the image right/up.
-                    indent: 2
                 
                 ##########################
                 ###### Link options ######
@@ -417,12 +372,13 @@ plugin_settings:
                 link_type:
                     plugin_setting:
                         name: link_type
-                    label: 'Destination:'
+                    label: 'Link destination:'
                     type: select
                     value: _NO_LINK
                     values:
                         _NO_LINK:
-                            label: No link
+                            label: |
+                                Don't link
                         _CONTENT_ITEM:
                             label: Link to a content item
                         _DOCUMENT:
@@ -626,16 +582,12 @@ plugin_settings:
                     value: unlimited
                     values:
                         unlimited:
-                            ord: "1"
                             label: Unlimited size
                         fixed_width:
-                            ord: "2"
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
                             label: Constrain by width and height
                     format_onchange: true
                 enlarge_width:

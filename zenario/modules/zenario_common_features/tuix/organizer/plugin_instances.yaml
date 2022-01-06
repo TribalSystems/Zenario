@@ -242,8 +242,7 @@ zenario__modules:
                     hide_when_children_are_not_visible: true
                 view:
                     parent: view_dropdown
-                    label: View image
-                    tooltip: View image
+                    label: Plugin's image
                     popout:
                         href: zenario/file.php
                         options:

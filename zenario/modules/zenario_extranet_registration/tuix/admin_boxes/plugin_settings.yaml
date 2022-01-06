@@ -11,7 +11,7 @@ plugin_settings:
                     ord: "0"
                     full_width: true
                     snippet:
-                        html: Configure the initial registration form that is used to create the user account.
+                        html: Configure the registration form through which a user or contact can create an account.
             
                 initial_email_address_status:
                     label: 'Verify email address:'
@@ -22,7 +22,7 @@ plugin_settings:
                         verified:
                             label: Don't verify
                         not_verified:
-                            label: Require verification
+                            label: Require verification (recommended)
                     value: not_verified
                     format_onchange: true
                     side_note: >
@@ -60,7 +60,7 @@ plugin_settings:
             
             
                 enable_notifications_on_user_signup:
-                    label: 'Notify an administrator when a user signs up'
+                    label: 'Notify an administrator when a user/contact signs up'
                     type: checkbox
                     plugin_setting:
                         name: enable_notifications_on_user_signup
@@ -86,7 +86,7 @@ plugin_settings:
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select an email template
@@ -111,7 +111,7 @@ plugin_settings:
                         user_to_choose_password:
                             label: "User to choose password"
                         user_to_have_random_password:
-                            label: "User to have an auto-assigned random password"
+                            label: "Auto-create a password for the user"
                     value: user_to_choose_password
                     format_onchange: true
                     empty_value: "-- Select --"
@@ -148,22 +148,22 @@ plugin_settings:
                         Users must enter their email twice before they can continue.
             
                 show_salutation:
-                    label: 'Show salutation'
+                    label: 'Show salutation field'
                     plugin_setting:
                         name: show_salutation
                     type: checkbox
                     value: "0"
-                    
-            
+                    side_note: |
+                        Show field for salutations, with a helper dropdown from the centralised list, see <a href='organizer.php#zenario__languages/panels/salutations' target='_blank'>International->Salutations</a>.
                 requires_terms_and_conditions:
                     plugin_setting:
                         name: requires_terms_and_conditions
-                    label: 'Require user to give consent to personal data processing'
+                    label: 'Require user to give consent'
                     type: checkbox
                     value: ""
                     format_onchange: true
                     side_note: >
-                        If the terms and condictions checkbox is not checked the user will not be able to register. This will record an entry in the consents log.
+                        Show a terms and condictions checkbox which is mandatory. Every registration will be recorded in the <a href='organizer.php#zenario__users/panels/consents' target='_blank'>consents log</a>.
                 link_type:
                     plugin_setting:
                         name: link_type
@@ -343,14 +343,14 @@ plugin_settings:
                     format_onchange: true
             
         user_activation:
-            label: User activation
+            label: Activation
             fields:
                 desc:
                     full_width: true
                     snippet:
-                        html: Using this tab, you can set up the User/Contact activation policy.
+                        html: This defines the activation policy for new people signing up. It is recommended for Zenario to send a verification email to the person, to ensure their email address is valid and they can access it.
                 initial_account_status:
-                    label: 'Status upon signup:'
+                    label: 'Status upon signup (before email verification):'
                     type: radios
                     plugin_setting:
                         name: initial_account_status
@@ -358,29 +358,29 @@ plugin_settings:
                         contact:
                             label: Contact
                         pending:
-                            label: Pending
+                            label: User (Pending status)
                     format_onchange: true
                     value: pending
                     side_note: >
-                        Upon initial sign-up, class people as either "Contacts" or make them "Pending" as extranet users.
+                        Upon initial sign-up, class people as either "Contacts" (the site can email them but they cannot log in to an extranet area) or "User" (with Pending status, until they verify their email address and/or an administrator activates the account).
                 verified_account_status:
                     label: 'Status after email verification:'
                     type: radios
                     plugin_setting:
                         name: verified_account_status
                     values:
+                        leave:
+                            label: Leave account as-is
                         contact:
                             label: Set to Contact
                         active:
-                            label: Set to Extranet User (Active status)
-                        leave:
-                            label: Leave as-is
+                            label: Set to User (Active status)
                         check_trusted:
-                            label: Set to User (Active) if from a trusted domain, otherwise leave as-is
+                            label: Set to User (Active status) if from a trusted domain, otherwise leave as-is
                     format_onchange: true
                     value: active
                     side_note: >
-                        When the user verifies his email address, set his status to Active (allowing him to log in), otherwise leave as Contact/Pending.
+                        When the user verifies their email address, set status to User (Active status) to allow login; otherwise leave as Contact/User (Pending status).
                 welcome_email_template:
                     label: '"Welcome" email:'
                     plugin_setting:

@@ -163,7 +163,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected $groupingColumns = 0;
 	protected $maxColumns = false;
 	protected $sameHeight = false;
-	protected $showSlideInfo = false;
 	
 	public $banner_canvas = false;
 	public $banner_width = 0;
@@ -700,27 +699,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	public function showSlot() {
 		
-		//For super-users, when using slide designer, show a button at the top to show info about the selected slide,
-		//and some other tools.
-		if ($this->showSlideInfo) {
-			echo '
-				<x-zenario-superuser-slide-controls>
-					<x-zenario-superuser-slide-info
-						onclick="zenario_plugin_nest.initSlideInfoPopout(
-							\'', ze\escape::js($this->containerId), '\',
-							', (int) $this->slideLayoutId, '
-						);"
-						title="', htmlspecialchars($this->phrase('Slide info')), '"
-					></x-zenario-superuser-slide-info>
-				</x-zenario-superuser-slide-controls>
-			';
-			
-			//I can't work out how to center-align the thing using CSS, so I'm using JavaScript to do it instead.
-			$this->callScript('zenario_plugin_nest', 'setSlideControlWidth', $this->containerId);
-		}
-		
-		
-		
 		$this->mergeFields['TAB_ORDINAL'] = $this->slideNum;
 		
 		//Show a single plugin in the nest
@@ -756,7 +734,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$sql = "
 			SELECT
 				id, id AS slide_id,
-				slide_num, css_class, name_or_title, use_slide_layout,
+				slide_num, css_class, name_or_title,
 				states, show_back, no_choice_no_going_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
 				request_vars, hierarchical_var, global_command,
 				invisible_in_nav,
@@ -919,101 +897,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			while ($egg = ze\sql::fetchAssoc($result)) {
 				$ord = $egg['ord'];
 				$eggs[] = $egg;
-			}
-		}
-		
-		//Don't look up details on the slide-designer plugins if this is an AJAX request for one of the regular ones
-		if (!$specificEgg || $specificEgg < 0) {
-		
-			//Check if this slide is flagged as using a slide layout
-			if ('' !== $this->slides[$slideNum]['use_slide_layout']) {
-			
-				//Work out which slide layout this should be for
-				$sLayoutFor = $sLayoutForId = $showSlideInfoPerms = false;
-			
-				switch ($this->slides[$slideNum]['use_slide_layout']) {
-					case 'asset_schema':
-						if ($a2Prefix = ze\module::prefix('assetwolf_2')) {
-							$sLayoutFor = 'schema';
-							$sLayoutForId = ze\row::get($a2Prefix. 'nodes', 'schema_id', ze::$vars['assetId']);
-							$showSlideInfoPerms = ze\user::can('design', 'schema', $sLayoutForId);
-						}
-						break;
-				
-					case 'datapool_schema':
-						if ($a2Prefix = ze\module::prefix('assetwolf_2')) {
-							$sLayoutFor = 'schema';
-							$sLayoutForId = ze\row::get($a2Prefix. 'nodes', 'schema_id', ze::$vars['dataPoolId']);
-							$showSlideInfoPerms = ze\user::can('design', 'schema', $sLayoutForId);
-						}
-						break;
-				}
-			
-				if ($sLayoutForId !== false) {
-					$slData = false;
-					
-					//Look for slide layouts for this slide
-					$sql = "
-						SELECT id AS slide_layout_id, ord, privacy, at_location
-						FROM ". DB_PREFIX. "slide_layouts
-						WHERE layout_for = '". ze\escape::sql($sLayoutFor). "'
-						  AND layout_for_id = ". (int) $sLayoutForId. "
-						ORDER BY";
-					
-					//Have the option to request a specific one.
-					if (isset($_REQUEST['useSlideLayoutId'])) {
-						$sql .= "
-							id = ". (int) $_REQUEST['useSlideLayoutId']. " DESC,";
-					}
-					
-					//Otherwise just use the first one that we find...
-					$sql .= "
-						ord";
-					
-					//...that the current user has permissions to see.
-					foreach (ze\sql::select($sql) as $sl) {
-						if (ze\content::checkItemPrivacy($sl, $sl, ze::$cID, ze::$cType, ze::$cVersion)) {
-							$slData = ze\sql::fetchValue("
-								SELECT data
-								FROM ". DB_PREFIX. "slide_layouts
-								WHERE id = ". (int) $sl['slide_layout_id']
-							);
-							
-							$this->showSlideInfo = $showSlideInfoPerms;
-							$this->slideLayoutId = $sl['slide_layout_id'];
-							
-							break;
-						}
-					}
-					
-					//If we found a slide layout that the current user can see,
-					//read through the JSON data looking for all of the plugins and plugin settings,
-					//and add them as eggs with negative eggIds.
-					if ($slData
-					 && ($slData = json_decode($slData, true))
-					 && (is_array($slData))) {
-					
-						foreach ($slData as $slEgg) {
-							if (is_array($slEgg)
-							 && isset($slEgg['class_name'])) {
-							
-								if ($moduleId = ze\row::get('modules', 'id', ['class_name' => $slEgg['class_name'], 'status' => 'module_running'])) {
-									$eggs[] = [
-										'id' => --$slEggId,
-										'slide_num' => $slideNum,
-										'ord' => ++$ord,
-										'module_id' => $moduleId,
-										'cols' => $slEgg['cols'] ?? 1,
-										'framework' => $slEgg['framework'] ?? 'standard',
-										'css_class' => $slEgg['css_class'] ?? '',
-										'small_screens' => $slEgg['small_screens'] ?? 'show'
-									];
-									$bespokeSettings[$slEggId] = $slEgg['settings'] ?? [];
-								}
-							}
-						}
-					}
-				}
 			}
 		}
 		

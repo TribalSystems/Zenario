@@ -121,107 +121,103 @@ zenario_content_type_details:
                         (will appear in a breadcrumb trail but not in the menu navigation).
                 
                 auto_flag_feature_image:
-                    label: 'Flag the first-uploaded image as feature image'
+                    label: 'Flag the first-uploaded image as the featured image'
                     type: checkbox
                     value: 1
                     side_note: |
-                        When a content item has a feature image, that image can appear on a content summary list.
-                        Check here to make the image first uploaded to a content item be made the feature image.
+                        When a content item has a featured image, that image can appear on a content summary list.
+                        Check here to make the image first uploaded to a content item be made the featured image.
                 
                 enable_categories:
-                    label: 'Support for categories:'
-                    type: radios
-                    cols: 3
-                    value: 0
-                    values:
-                        disabled:
-                            label: Disabled
-                        enabled:
-                            label: Enabled
+                    label: 'Enable support for categories'
+                    type: checkbox
+                    onoff: true
                     side_note: |
                         When enabled, administrator will be able to assign content items of this content type to categories.
                         This is useful if you use a Content Summary List plugin, for example to make a list of recent news items.
+                when_creating_put_title_in_body:
+                    label: 'When creating a content item, copy the title into the content area'
+                    type: checkbox
+                    onoff: true
+                
                 description_field:
-                    label: 'Description field:'
-                    type: radios
-                    cols: 3
-                    values:
-                        hidden:
-                            label: 'Disabled (not recommended)'
-                        optional:
-                            label: 'Enabled'
-                        mandatory:
-                            label: 'Enabled and mandatory'
+                    label: 'Enable description field'
+                    type: checkbox
+                    onoff: true
                     side_note: |
                         This allows administrators to enter a description meta tag for content items,
                         which is useful for giving search engines information about the page. 
+                    redraw_onchange: true
+                description_field_mandatory:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: checkbox
+                    label: Mandatory
                 keywords_field:
-                    label: 'Keywords field:'
-                    type: radios
-                    cols: 3
-                    values:
-                        hidden:
-                            label: 'Disabled'
-                        optional:
-                            label: 'Enabled'
-                        mandatory:
-                            label: 'Enabled and mandatory (not recommended)'
+                    label: 'Enable keywords field'
+                    type: checkbox
+                    onoff: true
                     side_note: |
                         This allows administrators to enter a keywords meta tag for content items.
                         Search engines usually disregard this meta tag, but it can help with on-site searching.
+                    redraw_onchange: true
+                keywords_field_mandatory:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: checkbox
+                    label: Mandatory
                 release_date_field:
-                    label: 'Release date field:'
-                    type: radios
-                    cols: 3
-                    values:
-                        hidden:
-                            label: 'Disabled'
-                        optional:
-                            label: 'Enabled'
-                        mandatory:
-                            label: 'Enabled and mandatory'
+                    label: 'Enable release date field'
+                    type: checkbox
+                    onoff: true
                     side_note: |
                         This allows administrators to give content items a &quot;publication date&quot;.
                         This will appear on the page itself and in a Content Summary List that lists the content item
                         (subject to appropriate plugin settings).
                         Recommended for news, blog or other date-sensitive content.
+                    redraw_onchange: true
+                release_date_field_mandatory:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: checkbox
+                    label: Mandatory
+                    #This setting is hidden for HTML, Event, Document, Picture, Video and Audio content types.
+                    redraw_onchange: true
+                auto_set_release_date:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Set release date when publishing if not already set'
+                    type: checkbox
+                    visible_if: (lib.value('release_date_field') && !lib.value('release_date_field_mandatory'))
                 writer_field:
-                    label: 'Writer field:'
-                    type: radios
-                    cols: 3
-                    values:
-                        hidden:
-                            label: 'Disabled'
-                        optional:
-                            label: 'Enabled'
-                        mandatory:
-                            label: 'Enabled and mandatory'
+                    label: 'Enable writer profile'
+                    type: checkbox
+                    onoff: true
                     side_note: "Allows administrators to save their name as writer of a content item (although the name may be edited). For example, use this for blog content items."
+                    redraw_onchange: true
+                writer_field_mandatory:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: checkbox
+                    label: Mandatory
                 summary_field:
-                    label: 'Content summary:'
-                    type: radios
-                    cols: 3
-                    values:
-                        hidden:
-                            label: 'Disabled'
-                        optional:
-                            label: 'Enabled'
-                        mandatory:
-                            label: 'Enabled and mandatory'
+                    label: 'Enable summary field'
+                    type: checkbox
+                    onoff: true
                     side_note: "This allows administrators to save a WYSIWYG summary of the content item. Summaries are usually displayed by Content Summary List plugins. For example, use this for showing a summary of a news content item."
                     redraw_onchange: true
-                enable_summary_auto_update:
-                    label: 'Enable auto-update of summaries'
-                    type: checkbox
-                    visible_if: "zenarioAB.value('summary_field') != 'hidden'"
+                summary_field_mandatory:
                     indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: checkbox
+                    label: Mandatory
+                enable_summary_auto_update:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: checkbox
+                    label: 'Enable auto-update of summaries'
                 allow_pinned_content:
                     label: 'Allow content items to be pinned'
-                    type: radios
-                    cols: 3
-                    values:
-                        0:
-                            label: "Disabled"
-                        1:
-                            label: "Enabled"
+                    type: checkbox
+                    onoff: true
                     side_note: 'Pinned content items always appear first on content summary lists.'

@@ -1029,3 +1029,158 @@ if (ze\dbAdm::needRevision(53803)) {
 
 	ze\dbAdm::revision(53803);
 }
+
+//Writer profiles: create writer profiles for admins
+//and update the content item values to use the profile instead of admin ID.
+if (ze\dbAdm::needRevision(54404)) {
+	//Get a list of admins used as content item writers.
+	$sql = "
+		SELECT DISTINCT a.id
+		FROM " . DB_PREFIX . "content_item_versions v
+		INNER JOIN " . DB_PREFIX . "content_items ci
+			ON ci.id = v.id
+			AND ci.type = v.type
+		INNER JOIN " . DB_PREFIX . "admins a
+			ON a.id = v.writer_id
+		WHERE ci.status IN('published', 'published_with_draft')";
+	$result = ze\sql::select($sql);
+	$adminWriters = ze\sql::fetchValues($result);
+
+	if (is_array($adminWriters) && count($adminWriters) > 0) {
+		//Create writer profiles for these admins.
+		$adminWriterProfiles = [];
+
+		foreach ($adminWriters as $index => $adminId) {
+			$adminDetails = ze\admin::details($adminId);
+
+			$createdInfo = [];
+			ze\admin::setLastUpdated($createdInfo, true);
+
+			$writerProfileId = ze\row::set(
+				'writer_profiles',
+				[
+					'admin_id' => (int) $adminId,
+					'first_name' => ze\escape::sql(($adminDetails['first_name'] ?? '')),
+					'last_name' => ze\escape::sql(($adminDetails['last_name'] ?? '')),
+					'email' => ze\escape::sql(($adminDetails['email'] ?? '')),
+					'type' => 'administrator',
+					'created' => $createdInfo['created'],
+					'created_admin_id' => $createdInfo['created_admin_id']
+				],
+				[]
+			);
+
+			$adminWriterProfiles[$adminId] = $writerProfileId;
+		}
+
+		//Update the content item metadata to use the new writer profile instead of admin ID.
+		if (count($adminWriterProfiles) > 0) {
+			$sql = "
+				SELECT v.id, v.type, v.version, v.writer_id
+				FROM " . DB_PREFIX . "content_item_versions v
+				INNER JOIN " . DB_PREFIX . "content_items ci
+					ON ci.id = v.id
+					AND ci.type = v.type
+				WHERE v.writer_id IN (" . ze\escape::in($adminWriters) . ")
+				AND ci.status IN('published', 'published_with_draft')";
+			$result = ze\sql::select($sql);
+
+			while ($row = ze\sql::fetchAssoc($result)) {
+				ze\row::set(
+					'content_item_versions',
+					[
+						'writer_id' => (int) $adminWriterProfiles[$row['writer_id']]
+					],
+					[
+						'id' => $row['id'],
+						'type' => $row['type'],
+						'version' => $row['version'],
+						'writer_id' => $row['writer_id']
+					]
+				);
+			}
+		}
+	}
+
+	//Afterwards, remove dangling cross-references.
+	$sql = "
+		UPDATE " . DB_PREFIX . "content_item_versions v
+		INNER JOIN " . DB_PREFIX . "content_items ci
+			ON ci.id = v.id
+			AND ci.type = v.type
+		SET v.writer_id = 0
+		WHERE ci.status NOT IN('published', 'published_with_draft')";
+	$result = ze\sql::update($sql);
+
+	ze\dbAdm::revision(54404);
+}
+
+//In 9.2, there was a new plugin setting and 1 removed framework for Multiple Image Container plugin.
+//This logic will set the framework to standard, and enable the relevant setting.
+if (ze\dbAdm::needRevision(54631)) {
+	$module = 'zenario_multiple_image_container';
+	if (ze\module::isRunning($module)) {
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
+
+		//Non-nested plugins
+		$pluginInstancesSql = '
+			SELECT id, framework
+			FROM ' . DB_PREFIX . 'plugin_instances
+			WHERE module_id = ' . (int)$moduleId . '
+			AND framework = "image_then_title"';
+		$pluginInstancesResult = \ze\sql::select($pluginInstancesSql);
+
+		while ($row = \ze\sql::fetchAssoc($pluginInstancesResult)) {
+			ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => $row['id'], 'egg_id' => 0, 'name' => 'show_caption_above_thumbnail']);
+			ze\row::set('plugin_instances', ['framework' => 'standard'], ['id' => $row['id']]);
+		}
+		
+		//Nested plugins
+		$nestedPluginInstancesSql = '
+			SELECT instance_id, id, framework
+			FROM ' . DB_PREFIX . 'nested_plugins
+			WHERE module_id = ' . (int)$moduleId . '
+			AND framework = "image_then_title"';
+		$nestedPluginsResult = \ze\sql::select($nestedPluginInstancesSql);
+
+		while ($row = \ze\sql::fetchAssoc($nestedPluginsResult)) {
+			ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => $row['instance_id'], 'egg_id' => $row['id'], 'name' => 'show_caption_above_thumbnail']);
+			ze\row::set('nested_plugins', ['framework' => 'standard'], ['instance_id' => $row['instance_id'], 'id' => $row['id']]);
+		}
+	}
+
+	ze\dbAdm::revision(54631);
+}
+
+//Fix blank phrases in Extranet Base Login module
+if (ze\dbAdm::needRevision(54801)) {
+	$module = 'zenario_extranet';
+	if (ze\module::isRunning($module)) {
+		$defaultLangId = ze::$defaultLang;
+
+		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+
+		if (!empty($instances) && is_array($instances)) {
+			foreach ($instances as $instance) {
+				foreach ([
+					'invalid_email_error_text' => "Your email address didn't appear to be in a valid format.",		
+					'screen_name_required_error_text' => "Please enter your screen name.",		
+					'email_address_required_error_text' => "Please enter your email address.",			
+					'password_required_error_text' => "Please enter your password.",		
+					'no_new_password_error_text' => "Please enter new password.",
+					'no_new_repeat_password_error_text' => "Please repeat your new password."
+				] as $fieldName => $value) {
+					if (isset($instance['settings'][$fieldName]) && !$instance['settings'][$fieldName]) {
+						ze\row::update(
+							'plugin_settings',
+							['value' => ze\escape::sql($value)],
+							['name' => ze\escape::sql($fieldName), 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
+						);
+					}
+				}
+			}
+		}
+	}
+
+	ze\dbAdm::revision(54801);
+}

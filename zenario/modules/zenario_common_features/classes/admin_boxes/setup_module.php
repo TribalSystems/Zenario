@@ -72,6 +72,14 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 		$box['tabs']['confirm']['hidden'] = false;
 		$box['tabs']['confirm']['fields']['module_start_desc']['hidden'] = false;
 		$box['tabs']['confirm']['fields']['module_start_desc']['snippet']['p'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
+
+		$desc = false;
+		if (ze\moduleAdm::loadDescription($module['class_name'], $desc)) {
+			$box['tabs']['confirm']['fields']['module_description_or_help']['snippet']['html'] = '<div class="zenario_fbInfo">';
+			$box['tabs']['confirm']['fields']['module_description_or_help']['snippet']['html'] .= $desc['description'];
+			$box['tabs']['confirm']['fields']['module_description_or_help']['snippet']['html'] .= '</div>';
+			$box['tabs']['confirm']['fields']['module_description_or_help']['hidden'] = false;
+		}
 		
 		
 		$perms = $labels = [];
@@ -116,7 +124,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 					ze\admin::phrase('Administrators with &quot;all permissions&quot; ([[n]] people) will be able to use the module. For control over individual administrators, please go to the <a href="[[link]]" target="blank">Administrators panel</a>.',
 						[
 							'n' => $countOfAdminsWithAllPerms,
-							'link' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__users/panels/administrators')
+							'link' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__administration/panels/administrators')
 						]
 					);
 			}

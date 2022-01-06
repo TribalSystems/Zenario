@@ -305,11 +305,11 @@ zenario__layouts:
                     hide_in_select_mode: true
                     label: Restore
                     multiple_select: true
-                    multiple_select_tooltip: Restore the selected Layouts
+                    multiple_select_tooltip: Restore selected Layouts
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to restore the "[[code]] [[name]]" Layout?'
-                            multiple_select_message: Are you sure you wish to restore the selected Layouts?
+                            message: 'Are you sure you wish to restore the layout "[[code]] [[name]]"?'
+                            multiple_select_message: Are you sure you wish to restore the selected layouts?
                             button_message: Restore
                             cancel_button_message: Cancel
                             message_type: warning
@@ -321,20 +321,20 @@ zenario__layouts:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_TEMPLATE
                     hide_in_select_mode: true
-                    label: Archive
+                    label: Retire
                     multiple_select: true
-                    multiple_select_tooltip: Archive the selected layouts
+                    multiple_select_tooltip: Retire selected layouts
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to archive the "[[code]] [[name]]" layout?
+                                Are you sure you wish to retire the "[[code]] [[name]]" layout?
                                                             
-                                                            This action will not affect existing content items using this layout, but you will no longer be able to select it.
+                                It will no longer be possible to choose this layout when making new content items, but the change will not affect existing content items that use it.
                             multiple_select_message: |
-                                Are you sure you wish to archive the selected layouts?
+                                Are you sure you wish to retire the selected layouts?
                                                             
-                                                            This action will not affect existing content items using these layouts, but you will no longer be able to select them.
-                            button_message: Archive
+                                It will no longer be possible to choose these layouts when making new content items, but the change will not affect existing content items that use them.
+                            button_message: Retire
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
@@ -345,7 +345,7 @@ zenario__layouts:
                         !zenario.engToBoolean(item.archived)
                     disabled_if_for_any_selected_items: |
                         zenario.engToBoolean(item.default)
-                    disabled_tooltip: 'You cannot archive a layout that is the default layout for a content type.'
+                    disabled_tooltip: 'You cannot retire a layout that is the default layout for a content type.'
                 delete:
                     priv: _PRIV_EDIT_TEMPLATE
                     label: Delete
@@ -365,4 +365,4 @@ zenario__layouts:
                         deletable: false
                     disabled_if_for_any_selected_items: |
                         zenario.engToBoolean(item.delete_disabled)
-                    disabled_tooltip: 'You cannot delete a layout that is the default layout for a content type or if the layout is used by content items.'
+                    disabled_tooltip: 'You cannot delete a layout if it is the default layout for a content type, or if the layout is used by content items.'

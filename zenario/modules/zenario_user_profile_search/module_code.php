@@ -162,7 +162,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 			
 			$result = ze\sql::select($sql);
 			$options = [];
-			$options[0] = ['id' => 0, 'name' => $this->phrase('_ANYWHERE_IN_THE_WORLD')];
+			$options[0] = ['id' => 0, 'name' => $this->phrase('Anywhere in the world')];
 			while($row = ze\sql::fetchAssoc($result)){
 				$options[$row['id']] = $row;
 			}

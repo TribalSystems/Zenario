@@ -238,7 +238,7 @@ zenario__content:
             collection_buttons:
                 categories:
                     hidden: true
-                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    priv: _PRIV_EDIT_DRAFT
                     label: Change categories
                     admin_box:
                         path: zenario_content_categories
@@ -258,8 +258,10 @@ zenario__content:
                         zenario.engToBoolean(item.frontend_link)
             item_buttons:
                 settings:
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: Properties
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
+                    label: Edit content item
                     admin_box:
                         path: zenario_content
                     without_columns_set:
@@ -275,7 +277,6 @@ zenario__content:
                 view_image:
                     parent: view_dropdown
                     label: View picture
-                    tooltip: View Picture
                     popout:
                         href: 'zenario/file.php?usage=content&popout=1'
                         options:
@@ -305,7 +306,7 @@ zenario__content:
                     parent: view_dropdown
                     hidden: true
                 layout:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
@@ -317,7 +318,9 @@ zenario__content:
                         ghost: true
                 alias:
                     parent: action_dropdown
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
                     label: Edit alias
                     admin_box:
                         path: zenario_alias
@@ -325,7 +328,7 @@ zenario__content:
                         ghost: true
                 create_translation:
                     parent: action_dropdown
-                    priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     label: |
@@ -339,7 +342,7 @@ zenario__content:
                         ghost: true
                 add_existing_translation_to_chain:
                     parent: action_dropdown
-                    priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
@@ -358,7 +361,7 @@ zenario__content:
                         ajax:
                             confirm:
                                 message: |
-                                    Are you sure you wish to add this content item to the chain?
+                                    Add this content item to the translation chain?
                                 button_message: Add
                                 cancel_button_message: Cancel
                                 message_type: warning
@@ -366,7 +369,7 @@ zenario__content:
                                 add_existing_translation_to_chain: 1
                 remove_translation_from_chain__identical_alias:
                     parent: action_dropdown
-                    priv: _PRIV_DELETE_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
@@ -389,7 +392,7 @@ zenario__content:
                             remove_translation_from_chain: 1
                 remove_translation_from_chain__non_identical_alias:
                     parent: action_dropdown
-                    priv: _PRIV_DELETE_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     without_columns_set:
@@ -453,7 +456,7 @@ zenario__content:
                     admin_box:
                         path: zenario_publish
                 delete:
-                    priv: _PRIV_DELETE_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                         && item.id != item.equiv_id

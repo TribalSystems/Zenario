@@ -341,9 +341,9 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			unset($fields['image_and_link/mobile_behaviour']['note_below']);
 
 			if ($values['image_and_link/advanced_behaviour'] == 'use_rollover') {
-				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP images will be generated (with a fallback for browsers not supporting WebP)");
+				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP images will be generated, with fallback for browsers not supporting WebP.");
 			} else {
-				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP image will be generated (with a fallback for browsers not supporting WebP)");
+				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP image will be generated, with fallback for browsers not supporting WebP.");
 			}
 		}
 		

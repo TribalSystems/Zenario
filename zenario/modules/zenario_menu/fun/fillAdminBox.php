@@ -74,6 +74,12 @@ switch ($path) {
 			unset($box['tabs']['first_tab']['fields']['menu_number_of_levels']['values']['1_full_width']);
 			unset($box['tabs']['first_tab']['fields']['number_of_columns_full_width']);
 		}
+
+		if ($box['module_class_name'] != 'zenario_menu') {
+			unset($fields['first_tab/limit_initial_level_1_menu_nodes_checkbox']);
+			unset($fields['first_tab/limit_initial_level_1_menu_nodes']);
+			unset($fields['first_tab/text_for_more_button']);
+		}
 		
 		break;
 }

@@ -16,13 +16,15 @@ zenario__content:
                 privacy:
                     ord: 3.1
                     parent: property_dropdown
-                    priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+                    priv: _PRIV_EDIT_DRAFT
                     label: Change permissions
                     multiple_select: true
                     admin_box:
                         path: zenario_content_privacy
                     without_columns_set:
                         traits.ghost: true
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
                 
                 user_access_log:
                     priv: _PRIV_VIEW_USER

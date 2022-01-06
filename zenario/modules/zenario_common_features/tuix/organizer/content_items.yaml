@@ -76,14 +76,17 @@ zenario__content:
                     column: language_id
                     value: ''
                     remove_filter: true
-                layout:
-                    label: 'All layouts'
-                all_layouts:
-                    parent: layout
-                    label: 'All layouts'
-                    column: layout_id
+                content_type:
+                    label: 'All content types'
+                all_content_types:
+                    parent: content_type
+                    ord: 1
+                    label: 'All content types'
+                    column: type
                     value: ''
                     remove_filter: true
+                #All enabled content types will appear below.
+                #The list of values is populated in the PHP class.
                     
                 
             refiners:
@@ -480,7 +483,10 @@ zenario__content:
                 writer_name:
                     ord: 27
                     title: Writer name
-                    db_column: v.writer_name
+                    table_join: |
+                        LEFT JOIN [[DB_PREFIX]]writer_profiles AS wp
+                            ON wp.id = v.writer_id
+                    db_column: CONCAT(wp.first_name, " ", wp.last_name)
                     searchable: true
                 archives_exist:
                     ord: 28
@@ -576,7 +582,7 @@ zenario__content:
                     label: New
            
                 create:
-                    priv: _PRIV_CREATE_FIRST_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     hide_in_select_mode: true
                     hide_on_filter: true
                     css_class: zenario_create_a_new
@@ -643,9 +649,8 @@ zenario__content:
                         path: zenario_content_type_details
                         key:
                             id: ''
-                
-                settings_administration:
-                    priv: _PRIV_VIEW_SITE_SETTING
+                            
+                settings_ctype_list:
                     parent: settings_dropdown
                     hide_in_select_mode: true
                     hide_on_refiner: &hide_settings_on_these_refiners
@@ -669,16 +674,6 @@ zenario__content:
                         zenario__locations__create_content: true
                         group_members: true
                         form_id: true
-                    label: Settings for content item administration
-                    admin_box:
-                        path: site_settings
-                        key:
-                            id: administration
-                            
-                settings_ctype_list:
-                    parent: settings_dropdown
-                    hide_in_select_mode: true
-                    hide_on_refiner: *hide_settings_on_these_refiners
                     label: Enable more content types
                     link:
                         path: zenario__modules/panels/modules~-zenario_ctype
@@ -704,6 +699,11 @@ zenario__content:
                     tooltip: "This content item is not in the menu (an orphan)"
                     visible_if: >
                         (item.menunodecounter == 0)
+                menu_text_missing:
+                    css_class: zenario_not_at_menu
+                    tooltip: "This content item is in the menu, but the menu text is missing"
+                    visible_if: >
+                        (item.menunodecounter == 'menu_node_text_missing')
                 one_menu_linked:
                     css_class: zenario_at_menu_unique
                     tooltip: "This content item is in the menu"
@@ -720,7 +720,7 @@ zenario__content:
                     label: |
                         [[layout]]
                     admin_box:
-                        priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                        priv: _PRIV_EDIT_DRAFT
                         path: zenario_content_layout
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)                        
@@ -734,18 +734,21 @@ zenario__content:
                     css_class: privacy_inline_button
                     tooltip: "[[privacy]]"
                 pinned:
+                    ord: privacy.1
                     css_class: pinned
                     tooltip: "This content item is pinned"
                     admin_box:
                         path: zenario_content
                     visible_if: item.pinned == 1
                 not_pinned:
+                    ord: privacy.1
                     css_class: not_pinned
                     tooltip: "This content item is not pinned"
                     admin_box:
                         path: zenario_content
                     visible_if: item.pinned == 0
                 no_categories:
+                    ord: privacy.2
                     css_class: no_categories
                     tooltip: "Content item is not in any categories"
                     admin_box:
@@ -753,6 +756,7 @@ zenario__content:
                     visible_if: >
                         (item.number_of_categories == 0)
                 one_or_more_categories:
+                    ord: privacy.2
                     css_class: one_or_more_categories
                     tooltip: "Content item is in one or more categories"
                     admin_box:
@@ -775,7 +779,9 @@ zenario__content:
             
             item_buttons:
                 settings:
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
                     label: Edit content item
                     admin_box:
                         path: zenario_content
@@ -789,7 +795,9 @@ zenario__content:
                 
                 alias:
                     parent: property_dropdown
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
                     label: Edit alias
                     admin_box:
                         path: zenario_alias
@@ -813,7 +821,7 @@ zenario__content:
                             mode: foot
                                     
                 layout:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if: |
                         ((window.__selectedType = undefined) || true)
                     visible_if_for_all_selected_items: |
@@ -1046,7 +1054,9 @@ zenario__content:
                             unlock: 1
                 
                 categories_add:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
                     parent: category_dropdown
                     label: Add to categories
                     multiple_select_only: true
@@ -1059,7 +1069,9 @@ zenario__content:
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
                 categories:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
                     parent: category_dropdown
                     label: Change categories
                     
@@ -1071,7 +1083,9 @@ zenario__content:
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
                 categories_remove:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
                     parent: category_dropdown
                     label: Remove from categories
                     multiple_select_only: true
@@ -1130,7 +1144,12 @@ zenario__content:
                         hidden: true
                 duplicate:
                     parent: action_dropdown
-                    priv: _PRIV_CREATE_FIRST_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
+                    # For limited admins: if the create button is not enabled, don't enable
+                    # the duplicate button either
+                    visible_if: |
+                        !zenarioA.adminHasSpecificPerms
+                        || zenarioO.tuix.collection_buttons.create
                     label: Duplicate
                     admin_box:
                         path: zenario_content
@@ -1144,7 +1163,7 @@ zenario__content:
                 
                 create_draft_by_copying:
                     parent: action_dropdown
-                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
@@ -1172,7 +1191,7 @@ zenario__content:
                                 create_draft_by_copying: 1
                 create_draft_by_overwriting:
                     parent: action_dropdown
-                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     with_columns_set:
@@ -1225,7 +1244,7 @@ zenario__content:
                             delete_archives: 1
                 delete:
                     parent: action_dropdown
-                    priv: _PRIV_DELETE_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
@@ -1242,7 +1261,7 @@ zenario__content:
                         path: zenario_delete_draft
                 delete_media_content_item:
                     parent: action_dropdown
-                    priv: _PRIV_DELETE_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                         && (item.type == 'audio' || item.type == 'document' || item.type == 'picture' || item.type == 'video')
@@ -1306,7 +1325,7 @@ zenario__content:
                         path: zenario_trash
                 redraft:
                     parent: action_dropdown
-                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    priv: _PRIV_EDIT_DRAFT
                     label: Re-draft
                     css_class: create label_to_the_left
                     multiple_select: true

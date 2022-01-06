@@ -75,11 +75,7 @@
 #zenario_at #zenario_at_lower_section,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button {
 	margin: 0 auto;
-	max-width: 1110px;
-}
-
-.zenario_at_content.zenario_at_toolbar {
-	max-width:1060px !important;
+	max-width: 1200px;
 }
 
 #zenario_at .zenario_at_content:before, 
@@ -260,8 +256,10 @@
 }
 
 #zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li.zenario_toolbar_toggle a {
-	height: 20px;
-	padding:2px 8px 0;
+	width:26px;
+	height: 22px;
+	padding:0;
+	line-height:20px;
 	text-align:center;
 	color:#7F7F7F;	
 	-webkit-border-radius: 2px;
@@ -292,16 +290,34 @@
 	color:#FFF;
 }
 
-#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_grid_on span,
-#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_grid_off span {
-	display:inline-block;
-	min-width:56px;
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_grid_off a,
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_grid_on a,
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_empty_slots_off a,
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_empty_slots_on a {
+	background-repeat:no-repeat;
+	background-size: 16px auto;
+	background-position: center center;
 }
 
-#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_empty_slots_on span,
-#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_empty_slots_off span {
-	display:inline-block;
-	min-width:100px;
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_grid_off a {
+	background-image:url('../admin/images/icon-show-grid.svg');
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_grid_on a {
+	background-image:url('../admin/images/icon-hide-grid.svg');
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_empty_slots_off a {
+	background-image:url('../admin/images/icon-show-slot.svg');
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_empty_slots_on a {
+	background-image:url('../admin/images/icon-hide-slot.svg');
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_grid_off a:hover,
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li#zenario_at_button__show_empty_slots_off:hover a {
+	background-color:#fbf290;
 }
 
 #zenario_at .zenario_at_toolbar_container_top .zenario_at_menu_node ul .zenario_create_a_new a,
@@ -580,14 +596,14 @@
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .pinned a {
-	background-image:url('../admin/images/icon-pin-dark-grey.svg');
-	background-size:auto 16px;
+	background-image:url('../admin/images/icon-thumbtack-red.svg');
+	background-size:auto 14px;
 	background-color:#c5e8f4;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .not_pinned a {
-	background-image:url('../admin/images/icon-pin-grey-medium.svg');
-	background-size:auto 16px;
+	background-image:url('../admin/images/icon-thumbtack-dark-grey.svg');
+	background-size:auto 14px;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle .zenario_middle_inner {
@@ -660,11 +676,6 @@
 	background-size:16px 16px;
 }
 
-#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab .zenario_middle .zenario_middle_inner {
-	background-position:5px center;
-	background-size:28px 28px;
-}
-
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .zenario_middle_child .zenario_middle_inner {
 	padding-left:28px;
 	background-position:7px center;
@@ -720,17 +731,17 @@
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab .zenario_middle .zenario_middle_inner {
-	background-image:url('../admin/images/icon-menu-off-state.svg');
+	background-image:url('../admin/images/icon-menu-node-light-grey.svg');
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab .zenario_middle .zenario_middle_inner:hover {
-	background-image:url('../admin/images/icon-menu-hover-state.svg');
+	background-image:url('../admin/images/icon-menu-node-grey.svg');
 }
 
 #zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_middle_inner,
 #zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on .zenario_middle .zenario_middle_inner,
 #zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on .zenario_middle .zenario_middle_inner:hover {
-	background-image:url('../admin/images/icon-menu-on-state-v2.svg');
+	background-image:url('../admin/images/icon-menu-node-blue-v2.svg');
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_at_tab_with_children .zenario_middle > .zenario_middle_inner {
@@ -772,7 +783,6 @@
 }
 
 body.zenario_pageMode_edit #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
-body.zenario_pageMode_item #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
 body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
 body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner {
 	/* To style */
@@ -1264,6 +1274,44 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 #zenario_at ul li li,
 #zenario_at ul li.zenario_at_button_with_children li a {
 	background:none;
+}
+
+/* Image button */
+
+#zenario_at ul li#zenario_at_button__view_items_images a {
+	padding-left:0;
+}
+
+#zenario_at ul li#zenario_at_button__view_items_images span.content_item_images {
+	float:left;
+	position:relative;
+	height:41px;
+	width:24px;
+	margin-right:8px;
+	margin-left:8px;
+}
+
+#zenario_at ul li#zenario_at_button__view_items_images span.content_item_images.has_images_count {
+	margin-right:15px;
+}
+
+#zenario_at ul li#zenario_at_button__view_items_images span.content_item_images span.content_item_no_image {
+	display: inline-block;
+	width: 100%;
+	height: 100%;
+	background:url('../admin/images/icon-image-library-grey') no-repeat center 11px / 18px auto;
+}
+
+#zenario_at ul li#zenario_at_button__view_items_images span.content_item_images img {
+	max-width:100%;
+	height:auto;
+	margin-top:7px;
+}
+
+#zenario_at ul li#zenario_at_button__view_items_images span.content_item_images span.zenario_item_record_count.inline_images_count {
+    top: 4px;
+    right: -12px;
+    left:auto;
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_menu_section {
@@ -1837,17 +1885,19 @@ div.zenario_admin_toolbar div.zenario_linkbar div.zenario_right {
 }
 
 div.zenario_grid_overlay_view {
-	position = 'absolute';
+	position: 'absolute';
 	height:100%;
-	opacity:0.1;
+	opacity:0.3;
 	z-index:901;
 	margin-top:0 !important;
 	padding-top:0 !important;
+	background-color:#8ba9ba;
 }
 
 div.zenario_grid_overlay_view .span {
 	height:100%;
-	background-color:#933;
+	background-color:#ced7dd;
+	
 }
 
 div.zenario_grid_overlay_view .row {
@@ -2080,6 +2130,107 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	height:25px;
 	top:5px;
 }
+
+
+/* Top left dropdown, second level, 2 columns */
+
+#zenario_at_top_left_menu ul li ul li > .zenario_attld_vertical_blocks {
+	opacity:0;
+	visibility:hidden;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks {
+	opacity:1;
+	visibility:visible;
+}
+
+#zenario_at_top_left_menu ul li ul li > .zenario_attld_vertical_blocks {
+	position:absolute;
+	top:0;
+	left:230px;
+	overflow:hidden;
+}
+
+#zenario_at_top_left_menu ul li ul li > .zenario_attld_vertical_blocks ul {
+	position:static;
+	margin:0;
+}
+
+#zenario_at_top_left_menu ul li.zenario_at_button_with_children .zenario_attld_vertical_blocks ul {
+	-webkit-box-shadow:none;
+	box-shadow:none;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block {
+	overflow:hidden;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block:nth-child(2) {
+	border-top:2px solid #000;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block .zenario_attld_horizontal_blocks {
+	overflow:hidden;
+	display:flex;
+}
+
+/* reset borders and set accordion to the type of blocks */
+
+#zenario_at_top_left_menu ul li ul li .zenario_attld_vertical_blocks ul li a, 
+#zenario_at_top_left_menu ul li ul li:first-child .zenario_attld_vertical_blocks ul li a {
+	border-top:0;
+}
+
+/* 1 and 2 sections, 1st section */
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block {
+	border-left:1px solid grey;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block:nth-child(1) {
+	border-top:1px solid grey;
+}
+
+/* 2 sections, 1st section */
+ 
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) {
+	background:#f3f3f3;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) ul li a {
+	border-top:1px solid grey;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) ul li:nth-child(1) a {
+	border-top:0;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) ul li:last-child a {
+	border-bottom:1px solid grey;
+}
+
+/* 2 sections, 1st section, 2 columns */
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) .zenario_attld_horizontal_blocks .zenario_attld_horizontal_block {
+	border-right:1px solid grey;
+}
+
+/* 	1 section,
+	2 sections, 2nd section */
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_1_vertical_block .zenario_attld_vertical_block ul li a,
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(2) ul li a {
+	border-bottom:1px solid grey;
+	border-right:1px solid grey;
+}
+
+#zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(2) {
+	position:relative;
+	top:-2px;
+}
+
+
+
 
 /* "Admin toolbar for ..." text */
 

@@ -30,6 +30,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze\module::isRunning('zenario_extranet')) {
+			$fields['data/user_status']['values']['active']['hidden'] = true;
+		}
+		
 		if (!empty($box['key']['tab'])) {
 			$box['tab'] = $box['key']['tab'];
 		}

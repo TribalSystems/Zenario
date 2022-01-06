@@ -38,7 +38,7 @@
 		$('#{{containerId}} .feature_title').html('<h2>{{title}}</h2>');
 		$('#{{containerId}} .feature_text').html('{{desc}}');
 		
-		{# Replace the currently displayed feature image #}
+		{# Replace the currently displayed featured image #}
 		var el = zenario.get('{{containerId}}_node_id_{{topLevelId}}_feature_img');
 		if (el) {
 			if (zenario.addBasePath('{{currentLevelImageLink}}') != el.src) {
@@ -57,7 +57,7 @@
 			{% endif %}
 		}
 		
-		{# Set the href of the feature image link to this menu node #}
+		{# Set the href of the featured image link to this menu node #}
 		{% if currentLevelDestUrl %}
 			$('#{{containerId}} .feature_image a').attr('href', '{{currentLevelDestUrl|e}}');
 		{% else %}
@@ -119,6 +119,7 @@
 					{% if node1.children %}has_child{% endif %}
 					{% if node1.css_class %}{{node1.css_class|e}}{% endif %}
 					zenario_menu_node
+					{% if node1.privacy and (node1.privacy != 'public') %}private{% endif %}
 				">
 					{% if not node1.active %}
 						<em class="zenario_inactive">
@@ -141,7 +142,7 @@
 						</em>
 					{% endif %}
 					{% if node1.descriptive_text %}
-						{{node1.descriptive_text}}
+						<span class="node_descriptive_text">{{node1.descriptive_text}}</span>
 					{% endif %}
 					{% if node1.children or nodeExtraProperties[node1.mID]['use_feature_image'] %}
 						<div class="columns_wrap">
@@ -171,6 +172,7 @@
 											{% if node2.children %}has_child{% endif %}
 											{% if node2.css_class %}{{node2.css_class|e}}{% endif %}
 											zenario_menu_node
+											{% if node2.privacy and (node2.privacy != 'public') %}private{% endif %}
 										"
 										{% if (nodeExtraProperties[node2.mID]['feature_image_link']) %}
 											{{self.addOnMouseOver(containerId|e, nodeExtraProperties[node2.mID], nodeExtraProperties[node1.mID], true)}}
@@ -193,7 +195,7 @@
 										</em>
 									{% endif %}
 									{% if node2.descriptive_text %}
-										{{node2.descriptive_text}}
+										<span class="node_descriptive_text">{{node2.descriptive_text}}</span>
 									{% endif %}
 									
 									</div>
@@ -216,6 +218,7 @@
 												{% if node3.css_class %}{{node3.css_class|e}}{% endif %}
 												{{firstNode}}
 												zenario_menu_node
+												{% if node3.privacy and (node3.privacy != 'public') %}private{% endif %}
 											"
 											{% if (nodeExtraProperties[node3.mID]['feature_image_link']) %}
 												{{self.addOnMouseOver(containerId|e, nodeExtraProperties[node3.mID], nodeExtraProperties[node1.mID], true)}}
@@ -239,7 +242,7 @@
 												</em>
 											{% endif %}
 											{% if node3.descriptive_text %}
-												{{node3.descriptive_text}}
+												<span class="node_descriptive_text">{{node3.descriptive_text}}</span>
 											{% endif %}
 											</div>
 										{% endif %}
@@ -278,21 +281,23 @@
 									{% endif %}
 								</div>
 								
-								<div class="feature_content">
-									<div class="feature_title">
-										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
-											<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
-										{% endif %}
-										<h2>
-											{{nodeExtraProperties[node1.mID]['title']|e}}
-										</h2>
-										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
-									</div>
+								{% if (nodeExtraProperties[node1.mID]['title']) or (nodeExtraProperties[node1.mID]['text']) %}
+									<div class="feature_content">
+										<div class="feature_title">
+											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
+												<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
+											{% endif %}
+											<h2>
+												{{nodeExtraProperties[node1.mID]['title']|e}}
+											</h2>
+											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
+										</div>
 								
-									<div class="feature_text">
-										{{nodeExtraProperties[node1.mID]['text']}}
+										<div class="feature_text">
+											{{nodeExtraProperties[node1.mID]['text']}}
+										</div>
 									</div>
-								</div>
+								{% endif %}
 							</div>
 						<div class="second_gallery_wrap">
 							{% if node1.image_id %}

@@ -4,6 +4,10 @@
 			<div>
 				<textarea rows="2" cols="40" class="zenario_info_box_value" readonly="readonly">{{m.value|escape}}</textarea>
 			</div>
+		<% } else if (m.type !== undefined && m.type == 'url') { %>
+			<div>
+				<a href="{{m.href|escape}}" target="_blank">{{m.value|escape}}</a>
+			</div>
 		<% } else { %>
 			<div>
 				<input class="zenario_info_box_value" type="text" readonly="readonly" value="{{m.value|escape}}"/>

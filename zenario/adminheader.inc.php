@@ -34,7 +34,7 @@
 if (!defined('CMS_ROOT')) {
 	$dirname = dirname($cwd = $argv[0] ?? $_SERVER['SCRIPT_FILENAME'] ?? '.');
 	
- 	//MacOS or Linux	//Windows
+	//MacOS or Linux	//Windows
 	if ($cwd[0] === '/' || ($cwd[1] === ':' && $cwd[2] === '/')) {
 		$cwd = $dirname. '/';
 	} else {
@@ -78,7 +78,13 @@ if (!ze\priv::check()) {
 	}
 
 } else {
-	
+	//If the admin's IP changes while they're still logged in, log them out.
+	if (empty($_SESSION['admin_ip_at_login']) || $_SESSION['admin_ip_at_login'] != ze\user::ip()) {
+		\ze\admin::unsetSession();
+		header('location: '. ze\link::protocol(). $_SERVER["HTTP_HOST"]. SUBDIRECTORY. 'admin.php?desturl='. urlencode($_SERVER['REQUEST_URI']));
+		exit;
+	}
+
 	//Load the current admin's settings
 	foreach (ze\row::getValues('admin_setting_defaults', 'default_value', []) as $adminSettingName => $adminSettingDefaultValue) {
 		ze::$adminSettings[$adminSettingName] = $adminSettingDefaultValue;

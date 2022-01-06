@@ -74,6 +74,15 @@ properties:
             but it cannot be suspended and it will not appear in Organizer.
             
             You can use this from version 7.2 onwards.
+    start_running_on_install:
+        type: boolean
+        description: >
+            If you set this property, the module will be flagged as running and installed if it is present in
+            the filesystem when the Zenario installer is run, or the site is reset.
+            
+            Note: this is not a very smart feature and won't check for any dependancies your module has.
+            If your module does have dependancies, you should also ensure that they are present in the
+            filesystem and also have the start_running_on_install set.
     for_use_in_twig:
         type: boolean
         description: >
@@ -418,6 +427,9 @@ properties:
                     description: >
                         The CMS will automatically create a new layout for your content type when
                         it is installed on a site, with this name.
+                        
+                        If your module has the <code>is_pluggable</code> property set, a library plugin
+                        from your module will be placed on this layout.
                 enable_summary_auto_update:
                     type: boolean
                     description: >
@@ -576,6 +588,12 @@ properties:
                         (effectively taking them offline without a warning).
                         
                         Set this if your module uses special pages, but they are supposed to be optional.
+                
+                allow_search:
+                    type: boolean
+                    description: >
+                        If you set this property to true, search modules will not exclude this special page
+                        from search results. The Privacy Policy special page is searchable by default.
                 
                 publish:
                     type: boolean

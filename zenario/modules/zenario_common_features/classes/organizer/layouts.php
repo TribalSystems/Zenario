@@ -38,8 +38,8 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		}
 		
 		if (isset($_GET['refiner__archived'])) {
-			$panel['title'] = ze\admin::phrase('Archived Layouts');
-			$panel['no_items_message'] = ze\admin::phrase('This is the graveyard for layouts that shouldn\'t be used for new content.');
+			$panel['title'] = ze\admin::phrase('Retired layouts');
+			$panel['no_items_message'] = ze\admin::phrase('Area for layouts used in the past that shouldn\'t be used again.');
 			$panel['item']['css_class'] = 'archived_layout';
 			
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__archived'];
@@ -196,7 +196,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			}
 			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
 		
-		//Archive a layout
+		//Archive/retire a layout
 		} elseif (($_POST['archive'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (!ze\row::exists('content_types', ['default_layout_id' => $id])) {

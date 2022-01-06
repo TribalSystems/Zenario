@@ -8,7 +8,7 @@
 		<% foreach (m.links as li => link) { %>
 			
 			<!-- For each one, draw it here here  -->
-			<div class="organizer_start_page_item" id="organizer_start_page_item__{{link.id|escape}}">
+			<div class="organizer_start_page_item zenario_item_record_count_parent" id="organizer_start_page_item__{{link.id|escape}}">
 				<a
 					<% if (link.href) { %>
 						href="{{link.href|escape}}"
@@ -21,7 +21,7 @@
 					<label class="organizer_start_page_item_title">{{link.title|escape}}</label>
 					<label class="organizer_start_page_item_text">{{link.text|escape}}</label>
 					<% if (link.recordCount) { %>
-						<span class="organizer_start_page_item_recordCount">{{link.recordCount|escape}}</span>
+						<span class="organizer_start_page_item_recordCount zenario_item_record_count">{{link.recordCount|escape}}</span>
 					<% } %>					
 				</a>
 			</div>

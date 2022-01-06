@@ -7,9 +7,12 @@ editions: ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
 description: |
-    <p>
-                    This module displays a country and language picker.
-                </p>
+    <p>This module displays a country picker to new visitors arriving at the site.</p>
+    <p>The choice of country determines both country ID and language ID in the PHP session, so that other parts of the site can display personalised content based on these choices.</p>
+    <p>When chosen, Zenario stores the IDs both in the session and in the country_id and user_lang cookies (provided the visitor allows cookies), so that the visitor should not need to see the picker on subsequent visits.</p>
+    <p>In order to change the list of countries and their languages, you need to edit the framework file for this module.</p>
+    <p>To make it appear, place a plugin of this module in a slot near the top of every layout of the site.<p>
+    <p>If the GeoIP module is running, the automatically-acquired country of the visitor's IP address will be shown before the list, for easy selection by the visitor.<p>
 category: management
 keywords: country, language
 

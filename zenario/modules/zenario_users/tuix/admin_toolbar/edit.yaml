@@ -6,7 +6,7 @@ sections:
             privacy:
                 ord: 3.1
                 parent: property_dropdown
-                priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+                priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Change permissions

@@ -56,11 +56,11 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 				$this->sections['Error'] = ['Error' => $this->phrase('Your image must be smaller than [[filesize]] [[unit]]', ['filesize'=>setting('max_content_image_filesize'), 'unit'=>setting('max_content_image_filesize_unit')])];
 			} elseif (empty($_FILES['extranet_upload_image']) || empty($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
-				$this->sections['Error'] = ['Error' => $this->phrase('_ERROR_NO_IMAGE_SELECTED')];
+				$this->sections['Error'] = ['Error' => $this->phrase('Please pick an image.')];
 			
 			} elseif (!ze\file::isImage($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
-				$this->sections['Error'] = ['Error' => $this->phrase('_ERROR_INVALID_FILE_TYPE')];
+				$this->sections['Error'] = ['Error' => $this->phrase('Please pick a JPEG, GIF or PNG image.')];
 			
 			} else {
 				$image = getimagesize($location = $_FILES['extranet_upload_image']['tmp_name']);
@@ -75,7 +75,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 					}
 				} else {
 					$this->sections['Errors'] = true;
-					$this->sections['Error'] = ['Error' => $this->phrase('_ERROR_YOUR_UPLOADED_IMAGE_WAS_TOO_SMALL_IMAGE_SHOULD_BE_AT_LEAST_X_PIXELS_WIDE_AND_X_PIXELS_HIGH', 
+					$this->sections['Error'] = ['Error' => $this->phrase('Your uploaded image was too small. Your image should be at least [[width]] pixels wide and [[height]] pixels high.', 
 																					[	'width' => $minWidth,
 																							'height' => $minHeight
 																						] 
@@ -97,10 +97,10 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		 	$this->mergeFields['Image_Src'] = htmlspecialchars($url);
 		 	$this->mergeFields['Image_Width'] = $width;
 		 	$this->mergeFields['Image_Height'] = $height;
-			$this->mergeFields['Upload_Button_Phrase'] = $this->phrase('_REPLACE');
+			$this->mergeFields['Upload_Button_Phrase'] = $this->phrase('Replace Image');
 		} else {
 			$this->sections['Existing_Image'] = false;
-			$this->mergeFields['Upload_Button_Phrase'] = $this->phrase('_ADD');
+			$this->mergeFields['Upload_Button_Phrase'] = $this->phrase('Upload your image');
 		}
 		
 		$this->mergeFields['Image_Title'] = $this->setting('title');

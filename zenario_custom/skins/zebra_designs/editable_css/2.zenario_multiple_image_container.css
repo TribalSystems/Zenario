@@ -1,0 +1,180 @@
+.zenario_multiple_image_container .banner_images {
+	overflow:hidden;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image {
+	text-align:center;
+	margin:20px 15px;
+}
+
+/* For 3 columns (each column 33%) uncomment the following */
+
+.zenario_multiple_image_container .banner_images .banner_image {
+	float:left;
+	width:calc(33% - 30px);
+}
+.zenario_multiple_image_container .banner_images .banner_image:nth-child(3n+1) {
+	clear:left;
+}
+
+/* For 4 columns (each column 25%) uncomment the following */
+/*
+.zenario_multiple_image_container .banner_images .banner_image {
+	float:left;
+	width:calc(25% - 30px);
+}
+.zenario_multiple_image_container .banner_images .banner_image:nth-child(4n+1) {
+	clear:left;
+}
+*/
+
+/* For 5 columns (each column 20%) uncomment the following */
+/*
+.zenario_multiple_image_container .banner_images .banner_image {
+	float:left;
+	width:calc(20% - 30px);
+}
+.zenario_multiple_image_container .banner_images .banner_image:nth-child(5n+1) {
+	clear:left;
+}
+*/
+
+.zenario_multiple_image_container .banner_images .banner_image a img {
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image:hover a img {
+	opacity:0.8;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image > span,
+.zenario_multiple_image_container .banner_images .banner_image > div {
+	text-align:left;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image span.download_link {
+	display:block;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image > a.cboxElement {
+    position: relative;
+	display: inline-block;
+    clear: both;
+    margin: auto;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image img {
+	margin-top:5px;
+	margin-bottom:5px;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image .title {
+	float:none;
+	color:#333;
+	line-height:1.4em;
+	margin-bottom:5px;
+	
+	overflow: hidden;
+   	text-overflow: ellipsis;
+   	display: -webkit-box;
+   	-webkit-line-clamp: 2; /* number of lines to show */
+   	-webkit-box-orient: vertical;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image .title,
+.zenario_multiple_image_container .banner_images .banner_image span.download_link,
+#colorbox.multiple_image_container #cboxTitle {
+	font-size:0.857em;
+}
+
+#colorbox.multiple_image_container #cboxTitle {
+	width:calc(100% - 20px);
+	line-height:1.2em;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image span.download_link {
+	padding-top:5px;
+	color:#2a98ce;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image span.uploaded_date {
+	display:block;
+	font-size:0.813em;
+	color:#888;
+}
+
+.zenario_multiple_image_container .banner_images .banner_image span.download_link:before,
+.zenario_multiple_image_container #download_images_links #download_images_link a:before {
+	font-family:"FontAwesome";
+	content: "\f019";
+	color:#2a98ce;
+}
+
+/* Download */
+
+.zenario_multiple_image_container .link_to_zip_download_page,
+.zenario_multiple_image_container #download_images_links #download_images_link {
+    background: #e8f0f4;
+    color:#000;
+	padding:10px 20px;
+}
+
+.zenario_multiple_image_container .link_to_zip_download_page {
+	overflow:hidden;    
+	padding-top:20px;
+}
+
+.zenario_multiple_image_container .link_to_zip_download_page > span,
+.zenario_multiple_image_container .link_to_zip_download_page > .prepare_data {
+	float:left;
+}
+
+.zenario_multiple_image_container .link_to_zip_download_page > .prepare_data .controls input[type="submit"] {
+	min-height: 35px;
+	line-height: 30px;
+	margin-left:8px;
+	position:relative;
+	top:-5px;
+}
+
+.zenario_multiple_image_container #download_images_links #download_images_link {
+	height:45px;
+	line-height:45px;
+}
+
+.zenario_multiple_image_container #download_images_links #download_images_link > a {
+	color:#2a98ce;    
+	display: inline-block;
+    margin-right: 8px;
+}
+
+.zenario_multiple_image_container #download_images_links #download_images_link a:before {
+	margin-left:8px;
+	margin-right:5px;
+}
+
+/* Colorbox popout
+------------------------------------------------------------------------------------------------- */
+
+#colorbox.multiple_image_container #cboxTitle {
+	text-overflow:initial;
+	white-space: normal;
+}
+
+#colorbox.multiple_image_container  #cboxTitle span.uploaded_date {
+	display:block;
+	padding-top:2px;
+	font-size:0.813em;
+	color:#ccc;
+}
+
+#colorbox.multiple_image_container  #cboxTitle span.download_link {
+	padding-bottom:5px;
+	display:inline-block;
+}
+
+#colorbox.multiple_image_container  #cboxTitle span.download_link a {
+	font-size:0.813em;
+	color:#FFF;
+}

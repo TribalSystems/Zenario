@@ -67,14 +67,13 @@ if ($level == 1) {
 
 $mrg = ['slotName' => $slotName];
 $controls['info']['slot_name_in_edit_mode']['label'] =
-$controls['info']['slot_name_in_item_mode']['label'] =
 $controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span>', $mrg);
 
 switch ($level) {
 	case 1:
-		$pageMode = ['item' => true];
+		$pageMode = ['edit' => true];
 		
-		$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
+		//$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
 		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this layout', $mrg);
 		
 		//Show the "in this slot" blurb when looking at the wrong layer and it needs to be made clear
@@ -100,12 +99,12 @@ switch ($level) {
 	case 2:
 		$pageMode = ['layout' => true];
 		
-		$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
+		$controls['info']['slot_name_in_edit_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
 		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
 		
 		//Only show the "in this slot" blurb when looking at the wrong layer and it needs to be made clear
 		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('This slot on this layout contains:');
-		$controls['info']['in_this_slot']['page_modes'] = ['item' => true];
+		$controls['info']['in_this_slot']['page_modes'] = ['edit' => true];
 		unset($controls['info']['in_this_slot']['hidden']);
 		
 		$couldChange = $canChange = ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT');
@@ -113,7 +112,7 @@ switch ($level) {
 		break;
 	
 	default:
-		$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
+		$controls['info']['slot_name_in_edit_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
 		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this layout', $mrg);
 		$couldChange = $canChange = false;
 		break;
@@ -157,7 +156,7 @@ if (!$moduleId) {
 		}
 	} else {
 		//Opaque slots
-		$controls['info']['slot_name_in_item_mode']['label'] =
+		$controls['info']['slot_name_in_edit_mode']['label'] =
 		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> set to show nothing on this content item', $mrg);
 		unset($controls['actions']['insert_reusable_on_item_layer'], $controls['re_move_place']['insert_reusable_on_item_layer']);
 		unset($controls['actions']['insert_nest_on_item_layer'], $controls['re_move_place']['insert_nest_on_item_layer']);
@@ -214,7 +213,7 @@ if (!$moduleId) {
 			$controls['actions']['settings']['label'] = $controls['actions']['settings']['locked_label'];
 		
 		} elseif (!ze\content::isDraft(ze::$status)) {
-			if (!ze\priv::check('_PRIV_CREATE_REVISION_DRAFT')) {
+			if (!ze\priv::check('_PRIV_EDIT_DRAFT')) {
 				$controls['actions']['settings']['label'] = $controls['actions']['settings']['label']['cant_make_draft'];
 			
 			} elseif (ze::$status == 'trashed') {
@@ -248,6 +247,30 @@ if (!$moduleId) {
 		$controls['actions']['convert_nest']['page_modes'] = $pageMode;
 	} else {
 		unset($controls['actions']['convert_nest']);
+	}
+	
+	//Show options to switch to the correct level to change the settings
+	if (!$canChange) {
+		unset($controls['actions']['switch_to_edit']);
+		unset($controls['actions']['switch_to_edit_settings']);
+		unset($controls['actions']['switch_to_layout']);
+	
+	} elseif ($isVersionControlled && $level == 2) {
+		unset($controls['actions']['switch_to_edit_settings']);
+		unset($controls['actions']['switch_to_layout']);
+	
+	} elseif ($level == 2) {
+		unset($controls['actions']['switch_to_edit']);
+		unset($controls['actions']['switch_to_edit_settings']);
+	
+	} elseif ($level == 1) {
+		unset($controls['actions']['switch_to_edit']);
+		unset($controls['actions']['switch_to_layout']);
+	
+	} else {
+		unset($controls['actions']['switch_to_edit']);
+		unset($controls['actions']['switch_to_edit_settings']);
+		unset($controls['actions']['switch_to_layout']);
 	}
 	
 	
@@ -402,4 +425,17 @@ if (ze::$locked) {
 	}
 } else {
 	unset($controls['info']['locked']);
+}
+
+
+
+//Attempt to show some useful messages explaining why you can't edit something
+if (ze::$locked) {
+	unset($controls['no_perms']['cant_design']);
+} else {
+	if (!ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
+		$controls['no_perms']['cant_edit']['label'] = ze\admin::phrase("You don't have designer permissions.");
+	} else {
+		unset($controls['no_perms']['cant_design']);
+	}
 }

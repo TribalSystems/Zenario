@@ -1,0 +1,50 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: videos
+    title: Editing settings for videos
+    tabs:
+        zenario_videos_manager__vimeo:
+            label: Vimeo
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                vimeo_access_token_link:
+                    label: "Vimeo access token:"
+                    snippet:
+                        html: ""
+                enable_vimeo_privacy_settings:
+                    site_setting:
+                        name: enable_vimeo_privacy_settings
+                    label: 'Enable Vimeo privacy settings'
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
+                    pre_field_html: |
+                        <div class="title"><label>Vimeo privacy settings:</label></div><br />
+                vimeo_privacy_settings:
+                    site_setting:
+                        name: vimeo_privacy_settings
+                    indent: 1
+                    label: 'Allow using these privacy settings:'
+                    type: checkboxes
+                    values:
+                        anybody:
+                            ord: 1
+                        disable:
+                            ord: 2
+                        nobody:
+                            ord: 3
+                        unlisted:
+                            ord: 4
+                    #Labels are set in php.
+                    visible_if: lib.value('enable_vimeo_privacy_settings')
+                    validation:
+                        required_if_not_hidden: 'Please select at least 1 privacy setting.'
+                video_language_is_mandatory:
+                    label: 'Video language is mandatory'
+                    site_setting:
+                        name: video_language_is_mandatory
+                    type: checkbox
+                    side_note: 'Please enable the "Document Envelopes FEA" module to use this setting.'

@@ -775,33 +775,6 @@ zenario_conductor.goBack = function(slot, confirmed) {
 
 
 
-
-//For super-users, open the FEA popout that shows information about the current slide layout
-zenario_conductor.initSlideInfoPopout = 
-zenario_plugin_nest.initSlideInfoPopout = function(parentContainerId, slideLayoutId, parent) {
-	
-	var slotName = zenario.getSlotnameFromEl(parentContainerId),
-		slot = zenario.slots[slotName],
-		cSlot = zenario_conductor.getSlot(slotName),
-		state = cSlot.state,
-		//vars = cSlot.vars[state] || {},
-		request = {
-			cID: zenario.cID,
-			cType: zenario.cType,
-			cVersion: zenario.cVersion,
-			state: state,
-			slotName: slotName,
-			instanceId: slot.instanceId,
-			slideId: slot.slideId,
-			slideLayoutId: slideLayoutId,
-			commands: JSON.stringify(_.keys(cSlot.commands))
-		};
-	
-	return zenario_abstract_fea.initPopout('zenario_plugin_nest', zenarioAWF, 'zenario_slide_info', 'slide_info', 'zenario_slide_info', parentContainerId, request, parent, true);
-};
-
-
-
 //I can't work out how to center-align the thing using CSS, so I'm using JavaScript to do it instead.
 zenario_plugin_nest.setSlideControlWidth = function(containerId) {
 	

@@ -43,7 +43,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				ze\priv::exitIfNot('_PRIV_VIEW_REUSABLE_PLUGIN');
 			}
 			
-			$values['details/use_slide_layout'] = $details['use_slide_layout'];
 			$values['details/invisible_in_nav'] = $details['invisible_in_nav'];
 			$values['details/show_back'] = $details['show_back'];
 			$values['details/no_choice_no_going_back'] = $details['no_choice_no_going_back'];
@@ -274,7 +273,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			'param_1' => '',
 			'param_2' => '',
 			'always_visible_to_admins' => 1,
-			'use_slide_layout' => '',
 			'show_back' => 0,
 			'no_choice_no_going_back' => 0,
 			'show_embed' => $values['details/show_embed'],
@@ -291,7 +289,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		if ($box['key']['usesConductor']) {
 			$details['global_command'] = $values['details/global_command'];
-			$details['use_slide_layout'] = $values['details/use_slide_layout'] ?: '';
 			
 			if ($details['show_back'] = $values['details/show_back']) {
 				$details['no_choice_no_going_back'] = $values['details/no_choice_no_going_back'];
