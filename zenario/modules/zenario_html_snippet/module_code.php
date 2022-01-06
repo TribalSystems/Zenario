@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -153,7 +153,17 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 				require_once CMS_ROOT. 'zenario/includes/js_minify.inc.php';
 				define('IGNORE_REVERTS', true);
 				define('RECOMPRESS_EVERYTHING', true);
-				$values['javascript/minified_javascript'] = minifyString(self::JS_PREFIX. $values['javascript/javascript']. self::JS_SUFFIX);
+				
+				//Call the minifier to compress
+				$script = minifyString(self::JS_PREFIX. $values['javascript/javascript']. self::JS_SUFFIX);
+				
+				//Manipulate the results a bit to account for the fact that we're trying to add
+				//a couple of variables at the end.
+				$script = trim($script);
+				$script = ze\ring::chopPrefix("'use strict';", $script, true);
+				$script = ze\ring::chopSuffix($script, ';', true);
+				
+				$values['javascript/minified_javascript'] = $script;
 			}
 			$fields['javascript/minify']['hidden'] =
 			$fields['javascript/minified_javascript']['hidden'] = false;

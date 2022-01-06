@@ -1150,7 +1150,7 @@ CREATE TABLE `[[DB_PREFIX]]smart_groups` (
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_aliases`;
 CREATE TABLE `[[DB_PREFIX]]spare_aliases` (
-  `alias` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
+  `alias` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
   `target_loc` enum('int','ext') NOT NULL DEFAULT 'int',
   `content_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii NOT NULL DEFAULT '',

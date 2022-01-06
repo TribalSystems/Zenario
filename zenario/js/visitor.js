@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -4010,7 +4010,7 @@ zenario.shrtNms = function(lib, wipeOldShortcuts) {
 			//if/when there are changes/new functions
 			
 			//if (shortName.length < name.length) {
-			//	libName = lib.globalName || '_';
+			//	var libName = lib.globalName || '_';
 			//	console.log("'" + libName + "." + name + "(' => '" + libName + "." + shortName + "(',");
 			//}
 		}

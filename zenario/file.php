@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -367,7 +367,8 @@ if ($getUploadedFileInCacheDir) {
 			} else
 			if ($file['mime_type'] == 'application/pdf'
 			 && !empty($_SERVER['HTTP_REFERER'])
-			 && strpos($_SERVER['HTTP_REFERER'], '/zenario/admin/') !== false) {
+			 && (strpos($_SERVER['HTTP_REFERER'], '/organizer.php') !== false
+			  || strpos($_SERVER['HTTP_REFERER'], '/zenario/admin/') !== false)) {
 			
 			//If this is not an image, and is not a PDF that is being downloaded from Organizer,
 			//attempt to symlink the file to the private directory rather than load it all into memory in php

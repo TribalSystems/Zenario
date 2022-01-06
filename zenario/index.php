@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+$methodCall = isset($_REQUEST['method_call'])? $_REQUEST['method_call'] : false;
 
 //Check to see if this file is being directly accessed, when the index.php file in the directory below should be used to access this file
 if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
@@ -51,14 +53,14 @@ if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 
 
 //RSS feeds and Sitemaps are handled by different scripts
-} elseif (isset($_GET['method_call'])) {
-	if ($_GET['method_call'] == 'showRSS') {
+} elseif ($methodCall !== false) {
+	if ($methodCall == 'showRSS') {
 		chdir('zenario');
 		require 'ajax.php';
 		exit;
 	
 	//Sitemaps are handled by Storekeeper
-	} elseif ($_GET['method_call'] == 'showSitemap') {
+	} elseif ($methodCall == 'showSitemap') {
 		chdir('zenario');
 		require 'sitemap.php';
 		exit;
@@ -152,8 +154,10 @@ $status = ze\content::getShowableContent($content, $chain, $version, $cID, $cTyp
 
 //Catch the case where someone who is not logged in is requesting a private page
 if ($status === ZENARIO_401_NOT_LOGGED_IN) {
-	//Set the destination so the Visitor can come back here when logged in
-	if ($content) {
+	//Set the destination so the Visitor can come back here when logged in.
+	//Note: Only record the page if it's a full page view with no $methodCall set.
+	//(I.e. not an AJAX request, RSS request, or in an iframe.)
+	if ($content && $methodCall === false) {
 		$_SESSION['destCID'] = $content['id'];
 		$_SESSION['destCType'] = $content['type'];
 		$_SESSION['destURL'] = ze\link::protocol(). ze\link::host(). $_SERVER['REQUEST_URI'];
@@ -229,7 +233,6 @@ $specificSlot = false;
 $specificInstance = false;
 $overrideSettings = false;
 $overrideFrameworkAndCSS = false;
-$methodCall = isset($_REQUEST['method_call'])? $_REQUEST['method_call'] : false;
 
 if (($methodCall == 'showSingleSlot' || $methodCall == 'showIframe')
  && (($_REQUEST['instanceId'] ?? false) || ($_REQUEST['slotName'] ?? false))) {
@@ -341,7 +344,11 @@ $canonicalURL = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, true, tru
 
 
 $specialPage = ze\content::isSpecialPage(ze::$cID, ze::$cType);
-if ($validDestURL = !$specialPage || $specialPage == 'zenario_home') {
+
+//As long as this isn't a special page, note down that this was the last page the user viewed.
+//Note: Only record the page if it's a full page view with no $methodCall set.
+//(I.e. not an AJAX request, RSS request, or in an iframe.)
+if ($methodCall === false && (!$specialPage || $specialPage == 'zenario_home')) {
 	$_SESSION['destCID'] = ze::$cID;
 	$_SESSION['destCType'] = ze::$cType;
 	$_SESSION['destURL'] = $canonicalURL;

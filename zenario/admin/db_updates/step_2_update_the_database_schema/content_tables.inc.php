@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1258,11 +1258,6 @@ _sql
 	WHERE custom_thumbnail_2_height = 0
 _sql
 
-);	ze\dbAdm::revision( 52501
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(255) CHARACTER SET utf8mb4 NOT NULL
-_sql
-
 
 //
 //	Zenario 9.0
@@ -1438,6 +1433,21 @@ _sql
 , <<<_sql
 	DELETE FROM `[[DB_PREFIX]]document_types`
 	WHERE `type` IN ('htm', 'html', 'htt', 'mhtml', 'stm', 'xhtml')
+_sql
+
+
+//Update the "alias" column to use utf8mb4.
+//However also cut the length down to 250 characters, just in case anyone is limited to 1,000 bytes in their key lengths.
+//Please note: this was backpatched to 9.1 and 9.2. However, this code should be safe to use more than once.
+);	ze\dbAdm::revision( 53905
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]spare_aliases`
+	SET `alias` = SUBSTRING(`alias`, 1, 250)
+	WHERE LENGTH(`alias`) > 250
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 
 );
