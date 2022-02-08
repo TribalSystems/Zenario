@@ -48,6 +48,7 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 	zenario_pro_features::openTagStart($isXML, $f, 'target');
 	zenario_pro_features::addAtt($isXML, $f, 'cID', ($targetCID ?: $cID));
 	zenario_pro_features::addAtt($isXML, $f, 'cType', ($targetCType ?: $cType));
+	zenario_pro_features::addAtt($isXML, $f, 'pinned', $version['pinned']);
 	zenario_pro_features::openTagEnd($isXML, $encodeHTMLAtt, $f);
 	zenario_pro_features::closeTag($isXML, $f, 'target');
 	

@@ -3934,12 +3934,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				break;
 			case 'attachment':
 				if ($value && ($fileId = static::getFieldStorableValue($field, $value))) {
-					$file = ze\row::get('files', ['filename'], $fileId);
+					$file = ze\row::get('files', ['filename', 'size'], $fileId);
 					if ($file) {
+						$sizeFormatted = ze\file::fileSizeConvert($file['size']);
+
 						if ($html && $includeDownloadLinks == 'visitor') {
-							return '<a href="' . htmlspecialchars(ze\file::link($fileId)) . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
+							return '<a href="' . htmlspecialchars(ze\file::link($fileId)) . '" target="_blank">' . htmlspecialchars($file['filename']) . ' (' . htmlspecialchars($sizeFormatted) . ')</a>';
 						} elseif ($html && $includeDownloadLinks == 'admin') {
-							return '<a href="' . htmlspecialchars(ze\link::absolute()) . 'zenario/file.php?adminDownload=1&id=' . (int)$fileId . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
+							return '<a href="' . htmlspecialchars(ze\link::absolute()) . 'zenario/file.php?adminDownload=1&id=' . (int)$fileId . '" target="_blank">' . htmlspecialchars($file['filename']) . ' (' . htmlspecialchars($sizeFormatted) . ')</a>';
 						} else {
 							$display = $file['filename'];
 						}
@@ -3953,15 +3955,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($value && ($fileIds = static::getFieldStorableValue($field, $value))) {
 					$fileList = [];
 					foreach (explode(',', $fileIds) as $fileId) {
-						$file = ze\row::get('files', ['filename'], $fileId);
-						if ($html && $includeDownloadLinks == 'visitor') {
-							$fileList[] = '<a href="' . htmlspecialchars(ze\file::link($fileId)) . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
-						} elseif ($html && $includeDownloadLinks == 'admin') {
-							$fileList[] = '<a href="' . htmlspecialchars(ze\link::absolute()) . 'zenario/file.php?adminDownload=1&id=' . (int)$fileId . '" target="_blank">' . htmlspecialchars($file['filename']) . '</a>';
-						} else {
-							$fileList[] = $file['filename'];
+						$file = ze\row::get('files', ['filename', 'size'], $fileId);
+						if ($file) {
+							$sizeFormatted = ze\file::fileSizeConvert($file['size']);
+
+							if ($html && $includeDownloadLinks == 'visitor') {
+								$fileList[] = '<a href="' . htmlspecialchars(ze\file::link($fileId)) . '" target="_blank">' . htmlspecialchars($file['filename']) . ' (' . htmlspecialchars($sizeFormatted) . ')</a>';
+							} elseif ($html && $includeDownloadLinks == 'admin') {
+								$fileList[] = '<a href="' . htmlspecialchars(ze\link::absolute()) . 'zenario/file.php?adminDownload=1&id=' . (int)$fileId . '" target="_blank">' . htmlspecialchars($file['filename']) . ' (' . htmlspecialchars($sizeFormatted) . ')</a>';
+							} else {
+								$fileList[] = $file['filename'];
+							}
 						}
 					}
+					
 					$display = implode(', ', $fileList);
 					if ($html) {
 						return $display;

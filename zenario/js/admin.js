@@ -750,7 +750,6 @@ zenarioA.getGridSlotDetails = function(slotName) {
 						}
 					
 						rules = styleSheet.rules || styleSheet.cssRules;
-						//console.log('rules', rules);
 		
 						//middleLoop:
 						foreach (rules as ri => rule) {

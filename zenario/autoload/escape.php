@@ -85,13 +85,13 @@ class escape {
 	const jsFromTwig = true;
 	//Formerly "jsEscape()"
 	public static function js($text) {
-		return strtr(addcslashes($text, "\\\n\r\"'"), ['&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e', '{' => '\\x7b', '}' => '\\x7d']);
+		return strtr(addcslashes((string) $text, "\\\n\r\"'"), ['&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e', '{' => '\\x7b', '}' => '\\x7d']);
 	}
 
 	const jsOnClickFromTwig = true;
 	//Formerly "jsOnClickEscape()", "jsOnclickEscape()"
 	public static function jsOnClick($text) {
-		return htmlspecialchars(addcslashes($text, "\\\n\r\"'"));
+		return htmlspecialchars(addcslashes((string) $text, "\\\n\r\"'"));
 	}
 
 	public static function utf($string) {

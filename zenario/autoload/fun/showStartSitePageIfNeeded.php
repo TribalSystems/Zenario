@@ -29,6 +29,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 \ze\cookie::startSession();
 
+
+//If the site is not yet correctly set up, display the logo and a message
+//if someone tries to access it.
+
 $logoURL = $logoWidth = $logoHeight = false;
 if (\ze::$dbL
  && \ze::setting('brand_logo') == 'custom'
@@ -41,6 +45,10 @@ if (\ze::$dbL
 }
 
 
+$errorTitle = \ze::setting('site_disabled_title');
+
+
+//Display a different message and/or destination URL depending on the situation.
 if ($reportDBOutOfDate && \ze\priv::check()) {
 	$errorMessage = '<p>This site is currently unavailable because a major database update needs to be applied.</p><p>Please go to <a href="[[admin_link]]">/admin</a> to apply the update.</p>';
 	$adminLink = \ze\link::absolute(). 'admin.php';
@@ -61,13 +69,23 @@ if ($reportDBOutOfDate && \ze\priv::check()) {
 	$adminLink = \ze\link::absolute(). 'admin.php?og=zenario__organizer/panels/start_page';
 }
 
+
+//If the error title and error message are ever missing for whatever reason,
+//instead of displaying a blank message, use their default values.
+if (!$errorTitle || empty(trim($errorTitle))) {
+	$errorTitle = 'Welcome';
+}
+if (!$errorMessage || empty(trim($errorMessage))) {
+	$errorMessage = '<p>A site is being built at this location.</p><p><span class="x-small">If you are a site administrator please <a href="[[admin_link]]">click here</a> to manage your site.</span></p>';
+}
+
 $errorMessage = \ze\admin::phrase($errorMessage, ['admin_link' => htmlspecialchars($adminLink)]);
 
 
 echo '
 <html>
 	<head>
-		<title>', \ze::setting('site_disabled_title'), '</title>
+		<title>', htmlspecialchars($errorTitle), '</title>
 		<style type="text/css">
 			div, p {
 				color: #9a9a9a; font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
@@ -116,9 +134,9 @@ echo '
 </html>';
 
 
+//If a visitor has discovered a site that's missing database updates, warn the site admin.
 if ($reportDBOutOfDate && !\ze\priv::check()) {
 	\ze\db::reportError('Database update needed at',
 'This site is currently unavailable because a major database update needs to be applied.
 Please go to '. \ze\link::absolute(). 'admin to apply the update.');
 }
-

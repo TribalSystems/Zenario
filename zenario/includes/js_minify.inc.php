@@ -25,23 +25,43 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-define('YUI_COMPRESSOR_PATH', 'zenario/libs/manually_maintained/bsd/yuicompressor/yuicompressor-2.4.8.jar');
 define('CLOSURE_COMPILER_PATH', 'zenario/libs/not_to_redistribute/closure-compiler/closure-compiler.jar');
-
-//Use the closure compiler for .js files if it has been installed
-//(otherwise we must use YUI Compressor which gives slightly larger filesizes).
-define('USE_CLOSURE_COMPILER', file_exists(CLOSURE_COMPILER_PATH));
+define('YUI_COMPRESSOR_PATH', 'zenario/libs/manually_maintained/bsd/yuicompressor/yuicompressor-2.4.8.jar');
 
 define('DEBUG_DONT_MINIFY', false);
+
+
+if (!is_file(CMS_ROOT. CLOSURE_COMPILER_PATH)
+ || !is_file(CMS_ROOT. YUI_COMPRESSOR_PATH)) {
+	echo
+"A tool for minifying JavaScript used by Zenario;
+this is a wrapper for calling Closure Compiler (https://developers.google.com/closure/compiler/)
+and YUI Compressor (https://yui.github.io/yuicompressor/) on all relevant files.
+
+To save space, the Zenario download does not come with copies of these libraries,
+but if you download them and put them in the right place, then this tool will use them.
+
+To use this tool:
+ - Java must be available on your server.
+ - You must download the closure-compiler.jar file from the site mentioned above.
+ - This needs to be placed in the zenario/libs/not_to_redistribute/closure-compiler/ directory.
+ - You must have a copy of the yuicompressor-2.4.8.jar file from the site mentioned above.
+ - This needs to be placed in the zenario/libs/manually_maintained/bsd/yuicompressor/ directory.
+
+";
+	exit;
+}
+
 
 
 function displayUsage() {
 	echo
 "A tool for minifying JavaScript used by Zenario;
-this is a wrapper for calling YUI Compressor (http://developer.yahoo.com/yui/compressor/)
-or Closure Compiler (https://developers.google.com/closure/compiler/) on all relevant files.
+this is a wrapper for calling YUI Compressor (https://yui.github.io/yuicompressor/)
+and Closure Compiler (https://developers.google.com/closure/compiler/) on all relevant files.
 
 Usage:
 	php js_minify
@@ -55,10 +75,7 @@ Usage:
 	php js_minify v
 		Use debug/verbose mode when minifying.
 
-Notes:
-  * The Zenario download does not come with a copy of Closure Compiler to save space,
- 	but if you download a copy and put it in the right place then this program will use it.
-  * If you have svn, this script will only minify files that svn says are new or modified.
+If you have svn, this script will only minify files that svn says are new or modified.
 
 ";
 	exit;
@@ -893,7 +910,7 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 	if ($level > 2) {
 		echo ':'. $srcFile. "\n";
 		
-		if (!$isCSS && USE_CLOSURE_COMPILER) {
+		if (!$isCSS) {
 			$v = '--warning_level VERBOSE ';
 		} else {
 			$v = '-v ';
@@ -960,7 +977,7 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 						$tags = Spyc::YAMLLoad($srcFile);
 						file_put_contents($minFile, json_encode($tags, JSON_FORCE_OBJECT));
 					
-					} elseif (!$isCSS && USE_CLOSURE_COMPILER) {
+					} elseif (!$isCSS) {
 						if (DEBUG_DONT_MINIFY) {
 							//Use this line ot skip the minification, useful for debugging the compilation macros
 							copy($srcFile, $minFile);

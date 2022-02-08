@@ -58,7 +58,9 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 				['id', 'type', 'tag_id', 'language_id', 'equiv_id', 'alias', 'visitor_version', 'admin_version', 'status'],
 				['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
 		
-		$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
+		if ($content && isset($content['id'], $content['type'], $content['status'])) {
+			$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
+		}
 		
 		$fields['privacy/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
 		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();

@@ -158,9 +158,39 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 					$day_class_name_var = 'day';
 				}
 				
-				if (ze::in($this->setting('show_event_titles'), "first_event", "all_events") || $this->setting('event_count')) {
+				if (ze::in($this->setting('show_event_titles'), "first_event", "first_2_events", "first_3_events", "first_4_events", "first_5_events", "all_events") || $this->setting('event_count')) {
 					$dayEvents = [];
+
+					$eventLimit = 0;
+					$otherEvents = 0;
+					if (ze::in($this->setting('show_event_titles'), "first_event", "first_2_events", "first_3_events", "first_4_events", "first_5_events")) {
+						switch ($this->setting('show_event_titles')) {
+							case 'first_event':
+								$eventLimit = 1;
+								break;
+							case 'first_2_events':
+								$eventLimit = 2;
+								break;
+							case 'first_3_events':
+								$eventLimit = 3;
+								break;
+							case 'first_4_events':
+								$eventLimit = 4;
+								break;
+							case 'first_5_events':
+								$eventLimit = 5;
+								break;
+						}
+
+						if ($numberOfEvents > $eventLimit) {
+							$otherEvents = $numberOfEvents - $eventLimit;
+						}
+					}
+
+					$currentEventOrd = 0;
 					foreach ($events as $event) {
+						$currentEventOrd++;
+
 						if ($this->setting('show_event_titles') != "nothing") {
 							$dayEvents[] = [
 								'Title' => $event['title'],
@@ -168,19 +198,26 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 							];
 						}
 						
-						if ($this->setting('show_event_titles') == "first_event") {
+						if ($eventLimit && ($eventLimit == $currentEventOrd)) {
 							break;
 						}
 					}
 					
-					$mergeFields[] = [
+					$dayMergeFields = [
 						'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 						'Day_class_name' => $day_class_name_var,
 						'Td_day_class_name' => 'event',
 						'Day_label' => (string)(int)($j++),
 						'Num_events' => $numberOfEvents,
-						'Day_events' => $dayEvents
+						'Day_events' => $dayEvents,
+						'Other_events' => $otherEvents
 					];
+
+					if ($otherEvents) {
+						$dayMergeFields['And_x_more_events_phrase'] = ze\lang::nPhrase('and 1 other event', 'and [[count]] other events', $otherEvents, ['count' => (int) $otherEvents]);
+					}
+
+					$mergeFields[] = $dayMergeFields;
 				} elseif ($this->setting('show_event_titles') == "nothing" || !$this->setting('event_count')) {
 					$mergeFields[] = [
 						'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
@@ -263,7 +300,37 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 							
 					if (ze::in($this->setting('show_event_titles'), "first_event", "all_events") || $this->setting('event_count')) {
 						$monthEvents = [];
+
+						$eventLimit = 0;
+						$otherEvents = 0;
+						if (ze::in($this->setting('show_event_titles'), "first_event", "first_2_events", "first_3_events", "first_4_events", "first_5_events")) {
+							switch ($this->setting('show_event_titles')) {
+								case 'first_event':
+									$eventLimit = 1;
+									break;
+								case 'first_2_events':
+									$eventLimit = 2;
+									break;
+								case 'first_3_events':
+									$eventLimit = 3;
+									break;
+								case 'first_4_events':
+									$eventLimit = 4;
+									break;
+								case 'first_5_events':
+									$eventLimit = 5;
+									break;
+							}
+
+							if ($numberOfEvents > $eventLimit) {
+								$otherEvents = $numberOfEvents - $eventLimit;
+							}
+						}
+
+						$currentEventOrd = 0;
 						foreach ($events as $event) {
+							$currentEventOrd++;
+
 							if ($this->setting('show_event_titles') != "nothing") {
 								$monthEvents[] = [
 									'Title' => $event['title'],
@@ -271,19 +338,26 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 								];
 							}
 
-							if ($this->setting('show_event_titles') == "first_event") {
+							if ($eventLimit && ($eventLimit == $currentEventOrd)) {
 								break;
 							}
 						}
 					
-						$mergeFields[] = [	
+						$monthMergeFields = [
 							'Anchor' =>' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
 							'Num_events' => $numberOfEvents,
-							'Month_events' => $monthEvents
-						];		
+							'Month_events' => $monthEvents,
+							'Other_events' => $otherEvents
+						];
+
+						if ($otherEvents) {
+							$monthMergeFields['And_x_more_events_phrase'] = ze\lang::nPhrase('and 1 other event', 'and [[count]] other events', $otherEvents, ['count' => (int) $otherEvents]);
+						}
+
+						$mergeFields[] = $monthMergeFields;
 					} elseif ($this->setting('show_event_titles') == "nothing" || !$this->setting('event_count')) {
 						$mergeFields[] = [	
 							'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',

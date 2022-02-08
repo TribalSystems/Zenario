@@ -439,6 +439,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			unset($panel['item_buttons']['delete']);
 
 		} elseif (($_GET['refinerName'] ?? false) == 'find_duplicates') {
+			unset($panel['collection_buttons']['create']);
 			$panel['title'] = ze\admin::phrase('Items with duplicate file attachments');
 			$panel['no_items_message'] = ze\admin::phrase('No items with duplicate file attachments found');
 			unset($panel['collection_buttons']['diagnostics_dropdown']);
@@ -534,6 +535,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['columns']['language_id']['hidden'] = true;
 
 		} elseif ($_GET['refiner__category'] ?? false) {
+			unset($panel['collection_buttons']['create']);
 			$mrg = [
 				'category' => ze\category::name($_GET['refiner__category'] ?? false)];
 			$panel['title'] = ze\admin::phrase('Content items in the category "[[category]]"', $mrg);
@@ -1019,7 +1021,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		    if(isset($_REQUEST['refinerName'])  && ($_REQUEST['refinerName'] == "trash" || $_REQUEST['refinerName'] == "special_pages")){
 		        $panel['collection_buttons']['create']['hidden'] = true;
 		        $panel['collection_buttons']['new_node_dropdown']['hidden'] = true;
-		    } 
+		    }
 		   
 		} else {//All content items
 		    $panel['collection_buttons']['create']['hidden'] = true;
@@ -1035,7 +1037,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$panel['collection_buttons']['new_node_'.$j]['admin_box']['path'] = 'zenario_content'; 
 					$panel['collection_buttons']['new_node_'.$j]['admin_box']['key']['target_cType'] = $content['content_type_id']; 
 				}
-            }    
+            }
    
 		}
 		

@@ -7,7 +7,7 @@ Options -Indexes
 <ifModule mod_headers.c>
 	Header setifempty Content-Security-Policy "default-src *; img-src * data:; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'"
 	Header setifempty Feature-Policy "sync-xhr *; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none';"
-	Header setifempty Permissions-Policy "sync-xhr=(self), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), fullscreen=(self), payment=()"
+	Header setifempty Permissions-Policy "sync-xhr=(self), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=()"
 	Header setifempty Referrer-Policy strict-origin-when-cross-origin
 	Header setifempty X-Content-Type-Options nosniff
 	Header setifempty X-Frame-Options SAMEORIGIN

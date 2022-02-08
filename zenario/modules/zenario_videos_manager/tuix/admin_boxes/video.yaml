@@ -40,7 +40,6 @@ zenario_videos_manager__video:
                     label: "Privacy (Vimeo only):"
                     snippet:
                         html: ""
-                    hidden: true
                 image:
                     label: 'Image:'
                     upload:

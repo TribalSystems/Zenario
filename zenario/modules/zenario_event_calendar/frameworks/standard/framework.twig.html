@@ -54,6 +54,12 @@
 													</a>
 												</span>
 											{% endfor %}
+
+											{% if item.Other_events and item.And_x_more_events_phrase %}
+												<span class="event">
+													{{item.And_x_more_events_phrase|e}}
+												</span>
+											{% endif %}
 										</div>
 									</td>
 								{% endfor %}
@@ -155,6 +161,12 @@
 													</a>
 												</span>
 											{% endfor %}
+
+											{% if item.Other_events and item.And_x_more_events_phrase %}
+												<span class="event">
+													{{item.And_x_more_events_phrase|e}}
+												</span>
+											{% endif %}
 										</div>
 									</td>
 								{% endfor %}

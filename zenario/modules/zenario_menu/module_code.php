@@ -296,7 +296,7 @@ class zenario_menu extends ze\moduleBaseClass {
 				if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $row)) {
 					
 					if (!empty($row['children']) && is_array($row['children'])) {
-						$parentId = $row['mID'];
+						$parentId = $row['mID'] ?? 0;
 						$menuNodeMergeFields['children'] = $this->getMenuMergeFields($row['children'], $depth + 1, $parentId);
 						
 						$menuNodeMergeFields['All_Children_Are_Hidden'] = true;
@@ -326,7 +326,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		
 		$objects = [];
 		$objects['depth'] = (int) $depth;
-		$objects['mID'] = $row['mID'];
+		$objects['mID'] = $row['mID'] ?? 0;
 		$objects['Hyperlink'] = $this->drawMenuItem($row);
 		
 		$objects['Class'] = 'level'. $depth. ' level'. $depth. '_'. $i;

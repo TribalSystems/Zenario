@@ -23,6 +23,8 @@ site_settings:
                     redraw_onchange: true
                     pre_field_html: |
                         <div class="title"><label>Vimeo privacy settings:</label></div><br />
+                    #Hidden as of 12 Jan 2022. --Marcin
+                    hidden: true
                 vimeo_privacy_settings:
                     site_setting:
                         name: vimeo_privacy_settings
@@ -39,7 +41,9 @@ site_settings:
                         unlisted:
                             ord: 4
                     #Labels are set in php.
-                    visible_if: lib.value('enable_vimeo_privacy_settings')
+                    #Hidden as of 12 Jan 2022. --Marcin
+                    hidden: true
+                    #visible_if: lib.value('enable_vimeo_privacy_settings')
                     validation:
                         required_if_not_hidden: 'Please select at least 1 privacy setting.'
                 video_language_is_mandatory:

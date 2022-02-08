@@ -48,12 +48,12 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 		
 		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos', $videoId);
 		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos_custom_data', $videoId);
-		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['video_id' => $videoId]);
+		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['video_id' => $videoId]);
 	}
 	
 	public static function deleteCategory($categoryId) {
 		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories', $categoryId);
-		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['category_id' => $categoryId]);
+		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['category_id' => $categoryId]);
 	}
 	
 	public static function getVimeoVideoData($vimeoVideoId) {
@@ -73,6 +73,32 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 
 		$result = json_decode($result, true);
 		return $result;
+	}
+
+	public static function getVimeoVideoDataForMultiple($vimeoVideoIds) {
+		$vimeoAccessToken = ze::setting('vimeo_access_token');
+
+		if (is_array($vimeoVideoIds) && count($vimeoVideoIds) > 0) {
+			//Example of the format:
+			//https://api.vimeo.com/videos?uris=/videos/111,/videos/222,/videos/333
+			$link = 'https://api.vimeo.com/videos?uris=/videos/' . implode(',/videos/', $vimeoVideoIds);
+			$params = [
+				"Content-Type: application/json",
+				"Authorization: Bearer " . $vimeoAccessToken
+			];
+			$options = [
+				CURLOPT_CUSTOMREQUEST => 'GET',
+				CURLOPT_HTTPHEADER => $params,
+				CURLOPT_SSL_VERIFYPEER => 0,
+				CURLOPT_SSL_VERIFYHOST => 0,
+			];
+			$result = ze\curl::fetch($link, false, $options);
+
+			$result = json_decode($result, true);
+			return $result;
+		}
+
+		return [];
 	}
 	
 	public static function getVimeoVideoThumbnail($vimeoVideoUrl) {
@@ -103,7 +129,7 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 			],
 			'disable' => [
 				'label' => "Disable",
-				'note' => "Hide video from <a href='vimeo.com' target='_blank'>vimeo.com</a>, but the video can still be embedded on external sites. Non-shareable.",
+				'note' => "Hide video from vimeo.com, but the video can still be embedded on external sites. Non-shareable.",
 				'visitor_note' => "You may not share the link to this video"
 			],
 			'nobody' => [

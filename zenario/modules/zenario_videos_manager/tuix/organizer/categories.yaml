@@ -19,9 +19,9 @@ zenario_videos_manager:
                 number_of_videos:
                     title: No. of videos
                     table_join: |
-                        [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]video_categories AS vc
-                        ON c.id = vc.category_id
-                    db_column: COUNT(vc.video_id)
+                        [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]category_video_link AS cvl
+                        ON c.id = cvl.category_id
+                    db_column: COUNT(cvl.video_id)
                     always_show: true
                     align_right: true
             item_buttons:
@@ -51,4 +51,3 @@ zenario_videos_manager:
                     label: Create a category
                     admin_box:
                         path: zenario_videos_manager__category
-            

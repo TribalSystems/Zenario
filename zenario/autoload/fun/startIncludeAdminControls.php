@@ -65,7 +65,7 @@ if ($this->eggId && isset($this->parentNest)) {
 				href="', $organizerLink, $nestPath, '~.plugin_settings~tbreadcrumbs~k', htmlspecialchars(json_encode(['instanceId' => $this->instanceId])), '"
 				class="zenario_slotButton zenario_editNestedPlugin"
 				id="', $this->containerId, '-egg"
-				onclick="return zenarioA.pluginSlotEditSettings(this, \'', $this->slotName, '\');"
+				onclick="if (zenarioA.checkForEdits()) zenarioA.pluginSlotEditSettings(this, \'', $this->slotName, '\'); return false;"
 				title="'. htmlspecialchars($tooltip). '"
 				data-tooltip-options=\'{"tooltipClass": "zenario_admin_tooltip"}\'
 			><span></span></a>';
@@ -92,7 +92,7 @@ if ($this->eggId && isset($this->parentNest)) {
 				href="', $organizerLink, $nestPath, $this->eggId, '~.plugin_settings~k', htmlspecialchars(json_encode(['eggId' => $this->eggId])), '"
 				class="zenario_slotButton zenario_editNestedPlugin"
 				id="', $this->containerId, '-egg"
-				onclick="return zenarioA.pluginSlotEditSettings(this, \'', $this->slotName, '\', false, {eggId: ', (int) $this->eggId, '});"
+				onclick="if (zenarioA.checkForEdits()) zenarioA.pluginSlotEditSettings(this, \'', $this->slotName, '\', false, {eggId: ', (int) $this->eggId, '}); return false;"
 				title="'. htmlspecialchars($tooltip). '"
 				data-tooltip-options=\'{"tooltipClass": "zenario_admin_tooltip zenario_plugin_info_tooltip"}\'
 			><span></span></a>
@@ -101,14 +101,17 @@ if ($this->eggId && isset($this->parentNest)) {
 				class="zenario_slotButton zenario_nestedPluginOptions"
 				id="', $this->containerId, '-egg-options"
 				onclick="', "
-					return zenarioAT.organizerQuick(
-						'", $nestPath, $this->eggId, "',
-						'zenario__modules/panels/nested_plugins',
-						false,
-						'", ze\escape::js($this->slotName), "',
-						false,
-						". ze\ring::engToBoolean($this->isVersionControlled). ",
-						this);", '"
+					if (zenarioA.checkForEdits())
+						zenarioAT.organizerQuick(
+							'", $nestPath, $this->eggId, "',
+							'zenario__modules/panels/nested_plugins',
+							false,
+							'", ze\escape::js($this->slotName), "',
+							false,
+							". ze\ring::engToBoolean($this->isVersionControlled). ",
+							this
+						);
+					return false;", '"
 			><span></span></a>';
 	}
 	

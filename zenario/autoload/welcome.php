@@ -55,83 +55,66 @@ class welcome {
 
 
 	public static function passwordMessageSnippet($password, $isInstaller = false) {
-		$passwordValidation = \ze\user::checkPasswordStrength($password);
-
 		$passwordMessageSnippet = '';
-		if (!$passwordValidation['password_matches_requirements']) {
-			
-			if ($passwordValidation['password_length'] > 0) {
-				$passPhrase = 'Password does not match the requirements';
-				$class = "title_red";
-			} else {
-				$passPhrase = 'Please enter a password';
-				$class = "title_orange";
-			}
-			//Set the post-html field to display "FAIL" highlighted in red.
-			$passwordMessageSnippet = 
-				'<div>
-					<span id="snippet_password_message" class="' . $class . '">' . \ze\admin::phrase($passPhrase) . '</span>
-				</div>';
-		} else {
-			$minScore = (int) (\ze::setting('min_extranet_user_password_score') ?: 2);
 
-			$zxcvbn = new \ZxcvbnPhp\Zxcvbn();
-			$result = $zxcvbn->passwordStrength($password);
+		$minScore = (int) (\ze::setting('min_extranet_user_password_score') ?: 2);
 
-			if ($result && isset($result['score'])) {
-				switch ($result['score']) {
-					case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
-						if ($minScore < 4) {
-							$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
-						} elseif ($minScore == 4) {
-							$phrase = 'Password matches the requirements (score 4)';
-						}
+		$zxcvbn = new \ZxcvbnPhp\Zxcvbn();
+		$result = $zxcvbn->passwordStrength($password);
 
+		if ($result && isset($result['score'])) {
+			switch ($result['score']) {
+				case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+					if ($minScore < 4) {
+						$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
+					} elseif ($minScore == 4) {
+						$phrase = 'Password matches the requirements (score 4)';
+					}
+
+					$passwordMessageSnippet = 
+						'<div>
+							<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase($phrase) . '</span>
+						</div>';
+					break;
+				case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
+					if ($minScore == 4) {
+						$passwordMessageSnippet = 
+						'<div>
+							<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+						</div>';
+					} elseif ($minScore < 4) {
 						$passwordMessageSnippet = 
 							'<div>
-								<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase($phrase) . '</span>
+								<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
 							</div>';
-						break;
-					case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
-						if ($minScore == 4) {
-							$passwordMessageSnippet = 
+					}
+					break;
+				case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+					if ($minScore == 2) {
+						if ($isInstaller) {
+							$phrase = \ze\admin::phrase('Password is easy to guess. Make your password stronger if this will be a production site.');
+						} else {
+							$phrase = \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]);
+						}
+						$passwordMessageSnippet = 
 							'<div>
-								<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+								<span id="snippet_password_message" class="title_orange">' . $phrase . '</span>
 							</div>';
-						} elseif ($minScore < 4) {
-							$passwordMessageSnippet = 
-								'<div>
-									<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
-								</div>';
-						}
-						break;
-					case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
-						if ($minScore == 2) {
-							if ($isInstaller) {
-								$phrase = \ze\admin::phrase('Password is easy to guess. Make your password stronger if this will be a production site.');
-							} else {
-								$phrase = \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]);
-							}
-							$passwordMessageSnippet = 
-								'<div>
-									<span id="snippet_password_message" class="title_orange">' . $phrase . '</span>
-								</div>';
-						} elseif ($minScore > 2) {
-							$passwordMessageSnippet = 
-								'<div>
-									<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-								</div>';
-						}
-						break;
-					case 1: //is still very guessable (guesses < 10^6)
-					case 0: //s extremely guessable (within 10^3 guesses)
-					default:
+					} elseif ($minScore > 2) {
 						$passwordMessageSnippet = 
 							'<div>
 								<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 							</div>';
-						break;
-				}
+					}
+					break;
+				case 1: //is still very guessable (guesses < 10^6)
+				case 0: //s extremely guessable (within 10^3 guesses)
+				default:
+					$passwordMessageSnippet = 
+						'<div>
+							<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+						</div>';
+					break;
 			}
 		}
 		
@@ -1582,7 +1565,6 @@ class welcome {
 				\ze::$dbL = null;
 				
 					$fields['5/password_message']['snippet']['html'] = self::passwordMessageSnippet(($fields['5/password']['current_value'] ?? false), $isInstaller = true);
-					$fields['5/password_requirements']['snippet']['html'] = \ze\admin::displayPasswordRequirementsNoteAdmin($fields['5/password']['current_value'] ?? false);
 				
 				//Restore the connection
 				\ze::$dbL = $db;
@@ -2646,7 +2628,6 @@ class welcome {
 		}
 	
 		$fields['change_password/password_message']['snippet']['html'] = self::passwordMessageSnippet($values['password']);
-		$fields['change_password/password_requirements']['snippet']['html'] = \ze\admin::displayPasswordRequirementsNoteAdmin($fields['5/password']['current_value'] ?? false);
 	
 		return false;
 	}
@@ -2683,7 +2664,6 @@ class welcome {
 		}
 		
 		$fields['new_admin/password_message']['snippet']['html'] = self::passwordMessageSnippet($fields['new_admin/password']['current_value'] ?? false);
-		$fields['new_admin/password_requirements']['snippet']['html'] = \ze\admin::displayPasswordRequirementsNoteAdmin($fields['new_admin/password']['current_value'] ?? false);
 		
 		return false;
 	}
@@ -4122,8 +4102,15 @@ class welcome {
 		}
 		
 		$domain = ($forceAliasInAdminMode || !\ze\priv::check())? \ze\link::primaryDomain() : \ze\link::adminDomain();
-	
-		if (!empty($getRequest['og']) && \ze\priv::check()) {
+		
+		//A language needs to be enabled, when an admin logs in, the admin should always be taken to
+		//the languages panel in Organizer to enable it.
+		if (!\ze\row::exists('languages', []) && \ze\priv::check()) {
+			return
+				'organizer.php'.
+				'#zenario__languages/panels/languages';
+
+		} elseif (!empty($getRequest['og']) && \ze\priv::check()) {
 			return
 				'organizer.php'.
 				(isset($getRequest['fromCID']) && isset($getRequest['fromCType'])? '?fromCID='. $getRequest['fromCID']. '&fromCType='. $getRequest['fromCType'] : '').

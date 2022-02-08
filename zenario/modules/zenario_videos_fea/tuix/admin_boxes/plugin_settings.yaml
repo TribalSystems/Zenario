@@ -371,6 +371,17 @@ plugin_settings:
                         name: show_video_language
                     value: 0
                     type: checkbox
+                show_privacy_info:
+                    grouping: options
+                    label: Show privacy info
+                    visible_if:
+                        lib.modeIn: 
+                            - view_video
+                    plugin_setting:
+                        name: show_privacy_info
+                    value: 0
+                    type: checkbox
+                
                 highlight_currently_playing_video:
                     grouping: options
                     type: checkbox
@@ -380,8 +391,27 @@ plugin_settings:
                     visible_if:
                         lib.modeIs: list_videos
                 
+                in_any_or_all_categories:
+                    plugin_setting:
+                        name: in_any_or_all_categories
+                    grouping: filters
+                    indent: 1
+                    visible_if:
+                        lib.modeIs: list_videos
+                        lib.scopeIs: specific_categories
+                    type: select
+                    value: "any"
+                    values:
+                        any:
+                            ord: 1
+                            label: 'In ANY of the categories below'
+                        all:
+                            ord: 2
+                            label: 'In ALL of the categories below'
+                
                 category_filters:
                     grouping: filters
+                    indent: 1
                     label: 'Categories:'
                     visible_if:
                         lib.modeIs: list_videos

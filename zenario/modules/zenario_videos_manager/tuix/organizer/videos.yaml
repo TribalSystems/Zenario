@@ -49,10 +49,10 @@ zenario_videos_manager:
                 categories:
                     title: Categories
                     table_join: |
-                        [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]video_categories vc
-                            ON v.id = vc.video_id
+                        [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]category_video_link cvl
+                            ON v.id = cvl.video_id
                         LEFT JOIN [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]categories c
-                            ON vc.category_id = c.id
+                            ON cvl.category_id = c.id
                     db_column: GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ')
                     width: xlarge
                     always_show: true
@@ -105,4 +105,3 @@ zenario_videos_manager:
                     label: Add a video by URL
                     admin_box:
                         path: zenario_videos_manager__video
-            

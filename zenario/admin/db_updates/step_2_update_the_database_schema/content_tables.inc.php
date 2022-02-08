@@ -1609,4 +1609,11 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(250) CHARACTER SET utf8mb4 NOT NULL
 _sql
 
+);	ze\dbAdm::revision( 55052
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]writer_profiles`
+	DROP KEY `admin_id`,
+	ADD KEY (`admin_id`)
+_sql
+
 );

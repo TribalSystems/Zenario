@@ -591,7 +591,8 @@ zenario__content:
                         key:
                             create_from_content_panel: 1
                     ord: 1
-                            
+                    #This button will be hidden on many refiners.
+                    #Controlled in the PHP code.
                 delete_trashed_items:
                     priv: _PRIV_DELETE_TRASHED_CONTENT_ITEMS
                     hide_in_select_mode: true

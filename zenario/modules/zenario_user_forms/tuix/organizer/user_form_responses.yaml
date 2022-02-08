@@ -31,6 +31,7 @@ zenario__user_forms:
                     align_right: true
                     width: xxsmall
                     disallow_sorting: true
+                    searchable: true
                     always_show: true
                 response_datetime:
                     title: Date/Time Responded

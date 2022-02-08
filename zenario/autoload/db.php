@@ -150,7 +150,9 @@ class col {
 
 
 //Wrapper class for a SQL query
-class queryCursor implements \Iterator {
+	//Note: I'm declaring this as an abstract class. I don't actually an an stract class, but this is going
+	//to be used as a workaround to fix a particually stupid bug in PHP further below!
+abstract class abstractQueryCursor implements \Iterator {
 	public $q;
 	protected $d = [];
 	protected $dc = 0;
@@ -306,24 +308,44 @@ class queryCursor implements \Iterator {
 	protected $i = 0;
 	protected $nr;
 	
-	public function rewind() {
+	public function rewind(): void {
 	}
 	
-	public function next() {
+	public function next(): void {
 	}
 	
-	public function valid() {
+	public function valid(): bool {
 		++$this->i;
 		return false !== ($this->nr = $this->fAssoc());
 	}
 	
-	public function key() {
-		return $this->i;
-	}
+}
+
+//OK so here's the particually stupid bug in PHP.
+//Due to a breaking change, code written for PHP 7 and earlier isn't compatible
+//with code written for PHP 8.1 and later.
+//I'm forced to have a class declaration inside an if-statement, and have both versions
+//of the code, to fix it!
+if (version_compare(PHP_VERSION, '8.0.0') >= 0) {
+    class queryCursor extends abstractQueryCursor {
+		public function key(): mixed {
+			return $this->i;
+		}
 	
-	public function current() {
-		return $this->nr;
-	}
+		public function current(): mixed {
+			return $this->nr;
+		}
+    }
+} else {
+    class queryCursor extends abstractQueryCursor {
+		public function key() {
+			return $this->i;
+		}
+	
+		public function current() {
+			return $this->nr;
+		}
+    }
 }
 
 

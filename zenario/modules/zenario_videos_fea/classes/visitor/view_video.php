@@ -98,19 +98,23 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 							$json['html'] = str_replace('feature=oembed', 'feature=oembed&autoplay=1&rel=0', $json['html']);
 						} else {
 							//Privacy
-							$privacy = $videoData['privacy']['view'] ?? '';
-							$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
-							
-							if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
-								$privacyString = $this->phrase($vimeoPrivacySettingsFormattedNicely[$privacy]['visitor_note']);
-							} else {
-								$privacyString = $this->phrase('Sorry, cannot show privacy setting');
-							}
-							$this->data['video']['privacy'] = $privacyString;
-							
-							if ($privacy == 'unlisted' || $privacy == 'anybody') {
-								$this->data['video']['url'] = $this->video['url'];
-								$this->data['video']['shareable_link'] = true;
+							if ($this->setting('show_privacy_info')) {
+								$this->data['show_privacy_info'] = true;
+
+								$privacy = $videoData['privacy']['view'] ?? '';
+								$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
+								
+								if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
+									$privacyString = $this->phrase($vimeoPrivacySettingsFormattedNicely[$privacy]['visitor_note']);
+								} else {
+									$privacyString = $this->phrase('Sorry, cannot show privacy setting');
+								}
+								$this->data['video']['privacy'] = $privacyString;
+								
+								if ($privacy == 'unlisted' || $privacy == 'anybody') {
+									$this->data['video']['url'] = $this->video['url'];
+									$this->data['video']['shareable_link'] = true;
+								}
 							}
 
 							//Thumbnail

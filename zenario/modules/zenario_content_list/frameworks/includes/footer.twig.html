@@ -1,12 +1,12 @@
 {% if Rows %}
 		{% if More %}
-			<a class="content_list_more_link" {{More_Link}}>{{More_Link_Title|e}}</a>
+			<a class="content_list_more_link" {{More_Link}}>{{More_Link_Title}}</a>
 		{% endif %}
 	</div>
 {% endif %}
 {% if No_Rows %}
 	{% if Show_No_Title %}
-		<{{Title_Tags}}>{{Title_With_No_Content|e}}</{{Title_Tags}}>
+		<{{Title_Tags}}>{{Title_With_No_Content}}</{{Title_Tags}}>
 	{% endif %}
 {% endif %}
 {% if Years %}

@@ -68,9 +68,9 @@ class zenario_common_features__admin_boxes__writer_profile extends ze\moduleBase
                         $box['tabs']['details']['notices']['admin_acc_trashed']['show'] = true;
                     }
                 }
-            } elseif ($values['details/type'] == 'administrator') {
+            } elseif ($values['details/type'] == 'external_writer') {
                 //... or just show "External writer".
-                $fields['details/type_span'] = ze\admin::phrase('External writer');
+                $values['details/type_span'] = ze\admin::phrase('External writer');
             }
 
             $sql = "

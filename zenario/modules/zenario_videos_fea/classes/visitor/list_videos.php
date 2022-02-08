@@ -67,8 +67,8 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 	protected function populateItemsFrom($path, &$tags, &$fields, &$values) {
 		$sql = '
 			FROM ' . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos v
-			LEFT JOIN ' . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories vc
-				ON v.id = vc.video_id';
+			LEFT JOIN ' . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link cvl
+				ON v.id = cvl.video_id';
 		return $sql;
 	}
 	protected function populateItemsWhere($path, &$tags, &$fields, &$values) {
@@ -77,13 +77,13 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 		
 		if ($this->scope == 'similar_videos') {
 			$categoryFilters = [];
-			$result = ze\row::query(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['category_id'], ['video_id' => $this->videoId]);
+			$result = ze\row::query(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['category_id'], ['video_id' => $this->videoId]);
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$categoryFilters[] = $row['category_id'];
 			}
 			if ($categoryFilters) {
 				$sql .= '
-					AND vc.category_id IN (' . ze\escape::in($categoryFilters, 'numeric') . ')';
+					AND cvl.category_id IN (' . ze\escape::in($categoryFilters, 'numeric') . ')';
 			} else {
 				$sql .= '
 					AND FALSE';
@@ -95,15 +95,36 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 				foreach (explode(',', $categories) as $categoryId) {
 					$categoryFilters[] = $categoryId;
 				}
-				$sql .= '
-					AND vc.category_id IN (' . ze\escape::in($categoryFilters, 'numeric') . ')';
+
+				if (ze::in($this->setting('in_any_or_all_categories'), 'any', 'all')) {
+					$sql .= '
+						AND cvl.category_id IN (' . ze\escape::in($categoryFilters, 'numeric') . ')';
+					
+				}
 			}
 		}
+
 		return $sql;
 	}
 	protected function populateItemsGroupBy($path, &$tags, &$fields, &$values) {
-		return '
+		$sql = '
 			GROUP BY v.id';
+		
+		if ($this->scope == 'specific_categories' && ($categories = $this->setting('category_filters')) && $this->setting('in_any_or_all_categories') == 'all') {
+			$categoryFilters = [];
+			foreach (explode(',', $categories) as $categoryId) {
+				$categoryFilters[] = $categoryId;
+			}
+
+			$categoriesCount = count($categoryFilters);
+			if ($categoriesCount > 0) {
+				$sql .= '
+					HAVING COUNT(DISTINCT cvl.category_id) = ' . (int) $categoriesCount;
+			}
+				
+		}
+
+		return $sql;
 	}
 	protected function populateItemsOrderBy($path, &$tags, &$fields, &$values) {
 		//Order by options
@@ -219,5 +240,4 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 		}
 		return $anchor;
 	}
-
 }

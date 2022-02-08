@@ -124,13 +124,13 @@ class zenario_videos_fea__visitor__edit_video extends zenario_videos_fea__visito
 			
 				//Categories
 				if ($this->mode == 'edit_video') {
-					ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['video_id' => $videoId]);
+					ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['video_id' => $videoId]);
 				}
 			
 				if ($this->videoCategories) {
 					if ($currentVideoCategories = ze::post('current_video_category')) {
 						foreach ($currentVideoCategories as $categoryId) {
-							ze\row::insert(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['video_id' => $videoId, 'category_id' => $categoryId]);
+							ze\row::insert(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['video_id' => $videoId, 'category_id' => $categoryId]);
 						}
 					}
 				}
@@ -221,7 +221,7 @@ class zenario_videos_fea__visitor__edit_video extends zenario_videos_fea__visito
 			$this->data['short_description'] = $this->video['short_description'];
 			$this->data['date'] = $this->video['date'];
 			$this->data['language_id'] = $this->video['language_id'];
-			$this->data['current_video_categories'] = ze\row::getValues(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', 'category_id', ['video_id' => $this->videoId]);
+			$this->data['current_video_categories'] = ze\row::getValues(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', 'category_id', ['video_id' => $this->videoId]);
 		} else {
 			$this->data['date'] = ze\date::ymd();
 		}

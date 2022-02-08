@@ -11,11 +11,12 @@ class zenario_videos_manager__admin_boxes__site_settings extends zenario_videos_
 				ze\admin::phrase('The API key setting is available on the <a target="_blank" href="[[link]]">API Keys</a> panel.', ['link' => htmlspecialchars($link)]);
 			
 			//Set labels for privacy settings
-			$vimeoPrivacySettingsFormattedNicely = self::getVimeoPrivacySettingsFormattedNicely();
-			foreach ($fields['zenario_videos_manager__vimeo/vimeo_privacy_settings']['values'] as $privacySettingKey => &$privacySetting) {
-				$privacySetting['label'] = $this->phrase($vimeoPrivacySettingsFormattedNicely[$privacySettingKey]['label']);
-				$privacySetting['note_below'] = $this->phrase($vimeoPrivacySettingsFormattedNicely[$privacySettingKey]['note']);
-			}
+			//Hidden as of 12 Jan 2022. --Marcin
+			// $vimeoPrivacySettingsFormattedNicely = self::getVimeoPrivacySettingsFormattedNicely();
+			// foreach ($fields['zenario_videos_manager__vimeo/vimeo_privacy_settings']['values'] as $privacySettingKey => &$privacySetting) {
+			// 	$privacySetting['label'] = $this->phrase($vimeoPrivacySettingsFormattedNicely[$privacySettingKey]['label']);
+			// 	$privacySetting['note_below'] = $this->phrase($vimeoPrivacySettingsFormattedNicely[$privacySettingKey]['note']);
+			// }
 			
 			$documentEnvelopesModuleIsRunning = ze\module::inc('zenario_document_envelopes_fea');
 			if ($documentEnvelopesModuleIsRunning) {

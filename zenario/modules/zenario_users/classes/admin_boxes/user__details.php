@@ -62,7 +62,10 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$values['details/linked_countries'] =
 				implode(',', ze\row::getValues('user_country_link', 'country_id', ['user_id' => $box['key']['id']]));
 			
-			$suspendedDate = date_format(new DateTime($user['suspended_date']), "d M Y H:i:s");
+			$suspendedDate = '';
+			if (!empty($user['suspended_date'])) {
+				$suspendedDate = date_format(new DateTime($user['suspended_date']), "d M Y H:i:s");
+			}
 			switch($user['status']) {
 				case 'contact':
 					$fields['details/status']['note_below'] = 

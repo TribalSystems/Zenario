@@ -51,6 +51,16 @@ ul.zenario_grids {
 	height: auto;
 }
 
+.zenario_overflow_wrap {
+    min-width: 100%;
+    overflow-x: hidden;
+}
+
+.zenario_overflow_wrap > .zenario_grids {
+    background: white top left repeat-y;
+    background-size: auto 25px;
+}
+
 .zenario_overflow_wrap > ul.zenario_grids:first-child {
 	min-height:400px;
 }
@@ -72,6 +82,7 @@ li.zenario_grid_cell {
 .zenario_grid_sortable_target div {
 	height: 100%;
 	border: 2px dotted #008000;
+	background-position: 0.5px 0;
 }
 
 .zenario_grids a.zenario_grid_sortable_target {

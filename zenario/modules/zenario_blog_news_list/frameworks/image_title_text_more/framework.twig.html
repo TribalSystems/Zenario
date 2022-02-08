@@ -125,17 +125,17 @@
 					{% endif %}
 					
 					<div class="content_list_more">
-						<a {{item.Link}}{{item.Target_Blank}}>{{More_Phrase|e}}</a>
+						<a {{item.Link}}{{item.Target_Blank}}>{{More_Phrase}}</a>
 					</div>
 				</div>
 			{% endfor %}
 			{% if More %}
-				<a class="content_list_more_link" {{More_Link}}>{{More_Link_Title|e}}</a>
+				<a class="content_list_more_link" {{More_Link}}>{{More_Link_Title}}</a>
 			{% endif %}
 		</div>
 	{% endif %}
 	{% if No_Rows %}
-		<h2>{{Title_With_No_Content|e}}</h2>
+		<h2>{{Title_With_No_Content}}</h2>
 	{% endif %}
 	{% if Years %}
 		<form class="content_list_date_select">

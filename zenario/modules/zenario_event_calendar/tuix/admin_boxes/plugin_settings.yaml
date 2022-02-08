@@ -110,12 +110,19 @@ plugin_settings:
                     type: select
                     values:
                         nothing:
-                            label: |
-                                Don't show event details
+                            label: "Don't show event details"
                         first_event:
-                            label: 'Title of first event in time period'
+                            label: "First event only"
+                        first_2_events:
+                            label: "Up to 2 events"
+                        first_3_events:
+                            label: "Up to 3 events"
+                        first_4_events:
+                            label: "Up to 4 events"
+                        first_5_events:
+                            label: "Up to 5 events"
                         all_events:
-                            label: 'Titles of all events in time period'
+                            label: "All events"
                     value: first_event
                 event_count:
                     label: 'Show number of events'

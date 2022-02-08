@@ -885,7 +885,7 @@ zenarioGM.drawEditor = function(
 	//All a little bit of padding (which will be hidden with an "overflow-x: hidden;") to help prevent various bugs
 	//of things wrapping onto new lines when dragging things around.
 	if (level == 0) {
-		html += '<div class="zenario_overflow_wrap" style="width: ' + zenarioGM.scaleWidth(zenarioGM.data.maxWidth) + 'px; overflow-x: hidden;">';
+		html += '<div class="zenario_overflow_wrap">';
 		html += '<ul id="' + elId + 's" class="zenario_grids" style="width: ' + zenarioGM.scaleWidth(wrapWidth + Math.abs(gGutterRight - gGutterRightEdge) + 1) + 'px;';
 	} else {
 		html += '<ul id="' + elId + 's" class="zenario_grids" style="width: ' + zenarioGM.scaleWidth(wrapWidth) + 'px;';
@@ -900,7 +900,7 @@ zenarioGM.drawEditor = function(
 	
 	//If this is the outer-most tag, add a pink striped background so we can easily see the grid
 	if (level == 0) {
-		html += 'background: white top left repeat-y url(' + htmlspecialchars(URLBasePath) + 'zenario/admin/grid_maker/grid_bg.php?gColWidth=' + gColWidth + '&gCols=' + gCols + '&gGutter=' + gGutter + '&gGutterLeftEdge=' + gGutterLeftEdge + '&gGutterRightEdge=' + gGutterRightEdge + '); background-size: ' + zenarioGM.scaleWidth(zenarioGM.data.maxWidth) + 'px;';
+		html += 'background-image: url(' + htmlspecialchars(URLBasePath) + 'zenario/admin/grid_maker/grid_bg.php?gColWidth=' + gColWidth + '&gCols=' + gCols + '&gGutter=' + gGutter + '&gGutterLeftEdge=' + gGutterLeftEdge + '&gGutterRightEdge=' + gGutterRightEdge + ');';
 		
 		//Remember the width and height for typical new elements.
 		//This will be used later when trying to drag them in from the "add" toolbar
@@ -1119,7 +1119,7 @@ zenarioGM.drawEditor = function(
 			}
 			
 			
-			var nHTML = htmlspecialchars(zenarioGM.cellLabel(cells[i]))
+			var nHTML = htmlspecialchars(zenarioGM.cellLabel(cells[i]));
 			
 			if (cells[i].height && cells[i].height != 'small') {
 				nHTML += ' (' + htmlspecialchars(cells[i].height) + ')';

@@ -68,7 +68,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 			$values['details/language_id'] = $video['language_id'];
 			
 			$categories = [];
-			$result = ze\row::query(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['category_id'], ['video_id' => $box['key']['id']]);
+			$result = ze\row::query(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['category_id'], ['video_id' => $box['key']['id']]);
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$categories[] = $row['category_id'];
 			}
@@ -89,13 +89,9 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 						if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
 							$privacyString = $vimeoPrivacySettingsFormattedNicely[$privacy]['note'];
 						} else {
-							$privacyString = $this->phrase('Sorry, cannot show privacy setting');
+							$privacyString = $this->phrase('Sorry, cannot fetch privacy setting');
 						}
 						$fields['details/video_privacy']['snippet']['html'] = $privacyString;
-
-						if (ze::setting('enable_vimeo_privacy_settings')) {
-							$fields['details/video_privacy']['hidden'] = false;
-						}
 					}
 				}
 			}
@@ -231,12 +227,11 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 		
 		$box['key']['id'] = ze\row::set(ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos', $videoDetails, $box['key']['id']);
 		
-		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['video_id' => $box['key']['id']]);
+		ze\row::delete(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['video_id' => $box['key']['id']]);
 		if ($categories = $values['details/categories']) {
 			foreach (ze\ray::explodeAndTrim($categories) as $categoryId) {
-				ze\row::insert(ZENARIO_VIDEOS_MANAGER_PREFIX . 'video_categories', ['video_id' => $box['key']['id'], 'category_id' => $categoryId]);
+				ze\row::insert(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['video_id' => $box['key']['id'], 'category_id' => $categoryId]);
 			}
 		}
 	}
-	
 }

@@ -18,6 +18,11 @@ _sql
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]video_categories`
 _sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]category_video_link`
+_sql
+
 , <<<_sql
 	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]video_categories` (
 		`video_id` int(10) unsigned NOT NULL,
@@ -97,6 +102,13 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]videos`
 	ADD COLUMN `language_id` varchar(10) DEFAULT NULL
+_sql
+
+//Rename a table to have a less confusing name
+); ze\dbAdm::revision(13
+, <<<_sql
+	RENAME TABLE `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]video_categories`
+	TO `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]category_video_link`
 _sql
 
 );

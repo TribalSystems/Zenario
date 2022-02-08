@@ -35,7 +35,7 @@ if (!defined('CMS_ROOT')) {
 	$dirname = dirname($cwd = $argv[0] ?? $_SERVER['SCRIPT_FILENAME'] ?? '.');
 	$cwd = $cwd[0] === '/'? $dirname. '/' : getcwd(). '/'. ($dirname === '.'? '' : $dirname. '/');
 
-	define('CMS_ROOT', dirname(dirname(dirname($cwd))). '/');
+	define('CMS_ROOT', dirname(dirname($cwd)). '/');
 }
 
 require CMS_ROOT. 'zenario/basicheader.inc.php';

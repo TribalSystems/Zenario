@@ -33,6 +33,10 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 		$documentEnvelopesModuleIsRunning = ze\module::inc('zenario_document_envelopes_fea');
 		$languages = ze\dataset::centralisedListValues('zenario_document_envelopes_fea::getEnvelopeLanguages');
 		
+		//If there are Vimeo videos, Zenario will load their privacy settings.
+		//This will be done using 1 query with multiple IDs.
+		$vimeoVideos = [];
+
 		foreach ($panel['items'] as $id => &$item) {
 			if (!empty($item['thumbnail_id'])) {
 				$item['traits']['has_image'] = true;
@@ -55,17 +59,65 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 				if ($parsed) {
 					$url = false;
 					if (strpos($parsed['host'], 'vimeo.com') !== false) {
-						$vimeoVideoId = (int)str_replace('/', '', $parsed['path']);
-						$videoData = zenario_videos_manager::getVimeoVideoData($vimeoVideoId);
-						$privacy = $videoData['privacy']['view'] ?? '';
-						$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
-					
-						if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
-							$privacyString = $vimeoPrivacySettingsFormattedNicely[$privacy]['note'];
-						} else {
-							$privacyString = $this->phrase('Sorry, cannot show privacy setting');
+						$vimeoVideoId = $parsed['path'];
+						if (substr($vimeoVideoId, 0, 1) == '/') {
+							$vimeoVideoId = substr($vimeoVideoId, 1);
 						}
-						$item['video_privacy'] = $privacyString;
+
+						//Remember the Zenario video ID for easier processing later.
+						$vimeoVideos[$vimeoVideoId] = $id;
+					}
+				}
+			}
+		}
+
+		if (ze::setting('vimeo_access_token')) {
+			$videosCount = count($vimeoVideos);
+			if ($videosCount > 0) {
+				//There appears to be a limit of IDs that can be passed to Vimeo,
+				//around 100. If the page size is set to 200, make 2 requests.
+				if ($videosCount > 100) {
+					$preserveKeys = true;
+					$videoIdsArray = [array_slice($vimeoVideos, 0, 100, $preserveKeys), array_slice($vimeoVideos, 100, 100, $preserveKeys)];
+				} else {
+					$videoIdsArray = [$vimeoVideos];
+				}
+
+				$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
+
+				foreach ($videoIdsArray as $videos) {
+					$videoData = zenario_videos_manager::getVimeoVideoDataForMultiple(array_keys($videos));
+					
+					if (is_array($videoData) && !empty($videoData['data']) && count($videoData['data']) > 0) {
+						foreach ($videoData['data'] as $video) {
+							//Match the Vimeo ID to Zenario video ID...
+							$videoId = str_replace('/videos/', '', $video['uri']);
+							
+							$itemId = $vimeoVideos[$videoId];
+							//Handle unlisted videos, which have an additional string after the URL.
+							//Vimeo response only contains the first part.
+							if (!$itemId) {
+								foreach ($vimeoVideos as $vimeoId => $zenarioId) {
+									if (stristr($vimeoId, $videoId) === false) {
+										continue;
+									} else {
+										$itemId = $zenarioId;
+										break;
+									}
+								}
+							}
+
+							$privacy = $video['privacy']['view'] ?? '';
+						
+							if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
+								$privacyString = $vimeoPrivacySettingsFormattedNicely[$privacy]['note'];
+							} else {
+								$privacyString = $this->phrase('Sorry, cannot show privacy setting');
+							}
+
+							//... and populate the value.
+							$panel['items'][$itemId]['video_privacy'] = $privacyString;
+						}
 					}
 				}
 			}

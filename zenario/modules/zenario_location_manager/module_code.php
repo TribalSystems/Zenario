@@ -2012,7 +2012,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', $locationId);
 		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data', $locationId);
 
-		ze\module::sendSignal('eventLocationDeleted', ["locationId" => $locationId]);
+		ze\module::sendSignal('eventLocationDeleted', [$locationId]);
 	}
 
 	public static function activateLocation($locationId) {

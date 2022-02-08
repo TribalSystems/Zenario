@@ -63,7 +63,7 @@
 
 			<div class="description">{{video.description}}</div>
 			<p class="date">{{video.date|e}}</p>
-			{% if video.privacy %}
+			{% if show_privacy_info and video.privacy %}
 				<div class="privacy">{{video.privacy}}</div>
 				{% if video.shareable_link %}
 					<div class="shareable_link">

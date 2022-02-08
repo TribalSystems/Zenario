@@ -32,8 +32,22 @@ class zenario_videos_fea__admin_boxes__plugin_settings extends zenario_videos_fe
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		ze\miscAdm::setupSlideDestinations($box, $fields, $values);
+
+		$sql = '
+			SELECT cat.id, cat.name, COUNT(cvl.video_id) AS count
+			FROM ' . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories cat
+			LEFT JOIN ' . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link cvl
+				ON cvl.category_id = cat.id
+			GROUP BY cat.id
+			ORDER BY cat.name';
 		
-		$fields['first_tab/category_filters']['values'] = ze\row::getAssocs(ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories', 'name');
+		$categories = ze\sql::select($sql);
+
+		$ord = 0;
+		while ($row = ze\sql::fetchAssoc($categories)) {
+			$category = ['label' => $row['name'] . ' (' . (int) ($row['count'] ?: 0) . ')', 'ord' => ++$ord];
+			$fields['first_tab/category_filters']['values'][$row['id']] = $category;
+		}
 		
 		$documentEnvelopesModuleIsRunning = ze\module::inc('zenario_document_envelopes_fea');
 		if (!$documentEnvelopesModuleIsRunning) {
@@ -49,5 +63,4 @@ class zenario_videos_fea__admin_boxes__plugin_settings extends zenario_videos_fe
         $hidden = $values['global_area/mode'] != 'list_videos' || !$values['first_tab/show_images'];
 		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'image_');
 	}
-	
 }
