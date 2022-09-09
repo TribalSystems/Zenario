@@ -42,9 +42,8 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 			$this->setPageTitle($this->video['title']);
 			
 			$this->userCanManageVideo = ze\user::can('manage', 'video', $this->videoId);
-		} else {
-			header('HTTP/1.0 404 Not Found');
 		}
+		
 		return true;
 	}
 	

@@ -110,8 +110,8 @@ define('COOKIE_TIMEOUT', 8640000);
 // If set to 0 then they will be logged out when quitting/restarting, but will otherwise
 // remain logged in until session.cookie_lifetime and/or session.gc_maxlifetime.
 // 
-// We recomment setting this to 900 (15 minutes).
-define('SESSION_TIMEOUT', 900);
+// We recomment setting this to 1800 (30 minutes).
+define('SESSION_TIMEOUT', 1800);
 
 
   /////////////////////

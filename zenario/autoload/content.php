@@ -1236,7 +1236,7 @@ class content {
 			$translatedLangs = [];
 			foreach (\ze::$langs as $langId => $lang) {
 				if ($lang['translate_phrases']) {
-					if ($langId == \ze::$langId) {
+					if ($langId == \ze::$visLang) {
 						$thisPageTranslatesPages = \ze::$status !== 'trashed' && \ze::$status !== 'deleted';
 						$somePagesOnThisSiteTranslatePages = false;
 						break;

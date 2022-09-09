@@ -1429,6 +1429,11 @@ _sql
 _sql
 
 , <<<_sql
+	DELETE FROM `[[DB_PREFIX]]group_link`
+	WHERE `link_from` = 'slide_layout'
+_sql
+
+, <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]group_link`
 	MODIFY COLUMN `link_from` enum('chain', 'slide') NOT NULL
 _sql
@@ -1614,6 +1619,48 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]writer_profiles`
 	DROP KEY `admin_id`,
 	ADD KEY (`admin_id`)
+_sql
+
+
+//Post branch fix.
+//Fix some bad data where some nests/slideshows were not flagged as nests/slideshows in the database.
+);	ze\dbAdm::revision( 55053
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
+		pi.is_nest = 0,
+		pi.is_slideshow = 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
+		pi.is_nest = 1,
+		pi.is_slideshow = 0
+	WHERE pi.module_id IN (
+		SELECT m.id
+		FROM `[[DB_PREFIX]]modules` AS m
+		WHERE m.class_name in ('zenario_plugin_nest')
+	)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
+		pi.is_nest = 0,
+		pi.is_slideshow = 1
+	WHERE pi.module_id IN (
+		SELECT m.id
+		FROM `[[DB_PREFIX]]modules` AS m
+		WHERE m.class_name in ('zenario_slideshow', 'zenario_slideshow_simple')
+	)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]inline_images` AS ii
+	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ii.foreign_key_id
+	SET
+		ii.is_nest = pi.is_nest,
+		ii.is_slideshow = pi.is_slideshow
+	WHERE ii.foreign_key_to = 'library_plugin'
 _sql
 
 );

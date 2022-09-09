@@ -838,7 +838,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				
 				if ($mode === 'full' || $mode == 'get_item_data') {
 					$item['frontend_link'] = ze\link::toItem(
-						$item['id'], $item['type'], false,$item['alias'],
+						$item['id'], $item['type'], false, '', $item['alias'],
 						$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
 						$item['equiv_id'], $item['language_id']
 					);

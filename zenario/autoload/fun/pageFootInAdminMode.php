@@ -145,6 +145,10 @@ if (empty($importantGetRequests)) {
 	$importantGetRequests = '{}';
 } else {
 	$importantGetRequests = json_encode($importantGetRequests);
+	
+	if (empty($importantGetRequests)) {
+		$importantGetRequests = '{}';
+	}
 }
 
 $adminHasSpecificPermsOnThisPage = 0;

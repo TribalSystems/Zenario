@@ -460,5 +460,6 @@ zenario__menu:
                         path: zenario_content
                         key:
                             id_is_menu_node_id: 1
+                            edit_linked_content_item: 1
                     with_columns_set:
                         content: true

@@ -32,6 +32,8 @@ zenario_content:
         target_menu_parent: ''
         target_menu_section: ''
         target_menu_title: ''
+
+        edit_linked_content_item: ''
         
         last_title: ''
     
@@ -120,6 +122,7 @@ zenario_content:
                     label: 'Release date:'
                     type: date
                     change_month_and_year: true
+                    allow_typing_in_date_field: true
                     side_note: |
                         The release date is the publicly-displayed date of this content item. It may be different from the date you edit or publish it.
                 menu:

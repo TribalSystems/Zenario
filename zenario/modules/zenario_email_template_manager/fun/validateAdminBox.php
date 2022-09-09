@@ -57,7 +57,7 @@ switch ($path) {
 				$privacy = ze\row::get('documents', 'privacy', ['id' => $values['meta_data/selected_attachment']]);
 				
 				if ($privacy == 'offline') {
-					$fields['meta_data/selected_attachment']['error'] = true;
+					$fields['meta_data/selected_attachment']['error'] = ze\admin::phrase('The selected document is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $privacy]);
 				}
 			}
 			
@@ -78,5 +78,4 @@ switch ($path) {
 			}
 		}
 		break;
-		
 }

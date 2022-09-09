@@ -910,6 +910,49 @@ additionalProperties:
                                         
                                         This works from version 8.6 onwards.
                                 
+                                change_month_and_year:
+                                    type: boolean
+                                    description: >
+                                        This can be used for <code>type: date</code> fields.
+
+                                        If set, the year and month selectors will be displayed in the datepicker
+                                        for easy navigation.
+
+
+                                        This works from version 9.2 onwards.
+                                
+                                year_range:
+                                    type: string
+                                    description: >
+                                        This can be used for <code>type: date</code> fields.
+
+                                        If set, the year picker will display years from a specific range.
+
+                                        Accepted formats:
+                                        <code>"c-15:c+2"</code>, to display a dynamic range for currently displayed year -15 and +2.
+                                        <code>"-2:+10"</code>, to display a fixed range for today's year -2 and +10.
+                                        <code>"1950:2030"</code>, to display a fixed range.
+                                        <code>"1950:-2"</code>, for a combination of a fixed starting year and the current year -2.
+
+                                        If not set, the default value will be "c-15:c+2".
+
+
+                                        This works from version 9.2 onwards.
+                                
+                                allow_typing_in_date_field:
+                                    type: boolean
+                                    description: >
+                                        This can be used for <code>type: date</code> fields.
+
+                                        If set, the datepicker field will no longer be read-only,
+                                        and the admin/user will be able to type in it.
+                                        
+                                        The field will accept dates which follow the "Organizer date format" setting,
+                                        set in "Date and time" site settings.
+
+
+                                        This works from version 9.2 onwards.
+
                                 name:
                                     type: string
                                     default: (defaults to the code name/id)

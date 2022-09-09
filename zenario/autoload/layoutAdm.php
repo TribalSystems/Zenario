@@ -167,21 +167,22 @@ class layoutAdm {
 		if ($duplicating) {
 		
 			// Copy slots to duplicated layout
-			$slots = \ze\row::getAssocs('layout_slot_link', 
-				['slot_name'], 
-				['layout_id' => $sourceLayoutId]);
-			if ($slots) {
-				$sql = '
-					INSERT IGNORE INTO '.DB_PREFIX.'layout_slot_link (
-						layout_id,
-						slot_name
-					) VALUES ';
-				foreach ($slots as $slot) {
-					$sql .= '("'.(int) $layoutId. '","'. \ze\escape::sql($slot['slot_name']). '"),';
-				}
-				$sql = trim($sql, ',');
-				\ze\sql::update($sql);
-			}
+			$sql = "
+				REPLACE INTO ". DB_PREFIX. "layout_slot_link (
+					layout_id,
+					slot_name,
+					`ord`,
+					`cols`,
+					small_screens
+				) SELECT 
+					". (int) $layoutId.  ",
+					slot_name,
+					`ord`,
+					`cols`,
+					small_screens
+				FROM ". DB_PREFIX. "layout_slot_link
+				WHERE layout_id = ". (int) $sourceLayoutId;
+			\ze\sql::update($sql);
 		
 			$sql = "
 				REPLACE INTO ". DB_PREFIX. "plugin_layout_link (

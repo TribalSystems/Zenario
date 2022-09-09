@@ -3,7 +3,7 @@
 zenario_content_privacy:
     priv: _PRIV_EDIT_DRAFT
     hide_tab_bar: true
-    max_height: 500
+    max_height: 600
     key:
         id: ""
         originalId: ""

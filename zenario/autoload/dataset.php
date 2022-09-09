@@ -486,8 +486,13 @@ class dataset {
 				$sql = "
 					SELECT COUNT(*)
 					FROM `". DB_PREFIX. \ze\escape::sql($field['is_system_field']? $dataset['system_table'] : $dataset['table']). "`
-					WHERE `". \ze\escape::sql($field['db_column']). "` IS NOT NULL
-					  AND `". \ze\escape::sql($field['db_column']). "` != ''";
+					WHERE `". \ze\escape::sql($field['db_column']). "` IS NOT NULL";
+				
+				//Compatibility code for MySQL 8: do not pass a blank string to a date type field.
+				if ($field['type'] != 'date') {
+					$sql .= "
+						AND `". \ze\escape::sql($field['db_column']). "` != ''";
+				}
 			}
 		
 			$result = \ze\sql::select($sql);

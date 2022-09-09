@@ -51,9 +51,9 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		return ze\row::get(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', true, ['id' => $id]);
 	}
 	
-	public static function testSendEmailTemplate($body, $adminDetails, $email, $subject, $emailAddresFrom, $emailNameFrom) {
+	public static function testSendEmailTemplate($id, $body, $adminDetails, $email, $subject, $emailAddresFrom, $emailNameFrom, $attachments = []) {
 		//Identify this as a test email
-		$subject .= ' | TEST SEND';
+		$subject .= ' | TEST SEND (ID ' . (int) $id . ')';
 		
 		//Attempt to send the email
 		$emailOverriddenBy = false;
@@ -63,7 +63,9 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			$email,
 			$emailOverriddenBy,
 			$adminDetails['admin_first_name']. ' '. $adminDetails['admin_last_name'],
-			$emailAddresFrom, $emailNameFrom
+			$emailAddresFrom,
+			$emailNameFrom,
+			$attachments
 		);
 	}
 		

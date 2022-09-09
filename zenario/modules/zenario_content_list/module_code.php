@@ -590,27 +590,28 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$item['Local_File_Size'] = ze\file::formatSizeUnits($localFileDetails['size']);
 				}
 				
+				$item['Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, '', $row['alias'], false, false, $stayInCurrentLanguage = true);
+				$item['Full_Link'] = $this->escapeIfRSS($this->linkToItem($row['id'], $row['type'], true, '', $row['alias']));
+				
 				if ($s3FileDetails) {
 					$fileName = '';
-					$presignedUrl = '';	
 					if ($s3FileDetails['path']) {
 						$fileName = $s3FileDetails['path'].'/'.$s3FileDetails['filename'];
 					} else {
 						$fileName = $s3FileDetails['filename'];
 					}
+					
 					if ($fileName && ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
-						$presignedUrl = zenario_ctype_document::getS3FilePresignedUrl($fileName);
-						if ($presignedUrl) {
-							$item['S3_Anchor_Link'] =  $presignedUrl;
+						if (ze::setting('mod_rewrite_enabled') && ze::setting('mod_rewrite_admin_mode')) {
+							$fullpath = true;
+						} else {
+							$fullpath = false;
 						}
+
+						$item['S3_Anchor_Link'] = $this->linkToItem($row['id'], $row['type'], $fullpath, '', $row['alias']);
 					}
 				}
-				//$item['S3_Anchor_Link'] =  $this->linkToItemAnchor($this->cID,$this->cType,true,'&DownloadS3=1&sids=' . $row['s3_file_id']);
-				$item['Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, '', $row['alias'], false, false, $stayInCurrentLanguage = true);
 				
-				
-				
-				$item['Full_Link'] = $this->escapeIfRSS($this->linkToItem($row['id'], $row['type'], true, '', $row['alias']));
 				$item['Content_Type'] = $row['type'];
 				$item['Title'] = $this->escapeIfRSS($row['title']);
 				$item['Keywords'] = $this->escapeIfRSS($row['keywords']);
@@ -1030,34 +1031,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$moreLinkText = $this->phrase($moreLinkText);
 			}
 		}
-		//Download S3 
-		/*if (isset($_GET['DownloadS3']) && $_GET['DownloadS3'] == 1) {
-			$getS3Ids = $_GET['sids'];
-			$fileName = '';
-			$presignedUrl = '';	
-			if ($getS3Ids) {
-				$fileDetails = ze\row::get('files', ['filename','path'], $getS3Ids);
-				if ($fileDetails['path']) {
-					$fileName = $fileDetails['path'].'/'.$fileDetails['filename'];
-				} else {
-					$fileName = $fileDetails['filename'];
-				}
-				if ($fileName) {
-					if (ze\module::inc('zenario_ctype_document')) {
-						$presignedUrl = zenario_ctype_document::getS3FilePresignedUrl($fileName);
-					}
-					if ($presignedUrl) {
-						echo '<script type="text/javascript">
-								window.open("'. $presignedUrl .'", "_blank")
 
-							 </script>';
-					}
-				}
-			}
-			
-		}*/
 		//To add Zip download link
-		
 		$downLoadpage = false;
 		$linkResult = [];
 		$fileName = $this->phrase('Prepare zip');
@@ -1605,14 +1580,14 @@ class zenario_content_list extends ze\moduleBaseClass {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {
 			case 'site_settings':
-			//If a user has entered the value, validate it.
-			//If the user has not enterd anything then default value is 64, set in saveAdminBox.
-			if ($box['setting_group'] == 'external_programs'){
-				if(strlen($values['zip/max_unpacked_size']) > 0 && $values['zip/max_unpacked_size'] < 1 )
-				{
-					$fields['zip/max_unpacked_size']['error'] = ze\admin::phrase('Please enter an integer number, and a minimum of 1.');
+				//If a user has entered the value, validate it.
+				//If the user has not enterd anything then default value is 64, set in saveAdminBox.
+				if ($box['setting_group'] == 'external_programs'){
+					if(strlen($values['zip/max_unpacked_size']) > 0 && $values['zip/max_unpacked_size'] < 1 )
+					{
+						$fields['zip/max_unpacked_size']['error'] = ze\admin::phrase('Please enter an integer number, and a minimum of 1.');
+					}
 				}
-			}
 				break;
 		}
 		

@@ -228,8 +228,8 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			$this->mergeFields['CopyLink'] = $this->linkToItem($this->targetID, $this->targetType, $fullpath = true, $request);
 
 			$this->mergeFields['Aws_Link'] = ze::setting('aws_s3_support');
-			$this->mergeFields['Show_S3_File_Type_And_Size'] = $this->mergeFields['Aws_Link'] && ze::setting('show_s3_file_type_and_size');
-			$this->mergeFields['S3_Size'] = ', '.$s3Filesize;
+			$this->mergeFields['Show_S3_File_Type_And_Size'] = $this->mergeFields['Aws_Link'] && $this->setting('show_s3_file_type_and_size');
+			$this->mergeFields['S3_Size'] = $s3Filesize;
 			$this->mergeFields['File_Size'] = $localFileSize;
 			$this->mergeFields['S3_Link'] = $s3Link;
 			$this->mergeFields['Google_Analytics_Link'] = htmlspecialchars(ze\file::trackDownload($link));

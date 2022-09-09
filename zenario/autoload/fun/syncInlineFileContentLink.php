@@ -59,9 +59,10 @@ while ($fileIdsInPlugin = \ze\sql::fetchRow($result)) {
 	}
 }
 
-//Note down the sticky image for this Content Item, if there is one
+//Note down the feature image for this Content Item, if there is one
+$featureImageId = 0;
 if ($fileId = \ze\row::get('content_item_versions', 'feature_image_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion])) {
-	$fileIds[$fileId] = $fileId;
+	$fileIds[$fileId] = $featureImageId = $fileId;
 }
 
 //Do a quick check to see if all of those ids exist, only add the ones in the database!
@@ -110,6 +111,23 @@ while ($row = \ze\sql::fetchAssoc($result)) {
 		'foreign_key_version' => $cVersion],
 	$keepOldImagesThatAreNotInUse = true);
 
+//If there is no feature image, and the "Flag the first-uploaded image as the featured image" setting
+//is enabled for this content type, and the first image has just been uploaded, try to flag it now.
+if (!$featureImageId) {
+	if (ze\row::get('content_types', 'auto_flag_feature_image', ['content_type_id' => $cType]) && count($files) > 0) {
+		$inlineImagesCount = ze\row::count('inline_images', ['foreign_key_to' => 'content', 'foreign_key_id' => $cID, 'foreign_key_char' => $cType, 'foreign_key_version' => $cVersion]);
+
+		if ($inlineImagesCount == 1) {
+			$featureImageId = array_key_first($files);
+		}
+
+		//If unflagging a feature image, don't flag anything else as feature image.
+		if ($featureImageId && empty($_REQUEST['unflag_as_feature'])) {
+			ze\contentAdm::updateVersion($cID, $cType, $cVersion, ['feature_image_id' => $featureImageId]);
+		}
+	}
+}
+
 //Update the Content in the cache table
 $text = trim(strip_tags($content));
 \ze\row::set('content_cache', ['text' => $text, 'text_wordcount' => str_word_count($text)], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
@@ -131,6 +149,10 @@ if ($publishing && !empty($files)) {
 		if ($file['usage'] == 'image'
 		 && $file['privacy'] == 'auto') {
 			\ze\row::update('files', ['privacy' => $privacy], $fileId);
+			
+			if ($citemPrivacy == 'public') {
+				\ze\file::addPublicImage($fileId);
+			}
 		}
 	}
 }

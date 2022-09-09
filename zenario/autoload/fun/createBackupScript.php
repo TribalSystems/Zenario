@@ -321,6 +321,10 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 				} elseif (is_numeric($value) && $value != '' && false === strpbrk($value, 'exEX')) {
 					$inserts .= $value;
 		
+				//Catch JSON-type columns
+				} elseif (is_array($value)) {
+					$inserts .= \ze\escape::json($value);
+		
 				//Otherwise, write the value quoted and escaped
 				} else {
 					$inserts .= "'". \ze\escape::sql($value). "'";

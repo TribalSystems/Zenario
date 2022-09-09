@@ -1071,15 +1071,30 @@ class welcome {
 				$values['3/multi_db_prefix'] = 'z_';
 			}
 		}
-		//To show current version of Zenariosite
-		$currentVersion = \ze\site::versionNumber();
-		$currentVersionArr = explode(" ",$currentVersion);
-		if(sizeof($currentVersionArr)>0){
-			$currentVersion=str_replace(".","",$currentVersionArr[0]);
+
+		// See if there are clues for the database name, username and password
+		if (file_exists("../zenario-clues.txt")) {
+			$cluesHandle = fopen("../zenario-clues.txt", "r");
+			$clues = fread($cluesHandle,filesize("../zenario-clues.txt"));
+			$cluesArr = explode (" ", $clues);
+			fclose($cluesHandle);
+			$fields['3/description']['snippet']['html'] .= 'Note! AWS zenario-clues file found, so the database name, username and password have been pre-populated with known working values. Do not change these!';
 		}
+
+		//Get current version of Zenario so as to name the database, if no clues present
 		if (!isset($fields['3/name']['current_value'])) {
-			$values['3/name'] = 'zenariosite_'.$currentVersion;
-		}		
+			$values['3/name'] = 'zenario_client1_'. ZENARIO_MAJOR_VERSION. ZENARIO_MINOR_VERSION;
+		}
+
+		if (isset($cluesArr)) {
+			if (!isset($fields['3/user']['current_value']) && $cluesArr[1]) {
+				$values['3/user'] = $cluesArr[1];
+			}
+
+			if (!isset($fields['3/password']['current_value']) && $cluesArr[2]) {
+				$values['3/password'] = $cluesArr[2];
+			}
+		}
 		
 		//Validation for Step 1: Check if the Admin has accepted the license
 		$licenseAccepted = !empty($values['1/i_agree']);

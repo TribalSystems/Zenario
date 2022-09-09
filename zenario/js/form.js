@@ -1730,7 +1730,11 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	
 	
 	
-	if (fieldType != 'checkboxes'
+	if (!field.pick_items
+	 && !field.upload
+	 && fieldType != 'radio'
+	 && fieldType != 'checkbox'
+	 && fieldType != 'checkboxes'
 	 && (tag = thus.displayAsTag(field, readOnly))) {
 		
 		if (isFormattedNumber) {
@@ -2390,15 +2394,26 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					html += '<input';
 					extraAtt.type = 'text';
 					extraAtt['class'] += ' zenario_datepicker';
+
+					var allowTypingInDateField = !!engToBoolean(field.allow_typing_in_date_field);
+
+					var yearRange;
+					if (field.year_range) {
+						yearRange = field.year_range
+					} else {
+						yearRange = "c-15:c+2";
+					}
+
+                    if (!allowTypingInDateField) {
+                        extraAtt.readonly = 'readonly';
+                    }
 			
-					extraAtt.readonly = 'readonly';
-			
-					if (!readOnly) {
+					if (!readOnly && !allowTypingInDateField) {
 						extraAtt.onkeyup =
 							(extraAtt.onkeyup || '') +
 							"zenario.dateFieldKeyUp(this, event, '" + htmlspecialchars(id) + "');";
 					}
-					
+
 					cb.after(function() {
 						var $field = $(thus.get(id)),
 							changeMonthAndYear = !!engToBoolean(field.change_month_and_year);
@@ -2406,11 +2421,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						$field.datepicker({
 							changeMonth: changeMonthAndYear,
 							changeYear: changeMonthAndYear,
+							yearRange: yearRange,
 							dateFormat: (zenarioA.siteSettings && zenarioA.siteSettings.organizer_date_format) || zenario.dpf,
 							altField: thus.get('_value_for__' + id),
 							altFormat: 'yy-mm-dd',
 							showOn: 'focus',
-							disabled: readOnly,
+							disabled: (readOnly && !allowTypingInDateField),
 							onSelect: function(dateText, inst) {
 								$field.change();
 								//zenarioAB.fieldChange(this.name);
@@ -2896,7 +2912,7 @@ methods.testURL = function(id) {
 			iframe: true,
 			width: '95%',
 			height: '95%',
-			className: 'zenario_url_test_colorbox'
+			className: 'zenario_admin_cb zenario_url_test_colorbox'
 		});
 	
 	} else {

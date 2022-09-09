@@ -147,6 +147,11 @@ class zenario_abstract_list extends zenario_abstract_manager {
 			list($this->rows) = ze\sql::fetchRow($result);
 			
 			$importantGetRequests = ze\link::importantGetRequests();
+
+			//Make sure the page size is not a negative number.
+			if ((int) $this->pageSize <= 0) {
+				$this->pageSize = 10;
+			}
 			
 			$this->totalPages = (int) ceil($this->rows / $this->pageSize);
 			for ($i = 1; $i <= $this->pageLimit && $i <= $this->totalPages; ++$i) {

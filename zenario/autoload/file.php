@@ -66,8 +66,7 @@ class file {
 	}
 	
 	private static function genericCheckError($filepath) {
-		$filename = basename($filepath);
-		return new \ze\error('INVALID', \ze\admin::phrase('The contents of the file "[[filename]]" are corrupted and/or invalid.', ['filename' => $filename]));
+		return new \ze\error('INVALID', \ze\admin::phrase('The contents of the file "[[filename]]" are corrupted and/or invalid.', ['filename' => basename($filepath)]));
 	}
 	
 	
@@ -100,17 +99,45 @@ class file {
 			
 			//Check the basic types match, and reject the file if not.
 			if ($basicType !== $scannedBasicType) {
-				//Special case for EPS files
 				if (substr($mimeType, 0, 22) == 'application/postscript' && $scannedMimeType == 'image/eps') {
-					//Do nothing, allow these files
+					//Special case for EPS files: do nothing, allow these files
+				} elseif ($mimeType == "text/csv" && \ze::in($scannedMimeType, 'text/csv', 'application/csv')) {
+					//Special case for CSV files: allow certain mime types
 				} else {
 					return self::genericCheckError($filepath);
 				}
 			}
 			
+			//For images, enforce that the exact format of the image's contents matches what the file
+			//extension says it should be. E.g. don't allow .PNGs renamed to .JPGs
+			if ($basicType == 'image'
+			 && $scannedBasicType == 'image'
+			 && $mimeType !== $scannedMimeType) {
+				
+				switch ($scannedMimeType) {
+					case 'image/gif':
+						return new \ze\error('MISSNAMED_GIF', \ze\admin::phrase('The file "[[filename]]" is a GIF, so its extension must be .gif (upper or lower case).', ['filename' => basename($filepath)]));
+						break;
+					case 'image/jpeg':
+						return new \ze\error('MISSNAMED_JPG', \ze\admin::phrase('The file "[[filename]]" is a JPG, so its extension must be .jpg or .jpeg (upper or lower case).', ['filename' => basename($filepath)]));
+						break;
+					case 'image/png':
+						return new \ze\error('MISSNAMED_PNG', \ze\admin::phrase('The file "[[filename]]" is a PNG, so its extension must be .png (upper or lower case).', ['filename' => basename($filepath)]));
+						break;
+					case 'image/svg+xml':
+						return new \ze\error('MISSNAMED_SVG', \ze\admin::phrase('The file "[[filename]]" is a SVG, so its extension must be .svg (upper or lower case).', ['filename' => basename($filepath)]));
+						break;
+					default:
+						return new \ze\error('INVALID', \ze\admin::phrase('The file "[[filename]]" has been saved with the wrong extension and cannot be accepted.', ['filename' => basename($filepath)]));
+				}
+			}
+			
 			//If this is an Office document, check both checks agree that it's an Office document
-			if (substr($mimeType, 0, 15) == 'application/vnd'
-			 && $scannedMimeType != 'application/octet-stream'
+			$exIsOffice = substr($mimeType, 0, 15) == 'application/vnd';
+			$scanIsOffice = substr($scannedMimeType, 0, 15) == 'application/vnd';
+			
+			if ($exIsOffice
+			 && !$scanIsOffice
 			 && substr($scannedMimeType, 0, 15) != 'application/vnd') {
 				
 				if ($scannedMimeType == 'application/encrypted') {
@@ -125,11 +152,17 @@ class file {
 				}
 			}
 			
+			//...and vice versa, don't let other files mascerade as Office docs
+			if ($scanIsOffice && !$exIsOffice) {
+				return self::genericCheckError($filepath);
+			}
+			
 			switch ($mimeType) {
 				//For a short list of files, check we have an exact match of mime-types
 				//(Everywhere else I'm being a little more flexiable as there is often disagreement about exactly what
 				// the mime-type for a file should be.)
 				case 'application/msword':
+				case 'application/pdf':
 				case 'application/zip':
 				case 'application/gzip':
 				case 'application/7z-compressed':
@@ -766,7 +799,7 @@ class file {
 			}
 			
 			header('Content-type: '. ($file['mime_type'] ?: 'application/octet-stream'));
-			header('Content-Disposition: attachment; filename="'. urlencode($filename). '"');
+			header('Content-Disposition: attachment; filename="'. \ze\file::safeName($filename). '"');
 			
 			\ze\cache::end();
 			if ($file['location'] == 'docstore') {
@@ -857,7 +890,7 @@ class file {
 	}
 	
 	//Produce a label for a file in the standard format
-	public static function labelDetails($fileId) {
+	public static function labelDetails($fileId, $filename = null) {
 		
 		$sql = '
 			SELECT id, filename, size, path, location, width, height, checksum, short_checksum, `usage`
@@ -866,7 +899,7 @@ class file {
 		
 		if ($file = \ze\sql::fetchAssoc($sql)) {
 			
-			$file['label'] = $file['filename'];
+			$file['label'] = $filename ?? $file['filename'];
 
 			$file['size'] = self::formatSizeUnits($file['size']);
 

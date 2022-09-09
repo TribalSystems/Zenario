@@ -65,21 +65,22 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$box['key']['cType'] = $box['key']['target_cType'];
 	
 			} elseif ($box['key']['id'] && $box['key']['id_is_menu_node_id']) {
-				//Create a new Content Item/Menu Node under an existing child one
-				$box['key']['target_menu'] = $box['key']['id'] . '_' . $box['key']['target_menu_section'];
-				
-				$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
-				$box['key']['cType'] = $box['key']['target_cType'];
+				if ($box['key']['edit_linked_content_item'] && ($menuContentItem = ze\menu::getContentItem($box['key']['id']))) {
+					//Edit an existing Content Item based on its Menu Node
+					$box['key']['cID'] = $menuContentItem['equiv_id'];
+					$box['key']['cType'] = $menuContentItem['content_type'];
+					ze\content::langEquivalentItem($box['key']['cID'], $box['key']['cType'], ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ze::$defaultLang));
+					$box['key']['source_cID'] = $box['key']['cID'];
+			
+					$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
+				} else {
+					//Create a new Content Item/Menu Node under an existing child one
+					$box['key']['target_menu'] = $box['key']['id'] . '_' . $box['key']['target_menu_section'];
+					
+					$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
+					$box['key']['cType'] = $box['key']['target_cType'];
+				}
 
-			} elseif ($box['key']['id'] && ($menuContentItem = ze\menu::getContentItem($box['key']['id']))) {
-				//Edit an existing Content Item based on its Menu Node
-				$box['key']['cID'] = $menuContentItem['equiv_id'];
-				$box['key']['cType'] = $menuContentItem['content_type'];
-				ze\content::langEquivalentItem($box['key']['cID'], $box['key']['cType'], ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ze::$defaultLang));
-				$box['key']['source_cID'] = $box['key']['cID'];
-		
-				$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
-		
 			} else {
 				$box['key']['target_menu_section'] = ze::ifNull($box['key']['target_menu_section'], ($_REQUEST['sectionId'] ?? false), ($_REQUEST['refiner__section'] ?? false));
 			}
@@ -144,6 +145,55 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$box['key']['source_cID'] = $_REQUEST['cID'] ?? false;
 				$box['key']['cType'] = $_REQUEST['cType'] ?? false;
 				$box['key']['cID'] = '';
+			}
+
+			if (isset($fields['meta_data/release_date'])) {
+				//Work out the placeholder format.
+				$format = ze::setting('organizer_date_format');
+				$placeholder = '';
+				switch ($format) {
+					case 'd/m/y':
+						$placeholder = 'd/mm/yy';
+						break;
+					case 'd/m/yy':
+						$placeholder = 'd/mm/yyyy';
+						break;
+					case 'dd/mm/y':
+						$placeholder = 'dd/mm/yy';
+						break;
+					case 'dd/mm/yy':
+						$placeholder = 'dd/mm/yyyy';
+						break;
+					case 'dd.mm.yy':
+						$placeholder = 'dd.mm.yyyy';
+						break;
+					case 'm/d/y':
+						$placeholder = 'm/d/yy';
+						break;
+					case 'm/d/yy':
+						$placeholder = 'm/d/yyyy';
+						break;
+					case 'mm/dd/y':
+						$placeholder = 'mm/dd/yy';
+						break;
+					case 'mm/dd/yy':
+						$placeholder = 'mm/dd/yyyy';
+						break;
+					case 'yy-mm-dd':
+						$placeholder = 'yyyy-mm-dd';
+						break;
+					case 'd M y':
+						$placeholder = 'd Mon yy';
+						break;
+					case 'd M yy':
+						$placeholder = 'd Mon yyyy';
+						break;
+					case 'M d, yy':
+						$placeholder = 'Mon d, yyyy';
+						break;
+				}
+
+				$fields['meta_data/release_date']['placeholder'] = $placeholder;
 			}
 		}
 
@@ -415,7 +465,20 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['file/file'] = $version['file_id'];
 				$values['file/s3_file_id'] = $version['s3_file_id'];
 				$values['file/s3_file_name'] = $version['s3_filename'];
-
+				
+				//If a file has already been selected, don't rely on Zenario's standard function for
+				//automatically looking up the label, as the internal filename might have been changed
+				//and be different to the one used here. Specifically use this filename.
+				if ($version['file_id']) {
+					if ($file = \ze\file::labelDetails($version['file_id'], $version['filename'])) {
+						
+						if (empty($fields['file/file']['values'])) {
+							$fields['file/file']['values'] = [];
+						}
+						$fields['file/file']['values'][$file['id']] = $file;
+					}
+				}
+				
 				if ($values['meta_data/writer_name']) {
 					$fields['meta_data/writer_id']['note_below'] = ze\admin::phrase(
 						"Zenario 9.2 migration: please note the previous writer name was [[writer_name]].",

@@ -405,15 +405,33 @@ To correct this, please ask your system administrator to perform a
 			} else {
 				$parts = explode('.', $name);
 				$extension = $parts[count($parts) - 1];
+				$mrg = [
+					'name' => $name,
+					'mimeType' => $mimeType,
+					'extension' => $extension
+				];
 			
 				echo
 					\ze\lang::phrase('This file could not be uploaded.', [], $moduleClass),
-					"\n\n",
-					\ze\lang::phrase('According to its name, "[[name]]" should be an [[extension]] file, but on scanning its contents it failed to match "[[mimeType]]".', [
-						'name' => $name,
-						'mimeType' => $mimeType,
-						'extension' => $extension
-					], $moduleClass),
+					"\n\n";
+				
+				if (isset($fileCheck->errors['MISSNAMED_GIF'])) {
+					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a GIF, so its extension must be .gif (upper or lower case).', $mrg, $moduleClass);
+				
+				} elseif (isset($fileCheck->errors['MISSNAMED_JPG'])) {
+					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a JPEG, so its extension must be .jpg or .jpeg (upper or lower case).', $mrg, $moduleClass);
+				
+				} elseif (isset($fileCheck->errors['MISSNAMED_PNG'])) {
+					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a PNG, so its extension must be .png (upper or lower case).', $mrg, $moduleClass);
+				
+				} elseif (isset($fileCheck->errors['MISSNAMED_SVG'])) {
+					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a SVG, so its extension must be .svg (upper or lower case).', $mrg, $moduleClass);
+				
+				} else {
+					echo \ze\lang::phrase('According to its name, "[[name]]" should be an [[extension]] file, but on scanning its contents it failed to match "[[mimeType]]".', $mrg, $moduleClass);
+				}
+				
+				echo
 					"\n\n",
 					\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass),
 					"\n\n",

@@ -75,60 +75,60 @@
 					{% if Custom_Fields %}
 						    {% for val in Custom_Fields_Values %}
 						      
-							{% if val.type == "text" %}        
-						        <div class="extranet_field">
-						        <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
-						        <input type = "{{val.type}}" name="{{val.name}}" value=""/><br/>
-						        </div>
-						    {% elseif val.type == "textarea" %}
-						        <div class="extranet_field">
-						         <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
-						        <textarea  name="{{val.name}}"></textarea>
-						        </div>
-							{% elseif val.type == "select" or val.type == "centralised_select" or val.type == "dataset_select"%}
-                                <div class="extranet_field">
-                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
-                                <select name="{{val.name}}">
-                                    {% for key, opt in val.values %}
-                                    <option value="{{ key }}">{{ opt.label }}</option>
-                                    {% endfor %}
-                                </select>
-                                </div>
-                            {% elseif val.type == "checkbox"%}
-                                <div class="extranet_field">
-                                <div class="label">
-                                <input type = "{{val.type}}" name="{{val.name}}" />
-                                <label for="{{val.label}}">{{val.label}}</label>
-                                </div>
-                                </div>
-                            {% elseif val.type == "consent" or  val.type == "group"%}
-                                <div class="extranet_field">
-                                <div class="label">
-                                <input type="checkbox" id="{{key}}" name="{{ val.name }}">
-                                <label for="{{val.label}}">{{val.label}}</label>
-                                </div>
-                                </div>
-                            {% elseif val.type == "radios" or val.type == "centralised_radios"%}
-                                <div class="extranet_field">
-                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
-                                {% for key, opt in val.values %}
-                                    <input type="radio" id="{{key}}" name="{{ val.name }}" value="{{key}}"> {{opt.label}}
-                                {% endfor %}
-                                </div>
-                           
-                            {% elseif val.type == "url"%}
-                                <div class="extranet_field">
-                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
-                                <input type="url"  name="{{ val.name }}" value="http://"/>
-                                </div>
-                            {% elseif val.type == "date" %}
-                                <div class="extranet_field">
-                                <div class="label"><label for="{{val.label}}">{{val.label}}</label></div>
-                              
-                                <input type="date"  name="{{ val.name }}" />
-                                </div>                  
-                            
-                            {% endif %}
+								{% if val.type == "text" %}
+									<div class="extranet_field">
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
+										<input id="{{val.name|e}}" type="{{val.type|e}}" name="{{val.name|e}}" value=""/><br/>
+									</div>
+								{% elseif val.type == "textarea" %}
+									<div class="extranet_field">
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
+										<textarea id="{{val.name|e}}" name="{{val.name|e}}"></textarea>
+									</div>
+								{% elseif val.type == "select" or val.type == "centralised_select" or val.type == "dataset_select"%}
+									<div class="extranet_field">
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
+										<select id="{{val.name|e}}" name="{{val.name|e}}">
+											{% for key, opt in val.values %}
+												<option value="{{key|e}}">{{opt.label|e}}</option>
+											{% endfor %}
+										</select>
+									</div>
+								{% elseif val.type == "checkbox"%}
+									<div class="extranet_field">
+										<div class="label">
+											<input id="{{val.name|e}}" type="{{val.type|e}}" name="{{val.name|e}}" />
+											<label for="{{val.name|e}}">{{val.label|e}}</label>
+										</div>
+									</div>
+								{% elseif val.type == "consent" or  val.type == "group"%}
+									<div class="extranet_field">
+										<div class="label">
+											<input id="{{val.name|e}}" type="checkbox" id="{{key|e}}" name="{{val.name|e}}">
+											<label for="{{val.name|e}}">{{val.label|e}}</label>
+										</div>
+									</div>
+								{% elseif val.type == "radios" or val.type == "centralised_radios"%}
+									<div class="extranet_field">
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
+										{% for key, opt in val.values %}
+											<input type="radio" id="{{key|e}}" name="{{val.name|e}}" value="{{key|e}}">
+											<label for="{{key|e}}">{{opt.label|e}}</label>
+										{% endfor %}
+									</div>
+							
+								{% elseif val.type == "url"%}
+									<div class="extranet_field">
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
+										<input id="{{val.name|e}}" type="url" name="{{val.name|e}}" value="http://"/>
+									</div>
+								{% elseif val.type == "date" %}
+									<div class="extranet_field">
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
+										<input id="{{val.name|e}}" type="date" name="{{val.name|e}}" />
+									</div>                  
+								
+								{% endif %}
                                 
                             {% endfor %}
 						

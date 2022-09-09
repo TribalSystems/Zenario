@@ -78,8 +78,10 @@ if (!ze\priv::check()) {
 	}
 
 } else {
+	//For http connections only.
 	//If the admin's IP changes while they're still logged in, log them out.
-	if (empty($_SESSION['admin_ip_at_login']) || $_SESSION['admin_ip_at_login'] != ze\user::ip()) {
+	if (empty($_SESSION['admin_ip_at_login'])
+	 || ($_SESSION['admin_ip_at_login'] != ze\user::ip() && !ze\link::isHttps())) {
 		\ze\admin::unsetSession();
 		header('location: '. ze\link::protocol(). $_SERVER["HTTP_HOST"]. SUBDIRECTORY. 'admin.php?desturl='. urlencode($_SERVER['REQUEST_URI']));
 		exit;

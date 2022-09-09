@@ -2865,15 +2865,15 @@ zenario.grecaptcha = function(elId) {
 	$(function() {
 		zenario.loadLibrary('https://www.google.com/recaptcha/api.js?render=explicit', function() {
 			
-			if (zenario.grecaptchaIsLoaded()) {
-				grecaptcha.render(elId, google_recaptcha);
-			} else {
-				setTimeout(function() {
-					$(function() {
-						grecaptcha.render(elId, google_recaptcha);
-					});
-				}, 75);
+			var areWeThereYet = function() {
+				if (zenario.grecaptchaIsLoaded()) {
+					grecaptcha.render(elId, google_recaptcha);
+				} else {
+					setTimeout(areWeThereYet, 100);
+				}
 			}
+
+			areWeThereYet();
 			
 		}, zenario.grecaptchaIsLoaded());
 	});

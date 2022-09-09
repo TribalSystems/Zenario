@@ -2640,91 +2640,102 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	private function savePageData($pageId, $post) {
 		$t = $this->form['translate_text'];
 		$setPreDefinedTextFieldId = false;
-		foreach ($this->pages[$pageId]['fields'] as $i => $fieldId) {
-			$field = $this->fields[$fieldId];
-			$name = static::getFieldName($fieldId, $field['custom_code_name']);
-			switch ($field['type']) {
-				case 'checkbox':
-				case 'group':
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = !empty($post[$name]);
-					break;
-				case 'calculated':
-				case 'url':
-				case 'text':
-				case 'date':
-				case 'radios':
-				case 'centralised_radios':
-				case 'select':
-				case 'centralised_select':
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $post[$name] ?? false;
-					break;
-				case 'textarea':
-					if (isset($post['set_predefined_text_' . $fieldId])) {
-						$setPreDefinedTextFieldId = $fieldId;
-					}
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $post[$name] ?? false;
-					break;
-				case 'checkboxes':
-					$lov = $this->getFieldCurrentLOV($fieldId);
-					$values = [];
-					foreach ($lov as $valueId => $label) {
-						if (!empty($post[$name . '_' . $valueId])) {
-							$values[] = $valueId;
-						}
-					}
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $values;
-					break;
-				case 'attachment':
-					if (!empty($_FILES[$name]) && isset($_FILES[$name]['size']) && $_FILES[$name]['size'] > 0 && ze\cache::cleanDirs()) {
-						ze\fileAdm::exitIfUploadError(true, true, true, $fileVar = $name);
-						try {
-							//Undefined | Multiple Files | $_FILES Corruption Attack
-							//If this request falls under any of them, treat it invalid.
-							if (!isset($_FILES[$name]['error']) || is_array($_FILES[$name]['error'])) {
-								throw new RuntimeException(static::fPhrase('Invalid parameters.', [], $t));
-							}
-							
-							//Check $_FILES[$name]['error'] value.
-							switch ($_FILES[$name]['error']) {
-								case UPLOAD_ERR_OK:
-									break;
-								case UPLOAD_ERR_NO_FILE:
-									//Handled by validateFormField
-									//throw new RuntimeException(static::fPhrase('No file sent.', [], $t));
-									break;
-								case UPLOAD_ERR_INI_SIZE:
-								case UPLOAD_ERR_FORM_SIZE:
-									$max = $this->getMaxUploadSize();
-									throw new RuntimeException(static::fPhrase('Exceeded filesize limit of [[max]].', ['max' => $max], $t));
-								default:
-									throw new RuntimeException(static::fPhrase('Unknown errors.', [], $t));
-							}
-							
-							//File is valid, add to cache and remember the location
-							$randomDir = ze\cache::createRandomDir(30, 'uploads');
-							if (!$randomDir) {
-								exit('Could not create cache directory in private/uploads');
-							}
-							$cacheDir = $randomDir. ze\file::safeName($_FILES[$name]['name'], true);
-							if (\ze\fileAdm::moveUploadedFile($_FILES[$name]['tmp_name'], CMS_ROOT. $cacheDir)) {
-								\ze\cache::chmod(CMS_ROOT. $cacheDir, 0666);
-								$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $cacheDir;
-							}
-							
-						} catch (RuntimeException $e) {
-							$this->errors[$fieldId] = $e->getMessage();
-						}
-					} elseif (isset($post['remove_attachment_' . $fieldId])) {
-						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = false;
-					} else {
+		
+		if (
+			!empty($this->pages)
+			&& is_array($this->pages)
+			&& !empty($pageId)
+			&& !empty($this->pages[$pageId])
+			&& is_array($this->pages[$pageId])
+			&& !empty($this->pages[$pageId]['fields'])
+			&& is_array($this->pages[$pageId]['fields'])
+		) {
+			foreach ($this->pages[$pageId]['fields'] as $i => $fieldId) {
+				$field = $this->fields[$fieldId];
+				$name = static::getFieldName($fieldId, $field['custom_code_name']);
+				switch ($field['type']) {
+					case 'checkbox':
+					case 'group':
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = !empty($post[$name]);
+						break;
+					case 'calculated':
+					case 'url':
+					case 'text':
+					case 'date':
+					case 'radios':
+					case 'centralised_radios':
+					case 'select':
+					case 'centralised_select':
 						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $post[$name] ?? false;
-					}
-					break;
-				case 'file_picker':
-				case 'document_upload':
-					$files = json_decode($post[$name], true);
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $files ? $files : [];
-					break;
+						break;
+					case 'textarea':
+						if (isset($post['set_predefined_text_' . $fieldId])) {
+							$setPreDefinedTextFieldId = $fieldId;
+						}
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $post[$name] ?? false;
+						break;
+					case 'checkboxes':
+						$lov = $this->getFieldCurrentLOV($fieldId);
+						$values = [];
+						foreach ($lov as $valueId => $label) {
+							if (!empty($post[$name . '_' . $valueId])) {
+								$values[] = $valueId;
+							}
+						}
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $values;
+						break;
+					case 'attachment':
+						if (!empty($_FILES[$name]) && isset($_FILES[$name]['size']) && $_FILES[$name]['size'] > 0 && ze\cache::cleanDirs()) {
+							ze\fileAdm::exitIfUploadError(true, true, true, $fileVar = $name);
+							try {
+								//Undefined | Multiple Files | $_FILES Corruption Attack
+								//If this request falls under any of them, treat it invalid.
+								if (!isset($_FILES[$name]['error']) || is_array($_FILES[$name]['error'])) {
+									throw new RuntimeException(static::fPhrase('Invalid parameters.', [], $t));
+								}
+								
+								//Check $_FILES[$name]['error'] value.
+								switch ($_FILES[$name]['error']) {
+									case UPLOAD_ERR_OK:
+										break;
+									case UPLOAD_ERR_NO_FILE:
+										//Handled by validateFormField
+										//throw new RuntimeException(static::fPhrase('No file sent.', [], $t));
+										break;
+									case UPLOAD_ERR_INI_SIZE:
+									case UPLOAD_ERR_FORM_SIZE:
+										$max = $this->getMaxUploadSize();
+										throw new RuntimeException(static::fPhrase('Exceeded filesize limit of [[max]].', ['max' => $max], $t));
+									default:
+										throw new RuntimeException(static::fPhrase('Unknown errors.', [], $t));
+								}
+								
+								//File is valid, add to cache and remember the location
+								$randomDir = ze\cache::createRandomDir(30, 'uploads');
+								if (!$randomDir) {
+									exit('Could not create cache directory in private/uploads');
+								}
+								$cacheDir = $randomDir. ze\file::safeName($_FILES[$name]['name'], true);
+								if (\ze\fileAdm::moveUploadedFile($_FILES[$name]['tmp_name'], CMS_ROOT. $cacheDir)) {
+									\ze\cache::chmod(CMS_ROOT. $cacheDir, 0666);
+									$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $cacheDir;
+								}
+								
+							} catch (RuntimeException $e) {
+								$this->errors[$fieldId] = $e->getMessage();
+							}
+						} elseif (isset($post['remove_attachment_' . $fieldId])) {
+							$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = false;
+						} else {
+							$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $post[$name] ?? false;
+						}
+						break;
+					case 'file_picker':
+					case 'document_upload':
+						$files = json_decode($post[$name], true);
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $files ? $files : [];
+						break;
+				}
 			}
 		}
 		//Set pre-defined text from trigger fields that have been set.

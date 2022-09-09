@@ -31,6 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_extranet_password_reset extends zenario_extranet {
 	
 	public function init() {
+		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+
 		$this->registerPluginPage();
 		
 		$this->allowCaching(
@@ -186,5 +188,4 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			return ($userPasswordResetTimePlusOneDay > $now);
 		}
 	}
-
 }

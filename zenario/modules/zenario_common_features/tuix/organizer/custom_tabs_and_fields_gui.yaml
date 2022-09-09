@@ -39,7 +39,7 @@ zenario__administration:
                             label:
                                 label: 'Label:'
                                 type: text
-                                maxlength: 255
+                                maxlength: 64
                                 note_below: The text of the label that appears before the field.
                                 visible_if: |
                                     item.type != 'other_system_field'

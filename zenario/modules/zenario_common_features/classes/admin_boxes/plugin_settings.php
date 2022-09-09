@@ -345,7 +345,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						}
 					} else {
 						if ($b && $c) {
+							//Don't show the "choice" section if the only option is to change the name.
+							$fields['first_tab/duplicate_or_rename']['hidden'] = true;
+							
+							$fields['first_tab/instance_name']['redraw_onchange'] =
+							$fields['first_tab/instance_name']['redraw_immediately_onchange'] = false;
+							
 							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this plugin.');
+						
 						} else {
 							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this plugin or save as a new plugin.');
 							
@@ -739,12 +746,19 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 	
 	//Should we offer the ability to duplicate the plugin
 	protected function canDuplicatePlugin($box) {
-		return $this->canRenamePlugin($box) && !$this->canReplacePlugin($box);
+		return $this->canRenamePlugin($box) && !$this->canReplacePlugin($box) && !$this->editingSettingsFromInsideNestOrSlideshow();
+	}
+	
+	//Also hide the rename option if this FAB is for a nest or slideshow that's opened from the 
+	//Nest settings/Sideshow settings button inside the Organizer panel for that nest/slideshow
+	protected function editingSettingsFromInsideNestOrSlideshow() {
+		return !empty($_REQUEST['refiner__nest']);
 	}
 	
 	//If editing a library plugin from the front-end, check to see if the admin is allowed to copy/replace the plugin
 	protected function canReplacePlugin($box) {
-		if (!$this->canRenamePlugin($box)
+		if ($this->editingSettingsFromInsideNestOrSlideshow()
+		 || !$this->canRenamePlugin($box)
 		 || !$box['key']['cID']
 		 || !$box['key']['frontEnd']
 		 || !$box['key']['instanceId']

@@ -31,6 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_extranet_change_password extends zenario_extranet {
 	
 	public function init() {
+		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+
 		$this->registerPluginPage();
 		
 		$this->mode = 'modeChangePassword';
@@ -105,5 +107,4 @@ class zenario_extranet_change_password extends zenario_extranet {
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 	}	
-
 }

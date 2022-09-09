@@ -5200,11 +5200,12 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 }
 
 #zenario_fbog.zenario_organizer_under_admin_box.zenario_panel_type__hierarchy_documents .dd3-item > button {
-	margin-left:12px;
+	margin-left:16px;
 }
 
 #zenario_fbog.zenario_organizer_under_admin_box.zenario_panel_type__hierarchy_documents .dd-item > button:before {
 	width:auto;
+	right:0;
 }
 
 #zenario_fbog.zenario_organizer_under_admin_box.zenario_panel_type__hierarchy_documents .dd-list .dd-list .dd3-item {
@@ -5872,6 +5873,17 @@ table.table-bordered td
 #organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row.organizer_tall_row_with_small_icon div.organizer_cells_items .organizer_inline_buttons div {
 	margin:0;
 	padding:0;
+}
+
+/* Cells to reorder */
+
+#organizer_rightColumnContent div.organizer_list_view_with_reorder .organizer_header .organizer_row #organizer_checkbox_col,
+#organizer_rightColumnContent div.organizer_list_view_with_reorder .organizer_list_view_body_wrap .organizer_cell.organizer_checkbox_col {
+	padding-left:22px;
+}
+
+#organizer_rightColumnContent div.organizer_list_view_with_reorder .organizer_list_view_body_wrap .organizer_cell.organizer_checkbox_col {
+	background: url('../admin/images/icon-drag-handle.svg') no-repeat left center / 30px 30px;
 }
 
 /* Styles for icons in usage columns */

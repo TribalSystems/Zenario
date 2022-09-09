@@ -170,7 +170,7 @@
 						{% if this.setting('show_location_list') and this.setting('show_map') %}
 							onclick="
 								if (typeof zenario_location_map_and_listing_2 !== 'undefined') {
-									zenario_location_map_and_listing_2.listingClick(this, {{location.location_id|e}})
+									zenario_location_map_and_listing_2.listingClick(this, {{location.this_location_id|e}})
 								};
 
 								if ($(this).find('.zenario_lmal_description').height() != '18')
@@ -178,8 +178,8 @@
 								else
 									$(this).find('.zenario_lmal_description').animate({ height: '100%' }, 100 );
 							"
-							onmouseover="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseover(this, {{location.location_id|e}})};"
-							onmouseout="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseout(this, {{location.location_id|e}})};"
+							onmouseover="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseover(this, {{location.this_location_id|e}})};"
+							onmouseout="if (typeof zenario_location_map_and_listing_2 !== 'undefined') {zenario_location_map_and_listing_2.listingMouseout(this, {{location.this_location_id|e}})};"
 						{% endif %}
 					>
 						<div id="{{location.htmlId|escape}}_basic_details">
@@ -288,8 +288,8 @@
 							<a
 								class="zenario_front_end_picked_item_info"
 								href="
-									{{Location_organizer_href_start}}{{location.location_id}}
-									{{Location_organizer_href_middle}}{{location.location_id}}
+									{{Location_organizer_href_start}}{{location.this_location_id}}
+									{{Location_organizer_href_middle}}{{location.this_location_id}}
 									{{Location_organizer_href_end}}"
 								target="_blank">i</a>
 						{% endif %}

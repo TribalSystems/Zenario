@@ -108,6 +108,7 @@ switch ($path) {
 		//Send a test email for the email template
 		$box['tabs']['meta_data']['notices']['test_send_error']['show'] = false;
 		$box['tabs']['meta_data']['notices']['test_send_sucesses']['show'] = false;
+		$box['tabs']['meta_data']['notices']['test_send_attachment_not_sent']['show'] = false;
 		if ($fields['meta_data/test_send_button']['pressed'] ?? false) {
 			$error = '';
 			$success = '';
@@ -136,6 +137,18 @@ switch ($path) {
 				}
 				
 				foreach (ze\ray::explodeAndTrim($values['meta_data/test_send_email_address']) as $email) {
+					$attachments = [];
+					if ($values['meta_data/include_a_fixed_attachment'] && $values['meta_data/selected_attachment']) {
+						$document = ze\row::get('documents', ['file_id', 'privacy'], ['id' => $values['meta_data/selected_attachment']]);
+						if ($document['privacy'] != 'offline') {
+							$file = ze\file::link($document['file_id']);
+							$attachments[] = realpath(rawurldecode($file));
+						} else {
+							$box['tabs']['meta_data']['notices']['test_send_attachment_not_sent']['message'] = ze\admin::phrase('The selected attachment is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $privacy]);
+							$box['tabs']['meta_data']['notices']['test_send_attachment_not_sent']['show'] = true;
+						}
+					}
+					
 					if (!ze\ring::validateEmailAddress($email)) {
 						$error .= ($error? "\n" : ''). ze\admin::phrase('"[[email]]" is not a valid email address.', ['email' => $email]);
 					} elseif (!$values['meta_data/body']) {
@@ -143,12 +156,14 @@ switch ($path) {
 						break;
 					} elseif ($box['key']['id'] 
 						&& !static::testSendEmailTemplate(
+							$box['key']['numeric_id'],
 							$body,
 							$adminDetails, 
 							$email, 
 							$values['meta_data/subject'], 
 							$emailAddressFrom,
-							$emailNameFrom
+							$emailNameFrom,
+							$attachments
 						)
 					) {
 						$error .= ($error? "\n" : ''). ze\admin::phrase("The test email(s) could not be sent. There could be a problem with the site's email system.");
@@ -167,7 +182,6 @@ switch ($path) {
 				$box['tabs']['meta_data']['notices']['test_send_sucesses']['message'] = $success;
 			}
 		}
-		
 			
 		break;
 }

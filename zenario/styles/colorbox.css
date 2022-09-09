@@ -23,7 +23,7 @@
 #colorbox{outline:0;}
     	#cboxContent{background:#333;font-family:verdana,arial,helvetica,sans-serif; font-size:12px; -webkit-border-radius: 6px; margin:5px; -moz-border-radius: 6px; border-radius: 6px; -webkit-box-shadow: 0px 0px 5px 0px ; box-shadow: 0px 0px 5px 0px ; border:10px solid #222;}
         #cboxError{padding:50px; border:1px solid #ccc;}
-        #cboxTitle{position:absolute; bottom:0; left:0; color:#fff; background:url(../admin/images/colorbox/overlay_bg_title.png) repeat 0 0; padding:6px 0; width:100%; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
+        #cboxTitle{position:absolute; bottom:0; left:0; color:#fff; background:url(../admin/images/colorbox/overlay_bg_title.png) repeat 0 0; padding:6px 0; width:100%; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; text-align:center; }
         #cboxCurrent{position:absolute; top:-20px; height:10px; left:0px; color:#fff; background:#222; font-size:9px; padding:2px 3px; }
         #cboxLoadingGraphic{background:url(../admin/images/colorbox/loading.gif) no-repeat center center;}
 
@@ -38,8 +38,8 @@
         #cboxPrevious:hover{background-position:bottom left;}
         #cboxNext{position:absolute; top:50%; right:5px; margin-top:-32px; background:url(../admin/images/colorbox/controls.png) no-repeat top right; width:28px; height:65px; text-indent:-9999px;}
         #cboxNext:hover{background-position:bottom right;}
-        #cboxClose{position:absolute; top:3px; right:3px; display:block; background:url(../admin/images/colorbox/close-btn.png) no-repeat top center; width:23px; height:23px; text-indent:-9999px;}
-        #cboxClose:hover{background-position:0 -23px;}
+        #cboxClose{position:absolute; top:5px; right:5px; display:block; background:#333 url(../admin/images/icon-close-off.svg) no-repeat top center; width:30px; height:30px; text-indent:-9999px;}
+        #cboxClose:hover{background:url(../admin/images/icon-close-over.svg) no-repeat;}
         
 #cboxTopLeft,
 #cboxTopCenter,

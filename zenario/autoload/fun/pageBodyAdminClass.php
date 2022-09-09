@@ -128,18 +128,18 @@ foreach ([
 }
 
 
-#if ($_SESSION['page_mode'] == 'edit' || $_SESSION['page_mode'] == 'layout') {
-#	$class .= ' zenario_slotWand_on';
-#} else {
+if ($_SESSION['page_mode'] == 'edit' || $_SESSION['page_mode'] == 'layout') {
+	$class .= ' zenario_slotWand_on';
+} else {
 	$class .= ' zenario_slotWand_off';
-#}
+}
 
 //Add the old class name for this for backwards compatability
-#if ($_SESSION['page_mode'] == 'layout') {
-#	$class .= ' zenario_pageMode_template';
-#} else {
+if ($_SESSION['page_mode'] == 'layout') {
+	$class .= ' zenario_pageMode_template';
+} else {
 	$class .= ' zenario_pageModeIsnt_template';
-#}
+}
 
 //Add a class when locked
 if (ze::$locked) {

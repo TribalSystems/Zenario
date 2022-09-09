@@ -331,9 +331,12 @@ body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .only_show_in_
 }
 
 
-/* Hide the slot contents tooltips when in preview mode, or when editing something on the page */
+/*
+	Hide the slot contents tooltips when in preview mode, menu mode, or when editing something on the page
+*/
 
 body.zenario_being_edited .zenario_whatsInSlotTooltip,
+body.zenario_pageMode_menu .zenario_whatsInSlotTooltip,
 body.zenario_pageMode_preview .zenario_whatsInSlotTooltip {
 	display:none !important;
 }

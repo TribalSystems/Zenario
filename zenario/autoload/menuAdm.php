@@ -364,55 +364,13 @@ class menuAdm {
 
 	//Formerly "addContentItemsToMenu()"
 	public static function addContentItems($tagIds, $menuTarget, $afterNeighbour = 0) {
-		//This code just adds one content item, unless multiple in the same were selected at once
-		$sql = "
-			SELECT
-				'__tmp__' AS section_id,
-				c.language_id,
-				IF(v.title != '', v.title, IF(c.alias != '', c.alias, c.tag_id)) AS name,
-				'int' AS 'target_loc',
-				c.equiv_id,
-				c.type AS content_type,
-				'secondary' AS redundancy
-			FROM ". DB_PREFIX. "content_items AS c
-			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
-			   ON v.id = c.id
-			  AND v.type = c.type
-			  AND v.version = c.admin_version
-			WHERE c.tag_id IN (". \ze\escape::in($tagIds, 'asciiInSQL'). ")
-			ORDER BY
-				c.type,
-				c.equiv_id,
-				c.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC,
-				c.language_id,
-				v.title";
-
-		$menuId = false;
-		$lastEquivTag = false;
-		$menuIds = [];
-		$result = \ze\sql::select($sql);
-		while ($row = \ze\sql::fetchAssoc($result)) {
-			if ($lastEquivTag != $row['content_type']. '_'. $row['equiv_id']) {
-				$lastEquivTag = $row['content_type']. '_'. $row['equiv_id'];
-				$menuId = false;
-			}
-	
-			$contentType = \ze\row::get('content_types', ['hide_private_item', 'hide_menu_node'], $row['content_type']);
-	
-			if ($contentType['hide_menu_node']) {
-				$row['invisible'] = true;
-			}
-			$row['hide_private_item'] = (int) $contentType['hide_private_item'];
-	
-			$menuId = \ze\menuAdm::save($row, $menuId, $resyncIfNeeded = false, $skipSectionChecks = true);
-			\ze\menuAdm::saveText($menuId, $row['language_id'], $row);
-			$menuIds[$menuId] = $menuId;
-		}
-
-		//By default, just move to the top level
+		
+		//First step, work out where we're putting these menu nodes.
+		//By default, just use the top level.
 		$newParentId = 0;
 		$newSectionId = $_POST['child__refiner__section'] ?? false;
 		$newNeighbourId = 0;
+		$numMoves = 0;
 
 		//Look for a menu node in the request
 		if ($menuTarget) {
@@ -464,13 +422,80 @@ class menuAdm {
 				}
 			}
 		}
+		
+		
+		//This code just adds one content item, unless multiple in the same were selected at once
+		$sql = "
+			SELECT
+				c.language_id,
+				IF(v.title != '', v.title, IF(c.alias != '', c.alias, c.tag_id)) AS name,
+				'int' AS 'target_loc',
+				c.equiv_id,
+				c.type AS content_type,
+				'secondary' AS redundancy
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+			   ON v.id = c.id
+			  AND v.type = c.type
+			  AND v.version = c.admin_version
+			WHERE c.tag_id IN (". \ze\escape::in($tagIds, 'asciiInSQL'). ")
+			ORDER BY
+				c.type,
+				c.equiv_id,
+				c.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC,
+				c.language_id,
+				v.title";
 
-		\ze\menuAdm::moveMenuNode(
-			$menuIds,
-			$newSectionId,
-			$newParentId,
-			$newNeighbourId,
-			$afterNeighbour);
+		$menuIds = [];
+		$menuId = false;
+		$lastEquivTag = false;
+		$newNeighbour = false;
+		$result = \ze\sql::select($sql);
+
+		//If a specific node was picked, move the selected nodes to that ordinal
+		if ($newNeighbourId) {
+			$numMoves = \ze\sql::numRows($result);
+			$newNeighbour = \ze\row::get('menu_nodes', 'ordinal', $newNeighbourId);
+			
+			//If there was a specific ordinal chosen, we'll need to bump up the ordinals of the existing Menu Node(s) after that ordinal
+			if ($newNeighbour !== false && $numMoves) {
+				$sql = "
+					UPDATE ". DB_PREFIX. "menu_nodes
+					SET ordinal = ordinal + ". (int) $numMoves. "
+					WHERE section_id = ". (int) $newSectionId. "
+					  AND parent_id = ". (int) $newParentId. "
+					  AND ordinal >= ". (int) ($newNeighbour + $afterNeighbour);
+				\ze\sql::update($sql);
+			}
+		}
+		$numMoves = 0;
+		
+		
+		while ($row = \ze\sql::fetchAssoc($result)) {
+			if ($lastEquivTag != $row['content_type']. '_'. $row['equiv_id']) {
+				$lastEquivTag = $row['content_type']. '_'. $row['equiv_id'];
+				$menuId = false;
+			}
+	
+			$contentType = \ze\row::get('content_types', ['hide_private_item', 'hide_menu_node'], $row['content_type']);
+	
+			if ($contentType['hide_menu_node']) {
+				$row['invisible'] = true;
+			}
+			$row['hide_private_item'] = (int) $contentType['hide_private_item'];
+			
+			$row['parent_id'] = $newParentId;
+			$row['section_id'] = $newSectionId;
+			
+			//If there was a specific ordinal chosen, move there
+			if ($newNeighbour !== false) {
+				$row['ordinal'] = $newNeighbour + $afterNeighbour + $numMoves++;
+			}
+			
+			$menuId = \ze\menuAdm::save($row, $menuId, $resyncIfNeeded = false, $skipSectionChecks = true);
+			\ze\menuAdm::saveText($menuId, $row['language_id'], $row);
+			$menuIds[$menuId] = $menuId;
+		}
 		
 		return $menuIds;
 	}

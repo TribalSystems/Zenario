@@ -350,7 +350,11 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 	protected static function setFirstUploadedImageAsFeatureImage($content, $imageId) {
 		if (ze\row::get('content_types', 'auto_flag_feature_image', ['content_type_id' => $content['type']])
 		 && !ze\row::get('content_item_versions', 'feature_image_id', ['id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version']])) {
-			self::setFeatureImage($content, $imageId);
+			$inlineImagesCount = ze\row::count('inline_images', ['foreign_key_to' => 'content', 'foreign_key_id' => $content['id'], 'foreign_key_char' => $content['type'], 'foreign_key_version' => $content['admin_version']]);
+			
+			if ($inlineImagesCount == 1) {
+				self::setFeatureImage($content, $imageId);
+			}
 		}
 	}
 	

@@ -1957,7 +1957,7 @@ zenarioGM.editProperties = function(el) {
 		levels,
 		data,
 		m = {},
-		cssClasses = ['zenario_grid_box', 'zenario_grid_rename_slot_box'];
+		cssClasses = ['zenario_admin_cb', 'zenario_grid_box', 'zenario_grid_rename_slot_box'];
 	
 	if (($cell = $(el).data('for'))
 	 && ($cell = $('#' + $cell))) {
@@ -2247,14 +2247,14 @@ zenarioGM.drawLinks = function() {
 	sel.height(Math.max(zenarioGM.gridAreaSmallestHeight, $(window).height() - $('body').height() - zenarioGM.bodyPadding));
 	
 	
-	var cssClasses1 = ['zenario_grid_box', 'zenario_grid_copy_box', 'zenario_grid_copy_css_box'];
+	var cssClasses1 = ['zenario_admin_cb', 'zenario_grid_box', 'zenario_grid_copy_box', 'zenario_grid_copy_css_box'];
 	$('#' + linksId + ' a.zenario_grid_copy_css').colorbox({
 		onOpen: function() { zenario.addClassesToColorbox(cssClasses1); },
 		onClosed: function() { zenario.removeClassesToColorbox(cssClasses1); },
 		onComplete: function() { $('#colorbox textarea').focus();}
 	});
 	
-	var cssClasses2 = ['zenario_grid_box', 'zenario_grid_copy_box', 'zenario_grid_copy_html_box'];
+	var cssClasses2 = ['zenario_admin_cb', 'zenario_grid_box', 'zenario_grid_copy_box', 'zenario_grid_copy_html_box'];
 	$('#' + linksId + ' a.zenario_grid_copy_html').colorbox({
 		onOpen: function() { zenario.addClassesToColorbox(cssClasses2); },
 		onClosed: function() { zenario.removeClassesToColorbox(cssClasses2); },
@@ -2291,7 +2291,7 @@ zenarioGM.save = function(saveAs) {
 	var data;
 	
 	if (saveAs) {
-		var cssClasses = ['zenario_grid_box', 'zenario_grid_new_layout_box'];
+		var cssClasses = ['zenario_admin_cb', 'zenario_grid_box', 'zenario_grid_new_layout_box'];
 		
 		if (data = zenario.nonAsyncAJAX(
 			zenarioGM.ajaxURL(),

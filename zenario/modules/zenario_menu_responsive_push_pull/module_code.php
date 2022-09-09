@@ -151,7 +151,7 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 						ze\menu::getStructure(
 							$cachingRestrictions,
 							$this->sectionId, $this->currentMenuId, $parentId,
-							1, $this->maxLevel1MenuItems, $this->language,
+							$this->numLevels, $this->maxLevel1MenuItems, $this->language,
 							$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
 							$this->showInvisibleMenuItems,
 							$this->showMissingMenuNodes,

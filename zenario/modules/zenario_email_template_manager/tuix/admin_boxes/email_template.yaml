@@ -31,6 +31,10 @@ zenario_email_template:
                     show: ""
                     type: error
                     message: ""
+                test_send_attachment_not_sent:
+                    show: ""
+                    type: warning
+                    message: ""
             fields:
                 template_name:
                     label: 'Email template name:'

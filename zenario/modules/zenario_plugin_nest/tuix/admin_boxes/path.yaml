@@ -116,5 +116,5 @@ zenario_path:
                     hide_if_previous_outdented_value_isnt: 1
                     snippet:
                         div_class: zenario_fbWarning
-                        div: 'Warning: No plugin on this slide is set to generate smart breadcrumbs.'
+                        div: 'Warning: No plugin on this slide is set to generate smart breadcrumbs. Edit the nest, select a suitable plugin, and click "Use for smart breadcrumbs".'
                     

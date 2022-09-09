@@ -631,7 +631,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		
 		$sql = "
 			SELECT
-				cd.location_id,";
+				loc.id AS this_location_id,";
 		
 		if (ze\datasetAdm::checkColumnExistsInDB(ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data", "special_offers")) {
 			$sql .= "		
@@ -737,9 +737,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		while ($row = ze\sql::fetchAssoc($result)) {
 			
 			$row['css_class'] = 'zenario_lmal_marker';
-			$row['htmlId'] = $this->containerId. '_loc_'. $row['location_id'];
+			$row['htmlId'] = $this->containerId. '_loc_'. $row['this_location_id'];
 			
-			$imageId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['sticky_flag' => '1', 'location_id' => $row['location_id']]);
+			$imageId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['sticky_flag' => '1', 'location_id' => $row['this_location_id']]);
 			
 			$row['alt_tag'] = ze\row::get('files', 'alt_tag', $imageId);
 			$row['list_image'] = self::getStickyImageLink($imageId);
@@ -794,7 +794,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		
 			foreach ($this->data['locations'] as $row) {
 				$this->data['locations_map_info'][] = [
-					'id' => $row['location_id'],
+					'id' => $row['this_location_id'],
 					'htmlId' => $row['htmlId'],
 					'latitude' => $row['latitude'],
 					'longitude' => $row['longitude'],

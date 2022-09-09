@@ -205,24 +205,25 @@ additionalProperties:
             type: *stringy
             modified_by_cms: true
             description: >
-                This would be the code-name of the current tab.
+                Forms are divided up into sections called "tabs".
                 
-                Note: different tabs are not supported at the moment!
+                Your form must have at least one tab. If you have multiple tabs, you can only display one at a time.
+                
+                You should enter the code-name of the tab you wish to display into this property.
             default: (the first tab of the form)
         
         tabs:
             type: object
             description: >
-                Forms are divided up into sections called "Tabs".
+                Forms are divided up into sections called "tabs".
                 
-                Your form must have at least one tab, and only one tab, because multiple tabs are not yet supported!
+                Your form must have at least one tab.
                 
-                To place fields on your form, you must create at least one tab to put them on.
+                If you wish to create a multi-stage form, you can use multiple tabs, one per stage of the form.
             
             additionalProperties:
                 type: object
                 required:
-                    - label
                     - fields
                 properties:
                     ord: *ord
@@ -690,16 +691,6 @@ additionalProperties:
             
             additionalProperties:
                 type: object
-                oneOf:
-                    -
-                        required:
-                            - ajax
-                    -
-                        required:
-                            - go
-                    -
-                        required:
-                            - href
                 properties:
                     ord: *ord
                     copy_of: *copy_of
@@ -981,16 +972,6 @@ additionalProperties:
                 Item buttons appear next to each item, and are for actions on that item
             additionalProperties:
                 type: object
-                oneOf:
-                    -
-                        required:
-                            - ajax
-                    -
-                        required:
-                            - go
-                    -
-                        required:
-                            - href
                 properties:
                     ord: *ord
                     copy_of: *copy_of

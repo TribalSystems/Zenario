@@ -250,7 +250,7 @@ zenarioT.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack,
 	
 	} else {
 		
-		$(el || document.body).on(
+		$(el || document.body).off().on(
 			'drop',
 			function(e) {
 				
@@ -548,7 +548,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		}
 	}
 	
-	var ajaxMethodCall;
+	var ajaxMethodCall, isAdmin = true;
 	switch (zenarioCallingLibrary.globalName) {
 		case 'zenarioO':
 			ajaxMethodCall = 'handleOrganizerPanelAJAX';
@@ -565,6 +565,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			break;
 		default:
 			ajaxMethodCall = 'handlePluginAJAX';
+			isAdmin = false;
 	}
 	
 	if (!link && object.link) {
@@ -878,8 +879,13 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			popout.href = zenario.addBasePath(popout.href);
 		}
 		
-		if (popout.css_class) {
-			var cssClasses = ('' + popout.css_class).split(' ');
+		if (isAdmin || popout.css_class) {
+			var cssClasses = ('' + (popout.css_class || '')).split(' ');
+			
+			if (isAdmin) {
+				cssClasses.push('zenario_admin_cb');
+			}
+			
 			popout.onOpen = function() { zenario.addClassesToColorbox(cssClasses); };
 			popout.onClosed = function() { zenario.removeClassesToColorbox(cssClasses); };
 		}

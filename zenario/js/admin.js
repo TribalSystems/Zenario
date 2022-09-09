@@ -409,7 +409,7 @@ zenarioA.showTutorial = function(nav, auto) {
 		innerHeight: 696,
 		maxHeight: '95%',
 		html: html,
-		className: 'zenario_tutorial_cbox',
+		className: 'zenario_admin_cb zenario_tutorial_cbox',
 		overlayClose: false,
 		escKey: false,
 		onComplete: function() {
@@ -2458,7 +2458,7 @@ zenarioA.showPagePreview = function(width, height, description, id) {
 		open: true,
 		title: title,
 		href: URLBasePath + 'index.php?cID=' + id + '&_show_page_preview=1',
-		className: 'zenario_page_preview_colorbox'
+		className: 'zenario_admin_cb zenario_page_preview_colorbox'
 	});
 };
 
@@ -3308,19 +3308,17 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
 };
 
 
+var lsCount = 0;
 zenarioA.addLinkStatus = function($el, status) {
     
     var code = 'link_status__' + status,
-    	msg = phrase[code];
+    	msg = phrase[code],
+    	thisId = 'zenario_link_status__' + ++lsCount;
     
-    $el.append(_$html('del', 'class', 'zenario_link_status zenario_' + code, _$html('del')));
+    $el.append(_$html('del', 'class', 'zenario_link_status zenario_' + code, 'id', thisId, _$html('del')));
     
     if (msg) {
-		$el.find('del.zenario_link_status > del').jQueryTooltip({
-			items: '*',
-			tooltipClass: 'zenario_link_status_tooltip',
-			content: msg
-		});
+    	zenarioA.tooltips('#' + thisId + ' > del', {content: msg, items: '*'});
 	}
 };
 

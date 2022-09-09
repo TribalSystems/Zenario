@@ -310,6 +310,9 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		// Filter locations by distance to postcode
 		$lat = $lng = $label = $error = false;
 		if ($this->setting('enable_postcode_search') && !empty($this->data['postcode'])) {
+			//Debug code if we ever need it
+			//echo 'https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_geocode_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']);
+			
 			$json = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_geocode_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
 			$data = json_decode($json, true);
 			switch ($data['status']) {
@@ -327,7 +330,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				case 'REQUEST_DENIED':
 				case 'INVALID_REQUEST':
 				case 'UNKNOWN_ERROR':
-					$error = $this->phrase('Unable to lookup postcode. Please try again later.');
+					$error = $this->phrase('Unable to lookup postcode. Please try again later. (Error: [[error_code]])', ['error_code' => $data['status']]);
 					break;
 			}
 		}

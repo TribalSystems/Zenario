@@ -955,7 +955,7 @@ methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 		preloading: false,
 		open: true,
 		title: thus.previewSlotWidthInfo || phrase.preview,
-		className: 'zenario_plugin_preview_popout_box',
+		className: 'zenario_admin_cb zenario_plugin_preview_popout_box',
 		href: href,
 		onComplete: onComplete
 	});

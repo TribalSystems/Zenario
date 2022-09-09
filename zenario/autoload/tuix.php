@@ -1455,12 +1455,16 @@ class tuix {
 							} elseif ($filling && $field[$currentValue] && !empty($field['upload'])) {
 								foreach (\ze\ray::explodeAndTrim($field[$currentValue], true) as $fileId) {
 								
-									if ($file = \ze\file::labelDetails($fileId)) {
-										if (empty($field['values'])) {
-											$field['values'] = [];
+									//But don't try to overwrite this if the dev has already customised this.
+									if (!isset($field['values'][$fileId])) {
+										
+										if ($file = \ze\file::labelDetails($fileId)) {
+											if (empty($field['values'])) {
+												$field['values'] = [];
+											}
+											
+											$field['values'][$fileId] = $file;
 										}
-									
-										$field['values'][$file['id']] = $file;
 									}
 								}
 						

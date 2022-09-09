@@ -274,11 +274,15 @@ class server {
 	public static function programPathForExec($path, $program, $checkExecutable = false) {
 	
 		if ($checkExecutable) {
-			$path = \ze\server::programPathForExec($path, $program, false);
-			if ($path && is_executable($path)) {
-				return $path;
+			if ($execPath = \ze\server::programPathForExec($path, $program, false)) {
+				if ($path == 'PATH') {
+					$execPath = exec('which '. escapeshellarg($program));
+				}
+				if (is_executable($execPath)) {
+					return $execPath;
+				}
 			}
-	
+		
 		} else {
 			if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
 				switch ($path) {

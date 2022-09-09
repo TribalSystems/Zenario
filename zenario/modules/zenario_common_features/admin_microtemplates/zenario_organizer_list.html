@@ -15,6 +15,10 @@
 			organizer_list_view_with_short_rows
 			<% zenarioO.firstColWidth = 30 + 20 * m.maxNumberOfInlineButtons + (m.canClickThrough? 9 : 0); %>
 		<% } %>
+		
+		<% if (zenarioO.tuix.reorder && zenarioO.tuix.reorder.column) { %>
+			organizer_list_view_with_reorder
+		<% } %>
 	"
 >
 

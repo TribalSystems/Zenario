@@ -1365,6 +1365,15 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	padding:5px 0;
 }
 
+#zenario_fbAdminInner .div_table .zfab_row#row__send_date .zfab_row_inner .zfab_row_fields {
+	display:flex;
+}
+
+#zenario_fbAdminInner .div_table .zfab_row#row__send_date .zfab_row_inner .zfab_row_fields span,
+#zenario_fbAdminInner .div_table .zfab_row#row__send_date .zfab_row_inner .zfab_row_fields select {
+	margin-right:5px;
+}
+
 /* Toggles checkboxes onoffswitch for FABs */
 
 #zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .zenario_input_checkbox label[for]::before,
@@ -5542,6 +5551,7 @@ body.ie10 #zenario_fabBox_readonlyMarker {
 	width: 416px;
 	height: auto;
 	overflow-y: hidden;
+	overflow-x: hidden;
 	padding:2px;
 }
 
@@ -5942,7 +5952,8 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 /* Styles crop tool
 --------------------------------------------------------------------------------------------------*/
 
-#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__crop_tool .zenario_image_in_form {
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__crop_tool .zenario_image_in_form,
+#zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__image .zenario_image_in_form {
 	background:url('../admin/images/checkered.gif') repeat;
 }
 

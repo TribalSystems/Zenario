@@ -38,7 +38,7 @@
 				{% endif %}
 			{% endif %}
 			{% if item.s3_File_Id %}
-				<a href="{{item.S3_Anchor_Link}}" download>{{S3_File_Link_Text}}</a>
+				<a href="{{item.S3_Anchor_Link}}"{{item.Target_Blank}}>{{S3_File_Link_Text}}...</a>
 				
 				{% if Show_Format_And_Size %}
 					({{item.S3_File_Size}})

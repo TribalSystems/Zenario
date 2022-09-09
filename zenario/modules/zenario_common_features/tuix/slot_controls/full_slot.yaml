@@ -300,7 +300,7 @@ full_slot:
             page_modes:
                 layout: true
             onclick: return zenarioA.removePlugin(this, slotName, 2);
-            label: Remove ~plugin~ from this content item
+            label: Remove ~plugin~ from this layout
     no_perms:
         cant_design:
             page_modes:

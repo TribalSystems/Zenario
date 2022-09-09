@@ -33,6 +33,8 @@ class zenario_extranet_registration extends zenario_extranet {
 	protected $customFormExtraErrors = [];
 	
 	public function init() {
+		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		
 		$this->registerPluginPage();
 		
 		$this->allowCaching(
@@ -79,10 +81,11 @@ class zenario_extranet_registration extends zenario_extranet {
 			if ($this->setting('user_email_verification')) {
 				$this->subSections['Second_Email'] = true;
 			}
+
 			if ($this->setting('show_salutation')) {
 		        $this->subSections['Salutation'] = true;
-			
 		    }
+
 		    if($this->setting('user_custom_fields')){
 		        $chosenCustomFields = $allCustomFields = [];
 		        $chosenCustomFields = explode(',', $this->setting('user_custom_fields'));
@@ -111,8 +114,12 @@ class zenario_extranet_registration extends zenario_extranet {
 				
 				//To maintain the order as in the plugin settings
 				$sortedArray = [];
-				for($i=0; $i<count($chosenCustomFields); $i++){
-				    $sortedArray[$chosenCustomFields[$i]] = $customDBColumns[$chosenCustomFields[$i]];
+				for ($i=0; $i<count($chosenCustomFields); $i++) {
+					//Catch the case where a custom field was removed from the dataset editor,
+					//but is still selected in the plugin settings.
+					if (!empty($customDBColumns[$chosenCustomFields[$i]])) {
+						$sortedArray[$chosenCustomFields[$i]] = $customDBColumns[$chosenCustomFields[$i]];
+					}
 				}
 				$customDBColumns = $sortedArray;
 				
@@ -388,7 +395,7 @@ class zenario_extranet_registration extends zenario_extranet {
 
 	protected function validateFormFields($section, $contactsCountAsUnregistered = false) {
 		$fields = parent::validateFormFields($section, $contactsCountAsUnregistered);
-		if ($section=='Registration_Form') {
+		if ($section == 'Registration_Form') {
 			if (!empty($_POST['first_name']) && mb_strlen($_POST['first_name']) > 25) {
 				$this->errors[] = ['Error' => $this->phrase('Your first name looks too long, are you sure this is your first name?')];
 			}
@@ -397,10 +404,10 @@ class zenario_extranet_registration extends zenario_extranet {
 				$this->errors[] = ['Error' => $this->phrase('Your last name looks too long, are you sure this is your last name?')];
 			}
 
-			if ($this->setting('user_password')=='user_to_choose_password'){
-				$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),false,get_class($this));
+			if ($this->setting('user_password') == 'user_to_choose_password') {
+				$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ($_POST['extranet_new_password_confirm'] ?? false), false, get_class($this));
 				if (count($errors)) {
-					$this->errors = array_merge ($this->errors, $errors);
+					$this->errors = array_merge($this->errors, $errors);
 					unset($_SESSION['captcha_passed__'. $this->instanceId]);
 					return false;
 				}
@@ -418,10 +425,11 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 			}
 		}
+
 		return $fields;
 	}
 
-	protected function addUserRecord(){
+	protected function addUserRecord() {
 		
 		//Depending on the settings, allow contacts to register as if they haven't already made an account.
 		switch ($this->setting('verified_account_status')) {
@@ -447,9 +455,9 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		if ($this->setting('show_salutation')) {
 		    //$this->subSections['Salutation'] = true;
-			
 		}
-		if ($this->errors){
+
+		if ($this->errors) {
 			return false;
 		}
 		
@@ -473,7 +481,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		$fields['email_verified'] = 0;
 		if ($this->setting('initial_account_status')=='pending'){
 			$fields['status'] = 'pending';
-			if ($this->setting('user_password')=='user_to_choose_password'){
+			if ($this->setting('user_password') == 'user_to_choose_password') {
 				$fields['password'] = $_POST['extranet_new_password'] ?? false;
 			} else {
 				$fields['password'] = ze\userAdm::createPassword();
@@ -481,14 +489,16 @@ class zenario_extranet_registration extends zenario_extranet {
 		} else {
 			$fields['status'] = 'contact';
 		}
+
 		$fields['created_date'] = date("Y-m-d H:i:s");
-		if ($this->setting('user_password')=='user_to_choose_password'){
+
+		if ($this->setting('user_password') == 'user_to_choose_password') {
 			$fields['password'] = $_POST['extranet_new_password'] ?? false;
 		} else {
 			$fields['password'] = ze\userAdm::createPassword();
 		}
 		
-		if(($_REQUEST['extranet_terms_and_conditions'] ?? false) && $this->setting('requires_terms_and_conditions') && ($this->setting('terms_and_conditions_page')) || $this->setting('url')) {
+		if (($_REQUEST['extranet_terms_and_conditions'] ?? false) && $this->setting('requires_terms_and_conditions') && ($this->setting('terms_and_conditions_page')) || $this->setting('url')) {
 			$fields['terms_and_conditions_accepted'] = 1;
 		}
 		
@@ -565,6 +575,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					}
 				}
 			}
+
 			// Save custom fields from frameworks (using framework field).
 			foreach (ze::$dbL->cols[$tableName] as $col => $colDef) {
 				if ($col != 'user_id' && (isset($fields[$col]) || isset($customFields[$col]))) {
@@ -591,6 +602,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($this->setting('enable_notifications_on_user_signup') && ($this->setting('user_signup_notification_email_template')) && ($this->setting('user_signup_notification_email_address'))){
 			$this->sendSignupNotification($userId);
 		}
+
 		if ($this->setting('initial_email_address_status')=='verified'){
 			$this->setEmailVerified($userId);
 		} elseif ($this->setting('initial_email_address_status')=='not_verified'){
@@ -599,8 +611,8 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 
 	protected function setEmailVerified($userId){
-		if ($userId){
-			$sql ="
+		if ($userId) {
+			$sql = "
 					UPDATE "
 						. DB_PREFIX . "users 
 					SET email_verified = 1";
@@ -739,7 +751,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			
 			//Deal with the fact that passwords are encrypted
 			// If user chose password, show ****
-			if ($this->setting('user_password')=='user_to_choose_password'){
+			if ($this->setting('user_password') == 'user_to_choose_password') {
 				$emailMergeFields['password'] = '********';
 			
 			// Otherwise generate a new password and show it
@@ -767,7 +779,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 	}
 
-	protected function sendActivationNotification($userId){
+	protected function sendActivationNotification($userId) {
 		if ($this->setting('user_activation_notification_email_address') && $this->setting('user_activation_notification_email_template')) {
 			$emailMergeFields = ze\user::details($userId);
 			$emailMergeFields['cms_url'] = ze\link::absolute();
@@ -865,18 +877,20 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		
 		$this->subSections['User_passwords'] = false;
-		if ($this->setting('user_password')=='user_to_choose_password'){
+		$userToChoosePassword = ($this->setting('user_password') == 'user_to_choose_password');
+		if ($userToChoosePassword) {
 			$this->subSections['User_passwords'] = true;
+			$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
 		}
-		
-		$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
 		
 		echo $this->openForm('',' class="form-horizontal"', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Registration_Form'] = true;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 		
-		$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
+		if ($userToChoosePassword) {
+			$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
+		}
 	}
 
 	protected function modeResend() {

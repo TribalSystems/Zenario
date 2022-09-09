@@ -196,7 +196,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		//which extends this one.
 		
 		//1) Custom title feature
-		$this->mergeFields['show_custom_title'] = $this->phrase($this->setting('show_custom_title'));
+		$this->mergeFields['show_custom_title'] = $this->setting('show_custom_title');
 		$this->mergeFields['title_tags'] = $this->setting('title_tags');
 		$this->mergeFields['custom_title'] = $this->setting('custom_title');
 

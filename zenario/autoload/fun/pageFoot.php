@@ -130,9 +130,8 @@ if ($isAdmin || $isWelcomeOrWizard) {
 	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
 	\ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
 	\ze::requireJsLib('zenario/js/admin.wrapper.js.php');
+	\ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 }
-
-\ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 
 
 //Loop through all of the libraries we're trying to include

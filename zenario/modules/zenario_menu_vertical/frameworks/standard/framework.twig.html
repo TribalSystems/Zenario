@@ -40,7 +40,7 @@
 				<h2 class="side_menu_title"><a href="{{Title.Parent_Link}}">{{Title.Parent_Name}}</a></h2>
 			{% endif %}
 		
-			{% if show_custom_title %}
+			{% if show_custom_title and custom_title %}
 				<{{title_tags}}>{{custom_title|trans}}</{{title_tags}}>
 			{% endif %}
 

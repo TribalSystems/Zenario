@@ -1,0 +1,99 @@
+{# This framework doesn't support AWS links S3. Or categories. #}
+
+{% if RSS %}{% include this.frameworkBaseDir() ~ 'includes/rss.twig.html' %}
+{% else %}
+	
+	{% include this.frameworkBaseDir() ~ 'includes/header.twig.html' %}
+	
+	{% set LINKS_IN_INCLUDES = true %}
+	
+	{% if Rows %}
+		{% for item in Row %}
+			<div class="content_list_item">
+			{% if LINKS_IN_INCLUDES %}
+				<a {{item.Link}}{{item.Target_Blank}} class="content_list_data_row_link">
+			{% endif %}
+		
+			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
+				{% if Show_Sticky_Image %}
+					<div class="sticky_image">
+						{% if item.Sticky_Image %}
+							<picture>
+								{% set i = 0 %}
+
+								{# WebP source: 1 source, responsive to retina setting. #}
+								{% if item.Sticky_Image_WebP %}
+									{% set i = i + 1 %}
+									<source id="{{containerId}}_source_{{i}}" srcset="{{item.Sticky_Image_WebP|e}}" type="image/webp">
+								{% endif %}
+
+								{# Non-WebP retina source #}
+								{% if item.Sticky_Image_Retina_Srcset %}
+									{% set i = i + 1 %}
+									<source id="{{containerId}}_source_{{i}}" srcset="{{item.Sticky_Image_Retina_Srcset|e}}" type="{{item.Sticky_Image_Mime_Type|e}}">
+								{% endif %}
+
+								{# Non-WebP fallback #}
+								<img class="{{item.Sticky_Image_Css_Class|e}}"
+									alt="{{item.Sticky_Image_Alt|e}}"
+									src="{{item.Sticky_Image_Src|e}}"
+									type="{{item.Sticky_Image_Mime_Type|e}}"
+									style="width: {{item.Sticky_Image_Width|e}}px; height: {{item.Sticky_Image_Height|e}}px;"
+								/>
+							</picture>
+						{% endif %}
+					</div>
+				{% endif %}
+				
+				<div class="content_list_text">
+					{% if Show_Item_Title %}
+						{% if item.Pinned or item.Pinned_Text %}
+							<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
+						{% endif %}
+							<{{Item_Title_Tags}}
+								class="
+									content_list_title
+									{{item.Content_Type|e}}
+									{% if item.Disabled %}
+										disabled_link
+									{% endif %}
+								"
+							>
+
+								{{item.Title|e}}
+			
+							</{{Item_Title_Tags}}>
+	
+					{% endif %}
+
+					{# As of 06 Sept 2021, the "Show writer's photo" setting is disabled. #}
+					{# Commenting out the code in case we want it back in the future. #}
+
+					{% if Show_Author_Image %}
+						<div class="content_list_author_image">
+							<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}" width="{{item.Author_Image_Width|e}}" height="{{item.Author_Image_Height|e}}"/>
+						</div>
+					{% endif %}
+
+					{% if Show_Author %}
+						<p class="content_list_author">{{item.Author|e}}</p>
+					{% endif %}
+					{% if Show_Date %}
+						<p class="content_list_date">{{item.Date|e}}</p>
+					{% endif %}
+					
+					{% include this.frameworkBaseDir() ~ 'includes/excerpt.twig.html' %}
+				</div>
+				
+			</div>
+
+			{% if LINKS_IN_INCLUDES %}
+				</a>
+			{% endif %}
+			</div>
+		{% endfor %}
+	{% endif %}
+	
+	{% include this.frameworkBaseDir() ~ 'includes/footer.twig.html' %}
+
+{% endif %}
