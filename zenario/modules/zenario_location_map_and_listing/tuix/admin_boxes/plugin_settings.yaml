@@ -10,7 +10,7 @@ plugin_settings:
                     ord: 0
                     snippet:
                         html: |
-                            This plugin will show a map and a list of all of the active locations on your site.
+                            This plugin will show a Google Map and a list of all of locations on your site. The site must have a valid Google Maps API key, and "Maps JavaScript API", "Maps JavaScript API" and "Geocoding API" enabled in Google Cloud. Only locations that are "active" and with a pin will be shown.
                 sector:
                     label: 'Show Locations from Sector:'
                     plugin_setting:
@@ -336,10 +336,10 @@ plugin_settings:
                     type: checkbox
                     label: 'Show images'
                     format_onchange: true
-                map_view_thumbnail_canvas:
+                image_2_canvas:
                     indent: 1
                     plugin_setting:
-                        name: map_view_thumbnail_canvas
+                        name: image_2_canvas
                     label: 'Image size on the map info window:'
                     type: select
                     value: unlimited
@@ -360,10 +360,10 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: true
-                map_view_thumbnail_width:
+                image_2_width:
                     indent: 3
                     plugin_setting:
-                        name: map_view_thumbnail_width
+                        name: image_2_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -373,10 +373,10 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                map_view_thumbnail_height:
+                image_2_height:
                     indent: 3
                     plugin_setting:
-                        name: map_view_thumbnail_height
+                        name: image_2_height
                     label: 'Height:'
                     type: text
                     validation:
@@ -402,10 +402,10 @@ plugin_settings:
                     note_below: |
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
-                list_view_thumbnail_canvas:
+                image_canvas:
                     indent: 1
                     plugin_setting:
-                        name: list_view_thumbnail_canvas
+                        name: image_canvas
                     label: 'Image size on the list:'
                     type: select
                     value: unlimited
@@ -426,10 +426,10 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: true
-                list_view_thumbnail_width:
+                image_width:
                     indent: 3
                     plugin_setting:
-                        name: list_view_thumbnail_width
+                        name: image_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -439,10 +439,10 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                list_view_thumbnail_height:
+                image_height:
                     indent: 3
                     plugin_setting:
-                        name: list_view_thumbnail_height
+                        name: image_height
                     label: 'Height:'
                     type: text
                     validation:

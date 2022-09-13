@@ -63,13 +63,19 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 		
 		//Check to see if consent cookies is needed/required
 		switch ($this->setting('cookie_consent')) {
-			case 'required':
-				ze\cookie::requireConsent();
 			case 'needed':
-				if (!ze\cookie::canSet('required')) {
+				if (!ze\cookie::canSet('necessary')) {
 					$this->raw_html = '';
 					return false;
 				}
+				break;
+			case 'specific_types':
+				$cookieType = $this->setting('cookie_consent_specific_cookie_types');
+				if (!(ze::in($cookieType, 'functionality', 'analytics', 'social_media') && ze\cookie::canSet($cookieType))) {
+					$this->raw_html = '';
+					return false;
+				}
+				break;
 		}
 		
 		if (!$this->isVersionControlled && $this->enablePhraseCodeReplace) {
@@ -127,10 +133,7 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 	}
 	
 	protected function hasJS(&$javascript) {
-		if (($javascript = trim($this->setting('minified_javascript')))
-		 && (self::canMinifyJavaScript())) {
-		
-		} elseif ($javascript = trim($this->setting('javascript'))) {
+		if ($javascript = trim($this->setting('javascript'))) {
 			$javascript = self::JS_PREFIX. "\n". $javascript. "\n". self::JS_SUFFIX;
 		
 		} else {
@@ -142,35 +145,8 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 		return true;
 	}
 	
-	protected static function canMinifyJavaScript() {
-		return !ze\server::isWindows() && ze\server::execEnabled();
-	}
-	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
-		if (self::canMinifyJavaScript()) {
-			if (!empty($fields['javascript/minify']['pressed'])) {
-				require_once CMS_ROOT. 'zenario/includes/js_minify.inc.php';
-				define('IGNORE_REVERTS', true);
-				define('RECOMPRESS_EVERYTHING', true);
-				
-				//Call the minifier to compress
-				$script = minifyString(self::JS_PREFIX. $values['javascript/javascript']. self::JS_SUFFIX);
-				
-				//Manipulate the results a bit to account for the fact that we're trying to add
-				//a couple of variables at the end.
-				$script = trim($script);
-				$script = ze\ring::chopPrefix("'use strict';", $script, true);
-				$script = ze\ring::chopSuffix($script, ';', true);
-				
-				$values['javascript/minified_javascript'] = $script;
-			}
-			$fields['javascript/minify']['hidden'] =
-			$fields['javascript/minified_javascript']['hidden'] = false;
-		} else {
-			$fields['javascript/minify']['hidden'] =
-			$fields['javascript/minified_javascript']['hidden'] = true;
-		}
+		//...
 	}
 	
 	public function fillAdminSlotControls(&$controls) {

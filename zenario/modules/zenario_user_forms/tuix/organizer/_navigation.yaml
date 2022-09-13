@@ -12,6 +12,7 @@ zenario__user_forms:
     nav:
         user_forms:
             ord: 1
+            css_class: zenario_user_forms
             label: Forms
             tooltip: 'Forms you can use on your site'
             link:

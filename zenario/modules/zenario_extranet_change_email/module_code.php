@@ -169,7 +169,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				if ($loggedInUserData['email'] == $_POST['extranet_email']) {
 					$this->errors[] = ['Error'=>$this->phrase('Error. The new email address is the same as the current one.')];
 				} else {
-					$this->errors[] = ['Error'=>$this->phrase('Error. The email address you entered is already in use.')];
+					$this->errors[] = ['Error'=>$this->phrase('Error. The new email address you entered is already in use.')];
 				}
 			}
 

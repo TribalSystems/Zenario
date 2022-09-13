@@ -19,6 +19,8 @@ zenario_smart_group:
         companiesExist: false
         locationsExist: false
         rolesExist: false
+        userTimersModuleIsRunning: false
+        userTimersExist: false
         activityBandsExist: false
         isNotMemberExist: false
         isMemberExist: false
@@ -32,7 +34,6 @@ zenario_smart_group:
         smart_group:
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 name: 
                     label: "Smart group name:"
@@ -282,6 +283,17 @@ zenario_smart_group:
                         zenarioAB.value('type__znz') == 'role'
                         && tuix.key.intended_usage == 'smart_newsletter_group'
                 
+                timer_template__znz:
+                    same_row: true
+                    type: select
+                    values: timerTemplates
+                    empty_value: ' -- Select -- '
+                    visible_if: |
+                        (zenarioAB.value('type__znz') == 'has_a_current_timer' || zenarioAB.value('type__znz') == 'has_no_current_timer')
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: "Please select a timer template."
+                
                 td__znz:
                     same_row: true
                     snippet: 
@@ -369,7 +381,16 @@ zenario_smart_group:
                 label:  Is not a member of any group
                 disabled_if: tuix.key.isNotMemberExist == false
 
+            has_a_current_timer:
+                ord: 10
+                parent: has_access_to
+                label: Has a current timer
+                visible_if: tuix.key.userTimersModuleIsRunning
+                disabled_if: tuix.key.userTimersExist == false
                 
-                
-    
-    
+            has_no_current_timer:
+                ord: 11
+                parent: has_access_to
+                label:  Has an expired timer and no current timer
+                visible_if: tuix.key.userTimersModuleIsRunning
+                disabled_if: tuix.key.userTimersExist == false

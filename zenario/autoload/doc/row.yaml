@@ -11,6 +11,7 @@ exists:
     <h2>Parameters</h2>
     <h3><code>$table</code></h3>
     <p style="margin-left: 40px;">The name of a table to check.</p>
+    <p style="margin-left: 40px;">You do not need to add the <code>DB_PREFIX</code>, this will be added automatically.</p>
     <h3><code>$ids</code></h3>
     <p style="margin-left: 40px;">An associative array of keys (column names) to values&nbsp;to search for; see <a href="format-of-id-and-values-for-database-functions.html">Format of $id and $values for Database Functions</a> for details.</p>
     <h3>&nbsp;</h3>
@@ -80,6 +81,7 @@ get:
     <h2>Parameters</h2>
     <h3><code>$table</code></h3>
     <p style="margin-left: 40px;">The name of a table to check.</p>
+    <p style="margin-left: 40px;">You do not need to add the <code>DB_PREFIX</code>, this will be added automatically.</p>
     <h3><code>$cols</code></h3>
     <p style="margin-left: 40px;">This can be either the name of a column, or an array of column names.</p>
     <p style="margin-left: 40px;">From Zenario 7.0.0 onwards you this can be set to <span class="code">true</span> to perform a <span class="code">SELECT *</span> query, returning every column in the table. However, as per our <a href="coding-standards.html">coding practices</a>, you should not do this unless you do need every row in the table.</p>
@@ -113,6 +115,7 @@ query:
     <h2>Parameters</h2>
     <h3><code>$table</code></h3>
     <p style="margin-left: 40px;">The name of a table to check.</p>
+    <p style="margin-left: 40px;">You do not need to add the <code>DB_PREFIX</code>, this will be added automatically.</p>
     <h3><code>$cols</code></h3>
     <p style="margin-left: 40px;">This can be either the name of a column, or an array of column names.</p>
     <p style="margin-left: 40px;">From Zenario 7.0.0 onwards you this can be set to&nbsp;<span class="code">true</span>&nbsp;to perform a&nbsp;<span class="code">SELECT *</span>&nbsp;query, returning every column in the table. However, as per our&nbsp;<a href="coding-standards.html">coding practices</a>, you should not do this unless you do need every row in the table.</p>
@@ -143,6 +146,7 @@ getArray:
     <h2>Parameters</h2>
     <h3><code>$table</code></h3>
     <p style="margin-left: 40px;">The name of a table to check.</p>
+    <p style="margin-left: 40px;">You do not need to add the <code>DB_PREFIX</code>, this will be added automatically.</p>
     <h3><code>$cols</code></h3>
     <p style="margin-left: 40px;">This can be either the name of a column, or an array of column names.</p>
     <p style="margin-left: 40px;">You this can be set to&nbsp;<span class="code">true</span>&nbsp;to perform a&nbsp;<span class="code">SELECT *</span>&nbsp;query, returning every column in the table. However, as per our&nbsp;<a href="coding-standards.html">coding practices</a>, you should not do this unless you do need every row in the table.</p>
@@ -196,6 +200,7 @@ count:
     <h2>Parameters</h2>
     <h3><code>$table</code></h3>
     <p style="margin-left: 40px;">The name of a table to check.</p>
+    <p style="margin-left: 40px;">You do not need to add the <code>DB_PREFIX</code>, this will be added automatically.</p>
     <h3><code>$ids</code></h3>
     <p style="margin-left: 40px;">An associative array of keys (column names) to values to search for; see <a href="format-of-id-and-values-for-database-functions.html">Format of $id and $values for Database Functions</a> for details.</p>
 max:
@@ -207,6 +212,7 @@ max:
     <h2>Parameters</h2>
     <h3><code>$table</code></h3>
     <p style="margin-left: 40px;">The name of a table to check.</p>
+    <p style="margin-left: 40px;">You do not need to add the <code>DB_PREFIX</code>, this will be added automatically.</p>
     <h3><code>$cols</code></h3>
     <p style="margin-left: 40px;">This can be either the name of a column, or an array of column names.</p>
     <p style="margin-left: 40px;">If you specify more than one&nbsp;column, then&nbsp;you'll get the <span class="code">MAX()</span> of each column in an array.</p>
@@ -221,6 +227,7 @@ min:
     <h2>Parameters</h2>
     <h3><code>$table</code></h3>
     <p style="margin-left: 40px;">The name of a table to check.</p>
+    <p style="margin-left: 40px;">You do not need to add the <code>DB_PREFIX</code>, this will be added automatically.</p>
     <h3><code>$cols</code></h3>
     <p style="margin-left: 40px;">This can be either the name of a column, or an array of column names.</p>
     <p style="margin-left: 40px;">If you specify more than one&nbsp;column, then&nbsp;you'll get the <span class="code">MIN()</span> of each column in an array.</p>

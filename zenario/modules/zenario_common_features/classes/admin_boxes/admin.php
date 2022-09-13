@@ -123,6 +123,13 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 							if (!empty($perms[$valueName])) {
 								$items[] = $valueName;
 							}
+							
+							//Show the code names of permissions to developers
+							if (ze\admin::setting('show_dev_tools')) {
+								//$value['side_note'] = $valueName;
+								//$value['label'] = ($value['label'] ?? '') . ' ('. $valueName. ')';
+								$value['post_field_html'] = ' (<code>'. htmlspecialchars($valueName). '</code>)';
+							}
 						}
 						
 						if ($allPerms) {
@@ -212,11 +219,11 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			
 			
 			$box['tabs']['details']['edit_mode']['enabled'] =
-			$box['tabs']['details']['edit_mode']['always_on'] =
 			$box['tabs']['password']['edit_mode']['enabled'] =
-			$box['tabs']['password']['edit_mode']['always_on'] =
-			$box['tabs']['permissions']['edit_mode']['enabled'] =
-			$box['tabs']['permissions']['edit_mode']['always_on'] = true;
+			$box['tabs']['permissions']['edit_mode']['enabled'] = true;
+			$box['tabs']['details']['edit_mode']['use_view_and_edit_mode'] =
+			$box['tabs']['password']['edit_mode']['use_view_and_edit_mode'] =
+			$box['tabs']['permissions']['edit_mode']['use_view_and_edit_mode'] =
 			$box['tabs']['details']['edit_mode']['enable_revert'] =
 			$box['tabs']['password']['edit_mode']['enable_revert'] =
 			$box['tabs']['permissions']['edit_mode']['enable_revert'] = false;

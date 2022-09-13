@@ -500,15 +500,7 @@ class link {
 				case '&download=true&cType=document':
 				case '&cType=document&download=1':
 				case '&cType=document&download=true':
-					
-					$currentContentType = \ze::$cType;
-					if (\ze::isAdmin() && $currentContentType != 'document') {
-						$download = false;
-					} else {
-						$download = '.download';
-					}
-					
-					return $fullPath. $aliasOrCID. $download;
+					return $fullPath. $aliasOrCID. '.download';
 			}
 		}
 	

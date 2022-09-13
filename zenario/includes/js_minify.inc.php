@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 define('CLOSURE_COMPILER_PATH', 'zenario/libs/not_to_redistribute/closure-compiler/closure-compiler.jar');
-define('YUI_COMPRESSOR_PATH', 'zenario/libs/manually_maintained/bsd/yuicompressor/yuicompressor-2.4.8.jar');
+define('YUI_COMPRESSOR_PATH', 'zenario/libs/not_to_redistribute/yuicompressor/yuicompressor-2.4.8.jar');
 
 define('DEBUG_DONT_MINIFY', false);
 
@@ -49,7 +49,7 @@ To use this tool:
  - You must download the closure-compiler.jar file from the site mentioned above.
  - This needs to be placed in the zenario/libs/not_to_redistribute/closure-compiler/ directory.
  - You must have a copy of the yuicompressor-2.4.8.jar file from the site mentioned above.
- - This needs to be placed in the zenario/libs/manually_maintained/bsd/yuicompressor/ directory.
+ - This needs to be placed in the zenario/libs/not_to_redistribute/yuicompressor/ directory.
 
 ";
 	exit;
@@ -979,7 +979,7 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 					
 					} elseif (!$isCSS) {
 						if (DEBUG_DONT_MINIFY) {
-							//Use this line ot skip the minification, useful for debugging the compilation macros
+							//Use this line to skip the minification, useful for debugging the compilation macros
 							copy($srcFile, $minFile);
 						
 						} else {
@@ -994,6 +994,15 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 									' --js '. 
 										escapeshellarg($srcFile)
 								, $output);
+						}
+						
+						if ($minFile == $dir. 'body.min.js') {
+							//Special case for zenario/body.js
+							//We'll want to manually initialise this with specific variables, so chop off the standard variables at the end.
+							$contents = file_get_contents($minFile);
+							$contents = explode(';ZENARIO_END_OF_SECTION()', $contents);
+							file_put_contents($minFile, $contents[0]);
+							file_put_contents($dir. 'body.anchor-fix.min.js', $contents[1]);
 						}
 					} else {
 						exec('java -jar '. escapeshellarg(YUI_COMPRESSOR_PATH). ' --type '. ($isCSS? 'css' : 'js'). ' '. $v. '--line-break 150 -o '.

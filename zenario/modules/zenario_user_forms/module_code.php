@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_user_forms extends ze\moduleBaseClass {
 	
-	protected $data = false;
+	protected $data = [];
 	protected $inFullScreen = false;
 	protected $dataset = false;
 	protected $form = false;
@@ -345,10 +345,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 					} else {
 						$pageId = $currentPageId;
-					}	
+					}
+
+					$this->callScript('zenario', 'scrollToSlotTop', $this->slotName, $neverScrollDown = false);
 				} elseif ($saveToCompleteLaterButtonPressed || $saveToCompleteLaterPageNav) {
-					$this->createFormPartialResponse();
-					if ($saveToCompleteLaterButtonPressed) {
+					$responseCreated = $this->createFormPartialResponse();
+					if ($saveToCompleteLaterButtonPressed && $responseCreated) {
 						if ($this->form['partial_completion_message']) {
 							$successMessage = static::fPhrase($this->form['partial_completion_message'], [], $t);
 						} elseif (ze\admin::id()) {
@@ -825,7 +827,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Do not display these field types
 			if ($field['type'] == 'repeat_start' 
 				|| $field['type'] == 'repeat_end' 
-				|| ($field['type'] == 'section_description' && !$field['show_in_summary'])
+				|| (ze::in($field['type'], 'section_description', 'section_spacer') && !$field['show_in_summary'])
 			) {
 				continue;
 			}
@@ -842,10 +844,22 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			//Show field if not hidden
 			if (!$pageIsHidden && !static::isFieldHiddenStatic($field, $fields)) {
-				$label = $field['label'] ? $field['label'] : $field['name'];
-				if ($field['type'] == 'section_description') {
-					$html .= '<tr><th colspan="2" class="subheader">' . htmlspecialchars($label) . '</th></tr>';
-					if ($field['description']) {
+				if ($field['type'] == 'section_spacer') {
+					$label = '';
+				} else {
+					$label = $field['label'] ? $field['label'] : $field['name'];
+				}
+				
+				if (ze::in($field['type'], 'section_description', 'section_spacer')) {
+					if ($field['type'] == 'section_description') {
+						$class = 'subheader';
+					} elseif ($field['type'] == 'section_spacer') {
+						$class = 'spacer';
+					}
+					
+					$html .= '<tr><th colspan="2" class="' . $class . '">' . htmlspecialchars($label) . '</th></tr>';
+					
+					if ($field['type'] == 'section_description' && $field['description']) {
 						$html .= '<tr><td colspan="2" class="subheader_description">' . $field['description'] . '</td></tr>';
 					}
 				} else {
@@ -853,6 +867,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if (isset($field['value'])) {
 						$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks);
 					}
+					
 					if (isset($field['row']) && !empty($field['firstRepeatBlockField'])) {
 						$rows = count($fields[$field['repeat_start_id']]['rows']);
 						
@@ -868,15 +883,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 
 						$html .= '<tr><th colspan="2" class="subheader">' . $repeatSectionLabel . '</th></tr>';
 					}
-					if($displayHTML)
+					
+					if ($displayHTML) {
 						$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . $displayHTML . '</td></tr>';
-					else
+					} else {
 						//Catch the case where the value is a 0 rather than "empty".
 						if (isset($field['value']) && is_numeric($field['value'])) {
 							$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>0</td></tr>';
 						} else {
 							$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>[Empty]</td></tr>';
 						}
+					}
 						
 				}
 			}
@@ -887,8 +904,160 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	public static function deleteFormResponse($responseId) {
 		ze\module::sendSignal('eventFormResponseDeleted', [$responseId]);
+
+		$thisResponseFileIdsArray = $otherFullResponsesAndPartialResponsesFileIdsArray = [];
+
+		//Get a list of files in this response
+		$sql = "
+			SELECT urd.value
+			FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+				ON urd.user_response_id = ur.id
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+				ON urd.form_field_id = uff.id 
+				AND uff.user_form_id = ur.form_id
+			WHERE uff.field_type IN ('attachment', 'document_upload')
+			AND ur.id = " . (int) $responseId;
+
+		$result = ze\sql::fetchValues($sql);
+		if (!empty($result)) {
+			//Implode first to get all file IDs and account for multi-upload fields...
+			$thisResponseFileIds = implode(',', $result);
+			//... then explode for later.
+			$thisResponseFileIdsArray = explode(',', $thisResponseFileIds);
+
+			//Check if the files are used in any other form responses (full and partial alike).
+			//Full responses...
+			$sql = "
+				SELECT urd.value
+				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+					ON urd.user_response_id = ur.id
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+					ON urd.form_field_id = uff.id 
+					AND uff.user_form_id = ur.form_id
+				WHERE uff.field_type IN ('attachment', 'document_upload')
+				AND ur.id != " . (int) $responseId . "
+				AND urd.value IN (" . ze\escape::in($thisResponseFileIds) . ")";
+			
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				$otherResponsesFileIds = implode(',', $result);
+				$otherResponsesFileIdsArray = explode(',', $otherResponsesFileIds);
+				$otherFullResponsesAndPartialResponsesFileIdsArray = array_merge($otherFullResponsesAndPartialResponsesFileIdsArray, $otherResponsesFileIdsArray);
+			}
+
+			//... and partial responses.
+			$sql = "
+				SELECT uprd.value
+				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response upr
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response_data uprd
+					ON uprd.user_partial_response_id = upr.id
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+					ON uprd.form_field_id = uff.id 
+					AND uff.user_form_id = upr.form_id
+				WHERE uff.field_type IN ('attachment', 'document_upload')
+				AND uprd.value IN (" . ze\escape::in($thisResponseFileIds) . ")";
+			
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				$partialResponsesFileIds = implode(',', $result);
+				$partialResponsesFileIdsArray = explode(',', $partialResponsesFileIds);
+				$otherFullResponsesAndPartialResponsesFileIdsArray = array_merge($otherFullResponsesAndPartialResponsesFileIdsArray, $partialResponsesFileIdsArray);
+			}
+
+			//Remove duplicates
+			$otherFullResponsesAndPartialResponsesFileIdsArray = array_unique($otherFullResponsesAndPartialResponsesFileIdsArray);
+
+			//If a file is used by any other response, or any partial response, don't remove it from the files table.
+			foreach ($thisResponseFileIdsArray as $fileId) {
+				if (!in_array($fileId, $otherFullResponsesAndPartialResponsesFileIdsArray)) {
+					ze\row::delete('files', ['id' => $fileId, 'usage' => 'forms']);
+				}
+			}
+		}
+
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId]);
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response', $responseId);
+	}
+
+	public static function deleteFormPartialResponse($partialResponseId) {
+		ze\module::sendSignal('eventFormPartialResponseDeleted', [$partialResponseId]);
+
+		$thisPartialResponseFileIdsArray = $otherFullResponsesAndPartialResponsesFileIdsArray = [];
+
+		//Get a list of files in this partial response
+		$sql = "
+			SELECT uprd.value
+			FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response upr
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response_data uprd
+				ON uprd.user_partial_response_id = upr.id
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+				ON uprd.form_field_id = uff.id 
+				AND uff.user_form_id = upr.form_id
+			WHERE uff.field_type IN ('attachment', 'document_upload')
+			AND upr.id = " . (int) $partialResponseId;
+
+		$result = ze\sql::fetchValues($sql);
+		if (!empty($result)) {
+			//Implode first to get all file IDs and account for multi-upload fields...
+			$thisPartialResponseFileIds = implode(',', $result);
+			//... then explode for later.
+			$thisPartialResponseFileIdsArray = explode(',', $thisPartialResponseFileIds);
+
+			//Check if the files are used in any other form responses (full and partial alike).
+			//Partial responses...
+			$sql = "
+				SELECT uprd.value
+				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response upr
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response_data uprd
+					ON uprd.user_partial_response_id = upr.id
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+					ON uprd.form_field_id = uff.id 
+					AND uff.user_form_id = upr.form_id
+				WHERE uff.field_type IN ('attachment', 'document_upload')
+				AND upr.id != " . (int) $partialResponseId . "
+				AND uprd.value IN (" . ze\escape::in($thisPartialResponseFileIds) . ")";
+			
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				$otherPartialResponsesFileIds = implode(',', $result);
+				$otherPartialResponsesFileIdsArray = explode(',', $otherPartialResponsesFileIds);
+				$otherFullResponsesAndPartialResponsesFileIdsArray = array_merge($otherFullResponsesAndPartialResponsesFileIdsArray, $otherPartialResponsesFileIdsArray);
+			}
+
+			//... and full responses.
+			$sql = "
+				SELECT urd.value
+				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+					ON urd.user_response_id = ur.id
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+					ON urd.form_field_id = uff.id 
+					AND uff.user_form_id = ur.form_id
+				WHERE uff.field_type IN ('attachment', 'document_upload')
+				AND urd.value IN (" . ze\escape::in($thisPartialResponseFileIds) . ")";
+			
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				$responsesFileIds = implode(',', $result);
+				$responsesFileIdsArray = explode(',', $responsesFileIds);
+				$otherFullResponsesAndPartialResponsesFileIdsArray = array_merge($otherFullResponsesAndPartialResponsesFileIdsArray, $responsesFileIdsArray);
+			}
+
+			//Remove duplicates
+			$otherFullResponsesAndPartialResponsesFileIdsArray = array_unique($otherFullResponsesAndPartialResponsesFileIdsArray);
+			
+			//If a file is used by any other response, or any partial response, don't remove it from the files table.
+			foreach ($thisPartialResponseFileIdsArray as $fileId) {
+				if (!in_array($fileId, $otherFullResponsesAndPartialResponsesFileIdsArray)) {
+					ze\row::delete('files', ['id' => $fileId, 'usage' => 'forms']);
+				}
+			}
+		}
+
+		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id' => $partialResponseId]);
+		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['user_partial_response_id' => $partialResponseId]);
 	}
 	
 	public static function deletePredefinedTextTarget($fieldId) {
@@ -916,6 +1085,113 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Send signal that the form field is now deleted (sent before actual delete in case modules need to look at any metadata or field values)
 		ze\module::sendSignal('eventFormFieldDeleted', [$fieldId]);
+
+		//Get the field type. If this is "attachment" or "document upload" type,
+		//delete any files uploaded in partial and full responses from the files table.
+		//Caution: this code will only remove files uploaded for this exact field ID.
+		//It will not remove any files uploaded for any other fields of "attachment" or "document upload" type,
+		//neither on this form, nor any other form.
+		$fieldType = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 'field_type', ['id' => $fieldId]);
+		if (ze::in($fieldType, 'attachment', 'document_upload')) {
+			$thisFieldResponseAndPartialResponseFileIds = $otherFieldsResponseAndPartialResponseFileIds = [];
+			//Get a list of files in full responses to this field
+			$sql = "
+			SELECT urd.value
+			FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+				ON urd.user_response_id = ur.id
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+				ON urd.form_field_id = uff.id 
+				AND uff.user_form_id = ur.form_id
+			WHERE uff.field_type IN ('attachment', 'document_upload')
+			AND uff.id = " . (int) $fieldId;
+
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				//Implode first to get all file IDs and account for multi-upload fields...
+				$thisFieldFileIds = implode(',', $result);
+				//... then explode for later.
+				$thisFieldFileIdsArray = explode(',', $thisFieldFileIds);
+				$thisFieldResponseAndPartialResponseFileIds = array_merge($thisFieldResponseAndPartialResponseFileIds, $thisFieldFileIdsArray);
+			}
+
+			//...and get a list of files in partial responses to this field
+			$sql = "
+			SELECT uprd.value
+			FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response upr
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response_data uprd
+				ON uprd.user_partial_response_id = upr.id
+			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+				ON uprd.user_partial_response_id = uff.id 
+				AND uff.user_form_id = upr.form_id
+			WHERE uff.field_type IN ('attachment', 'document_upload')
+			AND uff.id = " . (int) $fieldId;
+
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				//Implode first to get all file IDs and account for multi-upload fields...
+				$thisFieldPartialFileIds = implode(',', $result);
+				//... then explode for later.
+				$thisFieldPartialFileIdsArray = explode(',', $thisFieldPartialFileIds);
+				$thisFieldResponseAndPartialResponseFileIds = array_merge($thisFieldResponseAndPartialResponseFileIds, $thisFieldPartialFileIdsArray);
+			}
+
+			if (count($thisFieldResponseAndPartialResponseFileIds) > 0) {
+				//Remove duplicates
+				$thisFieldResponseAndPartialResponseFileIds = array_unique($thisFieldResponseAndPartialResponseFileIds);
+
+				//Check if the files are used in any other form field responses (full and partial alike).
+				//Full responses...
+				$sql = "
+					SELECT urd.value
+					FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
+					INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+						ON urd.user_response_id = ur.id
+					INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+						ON urd.form_field_id = uff.id 
+						AND uff.user_form_id = ur.form_id
+					WHERE uff.field_type IN ('attachment', 'document_upload')
+					AND uff.id != " . (int) $fieldId . "
+					AND urd.value IN (" . ze\escape::in($thisFieldResponseAndPartialResponseFileIds) . ")";
+
+				$result = ze\sql::fetchValues($sql);
+				if (!empty($result)) {
+					$otherFieldResponsesFileIds = implode(',', $result);
+					$otherFieldResponsesFileIdsArray = explode(',', $otherFieldResponsesFileIds);
+					$otherFieldsResponseAndPartialResponseFileIds = array_merge($otherFieldsResponseAndPartialResponseFileIds, $otherFieldResponsesFileIdsArray);
+				}
+
+				//... and partial responses.
+				$sql = "
+					SELECT uprd.value
+					FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response upr
+					INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response_data uprd
+						ON uprd.user_partial_response_id = upr.id
+					INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+						ON uprd.form_field_id = uff.id 
+						AND uff.user_form_id = upr.form_id
+					WHERE uff.field_type IN ('attachment', 'document_upload')
+					AND uff.id != " . (int) $fieldId . "
+					AND uprd.value IN (" . ze\escape::in($thisFieldResponseAndPartialResponseFileIds) . ")";
+
+				$result = ze\sql::fetchValues($sql);
+				if (!empty($result)) {
+					$partialFieldResponsesFileIds = implode(',', $result);
+					$partialFieldResponsesFileIdsArray = explode(',', $partialFieldResponsesFileIds);
+					$otherFieldsResponseAndPartialResponseFileIds = array_merge($otherFieldsResponseAndPartialResponseFileIds, $partialFieldResponsesFileIdsArray);
+				}
+
+				//Remove duplicates
+				$otherFieldsResponseAndPartialResponseFileIds = array_unique($otherFieldsResponseAndPartialResponseFileIds);
+
+				//If a file is used by any other response, or any partial response, don't remove it from the files table.
+				foreach ($thisFieldResponseAndPartialResponseFileIds as $fileId) {
+					if (!in_array($fileId, $otherFieldsResponseAndPartialResponseFileIds)) {
+						ze\row::delete('files', ['id' => $fileId, 'usage' => 'forms']);
+					}
+				}
+			}
+		}
 		
 		//Delete form field
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $fieldId);
@@ -934,6 +1210,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Delete any response data
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
+
+		//Delete any partial response data
+		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['form_field_id' => $fieldId]);
 		
 		//Delete predefined text target and trigger records (if exists)
 		static::deletePredefinedTextTarget($fieldId);
@@ -973,6 +1252,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		while ($row = ze\sql::fetchAssoc($result)) {
 			static::deleteFormResponse($row['id']);
 		}
+
+		//Delete partial responses
+		$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id'], ['form_id' => $formId]);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			static::deleteFormPartialResponse($row['id']);
+		}
+
 		return true;
 	}
 	
@@ -1079,6 +1365,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				uff.ord, 
 				uff.is_readonly, 
 				uff.is_required,
+				uff.all_values_are_required,
 				uff.mandatory_if_visible,
 				uff.mandatory_condition_field_id,
 				uff.mandatory_condition_invert,
@@ -1090,6 +1377,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				uff.visible_condition_checkboxes_operator,
 				uff.visible_condition_field_value,
 				uff.label,
+				uff.text_above_left_group,
+				uff.text_above_right_group,
 				uff.name,
 				uff.custom_code_name,
 				uff.placeholder,
@@ -1311,6 +1600,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Page switcher
 		if ($this->form['show_page_switcher']) {
+			$makeStepsClickableIfPossible = $this->form['page_switcher_navigation'] == 'only_visited_pages';
+			
 			$switcherHTML = '';
 			$hasPageVisibleOnSwitcher = false;
 			$switcherHTML .= '<div class="page_switcher"><ul class="progress_bar">';
@@ -1319,6 +1610,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$maxPageReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'] ?? $pageId;
 			
 			$step = 1;
+			$pagesCount = count($this->pages);
 			foreach ($this->pages as $tPageId => $tPage) {
 				if ($tPage['hide_in_page_switcher']) {
 					continue;
@@ -1363,8 +1655,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$extraClasses .= ' complete';
 				}
 				
+				$isComplete = false;
 				//Available if we are not on this section and its less than the max page we reached
 				if (!$isCurrent && $this->pages[$maxPageReached]['ord'] >= $tPage['ord']) {
+					$isComplete = true;
 					$extraClasses .= ' available';
 				}
 				
@@ -1372,7 +1666,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$switcherHTML .= $this->getVisibleConditionDataValuesHTML($tPage, $pageId);
 					$extraClasses .= ' visible_on_condition';
 				}
-				$switcherHTML .= 'class="step step_' . (int)($step++) . ' ' . htmlspecialchars($extraClasses) . '">' . htmlspecialchars($tPage['name']) . '</li>';
+				$switcherHTML .= 'class="step step_' . (int)($step++) . ' ' . ($step == 2 ? 'first' : '') . ' ' . ($step == $pagesCount ? 'last' : '') . ' ' . htmlspecialchars($extraClasses) . ' ' . (($makeStepsClickableIfPossible && ($isCurrent || $isComplete)) ? 'clickable_step' : '') . '"><span>' . htmlspecialchars($tPage['name']) . '</span></li>';
 			}
 			$switcherHTML .= '</ul></div>';
 			if ($hasPageVisibleOnSwitcher) {
@@ -1559,6 +1853,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($this->enableCaptcha()) {
 				$html .= $this->getCaptchaHTML();
 			}
+
 			if (!empty($this->form['use_honeypot'])) {
 			    $html .= $this->getHoneypotHTML();
 			}
@@ -1686,7 +1981,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Label
-		if ($field['type'] != 'group' && $field['type'] != 'checkbox') {
+		if (!ze::in($field['type'], 'group', 'checkbox', 'section_spacer')) {
 			$html .= '<div class="field_title">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</div>';
 			if (!$this->form['show_errors_below_fields']) {
 				$html .= $errorHTML;
@@ -1910,6 +2205,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '<div class="description">' . $descriptionHTML . '</div>';
 				break;
 				
+			case 'section_spacer':
+				$html .= '<div class="spacer"></div>';
+				break;
+			
 			case 'radios':
 				$fieldLOV = $this->getFieldCurrentLOV($fieldId);
 				
@@ -2116,6 +2415,51 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '</div>';
 				break;
 			
+			case 'sortable_selection':
+				$fieldLOV = $this->getFieldCurrentLOV($fieldId);
+				
+				$html .= '<div class="sortable_selection_wrap">';
+				
+				//Remember the list of values and their labels
+				$html .= '<select id="' . htmlspecialchars($this->containerId) . '_sortable_selection_list_of_values" style="display: none;" data-value="' . '">';
+				foreach ($fieldLOV as $sortableValueId => $sortableValueLabel) {
+					$html .= '<option value="' . (int) $sortableValueId . '">' . htmlspecialchars($sortableValueLabel) . '</option>';
+				}
+				$html .= '</select>';
+				
+				//Left group
+				$html .= '<div class="sortable_selection_left_column">';
+				if (!empty($field['text_above_left_group'])) {
+					$html .= '<label for="' . htmlspecialchars($this->containerId . '_sortable1') . '">' . htmlspecialchars($field['text_above_left_group']) . '</label>';
+				}
+				
+				$html .= '<ul id="' . htmlspecialchars($this->containerId) . '_sortable1" class="connectedSortable">';
+				$sortableSelectionFieldValues = $this->populateSortableSelectionFieldValues($fieldId, $fieldName, $fieldElementId, $fieldLOV, $t, 'left');
+				$html .= $sortableSelectionFieldValues['valuesHtml'];
+				$html .= '</ul>';
+				
+				//Invisible input field to remember what was selected in the left group and in what order. Also end the left column container.
+				$html .= '<input id="' . htmlspecialchars($this->containerId) . '_sortable1_values" name="' . htmlspecialchars($fieldName) . '_left_values" type="text" value="' . $sortableSelectionFieldValues['values'] . '" style="display: none;" />';
+				$html .= '</div>';
+				
+				//Right group
+				$html .= '<div class="sortable_selection_right_column">';
+				if (!empty($field['text_above_right_group'])) {
+					$html .= '<label for="' . htmlspecialchars($this->containerId) . '_sortable2' . '">' . htmlspecialchars($field['text_above_right_group']) . '</label>';
+				}
+				
+				$html .= '<ul id="' . htmlspecialchars($this->containerId) . '_sortable2" class="connectedSortable">';
+				$sortableSelectionFieldValues = $this->populateSortableSelectionFieldValues($fieldId, $fieldName, $fieldElementId, $fieldLOV, $t, 'right');
+				$html .= $sortableSelectionFieldValues['valuesHtml'];
+				$html .= '</ul>';
+				
+				//Invisible input field to remember what was selected in the right group and in what order. Also end the right column container.
+				$html .= '<input id="' . htmlspecialchars($this->containerId) . '_sortable2_values" name="' . htmlspecialchars($fieldName) . '_right_values" type="text" value="' . $sortableSelectionFieldValues['values'] . '" style="display: none;" />';
+				$html .= '</div>';
+				
+				$html .= '</div>';
+				break;
+			
 			case 'attachment':
 				if ($value || $readonly) {
 					$filename = basename($value);
@@ -2290,7 +2634,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Containing div css classes
-		$containerHTML .= ' class="form_field field_' . htmlspecialchars($field['type']) . ' ' . htmlspecialchars($field['css_classes']);
+		if (!empty($field['css_classes'])) {
+			$cssClasses = htmlspecialchars($field['css_classes']);
+		} else {
+			$cssClasses = '';
+		}
+		
+		$containerHTML .= ' class="form_field field_' . htmlspecialchars($field['type']) . ' ' . $cssClasses;
 		if ($field['repeat_start_id']) {
 			$idParts = explode('_', $fieldId);
 			if (count($idParts) == 2) {
@@ -2314,6 +2664,69 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $html;
 	}
 	
+	protected function populateSortableSelectionFieldValues($fieldId, $fieldName, $fieldElementId, $fieldLOV, $translateText, $populateLeftOrRight) {
+		$html = '';
+		
+		if ($populateLeftOrRight == 'left') {
+			if (isset($_POST[$fieldName . '_left_values'])) {
+				$currentValuesAndOrder = explode(',', $_POST[$fieldName . '_left_values']);
+			} elseif (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['left_values'])) {
+				$currentValuesAndOrder = explode(',', $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['left_values']);
+			}
+			
+			if (!empty($currentValuesAndOrder)) {
+				$currentValuesAndOrderArray = [];
+				if (count($currentValuesAndOrder) > 0) {
+					foreach ($currentValuesAndOrder as $value) {
+						if ($value && isset($fieldLOV[$value])) {
+							$currentValuesAndOrderArray[$value] = $fieldLOV[$value];
+						}
+					}
+				}
+				
+				$fieldLOV = $currentValuesAndOrderArray;
+			}
+		} elseif ($populateLeftOrRight == 'right') {
+			if (isset($_POST[$fieldName . '_right_values'])) {
+				$currentValuesAndOrder = explode(',', $_POST[$fieldName . '_right_values']);
+			} elseif (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values'])) {
+				$currentValuesAndOrder = explode(',', $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values']);
+			}
+			
+			if (!empty($currentValuesAndOrder)) {
+				$currentValuesAndOrderArray = [];
+				if (count($currentValuesAndOrder) > 0) {
+					foreach ($currentValuesAndOrder as $value) {
+						if ($value && isset($fieldLOV[$value])) {
+							$currentValuesAndOrderArray[$value] = $fieldLOV[$value];
+						}
+					}
+				}
+				
+				$fieldLOV = $currentValuesAndOrderArray;
+			} else {
+				$fieldLOV = [];
+			}
+		}
+		
+		if (count($fieldLOV) > 0) {
+			foreach ($fieldLOV as $valueId => $label) {
+				$sortableItemHtml = '';
+				$name = $fieldName . '_' . $valueId; 
+				$sortableElementId = $fieldElementId . '_' . $valueId;
+			
+				$sortableItemHtml .= '<li class=" ui-state-default" data-value="' . htmlspecialchars($valueId) . '"';
+				$sortableItemHtml .= ' name="' . htmlspecialchars($name) . '" id="' . htmlspecialchars($sortableElementId) . '">';
+				$sortableItemHtml .= htmlspecialchars(static::fPhrase($label, [], $translateText)) . '</li>';
+				$html .= $sortableItemHtml;
+			}
+		}
+		
+		$values = implode(',', array_keys($fieldLOV));
+		
+		return ['valuesHtml' => $html, 'values' => $values];
+	}
+	
 	protected function getFieldCurrentValue($fieldId, $recursionCount = 1) {
 		if (!isset($this->fields[$fieldId]) || $recursionCount > 999) {
 			return false;
@@ -2326,11 +2739,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		} elseif ($field['type'] == 'restatement') {
 			$value = $this->getFieldCurrentValue($field['restatement_field'], ++$recursionCount);
 			return static::getFieldDisplayValue($this->fields[$field['restatement_field']] ?? false, $value);
+		} elseif ($field['type'] == 'sortable_selection') {
+			$value = [];
+			$fieldName = static::getFieldName($fieldId, $field['custom_code_name']);
+			if (!empty($_POST[$fieldName . '_right_values'])) {
+				$value = explode(',', $_POST[$fieldName . '_right_values']);
+			}
 		}
 		
 		//Check if value has been saved before
 		if (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
-			$value = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
+			if ($field['type'] == 'sortable_selection') {
+				$value = explode(',', $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values']);
+			} else {
+				$value = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
+			}
 		//..Otherwise see if we can load from the  dataset
 		} elseif ($field['preload_dataset_field_user_data'] && $this->userId && $field['db_column']) {
 			$this->allowCaching(false);
@@ -2521,6 +2944,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			case 'centralised_radios':
 			case 'select':
 			case 'checkboxes':
+			case 'sortable_selection':
 				return $this->getFormFieldLOV($fieldId);
 			//Where field lists can depend on another fields value (text fields can have autocomplete lists)
 			case 'centralised_select':
@@ -2588,6 +3012,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			case 'select':
 			case 'radios':
 			case 'checkboxes':
+			case 'sortable_selection':
 				return ze\row::getValues(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'label', ['form_field_id' => $field['id']], 'ord');
 		}
 		return $values;
@@ -2683,6 +3108,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							}
 						}
 						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $values;
+						break;
+					case 'sortable_selection':
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['left_values'] = $post[$name . '_left_values'];
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values'] = $post[$name . '_right_values'];
 						break;
 					case 'attachment':
 						if (!empty($_FILES[$name]) && isset($_FILES[$name]['size']) && $_FILES[$name]['size'] > 0 && ze\cache::cleanDirs()) {
@@ -2875,6 +3304,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				case 'repeat_start':
 				case 'repeat_end':
 				case 'section_description':
+				case 'section_spacer':
 				case 'restatement':
 					continue 2;
 			}
@@ -2984,7 +3414,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				case 'attachment':
 				case 'file_picker':
 				case 'document_upload':
-					if (!$value) {
+				case 'sortable_selection':
+					if ($field['type'] == 'sortable_selection') {
+// 						if ($field['all_values_are_required']) {
+							$fieldLov = $this->getFieldCurrentLOV($fieldId);
+							$fieldLovCount = count($fieldLov);
+						
+// 							var_dump(count($value)); var_dump($fieldLovCount);
+							if ($fieldLovCount > 0 && count($value) != $fieldLovCount) {
+								return static::fPhrase($field['required_error_message'], [], $t);
+							}
+// 						}
+					} elseif (!$value) {
 						return static::fPhrase($field['required_error_message'], [], $t);
 					}
 					break;
@@ -3150,7 +3591,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$consentFields = [];
 		$fieldIdValueLink = [];
 		foreach ($this->fields as $fieldId => $field) {
-			$this->fields[$fieldId]['value'] = $this->getFieldCurrentValue($fieldId);
+			if ($field['field_type'] == 'sortable_selection') {
+				$this->fields[$fieldId]['value'] = $this->getFieldCurrentValue($fieldId);
+			} else {
+				$this->fields[$fieldId]['value'] = $this->getFieldCurrentValue($fieldId);
+			}
 			$fieldIdValueLink[$fieldId] = static::getFieldStorableValue($field, $this->fields[$fieldId]['value']);
 			
 			if (!empty($field['is_consent'])) {
@@ -3244,20 +3689,22 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			} else {
 			    $email = ze\row::get('users', 'email', $userId);
 			}
+
 			if ($fieldId = ($this->datasetFieldsColumnLink['first_name'] ?? false)) {
 				$firstName = $this->fields[$fieldId]['value'];
 				if ($this->fields[$fieldId]['split_first_name_last_name']) {
-					$lastName = trim(substr($firstName, strpos($firstName, ' ')));
-					$firstName = trim(substr($firstName, 0, strpos($firstName, ' ')));
+					$lastName = trim(mb_substr($firstName, mb_strpos($firstName, ' ', null, 'UTF-8'), null, 'UTF-8'));
+					$firstName = trim(mb_substr($firstName, 0, mb_strpos($firstName, ' ', null, 'UTF-8'), 'UTF-8'));
 				}
 			} else {
 			    $firstName = ze\row::get('users', 'first_name', $userId);
 			}
+			
 			if ($fieldId = ($this->datasetFieldsColumnLink['last_name'] ?? false)) {
 				$lastName = $this->fields[$fieldId]['value'];
 				if ($this->fields[$fieldId]['split_first_name_last_name']) {
-					$firstName = trim(substr($lastName, 0, strpos($lastName, ' ')));
-					$lastName = trim(substr($lastName, strpos($lastName, ' ')));
+					$firstName = trim(mb_substr($lastName, 0, mb_strpos($lastName, ' ', null, 'UTF-8'), 'UTF-8'));
+					$lastName = trim(mb_substr($lastName, mb_strpos($lastName, ' ', null, 'UTF-8'), null, 'UTF-8'));
 				}
 			} else {
 			    $lastName = ze\row::get('users', 'last_name', $userId);
@@ -3537,7 +3984,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($this->parentNest) {
 				$backs = $this->parentNest->getBackLinks();
 				foreach ($backs as $state => $back) {
-					$menuNodes[] = $this->parentNest->formatTitleText(ze\lang::phrase($back['slide']['name_or_title'], [], 'zenario_breadcrumbs'));
+					$menuNodes[] = $this->parentNest->formatTitleText(ze\lang::phrase($back['slide']['name_or_slide_label'], [], 'zenario_breadcrumbs'));
 				}
 			}
 		}
@@ -3565,6 +4012,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				case 'repeat_start':
 				case 'repeat_end':
 				case 'section_description':
+				case 'section_spacer':
 				case 'restatement':
 					continue 2;
 			}
@@ -3790,6 +4238,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				switch ($field['type']) {
 					case 'repeat_end':
 					case 'section_description':
+					case 'section_spacer':
 						continue 2;
 				}
 				$row = 0;
@@ -3853,6 +4302,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	public static function getFieldStorableValue($field, $value) {
 		switch ($field['type']) {
 			case 'checkboxes':
+			case 'sortable_selection':
 				return $value ? implode(',', $value) : '';
 			case 'attachment':
 				if ($value && file_exists(CMS_ROOT . $value)) {
@@ -3882,6 +4332,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	public static function getFieldValueFromStored($field, $value) {
 		switch ($field['type']) {
 			case 'checkboxes':
+			case 'sortable_selection':
 				return $value ? explode(',', $value) : false;
 			case 'attachment':
 				return $value ? ze\file::link($value) : false;
@@ -3923,6 +4374,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$display = $value ? static::getFormFieldValueLabel($field['dataset_field_id'], $value) : '';
 				break;
 			case 'checkboxes':
+			case 'sortable_selection':
 				if ($value) {
 					$labels = [];
 					foreach ($value as $valueId) {
@@ -3997,6 +4449,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$display = htmlspecialchars($display);
 			if ($field['type'] == 'textarea') {
 				$display = nl2br($display);
+			} elseif ($field['type'] == 'sortable_selection' && $display) {
+				//Display sortable selection fields as an ordered list
+				$display = '<ol><li>' . implode('</li><li>', $labels);
+				$display .= '</li></ol>';
 			}
 		}
 		return $display;
@@ -4022,6 +4478,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			switch ($field['type']) {
 				case 'repeat_end':
 				case 'section_description':
+				case 'section_spacer':
 				case 'restatement':
 					continue 2;
 			}
@@ -4122,11 +4579,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if (isset($this->errors['captcha']) && !$this->form['show_errors_below_fields']) {
 			$html .= '<div class="form_error">' . htmlspecialchars(static::fPhrase($this->errors['captcha'], [], $t)) . '</div>';
 		}
+
 		if ($this->form['captcha_type'] == 'math') {
 			$html .= $this->mathCaptcha();
 		} elseif ($this->form['captcha_type'] == 'pictures') {
 			$html .= $this->captcha2();
 		}
+
 		if (isset($this->errors['captcha']) && $this->form['show_errors_below_fields']) {
 			$html .= '<div class="form_error">' . htmlspecialchars(static::fPhrase($this->errors['captcha'], [], $t)) . '</div>';
 		}
@@ -5005,6 +5464,88 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			ze\sql::update($sql);
 
 			$cleared += ze\sql::affectedRows();
+		}
+
+		//Clear partial form responses
+		$days = ze::setting('period_to_delete_the_form_partial_responses');
+		if (is_numeric($days)) {
+			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
+			
+			$sql = '
+				SELECT id
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_partial_response
+				WHERE response_datetime < "' . ze\escape::sql($date) . '"';
+			
+			$result = ze\sql::select($sql);
+			while ($row = ze\sql::fetchAssoc($result)) {
+				static::deleteFormPartialResponse($row['id']);
+				$cleared += ze\sql::numRows($result);
+			}
+		}
+
+		//Before 9.3, Zenario did not remove files from the files table
+		//when a response or partial response was deleted.
+		//This is a one-off clear routine to delete orphaned files.
+		$filesUsedInFullAndPartialResponses = [];
+
+		$sql = "
+			SELECT id
+			FROM " . DB_PREFIX . "files
+			WHERE `usage` = 'forms'";
+		$files = ze\sql::fetchValues($sql);
+
+		if (is_array($files) && count($files) > 0) {
+			//Get files used in full responses...
+			$sql = "
+				SELECT urd.value
+				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+					ON urd.user_response_id = ur.id
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+					ON urd.form_field_id = uff.id 
+					AND uff.user_form_id = ur.form_id
+				WHERE uff.field_type IN ('attachment', 'document_upload')
+				AND urd.value IN (" . ze\escape::in($files) . ")";
+
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				$filesUsedInFullResponses = implode(',', $result);
+				$filesUsedInFullResponses = explode(',', $filesUsedInFullResponses);
+				$filesUsedInFullAndPartialResponses = array_merge($filesUsedInFullAndPartialResponses, $filesUsedInFullResponses);
+			}
+
+			//... and partial responses.
+			$sql = "
+				SELECT uprd.value
+				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response upr
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_partial_response_data uprd
+					ON uprd.user_partial_response_id = upr.id
+				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
+					ON uprd.form_field_id = uff.id 
+					AND uff.user_form_id = upr.form_id
+				WHERE uff.field_type IN ('attachment', 'document_upload')
+				AND uprd.value IN (" . ze\escape::in($files) . ")";
+
+			$result = ze\sql::fetchValues($sql);
+			if (!empty($result)) {
+				$filesUsedInPartialResponses = implode(',', $result);
+				$filesUsedInPartialResponses = explode(',', $filesUsedInPartialResponses);
+				$filesUsedInFullAndPartialResponses = array_merge($filesUsedInFullAndPartialResponses, $filesUsedInPartialResponses);
+			}
+
+			//Remove duplicates
+			$filesUsedInFullAndPartialResponses = array_unique($filesUsedInFullAndPartialResponses);
+			
+			$filesToDelete = array_diff($files, $filesUsedInFullAndPartialResponses);
+
+			if (is_array($filesToDelete) && count($filesToDelete) > 0) {
+				$sql = "
+					DELETE FROM " . DB_PREFIX . "files
+					WHERE `usage` = 'forms'
+					AND id IN (" . ze\escape::in($filesToDelete) . ")";
+				ze\sql::update($sql);
+				$cleared += ze\sql::affectedRows();
+			}
 		}
 		
 		return $cleared;

@@ -61,7 +61,7 @@
 .zenario_content_list .content_list_listing .content_list_data_row p.size,
 .zenario_content_list .content_list_listing .content_list_data_row p.language {
 	font-size:0.857em;
-	font-family:'cardoregular',Arial, Helvetica, sans-serif;
+	font-family: 'cardoregular','Times New Roman','Georgia',serif;
 }
 
 .zenario_content_list .content_list_listing .content_list_data_row p.content_list_date,
@@ -189,6 +189,10 @@
 
 .zenario_content_list__default_style .content_list_data_row div.sticky_image img {
 	border:1px solid #777;
+}
+
+.zenario_content_list__default_style .content_list_data_row .content_list_text {
+	overflow:hidden;
 }
 
 /* Categories */

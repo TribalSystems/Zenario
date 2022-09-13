@@ -15,7 +15,7 @@ html, body  {
 	overflow:auto;
 	margin:0px;
 	padding:0px;
-	background:url('../admin/images/welcome/bg-dotted.gif');
+	background:#F5F7F8 url('../admin/images/welcome/pattern-bg.svg') repeat-x center -20px / 100px;
 }
 
 /**/
@@ -51,8 +51,6 @@ body.webkit input {
 	position:relative;
 	background:#F6F6F6;
 	border:2px solid #333;
-	-webkit-box-shadow: 0 0 3px 0 rgba(0,0,0,0.70);
-	box-shadow: 0 0 3px 0 rgba(0,0,0,0.70);
 	-webkit-border-radius: 1px;
 	-moz-border-radius: 1px;
 	border-radius: 1px;
@@ -788,6 +786,7 @@ input:-webkit-autofill.password:active {
 	color:#6F6F6F;
 	font-size:12px;
 	text-decoration:underline;
+	margin-top:15px;
 }
 
 .welcome div.thickbox_table input.return_front_end {
@@ -1046,6 +1045,18 @@ input:-webkit-autofill.password:active {
 	margin-bottom:0;
 }
 
+.welcome .zenario_ab_tab__login .zenario_ab_row__admin_link {
+	font-size:11px;
+	padding: 4px 10px 10px;
+	background: #efefef;
+}
+
+.welcome .zenario_ab_tab__login .zenario_ab_row__admin_link p {
+	background: url('../admin/images/icon-information.svg') no-repeat left 0 / 16px 16px;
+  	padding-left: 25px;
+  	margin: 0;
+}
+
 .welcome .zenario_ab_tab__login .zenario_ab_row__forgot {
 	display:inline-block;
 	position:relative;
@@ -1063,10 +1074,12 @@ input:-webkit-autofill.password:active {
 	padding: 10px 0;
 	overflow-x: scroll;
 	white-space:nowrap;
+	display:flex;
+	gap:20px;
 }
 
 .horizontal_scroll > div div.zenario_group_col_1 {
-	float:none;
+	clear:none;
 	display:inline-block;
 }
 
@@ -1079,26 +1092,52 @@ input:-webkit-autofill.password:active {
 .horizontal_scroll br {
 	display: none;
 }
+
+.horizontal_scroll > div div.zenario_group_col_1 > .input_radio {
+	opacity:0;
+	position:absolute;
+}
+
+.horizontal_scroll > div div.zenario_group_col_1 label.skin_selector_box {
+	display:inline-block;
+	padding:5px;
+	-webkit-transition: background-color 200ms ease-in-out;
+  	-moz-transition: background-color 200ms ease-in-out;
+  	transition: background-color 200ms ease-in-out;
+	cursor:pointer;
+}
+
+.horizontal_scroll > div div.zenario_group_col_1 label.skin_selector_box:hover {
+	background-color:#ccc;
+}
+
+.horizontal_scroll > div div.zenario_group_col_1 label.skin_selector_box_selected,
+.horizontal_scroll > div div.zenario_group_col_1 label.skin_selector_box_selected:hover {
+	background-color:#ff0000;
+}
+
 /* License */
+
 .welcome .zenario_ab_row__i_agree .zenario_note_below,
 .welcome .zenario_ab_row__blurb span#snippet__blurb p,
 .welcome .zenario_ab_row__blurb2 span#snippet__blurb2 p{
 	margin-top: 5px;
 	line-height: 1.4em;
 }
+
 /* System requirements */
 
-.welcome .zenario_ab_row__description span#snippet__description p.secure_connection,
-.welcome .zenario_ab_row__description span#snippet__description p.not_secure_connection {
+.welcome p.secure_connection,
+.welcome p.not_secure_connection {
 	padding:2px 0 0 20px;
 }
 
-.welcome .zenario_ab_row__description span#snippet__description p.secure_connection {
+.welcome p.secure_connection {
 	background:url('../admin/images/welcome/icon-padlock-green.svg') no-repeat 0 0 / 12px 15px;
 	color:#259b37;
 }
 
-.welcome .zenario_ab_row__description span#snippet__description p.not_secure_connection {
+.welcome p.not_secure_connection {
 	background:url('../admin/images/welcome/icon-padlock-open-red.svg') no-repeat 0 0 / 12px 15px;
 	color:#b91111;
 }

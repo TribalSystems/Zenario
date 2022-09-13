@@ -563,6 +563,16 @@
 		margin-right:10px;
 	}
 	
+	.zenario_location_listing__default_style .location_listing,
+	.zenario_location_listing__default_style .single_location {
+		padding:10px;
+	}
+	
+	.zenario_location_listing__default_style .single_location .single_location_sticky_image {
+		width:25%;
+		min-width:80px;
+	}
+	
 }
 
 /* Layout max-width: 650px
@@ -689,6 +699,17 @@
 		width:100%;
 		float:none;
 	}
+	
+	.zenario_event_listing__default_style .event_listing .single_event .single_event_sticky_image {
+		float: none;
+		text-align:center;
+		margin:0 0 10px;
+	}
+
+	.zenario_event_listing__default_style .event_listing .single_event .single_event_sticky_image img {
+		margin:auto;
+	}
+
 	
 }
 

@@ -1,6 +1,6 @@
 
 <!--
-	To do: when the design is finalised, replace the hard-coded messages below with phrases
+	N.b. the help text here is hardcoded English.
 -->
 
 <form class="zenario_grid_form zenario_grid_properties_form" onsubmit="return false;">
@@ -10,48 +10,77 @@
 			<% case 'grouping': %>
 				<h3>Grouping</h3>
 				<p>Groupings are a way of putting one or more slots into a single container.</p>
+				<p>The HTML around this grouping will look like this:</p>
 			<% break; %>
 			<% case 'space': %>
 				<h3>Whitespace</h3>
-				<p>Whitespace lets you add some empty space on a layout.
-					No HTML is written to the screen (unless you enter some custom HTML in the box below).<p>
-			<% break; %>
-			<% case 'grid_break': %>
-				<h3>Gridbreak</h3>
-				<p>Gridbreaks split a grid into two sections, interrupting the usual column structure.</p>
-				<p>Use gridbreaks to split a layout into say header, body and footer. A name (and hence class) is not mandatory, but will be needed if you wish to target the gridbreak with JS effects (typical names would be Gridbreak_Header, Gridbreak_Body, Gridbreak_Footer). Add a class called "Fixed" to a gridbreak near the top of a layout to make a sticky header.</p>
-				<p>Their HTML has a structure like this:<p>
-				<pre>
-				&nbsp; &nbsp; &lt;/div&gt;
-<br/>			&lt;/div&gt;
-<br/>			[[Custom HTML]]
-<br/>			&lt;div class=&quot;{{m.data.grid_css_class|e}}&quot;&gt;
-<br/>			&nbsp; &nbsp; &lt;div class=&quot;container ...&quot;&gt;
-				</pre>
-			<% break; %>
-			<% case 'grid_break_with_slot': %>
-				<h3>Slot outside the grid</h3>
-				<p>A slot outside of the grid creates a break in the grid, with a slot in the break that may contain a plugin.
-				 The HTML has a structure like this:<p>
-				<pre>
-					&nbsp; &nbsp; &lt;/div&gt;
-<br/>				&lt;/div&gt;
-<br/>				&lt;div id=&quot;plgslt_{{m.data.name|e}}&quot; class=&quot;zenario_slot ... &quot;&gt;
-<br/>				&nbsp; &nbsp; [[Slot contents]]
-<br/>				&lt;/div&gt;
-<br/>				&lt;div class=&quot;{{m.data.grid_css_class|e}}&quot;&gt;
-<br/>				&nbsp; &nbsp; &lt;div class=&quot;container ...&quot;&gt;
-				</pre>
+				<p>Whitespaces let you add some space on a layout.
+					This space can be empty, or you enter some custom HTML in the box below.<p>
+				<p>The HTML around this whitespace will look like this:</p>
 			<% break; %>
 			<% case 'slot': %>
 				<h3>Slot</h3>
-				<p>Slots are the most common element, have a width in columns, and may contain plugins. Their HTML has this structure:<p>
+				<p>Slots are the most common element, have a width in columns, and may contain plugins.<p>
+				<p>The HTML around this slot will look like this:</p>
+			<% break; %>
+			<% case 'grid_break': %>
+				<h3>Gridbreak</h3>
+				<p>A gridbreak splits the grid into two different containers (or into three containers if you use a
+					second gridbreak, into four containers if you use a third break break, and so on).</p>
+				<p>A common use for gridbreaks is to split a layout into a header, body and footer
+					(though you can have as many containers as you wish).</p>
+				<p>Each grid layout has at least one container. Each gridbreak you add to the layout creates an
+					additional container. The HTML for two containers separated by a gridbreak looks like this:<p>
+			<% break; %>
+			<% case 'grid_break_with_slot': %>
+				<h3>Gridbreak + slot</h3>
+				<p>A gridbreak splits the grid into two different containers (or into three containers if you use a
+					second gridbreak, into four containers if you use a third break break, and so on).</p>
+				<p>To create a slot that appears outside of the grid layout, you can use a
+					&ldquo;Gridbreak + slot&rdquo;. This gives you a gridbreak, and places a slot in the break outside
+					of the containers.</p>
+				<p>The HTML such a slot looks like this:<p>
+			<% break; %>
+		<% } %>
+		
+		<% switch (m.type) { %>
+			<% case 'grouping': %>
+			<% case 'space': %>
+			<% case 'slot': %>
 				<pre>
-					&lt;div id=&quot;plgslt_{{m.data.name|e}}&quot; class=&quot;zenario_slot ... &quot;&gt;
-<br/>				&nbsp; &nbsp; [[Plugin contents]]
+					&lt;div class=&quot;span
+						span{{m.data.width|escape}}{{m.cell.is_alpha? ' alpha' : ''}}{{m.cell.is_omega? ' omega' : ''}}{{m.type == 'space'? ' grid_space' : ''}}
+						{{m.type == 'slot'? 'slot <em>[[Name]]</em>' : ''}}
+						<em>[[Additional class name(s)]]</em>
+						<em>...</em>
+					&quot;&gt;
+<br/>				&nbsp; &nbsp; <em>...</em>
 <br/>				&lt;/div&gt;
 				</pre>
-				
+			<% break; %>
+			<% case 'grid_break': %>
+			<% case 'grid_break_with_slot': %>
+				<pre>
+				&lt;div class=&quot;<em>...</em>&quot;&gt;
+<br/>				&nbsp; &nbsp; &lt;div class=&quot;container container{{m.data.width|escape}}&quot;&gt;
+<br/>				&nbsp; &nbsp; &nbsp; &nbsp; <em>...</em>
+<br/>				&nbsp; &nbsp; &lt;/div&gt;
+<br/>				&lt;/div&gt;
+					<% if (m.type == 'grid_break') { %>
+<br/>					<em>&lt;!-- This is the gridbreak here --&gt;</em>
+					<% } else { %>
+<br/>					<em>&lt;!-- The gridbreak starts here --&gt;</em>
+<br/>					&lt;div class=&quot;slot <em>[[Name]]</em> <em>[[Additional class name(s)]]</em>&quot;&gt;
+<br/>					&nbsp; &nbsp; <em>...</em>
+<br/>					&lt;/div&gt;
+<br/>					<em>&lt;!-- The gridbreak ends here --&gt;</em>
+					<% } %>
+<br/>				&lt;div class=&quot;<em>[[CSS class name(s) for the following container]]</em> <em>...</em>&quot;&gt;
+<br/>				&nbsp; &nbsp; &lt;div class=&quot;container container{{m.data.width|escape}}&quot;&gt;
+<br/>				&nbsp; &nbsp; &nbsp; &nbsp; <em>...</em>
+<br/>				&nbsp; &nbsp; &lt;/div&gt;
+<br/>				&lt;/div&gt;
+				</pre>
 			<% break; %>
 		<% } %>
 		
@@ -69,7 +98,7 @@
 			<div id="zenario_grid_slot_columns">
 				<span>
 					<span class="value">{{m.data.width|e}}</span>
-					<span class="title">columns</span>
+					<span class="title">{{zenario.applyMergeFieldsN(zenarioA.phrase.column, zenarioA.phrase.columns, m.data.width)}}</span>
 				</span>
 			</div>
 		<% } %>
@@ -79,32 +108,14 @@
 			<input type="text" name="css_class" value="{{m.data.css_class|e}}" maxlength="100"/>
 		<% } %>
 	
-		<% if (m.type == 'space' || m.type == 'grid_break') { %>
+		<% if (m.type == 'space') { %>
 			<p>{{zenarioA.phrase.gridHtml}}</p>
 			<textarea name="html">{{m.data.html|e}}</textarea>
-		<% } %>
-	
-		<% if (m.type == 'slot') { %>
-			<div class="zenario_grid_slot_heights">
-				<% var h, heights = ['small', 'medium', 'large', 'xlarge', 'xxlarge']; %>
-				<% for (h in heights) { %>
-					<input type="radio" name="height" value="{{heights[h]}}"
-						id="zenario_grid_height_{{heights[h]}}"
-						{{(heights[h] == m.data.height || (h == 0 && !m.data.height)? 'checked="checked"' : '')}}
-					/>
-					<label for="zenario_grid_height_{{heights[h]}}">{{heights[h]}}</label>
-					
-				<% } %>
-			</div>
-			<br/>
 		<% } %>
 	
 		<% var show = false, showFirst = false, showOnly = false; %>
 	
 		<% if (m.type == 'grid_break' || m.type == 'grid_break_with_slot') { %>
-			<p>{{zenarioA.phrase.gridGridCSSClass}}</p>
-			<input type="text" name="grid_css_class" value="{{m.data.grid_css_class|e}}" maxlength="100"/>
-		
 			<% if (m.type == 'grid_break_with_slot') { %>
 				<% show = showOnly = true; %>
 			<% } %>
@@ -134,11 +145,23 @@
 		<% if (show) { %>
 			<p>
 				<input type="radio" name="small" id="grid_resp_always" value="" {{(!m.data.small? 'checked="checked"' : '')}}/>
-				<label for="grid_resp_always">{{zenarioA.phrase.gridResp_always}}</label>
+				<label for="grid_resp_always">
+					<% if (m.type == 'grid_break_with_slot') { %>
+						{{zenarioA.phrase.gridResp_slot_always}}
+					<% } else { %>
+						{{zenarioA.phrase.gridResp_always}}
+					<% } %>
+				</label>
 			
 				<br/>
 				<input type="radio" name="small" id="grid_resp_hide" value="hide" {{('hide' == m.data.small? 'checked="checked"' : '')}}/>
-				<label for="grid_resp_hide">{{zenarioA.phrase.gridResp_hide}}</label>
+				<label for="grid_resp_hide">
+					<% if (m.type == 'grid_break_with_slot') { %>
+						{{zenarioA.phrase.gridResp_slot_hide}}
+					<% } else { %>
+						{{zenarioA.phrase.gridResp_hide}}
+					<% } %>
+				</label>
 		
 				<% if (showFirst) { %>
 					<br/>
@@ -148,11 +171,32 @@
 				<% if (showOnly) { %>
 					<br/>
 					<input type="radio" name="small" id="grid_resp_only" value="only" {{('only' == m.data.small? 'checked="checked"' : '')}}/>
-					<label for="grid_resp_only">{{zenarioA.phrase.gridResp_only}}</label>
+					<label for="grid_resp_only">
+					<% if (m.type == 'grid_break_with_slot') { %>
+						{{zenarioA.phrase.gridResp_slot_only}}
+					<% } else { %>
+						{{zenarioA.phrase.gridResp_only}}
+					<% } %>
+				</label>
 				<% } %>
 			</p>
 		<% } %>
-	
+		
+		<% if (m.type == 'grid_break' || m.type == 'grid_break_with_slot') { %>
+			<br/>
+			<p>
+				To style each container differently, you should give them a different CSS class name.
+				(For example,
+					&ldquo;Gridbreak_Header&rdquo;,
+					&ldquo;Gridbreak_Body&rdquo;, or
+					&ldquo;Gridbreak_Footer&rdquo;.)
+			<p></p>
+				Tip: To give the very first container a CSS class name, create a gridbreak and place it at
+				the very start of the layout.
+			</p>
+			<p>{{zenarioA.phrase.gridGridCSSClass}}</p>
+			<input type="text" name="grid_css_class" value="{{m.data.grid_css_class|e}}" maxlength="100"/>
+		<% } %>
 
 		<div class="nice_button"><div class="r"><input type="submit" id="zenario_grid_slotname_button" class="i" value="{{zenarioA.phrase.gridSaveProperties}}"/></div></div>
 	</div>

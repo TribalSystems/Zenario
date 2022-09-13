@@ -48,7 +48,7 @@ _sql
 		email_body TEXT,
 		sent_timestamp datetime NOT NULL,			
 	PRIMARY KEY (`id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 );
 ze\dbAdm::revision(47,
@@ -129,58 +129,58 @@ _sql
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 );	ze\dbAdm::revision( 130
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `content_type` varchar(25) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `content_type` varchar(25) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_address_from` = SUBSTR(`email_address_from`, 1, 250) WHERE CHAR_LENGTH(`email_address_from`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_from` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_from` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_address_replyto` = SUBSTR(`email_address_replyto`, 1, 250) WHERE CHAR_LENGTH(`email_address_replyto`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_replyto` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_replyto` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_address_to` = SUBSTR(`email_address_to`, 1, 250) WHERE CHAR_LENGTH(`email_address_to`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_to` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_to` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_address_to_overridden_by` = SUBSTR(`email_address_to_overridden_by`, 1, 250) WHERE CHAR_LENGTH(`email_address_to_overridden_by`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_to_overridden_by` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_address_to_overridden_by` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_body` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_body` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_name_from` = SUBSTR(`email_name_from`, 1, 250) WHERE CHAR_LENGTH(`email_name_from`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_name_from` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_name_from` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_name_replyto` = SUBSTR(`email_name_replyto`, 1, 250) WHERE CHAR_LENGTH(`email_name_replyto`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_name_replyto` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_name_replyto` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_subject` = SUBSTR(`email_subject`, 1, 250) WHERE CHAR_LENGTH(`email_subject`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_subject` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_subject` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` SET `email_template_name` = SUBSTR(`email_template_name`, 1, 250) WHERE CHAR_LENGTH(`email_template_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_template_name` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log` MODIFY COLUMN `email_template_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 );
 
@@ -200,10 +200,19 @@ ze\dbAdm::revision(135
 	ADD COLUMN email_ccs varchar(255) DEFAULT NULL
 _sql
 
-);
-ze\dbAdm::revision(137
+);	ze\dbAdm::revision(137
 , <<<_sql
 	ALTER TABLE [[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log 
 	ADD COLUMN debug_mode tinyint DEFAULT 0 after `status`
 _sql
+
+
+//In 9.3, we're going through and fixing the character-set on several columns that should
+//have been using "ascii"
+);	ze\dbAdm::revision(140
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL
+_sql
+
 );

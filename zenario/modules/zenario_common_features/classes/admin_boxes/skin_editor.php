@@ -33,12 +33,18 @@ ze\module::incSubclass('zenario_common_features', 'admin_boxes', 'plugin_setting
 
 class zenario_common_features__admin_boxes__skin_editor extends zenario_common_features__admin_boxes__plugin_settings {
 	
-	protected $files = [
+	protected $filesFirstHalf = [
 		'0.reset.css' => "Enter CSS here to reset the browser's default styles.",
+		'1.colorbox.css' => "This should contain styles for the Colorbox library.",
 		'1.fonts.css' => 'This should contain styles for fonts.',
 		'1.forms.css' => 'This should contain styles for form elements, e.g. <code>&lt;input&gt;s<code>, <code>&lt;select&gt;s<code> and <code>&lt;textareas&gt;s<code>.',
-		'1.layout.css' => 'This should contain styles that relate to the layout of the page and slots.',
-		'3.misc.css' => "This should contain styles anything that doesn't fit in another category, e.g. pagination.",
+		'1.jquery_ui.css' => "This should contain styles for the JQuery library.",
+		'1.layout.css' => 'This should contain styles that relate to the layout of the page and slots.'
+	];
+
+	protected $filesSecondHalf = [
+		'3.misc.css' => "This should contain styles for anything that doesn't fit in another category, e.g. pagination.",
+		'3.misc_zfea.css' => "This should contain styles for FEA plugins",
 		'4.responsive.css' => 'This should contain rules for mobile devices.',
 		'print.css' => 'This should contain rules for printing.'
 	];
@@ -56,9 +62,8 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 		$box['tabs'][$file]['hidden'] = false;
 		$box['tabs'][$file]['label'] = $file;
 		$box['tabs'][$file]['ord'] = ++$box['key']['newTabOrd'];
-		$box['tabs'][$file]['tooltip'] =
-			'<p><code>'. htmlspecialchars($filepath). '</code></p>'.
-			'<p>'. ze\admin::phrase($desc). '</p>';
+		$box['tabs'][$file]['custom__filepath'] = $filepath;
+		$box['tabs'][$file]['custom__description'] = ze\admin::phrase($desc);
 		
 		if (file_exists(CMS_ROOT. $filepath)) {
 			if (is_readable(CMS_ROOT. $filepath)) {
@@ -97,15 +102,16 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 		//I'm calling this function to initialise some variables in the extended class
 		$this->getPluginCSSFilepath($box, false);
 		
-		if (!$box['key']['skinId'] || !($skin = ze\row::get('skins', ['display_name'], $box['key']['skinId']))) {
+		if (!$box['key']['skinId'] || !($skin = ze\row::get('skins', ['name', 'display_name'], $box['key']['skinId']))) {
 			echo ze\admin::phrase('Skin not found!');
 			exit;
 		}
 		
-		$box['title'] = ze\admin::phrase('Editing the skin "[[display_name]]"', $skin);
+		$box['title'] = ze\admin::phrase('Editing the skin "[[display_name]]"', $skin['display_name']);
 		
-		//Add a tab for each editable file
-		foreach ($this->files as $file => &$desc) {
+		$files = self::getFilesArray($skin);
+		//Add a tab for each editable file.
+		foreach ($files as $file => &$desc) {
 			$this->addSlide($box, $fields, $values, $file, $desc);
 		}
 	}
@@ -120,13 +126,14 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
 		//I'm calling this function to initialise some variables in the extended class
 		$this->getPluginCSSFilepath($box, false);
 		
 		//Save the CSS files, if they were there
-		if ($box['key']['skinId'] && ze\priv::check('_PRIV_EDIT_CSS') && ze\row::get('skins', 'enable_editable_css', $box['key']['skinId'])) {
-			foreach ($this->files as $file => &$desc) {
+		if ($box['key']['skinId'] && ze\priv::check('_PRIV_EDIT_CSS') && ($skin = ze\row::get('skins', ['name', 'enable_editable_css'], $box['key']['skinId']))) {
+			$files = self::getFilesArray($skin);
+
+			foreach ($files as $file => &$desc) {
 				$filepath = CMS_ROOT. $this->skinWritableDir. $file;
 				
 				if (file_exists($filepath)) {
@@ -143,6 +150,49 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 			
 			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
 		}
+	}
+
+	public function getFilesArray($skin) {
+		if (!$skin) {
+			return [];
+		}
+
+		$files = [];
+
+		//Add a tab for each editable file (names starting with 0-1)...
+		foreach ($this->filesFirstHalf as $file => $desc) {
+			$files[$file] = $desc;
+		}
+
+		//... then add skin editable CSS files (names starting with 2)...
+		$editableCssFiles = [];
+		$skinPath = CMS_ROOT . ze\content::skinPath($skin['name']) . 'editable_css/';
+		if ($handle = opendir($skinPath)) {
+			while (($entry = readdir($handle)) !== false) {
+				if ($entry != "." && $entry != ".." && strpos($entry, '2.') === 0) {
+					$editableCssFiles[] = $entry;
+				}
+			}
+		
+			closedir($handle);
+
+			asort($editableCssFiles);
+		}
+
+		if (!empty($editableCssFiles)) {
+			$desc = 'Editable CSS file used by the skin.';
+			
+			foreach ($editableCssFiles as $file) {
+				$files[$file] = $desc;
+			}
+		}
+
+		//... and finally add the rest (names starting with 3+).
+		foreach ($this->filesSecondHalf as $file => $desc) {
+			$files[$file] = $desc;
+		}
+
+		return $files;
 	}
 	
 	protected function getPluginCSSName(&$box, $thisPlugin) {

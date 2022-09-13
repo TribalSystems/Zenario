@@ -1,0 +1,269 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    panels:
+        images_in_slideshow:
+            priv: _PRIV_VIEW_REUSABLE_PLUGIN
+            panel_type: hierarchy
+            key:
+                instanceId: ''
+                cID: ''
+                cType: ''
+                cVersion: ''
+            db_items:
+                table: |
+                    [[DB_PREFIX]]nested_plugins AS banner
+                    INNER JOIN [[DB_PREFIX]]nested_plugins AS slide
+                       ON slide.instance_id = banner.instance_id
+                      AND slide.is_slide = 1
+                      AND slide.slide_num = banner.slide_num
+                    LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
+                       ON img_ps.instance_id = banner.instance_id
+                      AND img_ps.egg_id = banner.id
+                      AND img_ps.name = 'image'
+                    LEFT JOIN [[DB_PREFIX]]plugin_settings AS title_ps
+                       ON title_ps.instance_id = banner.instance_id
+                      AND title_ps.egg_id = banner.id
+                      AND title_ps.name = 'title'
+                    LEFT JOIN [[DB_PREFIX]]plugin_settings AS link_type_ps
+                       ON link_type_ps.instance_id = banner.instance_id
+                      AND link_type_ps.egg_id = banner.id
+                      AND link_type_ps.name = 'link_type'
+                    LEFT JOIN [[DB_PREFIX]]files AS f
+                       ON f.id = img_ps.foreign_key_id
+                      AND `usage` = 'image'
+                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                id_column: banner.id
+                where_statement: |
+                    WHERE banner.is_slide = 0
+                      AND banner.module_id = (
+                        SELECT id FROM [[DB_PREFIX]]modules AS m WHERE m.class_name = 'zenario_banner'
+                    )
+            refiners:
+                nest:
+                    sql: 'banner.instance_id = [[REFINER_ID]]'
+            refiner_required: true
+            panel_type: multi_line_list
+            use_tall_rows: true
+            #two_line_list: true
+            #disable_grid_view: true
+            
+            columns:
+                ordinal:
+                    title: Ord
+                    db_column: slide.slide_num
+                    width: xxsmall
+                    show_by_default: true
+                banner_title:
+                    title: Title
+                    width: large
+                    db_column: title_ps.value
+                    always_show: true
+                    empty_value: '[No title]'
+                    css_class: label_column
+                slide_title:
+                    parent: banner_title
+                    title: Slide
+                    db_column: slide.name_or_slide_label
+                    always_show: true
+                link_type:
+                    db_column: link_type_ps.value
+                links_to:
+                    parent: banner_title
+                    title: Link
+                    always_show: true
+                    empty_value: '[No link]'
+                    format: enum
+                    values:
+                        _NO_LINK: '[No link]'
+                        _CONTENT_ITEM: Links to a content item
+                        _DOCUMENT: Links to a document
+                        _EXTERNAL_URL: Links to an external URL
+                        _EMAIL: Links to an email address
+                        _ENLARGE_IMAGE: Link enlarges image in floating box
+                
+                filename:
+                    title: Filename
+                    width: large
+                    db_column: f.filename
+                    always_show: true
+                    get_tags_from_column: tags
+                    empty_value: '[No image]'
+                alt_tag:
+                    parent: filename
+                    title: Default alt-tag
+                    db_column: f.alt_tag
+                    show_by_default: true
+                short_checksum:
+                    title: Checksum (short)
+                    ascii_only: true
+                    db_column: f.short_checksum
+                    width: small
+                    show_by_default: false
+                mime_type:
+                    db_column: f.mime_type
+                checksum:
+                    db_column: f.checksum
+                
+                size:
+                    title: Size
+                    format: filesize
+                    db_column: f.size
+                    always_show: true
+                    width: small
+                width:
+                    db_column: f.width
+                height:
+                    db_column: f.height
+                dimensions:
+                    parent: size
+                    always_show: true
+                    title: Dimensions
+                    microtemplate: |
+                        <% if (m.item.mime_type) { %>
+                            <% if (m.item.width && m.item.height) { %>
+                                <% if (m.item.mime_type == 'image/svg+xml') { %>
+                                    {{m.item.width|e}} × {{m.item.height|e}}px; scalable
+                                <% } else { %>
+                                    {{m.item.width|e}} × {{m.item.height|e}}px
+                                <% } %>
+                            <% } else { %>
+                                {{'No dimensions; scalable'}}
+                            <% } %>
+                        <% } else { %>
+                            {{'No dimensions'}}
+                        <% } %>
+                uploaded_datetime:
+                    title: Uploaded on
+                    format: datetime
+                    width: medium
+                    db_column: f.created_datetime
+                    show_by_default: true
+                
+                privacy:
+                    title: Image privacy
+                    db_column: f.privacy
+                    width: small
+                    format: enum
+                    values:
+                        auto: Will auto-detect
+                        public: Public
+                        private: Private
+                    tooltip: |
+                        <table>
+                            <tr>
+                                <th style="text-align: left;">Public (green border):</th>
+                                <td style="vertical-align: text-top;">Accessible by any visitor via a friendly URL; may be indexed by search engines.</td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;">Private (blue border):</th>
+                                <td style="vertical-align: text-top;">Contains an cryptic directory path to prevent unauthorised visitor access; may not be indexed by search engines.</td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;">Will auto-detect (orange border):</th>
+                                <td style="vertical-align: text-top;">When next displayed to a visitor, will be set to Public if on a public content item, or Private if on a private content item.</td>
+                            </tr>
+                        </table>
+            item:
+                name: Image
+                names: Images
+                tooltip: >
+                    To reorder items, simply drag and drop.
+                    Changes will take effect immediately.
+            disable_periodic_refresh: true
+            #default_sort_column: ordinal
+            reorder:
+                priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                column: ordinal
+            collection_buttons:
+                upload_banner:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    label: Upload
+                    css_class: zenario_create_a_new
+                    upload:
+                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+                        fileDesc: Images
+                        multi: true
+                        drag_and_drop: true
+                        request:
+                            upload_banner: 1
+                add_from_library:
+                    label: Add image from image library
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Use
+                        multiple_select: true
+                        request:
+                            add_from_library: 1
+                paste:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    #label: Paste plugin
+                    ajax:
+                        request:
+                            paste: 1
+                slideshow_settings:
+                    label: Slideshow settings
+                    admin_box:
+                        path: plugin_settings
+                        key:
+                            instanceId: ""
+            item_buttons:
+                plugin_settings:
+                    label: Image settings
+                    admin_box:
+                        path: plugin_settings
+                tab_settings:
+                    label: Edit slide label and visibility
+                    admin_box:
+                        path: zenario_slide
+                view:
+                    label: View image
+                    popout:
+                        href: zenario/file.php
+                        options:
+                            type: image
+                    with_columns_set:
+                        image: true
+                duplicate:
+                    label: Duplicate plugin
+                    ajax:
+                        confirm:
+                            html: true
+                            button_message: Duplicate
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            duplicate_plugin_and_add_tab: 1
+                copy:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    label: Copy plugin
+                    tooltip: Use this to copy a plugin in a nest or slideshow
+                    multiple_select: true
+                    multiple_select_label: Copy plugins
+                    multiple_select_tooltip: Use this to copy plugins in a nest or slideshow
+                    ajax:
+                        request:
+                            copy: 1
+                insert:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    #label: Insert/paste plugin
+                    ajax:
+                        request:
+                            paste: 1
+                            insert: 1
+                remove_banner:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    label: Remove
+                    multiple_select: true
+                    multiple_select_label: Remove images from slideshow
+                    ajax:
+                        confirm:
+                            html: true
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove_banner: 1

@@ -103,6 +103,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 		relative_urls: !zenario.slashesInURL,
 		
 		style_formats: zenarioA.skinDesc.style_formats,
+		fontsize_formats: '8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt',
 		file_browser_callback: zenarioA.fileBrowser,
 		
 		

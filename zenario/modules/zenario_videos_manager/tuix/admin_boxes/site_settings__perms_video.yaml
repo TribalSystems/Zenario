@@ -17,7 +17,7 @@ site_settings:
                         name: perm.manage.video.by.group
                     indent: 1
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of the groups:'
                     redraw_onchange: true
                 perm.manage.video.groups:
                     site_setting:
@@ -34,4 +34,4 @@ site_settings:
                         select_phrase: Select a group...
                         multiple_select: true
                     validation:
-                        required_if_not_hidden: Please select a group who can create an envelope.
+                        required_if_not_hidden: Please select one or more groups, members of which can create an envelope.

@@ -41,10 +41,13 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 			$values['settings/search_type'] = $lang['search_type'];
 			$values['settings/thousands_sep'] = $lang['thousands_sep'];
 			$values['settings/dec_point'] = $lang['dec_point'];
-			$values['settings/translate_phrases'] = $lang['translate_phrases'];
 			$values['settings/show_untranslated_content_items'] = $lang['show_untranslated_content_items'];
 			$values['settings/sync_assist'] = $lang['sync_assist'];
 			$fields['settings/sync_assist']['hidden'] = $box['key']['id'] == ze::$defaultLang;
+			
+			//N.b. we're not longer allowing admins to change which languages get translated,
+			//so don't bother loading the saved value.
+			//$values['settings/translate_phrases'] = $lang['translate_phrases'];
 	
 			if ($lang['domain']) {
 				$values['settings/use_domain'] = 1;
@@ -56,16 +59,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		} else {
 			$box['title'] = ze\admin::phrase('Enabling the language "[[language]]"', ['language' => ze\lang::name($box['key']['id'])]);
 			ze\priv::exitIfNot('_PRIV_MANAGE_LANGUAGE_CONFIG');
-			$box['save_button_message'] = ze\admin::phrase('Enable Language');
-	
-			$box['tabs']['settings']['edit_mode']['always_on'] = true;
-	
-			//Don't default translations to on for English
-			if ($box['key']['id'] == 'en'
-			 || substr($box['key']['id'], 0, 3) == 'en-') {
-			} else {
-				$values['settings/translate_phrases'] = 1;
-			}
+			$box['save_button_message'] = ze\admin::phrase('Enable language');
 	
 			switch ($box['key']['id']) {
 				case 'zh-hans':
@@ -116,6 +110,18 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 					$values['settings/thousands_sep'] = ',';
 					$values['settings/dec_point'] = '.';
 			}
+		}
+	
+		//N.b. we're not longer allowing admins to change which languages get translated.
+		//"English" like languages should never use translations,
+		//and any other language should always use translations.
+		if ($box['key']['id'] == 'en'
+		 || substr($box['key']['id'], 0, 3) == 'en-') {
+			$values['settings/translate_phrases'] = 0;
+			$fields['settings/uses_phrases']['hidden'] = true;
+		} else {
+			$values['settings/translate_phrases'] = 1;
+			$fields['settings/doesnt_use_phrases']['hidden'] = true;
 		}
 
 		$fields['settings/domain']['placeholder'] = $box['key']['id']. '.'. ze\link::primaryDomain();

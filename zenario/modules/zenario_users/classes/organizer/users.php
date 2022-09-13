@@ -227,7 +227,7 @@ class zenario_users__organizer__users extends zenario_users {
 			
 			case 'active_users':
 				$panel['title'] = ze\admin::phrase('Active users');
-				$panel['no_items_message'] = 'No active users.';
+				$panel['no_items_message'] = 'No extranet users found with active status';
 				unset($panel['trash']);
 				unset($panel['quick_filter_buttons']['all']);
 				unset($panel['quick_filter_buttons']['pending']);

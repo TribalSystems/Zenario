@@ -7,19 +7,17 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Change Email
 description: |
-    <p>This Module allows Extranet Users to change their email address.</p>
-            <p>As a safety check, before Extranet Users can change their email address, they must enter their current password and their desired new email address.</p>
-            <p>When the User requesting the email address change is successfully authenticated, an email message containing a confirmation link is sent to the new email address.</p>
-            <p>The email address is changed on clicking the confirmation link in the email message. Before that, no updates to the User account are performed.</p>
-            <p>You can create and select your own Email Template which will be used to send the Email Change confirmation message. The selected Email Template can contain various Merge Fields which will be replaced by real values when the email is sent. You can use the following fields in the Emails sent by the Extranet Change Email Module:</p>
+    <p>This module allows extranet users to change their email address.</p>
+            <p>A user must be logged in to use this plugin, and must enter their current password and their new email address.</p>
+            <p>When the user has entered their password correctly, Zenario sends a a verification email to the existing email address, containing a verification link. When clicked successfully, Zenario sends an email to both the old and the new email address to notify that the change has been made.</p>
+            <p>You can create and select your own email template which will be used to send the messages. It can contain various merge fields which will be replaced by real values when the email is sent. You can use the following fields:</p>
             <ul>
-                <li>[[new_email]] - New email address.</li>
-                <li>[[hash]] - A hash code required to activate new email address.</li>
-                <li>[[ip_address]] - The IP address of the computer from which email address change was requested.</li>
-                <li>[[cms_url]] - A Website URL.</li>
-                <li>[[email_confirmation_link]] - The confirmation link to activate email address change.</li>
+                <li>[[new_email]] - the new email address</li>
+                <li>[[hash]] - a hash code required to activate new email address</li>
+                <li>[[ip_address]] - the IP address of the computer from which email address change was requested</li>
+                <li>[[cms_url]] - the Website URL</li>
+                <li>[[email_confirmation_link]] - the confirmation link to activate email address change.</li>
             </ul>
-            <p>Additionally the following User data fields can be used: [[screen_name]], [[password]], [[status]], [[last_login]], [[title]], [[first_name]], [[middle_name]], [[maiden_name]], [[last_name]], [[birth_date]], [[email]], [[email_verified]], [[alt_email]], [[website]], [[job_title]], [[company_name]], [[bus_address1]], [[bus_address2]], [[bus_address3]], [[bus_town]], [[bus_state]], [[bus_postcode]], [[bus_country_id]], [[res_address1]], [[res_address2]], [[res_address3]], [[res_town]], [[res_state]], [[res_postcode]], [[res_country_id]], [[address_pref]], [[mobile]], [[bus_phone]], [[res_phone]], [[fax]], [[created_date]].</p>
 category: pluggable
 keywords: address, change, email, extranet, user
 

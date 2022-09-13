@@ -53,6 +53,8 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$box['key']['sectionId'] = $menu['section_id'];
 			$box['key']['parentMenuID'] = $menu['parent_id'];
 	
+			$box['identifier']['css_class'] = ze\menuAdm::cssClass($menu);
+			
 			$box['title'] = '';
 	
 			if ($menu['target_loc'] == 'int' && $menu['equiv_id'] && $menu['content_type']) {
@@ -64,12 +66,12 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$mergeFields = ['tag' => $tag];
 
 				if ($menu['redundancy'] == 'primary') {
-					$warning = 'This is a primary menu node. This means that there are other menu nodes that link to the content item [[tag]].';
+					$warning = 'This is a primary menu node. This means that there are other menu nodes that link to the same content item, [[tag]].';
 					$mergeFields['div_start'] = '<div class="zenario_fbInfo">';
 				} elseif ($menu['redundancy'] == 'secondary') {
 					$primaryNodeId = ze\row::get('menu_nodes', 'id', ['equiv_id' => $menu['equiv_id'], 'content_type' => $menu['content_type'], 'redundancy' => 'primary']);
 					$node_path = ze\menuAdm::path($primaryNodeId);
-					$warning = 'This is a secondary menu node. This means that it links to the same content item ([[tag]]) as the menu node "[[node_path]]"';
+					$warning = 'This is a secondary menu node. This means that it links to the same content item ([[tag]]) as the primary menu node "[[node_path]]".';
 					$mergeFields['node_path'] = $node_path;
 					$mergeFields['div_start'] = '<div class="zenario_fbWarning">';
 				}
@@ -119,6 +121,10 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				}
 			}
 
+			if (!empty($menu['restrict_child_content_types'])) {
+				$box['identifier']['css_class'] .= ' node_suggest_on';
+			}
+
 		} else {
 			ze\priv::exitIfNot('_PRIV_ADD_MENU_ITEM');
 			//Convert the location requests from the old format
@@ -134,7 +140,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				if (is_array($tab) && isset($tab['edit_mode'])) {
 					$tab['edit_mode']['enabled'] = true;
 					$tab['edit_mode']['on'] = true;
-					$tab['edit_mode']['always_on'] = true;
 				}
 			}
 	
@@ -273,10 +278,10 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		foreach (ze\row::getAssocs('content_types', ['content_type_plural_en'], [], 'content_type_plural_en') as $cType => $cTypeDetails) {
 			if ($cType == 'html') {
 				$fields['advanced/restrict_child_content_types']['empty_value'] = 
-					ze\admin::phrase("Don't restrict");
+					ze\admin::phrase("Don't suggest");
 			} else {
 				$fields['advanced/restrict_child_content_types']['values'][$cType] = 
-					ze\admin::phrase('Suggest [[content_type_plural_en]] be created under here', $cTypeDetails);
+					ze\admin::phrase('Suggest [[content_type_plural_en]] be created under this menu node', $cTypeDetails);
 				
 				if ($i > 0) {
 					$cTypes[$i - 1] = ', ';

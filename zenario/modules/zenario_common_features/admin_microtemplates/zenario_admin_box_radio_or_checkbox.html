@@ -19,12 +19,15 @@
 		for="{{m.lovId|escape}}"
 		id="label_for__{{m.lovId|escape}}"
 		class="
-			{{m.lovField.label_class}}
+			{{m.lovField.label_class|escape}}
 			<% if (m.tag_color) { %>
 				zenario_tag zenario_tag_{{m.tag_color|escape}}
 			<% } %>
 		"
 	>
+		<% if (m.lovField.icon_class !== undefined) { %>
+			<span class="zfab_label_icon {{m.lovField.icon_class|escape}}"></span>
+		<% } %>
 		{{m.lovField.label}}
 	</label>
 

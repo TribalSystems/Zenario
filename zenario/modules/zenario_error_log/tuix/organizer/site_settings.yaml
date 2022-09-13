@@ -1,9 +1,0 @@
-zenario__administration:
-	panels:
-		site_settings:
-			items:
-				#	The new item to add, which will form the Settings Group. We should
-				#	prefix it with our Module name to help avoid any name-clashes.
-				zenario_error_log__site_settings_group:
-					name: Error Log
-					desc: Settings for the error log.

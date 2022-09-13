@@ -96,14 +96,10 @@ zenarioA.hideAJAXLoader = function() {
 };
 
 zenarioA.nowDoingSomething = function(something, showImmediately) {
-
+	
 	$('#zenario_now_loading').clearQueue().hide();
 	$('#zenario_now_saving').clearQueue().hide();
-	
-	var $zenario_now_installing = $('#zenario_now_installing');
-	if ($zenario_now_installing.length) {
-		$zenario_now_installing.clearQueue().hide();
-	}
+	$('#zenario_now_installing').clearQueue().hide();
 
 	if (something) {
 		if (showImmediately) {
@@ -115,6 +111,12 @@ zenarioA.nowDoingSomething = function(something, showImmediately) {
 				.fadeIn(2000);
 		}
 	}
+};
+
+
+
+zenarioA.nItems = function(n) {
+	return zenario.applyMergeFieldsN(phrase.oneItem, phrase.nItems, n);
 };
 
 
@@ -2016,6 +2018,9 @@ zenarioA.addImagePropertiesButtons = function(path) {
 			//Try to work out the image id, which will be using a CSS class in the format "zenario_image_id__123__"
 			var $el = $(el),
 				imageId = el.className.match(/zenario_image_id__(\d+)__/),
+				imageNum = el.className.match(/zenario_image_num__(\d+)__/),
+				mobImageId = el.className.match(/zenario_mob_image_id__(\d+)__/),
+				mobImageNum = el.className.match(/zenario_mob_image_num__(\d+)__/),
 				slotName = zenario.getSlotnameFromEl(el),
 				eggId = zenario.getSlotnameFromEl(el, false, true),
 				slot = slotName && zenario.slots[slotName],
@@ -2025,32 +2030,57 @@ zenarioA.addImagePropertiesButtons = function(path) {
 			if (imageId) {
 				imageId = 1*imageId[1];
 			}
+			if (imageNum) {
+				imageNum = 1*imageNum[1];
+			}
+			if (mobImageId) {
+				mobImageId = 1*mobImageId[1];
+			}
+			if (mobImageNum) {
+				mobImageNum = 1*mobImageNum[1];
+			}
 			
 			if (imageId && instanceId) {
 				//We want to try and attach a button just before the image.
 				//If there is an image inside a link, a picture tag, or a <div class="banner_image">, try to go up one
-				//level and attach the button outside the tag, rather than inside
+				//level and attach the button outside the tag, rather than inside.
+				//But one counter exception - don't do this for the MiC plugin where there are many banner images on the same level
 				while ($el
 					&& ($parent = $el.parent())
 					&& (nodeName = $parent[0].nodeName)
 					&& (nodeName = nodeName.toLowerCase())
 					&& (nodeName == 'a'
 					 || nodeName == 'picture'
-					 || (nodeName == 'div' && $parent.hasClass('banner_image')))
+					 || (nodeName == 'div' && $parent.hasClass('banner_image') && !$parent.parent().hasClass('banner_images')))
 				) {
 					$el = $parent;
 				}
 			
 			
 			
-				if (instanceId) {
-					$imagePropertiesButton = $(_$span('class', 'zenario_image_properties_button'));
+				$imagePropertiesButton = $(_$span('class', 'zenario_image_properties_button zenario_ipb_' + imageNum));
+			
+				$el.before($imagePropertiesButton);
+			
+				$imagePropertiesButton.on('click', function() {
+					zenarioAB.open('zenario_image', {
+						id: imageId,
+						slotName: slotName,
+						instanceId: instanceId,
+						eggId: eggId
+					}, 'crop_1');
+					
+					return false;
+				});
+				
+				if (mobImageId) {
+					$imagePropertiesButton = $(_$span('class', 'zenario_image_properties_button zenario_ipb_' + mobImageNum));
 				
 					$el.before($imagePropertiesButton);
 				
 					$imagePropertiesButton.on('click', function() {
 						zenarioAB.open('zenario_image', {
-							id: imageId,
+							id: mobImageId,
 							slotName: slotName,
 							instanceId: instanceId,
 							eggId: eggId

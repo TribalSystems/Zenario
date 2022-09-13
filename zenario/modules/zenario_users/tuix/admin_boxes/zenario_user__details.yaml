@@ -56,7 +56,8 @@ zenario_user__details:
                             ord: 4
                             label: Extranet user (suspended)
                     redraw_onchange: true
-                
+                    side_note: |
+                        Choose "Contact" for a record of someone whose details you store, whom you may email, or export their details. They won't be able to log in.<br /><br />Choose "Extranet user" for someone whose details you store, and who may also log into an extranet area, so long as their account is "active".
                 linked_countries:
                     visible_if: |
                         zenarioAB.value('status', 'details')
@@ -274,6 +275,7 @@ zenario_user__details:
             visible_if: |
                 zenarioAB.tuix.key.id
             label: Dates/History
+            ord: 999999
             fields:
                 last_login: 
                     visible_if: |

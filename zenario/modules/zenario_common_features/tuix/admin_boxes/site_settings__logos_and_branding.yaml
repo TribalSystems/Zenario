@@ -14,30 +14,6 @@ site_settings:
                     snippet:
                         html: >
                             You may set an image to use as a favicon, an image that visitors save as a home screen icon on mobile devices, and an OG image when the site is mentioned on social media.
-                default_icon:
-                    site_setting:
-                        name: default_icon
-                    label: "Open Graph (OG) image for the site:"
-                    upload: 
-                        accept: "image/*"
-                        extensions: 
-                            - .gif
-                            - .png
-                        drag_and_drop: false
-                    pick_items: 
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
-                    note_below: >
-                        When a content item doesn’t have a featured image, this image will be used for the content item's <code>og:image</code> meta data tags.<br>
-                        You should upload a <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
-                        We recommend that the image should be at least 200x200 pixels in size;
-                        larger images will be auto-downsized.
-                    validation:
-                        must_be_gif_or_png: >
-                            The default icon must be a .gif or a .png file.
                 favicon: 
                     site_setting:
                         name: favicon
@@ -52,6 +28,7 @@ site_settings:
                         drag_and_drop: false
                     note_below: |
                         You may upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.)
+                        We recommend that the image should be at least 32×32 pixels in size.
                     validation:
                         must_be_gif_ico_or_png: |
                             The favicon must be a file with format <code>.gif</code>, <code>.ico</code> or a <code>.png</code>.
@@ -78,8 +55,34 @@ site_settings:
                     validation:
                         must_be_gif_or_png: >
                             The home screen icon must be a .gif or a .png file.
+                default_icon:
+                    site_setting:
+                        name: default_icon
+                    label: "Open Graph (OG) image for the site:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .png
+                            - .jpg
+                            - .jpeg
+                        drag_and_drop: false
+                    pick_items: 
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    note_below: >
+                        When a content item doesn’t have a featured image, this image will be used for the content item's <code>og:image</code> meta data tags.<br>
+                        You should upload a <code>.jpg</code>, <code>.jpeg</code>, <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
+                        We recommend that the image should be at least 200x200 pixels in size;
+                        Larger images will be auto-downsized.
+                    validation:
+                        must_be_image: >
+                            The OG image must be a .gif, .jpg, .jpeg or a .png file.
         admin_login:
-            label: Admin login
+            label: Admin/site disabled
             edit_mode:
                 enabled: Yes
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -94,7 +97,7 @@ site_settings:
                 brand_logo:
                     site_setting:
                         name: brand_logo
-                    label: 'Logo:'
+                    label: 'Logo on admin login and site disabled page:'
                     type: radios
                     value: zenario
                     values:
@@ -104,11 +107,13 @@ site_settings:
                             label: 'Use a custom logo:'
                     redraw_onchange: true
                 
+                zenario_logo:
+                    visible_if: zenarioAB.value('brand_logo') == 'zenario'
+                
                 custom_logo:
                     site_setting:
                         name: custom_logo
-                    visible_if: |
-                        zenarioAB.value('brand_logo') == 'custom'
+                    visible_if: zenarioAB.value('brand_logo') == 'custom'
                     upload:
                         accept: "image/*"
                         extensions: 
@@ -119,12 +124,25 @@ site_settings:
                             - .svg
                         drag_and_drop: true
                     note_below: >
-                        If your image is larger than 500×250 it will be scaled down to fit.
+                        If your image is larger than 500p× wide by 250px high, it will be scaled down to fit.
                     validation:
                         required_if_not_hidden: >
                             Please upload an image.
                         must_be_image_or_svg: >
                             The custom logo must be a .gif, .jpg, .png or a .svg file.
+                
+                site_disabled_title:
+                    label: "Browser title when site disabled:"
+                    type: text
+                site_disabled_message:
+                    label: "Message for all visitors when site disabled:"
+                    type: editor
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: true
+                        relative_urls: true
+                    rows: 4
+                    cols: 80
         admin_login_link:
             label: Admin login link
             edit_mode:

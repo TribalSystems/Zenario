@@ -177,7 +177,7 @@ class user {
 				 && ($idAndMD5[1] === md5(\ze\link::host(). $user['id']. $user['screen_name']. $user['email']. $user['password']))) {
 					\ze\user::logIn($user['id']);
 				
-					if (\ze::setting('cookie_consent_for_extranet') == 'granted') {
+					if (\ze\cookie::canSet('functionality')) {
 						\ze\cookie::setConsent();
 					}
 				}
@@ -335,7 +335,7 @@ class user {
 			//Update their last login time
 			\ze\row::update('users', ['last_login' => \ze\date::now()], $userId);
 	
-			if (\ze::setting('period_to_delete_sign_in_log') != 0) {
+			if (\ze::setting('period_to_delete_sign_in_log')) {
 				require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
 				$browser = new \Browser();
 				

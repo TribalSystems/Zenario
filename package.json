@@ -16,17 +16,18 @@
 		"bez": "*",
 		"cytoscape": "*",
 		"jquery": "*",
+		"jquery-doubletaptogo": "^3.0.2",
 		"jquery-lazy": "*",
 		"jquery-multiselect": "*",
+		"js-crc": "emn178\/js-crc",
 		"mdn-polyfills": "*",
 		"rcrop": "aewebsolutions\/rcrop",
 		"respond.js": "*",
 		"spectrum-colorpicker": "*",
 		"toastr": "*",
 		"underscore.string": "*",
-		"vimeo-upload": "*",
 		"wowjs": "*",
 		"zxcvbn": "^4.4.2"
 	},
-	"version": "9.2.57169"
+	"version": "9.3.57186"
 }

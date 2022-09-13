@@ -3,19 +3,24 @@
 plugin_settings:
     module_class_name: zenario_multiple_image_container
     tabs:
-        mobile_tab:
-            hidden: true
-        
-        image_and_link:
-            ord: 4.4
+        first_tab:
+            edit_mode:
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
             label: Choose images
+            notices:
+                docstore_warning:
+                    show: false
+                    type: warning
+                    html: true
+                    message: ''
             fields:
-                # Overwrite the single image picker from the Banner Plugin with a multiple image picker
                 image:
                     plugin_setting:
+                        name: image
                         foreign_key_to: 'multiple_files'
                         use_value_for_plugin_name: false
-                        
                     label: Images
                     pick_items:
                         path: zenario__content/panels/mic_image_library
@@ -26,6 +31,8 @@ plugin_settings:
                         select_phrase: Select from Organizer...
                     format_onchange: true
                     upload:
+                        usage: 'mic'
+                        location: 'docstore'
                         multi: true
                         accept: 'image/*'
                         extensions:
@@ -35,41 +42,75 @@ plugin_settings:
                             - .png
                         drag_and_drop: true
                         reorder_items: true
+                    validation:
+                        required_if_not_hidden: Please select an image.
                 
-                show_link_to_download_original:
-                    type: checkbox
+                canvas:
                     plugin_setting:
-                        name: show_link_to_download_original
-                    label: "Show link to download original file"
-                    redraw_onchange: true
-                show_file_size:
-                    indent: 2
-                    type: checkbox
-                    plugin_setting:
-                        name: show_file_size
-                    label: "Show file size"
-                    visible_if: zenarioAB.value('show_link_to_download_original')
-                show_image_uploaded_date:
-                    type: checkbox
-                    plugin_setting:
-                        name: show_image_uploaded_date
-                    label: "Show image uploaded date"
-                    redraw_onchange: true
-                lazy_load:
+                        name: canvas
+                    label: 'Thumbnail image canvas:'
+                    type: select
+                    value: fixed_width_and_height
+                    values:
+                        unlimited:
+                            label: Unlimited size
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                        crop_and_zoom:
+                            label: Crop and zoom
+                    format_onchange: true
+                retina:
                     indent: 1
-                    visible_if: true
                     plugin_setting:
-                        name: lazy_load
-                    label: Lazy load images
+                        name: retina
+                    label: 'This is a retina image'
                     type: checkbox
+                    same_row: true
+                    value: ""
+                    visible_if: |
+                        !zenarioAB.svgSelected('image') &&
+                        !zenarioAB.svgSelected('images')
                     side_note: |
-                        This will cause the images to be loaded when they scroll into view,
-                        rather than loading them all at once.
+                        Display image at double density.
+                width:
+                    indent: 1
+                    plugin_setting:
+                        name: width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                height:
+                    indent: 1
+                    plugin_setting:
+                        name: height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                
                 show_caption_on_image:
-                    #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
+                    plugin_setting:
+                        name: show_caption_on_image
+                    label: "Show caption on thumbnail"
+                    type: checkbox
                     redraw_onchange: true
                 show_caption_above_thumbnail:
-                    indent: 2
+                    indent: 1
                     ord: show_caption_on_image.1
                     plugin_setting:
                         name: show_caption_above_thumbnail
@@ -77,10 +118,26 @@ plugin_settings:
                     type: checkbox
                     visible_if: lib.value('show_caption_on_image')
                     side_note: "Captions normally appear below the thumbnail; check here for captions to appear first."
-                show_caption_on_enlarged_image:
-                    #This checkbox is defined in Banner module. It just needs to be enabled by default in this module.
-                    value: true
-                    side_note: 'This only has effect when you select "Enlarge image in a floating box" for an image.'
+                show_image_credit_on_thumbnail:
+                    ord: show_caption_on_image.2
+                    plugin_setting:
+                        name: show_image_credit_on_thumbnail
+                    label: 'Show image credit on thumbnail'
+                    type: checkbox
+                webp:
+                    plugin_setting:
+                        name: webp
+                    type: checkbox
+                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    value: 1
+                lazy_load:
+                    plugin_setting:
+                        name: lazy_load
+                    label: Lazy load images
+                    type: checkbox
+                    side_note: |
+                        This will cause the images to be loaded when they scroll into view,
+                        rather than loading them all at once.
                 zip_archive_enabled:
                     label: 'Offer to create zip of downloads'
                     type: checkbox
@@ -88,9 +145,7 @@ plugin_settings:
                         name: zip_archive_enabled
                     redraw_onchange: true
                 zip_archive_name:
-                    indent: 2
-                    #Indent is set to 2, because there is logic in the MIC formatAdminBox() method
-                    #which reduces it by 1.
+                    indent: 1
                     hide_with_previous_outdented_field: true
                     hide_if_previous_value_isnt: 1
                     label: 'Zip archive name:'
@@ -103,9 +158,55 @@ plugin_settings:
                         leave this field empty, the "images.zip" name is assumed.
                     post_field_html: '.zip'
                     note_below: ''
-
+                
+                title:
+                    plugin_setting:
+                        name: title
+                        is_searchable_content: true
+                        use_value_for_plugin_name: true
+                        translate: true
+                    label: 'Title:'
+                    type: text
+                    width: "150"
+                    maxlength: "255"
+                    value: ""
+                
+                title_tags:
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tags:'
+                    type: select
+                    values:
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h2
+                    same_row: true
+                
+                set_an_anchor:
+                    plugin_setting:
+                        name: set_an_anchor
+                    label: 'Set an anchor'
+                    type: checkbox
+                    value: false
+                    format_onchange: true
+                anchor_name:
+                    plugin_setting:
+                        name: anchor_name
+                    indent: 1
+                    type: text
+                    label: 'Anchor name:'
+                    validation:
+                        required_if_not_hidden: 'Please enter the anchor name.'
+                    visible_if: zenarioAB.value('set_an_anchor')
+                    #This field has an oninput event, set in the fillAdminBox method,
+                    #and a side_note, set in the formatAdminBox method.
+        
         links:
-            ord: 4.5
             label: Captions, links, enlarging
             custom_template_fields:
 
@@ -135,7 +236,7 @@ plugin_settings:
                             - .png
                     values: {}
                 
-                image_link_znz: 
+                image_link_znz:
                     type: grouping
                     name: image_link_znz
                     grouping_css_class: zenario_grouping__image_link
@@ -170,7 +271,7 @@ plugin_settings:
                             label: Link to an external URL
                         _NO_LINK:
                             label: — Don't link/enlarge —
-                    redraw_onchange: true
+                    format_onchange: true
               
                 target_blank_znz:
                     indent: 1
@@ -240,13 +341,103 @@ plugin_settings:
                         taken to its location on navigation.
                     same_row: true
             fields:
-                # Annoying bug: you need to add an actual new field to be able to run
-                # your placeholder methods!
-                test:
-                    hidden: true
+                options_for_all_images:
+                    ord: 999999999
+                    type: grouping
+                    snippet:
+                        label: 'Options for all images'
+                        label_class: subheading
                 no_captions:
+                    grouping: image_settings
                     snippet:
                         html: 'Captions can be attached to images. Please upload some images, then return to this tab to add captions.'
                     readonly: true
-                    
-                        
+                enlarge_canvas:
+                    grouping: options_for_all_images
+                    plugin_setting:
+                        name: enlarge_canvas
+                    label: 'Enlarged image canvas:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            label: Unlimited size
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                    format_onchange: true
+                enlarge_width:
+                    grouping: options_for_all_images
+                    indent: 1
+                    plugin_setting:
+                        name: enlarge_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged width.
+                        numeric: The enlarged width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                enlarge_height:
+                    grouping: options_for_all_images
+                    indent: 1
+                    plugin_setting:
+                        name: enlarge_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged height.
+                        numeric: The enlarged height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                show_caption_on_enlarged_image:
+                    grouping: options_for_all_images
+                    plugin_setting:
+                        name: show_caption_on_enlarged_image
+                    label: "Show caption on enlarged image"
+                    type: checkbox
+                    redraw_onchange: true
+                    value: true
+                    side_note: 'This only has effect when you select "Enlarge image in a floating box" for an image.'
+                show_image_credit_on_enlarged_image:
+                    grouping: options_for_all_images
+                    plugin_setting:
+                        name: show_image_credit_on_enlarged_image
+                    label: 'Show image credit on enlarged image'
+                    type: checkbox
+                enlarge_webp:
+                    grouping: options_for_all_images
+                    plugin_setting:
+                        name: enlarge_webp
+                    type: checkbox
+                    label: 'Link to WebP-format for enlarged image (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    value: 1
+                show_link_to_download_original:
+                    grouping: options_for_all_images
+                    type: checkbox
+                    plugin_setting:
+                        name: show_link_to_download_original
+                    label: "Show link to download original file"
+                    redraw_onchange: true
+                show_file_size:
+                    grouping: options_for_all_images
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: checkbox
+                    plugin_setting:
+                        name: show_file_size
+                    label: "Show file size"
+                show_image_uploaded_date:
+                    grouping: options_for_all_images
+                    type: checkbox
+                    plugin_setting:
+                        name: show_image_uploaded_date
+                    label: "Show image uploaded date"
+                    redraw_onchange: true

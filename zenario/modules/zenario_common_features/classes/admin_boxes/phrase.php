@@ -132,8 +132,7 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 						'visible_if' => 'zenarioAB.editModeOn()',
 						'value' => $protectValue,
 						'side_note' =>
-						"Protecting a Phrase will stop it from being overwritten when
-						importing Phrases from a CSV file."
+						"If importing a CSV/Excel translation file, prevent this phrase from being overwritten."
 					];
 				$ord += 2;
 			}
@@ -164,11 +163,11 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 		
 		// If this a phrase code (e.g. _HELLO_WORLD) or a ze\lang::phrase (e.g. Hello World)
 		if ($box['key']['is_code']) {
-			$box['title'] = ze\admin::phrase('Editing the Phrase "[[code]]".', $box['key']);			
+			$box['title'] = ze\admin::phrase('Editing the phrase "[[code]]".', $box['key']);			
 		
 		// If this is a ze\lang::phrase (not a code)
 		} else {
-			$box['title'] = ze\admin::phrase('Editing a Phrase');
+			$box['title'] = ze\admin::phrase('Editing a phrase');
 		}
 	}
 	

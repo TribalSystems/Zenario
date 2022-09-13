@@ -4,7 +4,7 @@ sections:
     icons:
         buttons:
             item_permissions:
+                ord: layout_id.01
                 css_class: zenario_at_icon_permissions
                 admin_box:
                   path: zenario_content_privacy
-                ord: 15

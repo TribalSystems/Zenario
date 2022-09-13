@@ -632,7 +632,11 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 				$addressFrom = false,
 				$nameFrom = false,
 				false, false, false,
-				$isHTML = false);
+				$isHTML = false,
+				false, false, false, false, '', '', 'To',
+				$ignoreDebugMode = true		//Scheduled task logs should always be sent to the intended recipient,
+											//even if debug mode is on.
+			);
 		}
 	}
 	

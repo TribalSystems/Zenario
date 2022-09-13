@@ -7,12 +7,6 @@ Plugin
 zenario_common_features
 
 "Phrase Code",Translation
-_COOKIE_CONSENT_ACCEPT,"Accetta"
-_COOKIE_CONSENT_CLOSE,"Chiudi"
-_COOKIE_CONSENT_CONTINUE,"Continuare"
-_COOKIE_CONSENT_IMPLIED_MESSAGE,"Questo sito mette i cookie sul vostro computer per fornire funzionalità essenziale e per offrire la migliore esperienza. Se si continua a utilizzare questo sito, si suppone che si accetta a questo. Si prega di consultare la nostra politica sulla privacy per ulteriori informazioni."
-_COOKIE_CONSENT_MESSAGE,"Questo sito potrebbe caricare cookies sul tuo computer. Uno di questi è essenziale per il funzionamento del sito e quindi è già stato caricato; accettandone altri faciliterai la tua navigazione. Per favore guarda la pagina dedicata alla Privacy Policy per ulteriori informazioni."
-_COOKIE_CONSENT_REJECT,"Rifiuta"
 _MONTH_LONG_01,"gennaio"
 _MONTH_LONG_02,"febbraio"
 _MONTH_LONG_03,"marzo"
@@ -44,3 +38,8 @@ _WEEKDAY_3,"mercoledì"
 _WEEKDAY_4,"Giovedi"
 _WEEKDAY_5,"venerdì"
 _WEEKDAY_6,"sabato"
+_FILE_SIZE_UNIT_GB,"GB"
+_FILE_SIZE_UNIT_MB,"MB"
+_FILE_SIZE_UNIT_KB,"KB"
+_FILE_SIZE_UNIT_BYTE,"byte"
+_FILE_SIZE_UNIT_BYTES,"bytes"

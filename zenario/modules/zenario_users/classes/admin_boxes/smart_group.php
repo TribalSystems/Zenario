@@ -117,6 +117,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						++$n;
 						$values['smart_group/type__'. $n] = 'not_in_a_group';
 						break;
+
 					//If a role is picked, set the select list
 					case 'role':
 						++$n;
@@ -124,13 +125,33 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						$values['smart_group/role__'. $n] = $rule['role_id'];
 						break;		
 						
+					case 'has_a_current_timer':
+						++$n;
+						$values['smart_group/type__'. $n] = 'has_a_current_timer';
+
+						if ($rule['timer_template_id']) {
+							$values['smart_group/timer_template__'. $n] = $rule['timer_template_id'];
+						} else {
+							$values['smart_group/timer_template__'. $n] = "any";
+						}
+						break;
+					case 'has_no_current_timer':
+						++$n;
+						$values['smart_group/type__'. $n] = 'has_no_current_timer';
+
+						if ($rule['timer_template_id']) {
+							$values['smart_group/timer_template__'. $n] = $rule['timer_template_id'];
+						} else {
+							$values['smart_group/timer_template__'. $n] = "any";
+						}
+						break;
+					
 					case 'activity_band':
 						++$n;
 						$values['smart_group/type__'. $n] = 'activity_band';
 						$values['smart_group/activity_bands__'. $n] = $rule['activity_band_id'];
 						$values['smart_group/is_isnt_in_activity_band__'. $n] = $rule['not']? 'isnt' : 'is';
 						break;
-						
 				}
 			}
 			
@@ -187,6 +208,22 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager', $mustBeRunning = true)) {
 			$box['lovs']['roles'] = ze\row::getValues($ZENARIO_ORGANIZATION_MANAGER_PREFIX. 'user_location_roles', 'name', [], 'name', 'id');
 			$box['key']['rolesExist'] = !empty($box['lovs']['roles']);
+		}
+		if ($ZENARIO_USER_TIMERS_PREFIX = ze\module::prefix('zenario_user_timers', $mustBeRunning = true)) {
+			$box['key']['userTimersModuleIsRunning'] = true;
+
+			$box['lovs']['timerTemplates'] = [];
+			$timerTemplates = ze\row::getValues($ZENARIO_USER_TIMERS_PREFIX. 'user_timer_templates', ['id', 'name'], [], 'name', 'id');
+			if (!empty($timerTemplates) && is_array($timerTemplates)) {
+				$ord = 1;
+				$box['lovs']['timerTemplates']["any"] = ['label' => 'ANY', 'ord' => $ord];
+
+				foreach ($timerTemplates as $timerTemplate) {
+					$box['lovs']['timerTemplates'][$timerTemplate['id']] = ['label' => $timerTemplate['name'], 'ord' => ++$ord];
+				}
+			}
+			
+			$box['key']['userTimersExist'] = !empty($box['lovs']['timerTemplates']);
 		}
 		
 		
@@ -312,7 +349,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				}
 			}
 		}
-		unset($field);		
+		unset($field);
 		
 		return;
 	}
@@ -451,6 +488,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				$rule['field4_id'] = 0;
 				$rule['field5_id'] = 0;
 				$rule['role_id'] = 0;
+				$rule['timer_template_id'] = 0;
 				$rule['value'] = null;
 				$rule['not'] = 0;
 				$rule['must_match'] = $values['smart_group/must_match'];
@@ -464,19 +502,41 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 							$rules[] = $rule;
 						}
 						break;
+					
 					case 'in_a_group':
-							$rule['value'] = 'active';
-							$rule['type_of_check'] = $type;
-							$rules[] = $rule;
-						
+						$rule['value'] = 'active';
+						$rule['type_of_check'] = $type;
+						$rules[] = $rule;
 						break;
+					
 					case 'not_in_a_group':
-							$rule['value'] = 'active';
+						$rule['value'] = 'active';
+						$rule['type_of_check'] = $type;
+						$rules[] = $rule;
+						break;
+					
+					case 'has_a_current_timer':
+						if ($values['smart_group/timer_template__'. $n]) {
+							$rule['timer_template_id'] = $values['smart_group/timer_template__'. $n];
+							if ($rule['timer_template_id'] == "any") {
+								$rule['timer_template_id'] = 0;
+							}
 							$rule['type_of_check'] = $type;
 							$rules[] = $rule;
-						
-						break;			
-						
+						}
+						break;
+					
+					case 'has_no_current_timer':
+						if ($values['smart_group/timer_template__'. $n]) {
+							$rule['timer_template_id'] = $values['smart_group/timer_template__'. $n];
+							if ($rule['timer_template_id'] == "any") {
+								$rule['timer_template_id'] = 0;
+							}
+							$rule['type_of_check'] = $type;
+							$rules[] = $rule;
+						}
+						break;
+					
 					case 'activity_band':
 						if ($rule['activity_band_id'] = $values['smart_group/activity_bands__'. $n]) {
 							$rule['type_of_check'] = $type;

@@ -129,7 +129,7 @@ zenario_content:
                         59: "59"
                 late_evening_event:
                     indent: 1
-                    label: 'Night-time event'
+                    label: 'Runs past midnight'
                     type: checkbox
                     side_note: Check this if your event runs past midnight and its end time is on the following day.
                 locations_snippet:

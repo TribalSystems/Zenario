@@ -19,31 +19,26 @@ zenario__content:
             
             columns:
                 ord:
-                    title: Ordinal
-                    width: xxsmall
-                    always_show: true
+                    hidden: true
                 slotname:
                     title: Slot name
                     disallow_sorting: true
                     always_show: true
+                layout:
+                    title: Slot contents
+                    always_show: true
+                    disallow_sorting: true
+                    width: large
+                    html: true
+                content_item:
+                    title: Slot contents (content item)
+                    always_show: true
+                    disallow_sorting: true
+                    width: large
+                    html: true
                 visitor_sees:
                     title: Visitor sees
                     searchable: true
-                    always_show: true
-                    disallow_sorting: true
-                    width: large
-                content_item:
-                    title: Slot contents on content item
-                    always_show: true
-                    disallow_sorting: true
-                    width: large
-                layout:
-                    title: Slot contents on layout
-                    always_show: true
-                    disallow_sorting: true
-                    width: large
-                where_used:
-                    title: Usage
                     always_show: true
                     disallow_sorting: true
                     width: xlarge
@@ -123,7 +118,7 @@ zenario__content:
                 remove_from_layout_layer:
                     parent: remove_dropdown
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
-                    label: Remove from layout
+                    label: Remove plugin from slot
                     ajax:
                         confirm:
                             html: true
@@ -141,10 +136,10 @@ zenario__content:
                 
                 remove_from_item_layer:
                     parent: remove_dropdown
-                    label: Remove from content item
+                    label: Remove plugin from slot
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to remove [[content_item]] from this content item?'
+                            message: 'Are you sure you wish to remove [[content_item]] from the slot on this content item?'
                             button_message: Remove
                             cancel_button_message: Cancel
                             message_type: warning

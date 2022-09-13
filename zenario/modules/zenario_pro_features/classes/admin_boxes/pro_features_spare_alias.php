@@ -59,7 +59,6 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		
 		if (!$box['key']['id']) {
 			$box['tabs']['spare_alias']['edit_mode']['on'] = true;
-			$box['tabs']['spare_alias']['edit_mode']['always_on'] = true;
 			
 			if(isset($values['spare_alias/hyperlink_target'])){
 				$values['spare_alias/hyperlink_target'] = ze::$homeCType . '_' . ze::$homeEquivId;

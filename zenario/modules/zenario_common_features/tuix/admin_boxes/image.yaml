@@ -10,7 +10,6 @@ zenario_image:
     identifier:
         css_class: media_image
         value: ''
-    #hide_tab_bar: true
     tabs:
         details:
             edit_mode:
@@ -36,67 +35,63 @@ zenario_image:
                 privacy_auto: *privacy
                     value: Will auto-detect
                     note_below: |
-                        When this image is first displayed on a content item, its privacy will be set to either
-                        &rdquo;public&ldquo; or &rdquo;private&ldquo; so as to match that of the content item.
-                        This will happen on the first page-load.
-                        You can set the image's privacy explicitly by using the &rdquo;Actions&ldquo; menu
-                        and clicking &rdquo;Make public&ldquo; or &rdquo;Make private&ldquo;.
+                        Auto-detect: The first time this image is displayed on a content item, its privacy will be set to 
+                        match the privacy of that content item (either "public" or "private").
+                        You can set the image's privacy manually using the Actions menu.
                 missing_public_image: 
                     hidden: true
                     snippet: 
                         div_class: zenario_fbWarning
                         div: |
-                            This image does not exist in the directory public/images.
-                            Please close this box and use "Re-generate cache".
+                            This image is missing from the directory public/images.
+                            Please close this box and click "Re-generate cache".
                             
                 filename:
                     label: 'Filename:'
                     type: text
                     maxlength: "255"
+                    side_note: |
+                        You may edit the filename for better search engine optimisation (SEO). Best is short and descriptive, separate words with hyphens. Should be unique on this site.
                 size:
                     label: 'Size & dimensions (w × h):'
                     snippet:
                         html: ""
                 
+                alt_tag:
+                    label: 'Alt tag:'
+                    type: text
+                    side_note: |
+                        Zenario sets this automatically when an image is first uploaded. Edit this for SEO.
+                        If your site has multiple languages you can override this to translate the tag in the appropriate plugin.
+
                 left_column:
                     type: grouping
                     name: left_column
                 tags:
                     grouping: left_column
-                    label: 'Tags:'
+                    label: 'Organizer tags:'
                     pick_items:
                         path: zenario__content/panels/image_tags
                         multiple_select: true
-                        nothing_selected_phrase: No tags set
+                        nothing_selected_phrase: No tags yet
                         allow_typing_anything: true
+                        select_phrase: Select tags...
                     cols: 4
                     note_below: |
-                        You may type the names of tags that do not exist to create them.
-                        Press the tab or the comma button while typing to enter multiple tags.
-                    
-                desc:
-                    full_width: true
-                    snippet:
-                        html: >
-                            You may override the following fields on a per-Plugin basis,
-                            e.g. to translate it.
-                alt_tag:
-                    label: 'Default alt-tag:'
+                        Tags are for admin use only. To create a tag, just type the name of a new tag.
+
+                image_credit:
+                    label: 'Image credit:'
                     type: text
+                    maxlength: "255"
                 floating_box_title:
-                    label: 'Default floating box caption:'
+                    label: 'Caption:'
                     type: editor
                     dont_trim: true
-                    #editor_options:
-                    #    height: 30
-                    #    min_height: 30
-                    #    max_height: 30
-                    #    autoresize_bottom_margin: 10
                     style: |
                         height: 5em;
-                    note_below: >
-                        This will be used to add a table under the image when
-                        displayed in a floating box.
+                    side_note: >
+                        If image is displayed in an enlarged box, use this caption.
             show_errors_after_field: image
         
         crops:

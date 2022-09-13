@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016-2021, The Cytoscape Consortium.
+ * Copyright (c) 2016-2022, The Cytoscape Consortium.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the “Software”), to deal in
@@ -22,6 +22,9 @@
 
 import util from 'lodash.debounce';
 import Heap from 'heap';
+import get from 'lodash.get';
+import set from 'lodash.set';
+import toPath from 'lodash.topath';
 
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -2038,6 +2041,8 @@ var elesfn$5 = {
 
     if (replacedEdge) {
       // Check for negative weight cycles
+      var negativeWeightCycleIds = [];
+
       for (var _e = 0; _e < numEdges; _e++) {
         var _edge = edges[_e];
 
@@ -2051,9 +2056,61 @@ var elesfn$5 = {
         var tgtDist = getInfo(_tgt).dist;
 
         if (srcDist + _weight2 < tgtDist || !directed && tgtDist + _weight2 < srcDist) {
-          warn('Graph contains a negative weight cycle for Bellman-Ford');
-          hasNegativeWeightCycle = true;
-          break;
+          if (!hasNegativeWeightCycle) {
+            warn('Graph contains a negative weight cycle for Bellman-Ford');
+            hasNegativeWeightCycle = true;
+          }
+
+          if (options.findNegativeWeightCycles !== false) {
+            var negativeNodes = [];
+
+            if (srcDist + _weight2 < tgtDist) {
+              negativeNodes.push(_src);
+            }
+
+            if (!directed && tgtDist + _weight2 < srcDist) {
+              negativeNodes.push(_tgt);
+            }
+
+            var numNegativeNodes = negativeNodes.length;
+
+            for (var n = 0; n < numNegativeNodes; n++) {
+              var start = negativeNodes[n];
+              var cycle = [start];
+              cycle.push(getInfo(start).edge);
+              var _node = getInfo(start).pred;
+
+              while (cycle.indexOf(_node) === -1) {
+                cycle.push(_node);
+                cycle.push(getInfo(_node).edge);
+                _node = getInfo(_node).pred;
+              }
+
+              cycle = cycle.slice(cycle.indexOf(_node));
+              var smallestId = cycle[0].id();
+              var smallestIndex = 0;
+
+              for (var c = 2; c < cycle.length; c += 2) {
+                if (cycle[c].id() < smallestId) {
+                  smallestId = cycle[c].id();
+                  smallestIndex = c;
+                }
+              }
+
+              cycle = cycle.slice(smallestIndex).concat(cycle.slice(0, smallestIndex));
+              cycle.push(cycle[0]);
+              var cycleId = cycle.map(function (el) {
+                return el.id();
+              }).join(",");
+
+              if (negativeWeightCycleIds.indexOf(cycleId) === -1) {
+                negativeWeightCycles.push(eles.spawn(cycle));
+                negativeWeightCycleIds.push(cycleId);
+              }
+            }
+          } else {
+            break;
+          }
         }
       }
     }
@@ -6572,14 +6629,22 @@ var define$1 = {
 
       if (string(name)) {
         // set or get property
-        // .data('foo')
+        var isPathLike = name.indexOf('.') !== -1; // there might be a normal field with a dot 
+
+        var path = isPathLike && toPath(name); // .data('foo')
+
         if (p.allowGetting && value === undefined) {
           // get
           var ret;
 
           if (single) {
-            p.beforeGet(single);
-            ret = single._private[p.field][name];
+            p.beforeGet(single); // check if it's path and a field with the same name doesn't exist
+
+            if (path && single._private[p.field][name] === undefined) {
+              ret = get(single._private[p.field], path);
+            } else {
+              ret = single._private[p.field][name];
+            }
           }
 
           return ret; // .data('foo', 'bar')
@@ -6596,7 +6661,11 @@ var define$1 = {
               var ele = all[i];
 
               if (p.canSet(ele)) {
-                ele._private[p.field][name] = value;
+                if (path && single._private[p.field][name] === undefined) {
+                  set(ele._private[p.field], path, value);
+                } else {
+                  ele._private[p.field][name] = value;
+                }
               }
             } // update mappers if asked
 
@@ -6930,11 +6999,11 @@ var tokens = {
   directedEdge: '\\s+->\\s+',
   undirectedEdge: '\\s+<->\\s+'
 };
-tokens.variable = '(?:[\\w-]|(?:\\\\' + tokens.metaChar + '))+'; // a variable name
+tokens.variable = '(?:[\\w-.]|(?:\\\\' + tokens.metaChar + '))+'; // a variable name can have letters, numbers, dashes, and periods
+
+tokens.className = '(?:[\\w-]|(?:\\\\' + tokens.metaChar + '))+'; // a class name has the same rules as a variable except it can't have a '.' in the name
 
 tokens.value = tokens.string + '|' + tokens.number; // a value literal, either a string or number
-
-tokens.className = tokens.variable; // a class name (follows variable conventions)
 
 tokens.id = tokens.variable; // an element id (follows variable conventions)
 
@@ -8870,7 +8939,12 @@ fn$2 = elesfn$j = {
       cy.startBatch();
 
       for (var i = 0; i < this.length; i++) {
-        var ele = this[i];
+        var ele = this[i]; // exclude any node that is a descendant of the calling collection
+
+        if (cy.hasCompoundNodes() && ele.isChild() && ele.ancestors().anySame(this)) {
+          continue;
+        }
+
         var pos = ele.position();
         var newPos = {
           x: pos.x + delta.x,
@@ -9495,6 +9569,18 @@ var boundingBoxImpl = function boundingBoxImpl(ele, options) {
       }
     }
 
+    var underlayOpacity = 0;
+    var underlayPadding = 0;
+
+    if (styleEnabled && options.includeUnderlays) {
+      underlayOpacity = ele.pstyle('underlay-opacity').value;
+
+      if (underlayOpacity !== 0) {
+        underlayPadding = ele.pstyle('underlay-padding').value;
+      }
+    }
+
+    var padding = Math.max(overlayPadding, underlayPadding);
     var w = 0;
     var wHalf = 0;
 
@@ -9657,7 +9743,7 @@ var boundingBoxImpl = function boundingBoxImpl(ele, options) {
       ex2 = bounds.x2;
       ey1 = bounds.y1;
       ey2 = bounds.y2;
-      updateBounds(bounds, ex1 - overlayPadding, ey1 - overlayPadding, ex2 + overlayPadding, ey2 + overlayPadding);
+      updateBounds(bounds, ex1 - padding, ey1 - padding, ex2 + padding, ey2 + padding);
     } // always store the body bounds separately from the labels
 
 
@@ -9818,6 +9904,7 @@ var defBbOpts = {
   includeSourceLabels: true,
   includeTargetLabels: true,
   includeOverlays: true,
+  includeUnderlays: true,
   useCache: true
 };
 var defBbOptsKey = getKey(defBbOpts);
@@ -16056,7 +16143,7 @@ var styfn$6 = {};
       enums: ['solid', 'dotted', 'dashed', 'double']
     },
     curveStyle: {
-      enums: ['bezier', 'unbundled-bezier', 'haystack', 'segments', 'straight', 'taxi']
+      enums: ['bezier', 'unbundled-bezier', 'haystack', 'segments', 'straight', 'straight-triangle', 'taxi']
     },
     fontFamily: {
       regex: '^([\\w- \\"]+(?:\\s*,\\s*[\\w- \\"]+)*)$'
@@ -16084,6 +16171,9 @@ var styfn$6 = {};
     },
     nodeShape: {
       enums: ['rectangle', 'roundrectangle', 'round-rectangle', 'cutrectangle', 'cut-rectangle', 'bottomroundrectangle', 'bottom-round-rectangle', 'barrel', 'ellipse', 'triangle', 'round-triangle', 'square', 'pentagon', 'round-pentagon', 'hexagon', 'round-hexagon', 'concavehexagon', 'concave-hexagon', 'heptagon', 'round-heptagon', 'octagon', 'round-octagon', 'tag', 'round-tag', 'star', 'diamond', 'round-diamond', 'vee', 'rhomboid', 'polygon']
+    },
+    overlayShape: {
+      enums: ['roundrectangle', 'round-rectangle', 'ellipse']
     },
     compoundIncludeLabels: {
       enums: ['include', 'exclude']
@@ -16448,6 +16538,26 @@ var styfn$6 = {};
     name: 'overlay-opacity',
     type: t.zeroOneNumber,
     triggersBounds: diff.zeroNonZero
+  }, {
+    name: 'overlay-shape',
+    type: t.overlayShape,
+    triggersBounds: diff.any
+  }];
+  var underlay = [{
+    name: 'underlay-padding',
+    type: t.size,
+    triggersBounds: diff.any
+  }, {
+    name: 'underlay-color',
+    type: t.color
+  }, {
+    name: 'underlay-opacity',
+    type: t.zeroOneNumber,
+    triggersBounds: diff.zeroNonZero
+  }, {
+    name: 'underlay-shape',
+    type: t.overlayShape,
+    triggersBounds: diff.any
   }];
   var transition = [{
     name: 'transition-property',
@@ -16813,13 +16923,14 @@ var styfn$6 = {};
       });
     });
   }, {});
-  var props = styfn$6.properties = [].concat(behavior, transition, visibility, overlay, ghost, commonLabel, labelDimensions, mainLabel, sourceLabel, targetLabel, nodeBody, nodeBorder, backgroundImage, pie, compound, edgeLine, edgeArrow, core);
+  var props = styfn$6.properties = [].concat(behavior, transition, visibility, overlay, underlay, ghost, commonLabel, labelDimensions, mainLabel, sourceLabel, targetLabel, nodeBody, nodeBorder, backgroundImage, pie, compound, edgeLine, edgeArrow, core);
   var propGroups = styfn$6.propertyGroups = {
     // common to all eles
     behavior: behavior,
     transition: transition,
     visibility: visibility,
     overlay: overlay,
+    underlay: underlay,
     ghost: ghost,
     // labels
     commonLabel: commonLabel,
@@ -16974,6 +17085,11 @@ styfn$6.getDefaultProperties = function () {
     'overlay-opacity': 0,
     'overlay-color': '#000',
     'overlay-padding': 10,
+    'overlay-shape': 'round-rectangle',
+    'underlay-opacity': 0,
+    'underlay-color': '#000',
+    'underlay-padding': 10,
+    'underlay-shape': 'round-rectangle',
     'transition-property': 'none',
     'transition-duration': 0,
     'transition-delay': 0,
@@ -18356,6 +18472,10 @@ var corefn$8 = {
       w: width,
       h: height
     };
+  },
+  multiClickDebounceTime: function multiClickDebounceTime(_int) {
+    if (_int) this._private.multiClickDebounceTime = _int;else return this._private.multiClickDebounceTime;
+    return this; // chaining
   }
 }; // aliases
 
@@ -18496,7 +18616,8 @@ var Core = function Core(opts) {
       current: [],
       queue: []
     },
-    hasCompoundNodes: false
+    hasCompoundNodes: false,
+    multiClickDebounceTime: defVal(250, options.multiClickDebounceTime)
   };
 
   this.createEmitter(); // set selection type
@@ -18808,7 +18929,7 @@ extend(corefn$9, {
         cy.data(obj.data);
       }
 
-      var fields = ['minZoom', 'maxZoom', 'zoomingEnabled', 'userZoomingEnabled', 'panningEnabled', 'userPanningEnabled', 'boxSelectionEnabled', 'autolock', 'autoungrabify', 'autounselectify'];
+      var fields = ['minZoom', 'maxZoom', 'zoomingEnabled', 'userZoomingEnabled', 'panningEnabled', 'userPanningEnabled', 'boxSelectionEnabled', 'autolock', 'autoungrabify', 'autounselectify', 'multiClickDebounceTime'];
 
       for (var _i2 = 0; _i2 < fields.length; _i2++) {
         var f = fields[_i2];
@@ -18862,6 +18983,7 @@ extend(corefn$9, {
       json.textureOnViewport = options.textureOnViewport;
       json.wheelSensitivity = options.wheelSensitivity;
       json.motionBlur = options.motionBlur;
+      json.multiClickDebounceTime = options.multiClickDebounceTime;
       return json;
     }
   }
@@ -18896,6 +19018,8 @@ var defaults$9 = {
   // the roots of the trees
   maximal: false,
   // whether to shift nodes down their natural BFS depths in order to avoid upwards edges (DAGS only)
+  depthSort: undefined,
+  // a sorting function to order nodes at equal depth. e.g. function(a, b){ return a.data('weight') - b.data('weight') }
   animate: false,
   // whether to transition the node positions
   animationDuration: 500,
@@ -19200,7 +19324,11 @@ BreadthFirstLayout.prototype.run = function () {
     } else {
       return diff;
     }
-  }; // sort each level to make connected nodes closer
+  };
+
+  if (options.depthSort !== undefined) {
+    sortFn = options.depthSort;
+  } // sort each level to make connected nodes closer
 
 
   for (var _i6 = 0; _i6 < depths.length; _i6++) {
@@ -20486,6 +20614,10 @@ var calculateEdgeForces = function calculateEdgeForces(layoutInfo, options) {
 
 
 var calculateGravityForces = function calculateGravityForces(layoutInfo, options) {
+  if (options.gravity === 0) {
+    return;
+  }
+
   var distThreshold = 1; // var s = 'calculateGravityForces';
   // logDebug(s);
 
@@ -22616,7 +22748,7 @@ BRp$3.findEdgeControlPoints = function (edges) {
       continue;
     }
 
-    var edgeIsUnbundled = curveStyle === 'unbundled-bezier' || curveStyle === 'segments' || curveStyle === 'straight' || curveStyle === 'taxi';
+    var edgeIsUnbundled = curveStyle === 'unbundled-bezier' || curveStyle === 'segments' || curveStyle === 'straight' || curveStyle === 'straight-triangle' || curveStyle === 'taxi';
     var edgeIsBezier = curveStyle === 'unbundled-bezier' || curveStyle === 'bezier';
     var src = _p.source;
     var tgt = _p.target;
@@ -24214,7 +24346,7 @@ BRp$c.load = function () {
     var list = opts.addToList;
     var listHasEle = list.has(ele);
 
-    if (!listHasEle) {
+    if (!listHasEle && ele.grabbable() && !ele.locked()) {
       list.merge(ele);
       setGrabbed(ele);
     }
@@ -24240,7 +24372,7 @@ BRp$c.load = function () {
     }
 
     if (opts.addToList) {
-      opts.addToList.unmerge(innerNodes);
+      addToDragList(innerNodes, opts);
     }
   }; // adds the given nodes and its neighbourhood to the drag layer
 
@@ -24831,8 +24963,7 @@ BRp$c.load = function () {
             }
 
             r.dragData.didDrag = true; // indicate that we actually did drag the node
-
-            var toTrigger = cy.collection(); // now, add the elements to the drag layer if not done already
+            // now, add the elements to the drag layer if not done already
 
             if (!r.hoverData.draggingEles) {
               addNodesToDrag(draggedElements, {
@@ -24859,16 +24990,8 @@ BRp$c.load = function () {
               }
             }
 
-            for (var i = 0; i < draggedElements.length; i++) {
-              var dEle = draggedElements[i];
-
-              if (r.nodeIsDraggable(dEle) && dEle.grabbed()) {
-                toTrigger.push(dEle);
-              }
-            }
-
             r.hoverData.draggingEles = true;
-            toTrigger.silentShift(totalShift).emit('position drag');
+            draggedElements.silentShift(totalShift).emit('position drag');
             r.redrawHint('drag', true);
             r.redraw();
           }
@@ -24891,6 +25014,7 @@ BRp$c.load = function () {
       return false;
     }
   }, false);
+  var clickTimeout, didDoubleClick, prevClickTimeStamp;
   r.registerBinding(window, 'mouseup', function mouseupHandler(e) {
     // eslint-disable-line no-undef
     var capture = r.hoverData.capture;
@@ -24961,15 +25085,35 @@ BRp$c.load = function () {
         y: pos[1]
       });
 
-      if (!r.dragData.didDrag // didn't move a node around
-      && !r.hoverData.dragged // didn't pan
-      && !r.hoverData.selecting // not box selection
-      && !r.hoverData.isOverThresholdDrag // didn't move too much
+      if (!r.dragData.didDrag && // didn't move a node around
+      !r.hoverData.dragged && // didn't pan
+      !r.hoverData.selecting && // not box selection
+      !r.hoverData.isOverThresholdDrag // didn't move too much
       ) {
-          triggerEvents(down, ['click', 'tap', 'vclick'], e, {
+          triggerEvents(down, ["click", "tap", "vclick"], e, {
             x: pos[0],
             y: pos[1]
           });
+          didDoubleClick = false;
+
+          if (e.timeStamp - prevClickTimeStamp <= cy.multiClickDebounceTime()) {
+            clickTimeout && clearTimeout(clickTimeout);
+            didDoubleClick = true;
+            prevClickTimeStamp = null;
+            triggerEvents(down, ["dblclick", "dbltap", "vdblclick"], e, {
+              x: pos[0],
+              y: pos[1]
+            });
+          } else {
+            clickTimeout = setTimeout(function () {
+              if (didDoubleClick) return;
+              triggerEvents(down, ["oneclick", "onetap", "voneclick"], e, {
+                x: pos[0],
+                y: pos[1]
+              });
+            }, cy.multiClickDebounceTime());
+            prevClickTimeStamp = e.timeStamp;
+          }
         } // Deselect all elements if nothing is currently under the mouse cursor and we aren't dragging something
 
 
@@ -25869,7 +26013,7 @@ BRp$c.load = function () {
       start.unactivate();
     }
   });
-  var touchendHandler;
+  var touchendHandler, didDoubleTouch, touchTimeout, prevTouchTimeStamp;
   r.registerBinding(window, 'touchend', touchendHandler = function touchendHandler(e) {
     // eslint-disable-line no-unused-vars
     var start = r.touchData.start;
@@ -26050,6 +26194,26 @@ BRp$c.load = function () {
           x: now[0],
           y: now[1]
         });
+        didDoubleTouch = false;
+
+        if (e.timeStamp - prevTouchTimeStamp <= cy.multiClickDebounceTime()) {
+          touchTimeout && clearTimeout(touchTimeout);
+          didDoubleTouch = true;
+          prevTouchTimeStamp = null;
+          triggerEvents(start, ['dbltap', 'vdblclick'], e, {
+            x: now[0],
+            y: now[1]
+          });
+        } else {
+          touchTimeout = setTimeout(function () {
+            if (didDoubleTouch) return;
+            triggerEvents(start, ['onetap', 'voneclick'], e, {
+              x: now[0],
+              y: now[1]
+            });
+          }, cy.multiClickDebounceTime());
+          prevTouchTimeStamp = e.timeStamp;
+        }
       } // Prepare to select the currently touched node, only if it hasn't been dragged past a certain distance
 
 
@@ -28476,6 +28640,16 @@ CRp$1.drawElementOverlay = function (context, ele) {
   }
 };
 
+CRp$1.drawElementUnderlay = function (context, ele) {
+  var r = this;
+
+  if (ele.isNode()) {
+    r.drawNodeUnderlay(context, ele);
+  } else {
+    r.drawEdgeUnderlay(context, ele);
+  }
+};
+
 CRp$1.drawCachedElementPortion = function (context, ele, eleTxrCache, pxRatio, lvl, reason, getRotation, getOpacity) {
   var r = this;
   var bb = eleTxrCache.getBoundingBox(ele);
@@ -28590,6 +28764,7 @@ CRp$1.drawCachedElement = function (context, ele, pxRatio, extent, lvl, requestH
 
     var badLine = ele.element()._private.rscratch.badLine;
 
+    r.drawElementUnderlay(context, ele);
     r.drawCachedElementPortion(context, ele, eleTxrCache, pxRatio, lvl, reason, getZeroRotation, getOpacity);
 
     if (!isEdge || !badLine) {
@@ -28687,6 +28862,7 @@ CRp$2.drawEdge = function (context, edge, shiftToOriginWithBb) {
 
   var opacity = shouldDrawOpacity ? edge.pstyle('opacity').value : 1;
   var lineOpacity = shouldDrawOpacity ? edge.pstyle('line-opacity').value : 1;
+  var curveStyle = edge.pstyle('curve-style').value;
   var lineStyle = edge.pstyle('line-style').value;
   var edgeWidth = edge.pstyle('width').pfValue;
   var lineCap = edge.pstyle('line-cap').value;
@@ -28696,11 +28872,17 @@ CRp$2.drawEdge = function (context, edge, shiftToOriginWithBb) {
 
   var drawLine = function drawLine() {
     var strokeOpacity = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : effectiveLineOpacity;
-    context.lineWidth = edgeWidth;
-    context.lineCap = lineCap;
-    r.eleStrokeStyle(context, edge, strokeOpacity);
-    r.drawEdgePath(edge, context, rs.allpts, lineStyle);
-    context.lineCap = 'butt'; // reset for other drawing functions
+
+    if (curveStyle === 'straight-triangle') {
+      r.eleStrokeStyle(context, edge, strokeOpacity);
+      r.drawEdgeTrianglePath(edge, context, rs.allpts);
+    } else {
+      context.lineWidth = edgeWidth;
+      context.lineCap = lineCap;
+      r.eleStrokeStyle(context, edge, strokeOpacity);
+      r.drawEdgePath(edge, context, rs.allpts, lineStyle);
+      context.lineCap = 'butt'; // reset for other drawing functions
+    }
   };
 
   var drawOverlay = function drawOverlay() {
@@ -28709,6 +28891,14 @@ CRp$2.drawEdge = function (context, edge, shiftToOriginWithBb) {
     }
 
     r.drawEdgeOverlay(context, edge);
+  };
+
+  var drawUnderlay = function drawUnderlay() {
+    if (!shouldDrawOverlay) {
+      return;
+    }
+
+    r.drawEdgeUnderlay(context, edge);
   };
 
   var drawArrows = function drawArrows() {
@@ -28734,6 +28924,7 @@ CRp$2.drawEdge = function (context, edge, shiftToOriginWithBb) {
     context.translate(-gx, -gy);
   }
 
+  drawUnderlay();
   drawLine();
   drawArrows();
   drawOverlay();
@@ -28744,34 +28935,43 @@ CRp$2.drawEdge = function (context, edge, shiftToOriginWithBb) {
   }
 };
 
-CRp$2.drawEdgeOverlay = function (context, edge) {
-  if (!edge.visible()) {
-    return;
+var drawEdgeOverlayUnderlay = function drawEdgeOverlayUnderlay(overlayOrUnderlay) {
+  if (!['overlay', 'underlay'].includes(overlayOrUnderlay)) {
+    throw new Error('Invalid state');
   }
 
-  var overlayOpacity = edge.pstyle('overlay-opacity').value;
+  return function (context, edge) {
+    if (!edge.visible()) {
+      return;
+    }
 
-  if (overlayOpacity === 0) {
-    return;
-  }
+    var opacity = edge.pstyle("".concat(overlayOrUnderlay, "-opacity")).value;
 
-  var r = this;
-  var usePaths = r.usePaths();
-  var rs = edge._private.rscratch;
-  var overlayPadding = edge.pstyle('overlay-padding').pfValue;
-  var overlayWidth = 2 * overlayPadding;
-  var overlayColor = edge.pstyle('overlay-color').value;
-  context.lineWidth = overlayWidth;
+    if (opacity === 0) {
+      return;
+    }
 
-  if (rs.edgeType === 'self' && !usePaths) {
-    context.lineCap = 'butt';
-  } else {
-    context.lineCap = 'round';
-  }
+    var r = this;
+    var usePaths = r.usePaths();
+    var rs = edge._private.rscratch;
+    var padding = edge.pstyle("".concat(overlayOrUnderlay, "-padding")).pfValue;
+    var width = 2 * padding;
+    var color = edge.pstyle("".concat(overlayOrUnderlay, "-color")).value;
+    context.lineWidth = width;
 
-  r.colorStrokeStyle(context, overlayColor[0], overlayColor[1], overlayColor[2], overlayOpacity);
-  r.drawEdgePath(edge, context, rs.allpts, 'solid');
+    if (rs.edgeType === 'self' && !usePaths) {
+      context.lineCap = 'butt';
+    } else {
+      context.lineCap = 'round';
+    }
+
+    r.colorStrokeStyle(context, color[0], color[1], color[2], opacity);
+    r.drawEdgePath(edge, context, rs.allpts, 'solid');
+  };
 };
+
+CRp$2.drawEdgeOverlay = drawEdgeOverlayUnderlay('overlay');
+CRp$2.drawEdgeUnderlay = drawEdgeOverlayUnderlay('underlay');
 
 CRp$2.drawEdgePath = function (edge, context, pts, type) {
   var rs = edge._private.rscratch;
@@ -28855,6 +29055,25 @@ CRp$2.drawEdgePath = function (edge, context, pts, type) {
   if (context.setLineDash) {
     // for very outofdate browsers
     context.setLineDash([]);
+  }
+};
+
+CRp$2.drawEdgeTrianglePath = function (edge, context, pts) {
+  // use line stroke style for triangle fill style
+  context.fillStyle = context.strokeStyle;
+  var edgeWidth = edge.pstyle('width').pfValue;
+
+  for (var i = 0; i + 1 < pts.length; i += 2) {
+    var vector = [pts[i + 2] - pts[i], pts[i + 3] - pts[i + 1]];
+    var length = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
+    var normal = [vector[1] / length, -vector[0] / length];
+    var triangleHead = [normal[0] * edgeWidth / 2, normal[1] * edgeWidth / 2];
+    context.beginPath();
+    context.moveTo(pts[i] - triangleHead[0], pts[i + 1] - triangleHead[1]);
+    context.lineTo(pts[i] + triangleHead[0], pts[i + 1] + triangleHead[1]);
+    context.lineTo(pts[i + 2], pts[i + 3]);
+    context.closePath();
+    context.fill();
   }
 };
 
@@ -29787,6 +30006,12 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
     }
   };
 
+  var drawUnderlay = function drawUnderlay() {
+    if (shouldDrawOverlay) {
+      r.drawNodeUnderlay(context, node, pos, nodeWidth, nodeHeight);
+    }
+  };
+
   var drawText = function drawText() {
     r.drawElementText(context, node, null, drawLabel);
   };
@@ -29808,6 +30033,16 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
     drawImages(effGhostOpacity, false);
     darken(effGhostOpacity);
     context.translate(-gx, -gy);
+  }
+
+  if (usePaths) {
+    context.translate(-pos.x, -pos.y);
+  }
+
+  drawUnderlay();
+
+  if (usePaths) {
+    context.translate(pos.x, pos.y);
   }
 
   setupShapeColor();
@@ -29832,32 +30067,42 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
   }
 };
 
-CRp$5.drawNodeOverlay = function (context, node, pos, nodeWidth, nodeHeight) {
-  var r = this;
-
-  if (!node.visible()) {
-    return;
+var drawNodeOverlayUnderlay = function drawNodeOverlayUnderlay(overlayOrUnderlay) {
+  if (!['overlay', 'underlay'].includes(overlayOrUnderlay)) {
+    throw new Error('Invalid state');
   }
 
-  var overlayPadding = node.pstyle('overlay-padding').pfValue;
-  var overlayOpacity = node.pstyle('overlay-opacity').value;
-  var overlayColor = node.pstyle('overlay-color').value;
+  return function (context, node, pos, nodeWidth, nodeHeight) {
+    var r = this;
 
-  if (overlayOpacity > 0) {
-    pos = pos || node.position();
-
-    if (nodeWidth == null || nodeHeight == null) {
-      var padding = node.padding();
-      nodeWidth = node.width() + 2 * padding;
-      nodeHeight = node.height() + 2 * padding;
+    if (!node.visible()) {
+      return;
     }
 
-    r.colorFillStyle(context, overlayColor[0], overlayColor[1], overlayColor[2], overlayOpacity);
-    r.nodeShapes['roundrectangle'].draw(context, pos.x, pos.y, nodeWidth + overlayPadding * 2, nodeHeight + overlayPadding * 2);
-    context.fill();
-  }
-}; // does the node have at least one pie piece?
+    var padding = node.pstyle("".concat(overlayOrUnderlay, "-padding")).pfValue;
+    var opacity = node.pstyle("".concat(overlayOrUnderlay, "-opacity")).value;
+    var color = node.pstyle("".concat(overlayOrUnderlay, "-color")).value;
+    var shape = node.pstyle("".concat(overlayOrUnderlay, "-shape")).value;
 
+    if (opacity > 0) {
+      pos = pos || node.position();
+
+      if (nodeWidth == null || nodeHeight == null) {
+        var _padding = node.padding();
+
+        nodeWidth = node.width() + 2 * _padding;
+        nodeHeight = node.height() + 2 * _padding;
+      }
+
+      r.colorFillStyle(context, color[0], color[1], color[2], opacity);
+      r.nodeShapes[shape].draw(context, pos.x, pos.y, nodeWidth + padding * 2, nodeHeight + padding * 2);
+      context.fill();
+    }
+  };
+};
+
+CRp$5.drawNodeOverlay = drawNodeOverlayUnderlay('overlay');
+CRp$5.drawNodeUnderlay = drawNodeOverlayUnderlay('underlay'); // does the node have at least one pie piece?
 
 CRp$5.hasPie = function (node) {
   node = node[0]; // ensure ele ref
@@ -31486,6 +31731,9 @@ function setExtension(type, name, registrant) {
       };
     });
     ext = Renderer;
+  } else if (type === '__proto__' || type === 'constructor' || type === 'prototype') {
+    // to avoid potential prototype pollution
+    return error(type + ' is an illegal type to be registered, possibly lead to prototype pollutions');
   }
 
   return setMap({
@@ -31633,7 +31881,7 @@ sheetfn.appendToStyle = function (style) {
   return style;
 };
 
-var version = "3.19.1";
+var version = "3.21.1";
 
 var cytoscape = function cytoscape(options) {
   // if no options specified, use default

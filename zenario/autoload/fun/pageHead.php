@@ -201,17 +201,35 @@ if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappe
 			$overrideCSS = [];
 			$overridePrintCSS = [];
 			
-			foreach ([
+			$tabs = [
 				'this_css_tab',
 				'all_css_tab',
 				'0.reset.css',
+				'.colorbox.css',
 				'1.fonts.css',
 				'1.forms.css',
+				'1.jquery_ui.css',
 				'1.layout.css',
 				'3.misc.css',
+				'3.misc_zfea.css',
 				'4.responsive.css',
 				'print.css'
-			] as $tab) {
+			];
+
+			//Also add editable CSS files used by the skin.
+			if (\ze::$skinId && ($skin = ze\row::get('skins', 'name', \ze::$skinId))) {
+				$editableCssFiles = [];
+				$skinPath = CMS_ROOT . ze\content::skinPath($skin) . 'editable_css/';
+				if ($handle = opendir($skinPath)) {
+					while (($entry = readdir($handle)) !== false) {
+						if ($entry != "." && $entry != ".." && strpos($entry, '2.') === 0) {
+							$tabs[] = $entry;
+						}
+					}
+				}
+			}
+
+			foreach ($tabs as $tab) {
 				if (!empty($overrideFrameworkAndCSS[$tab. '/use_css_file'])
 				 && !empty($overrideFrameworkAndCSS[$tab. '/css_filename'])
 				 && isset($overrideFrameworkAndCSS[$tab. '/css_source'])) {
@@ -304,7 +322,7 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	
 	//Look up the background image and any HTML to add to the HEAD from the content item
 	$sql = "
-		SELECT head_html, head_cc, head_visitor_only, head_overwrite, bg_image_id, bg_color, bg_position, bg_repeat
+		SELECT head_html, head_cc, head_cc_specific_cookie_types, head_visitor_only, head_overwrite, bg_image_id, bg_color, bg_position, bg_repeat
 		FROM ". DB_PREFIX. "content_item_versions
 		WHERE id = ". (int) \ze::$cID. "
 		  AND type = '". \ze\escape::asciiInSQL(\ze::$cType). "'
@@ -313,18 +331,22 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	$itemHTML = \ze\sql::fetchAssoc($result);
 	
 	switch ($itemHTML['head_cc']) {
-		case 'required':
-			\ze::$cookieConsent = 'require';
 		case 'needed':
 			if (!\ze\cookie::canSet()) {
-				$itemHTML['head_html'] =
-				$itemHTML['head_overwrite'] = false;
+				$itemHTML['head_html'] = $itemHTML['head_overwrite'] = false;
 			}
+			break;
+		case 'specific_types':
+			$cookieType = $itemHTML['head_cc_specific_cookie_types'];
+			if (!(\ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
+				$itemHTML['head_html'] = $itemHTML['head_overwrite'] = false;
+			}
+			break;
 	}
 	
 	//Look up the background image and any HTML to add to the HEAD from the layout
 	$sql = "
-		SELECT head_html, head_cc, head_visitor_only, bg_image_id, bg_color, bg_position, bg_repeat
+		SELECT head_html, head_cc, head_cc_specific_cookie_types, head_visitor_only, bg_image_id, bg_color, bg_position, bg_repeat
 		FROM ". DB_PREFIX. "layouts
 		WHERE layout_id = ". (int) \ze::$layoutId;
 	$result = \ze\sql::select($sql);
@@ -333,13 +355,17 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	//Only add html from the layout if it's not been overridden on the Content Item
 	if (empty($itemHTML['head_overwrite'])) {
 		switch ($templateHTML['head_cc']) {
-			case 'required':
-				\ze::$cookieConsent = 'require';
 			case 'needed':
 				if (!\ze\cookie::canSet()) {
-					$templateHTML['head_html'] =
-					$templateHTML['head_overwrite'] = false;
+					$templateHTML['head_html'] = $templateHTML['head_overwrite'] = false;
 				}
+				break;
+			case 'specific_types':
+				$cookieType = $templateHTML['head_cc_specific_cookie_types'];
+				if (!(\ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
+					$templateHTML['head_html'] = $templateHTML['head_overwrite'] = false;
+				}
+				break;
 		}
 		
 		if (!empty($templateHTML['head_html']) && (empty($templateHTML['head_visitor_only']) || !$isAdmin)) {

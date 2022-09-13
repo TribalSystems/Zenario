@@ -5,38 +5,37 @@ security_code:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             show_errors_after_field: description
             fields:
                 
                 title:
                     full_width: true
                     snippet:
-                        h1: Two-factor authentication check
+                        h1: Two-factor authentication (2FA) check
 
                 not_seen_you:
                     full_width: true
                     snippet:
-                        p: We've not seen you logging in from this computer, or this browser before.
+                        p: Your browser isn't recognised as a recent device known to Zenario.
 
                 not_seen_you_ip:
                     full_width: true
                     snippet:
-                        p: We've not seen you logging in from this IP address, this computer, or this browser before.
+                        p: Your browser or your IP address isn't recognised as a recent device known to Zenario.
 
                 timeout:
                     full_width: true
                     snippet:
                         p: |
-                            It's been a while since your last authentication check on this computer/this browser,
-                            and we need to re-authenticate you.
+                            It's been a while since your last authentication check on this browser,
+                            and Zenario needs to re-authenticate you.
 
                 timeout_ip:
                     full_width: true
                     snippet:
                         p: |
-                            It's been a while since your last authentication check from this IP address/this computer/this browser,
-                            and we need to re-authenticate you.
+                            It's been a while since your last authentication check from this IP address and browser,
+                            and Zenario needs to re-authenticate you.
                 
                 code_sent:
                     full_width: true
@@ -49,7 +48,7 @@ security_code:
                     label: "Code:"
                     type: text
                     row_class: row_form
-                    return_key_presses_button: next
+                    return_key_presses_button: submit
                     style: |
                         width: 6em;
                     tooltip: |

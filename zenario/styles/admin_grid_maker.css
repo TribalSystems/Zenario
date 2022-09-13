@@ -260,6 +260,36 @@ div.zenario_grid_cell_show_hide_first span {
 	color:#333;
 }
 
+div.zenario_grid_object_properties span.show_mobile,
+div.zenario_grid_object_properties span.show_desktop,
+div.zenario_grid_object_properties span.show_first {
+	position:relative;
+	padding-left:16px;
+}
+
+div.zenario_grid_object_properties span.show_mobile:before,
+div.zenario_grid_object_properties span.show_desktop:before,
+div.zenario_grid_object_properties span.show_first:before {
+	content:"";
+	width:16px;
+	height:16px;
+	display:inline-block;
+	position:absolute;
+	left:0;
+}
+	
+div.zenario_grid_object_properties span.show_mobile:before {
+	background:url('../admin/images/grid_maker/mobile-icon-orange.svg') no-repeat 0 center / auto 15px;
+}
+
+div.zenario_grid_object_properties span.show_desktop:before {
+	background:url('../admin/images/grid_maker/desktop-icon-orange.svg') no-repeat 0 center / 12px auto;
+}
+
+div.zenario_grid_object_properties span.show_first:before {
+	background:url('../admin/images/grid_maker/mobile-icon-orange-arrow.svg') no-repeat 0 center / auto 15px;
+}
+
 div.zenario_grid_object_properties span.zenario_grid_slot_contents,
 #colorbox.zenario_grid_box.zenario_grid_rename_slot_box .content_wrap #zenario_grid_slot_contents span,
 #colorbox.zenario_grid_box.zenario_grid_rename_slot_box .content_wrap #zenario_grid_slot_columns > span {
@@ -368,7 +398,6 @@ div.zenario_grid_space {
 }
 
 div.zenario_grid_break_outer_wrap {
-	background: #dfe7ec;
 	padding-top: 10px;
 	padding-bottom: 10px;
 }
@@ -391,6 +420,10 @@ div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_with_
 	padding-right:7px;
 }
 
+div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_slot {
+	background:#9da9af;
+}
+
 div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_slot:before,
 div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_slot:after {
 	content: '.';
@@ -405,7 +438,7 @@ div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_sl
 
 div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_slot:before,
 div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_slot:after {
-	background: linear-gradient(-45deg, transparent 10px, #dfe7ec 0), linear-gradient(45deg, transparent 10px, #dfe7ec 0);
+    background:linear-gradient(45deg, #9da9af 25%, transparent 25%), linear-gradient(-45deg, #9da9af 25%, transparent 25%);
     background-position-x: 0%, 0%;
     background-position-y: 0%, 0%;
     background-repeat: repeat, repeat;
@@ -418,7 +451,7 @@ div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_sl
     width: 100%;
     height: 10px;
     position: relative;
-    top: 0px;
+    top: -10px;
     left: 0px;
     
     visibility:visible;
@@ -428,7 +461,7 @@ div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_no_sl
 	clear: both;
     transform:rotate(180deg);
     top:auto;
-    bottom: 0px;
+    bottom: -10px;
 }
 
 div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_with_slot {
@@ -444,7 +477,7 @@ div.zenario_grid_break_outer_wrap > .zenario_grid_break.zenario_grid_break_with_
   	height: 100%;
   	position: absolute;
   	background-color: #c5ac5a;
-  	background: linear-gradient(-137deg, #dfe7ec 6px, transparent 0) 0 5px, linear-gradient(320deg, #dfe7ec 5px, transparent 0) 0 5px;
+  	background: linear-gradient(-137deg, #9da9af 6px, transparent 0) 0 5px, linear-gradient(320deg, #9da9af 5px, transparent 0) 0 5px;
   	background-position: left;
   	background-repeat: repeat-y;
   	background-size:10px 10px;

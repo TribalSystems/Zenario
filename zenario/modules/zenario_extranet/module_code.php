@@ -138,21 +138,25 @@ class zenario_extranet extends ze\moduleBaseClass {
 					$this->objects['Redirect_Message'] = $this->phrase("You've requested a page for which access requires an account on this site. If you have an account, please log in using the form below.");
 				}
 				if ($this->hasLoginForm) {
-					if (!ze\cookie::canSet('required') && ze::setting('cookie_consent_for_extranet') == 'required') {
-						ze\cookie::requireConsent();
-						$this->message = $this->phrase('This site needs to place a cookie on your computer before you can log in. Please accept cookies from this site to continue.');
+					if (ze::setting('cookie_require_consent') == 'explicit' && !ze\cookie::canSet('functionality')) {
+						$this->message = $this->phrase(
+							'This site needs to place a cookie on your computer before you can log in. Please accept cookies from this site to continue. [[manage_cookies_link_start]]Manage cookies[[manage_cookies_link_end]]',
+							[
+								'manage_cookies_link_start' => '<a onclick="zenario.manageCookies();">',
+								'manage_cookies_link_end' => '</a>'
+							]
+						);
 						$this->mode = 'modeCookiesNotEnabled';
 						$manageCookies = false;
 					
 					} else {
-						if (ze::setting('cookie_consent_for_extranet') == 'granted') {
-							ze\cookie::hideConsent();
-						}
+						ze\cookie::hideConsent();
 						
-						if ($this->setting('enable_remember_me') && (ze\cookie::canSet('functionality') || ze::setting('cookie_consent_for_extranet') == 'granted')) {
+						if ($this->setting('enable_remember_me') && ze\cookie::canSet('functionality')) {
 							$this->subSections['Remember_Me_Section'] = true;
 						}
-						if ($this->setting('enable_log_me_in') && (ze\cookie::canSet('functionality') || ze::setting('cookie_consent_for_extranet') == 'granted')) {
+
+						if ($this->setting('enable_log_me_in') && ze\cookie::canSet('functionality')) {
 							$this->subSections['Log_Me_In_Section'] = true;
 						}
 						
@@ -192,7 +196,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 						unset($_SESSION['extranet_user_failed_logins_count']);
 						unset($_SESSION['captcha_passed__'. $this->instanceId]);
 
-						if (ze::setting('cookie_consent_for_extranet') == 'granted') {
+						if (ze\cookie::canSet('functionality')) {
 							ze\cookie::setConsent();
 						}
 					

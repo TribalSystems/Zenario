@@ -163,7 +163,7 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 			
 			
 			$sql = "
-				SELECT id, slide_num, ord, module_id, framework, is_slide, name_or_title
+				SELECT id, slide_num, ord, module_id, framework, is_slide, name_or_slide_label
 				FROM ". DB_PREFIX. "nested_plugins
 				WHERE instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
 				ORDER BY slide_num, is_slide DESC, ord";
@@ -174,7 +174,7 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 					zenario_pro_features::openTagStart($isXML, $f, 'slide', true);
 					zenario_pro_features::addAtt($isXML, $f, 'slideNum', $egg['slide_num']);
 					zenario_pro_features::openTagEnd($isXML, $encodeHTMLAtt, $f);
-					zenario_pro_features::setTagContents($isXML, $f, $egg['name_or_title'], true, true);
+					zenario_pro_features::setTagContents($isXML, $f, $egg['name_or_slide_label'], true, true);
 					zenario_pro_features::closeTag($isXML, $f, 'slide');
 					
 				} else {
@@ -183,7 +183,7 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 					zenario_pro_features::addAtt($isXML, $f, 'ord', $egg['ord']);
 					zenario_pro_features::addAtt($isXML, $f, 'class', ze\module::className($egg['module_id']));
 					zenario_pro_features::addAtt($isXML, $f, 'framework', $egg['framework']);
-					zenario_pro_features::addAtt($isXML, $f, 'name_or_title', $egg['name_or_title']);
+					zenario_pro_features::addAtt($isXML, $f, 'name_or_slide_label', $egg['name_or_slide_label']);
 					zenario_pro_features::openTagEnd($isXML, $encodeHTMLAtt, $f);
 					zenario_pro_features::closeTag($isXML, $f, 'egg');
 					

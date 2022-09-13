@@ -8,10 +8,11 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Web Feed Reader
 description: |
-    <p>This is a Module which reads RSS and Atom feeds from third-party sources and displays them on your site.</p>
-            <p>Includes caching feature to avoid unnecessary hits on the source website.</p>
-            <p>Contains many options for configuring how the feed is displayed. You can specify date and time formatting, what amount of feed's content to display, the target of any links, and how long to cache.</p>
-            <p>You can add a text filter to the incoming feed so that only certain items are displayed. Using a regular expression (text filter) applied to the title, description or date of the incoming data, you can specify that only the matching items are displayed.</p>
+    <p>This module reads an RSS or Atom feed from a third-party site, and displays the content on a Zenario site.</p>
+    <p>To use it, start the module, make a plugin, specify the source and other settings, and place it in a slot on a content item.</p>
+    <p>It supports a caching mechanism, to avoid unnecessary requests to the source website.</p>
+    <p>You can specify date and time formatting, what amount of content to display, the target of any links, and how long to cache.</p>
+    <p>You can add a text filter to the incoming feed so that only certain items are displayed. Using a regular expression (text filter) applied to the title, description or date of the incoming data, you can specify that only the matching items are displayed.</p>
 category: pluggable
 keywords: atom, feed, news, newsfeed, rss
 

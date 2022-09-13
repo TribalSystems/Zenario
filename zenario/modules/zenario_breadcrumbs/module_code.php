@@ -44,7 +44,7 @@ class zenario_breadcrumbs extends zenario_menu {
 		$this->onlyIncludeOnLinks		= true;
 		$this->showInvisibleMenuItems	= true;
 		
-		//$this->showInMenuMode();
+		$this->showInMenuMode();
 		
 		//Get the Menu Node for this content item
 		$this->currentMenuId = ze\menu::getIdFromContentItem(ze::$equivId, ze::$cType, $this->sectionId, $mustBePrimary = true);
@@ -183,7 +183,7 @@ class zenario_breadcrumbs extends zenario_menu {
 				if ($nextName !== null) {
 					$name = $nextName;
 				} else {
-					$name = $this->parentNest->formatTitleText($back['slide']['name_or_title']);
+					$name = $this->parentNest->formatTitleText($back['slide']['name_or_slide_label']);
 				}
 				
 				//Check if any smart breadcrumbs have been defined

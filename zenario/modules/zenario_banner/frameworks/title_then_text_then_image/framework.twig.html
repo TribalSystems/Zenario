@@ -6,8 +6,8 @@
 	{% if Title %}
 		<div class="banner_title">
 			<{{Title_Tags}}>
-				{% if Link_Href and not Enlarge_Image %}
-					<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
+				{% if Image_Link_Href and not Enlarge_Image %}
+					<a {{Image_Link_Href}}{{Target_Blank}}>{{Title}}</a>
 				{% else %}
 					{{Title}}
 				{% endif %}
@@ -23,21 +23,7 @@
 		</div>
 	{% endif %}
 	
-	{% if Background_Image %}
-		<a
-			id="{{Image_css_id}}" 
-			{{Image_Link_Href}}{{Target_Blank}}
-			{% if Image_Class %}
-				class="{{Image_Class|e}}"
-			{% endif %}
-		></a>
-	{% elseif Image %}
-		<div class="banner_image">
-			{% include this.frameworkBaseDir() ~ 'includes/image_link_href_start.twig.html' %}
-			
-			{% include this.frameworkBaseDir() ~ 'includes/image.twig.html' %}
-			
-			{% include this.frameworkBaseDir() ~ 'includes/image_link_href_end.twig.html' %}
-		</div>
+	{% if Image %}
+		{% include this.frameworkBaseDir() ~ 'includes/image.twig.html' %}
 	{% endif %}
 </div></div></div>

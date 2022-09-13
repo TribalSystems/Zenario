@@ -115,7 +115,8 @@ class layoutAdm {
 				'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_position', 'bg_repeat',
 				'json_data', 'json_data_hash',
 				'cols', 'min_width', 'max_width', 'fluid', 'responsive',
-				'head_html', 'head_cc', 'head_visitor_only', 'foot_html', 'foot_cc', 'foot_visitor_only'
+				'head_html', 'head_cc', 'head_cc_specific_cookie_types', 'head_visitor_only',
+				'foot_html', 'foot_cc', 'foot_cc_specific_cookie_types', 'foot_visitor_only'
 			], $sourceLayoutId);
 			
 			foreach ($sourceDetails as $col => $value) {

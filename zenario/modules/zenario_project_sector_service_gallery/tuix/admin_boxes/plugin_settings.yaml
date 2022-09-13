@@ -39,9 +39,9 @@ plugin_settings:
                             label: Resize and crop
                     format_onchange: Yes
                     note_below: The featured image will be used from the matching content items.
-                sticky_image_width: 
+                image_width: 
                     plugin_setting: 
-                        name: sticky_image_width
+                        name: image_width
                     label: "Width:"
                     type: text
                     validation: 
@@ -51,9 +51,9 @@ plugin_settings:
                     maxlength: "5"
                     style: "width: 5em;"
                     post_field_html: "&nbsp;pixels"
-                sticky_image_height: 
+                image_height: 
                     plugin_setting: 
-                        name: sticky_image_height
+                        name: image_height
                     label: "Height:"
                     type: text
                     validation: 

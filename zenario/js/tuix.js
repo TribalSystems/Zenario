@@ -250,7 +250,7 @@ zenarioT.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack,
 	
 	} else {
 		
-		$(el || document.body).off().on(
+		$(el || document.body).off('drop').on(
 			'drop',
 			function(e) {
 				
@@ -258,10 +258,19 @@ zenarioT.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack,
 				
 				e = e.originalEvent;
 				
+				//Hack to try and keep drags and drops working inside of TinyMCE editors.
+				//Don't stop the standard behaviour is this looks like TinyMCE.
+				var files = (e.target && e.target.files) || (e.dataTransfer && e.dataTransfer.files);
+				
+				if (files && !files.length) {
+					return true;
+				}
+				
 				if (preCall) {
 					preCall();
 				}
 				zenarioT.stopFileDragDrop(e);
+				
 				zenarioT.doHTML5Upload(
 					e.target.files || e.dataTransfer.files,
 					path,
@@ -396,6 +405,13 @@ zenarioT.uploadDone = function(e) {
 
 zenarioT.stopDefault = function(e) {
 	e = (e || event);
+				
+	//Hack to try and keep drags and drops working inside of TinyMCE editors.
+	//Don't stop the standard behaviour is this looks like TinyMCE.
+	if (e.target
+	 && e.target.isContentEditable) {
+		return true;
+	}
 	
 	if (e && e.stopPropagation) {
 		e.stopPropagation();

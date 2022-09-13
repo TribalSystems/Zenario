@@ -56,11 +56,13 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			$t['vis'] = 'head_visitor_only';
 			$t['overwrite'] = 'head_overwrite';
 			$t['cc'] = 'head_cc';
+			$t['cc_specific_cookie_types'] = 'head_cc_specific_cookie_types';
 		} else {
 			$t['html'] = 'foot_html';
 			$t['vis'] = 'foot_visitor_only';
 			$t['overwrite'] = 'foot_overwrite';
 			$t['cc'] = 'foot_cc';
+			$t['cc_specific_cookie_types'] = 'foot_cc_specific_cookie_types';
 		}
 		
 		if ($box['key']['level'] == 'item') {
@@ -130,7 +132,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 		
 		$t = $this->tableInfo($box);
 		
-		$cols = [$t['html'], $t['cc'], $t['vis']];
+		$cols = [$t['html'], $t['cc'], $t['cc_specific_cookie_types'], $t['vis']];
 		if ($t['overwrite']) {
 			$cols[] = $t['overwrite'];
 		}
@@ -138,6 +140,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 		$settings = ze\row::get($t['table'], $cols, $t['key']);
 		$values['slot/html'] = $settings[$t['html']];
 		$values['slot/cc'] = $settings[$t['cc']];
+		$values['slot/cc_specific_cookie_types'] = $settings[$t['cc_specific_cookie_types']];
 		$values['slot/output_in_admin_mode'] = !$settings[$t['vis']];
 		
 		if ($t['overwrite']) {
@@ -190,7 +193,14 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 		$cols = [
 			$t['html'] => $html,
 			$t['cc'] => $values['slot/cc'],
-			$t['vis'] => !$values['slot/output_in_admin_mode']];
+			$t['vis'] => !$values['slot/output_in_admin_mode']
+		];
+
+		if ($values['slot/cc'] == 'specific_types' && ze::in($values['slot/cc_specific_cookie_types'], 'functionality', 'analytics', 'social_media')) {
+			$cols[$t['cc_specific_cookie_types']] = $values['slot/cc_specific_cookie_types'];
+		} else {
+			$cols[$t['cc_specific_cookie_types']] = null;
+		}
 		
 		if ($t['overwrite']) {
 			$cols[$t['overwrite']] = $values['slot/overwrite'];

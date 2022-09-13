@@ -63,6 +63,11 @@ if ($encrypted) {
 	}
 }
 
+//Get a list of existing tables from modules in advance.
+//(Note: I'm doing this now in advance, rather than during the critical point when we are restoring the tables!)
+$moduleTables = \ze\sql::fetchValues("SHOW TABLES LIKE '". DB_PREFIX. "mod%'");
+
+
 
 
 set_time_limit(60 * 10);
@@ -397,6 +402,10 @@ if (!empty($failures)) {
 	$error = false;
 	\ze\welcome::runSQL(false, 'local-DROP.sql', $error);
 	\ze\welcome::runSQL(false, 'local-admin-DROP.sql', $error);
+	
+	foreach ($moduleTables as $moduleTable) {
+		\ze\sql::update("DROP TABLE IF EXISTS `". \ze\escape::sql($moduleTable). "`", false, false);
+	}
 	
 	//Copy over the new tables
 	foreach(\ze\dbAdm::lookupImportedTables(DB_PREFIX) as $importTable) {

@@ -139,6 +139,7 @@ directionality	ltr rtl
 		
 		
 		style_formats: zenarioA.skinDesc.style_formats,
+		fontsize_formats: '8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt',
 		/*: [
 			{title: 'Bold text', inline: 'b'},
 			{title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},

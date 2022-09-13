@@ -8,24 +8,19 @@ ze\dbAdm::revision( 2
 		referrer_url varchar(255) NOT NULL DEFAULT '',
 		page_alias varchar(255) NOT NULL,
 		PRIMARY KEY (id)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
-_sql
-
-); ze\dbAdm::revision( 7
-, <<<_sql
-	ALTER TABLE [[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log
-	MODIFY COLUMN referrer_url text
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 );	ze\dbAdm::revision( 20
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log` MODIFY COLUMN `referrer_url` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log`
+	MODIFY COLUMN `referrer_url` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 
 );	ze\dbAdm::revision( 22
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log`
-	MODIFY COLUMN `page_alias` varchar(255) CHARACTER SET utf8mb4 NOT NULL
+	MODIFY COLUMN `page_alias` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 );

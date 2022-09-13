@@ -18,7 +18,7 @@ site_settings:
                         name: perm.edit.pluginSetting.by.group
                     indent: 1
                     type: checkbox
-                    label: "They are a member of the group(s):"
+                    label: "They are a member of any of the groups:"
                     redraw_onchange: true
                 perm.edit.pluginSetting.groups: 
                     site_setting: 
@@ -31,9 +31,9 @@ site_settings:
                         min_path: zenario__users/panels/groups
                         max_path: zenario__users/panels/groups
                         disallow_refiners_looping_on_min_path: true
-                        nothing_selected_phrase: No group selected
-                        select_phrase: Select a group...
+                        nothing_selected_phrase: No groups selected
+                        select_phrase: Select groups...
                         multiple_select: true
                     validation: 
-                        required_if_not_hidden: Please select a group who can edit plugin settings.
+                        required_if_not_hidden: Please select one or more groups, members of which can edit plugin settings.
                 

@@ -12,7 +12,7 @@
 							current
 						{% endif %}
 					">
-						<a {{parentNest.refreshPluginSlotTabAnchor('slideId=' ~ slide.id, false)}}>{{slide.name_or_title|trans}}</a>
+						<a {{parentNest.refreshPluginSlotTabAnchor('slideId=' ~ slide.id, false)}}>{{slide.name_or_slide_label|trans}}</a>
 					</li>
 				{% endif %}
 			{% endfor %}

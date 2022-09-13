@@ -99,7 +99,8 @@ zenario__languages:
                     hide_when_children_are_not_visible: true
                 edit_phrases:
                     parent: view_dropdown
-                    label: Visitor names (phrases)
+                    label: Phrases
+                    tooltip: Translated names for this country
                     hide_in_select_mode: true
                     with_columns_set:
                         traits.show_localizations: true
@@ -168,7 +169,7 @@ zenario__languages:
             title: Regions
             name: Regions
             view_mode: list
-            no_items_message: No regions are defined for this country.
+            no_items_message: No regions found.
             db_items:
                 table: |
                     [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions AS r
@@ -176,12 +177,12 @@ zenario__languages:
             default_sort_column: region_name
             columns:
                 region_name:
-                    title: Region Name
+                    title: Region name
                     db_column: name
                     show_by_default: true
                     searchable: true
                 region_type:
-                    title: Region Type
+                    title: Region type
                     db_column: region_type
                     show_by_default: true
                     searchable: true
@@ -197,7 +198,7 @@ zenario__languages:
                 css_class: zenario_country_manager_region
                 name: Region
                 names: Regions
-                tooltip_when_link_is_active: 'View Sub-Regions of this Region'
+                tooltip_when_link_is_active: 'View sub-regions of this region'
                 link:
                     path: zenario__languages/panels/regions
                     branch: true
@@ -237,13 +238,12 @@ zenario__languages:
                     label: Delete
                     hide_in_select_mode: true
                     multiple_select: true
-                    multiple_select_tooltip: Delete selected Regions
+                    multiple_select_tooltip: Delete selected regions
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to delete the Region "[[region_name]]" and all its localized phrases?'
+                            message: 'Are you sure you wish to delete the region "[[region_name]]"?'
                             multiple_select_message: >
-                                Are you sure you wish to delete the selected regions and all
-                                their localized phrases?
+                                Are you sure you wish to delete the selected regions?
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

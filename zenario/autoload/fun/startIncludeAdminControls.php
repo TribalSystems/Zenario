@@ -33,18 +33,27 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if ($this->eggId && isset($this->parentNest)) {
 	
-	$isSlideshow = false !== strpos($this->parentNest->moduleClassName, 'slide');
+	$organizerLink = 'organizer.php?fromCID='. ze::$cID. '&fromCType='. ze::$cType. '#';
+	$tagPath = 'zenario__modules/panels/nested_plugins';
 	
-	if ($isSlideshow) {
-		$buttonName = 'plugins_in_slideshow';
-	} else {
-		$buttonName = 'plugins_in_nest';
+	switch ($this->parentNest->moduleClassName) {
+		case 'zenario_slideshow':
+			$buttonName = 'plugins_in_slideshow';
+			$isSlideshow = true;
+			break;
+		case 'zenario_slideshow_simple':
+			$isSlideshow = true;
+			$buttonName = 'images_in_slideshow';
+			$tagPath = 'zenario__modules/panels/images_in_slideshow';
+			break;
+		default:
+			$buttonName = 'plugins_in_nest';
+			$isSlideshow = false;
+			break;
 	}
 	
-	$organizerLink = 'organizer.php?fromCID='. ze::$cID. '&fromCType='. ze::$cType. '#';
+	$navPath = 'zenario__modules/panels/modules/item//'. (int) $this->parentNest->moduleId. '//item_buttons/'. $buttonName. '//'. (int) $this->instanceId. '//';
 	
-	$nestPath = 'zenario__modules/panels/modules/item//'. (int) $this->parentNest->moduleId. '//item_buttons/'. $buttonName. '//'. $this->instanceId. '//';
-
 	
 	
 	//Show a button to edit eggs in nests
@@ -62,7 +71,7 @@ if ($this->eggId && isset($this->parentNest)) {
 
 			echo '
 			<a
-				href="', $organizerLink, $nestPath, '~.plugin_settings~tbreadcrumbs~k', htmlspecialchars(json_encode(['instanceId' => $this->instanceId])), '"
+				href="', $organizerLink, $navPath, '~.plugin_settings~tbreadcrumbs~k', htmlspecialchars(json_encode(['instanceId' => $this->instanceId])), '"
 				class="zenario_slotButton zenario_editNestedPlugin"
 				id="', $this->containerId, '-egg"
 				onclick="if (zenarioA.checkForEdits()) zenarioA.pluginSlotEditSettings(this, \'', $this->slotName, '\'); return false;"
@@ -89,7 +98,7 @@ if ($this->eggId && isset($this->parentNest)) {
 			
 			echo '
 			<a
-				href="', $organizerLink, $nestPath, $this->eggId, '~.plugin_settings~k', htmlspecialchars(json_encode(['eggId' => $this->eggId])), '"
+				href="', $organizerLink, $navPath, $this->eggId, '~.plugin_settings~k', htmlspecialchars(json_encode(['eggId' => $this->eggId])), '"
 				class="zenario_slotButton zenario_editNestedPlugin"
 				id="', $this->containerId, '-egg"
 				onclick="if (zenarioA.checkForEdits()) zenarioA.pluginSlotEditSettings(this, \'', $this->slotName, '\', false, {eggId: ', (int) $this->eggId, '}); return false;"
@@ -97,13 +106,13 @@ if ($this->eggId && isset($this->parentNest)) {
 				data-tooltip-options=\'{"tooltipClass": "zenario_admin_tooltip zenario_plugin_info_tooltip"}\'
 			><span></span></a>
 			<a
-				href="', $organizerLink, $nestPath, $this->eggId, '"
+				href="', $organizerLink, $navPath, $this->eggId, '"
 				class="zenario_slotButton zenario_nestedPluginOptions"
 				id="', $this->containerId, '-egg-options"
 				onclick="', "
 					if (zenarioA.checkForEdits())
 						zenarioAT.organizerQuick(
-							'", $nestPath, $this->eggId, "',
+							'", $navPath, $this->eggId, "',
 							'zenario__modules/panels/nested_plugins',
 							false,
 							'", ze\escape::js($this->slotName), "',

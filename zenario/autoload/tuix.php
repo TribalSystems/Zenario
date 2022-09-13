@@ -125,7 +125,7 @@ class tuix {
 					exit;
 			
 				} elseif (\ze\tuix::mixesTabsAndSpaces($contents)) {
-					echo 'The YAML file '. $path. ' contains a mixture of tabs and spaces for indentation and cannot be read';
+					echo 'The YAML file '. $path. ' contains a mixture of tabs and spaces for indentation and cannot be read.';
 					exit;
 				}
 			
@@ -1230,7 +1230,7 @@ class tuix {
 		 && (\ze\tuix::decode($tags, $clientTags, $_SESSION['admin_box_sync'][$clientTags['_sync']['session']]))) {
 	
 		} else {
-			if (!empty($clientTags['_sync']['session']) || !\ze::setting('fab_use_cache_dir')) {
+			if (!empty($clientTags['_sync']['session'])) {
 				echo \ze\admin::phrase('An error occurred when syncing this form with the server. There is a problem with the server\'s $_SESSION variable.');
 		
 			} else {
@@ -1243,10 +1243,6 @@ class tuix {
 
 	//Formerly "adminBoxSyncStoragePath()"
 	public static function syncStoragePath(&$box) {
-	
-		if (!\ze::setting('fab_use_cache_dir')) {
-			return false;
-		}
 	
 		if (empty($box['key'])) {
 			$box['key'] = [];
@@ -2784,12 +2780,7 @@ class tuix {
 		$key['moduleClassName'] = $module['class_name'];
 		
 		if ($key['instanceId']) {
-			$key['mode'] =
-				\ze\row::get('plugin_settings', 'value', [
-					'name' => 'mode',
-					'instance_id' => $key['instanceId'],
-					'egg_id' => $key['eggId']
-				]);
+			$key['mode'] = \ze\plugin::setting('mode', $key['instanceId'], $key['eggId']);
 		}
 	}
 

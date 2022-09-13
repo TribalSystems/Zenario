@@ -5,22 +5,20 @@
 		{% for node in nodes %}
 			{% if not node.Conditionally_Hidden %}
 				<li class="{{node.Class}}">
-					<div class="left_end"></div>
-						<span class="menu_image">{{node.Image}}</span>
-						{% if node.Inactive_Open_Tag %}
-							{{node.Inactive_Open_Tag}}
-						{% endif %}
+					<span class="menu_image">{{node.Image}}</span>
+					{% if node.Inactive_Open_Tag %}
+						{{node.Inactive_Open_Tag}}
+					{% endif %}
 					
-						{{node.Hyperlink}}
+					{{node.Hyperlink}}
 					
-						{% if node.Inactive_Close_Tag %}
-							{{node.Inactive_Close_Tag}}
-						{% endif %}
+					{% if node.Inactive_Close_Tag %}
+						{{node.Inactive_Close_Tag}}
+					{% endif %}
 					
-						{% if node.children %}
-							{{ self.childNodes(node.children) }}
-						{% endif %}
-					<div class="right_end"></div>
+					{% if node.children %}
+						{{ self.childNodes(node.children) }}
+					{% endif %}
 				</li>
 			{% endif %}
 		{% endfor %}
@@ -48,25 +46,23 @@
 
 			<ul>
 				<li class="{{node.Class}}">
-					<div class="left_end"></div>
-						<span class="menu_image">{{node.Image}}</span>
-						{% if node.Inactive_Open_Tag %}
-							{{node.Inactive_Open_Tag}}
-						{% endif %}
+					<span class="menu_image">{{node.Image}}</span>
+					{% if node.Inactive_Open_Tag %}
+						{{node.Inactive_Open_Tag}}
+					{% endif %}
 					
-						{{node.Hyperlink}}
+					{{node.Hyperlink}}
 					
-						{% if node.Inactive_Close_Tag %}
-							{{node.Inactive_Close_Tag}}
-						{% endif %}
+					{% if node.Inactive_Close_Tag %}
+						{{node.Inactive_Close_Tag}}
+					{% endif %}
 					
-						{% if node.children and not node.All_Children_Are_Hidden %}
-							{% if not limit_initial_level_1_menu_nodes or (limit_initial_level_1_menu_nodes and (currentNode - limit_initial_level_1_menu_nodes <= 0 and node.depth <= menu_max_number_of_levels)) %}
-								{{ self.childNodes(node.children) }}
-								{% set hasChildren = true %}
-							{% endif %}
+					{% if node.children and not node.All_Children_Are_Hidden %}
+						{% if not limit_initial_level_1_menu_nodes or (limit_initial_level_1_menu_nodes and (currentNode - limit_initial_level_1_menu_nodes <= 0 and node.depth <= menu_max_number_of_levels)) %}
+							{{ self.childNodes(node.children) }}
+							{% set hasChildren = true %}
 						{% endif %}
-					<div class="right_end"></div>
+					{% endif %}
 				</li>
 			</ul>
 		{% endif %}
@@ -80,5 +76,6 @@
 </div>
 
 {% if hasChildren %}
+	{% do this.requireJsLib('zenario/libs/yarn/jquery-doubletaptogo/dist/jquery.dcd.doubletaptogo.min.js') %}
 	{% do this.jQuery('#' ~ containerId ~ ' .level1.has_child > a', 'doubleTapToGo') %}
 {% endif %}

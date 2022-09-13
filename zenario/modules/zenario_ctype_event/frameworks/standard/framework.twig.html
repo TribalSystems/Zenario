@@ -31,6 +31,10 @@
 
 		{% if Address_Text %}
 			<div class="event_address_text">
+				{% if At_Location_Text %}
+					{{At_Location_Text|e}}
+				{% endif %}
+				
 				{{Address_Text|e}}
 			</div>
 		{% endif %}

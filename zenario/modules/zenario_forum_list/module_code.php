@@ -160,7 +160,7 @@ class zenario_forum_list extends zenario_content_list {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$hidden = !$values['each_item/show_sticky_images'];
+				$hidden = !$values['each_item/show_featured_image'];
 				$this->showHideImageOptions($fields, $values, 'each_item', $hidden);
 				break;
 		}

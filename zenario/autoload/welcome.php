@@ -163,19 +163,38 @@ class welcome {
 		}
 	
 		if (!file_exists($prefix. $file)) {
-			$error = 'SQL Template File '. $file. ' does not exist.';
+			$error = 'SQL file '. $file. ' does not exist.';
 			return false;
 		}
 	
 		//Build up a list of pattern replacements
+		$from = ["\r"];
+		$to = [''];
 		if (!$patterns) {
 			//If no patterns have been set, go in with a few default patterns. Note I am assuming that the CMS
 			//is running here...
-			$from = ["\r", '[[DB_PREFIX]]',	'[[LATEST_REVISION_NO]]',	'[[INSTALLER_REVISION_NO]]',	'[[ZENARIO_TABLE_ENGINE]]',		'[[THEME]]'];
-			$to =	['',	DB_PREFIX,		LATEST_REVISION_NO,			INSTALLER_REVISION_NO,			ZENARIO_TABLE_ENGINE,			INSTALLER_DEFAULT_THEME];
+			$from[] = '[[DB_PREFIX]]';
+			$to[]   =    DB_PREFIX;
+			
+			$from[] = '[[LATEST_REVISION_NO]]';
+			$to[]   =    LATEST_REVISION_NO;
+			
+			$from[] = '[[INSTALLER_REVISION_NO]]';
+			$to[]   =    INSTALLER_REVISION_NO;
+			
+			$from[] = '[[ZENARIO_TABLE_ENGINE]]';
+			$to[]   =    ZENARIO_TABLE_ENGINE;
+			
+			$from[] = '[[ZENARIO_TABLE_CHARSET]]';
+			$to[]   =    ZENARIO_TABLE_CHARSET;
+			
+			$from[] = '[[ZENARIO_TABLE_COLLATION]]';
+			$to[]   =    ZENARIO_TABLE_COLLATION;
+			
+			$from[] = '[[THEME]]';
+			$to[]   =    INSTALLER_DEFAULT_THEME;
+			
 		} else {
-			$from = ["\r"];
-			$to = [''];
 			foreach($patterns as $pattern => $replacement) {
 			
 				//Accept $patterns and $replacements in two different arrays with numeric keys
@@ -915,7 +934,7 @@ class welcome {
 		} else {
 			$apacheModules = apache_get_modules();
 		
-			if (!in_array('mod_deflate', $apacheModules)) {
+			if (!in_array('mod_deflate', $apacheModules) && \ze::setting('mod_deflate_check') == 'warn_if_not_available') {
 				$optionalRequirementsMet = false;
 				$fields['0/optional_mod_deflate']['row_class'] = $warning;
 			}
@@ -1074,18 +1093,20 @@ class welcome {
 
 		// See if there are clues for the database name, username and password
 		if (file_exists("../zenario-clues.txt")) {
+			$cluesHandle = $clues = null;
+			$cluesArr = [];
 			$cluesHandle = fopen("../zenario-clues.txt", "r");
 			$clues = fread($cluesHandle,filesize("../zenario-clues.txt"));
 			$cluesArr = explode (" ", $clues);
 			fclose($cluesHandle);
-			$fields['3/description']['snippet']['html'] .= 'Note! AWS zenario-clues file found, so the database name, username and password have been pre-populated with known working values. Do not change these!';
+			$fields['3/description']['snippet']['html'] .= 'Note! Database has been created for Zenario, so the fields below have been pre-populated with known working values. Do not change these!';
 		}
 
 		//Get current version of Zenario so as to name the database, if no clues present
 		if (!isset($fields['3/name']['current_value'])) {
 			$values['3/name'] = 'zenario_client1_'. ZENARIO_MAJOR_VERSION. ZENARIO_MINOR_VERSION;
 		}
-
+		
 		if (isset($cluesArr)) {
 			if (!isset($fields['3/user']['current_value']) && $cluesArr[1]) {
 				$values['3/user'] = $cluesArr[1];
@@ -1559,23 +1580,31 @@ class welcome {
 			
 				if (empty($values['4/theme'])) {
 					$values['4/theme'] = INSTALLER_DEFAULT_THEME;
-					$fields['4/theme']['values'] = [];
-					foreach (\ze\welcome::listSampleThemes() as $dir => $imageSrc) {
-						$fields['4/theme']['values'][$dir] = [
-							'label' => '',
-							'post_field_html' =>
-								'<label for="theme___'. htmlspecialchars($dir). '">
-									<img src="'. htmlspecialchars($imageSrc). '"/>
-								</label>'
-						];
-					}
+				}
+				$fields['4/theme']['values'] = [];
+				foreach (\ze\welcome::listSampleThemes() as $dir => $imageSrc) {
+					$fields['4/theme']['values'][$dir] = [
+						'label' => '',
+						'post_field_html' =>
+							'<label
+								for="theme___'. htmlspecialchars($dir). '"
+								id="skin_selector_box___'. htmlspecialchars($dir). '"
+								class="skin_selector_box '. ($dir == $values['4/theme']? 'skin_selector_box_selected' : ''). '"
+							>
+								<img src="'. htmlspecialchars($imageSrc). '"/>
+							</label>',
+						'onchange' => '
+							$(".skin_selector_box").removeClass("skin_selector_box_selected");
+							$("#skin_selector_box___'. htmlspecialchars(\ze\escape::js($dir)). '").addClass("skin_selector_box_selected");
+						'
+					];
 				}
 			
 				break;
 		
 			case 5:
 			
-				//Quick hack - these functions doesn't seem to work with a partial db-connection, so just clear it quickly
+				//Quick hack - this function doesn't seem to work with a partial db-connection, so just clear it quickly
 				$db = \ze::$dbL;
 				\ze::$dbL = null;
 				
@@ -1619,16 +1648,18 @@ class welcome {
 				
 				\ze\dbAdm::getTableEngine();
 				$merge['ZENARIO_TABLE_ENGINE'] = ZENARIO_TABLE_ENGINE;
+				$merge['ZENARIO_TABLE_CHARSET'] = ZENARIO_TABLE_CHARSET;
+				$merge['ZENARIO_TABLE_COLLATION'] = ZENARIO_TABLE_COLLATION;
 			
 			
 				//Install to the database
-				\ze\sql::cacheFriendlyUpdate('SET NAMES "UTF8"');
-				\ze\sql::cacheFriendlyUpdate("SET collation_connection='utf8_general_ci'");
-				\ze\sql::cacheFriendlyUpdate("SET collation_server='utf8_general_ci'");
-				\ze\sql::cacheFriendlyUpdate("SET character_set_client='utf8'");
-				\ze\sql::cacheFriendlyUpdate("SET character_set_connection='utf8'");
-				\ze\sql::cacheFriendlyUpdate("SET character_set_results='utf8'");
-				\ze\sql::cacheFriendlyUpdate("SET character_set_server='utf8'");
+				\ze\sql::cacheFriendlyUpdate('SET NAMES "utf8mb4"');
+				\ze\sql::cacheFriendlyUpdate("SET collation_connection='utf8mb4_unicode_ci'");
+				\ze\sql::cacheFriendlyUpdate("SET collation_server='utf8mb4_unicode_ci'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_client='utf8mb4'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_connection='utf8mb4'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_results='utf8mb4'");
+				\ze\sql::cacheFriendlyUpdate("SET character_set_server='utf8mb4'");
 				
 				//Define the DB connection info, if it wasn't previously
 				\ze::define('DBHOST', $merge['DBHOST']);
@@ -1702,6 +1733,16 @@ class welcome {
 							break;
 						}
 					}
+					
+					//Insert the starter images from the starter_images folder
+					$tags = \ze\tuix::readFile('zenario/admin/db_install/starter_image_list.yaml', false);
+					if ($tags) {
+						foreach ($tags['imagelist'] as $image) {
+							$imagepath = 'zenario/admin/db_install/starter_images/'. $image['name'];
+							\ze\file::addToDatabase('image', $imagepath, $image['name'], false, false, false, $image['alt_tag'], false, false, $image['mime_type']);
+						}
+					}
+
 				
 					//Was the install successful?
 					if (empty($tags['tabs'][8]['errors'])) {
@@ -1803,7 +1844,11 @@ class welcome {
 							$addressFrom = false,
 							$nameFrom = $source['email_templates']['installed_cms']['from'],
 							false, false, false,
-							$isHTML = true);
+							$isHTML = true,
+							false, false, false, false, '', '', 'To',
+							$ignoreDebugMode = true		//CMS welcome emails should always be sent to the intended recipient,
+														//even if debug mode is on.
+						);
 					
 					
 						//Apply database updates
@@ -1957,14 +2002,14 @@ class welcome {
 		$tags['tabs']['forgot']['errors'] = [];
 
 		//Secure/not secure connection
-		if (\ze\link::protocol() == 'https://') {
-			$class = '';
-			$fields['login/description']['snippet']['html'] .= '<p class="secure_connection">Secure connection</p>';
+		if (\ze\link::isHttps()) {
+			$fields['login/not_secure_connection']['hidden'] = true;
 		} else {
-			$class = '';
-			$fields['login/description']['snippet']['html'] .= '<p class="not_secure_connection">Warning, you are connecting via http and so your credentials will not be sent securely.</p>';
+			$fields['login/secure_connection']['hidden'] = true;
 		}
-		\ze\lang::applyMergeFields($fields['login/description']['snippet']['html'], ['http_or_https_padlock' => htmlspecialchars($class)]);
+		\ze\lang::applyMergeFields($fields['login/admin_link']['snippet']['html'], [
+			'site_url' => htmlspecialchars(\ze\link::protocol(). \ze\link::adminDomain(). SUBDIRECTORY)
+		]);
 	
 		if ($tags['tab'] == 'login' && !empty($fields['login/previous']['pressed'])) {
 			$tags['go_to_url'] = \ze\welcome::redirectAdmin($getRequest);
@@ -2193,14 +2238,19 @@ class welcome {
 		            $message = \ze\admin::phrase('Dear Admin,')."\n\n". \ze\admin::phrase('The admin "').$_SESSION['admin_username'].\ze\admin::phrase('" has no permission to apply db updates for the site ').\ze\link::absolute()."admin. \n\n".\ze\admin::phrase("Thanks.");
 		    
 		            $mailSent = \ze\server::sendEmail(
-					            $subject, $message,
-					            EMAIL_ADDRESS_GLOBAL_SUPPORT,
-					            $addressToOverriddenBy,
-							    $nameTo = false,
-							    $addressFrom = false,
-							    $nameFrom = $source['email_templates']['installed_cms']['from'],
-							    false, false, false,
-							    $isHTML = false);
+						$subject, $message,
+						EMAIL_ADDRESS_GLOBAL_SUPPORT,
+						$addressToOverriddenBy,
+						$nameTo = false,
+						$addressFrom = false,
+						$nameFrom = $source['email_templates']['installed_cms']['from'],
+						false, false, false,
+						$isHTML = false,
+						false, false, false, false, '', '', 'To',
+						$ignoreDebugMode = true		//No permissions warnings should always be sent to the intended recipient,
+													//even if debug mode is on.
+					);
+
 					$_SESSION["mailSent"]= $mailSent ;  
 				}			
 			
@@ -2276,7 +2326,7 @@ class welcome {
 			
 				$html =
 					'<table class="revisions"><tr class="even"><td>'.
-						\ze\admin::phrase('A major CMS update needs to be applied.').
+						\ze\admin::phrase('A major Zenario software update needs make changes to your database.').
 					'</td></tr></table>';
 		
 			} else {
@@ -2633,6 +2683,42 @@ class welcome {
 			//If no errors with validation, then save new password
 			if (empty($tags['tabs']['change_password']['errors'])) {
 				\ze\adminAdm::setPassword($_SESSION['admin_userid'] ?? false, $newPassword, 0);
+
+				//Prepare password change email confirmation
+				$admin = \ze\row::get('admins', ['username', 'email', 'first_name', 'last_name'], $_SESSION['admin_userid'] ?? false);
+				$merge = [];
+				$merge['NAME'] = \ze::ifNull(trim($admin['first_name']. ' '. $admin['last_name']), $admin['username']);
+				$merge['URL'] = \ze\link::protocol(). $_SERVER['HTTP_HOST'];
+				$merge['SUBDIRECTORY'] = SUBDIRECTORY;
+			
+				$emailTemplate = 'change_password_complete';
+			
+				$message = $source['email_templates'][$emailTemplate]['body'];
+				$message = nl2br($message);
+			
+				if (\ze\module::inc('zenario_email_template_manager')) {
+					\zenario_email_template_manager::putBodyInTemplate($message);
+				}
+		
+				$subject = $source['email_templates'][$emailTemplate]['subject'];
+		
+				foreach ($merge as $pattern => $replacement) {
+					$message = str_replace('[['. $pattern. ']]', $replacement, $message);
+				};
+		
+				$addressToOverriddenBy = false;
+				\ze\server::sendEmail(
+					$subject, $message,
+					$admin['email'],
+					$addressToOverriddenBy,
+					$nameTo = $merge['NAME'],
+					$addressFrom = false,
+					$nameFrom = $source['email_templates'][$emailTemplate]['from'],
+					false, false, false,
+					$isHTML = true,
+					false, false, false, false, '', '', 'To',
+					$ignoreDebugMode = true);	//Admin password change emails should always be sent to the intended recipient,
+												//even if debug mode is on.
 			
 				if ($task == 'change_password') {
 					$task = 'password_changed';
@@ -2707,7 +2793,7 @@ class welcome {
 			ORDER BY last_login';
 		
 		$adminhtml = '';
-		if ($row = \ze\sql::fetchAssoc($sql)) {
+		if (($row = \ze\sql::fetchAssoc($sql)) && !\ze\site::description('hide_admin_ip_address_on_login')) {
 			if (\ze::request('task') == 'diagnostics' && $row['last_login']) {
 				$adminhtml .= '<h2>This login</h2>';
 				$adminhtml .= '<p>You logged in '. htmlspecialchars(\ze\admin::formatDateTime($row['last_login'], '_MEDIUM'));
@@ -2908,11 +2994,11 @@ class welcome {
 					if ($fileWritable) {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in directory <code>[[2dir]]</code> are not writable by the web server. Use <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in directory <code>[[2dir]]</code> are not writable by the web server. <code>cd</code> to <code>public_html</code> directory, then run <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
 					} else {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the directory <code>[[2dir]]</code> are not writable by the web server. Use <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the directory <code>[[2dir]]</code> are not writable by the web server. <code>cd</code> to <code>public_html</code> directory, then run <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
 					}
 		
 				} elseif ($fileNotWritable !== false) {
@@ -3157,10 +3243,10 @@ class welcome {
 				
 				$fields['0/public_images']['row_class'] = 'warning';
 				$fields['0/public_images']['snippet']['html'] =
-					\ze\admin::nPhrase('There is a problem with the public link for [[exampleFile]] and 1 other image. Please check your public/images directory for possible permission problems. <a href="[[manageImagesLink]]" target="_blank">Manage images</a>',
-						'There is a problem with the public link for [[exampleFile]] and [[count]] other images. Please check your public/images directory for possible permission problems. <a href="[[manageImagesLink]]" target="_blank">Manage images</a>',
+					\ze\admin::nPhrase('There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other image. Please <a href="[[manageImagesLink]]" target="_blank">regenerate the cache</a>, or check your public/images directory for possible permission problems.',
+						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and [[count]] other images. Please <a href="[[manageImagesLink]]" target="_blank">regenerate the cache</a>, or check your public/images directory for possible permission problems.',
 						abs($mrg['numMissing'] - 1), $mrg,
-						'There is a problem with the public link for the document [[exampleFile]]. Please check your public/images directory for possible permission problems. <a href="[[manageImagesLink]]" target="_blank">Manage images</a>'
+						'There is a problem with the public link for the document &quot;[[exampleFile]]&quot;. Please <a href="[[manageImagesLink]]" target="_blank">regenerate the cache</a>, or check your public/images directory for possible permission problems.'
 					);
 			} else {
 				$fields['0/public_images']['row_class'] = 'valid';
@@ -3287,18 +3373,6 @@ class welcome {
 					);
 			}
 
-			if (\ze::setting('fab_use_cache_dir')) {
-				$fields['0/fabs_not_cached']['hidden'] = true;
-			} else {
-				$show_warning = true;
-				$fields['0/fabs_not_cached']['row_class'] = 'warning';
-				$fields['0/fabs_not_cached']['snippet']['html'] =
-					\ze\admin::phrase(
-						'Admin mode floating boxes are not being cached. This will cause the Zenario administrator interface to run more slowly. ' . $cacheSiteSettingString,
-						['link_start' => $linkStart, 'link_end' => $linkEnd]
-					);
-			}
-
 			$cssFileWrapperSetting = \ze::setting('css_wrappers');
 			if ($cssFileWrapperSetting == 'visitors_only') {
 				$fields['0/css_file_wrappers_not_on_for_visitors']['hidden'] = true;
@@ -3408,8 +3482,16 @@ class welcome {
 			if (!$fields['0/missing_modules']['hidden'] = empty($missingModules)) {
 				$show_error = true;
 				$fields['0/missing_modules']['row_class'] = 'invalid';
+				
+				$href = 'organizer.php#zenario__modules/panels/modules';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				
 				$fields['0/missing_modules']['snippet']['html'] =
-					\ze\admin::phrase('Files for the following modules are missing:').
+					\ze\admin::phrase(
+						'The following [[link_start]]modules[[link_end]] are no longer in the file system (the folders under zenario/modules may have been deleted, or a recent upgrade of Zenario may have removed them because they are no longer supported):',
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					).
 					'<ul><li>'.
 						implode('</li><li>', $missingModules).
 					'</li></ul>';
@@ -3565,13 +3647,13 @@ class welcome {
 					SELECT count(*) as numberOfRecordsUnencrypted
 					FROM ". DB_PREFIX. "users";
 				$numberOfRecordsUnencrypted = \ze\sql::fetchAssoc($sql);
-				if($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] > 0){
+				if($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] > 4){
 				    $textForNumber = '';
 				    if($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] == 1){
-				        $textForNumber = "User/Contact";
+				        $textForNumber = "user/contact";
 				      
 				    }else {
-				        $textForNumber = "Users/Contacts";
+				        $textForNumber = "users/contacts";
 				    }    
 
 				   
@@ -4111,9 +4193,9 @@ class welcome {
 	//Formerly "redirectAdmin()"
 	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false) {
 		
-		$cID = $cType = $redirectNeeded = $aliasInURL = false;
+		$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
 		if (!empty($getRequest)) {
-			\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $getRequest, $getRequest, []);
+			\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $getRequest, $getRequest, []);
 		}
 		
 		$domain = ($forceAliasInAdminMode || !\ze\priv::check())? \ze\link::primaryDomain() : \ze\link::adminDomain();

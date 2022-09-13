@@ -40,6 +40,18 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 			$this->postingErrors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
 		}
 	}
+
+	if ($this->setting('enable_links') && $this->setting('add_nofollow_to_hyperlinks')) {
+		$this->addNofollowToHyperlinks($_POST['comm_message']);
+	}
+
+	if ($this->setting('enable_links') && $this->setting('limit_hyperlinks_or_not')) {
+		$hyperlinkLimit = $this->setting('hyperlink_limit');
+		if ($this->postHasTooManyHyperlinks($_POST['comm_message'], $hyperlinkLimit)) {
+			$failure = true;
+			$this->postingErrors[] = ['Error' => $this->phrase('Too many hyperlinks in post (max allowed: [[hyperlink_limit]])', ['hyperlink_limit' => (int) $hyperlinkLimit])];
+		}
+	}
 	
 	if ($this->setting('show_name')) {
 		if (empty($_POST['comm_name'])) {
@@ -102,10 +114,22 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 		$failure = true;
 		$this->postingErrors[] = ['Error' => $this->phrase('Please enter a message.')];
 	} else {
+		if ($this->setting('enable_links') && $this->setting('add_nofollow_to_hyperlinks')) {
+			$this->addNofollowToHyperlinks($_POST['comm_message']);
+		}
+
 		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
 		if (strlen($sanitisedMessage) > 65535) {
 			$failure = true;
 			$this->postingErrors[] = ['Error' => $this->phrase('The message is too long.')];
+		}
+	}
+
+	if ($this->setting('enable_links') && $this->setting('limit_hyperlinks_or_not')) {
+		$hyperlinkLimit = $this->setting('hyperlink_limit');
+		if ($this->postHasTooManyHyperlinks($_POST['comm_message'], $hyperlinkLimit)) {
+			$failure = true;
+			$this->postingErrors[] = ['Error' => $this->phrase('Too many hyperlinks in post (max allowed: [[hyperlink_limit]])', ['hyperlink_limit' => (int) $hyperlinkLimit])];
 		}
 	}
 	
@@ -115,11 +139,23 @@ if (($_POST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 	
 } elseif (($_POST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
 	if ($_POST['comm_message']) {
+		if ($this->setting('enable_links') && $this->setting('add_nofollow_to_hyperlinks')) {
+			$this->addNofollowToHyperlinks($_POST['comm_message']);
+		}
+
+		if ($this->setting('enable_links') && $this->setting('limit_hyperlinks_or_not')) {
+			$hyperlinkLimit = $this->setting('hyperlink_limit');
+			if ($this->postHasTooManyHyperlinks($_POST['comm_message'], $hyperlinkLimit)) {
+				$failure = true;
+				$this->postingErrors[] = ['Error' => $this->phrase('Too many hyperlinks in post (max allowed: [[hyperlink_limit]])', ['hyperlink_limit' => (int) $hyperlinkLimit])];
+			}
+		}
+
 		$sanitisedMessage = ze\escape::sql(zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links')));
 		if (strlen($sanitisedMessage) > 65535) {
 			$failure = true;
 			$this->postingErrors[] = ['Error' => $this->phrase('The message is too long.')];
-		} else {
+		} elseif (!$failure) {
 			$this->editPost(ze\user::id(), $_POST['comm_message'], $_POST['comm_name'] ?? '');
 		}
 	} else {

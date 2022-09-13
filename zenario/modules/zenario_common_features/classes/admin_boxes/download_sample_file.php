@@ -41,7 +41,7 @@ class zenario_common_features__admin_boxes__download_sample_file extends ze\modu
 				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
 			WHERE f.dataset_id = '.(int)$dataset['id']. '
 			AND f.db_column != ""
-			AND f.db_column != "status"
+			AND f.db_column NOT IN ("status", "screen_name_confirmed", "created_date", "modified_date", "last_login", "last_profile_update_in_frontend", "suspended_date")
 			ORDER BY t.ord, f.ord';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {

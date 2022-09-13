@@ -11,4 +11,12 @@
 			{{node.Hyperlink}}
 		</span>
 	{% endfor %}
+
+	{% if Visitor_cookie_management %}
+		<span class="zenario_cc_manage">
+			| <a onclick="zenario.manageCookies();">
+				{{Manage_cookies_phrase}}
+			</a>
+		</span>
+	{% endif %}
 </div>

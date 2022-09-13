@@ -50,7 +50,7 @@ $formFields = [
 	'page_title' => ze\content::title($comment['content_id'], $comment['content_type']),
 	'poster_screen_name' => ''];
 
-if (ze::setting('user_use_screen_name')) {
+if (ze::setting('user_use_screen_name') && !empty($poster) && is_array($poster)) {
 	$formFields['poster_screen_name'] = ze\user::screenName($poster['id']);
 }
 

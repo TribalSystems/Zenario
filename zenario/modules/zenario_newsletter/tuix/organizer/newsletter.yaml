@@ -30,6 +30,7 @@ zenario__email_template_manager:
                            ON ii.foreign_key_to = 'newsletter'
                           AND ii.foreign_key_id = n.id
                           AND ii.image_id = [[REFINER_ID]]
+            label_format_for_picked_items: '[[newsletter_name]] (ID[[id]])'
             columns:
                 id:
                     title: ID

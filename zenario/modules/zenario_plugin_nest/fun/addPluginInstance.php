@@ -59,7 +59,7 @@ if (($instance = ze\plugin::details($addPluginInstance))
 			'module_id' => $instance['module_id'],
 			'framework' => $instance['framework'],
 			'css_class' => $instance['css_class'],
-			'name_or_title' => $nametitleValue ]);
+			'name_or_slide_label' => $nametitleValue ]);
 	
 	$sql = "
 		INSERT INTO ". DB_PREFIX. "plugin_settings (

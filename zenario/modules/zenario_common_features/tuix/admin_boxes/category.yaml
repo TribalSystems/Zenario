@@ -17,7 +17,6 @@ zenario_categories:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 name:
                     label: 'Name:'

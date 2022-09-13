@@ -126,9 +126,8 @@ zenario__layouts:
                             
                             <p>Designers may want to turn this off for easier debugging. You can turn access this setting at
                                 <a href="organizer.php?#zenario__administration/panels/site_settings//optimisation" target="_blank">
-                                    Configuration->Site Settings->Cache
-                                </a>,
-                                see the "CSS File Wrappers" setting.</p>
+                                    Configuration->Site Settings->Cache</a>,
+                                see the "Combine skin CSS files" setting.</p>
 
 
 

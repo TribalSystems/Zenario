@@ -7,23 +7,20 @@ editions: ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
 description: |
-            <p>
-                This Module displays a list of Event content items to a visitor.
-            </p>
-            </p>
-                To display a list of events on a visitor-facing page, insert a plugin of this module into a slot on an HTML content item.
-            <p>
-            </p>
-                The events in the listing can be filtered by events in a given time period relative to the current time.
-                They can also be filtered by category of event content item, and by language.
-            <p>
-            </p>
-                The Event Content Type depends on the Location Manager module, so that Event content items can be associated with locations.
-                This allows you, optionally, to group events together when they take place at the same location.
-                If the Event Listing plugin is placed on a slot on the layout that's used for HTML pages, and those
-                HTML pages are identified as the Descriptive Pages of locations, then the Event Listing plugin can be made to
-                automatically show the events for the described location.
-            <p>
+    <p>This module allows a Zenario site to display events in a list.
+        </p>
+    <p>
+        It requires the Event content type to be running, as it displays details of those events.
+    </p>
+    <p>
+        After starting the module, create a plugin of this module, and then place this in a slot on the content item (e.g. the HTML home page) where you would like the list of events to be shown.
+    </p>
+    <p>
+        When a visitor clicks on an item in the list, it links to the Event content item for the event.
+    </p>
+    <p>
+        You can set the filter to display all Event content items, or limit the calendar to display just Events in a given category.
+    </p>
 category: pluggable
 keywords: calendar, event, list
 

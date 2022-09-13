@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_anonymous_comments
     tabs:
         first_tab:
             label: Display
@@ -28,7 +29,7 @@ plugin_settings:
                 date_format:
                     plugin_setting:
                         name: date_format
-                    label: 'Date format:'
+                    label: 'Date format (time is always shown):'
                     type: select
                     value: _LONG
                     values:
@@ -39,14 +40,14 @@ plugin_settings:
                         _LONG:
                             label: Long
         order:
-            label: Order and Pagination
+            label: Order and pagination
             fields:
                 order:
                     plugin_setting:
                         name: order
                     label: 'Order comments by:'
                     type: select
-                    value: OLDEST_FIRST
+                    value: MOST_RECENT_FIRST
                     values:
                         MOST_RECENT_FIRST:
                             label: Most recent first
@@ -79,129 +80,115 @@ plugin_settings:
                     value: zenario_common_features::pagCloseWithNPIfNeeded
         posting:
             label: Editing
+            notices:
+                captcha_keys_not_set:
+                    type: warning
+                    message: ''
+                    html: true
+                    show: false
             fields:
                 enable_images:
                     plugin_setting:
                         name: enable_images
-                    label: 'Enable images'
+                    label: 'Allow images in posts'
                     type: checkbox
                     value: 1
                 enable_links:
                     plugin_setting:
                         name: enable_links
-                    label: 'Enable hyperlinks'
+                    label: 'Allow hyperlinks in posts'
                     type: checkbox
                     value: 1
+                    redraw_onchange: true
+                limit_hyperlinks_or_not:
+                    indent: 1
+                    plugin_setting:
+                        name: limit_hyperlinks_or_not
+                    type: radios
+                    values:
+                        no_limit:
+                            ord: 1
+                            label: "Don't limit the number of hyperlinks"
+                        limit_to:
+                            ord: 2
+                            label: "Limit to:"
+                    value: limit_to
+                    visible_if: lib.value('enable_links')
+                    validation:
+                        required_if_not_hidden: 'Please select the limit setting.'
+                    redraw_onchange: true
+                hyperlink_limit:
+                    indent: 2
+                    plugin_setting:
+                        name: hyperlink_limit
+                    type: select
+                    values:
+                        1:
+                            label: "1"
+                        2:
+                            label: "2"
+                        3:
+                            label: "3"
+                        4:
+                            label: "4"
+                        5:
+                            label: "5"
+                    value: 2
+                    visible_if: lib.value('enable_links') && (lib.value('limit_hyperlinks_or_not') == 'limit_to')
+                    validation:
+                        required_if_not_hidden: 'Please select the limit setting.'
+                    post_field_html: "&nbsp; hyperlinks per post"
+                add_nofollow_to_hyperlinks:
+                    indent: 1
+                    plugin_setting:
+                        name: add_nofollow_to_hyperlinks
+                    type: checkbox
+                    label: 'Add "nofollow" to hyperlinks'
+                    visible_if: lib.value('enable_links')
                 enable_reply_with_quote:
                     plugin_setting:
                         name: enable_reply_with_quote
                     label: 'Enable replying, with quotes'
                     type: checkbox
                     value: 1
-        moderation:
-            label: Moderation
-            fields:
-                description_reporting:
-                    full_width: true
-                    snippet:
-                        html: >
-                            You can enable reporting of an offensive post, and you can require that
-                            comments are screened before they appear publicly.
-                enable_report_a_post:
-                    plugin_setting:
-                        name: enable_report_a_post
-                    label: 'Enable reporting of offensive posts'
-                    type: checkbox
-                    value: ""
-                    format_onchange: true
-                email_template_for_reports:
-                    plugin_setting:
-                        name: email_template_for_reports
-                        foreign_key_to: email_template
-                        dangling_cross_references: remove
-                    label: 'Email template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/email_templates
-                        target_path: zenario__email_template_manager/panels/email_templates
-                        min_path: zenario__email_template_manager/panels/email_templates
-                        max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: true
-                        one_to_one_choose_phrase: Choose email template
-                        select_phrase: Select an email template...
-                        nothing_selected_phrase: No email template selected
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select an email template.
-                    value: zenario_comments__comment_report
-                    note_below: _insert_email_template_note_here_
-                comments_require_approval:
-                    plugin_setting:
-                        name: comments_require_approval
-                    label: 'Comments require administrator approval'
-                    type: checkbox
-                    format_onchange: true
-                    note_below: >
-                        If enabled, comments must be approved by a moderator before
-                        they go live.
-                email_template_for_approve_requests:
-                    plugin_setting:
-                        name: email_template_for_approve_requests
-                        foreign_key_to: email_template
-                        dangling_cross_references: remove
-                    label: 'Email template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/email_templates
-                        target_path: zenario__email_template_manager/panels/email_templates
-                        min_path: zenario__email_template_manager/panels/email_templates
-                        max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: true
-                        one_to_one_choose_phrase: Choose email template
-                        select_phrase: Select an email template...
-                        nothing_selected_phrase: No email template selected
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select an email template.
-                    value: zenario_comments__comment_awaiting_approval
-                    note_below: _insert_email_template_note_here_
-                email_address_for_reports:
-                    plugin_setting:
-                        name: email_address_for_reports
-                        is_email_address: true
-                    label: 'Email address that offensive message reports will be sent to:'
-                    type: text
-                    maxlength: 255
-                    value: ""
-                    validation:
-                        required_if_not_hidden: Please enter an email address.
-                        emails: >
-                            Please ensure all the email addresses you have entered are
-                            valid.
-                    note_below: Separate multiple addresses with commas.
                 enable_captcha:
                     plugin_setting:
                         name: enable_captcha
-                    label: 'Captcha must be completed to post'
+                    label: 'Require poster to complete a captcha'
                     type: checkbox
                     value: ""
-                    format_onchange: true
-        notification:
-            label: Notification
+        moderation:
+            label: Moderation
             fields:
+                notifications:
+                    type: grouping
+                    snippet:
+                        label: Notifications
+                        label_class: subheading
+                moderation:
+                    type: grouping
+                    snippet:
+                        label: Moderation
+                        label_class: subheading
                 description_notification:
+                    grouping: notifications
                     full_width: true
                     snippet:
                         html: >
-                            If set, the CMS will send an email notification whenever a
+                            If set, Zenario will send an email notification whenever a
                             comment is added. If comments are being screened, the
                             notification will be sent when the comment is approved.
                 send_notification_email:
+                    grouping: notifications
                     plugin_setting:
                         name: send_notification_email
                     label: 'Send an email notification to an administrator'
                     type: checkbox
                     value: ""
-                    format_onchange: true
+                    redraw_onchange: true
                 notification_email_address:
+                    grouping: notifications
+                    indent: 1
                     plugin_setting:
                         name: notification_email_address
                         is_email_address: true
@@ -215,7 +202,10 @@ plugin_settings:
                             Please ensure all the email addresses you have entered are
                             valid.
                     note_below: Separate multiple addresses with commas.
+                    visible_if: lib.value('send_notification_email')
                 notification_email_template:
+                    indent: 1
+                    grouping: notifications
                     plugin_setting:
                         name: notification_email_template
                         foreign_key_to: email_template
@@ -228,11 +218,99 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose Email template
-                        select_phrase: select an email template...
+                        select_phrase: Select email template...
                         nothing_selected_phrase: No Email template selected
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_comments__to_admin_comment_notification_en
                     note_below: _insert_email_template_note_here_
-    module_class_name: zenario_anonymous_comments
+                    visible_if: lib.value('send_notification_email')
+                description_reporting:
+                    grouping: moderation
+                    full_width: true
+                    snippet:
+                        html: >
+                            You can enable reporting of an offensive post, and you can require that
+                            comments are screened before they appear publicly.
+                enable_report_a_post:
+                    grouping: moderation
+                    plugin_setting:
+                        name: enable_report_a_post
+                    label: 'Enable reporting of offensive posts'
+                    type: checkbox
+                    value: ""
+                    redraw_onchange: true
+                email_template_for_reports:
+                    indent: 1
+                    grouping: moderation
+                    plugin_setting:
+                        name: email_template_for_reports
+                        foreign_key_to: email_template
+                        dangling_cross_references: remove
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template.
+                    value: zenario_comments__comment_report
+                    note_below: _insert_email_template_note_here_
+                    visible_if: lib.value('enable_report_a_post')
+                comments_require_approval:
+                    grouping: moderation
+                    plugin_setting:
+                        name: comments_require_approval
+                    label: 'Comments require administrator approval'
+                    type: checkbox
+                    redraw_onchange: true
+                    note_below: >
+                        If enabled, comments must be approved by a moderator before
+                        they go live.
+                email_template_for_approve_requests:
+                    indent: 1
+                    grouping: moderation
+                    plugin_setting:
+                        name: email_template_for_approve_requests
+                        foreign_key_to: email_template
+                        dangling_cross_references: remove
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template.
+                    value: zenario_comments__comment_awaiting_approval
+                    note_below: _insert_email_template_note_here_
+                    visible_if: lib.value('comments_require_approval')
+                email_address_for_reports:
+                    indent: 1
+                    grouping: moderation
+                    plugin_setting:
+                        name: email_address_for_reports
+                        is_email_address: true
+                    label: 'Email address that offensive message reports will be sent to:'
+                    type: text
+                    maxlength: 255
+                    value: ""
+                    validation:
+                        required_if_not_hidden: Please enter an email address.
+                        emails: >
+                            Please ensure all the email addresses you have entered are
+                            valid.
+                    note_below: Separate multiple addresses with commas.
+                    visible_if: lib.value('enable_report_a_post') && lib.value('comments_require_approval')

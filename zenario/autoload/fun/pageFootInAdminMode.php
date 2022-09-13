@@ -97,8 +97,11 @@ $settings = [];
 if (!empty(\ze::$siteConfig)) {
 	foreach (\ze::$siteConfig[0] as $setting => &$value) {
 		if ($value) {
-			if (is_numeric($value)
-			 || $setting == 'admin_domain'
+			if (is_numeric($value)) {
+				$settings[$setting] = $value + 0;
+			
+			} elseif (
+				$setting == 'admin_domain'
 			 || $setting == 'cookie_require_consent'
 			 || $setting == 'default_language'
 			 || $setting == 'organizer_title'
@@ -106,7 +109,7 @@ if (!empty(\ze::$siteConfig)) {
 			 || $setting == 'primary_domain'
 			 || $setting == 'site_in_dev_mode'
 			 || $setting == 'vis_time_format') {
-				$settings[$setting] = \ze::$siteConfig[0][$setting];
+				$settings[$setting] = $value;
 			
 			} elseif (substr($setting, -5) == '_path') {
 				$settings[$setting] = true;

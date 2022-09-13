@@ -51,7 +51,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 				$box['title'] = ze\admin::phrase('Duplicating the layout "[[id_and_name]]".', $details);
 				$box['tabs']['template']['fields']['name']['value'] .= ' '. ze\admin::phrase('(copy)');
 				$box['tabs']['template']['fields']['status']['hidden'] = true;
-				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['hidden'] = true;
+				$box['tabs']['template']['fields']['layout_is_default_for_ctype']['hidden'] = true;
 				
 			
 			} else {
@@ -97,25 +97,14 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 		
 		if ($details['status'] == 'active') {
 			if (!$box['key']['duplicate'] && $details['default_layout_for_ctype'] != null) {
-				//A content type must always have a default layout.
-				//Check whether the currently selected layout is the default for a content type.
-				//If it isn't, allow the user to make it the default,
-				//but don't allow to leave a content item without a default layout entirely.
-				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['value'] = true;
-				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['disabled'] = true;
-				//TODO
-				$panelLink = ze\link::absolute() . '/organizer.php#zenario__content/panels/content_types//' . $box['tabs']['template']['fields']['content_type']['value'];
-				$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['note_below'] =
-					ze\admin::phrase('To change the default layout, go to <a href="' . $panelLink . '" target="_blank">Settings for content types</a> panel.');
-				
-				//Don't allow archiving a layout that is the default for a content item.
-				$box['tabs']['template']['fields']['status']['values']['suspended']['disabled'] = true;
-				$box['tabs']['template']['fields']['status']['values']['suspended']['side_note'] = ze\admin::phrase('You cannot retired the default layout for a content type. To retire this layout, create a new one for this content type and make it the default.');
+				$box['tabs']['template']['fields']['layout_is_default_for_ctype']['value'] = true;
 			}
+			$panelLink = ze\link::absolute() . '/organizer.php#zenario__content/panels/content_types//' . $box['tabs']['template']['fields']['content_type']['value'];
+			$box['tabs']['template']['fields']['layout_is_default_for_ctype']['note_below'] = ze\admin::phrase('To change the default layout, go to <a href="' . $panelLink . '" target="_blank">Settings</a>.');
 		} elseif ($details['status'] == 'suspended') {
 			//Don't allow using archived layouts as defaults.
-			$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['disabled'] = true;
-			$box['tabs']['template']['fields']['layout_is_detault_for_ctype']['side_note'] = ze\admin::phrase('A retired layout cannot be the default layout.');
+			$box['tabs']['template']['fields']['layout_is_default_for_ctype']['disabled'] = true;
+			$box['tabs']['template']['fields']['layout_is_default_for_ctype']['side_note'] = ze\admin::phrase('A retired layout cannot be the default layout.');
 			$box['identifier']['css_class'] = 'archived_layout';
 		}		
 		
@@ -143,18 +132,12 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 		}
 	}
 	
-	
-	
-	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$box['tabs']['css']['fields']['css_class']['pre_field_html'] =
 			'<span class="zenario_css_class_label">'.
 				'zenario_'. $values['template/content_type']. '_layout'.
 			'</span> ';
 	}
-	
-	
-	
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if (ze\ring::engToBoolean($box['tabs']['template']['edit_mode']['on'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
@@ -227,15 +210,6 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 		
 		if ($needToClearCache) {
 			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
-		}
-		
-		if ($values['layout_is_detault_for_ctype']) {
-			ze\row::update('content_types', ['default_layout_id' => $box['key']['id']], ['content_type_id' => $values['template/content_type']]);
-		}
-		
-		if (empty($fields['template/layout_is_detault_for_ctype']['disabled'])) {
-			
-			ze\row::update('layouts', ['status' => $values['template/status']], ['layout_id' => $box['key']['id']]);
 		}
 	}
 }

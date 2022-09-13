@@ -97,7 +97,7 @@ if (ze\module::isRunning('zenario_extranet')) {
 		}
 		
 		$adminToolbar['sections']['extranet_user']['buttons']['logged_in']['label'] =
-			ze\admin::phrase('User [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
+			ze\admin::phrase('Impersonating [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
 
 		unset($adminToolbar['sections']['extranet_user']['buttons']['logged_out']);
 		unset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']);

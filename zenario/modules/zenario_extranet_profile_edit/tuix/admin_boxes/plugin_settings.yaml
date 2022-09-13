@@ -9,7 +9,8 @@ plugin_settings:
                 enable_edit_profile:
                     plugin_setting:
                         name: enable_edit_profile
-                    label: 'Allow User to edit their Profile'
+                    label: 'Allow user to edit their profile'
+                    side_note: If not checked, just viewing is allowed.
                     type: checkbox
                     value: "1"
                 show_title_message:
@@ -28,6 +29,8 @@ plugin_settings:
                         name: user_form
                         foreign_key_to: user_form
                     label: 'Form:'
+                    note_below: |
+                        You will need to make a Form via the Organizer area. It must contain linked fields, such as first name and last name, selected from the Users/Contacts Dataset. Note that Email cannot be edited via this plugin, so the Email linked field should be made read-only on the form.
                     pick_items:
                         path: zenario__user_forms/panels/user_forms
                         target_path: zenario__user_forms/panels/user_forms

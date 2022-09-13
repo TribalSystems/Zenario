@@ -13,7 +13,6 @@ zenario_document_tag:
             label: Details
             edit_mode:
                 on: Yes
-                always_on: Yes
                 enabled: Yes
             fields:
                 tag_name:

@@ -1751,14 +1751,28 @@ div.organizer_pageSize {
 #organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav {
 	float: left;
 	height: 100%;
+}
+
+body.nav_scrolls #organizer_leftColumn #organizer_topLevelNav,
+body.nav_scrolls #organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav {
+	overflow: hidden;
+}
+
+#organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav {
 	overflow: hidden;
 }
 
 #organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner {
 	padding-bottom:60px;
+	position:relative;
 }
 
 #organizer_leftColumn #organizer_topLevelNavScroll {
+	display: none;
+}
+
+body.nav_scrolls #organizer_leftColumn #organizer_topLevelNavScroll {
+	display: block;
 	clear: both;
 	height: 0;
 	position: absolute;
@@ -1801,8 +1815,179 @@ div.organizer_pageSize {
 	border-right:5px solid #00D201;
 }
 
-#organizer_leftColumn #organizer_topLevelNav .organizer_item:first-child {
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner ul,
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner ul li {
+	margin:0;
+	padding:0;
+	list-style:none;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:first-child {
 	margin-top:10px;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li {
+	position:relative;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul,
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > .zenario_attld_vertical_blocks {
+	opacity:0;
+	visibility:hidden;
+	position:absolute;
+	z-index:55;
+	top:0;
+	left:33px;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul {
+	width:228px;
+	background:#fff;
+	border:1px solid #c5c5c5;
+	-webkit-box-shadow: 0 0 3px 0 #888;
+	box-shadow: 0 0 3px 0 #888;
+	-webkit-transition: all .4s ease-in-out;
+	transition: all .4s ease-in-out;
+}
+
+body.nav_doesnt_scroll #organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > ul,
+body.nav_doesnt_scroll #organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks {
+	opacity:1;
+	visibility:visible;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:first-child:hover > ul {
+	opacity:0;
+	visibility:hidden;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul > li {
+	border-top:1px solid #c5c5c5;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul > li:first-child {
+	border-top:0;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul > li > a,
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li .zenario_attld_vertical_blocks ul li a {
+	display:block;
+	min-height:35px;
+	padding:2px 10px 2px 5px;
+	text-decoration:none;
+	color:#000;
+	background:#FFF;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul > li > a > span,
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li .zenario_attld_vertical_blocks ul li a > span {
+	display:inline-block;
+	position:relative;
+	padding:8px 0 0 35px;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul > li > a > span > span,
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li .zenario_attld_vertical_blocks ul li a > span > span {	
+	display: inline-block;
+  	width: 28px;
+  	height: 35px;
+  	position: absolute;
+  	top: 0;
+  	left: 0;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > ul > li > a:hover,
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li .zenario_attld_vertical_blocks ul li a:hover {
+	color:#027dc9;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > .zenario_attld_vertical_blocks {
+	overflow:hidden;
+	width:456px;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > .zenario_attld_vertical_blocks .zenario_attld_horizontal_block {
+	float:left;
+	width:50%;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block {
+	overflow:hidden;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block:nth-child(2) {
+	border-top:2px solid #000;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block .zenario_attld_horizontal_blocks {
+	overflow:hidden;
+	display:flex;
+}
+
+/* reset borders and set accordion to the type of blocks */
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li .zenario_attld_vertical_blocks ul li a, 
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:first-child .zenario_attld_vertical_blocks ul li a {
+	border-top:0;
+}
+
+/* 1 and 2 sections, 1st section */
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block {
+	border-left:1px solid grey;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks .zenario_attld_vertical_block:nth-child(1) {
+	border-top:1px solid grey;
+}
+
+/* 2 sections, 1st section */
+ 
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) {
+	background:#f3f3f3;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) ul li a {
+	border-top:1px solid grey;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) ul li:nth-child(1) a {
+	border-top:0;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) ul li:last-child a {
+	border-bottom:1px solid grey;
+}
+
+/* 2 sections, 1st section, 2 columns */
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) .zenario_attld_horizontal_blocks .zenario_attld_horizontal_block {
+	border-right:1px solid grey;
+}
+
+/* 	1 section,
+	2 sections, 2nd section */
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_1_vertical_block .zenario_attld_vertical_block ul li a,
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(2) ul li a {
+	border-bottom:1px solid grey;
+	border-right:1px solid grey;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(2) {
+	position:relative;
+	top:-2px;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li > .organizer_item > .organizer_legend {
+	-webkit-border-top-left-radius: 2px;
+	-webkit-border-bottom-left-radius: 2px;
+	border-top-left-radius: 2px;
+	border-bottom-left-radius: 2px;
+}
+
+#organizer_leftColumn #organizer_topLevelNav #organizer_topLevelNavInner > ul > li:hover > .organizer_item > .organizer_legend:not(.legend_on) {
+	background:#5f5f5f;
 }
 
 #organizer_leftColumn #organizer_topLevelNav .organizer_item {
@@ -1839,6 +2024,10 @@ div.organizer_pageSize {
 
 #organizer_leftColumn .organizer_sectionTitleText .organizer_sectionText {
 	font-size:11px;
+}
+
+#organizer_leftColumn .organizer_item.zenario_group {
+	float:none;
 }
 
 #organizer_leftColumn .legend_on span,
@@ -1904,6 +2093,19 @@ div.organizer_pageSize {
 	margin: 2px 5px 2px 15px;
 }
 
+/* Hide 2level nav when back button is visible*/
+
+.organizer_mainColumns_hide_2LevelNav #organizer_leftColumnOuter,
+.organizer_mainColumns_hide_2LevelNav #organizer_leftColumn {
+	width:39px;
+}
+
+.organizer_mainColumns_hide_2LevelNav #organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav {
+	display:none;
+}
+
+/**/
+
 .organizer_top_level_image.zenario_cms_core_languages {
 	background: url('../admin/images/icon-international-off.png') no-repeat center / 18px 18px;
 }
@@ -1934,43 +2136,43 @@ div.organizer_pageSize {
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_content,
 #organizer_leftColumn .legend_on a.zenario_cms_core_content,
-.organizer_top_level_image.zenario_cms_core_content:hover {
+li:hover .organizer_top_level_image.zenario_cms_core_content {
 	background: url('../admin/images/icon-content-items-on.svg') no-repeat center / auto 17px;
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_documents,
 #organizer_leftColumn .legend_on a.zenario_cms_core_documents,
-.organizer_top_level_image.zenario_cms_core_documents:hover {
+li:hover .organizer_top_level_image.zenario_cms_core_documents {
 	background: url('../admin/images/icon-documents-on.svg') no-repeat center / 17px 17px;
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_templates,
 #organizer_leftColumn .legend_on a.zenario_cms_core_templates,
-.organizer_top_level_image.zenario_cms_core_templates:hover {
+li:hover .organizer_top_level_image.zenario_cms_core_templates {
 	background: url('../admin/images/icon-layout-on.svg') no-repeat center / 16px 16px;
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_users,
 #organizer_leftColumn .legend_on a.zenario_cms_core_users,
-.organizer_top_level_image.zenario_cms_core_users:hover {
+li:hover .organizer_top_level_image.zenario_cms_core_users {
 	background: url('../admin/images/icon-users-on.svg') no-repeat center / 16px 16px;
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_languages,
 #organizer_leftColumn .legend_on a.zenario_cms_core_languages,
-.organizer_top_level_image.zenario_cms_core_languages:hover {
+li:hover .organizer_top_level_image.zenario_cms_core_languages {
 	background: url('../admin/images/icon-international-on.png') no-repeat center / 18px 18px;
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_plugins,
 #organizer_leftColumn .legend_on a.zenario_cms_core_plugins,
-.organizer_top_level_image.zenario_cms_core_plugins:hover {
+li:hover .organizer_top_level_image.zenario_cms_core_plugins {
 	background: url('../admin/images/icon-modules-on.svg') no-repeat center / 16px 16px;
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_administration,
 #organizer_leftColumn .legend_on a.zenario_cms_core_administration,
-.organizer_top_level_image.zenario_cms_core_administration:hover {
+li:hover .organizer_top_level_image.zenario_cms_core_administration {
 	background: url('../admin/images/icon-configuration-on.svg') no-repeat center / 17px 17px;
 }
 
@@ -1980,8 +2182,8 @@ div.organizer_pageSize {
 }
 
 #zenario_at_top_left_menu .organizer_top_level_image.zenario_cms_core_menu,
-.organizer_top_level_image.zenario_cms_core_menu:hover,
-#organizer_leftColumn .legend_on a.zenario_cms_core_menu {
+#organizer_leftColumn .legend_on a.zenario_cms_core_menu,
+li:hover .organizer_top_level_image.zenario_cms_core_menu {
 	background: url('../admin/images/icon-menu-navigation-on.svg') no-repeat center / 17px 17px;
 }
 
@@ -3670,6 +3872,11 @@ body.ff .organizer_toolbar .toolbar .toolbarButtons .organizer_item_toolbar_imag
 	float: left;
 }
 
+#organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon .organizer_inline_buttons div.one_or_more_categories,
+#organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon .organizer_inline_buttons div.no_categories {
+	cursor:pointer;
+}
+
 .organizer_inline_buttons .zenario_ib_warning {
 	background:url('../admin/images/icon-warning.svg') no-repeat center center / 18px 18px;
 	width: 18px;
@@ -3818,16 +4025,16 @@ body.ie8 #organizer_rightColumnContent div.organizer_row .ghost table.item_link 
 	overflow:hidden;
 }
 
-.organizer_item_image.zenario_menunode_internal {
-	background:url('../admin/images/icon-menu-node-1-blue-v3.svg') no-repeat center center / 14px 14px;
-}
-
 .organizer_item_image.zenario_menunode_internal_unique {
 	background:url('../admin/images/icon-menu-node-blue-v2.svg') no-repeat center center / 14px 14px;
 }
 
-.organizer_item_image.zenario_menunode_internal_secondary {
-	background:url('../admin/images/icon-menu-node-2-dark.svg') no-repeat center center / 16px 16px;
+.organizer_item_image.zenario_menunode_internal {
+	background:url('../admin/images/icon-menu-node-1-blue-v3.svg') no-repeat center center / 14px 14px;
+}
+
+#organizer_rightColumn div.organizer_hierarchy_view .listicon > div.organizer_item_image.zenario_menunode_internal_secondary {
+	background:url('../admin/images/icon-menu-node-2-blue.svg') no-repeat center center / 14px 14px;
 }
 
 .organizer_item_image.zenario_menunode_unlinked {
@@ -3844,8 +4051,32 @@ body.ie8 #organizer_rightColumnContent div.organizer_row .ghost table.item_link 
 	background:url('../admin/images/icon-external-url.svg') no-repeat center center / 16px 16px;
 }
 
-#organizer_rightColumn div.organizer_hierarchy_view .listicon > div.organizer_item_image.zenario_menunode_internal_secondary {
-	background:url('../admin/images/icon-menu-node-2-blue.svg') no-repeat center center / 16px 16px;
+.organizer_item_image.zenario_menunode_internal_secondary {
+	background:url('../admin/images/icon-menu-node-2-dark.svg') no-repeat center center / 14px 14px;
+}
+
+.organizer_item_image.zenario_menunode_internal_unique.node_suggest_on {
+	background:url('../admin/images/icon-menu-node-blue-folder-green.svg') no-repeat center center / 23px auto;
+}
+
+.organizer_item_image.zenario_menunode_internal.node_suggest_on {
+	background:url('../admin/images/icon-menu-node-1-blue-folder-green.svg') no-repeat center center / 23px auto;
+}
+
+#organizer_rightColumn div.organizer_hierarchy_view .listicon > div.organizer_item_image.zenario_menunode_internal_secondary.node_suggest_on {
+	background:url('../admin/images/icon-menu-node-2-blue-folder-green.svg') no-repeat center center / 23px auto;
+}
+
+.organizer_item_image.zenario_menunode_unlinked.node_suggest_on {
+	background:url('../admin/images/icon-menu-node-unlinked-folder-green.svg') no-repeat center center / 23px auto;
+}
+
+.organizer_item_image.zenario_menunode_external.node_suggest_on {
+	background:url('../admin/images/icon-external-url-folder-green.svg') no-repeat center center / 23px auto;
+}
+
+.organizer_item_image.zenario_menunode_internal_secondary.node_suggest_on {
+	background:url('../admin/images/icon-menu-node-2-dark-folder.svg') no-repeat center center / 23px auto;
 }
 
 .organizer_item_image.no_icon {
@@ -3977,12 +4208,12 @@ body.ie8 .organizer_item_image.ghost {
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.no_categories,
 #organizer_rightColumn div.organizer_row div.organizer_cells_items div.no_categories {
-	background: url('../admin/images/icon-categories-inline.png') no-repeat center center / 16px 16px;
+	background: url('../admin/images/icon-category-grey-bg.svg') no-repeat center center / 16px 16px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.one_or_more_categories,
 #organizer_rightColumn div.organizer_row div.organizer_cells_items div.one_or_more_categories {
-	background: url('../admin/images/icon-categories-one-or-more.png') no-repeat center center / 16px 16px;
+	background: url('../admin/images/icon-category-red-bg.svg') no-repeat center center / 16px 16px;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.pinned a,
@@ -4129,7 +4360,8 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell.content_trashed,
-.organizer_item_image.content_trashed {
+.organizer_item_image.content_trashed,
+.organizer_item_image.content_archived {
 	background:url("../admin/images/icon-trashed-content.svg") no-repeat center center / 20px 23px;
 }
 
@@ -4162,7 +4394,7 @@ body.ie8 .organizer_item_image.ghost {
 }
 
 .organizer_item_image.zenario_category_icon {
-	background:url('../admin/images/icon-categories-dark-v2.svg') no-repeat center center / auto 14px;
+	background:url('../admin/images/icon-category-dark-grey.svg') no-repeat center center / auto 18px;
 }
 
 .organizer_item_image.datasets {
@@ -4252,6 +4484,10 @@ body.ie8 .organizer_item_image.ghost {
 
 .organizer_item_image.archived_layout {
 	background: url('../admin/images/icon-archive.svg') no-repeat 0 center / auto 18px;
+}
+
+.zenario_at_infobar_icon.organizer_item_image.template {
+	background: url('../admin/images/icon-layout-on-state-v2.svg') no-repeat center center / 18px auto;
 }
 
 #zenario_at_top_left_menu .organizer_item_image.template,
@@ -6971,6 +7207,22 @@ span.video_title {
 .organizer_form_builder_view .form_outer .form_field.consent .label, 
 .organizer_admin_box_builder_view .form_outer .form_field.consent .label {
 	background-image:url("../admin/images/icon-consents-dark.svg");
+}
+
+.field_type_list_outer .field_type_section span.sortable_selection,
+.field_type_list_outer .dataset_fields .dataset_field span.sortable_selection,
+.organizer_form_builder_view .form_outer .form_field.sortable_selection .label, 
+.organizer_admin_box_builder_view .form_outer .form_field.sortable_selection .label {
+	background-image:url("../admin/images/icon-field-sortable.svg");
+	background-size:18px;
+}
+
+.field_type_list_outer .field_type_section span.section_spacer,
+.field_type_list_outer .dataset_fields .dataset_field span.section_spacer,
+.organizer_form_builder_view .form_outer .form_field.section_spacer .label, 
+.organizer_admin_box_builder_view .form_outer .form_field.section_spacer .label {
+	background-image:url("../admin/images/icon-field-section-spacer.svg");
+	background-size:auto 16px;
 }
 
 /* Form builder,

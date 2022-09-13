@@ -18,7 +18,7 @@ _sql
 		`polygon_points` text,
 		`polygon_colour` varchar(10) DEFAULT '#000000',
 		PRIMARY KEY (`id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ); ze\dbAdm::revision(2
@@ -32,7 +32,7 @@ _sql
 		`location_id` int(10) unsigned NOT NULL,
 		`icon_name` varchar(255) DEFAULT NULL,
 		UNIQUE KEY `location_id` (`location_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 );

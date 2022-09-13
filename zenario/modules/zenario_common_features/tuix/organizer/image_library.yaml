@@ -541,7 +541,8 @@ zenario__content:
                 mark_as_public:
                     parent: actions_dropdown
                     priv: _PRIV_MANAGE_MEDIA
-                    label: Make public
+                    label: Make image public
+                    multiple_select_label: Make images public
                     multiple_select: true
                     hide_in_select_mode: true
                     visible_if_for_any_selected_items: >
@@ -554,14 +555,15 @@ zenario__content:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to make the image "[[filename]]" public?
+                                Make the image "[[filename]]" public?
                                 
                                 Public images may be indexed by search engines.
                                 
                             multiple_select_message: |
-                                Are you sure you wish to make the selected images public?
+                                Make the selected images public?
                                 
                                 Public images may be indexed by search engines.
+
                             button_message: Make public
                             cancel_button_message: Cancel
                             message_type: warning
@@ -571,7 +573,8 @@ zenario__content:
                 mark_as_private:
                     parent: actions_dropdown
                     priv: _PRIV_MANAGE_MEDIA
-                    label: Make private
+                    label: Make image private
+                    multiple_select_label: Make images private
                     multiple_select: true
                     hide_in_select_mode: true
                     visible_if_for_any_selected_items: >
@@ -584,26 +587,26 @@ zenario__content:
                     ajax:
                         confirm:
                             message: >
-                                Are you sure you wish to make the image "[[filename]]" private?
+                                Make the image "[[filename]]" private?
                                 
-                                
-                                Private images have an cryptic directory path to prevent unauthorised visitor access;
+
+                                Private images have a URL that is unguessable and keeps changing;
                                 they will not be indexed by search engines.
+
                                 
-                                
-                                Visitors can still see private images if you link to them using a banner, image
-                                container or other managed link.
+                                You should not link to an image you want to be private using a managed link (e.g. in a Banner or Multiple Image Container),
+                                unless it's on a private content item.
                                 
                             multiple_select_message: >
                                 Are you sure you wish to make the selected images private?
                                 
                                 
-                                Private images have an cryptic directory path to prevent unauthorised visitor access;
+                                Private images have a URL that is unguessable and keeps changing;
                                 they will not be indexed by search engines.
                                 
                                 
-                                Visitors can still see private images if you link to them using a banner, image
-                                container or other managed link.
+                                You should not link to an image you want to be private using a managed link (e.g. in a Banner or Multiple Image Container),
+                                unless it's on a private content item.
                             
                             button_message: Make private
                             cancel_button_message: Cancel
@@ -652,49 +655,6 @@ zenario__content:
                         request:
                             copy_to_mic_images: 1
                     visible_if: zenarioA.module.zenario_multiple_image_container && zenarioA.module.zenario_multiple_image_container.running
-                    
-                delete:
-                    priv: _PRIV_MANAGE_MEDIA
-                    label: Delete
-                    multiple_select: true
-                    hide_in_select_mode: true
-                    visible_if_for_all_selected_items: >
-                        !item.in_use_anywhere
-                    onclick: |
-                        if (window.zenarioOQuickMode) {
-                            zenario.reloadPageWhenOrganizerQuickCloses = true;
-                        }
-                        zenarioO.itemButtonClick('delete');
-                    ajax:
-                        confirm:
-                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
-                            multiple_select_message: Are you sure you wish to delete these unused images?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete: 1
-                    
-                delete_in_use:
-                    priv: _PRIV_MANAGE_MEDIA
-                    label: Delete
-                    multiple_select: true
-                    hide_in_select_mode: true
-                    visible_if_for_any_selected_items: >
-                        item.in_use_anywhere
-                    onclick: |
-                        if (window.zenarioOQuickMode) {
-                            zenario.reloadPageWhenOrganizerQuickCloses = true;
-                        }
-                        zenarioO.itemButtonClick('delete_in_use');
-                    ajax:
-                        confirm:
-                            html: true
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete_in_use: 1
                 
                 
                 
@@ -766,6 +726,48 @@ zenario__content:
                             message_type: warning
                         request:
                             remove: 1
+                    
+                delete:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Delete
+                    multiple_select: true
+                    visible_if_for_all_selected_items: >
+                        !item.in_use_anywhere
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('delete');
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
+                            multiple_select_message: Are you sure you wish to delete these unused images?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: 1
+                    
+                delete_in_use:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Delete
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_any_selected_items: >
+                        item.in_use_anywhere
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('delete_in_use');
+                    ajax:
+                        confirm:
+                            html: true
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_in_use: 1
             
             hidden_nav:
                 plugins_using_image:

@@ -61,6 +61,7 @@ zenario__content:
                 refiner: filter_by_lang
         content:
             ord: 23
+            css_class: content_published
             label: All content items
             tooltip: All content items of all types in a flat view
             link:
@@ -74,12 +75,14 @@ zenario__content:
                 path: zenario__content/panels/content/refiners/trash////
         categories:
             ord: 25
+            css_class: zenario_category_icon
             label: Categories
             tooltip: When listing content items in a Content Summary List, they can be filtered by category. Create categories & sub-categories.
             link:
                 path: zenario__content/panels/categories
         image_library:
             ord: 26
+            css_class: media_image
             label: Image library
             tooltip: |
                 Images on all content items are stored in a central library, even if not currently used. Manage images here.
@@ -88,6 +91,7 @@ zenario__content:
         writer_profiles:
             #MIC images has ord 27 if enabled. Writer profiles panel goes after it.
             ord: 28
+            css_class: writer_profile
             label: Writer profiles
             tooltip: |
                 Manage writer profiles
@@ -280,9 +284,18 @@ zenario__administration:
         administrators:
             priv: _PRIV_VIEW_ADMIN
             label: Administrators
-            tooltip: 'Manage Zenario administrators - people who can edit this site'
+            tooltip: |
+                Manage Zenario admins, who can edit this site
             link:
                 path: zenario__administration/panels/administrators
+        content_types:
+            visible_if: >
+                zenarioA.siteSettings.default_language
+            label: Content types
+            tooltip: |
+                Manage content types (HTML pages, news etc.)
+            link:
+                path: zenario__content/panels/content_types
         backups:
             priv: _PRIV_BACKUP_SITE
             #css_class: backups
@@ -290,18 +303,12 @@ zenario__administration:
             tooltip: Create and restore backups
             link:
                 path: zenario__administration/panels/backups
-        content_types:
-            visible_if: >
-                zenarioA.siteSettings.default_language
-            label: Content types
-            tooltip: Change settings for content types (e.g. blog posts, HTML pages, news items...)
-            link:
-                path: zenario__content/panels/content_types
         custom_datasets:
             visible_if: >
                 zenarioA.siteSettings.default_language
             label: Datasets
-            tooltip: Datasets are mini-databases inside Zenario, with customisable schemas
+            tooltip: |
+                Manage customisable mini-databases
             keywords: "Database, record, lookup, data, file, spreadsheet, field, column"
             link:
                 path: zenario__administration/panels/custom_datasets

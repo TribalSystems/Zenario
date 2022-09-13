@@ -479,6 +479,11 @@ if (ze\priv::check()) {
 					echo '<br/><br/>';
 					echo ze\admin::phrase("There's nothing using this slot.");
 				}
+				
+				if (!empty($_REQUEST['willRemoveGrouping'])) {
+					echo '<br/><br/>';
+					echo ze\admin::phrase("Removing the last slot in the grouping will also delete the grouping.");
+				}
 			
 			
 			//Show a message if a version controlled plugin is being removed from the layout
@@ -500,7 +505,7 @@ if (ze\priv::check()) {
 					echo ze\admin::phrase('Are you sure you wish to move this plugin?<br/><br/>This will affect [[pages]] (<b>[[published]] published</b>) content item(s).', $mrg);
 				
 				} else {
-					echo ze\admin::phrase('Plugin &ldquo;[[pluginName]]&rdquo; (from the [[moduleDisplayName]] module) is in slot [[slotName]] on layout [[codeName]], used on [[layoutUsage]]. [[organizerLink]]<br/><br/> Are you sure you wish to remove this plugin from the layout?', $mrg);
+					echo ze\admin::phrase('Plugin &ldquo;[[pluginName]]&rdquo; (from the [[moduleDisplayName]] module) is in slot [[slotName]] on layout [[codeName]], used on [[layoutUsage]]. [[organizerLink]]<br/><br/> Are you sure you wish to remove this plugin from slot on the layout?', $mrg);
 				}
 			}
 	

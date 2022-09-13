@@ -6,21 +6,14 @@ copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
-summary_desc: '<p>Displays a list of geographical Locations, as defined in the Location Manager Module.</p>'
+summary_desc: '<p>Displays a list of geographical Locations.</p>'
 description: |
-            <p>
-                This Module displays a list of the geographical Locations as defined in the Location 
-                Manager Module in the Admin Back-end of a site.
-            </p> 
-            <p>
-                Only Locations marked as Active are displayed, others are not shown. When defining a 
-                listing, you can specify a filter to display only Locations in a given Business Sector.
-            </p>
-            <p>
-                There are built-in pagination controls, and control over sort order. You can decide to 
-                sort on up to three parameters: Name and Country (which are built in), and on other 
-                parameters such as Sector Score if the Location Ratings Module is installed.
-            </p>
+    <p>
+        This module displays a list of the geographical locations, and thus requires that the Location Manager module is running. You can define locations in Organizer->Locations.
+    </p>
+    <p>
+        After starting the module, you should create a plugin and place it on a content item. By default, the plugin will display all locations in Zenario's database, but you can apply filters by Sector and by Country. Only locations marked as "active" (as opposed to "suspended" are displayed.
+    </p>
 category: pluggable
 keywords: list, location, place
 

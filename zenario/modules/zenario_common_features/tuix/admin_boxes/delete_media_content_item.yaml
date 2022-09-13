@@ -10,7 +10,6 @@ zenario_delete_media_content_item:
         delete_media_content_item:
             edit_mode:
                 enabled: true
-                always_on: true
                 enable_revert: false
             
             notices:

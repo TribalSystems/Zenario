@@ -43,27 +43,26 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
-			$item['traits'] = [];
 			$item['has_permissions'] = ze\row::exists('action_admin_link', ['admin_id' => $id]);
 			
 			if ($id == ($_SESSION['admin_userid'] ?? false)) {
-				$item['traits']['current_admin'] = true;
+				$item['isCurrentAdmin'] = true;
 			}
 			
 			if ($item['authtype'] == 'super') {
-				$item['traits']['super'] = true;
+				$item['isMultisite'] = true;
 			} else {
-				$item['traits']['local'] = true;
+				$item['isLocal'] = true;
 			}
 			
 			if ($item['status'] == 'active') {
-				$item['traits']['active'] = true;
+				$item['isActive'] = true;
 			} else {
-				$item['traits']['trashed'] = true;
+				$item['isTrashed'] = true;
 			}
 			
 			if (!empty($item['checksum'])) {
-				$item['traits']['has_image'] = true;
+				$item['hasImage'] = true;
 				$img = '&usage=admin&c='. $item['checksum'];
 	
 				$item['image'] = 'zenario/file.php?og=1'. $img;
@@ -171,9 +170,15 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__administration/panels/administrators') return;
 		
-		if (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_DELETE_ADMIN') && zenario_common_features::canCreateAdditionalAdmins()) {
+		if (!empty($_POST['restore']) && ze\priv::check('_PRIV_DELETE_ADMIN') && zenario_common_features::canCreateAdditionalAdmins()) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\adminAdm::delete($id, true);
+			}
+		
+		} else
+		if (!empty($_POST['delete']) && ze\priv::check('_PRIV_DELETE_ADMIN')) {
+			foreach (ze\ray::explodeAndTrim($ids) as $id) {
+				ze\adminAdm::reallyDelete($id, $onlyDeleteAdminsThatHaveNeverLoggedIn = true, $deleteAllButThisAdmin = false);
 			}
 		}
 	}

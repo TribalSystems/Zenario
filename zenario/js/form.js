@@ -892,8 +892,7 @@ methods.drawTUIX = function(tuix, template, cb) {
 				template: template,
 				edit_mode: {
 					on: true,
-					enabled: true,
-					always_on: true
+					enabled: true
 				},
 				fields: tuix
 			}
@@ -925,6 +924,10 @@ methods.insertHTML = function(html, cb, isNewTab) {
 	}
 	
 	thus.fieldThatTriggeredRedraw = false;
+	
+	if (zenarioT.showDevTools()) {
+		thus.__lastFormHTML = html;
+	}
 };
 
 methods.hideShowFields = function(onShowFunction) {
@@ -2135,7 +2138,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					
 					codeEditor.$blockScrolling = Infinity;
 					
-					thus.setCodeEditorPosition(codeEditor, thus.editingPositions[tab + '/' + id]);
+					thus.setCodeEditorPosition(codeEditor, thus.editingPositions[tab + '/' + id], true);
 					
 					//I've been experiementing with trying to save the undo history, but can't get it working :(
 					//var editingHistory, undoManager;
@@ -2259,6 +2262,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 								content_css: content_css,
 								toolbar: 'undo redo | bold italic underline strikethrough forecolor backcolor | removeformat | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | code fullscreen',
 								style_formats: zenarioA.skinDesc.style_formats,
+								fontsize_formats: '8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt',
 								oninit: undefined
 							}),
 						optionsWithImagesAndLinks = _.extend({}, normalOptions, {
@@ -2416,7 +2420,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 
 					cb.after(function() {
 						var $field = $(thus.get(id)),
-							changeMonthAndYear = !!engToBoolean(field.change_month_and_year);
+							changeMonthAndYear = !!engToBoolean(field.change_month_and_year)
+							lastSafeValue = '';
 						
 						$field.datepicker({
 							changeMonth: changeMonthAndYear,
@@ -2430,6 +2435,52 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							onSelect: function(dateText, inst) {
 								$field.change();
 								//zenarioAB.fieldChange(this.name);
+							},
+							beforeShow: function(el, inst) {
+								//Note down what value the field was set to before it's opened
+								lastSafeValue = inst.input.val();
+							},
+							onClose: function(dateText, inst) {
+								/*
+									Datepickers use 2 input fields: one is a visible picker with human-readable value,
+									and the other is a hidden input with the same value but in MySQL format.
+
+									If the user selects or types a date in, check if the date is valid by trying to parse it (the first "Try" block).
+									If we get a formatting error (the first "Catch" block),
+									assume it's a bad date and revert to the last known valid date (the second "Catch" block).
+
+									Please note: the parseDate() function needs to be in a try/catch block,
+									as it throws an error if the date is invalid and can't be parsed.
+								*/
+								try {
+									//Valid date in the expected format and no errors.
+									var enteredVal = inst.input.val(),
+										dateObj = $.datepicker.parseDate(inst.settings.dateFormat, inst.input.val(), inst.settings),
+										formattedVal = $.datepicker.formatDate(inst.settings.dateFormat, dateObj, inst.settings),
+										mySqlVal = $.datepicker.formatDate("yy-mm-dd", dateObj, inst.settings);
+									
+									//Fallback code: valid date in valid format, but the month capitalisation is wrong.
+									//Format the value to fix capitalisation.
+									if (formattedVal !== enteredVal) {
+										zenarioAB.setFieldValue(id, formattedVal, mySqlVal);
+										$(zenarioAB.get(id)).change();
+									}
+								} catch (e) {
+									//Invalid date: attempt to set the last known valid value.
+									try {
+										//Last known valid value exists and is correct
+										var dateObj = $.datepicker.parseDate(inst.settings.dateFormat, lastSafeValue, inst.settings),
+											formattedVal = $.datepicker.formatDate(inst.settings.dateFormat, dateObj, inst.settings),
+											mySqlVal = $.datepicker.formatDate("yy-mm-dd", dateObj, inst.settings);
+										
+										zenarioAB.setFieldValue(id, formattedVal, mySqlVal);
+										$(zenarioAB.get(id)).change();
+									} catch (e) {
+										//Fallback code: there is no last safe value. Set the value to a blank string ('').
+										zenarioAB.setFieldValue(id, '');
+										$(zenarioAB.get(id)).change();
+									}
+								}
 							}
 						});
 					});
@@ -2717,7 +2768,17 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			html = _$span('class', 'zenario_field_widget_wrap', html);
 		}
 		
-		
+		if (field.progress_bar) {
+			html += _$div('id', 'progressbar__' + id, 'class', 'zfab_progressbar');
+			
+			cb.after(function() {
+				thus.updateProgressBar(id);
+
+				$(thus.get(id)).on('input', function() {
+					thus.updateProgressBar(id);
+				})
+			});
+		}
 		
 		if (defined(field.post_field_html)) {
 			html += zenario.unfun(field.post_field_html);
@@ -2769,6 +2830,65 @@ methods.copyField = function(copyButtonEl, fieldId) {
 		}, 0);
 	}	
 };
+
+methods.updateProgressBar = function(fieldId) {
+	cnt = $(thus.get(fieldId)).val().length;
+	var progressBarValue;
+	var progressBarClass;
+	var progressBar = $('#progressbar__' + fieldId);
+	
+	if (cnt < 1) {
+		progressBarClass = 'poor';
+		progressBarValue = 0;
+
+	} else if (cnt < 12) {
+		progressBarClass = 'poor';
+		if (cnt < 8) {
+			progressBarValue = 10;
+		} else {
+			progressBarValue = 20;
+		}
+
+	} else if (cnt < 26) {
+		progressBarClass = 'medium';
+		if (cnt < 20) {
+			progressBarValue = 30;
+		} else if (cnt < 23) {
+			progressBarValue = 40;
+		} else {
+			progressBarValue = 50;
+		}
+
+	} else if (cnt < 70) {
+		progressBarClass = 'good';
+		if (cnt < 45) {
+			progressBarValue = 60;
+		} else if (cnt < 50) {
+			progressBarValue = 70;
+		} else if (cnt < 55) {
+			progressBarValue = 80;
+		} else if (cnt < 60) {
+			progressBarValue = 90;
+		} else {
+			progressBarValue = 100;
+		}
+
+	} else {
+		if (cnt < 120) {
+			progressBarClass = 'medium';
+		} else {
+			progressBarClass = 'poor';
+		}
+		progressBarValue = 100;
+
+	}
+
+	progressBar.progressbar({
+		value: progressBarValue
+	});
+
+	progressBar.removeClass('poor medium good').addClass(progressBarClass);
+}
 
 
 //A list of allowed attributes for form fields
@@ -4488,6 +4608,10 @@ methods.valueIsNot = function(f, v) {
 	return thus.value(f) != v;
 };
 
+methods.valueIsEmpty = function(f, v) {
+	return !thus.value(f);
+};
+
 methods.isButton = function(field) {
 	return field && (field.type == 'submit' || field.type == 'toggle' || field.type == 'button');
 };
@@ -4504,18 +4628,29 @@ methods.isFormField = function(field) {
 
 
 methods.getCodeEditorPosition = function(codeEditor) {
+	
+	var session = codeEditor.session;
+	
 	return {
-		top: codeEditor.session.getScrollTop(),
-		left: codeEditor.session.getScrollLeft(),
-		range: codeEditor.getSelectionRange()
+		top: session.getScrollTop(),
+		left: session.getScrollLeft(),
+		range: codeEditor.getSelectionRange(),
+		uman: session.getUndoManager()
 	};
 };
 
-methods.setCodeEditorPosition = function(codeEditor, editingPositions) {
+methods.setCodeEditorPosition = function(codeEditor, editingPositions, restoreHistory) {
 	if (editingPositions) {
-		codeEditor.session.setScrollTop(editingPositions.top);
-		codeEditor.session.setScrollLeft(editingPositions.left);
+		var session = codeEditor.session;
+		session.setScrollTop(editingPositions.top);
+		session.setScrollLeft(editingPositions.left);
 		codeEditor.selection.setSelectionRange(editingPositions.range);
+		
+		//If prompted, attempt to also restore the undo/redo history.
+		if (restoreHistory) {
+			editingPositions.uman.$doc = session;
+			session.setUndoManager(editingPositions.uman);
+		}
 	}
 };
 
@@ -4596,7 +4731,7 @@ methods.appendCodeEditorValue = function(editorId, snippetToInsert, atCursor) {
 	
 	//Update the value of the editor
 	codeEditor.setValue(text);
-	thus.setCodeEditorPosition(codeEditor, pos);
+	thus.setCodeEditorPosition(codeEditor, pos, false);
 	
 };
 
@@ -4764,7 +4899,7 @@ methods.blankField = function(f) {
 	thus.setFieldValue(f, '');
 };
 
-methods.setFieldValue = function(f, val) {
+methods.setFieldValue = function(f, val, savedVal) {
 	var tab = thus.tuix.tab
 		field = thus.field(f, tab);
 	
@@ -4773,7 +4908,7 @@ methods.setFieldValue = function(f, val) {
 	}
 	
 	if (thus.get('_value_for__' + f)) {
-		thus.get('_value_for__' + f).value = val;
+		thus.get('_value_for__' + f).value = defined (savedVal) ? savedVal : val;
 	}
 	
 	field.current_value = val;

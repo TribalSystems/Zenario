@@ -1,10 +1,10 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-    title: Viewing/Editing Settings for API Keys
+    title: Third party API keys
     tabs:
         translation:
-            label: Translation
+            label: Google Cloud Translation
             edit_mode:
                 enabled: Yes
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -17,7 +17,7 @@ site_settings:
                 google_translate_api_key:
                     site_setting:
                         name: google_translate_api_key
-                    label: 'Private Key:'
+                    label: 'Private key:'
                     type: text
                     note_below: |
                         An application key that can use the Google Translate API.

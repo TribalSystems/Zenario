@@ -5,7 +5,6 @@ install:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 blurb:
                     full_width: true
@@ -38,7 +37,6 @@ install:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 blurb:
                     full_width: true
@@ -92,6 +90,8 @@ install:
                     value: Create a new site
                     type: submit
                     full_width: true
+                    onclick: |
+                        zenarioAW._nextLoadIsAnInstall = true;
                     disabled_if: |
                         !zenarioAW.value('i_agree')
                 restore:
@@ -100,17 +100,10 @@ install:
                     same_row: true
                     disabled_if: |
                         !zenarioAW.value('i_agree')
-                restore:
-                    value: Upgrade existing
-                    type: submit
-                    same_row: true
-                    disabled_if: |
-                        !zenarioAW.value('i_agree')
         3:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
                     full_width: true
@@ -233,7 +226,6 @@ install:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
                     full_width: true
@@ -341,7 +333,7 @@ install:
                     #full_width: true
                     label: 'Skin:'
                     pre_field_html: |
-                        <div class="horizontal_scroll">
+                        <div class="skin_selector horizontal_scroll">
                             <div>
                     type: radios
                     post_field_html: |
@@ -385,7 +377,6 @@ install:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
                     full_width: true
@@ -430,13 +421,10 @@ install:
                     return_key_presses_button: next
                 password:
                     label: "Choose a password:"
+                    autocomplete: "new-password"
                     type: password
                     oninput: |
                         zenario.updatePasswordNotifier('#password', '#snippet_password_message', true);
-                    onmouseover: |
-                        $('#snippet__password_requirements').show();
-                    onmouseout: |
-                        $('#snippet__password_requirements').hide();
                     row_class: row_form
                     return_key_presses_button: next
                 password_requirements:
@@ -447,6 +435,7 @@ install:
                         html: "&nbsp;"
                 re_password:
                     label: "Re-enter your password:"
+                    autocomplete: "new-password"
                     type: password
                     row_class: row_form
                     return_key_presses_button: next
@@ -467,7 +456,6 @@ install:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
                     full_width: true
@@ -517,14 +505,13 @@ install:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 5: Great! Now let's save the configuration and make the database...</h1>
-                            <p>Zenario needs the settings to be written to a configuration file. After this, the database will be created (this takes a few moments), and the site will be running. It can be live immediately, or you can keep it only visible in administrator mode while you work on it.</p>
+                            <h1>Step 5: Great! Now let's save the configuration and database</h1>
+                            <p>Zenario needs the settings to be written to a configuration file. Then the database will be populated, which takes a few moments. You can choose to have the site live immediately, or you can keep it only visible in administrator mode while you work on it.</p>
                             <p>This installer can populate the config file for you: to do this the file must be writeable by the web server. Alternatively, copy the text from the box below and paste it into the file manually.</p>
                             <p>The file must be located at:</p>
                 zenario_siteconfig:
@@ -558,20 +545,21 @@ install:
                     same_row: true
                     style: |
                         float: right;
-                    onclick: "zenarioA.nowDoingSomething('installing');"
+                    onclick: |
+                        zenarioAW._nextLoadIsAnInstall = true;
                 do_it_for_me:
                     value: Do it for me
                     type: submit
                     same_row: true
                     style: |
                         float: right;
-                    onclick: "zenarioA.nowDoingSomething('installing');"
+                    onclick: |
+                        zenarioAW._nextLoadIsAnInstall = true;
             show_errors_after_field: description
         8:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
                     full_width: true
@@ -592,5 +580,6 @@ install:
                     same_row: true
                     style: |
                         float: right;
-                    onclick: "zenarioA.nowDoingSomething('installing');"
+                    onclick: |
+                        zenarioAW._nextLoadIsAnInstall = true;
             show_errors_after_field: description

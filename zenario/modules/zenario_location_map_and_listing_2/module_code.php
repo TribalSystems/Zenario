@@ -87,7 +87,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		$this->locationFilters = [];
 		$this->data['list_title'] = "Locations";
 		$this->data['Selected_filters'] = [];
-		if (!empty($this->datasetCustomFields)) {
+
+		$this->data['Show_filter_button'] = ($this->setting('location_display') != 'show_all_locations');
+		if ($this->data['Show_filter_button'] && !empty($this->datasetCustomFields)) {
 			$level1Filters = $level2Filters = [];
 			foreach ($this->datasetCustomFields as $customField) {
 				$fieldDetails = ze\dataset::fieldDetails($customField['db_column'], $dataset);
@@ -263,8 +265,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		
 		$this->loadLocations($this->dataset['id'], $this->locationFilters);
 		
-		$this->data['openForm'] = $this->openForm();
+		$this->data['openForm'] = $this->openForm('', 'id="form_location_map_and_listing_2_' . $this->containerId . '"');
 		$this->data['closeForm'] = $this->closeForm();
+		$this->data['Container_Id'] = $this->containerId;
 		
 		return true;
 	}
@@ -274,7 +277,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			'zenario_location_map_and_listing_2',
 			'savePluginSettings',
 			$this->setting('show_location_list') ?? false,
-			$this->setting('show_map') ?? false
+			$this->setting('show_map') ?? false,
+			$this->containerId
 		);
 		
 		if (empty($_REQUEST['display_map'])) {
@@ -299,7 +303,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			$polygonStrokeOpacity = ze::setting('polygon_stroke_opacity') ?  (ze::setting('polygon_stroke_opacity') / 100) : 0.8;
 			$polygonFillOpacity = ze::setting('polygon_fill_opacity') ?  (ze::setting('polygon_fill_opacity') / 100) : 0.35;
 			
-			$moduleImagesPath = ze\link::absolute() . ze::moduleDir("zenario_location_map_and_listing_2") . 'images';
+			$moduleImagesPath = ze\link::absolute() . 'zenario_custom/skins/' . ze::$skinName . '/images/zenario_location_map_and_listing_2';
 			
 			//Store the variables for the map in the iframe.
 			if (!empty($this->setting('show_map'))) {
@@ -391,6 +395,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
+				$fields['first_tab/no_location_level_1_filters_found']['hidden'] = $fields['first_tab/no_location_level_2_filters_found']['hidden'] = true;
+				
 				$dataset = ze\dataset::details(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 				$datasetFields = ze\dataset::fieldsDetails($dataset['id']);
 
@@ -417,6 +423,36 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 					$fields['first_tab/locations__field__special_offers']['side_note'] = ze\admin::phrase('To use this option, please create a field with the code name "special_offers" in the "Locations" dataset.');
 					
 				}
+
+				//This code is a workaround for a bug where if a field is hidden,
+				//Zenario will save a blank value.
+				if (!$values['display/image_canvas']) {
+					$values['display/image_canvas'] = 'fixed_width_and_height';
+				}
+
+				switch ($values['display/image_canvas']) {
+					case 'fixed_width_and_height':
+					case 'resize_and_crop':
+						if (!$values['display/image_width']) {
+							$values['display/image_width'] = 240;
+						}
+
+						if (!$values['display/image_height']) {
+							$values['display/image_height'] = 160;
+						}
+						break;
+					case 'fixed_width':
+						if (!$values['display/image_width']) {
+							$values['display/image_width'] = 240;
+						}
+						break;
+					case 'fixed_height':
+						if (!$values['display/image_height']) {
+							$values['display/image_height'] = 160;
+						}
+						break;
+				}
+
 				break;
 			
 			case 'zenario_location_manager__areas':
@@ -442,16 +478,22 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 					$locationId = $box['key']['id'];
 					$values['filters/map_icon'] = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_map_icons', 'icon_name', ['location_id' => (int)$locationId]);
 				}
+
+				$defaultLayoutId = ze\row::get('content_types', 'default_layout_id', ['content_type_id' => 'html']);
+				$skinId = ze\content::layoutSkinId($defaultLayoutId, true);
+				$skin = ze\content::skinDetails($skinId);
+				$box['key']['default_html_layout_skin_path'] = ze\content::skinPath($skin['name']);
+
 				break;
 		}
 	}
 
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path){
+		switch ($path) {
 			case 'plugin_settings':
 				$hidden = !$values['display/show_images'];
-				$this->showHideImageOptions($fields, $values, 'display', $hidden, 'list_view_thumbnail_');
+				$this->showHideImageOptions($fields, $values, 'display', $hidden, 'image_');
 				
 				$fields['first_tab/location_dataset_filter_level_2']['values'] = [];
 				if (!empty($values['first_tab/location_display']) && $values['first_tab/location_display'] == 'apply_a_filter' && !empty($values['first_tab/location_dataset_filter_level_1'])) {
@@ -466,6 +508,17 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 						}
 					}
 				}
+
+				if ($values['first_tab/location_display'] == 'apply_a_filter') {
+					if (empty($fields['first_tab/location_dataset_filter_level_1']['values']) && empty($fields['first_tab/location_dataset_filter_level_1']['hidden'])) {
+						$fields['first_tab/no_location_level_1_filters_found']['hidden'] = false;
+					}
+
+					if (empty($fields['first_tab/location_dataset_filter_level_2']['values']) && $values['first_tab/location_dataset_filter_level_1'] && empty($fields['first_tab/location_dataset_filter_level_2']['hidden'])) {
+						$fields['first_tab/no_location_level_2_filters_found']['hidden'] = false;
+					}
+				}
+
 				break;
 				
 			case 'zenario_location_manager__areas':
@@ -484,6 +537,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 				break;
 			
 			case 'zenario_location_manager__location':
+				$box['tabs']['filters']['notices']['location_icon_not_found_on_filesystem']['show'] = false;
+
 				$box['tabs']['filters']['fields']['map_icon']['values'] = [];
 				if (!empty($box['tabs']['filters']['fields'])) {
 					$ord = 1;
@@ -503,6 +558,20 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 						}
 						
 						$field['format_onchange'] = true;
+					}
+
+					if ($values['filters/map_icon']) {
+						$expectedIconFolder = $box['key']['default_html_layout_skin_path'] . 'images/zenario_location_map_and_listing_2';
+						$expectedIconName = 'icon_' . $values['filters/map_icon'] . '.svg';
+
+						if (!file_exists(CMS_ROOT . $expectedIconFolder . '/' . $expectedIconName)) {
+							$box['tabs']['filters']['notices']['location_icon_not_found_on_filesystem']['show'] = true;
+							$box['tabs']['filters']['notices']['location_icon_not_found_on_filesystem']['message'] =
+								ze\admin::phrase(
+									'The code name of the map icon is "hotel" and so an icon was expected in folder <code>[[expectedIconFolder]]</code> with filename <code>[[expectedIconName]]</code>, but the file is missing.',
+									['expectedIconFolder' => htmlspecialchars($expectedIconFolder), 'expectedIconName' => htmlspecialchars($expectedIconName)]
+								);
+						}
 					}
 				}
 				break;
@@ -736,7 +805,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			
-			$row['css_class'] = 'zenario_lmal_marker';
+			$row['css_class'] = 'zenario_lmal_marker__' . $row['icon_name'];
 			$row['htmlId'] = $this->containerId. '_loc_'. $row['this_location_id'];
 			
 			$imageId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['sticky_flag' => '1', 'location_id' => $row['this_location_id']]);
@@ -745,7 +814,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			$row['list_image'] = self::getStickyImageLink($imageId);
 			
 			$row['descriptive_page'] = false;
-			if($row['equiv_id'] && $row['content_type']){
+			if ($row['equiv_id'] && $row['content_type']) {
 				$cID = $row['equiv_id'];
 				$cType = $row['content_type'];
 				ze\content::langEquivalentItem($cID, $cType);
@@ -755,7 +824,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 				}
 			}
 			
-			if (!empty($customFields)) {
+			if ($this->setting('location_display') != 'show_all_locations' && !empty($customFields)) {
 				$locationFiltersListLevel1 = $locationFiltersListLevel2 = [];
 				foreach ($customFields as $customFieldKey => $customField) {
 					if (!empty($row[$customField['db_column']]) && ($customField['type'] == 'checkbox' || $customField['type'] == 'checkboxes')) {
@@ -780,6 +849,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		$this->data['button_label'] =  $this->phrase('View descriptive page');
 		
 		if (!empty($this->data['locations'])) {
+			$moduleImagesPath = CMS_ROOT . 'zenario_custom/skins/' . ze::$skinName . '/images/zenario_location_map_and_listing_2';
+
 			foreach ($this->data['locations'] as &$rowr) {
 				foreach ($this->data['tabs'] as $i => &$tab) {
 					if (!empty($rowr['tab'. $i])) {
@@ -793,6 +864,11 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			}
 		
 			foreach ($this->data['locations'] as $row) {
+				$iconName = '';
+				if (file_exists($moduleImagesPath . '/icon_' . $row['icon_name'] . '.svg')) {
+					$iconName = $row['icon_name'];
+				}
+
 				$this->data['locations_map_info'][] = [
 					'id' => $row['this_location_id'],
 					'htmlId' => $row['htmlId'],
@@ -802,7 +878,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 					'hide_pin' => $row['hide_pin'],
 					'name' => $row['name'],
 					'css_class' => $row['css_class'],
-					'icon_name' => $row['icon_name']
+					'icon_name' => $iconName
 				];
 			}
 		}
@@ -812,12 +888,11 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		if ($imageId && $this->setting('show_images')) {
 			$url = $width = $height = false;
 			
-			$widthImage = $this->setting('list_view_thumbnail_width'); 
-			$heightImage = $this->setting('list_view_thumbnail_height');
-			$canvas = $this->setting('list_view_thumbnail_canvas'); 
-			$offset = $this->setting('list_view_thumbnail_offset');
+			$widthImage = $this->setting('image_width'); 
+			$heightImage = $this->setting('image_height');
+			$canvas = $this->setting('image_canvas'); 
 			
-			ze\file::imageLink($width, $height, $url, $imageId, $widthImage, $heightImage, $canvas, $offset);
+			ze\file::imageLink($width, $height, $url, $imageId, $widthImage, $heightImage, $canvas);
 			return $url;
 		}
 		return false;

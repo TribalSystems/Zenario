@@ -1,82 +1,199 @@
-<% if (m.object.schema && m.object.schema.properties && typeof m.object.data == 'object') { %>
-	<div class="sidepanel_title">
-		<% if (m.object.parent && m.object.parent.schema && m.object.parent.schema.additionalProperties) { %>
-			<% if (!m.object.lastTag) { %>
-				 Documentation:
-			<% } else { %>
-				 "{{m.object.lastTag|escape}}" documentation:
-			<% } %>
-		<% } else { %>
-			<% if (!m.object.tag) { %>
-				 Documentation:
-			<% } else { %>
-				 "{{m.object.tag|escape}}" documentation:
-			<% } %>
-		<% } %>
+<% var aListOfObjectsIsBeingDocumented = false; %>
+
+<div class="sidepanel_header">
+	<div class="sidepanel_desc">
+		Info for the object/property in the line highlighted.
 	</div>
+</div>
+
+<% if (m.displayedPath) { %>
+	<div class="sidepanel_header">
+		<table class="selected_path">
+			<tr>
+				<th>Selected&nbsp;path:&nbsp;</th>
+				
+				<% var selectedPath = (devTools.path? devTools.path + '/' : '') + m.displayedPath; %>
+				
+				<td><code>{{zenario.htmlspecialchars(selectedPath).replace(/\//g, '/<wbr>')}}</code></td>
+			</tr>
+		</table>
+	</div>
+<% } %>
+
+<% if (m.object.schema && m.object.schema.properties && typeof m.object.data == 'object') { %>
+	<% if (m.exact || (m.depthReached && m.depthReached >= m.totalDepth - 1 )) { %>
+		
+		<% if (!m.exact) { %>
+				<% if (m.tag && devTools.internalCMSProperties[m.tag]) { %>
+					<div class="sidepanel_header">
+						<p class="internal_property">
+							<span class="info_icon">ⓘ</span> CMS internal property
+						</p>
+						<p class="internal_property_desc">
+							{{devTools.internalCMSProperties[m.tag].description}}
+						</p>
+					</div>
+				<% } else { %>
+					<div class="sidepanel_header">
+						<p class="not_documented property_not_documented">
+							<% if (m.tag) { %>
+								⚠ The <code>{{m.tag|e}}</code> property
+							<% } else { %>
+								⚠ The selected property
+							<% } %>
+				
+							<% if (m.object.lastTag) { %>
+								for objects under <code>{{m.object.lastTag|escape}}/</code>
+								<% aListOfObjectsIsBeingDocumented = true; %>
+				
+							<% } else if (m.object.tag) { %>
+								for the <code>{{m.object.tag|escape}}</code> object
+							<% } %>
+				
+							is not documented.
+						</p>
+					</div>
+				<% } %>
+			<% } %>
+		
+		<div class="sidepanel_header">
+			<div class="sidepanel_title">
+				<% if (!m.object.tag && !m.object.lastTag) { %>
+					<% switch (devTools.mode) { %>
+						<% case 'zenarioAB': %>
+							<strong>Admin Boxes</strong> use the following properties:
+							<% break; %>
 	
-	<% if (m.object.url) { %>
-		<div class="info">
-			<span><a target="_blank" href="{{m.object.url|escape}}">{{m.object.url.replace('http://', '')|escape}}</a></span>
+						<% case 'zenarioAT': %>
+							The <strong>Admin Toolbar</strong> uses the following properties:
+							<% break; %>
+	
+						<% case 'zenarioO': %>
+							<% if (devTools.orgMap) { %>
+								<strong>Organizer's map</strong> uses the following properties:
+							<% } else { %>
+								Organizer <strong>Panels</strong> use the following properties:
+							<% } %>
+							<% break; %>
+	
+						<% default: %>
+							<strong>Front-End Administration plugins</strong> use the following properties:
+							<% break; %>
+					<% } %>
+				<% } else { %>
+					<% if (m.object.lastTag) { %>
+						Objects under <code>{{m.object.lastTag|escape}}/</code> can have the following properties:
+						<% aListOfObjectsIsBeingDocumented = true; %>
+					<% } else { %>
+						The <code>{{m.object.tag|escape}}</code> object can have the following properties:
+					<% } %>
+				<% } %>
+			</div>
+		</div>
+
+		<table id="properties_table" class="properties_table">
+			<tr>
+				<th>Property</th>
+				<th>Type</th>
+			</tr>
+		
+			<% var prop, props = devTools.ksort(m.object.schema.properties, devTools.underscoresLast); %>
+			<% for (prop in props) { %>
+			
+				<% var mTooltip = {data: m.object.data[prop], isRequired: m.object.requiredProperties[prop], schema: m.object.schema.properties[prop], tag: prop}; %>
+				<% var tooltip = zenarioT.microTemplate('zenario_dev_tools_tooltip', mTooltip); %>
+			
+				<% if (mTooltip.data === undefined) { %>
+					<% if (mTooltip.isRequired) { %>
+						<tr title="{{tooltip|escape}}" class="property undefined_property required">
+							<td class="property_name">
+								<span>
+					<% } else { %>
+						<tr title="{{tooltip|escape}}" class="property undefined_property">
+							<td class="property_name">
+								<span>
+					<% } %>
+				<% } else { %>
+					<% if (mTooltip.isRequired) { %>
+						<tr title="{{tooltip|escape}}" class="property defined_property required">
+							<td class="property_name">
+								<span>
+					<% } else { %>
+						<tr title="{{tooltip|escape}}" class="property defined_property">
+							<td class="property_name">
+								<span>
+					<% } %>
+				<% } %>
+							<!--
+								<input type="text" readonly="readonly" value="{{prop|escape}}"/>
+							-->
+							{{zenario.htmlspecialchars(prop).replace(/_/g, '_<wbr/>')}}
+						</span>
+					</td>
+					<td class="property_desc">
+						<div>
+							<% if (m.object.schema.properties[prop].additionalProperties && m.object.schema.properties[prop].additionalProperties.properties) { %>
+								Array of elements
+						
+							<% } else if (m.object.schema.properties[prop].additionalProperties && m.object.schema.properties[prop].additionalProperties.type) { %>
+								Array of {{m.object.schema.properties[prop].additionalProperties.type|escape}}
+						
+							<% } else if (m.object.schema.properties[prop].enum) { %>
+								<% if (typeof m.object.schema.properties[prop].enum == 'string') { %>
+									enum ({{m.object.schema.properties[prop].enum|escape}})
+								<% } else { %>
+									enum ({{m.object.schema.properties[prop].enum.join(', ')|escape}})
+								<% } %>
+						
+							<% } else { %>
+								{{m.object.schema.properties[prop].type|escape}}
+							<% } %>
+						</div>
+					</td>
+				</tr>
+			<% } %>
+		</table>
+	
+		<% if (m.object.documentedTag) { %>
+			<div class="info">
+				<div class="info_title">
+					<% if (aListOfObjectsIsBeingDocumented) { %>
+						Documentation for objects under <code>{{m.object.lastTag|escape}}/</code>
+					<% } else { %>
+						Documentation for the <code>{{m.object.tag|escape}}</code> object
+					<% } %>
+				</div>
+				<div class="info_text">
+					<% switch (devTools.mode) { %>
+						<% case 'zenarioAB': %>
+							For more details see <code>zenario/<wbr>reference/<wbr>admin_box_schema.yaml</code> or
+							<% break; %>
+		
+						<% case 'zenarioAT': %>
+							For more details see <code>zenario/<wbr>reference/<wbr>admin_toolbar_schema.yaml</code> or
+							<% break; %>
+		
+						<% case 'zenarioO': %>
+							For more details see <code>zenario/<wbr>reference/<wbr>organizer_schema.yaml</code> or
+							<% break; %>
+		
+						<% default: %>
+							For more details see <code>zenario/<wbr>reference/<wbr>admin_toolbar_schema.yaml</code>
+							and <code>zenario/<wbr>reference/<wbr>fea_schema.yaml</code>, or
+							<% break; %>
+					<% } %>
+					<a target="_blank" href="{{m.object.url|escape}}">online documentation</a>.
+				</div>
+				<div class="learn_yaml">
+					<a target="_blank" href="https://learnxinyminutes.com/docs/yaml/">Learn YAML</a>.
+				</div>
+			</div>
+		<% } %>
+	<% } else { %>
+		<div class="sidepanel_header">
+			<p class="not_documented object_not_documented">
+				⚠ The selected object or property is not documented.
+			</p>
 		</div>
 	<% } %>
-
-	<table id="properties_table" class="properties_table">
-		<tr>
-			<th>Property</th>
-			<th>Type</th>
-		</tr>
-		
-		<% for (var prop in m.object.schema.properties) { %>
-			
-			<% var mTooltip = {data: m.object.data[prop], isRequired: m.object.requiredProperties[prop], schema: m.object.schema.properties[prop], tag: prop}; %>
-			<% var tooltip = zenarioT.microTemplate('zenario_dev_tools_tooltip', mTooltip); %>
-			
-			<% if (mTooltip.data === undefined) { %>
-				<% if (mTooltip.isRequired) { %>
-					<tr title="{{tooltip|escape}}" class="property undefined_property required">
-						<td class="property_name">
-							<span>
-				<% } else { %>
-					<tr title="{{tooltip|escape}}" class="property undefined_property">
-						<td class="property_name">
-							<span>
-				<% } %>
-			<% } else { %>
-				<% if (mTooltip.isRequired) { %>
-					<tr title="{{tooltip|escape}}" class="property defined_property required">
-						<td class="property_name">
-							<span>
-				<% } else { %>
-					<tr title="{{tooltip|escape}}" class="property defined_property">
-						<td class="property_name">
-							<span>
-				<% } %>
-			<% } %>
-						<input type="text" readonly="readonly" value="{{prop|escape}}"/>
-					</span>
-				</td>
-				<td class="property_desc">
-					<div>
-						<% if (m.object.schema.properties[prop].additionalProperties && m.object.schema.properties[prop].additionalProperties.properties) { %>
-							Array of elements
-						
-						<% } else if (m.object.schema.properties[prop].additionalProperties && m.object.schema.properties[prop].additionalProperties.type) { %>
-							Array of {{m.object.schema.properties[prop].additionalProperties.type|escape}}
-						
-						<% } else if (m.object.schema.properties[prop].enum) { %>
-							<% if (typeof m.object.schema.properties[prop].enum == 'string') { %>
-								enum ({{m.object.schema.properties[prop].enum|escape}})
-							<% } else { %>
-								enum ({{m.object.schema.properties[prop].enum.join(', ')|escape}})
-							<% } %>
-						
-						<% } else { %>
-							{{m.object.schema.properties[prop].type|escape}}
-						<% } %>
-					</div>
-				</td>
-			</tr>
-		<% } %>
-	</table>
 <% } %>

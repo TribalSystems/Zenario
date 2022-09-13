@@ -87,11 +87,11 @@ body.desktop .Fixed + div {
 
 /* ADMIN RESETS */
 
-	.zenario_adminLoggedIn .Fixed {
+	body.desktop.zenario_adminLoggedIn .Fixed {
 		position:relative;
 	}
 	
-	.zenario_adminLoggedIn .Gridbreak_Top + .Fixed {
+	body.desktop.zenario_adminLoggedIn .Gridbreak_Top + .Fixed {
 		top:0;
 	}
 	

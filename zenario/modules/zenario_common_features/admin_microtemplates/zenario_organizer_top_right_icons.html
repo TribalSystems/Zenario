@@ -10,18 +10,18 @@
 		<% if (zenarioA.siteSettings.site_enabled) { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
 				class="organizer_enabled_disabled site_enabled_development"
-				title="Site enabled and in development mode."
+				title="Site enabled, but in development mode"
 			<% } else { %>
 				class="organizer_enabled_disabled site_enabled"
-				title="Site enabled and in production mode."
+				title="Site enabled"
 			<% } %>
 		<% } else { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
 				class="organizer_enabled_disabled site_disabled"
-				title="Site disabled and in development mode."
+				title="Site disabled and in development mode"
 			<% } else { %>
 				class="organizer_enabled_disabled site_disabled"
-				title="Site disabled."
+				title="Site disabled"
 			<% } %>
 		<% } %>
 	></div>

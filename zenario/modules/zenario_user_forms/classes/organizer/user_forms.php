@@ -198,8 +198,15 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_FORMS');
 		if ($_POST['archive_form'] ?? false) {
-			foreach(explode(',', $ids) as $id) {
+			foreach (explode(',', $ids) as $id) {
 				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['status' => 'archived'], ['id' => $id]);
+
+				//If there are any partial responses to the form ("Save and complete later"),
+				//delete them now.
+				$partialResponses = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id'], ['form_id' => $id]);
+				while ($row = ze\sql::fetchAssoc($partialResponses)) {
+					zenario_user_forms::deleteFormPartialResponse($row['id']);
+				}
 			}
 		} elseif ($_POST['delete_form'] ?? false) {
 			foreach (explode(',', $ids) as $formId) {

@@ -27,8 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-//function smartGroupSQL(&$and, &$tableJoins, $smartGroupId, $list = true, $usersTableAlias = 'u', $customTableAlias = 'ucd')
-
 
 //A little hack - allow an array of rules to be passed in instead of an id,
 //in order to test rules that aren't yet in the database
@@ -50,7 +48,7 @@ if (is_array($smartGroupId)) {
 
 	$rules = \ze\row::getAssocs(
 		'smart_group_rules',
-		['type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'],
+		['type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id', 'timer_template_id', 'activity_band_id', 'not', 'value'],
 		['smart_group_id' => $smartGroupId],
 		'ord'
 	);
@@ -94,10 +92,9 @@ foreach ($rules as $rule) {
 		$andOr = "
 			OR ";
 	}
+	
 	$valid = false;
 	$typeOfCheck = $rule['type_of_check'];
-	
-	
 	
 	switch ($typeOfCheck) {
 		
@@ -138,7 +135,7 @@ foreach ($rules as $rule) {
 							['is_system_field', 'db_column'],
 							['id' => $fieldNId, 'type' => 'group']
 						)) {
-							$and .= ", `". \ze\escape::sql($fieldN['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". \ze\escape::sql($fieldN['db_column']). "`";
+							$and .= ", `". \ze\escape::sql($fieldN['is_system_field'] ? $usersTableAlias : $customTableAlias). "`.`". \ze\escape::sql($fieldN['db_column']). "`";
 						}
 					}
 			
@@ -189,27 +186,27 @@ foreach ($rules as $rule) {
 		//Logic to handle in_a_group  
 		case 'in_a_group':
 		
-		$fieldgroups = \ze\row::getAssocs('custom_dataset_fields', 'db_column', ['type' => 'group']);
+			$fieldgroups = \ze\row::getAssocs('custom_dataset_fields', 'db_column', ['type' => 'group']);
 		
 			if ( sizeof($fieldgroups) > 0 ) {
 				
 				$tableJoins .= "
 					". $leftOrInnerJoin. DB_PREFIX. "users_custom_data AS ucd_". $i. "
 					   ON ucd_". $i. ".user_id = `". \ze\escape::sql($usersTableAlias). "`.id";
-				if($or)
+				if ($or)
 					$and .= " OR ( ";
 				else
 					$and .= " AND ( ";
 				$ctr = 1;
+				
 				foreach ($fieldgroups as $fieldgroup) {
-					if($ctr == sizeof($fieldgroups))
+					if ($ctr == sizeof($fieldgroups))
 						$and .= " ucd_". $i. ".".$fieldgroup." = 1 ";
 					else
 						$and .= " ucd_". $i. ".".$fieldgroup." = 1 OR ";
 					$ctr++;
 				}
 				$and .= " ) ";
-				//$firstAndOr = false;
 				$valid = true;
 
 			}
@@ -217,7 +214,7 @@ foreach ($rules as $rule) {
 		//Logic to handle not_in_a_group  
 		case 'not_in_a_group':
 		
-		$fieldgroups = \ze\row::getAssocs('custom_dataset_fields', 'db_column', ['type' => 'group']);
+			$fieldgroups = \ze\row::getAssocs('custom_dataset_fields', 'db_column', ['type' => 'group']);
 		
 			if ( sizeof($fieldgroups) > 0 ) {
 				
@@ -225,7 +222,7 @@ foreach ($rules as $rule) {
 					". $leftOrInnerJoin. DB_PREFIX. "users_custom_data AS ucd_". $i. "
 					   ON ucd_". $i. ".user_id = `". \ze\escape::sql($usersTableAlias). "`.id";
 
-				if($or)
+				if ($or)
 					$and .= " OR ( ";
 				else
 					$and .= " AND ( ";
@@ -239,9 +236,76 @@ foreach ($rules as $rule) {
 					$notCtr++;
 				}
 				$and .= " ) ";
-				//$firstAndOr = false;
 				$valid = true;
 
+			}
+			break;
+		
+		case 'has_a_current_timer':
+			if ($ZENARIO_USER_TIMERS_PREFIX = ze\module::prefix('zenario_user_timers', $mustBeRunning = true)) {
+				$tableJoins .= "
+					". $leftOrInnerJoin. DB_PREFIX. $ZENARIO_USER_TIMERS_PREFIX. "user_timer_link AS utl_". $i. "
+					   ON utl_". $i. ".target_id = `". \ze\escape::sql($usersTableAlias). "`.id";
+				
+				if ($rule['timer_template_id']) {
+					$tableJoins .= "
+					  AND utl_". $i. ".timer_template_id = ". (int) $rule['timer_template_id'];
+				}
+				
+				$and .= "
+					  AND utl_". $i. ".status = 'active'";
+				
+				$valid = true;
+			}
+			break;
+		
+		case 'has_no_current_timer':
+			if ($ZENARIO_USER_TIMERS_PREFIX = ze\module::prefix('zenario_user_timers', $mustBeRunning = true)) {
+				$tableJoins .= "
+					LEFT JOIN " . DB_PREFIX. $ZENARIO_USER_TIMERS_PREFIX. "user_timer_link AS utl_". $i. "
+					   ON utl_". $i. ".target_id = `". \ze\escape::sql($usersTableAlias). "`.id
+					   AND utl_". $i. ".status NOT IN ('pending', 'active')";
+				
+				if ($rule['timer_template_id']) {
+					$tableJoins .= "
+					  AND utl_". $i. ".timer_template_id = ". (int) $rule['timer_template_id'];
+				}
+				
+				//Catch the case where a user has multiple expired timers of the same template
+				//(e.g. many years of the same membership).
+				//Avoid duplicates.
+				$and .= "
+					  AND `" . \ze\escape::sql($usersTableAlias). "`.id IN (
+						SELECT utl_". $i. "_expired.target_id
+						FROM " . DB_PREFIX. $ZENARIO_USER_TIMERS_PREFIX. "user_timer_link AS utl_". $i. "_expired
+						WHERE utl_". $i. "_expired.status = 'expired'";
+				
+				if ($rule['timer_template_id']) {
+					$and .= "
+						AND utl_". $i. "_expired.timer_template_id = " . (int) $rule['timer_template_id'];
+				}
+
+				$and .= "
+					  )";
+				
+				//Catch the case where a user has one or more expired timers,
+				//and an active timer of the same template (e.g. many years of the same membership and a newly started one).
+				//Ignore such users.
+				$and .= "
+					AND `" . \ze\escape::sql($usersTableAlias). "`.id NOT IN (
+					SELECT utl_". $i. "_active.target_id
+					FROM " . DB_PREFIX. $ZENARIO_USER_TIMERS_PREFIX. "user_timer_link AS utl_". $i. "_active
+					WHERE utl_". $i. "_active.status IN ('active', 'pending')";
+
+				if ($rule['timer_template_id']) {
+					$and .= "
+						AND utl_". $i. "_active.timer_template_id = " . (int) $rule['timer_template_id'];
+				}
+
+				$and .= "
+					  )";
+				
+				$valid = true;
 			}
 			break;
 			
@@ -281,16 +345,16 @@ foreach ($rules as $rule) {
 			break;
 		
 		case 'activity_band':
-			if($ZENARIO_USER_ACTIVITY_BANDS_PREFIX = \ze\module::prefix('zenario_user_activity_bands', $mustBeRunning = true)){
+			if ($ZENARIO_USER_ACTIVITY_BANDS_PREFIX = \ze\module::prefix('zenario_user_activity_bands', $mustBeRunning = true)) {
 				$tableJoins .= "
-				". $leftOrInnerJoin. DB_PREFIX. $ZENARIO_USER_ACTIVITY_BANDS_PREFIX. "user_activity_bands_link AS uabl_". $i. "
-				ON uabl_".$i.".user_id = `". \ze\escape::sql($usersTableAlias). "`.id";				
+					". $leftOrInnerJoin. DB_PREFIX. $ZENARIO_USER_ACTIVITY_BANDS_PREFIX. "user_activity_bands_link AS uabl_". $i. "
+					ON uabl_".$i.".user_id = `". \ze\escape::sql($usersTableAlias). "`.id";				
 				
-				if($rule['not']){
+				if ($rule['not']) {
 					$and .= "
 						  ". $andOr. " uabl_". $i. ".band_id != ".$rule['activity_band_id'];
 					$firstAndOr = false;
-				}else{
+				} else {
 					$and .= "
 						  ". $andOr. " uabl_". $i. ".band_id = ".$rule['activity_band_id'];
 					$firstAndOr = false;

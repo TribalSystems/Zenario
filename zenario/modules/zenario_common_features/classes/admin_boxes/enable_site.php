@@ -33,10 +33,16 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		$box['key']['isHead'] = ZENARIO_IS_HEAD;
+
+		$logosAndBrandingSiteSettingLink = ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//logos_and_branding~.site_settings~tadmin_login~k{"id"%3A"logos_and_branding"}';
+		$linkStart = "<a href='" . $logosAndBrandingSiteSettingLink . "' target='_blank'>";
+		$linkEnd = '</a>';
+		ze\lang::applyMergeFields(
+			$fields['site/site_disabled_note']['note_below'],
+			['link_start' => $linkStart, 'link_end' => $linkEnd]
+		);
 		
-		$fields['site/site_enabled']['pressed'] = (bool) ze::setting('site_enabled');
-		$box['tabs']['site']['fields']['site_disabled_title']['value'] = ze::setting('site_disabled_title');
-		$box['tabs']['site']['fields']['site_disabled_message']['value'] = ze::setting('site_disabled_message');
+		$values['site/site_enabled'] = (bool) ze::setting('site_enabled');
 		
 		$devModeSetting = \ze::setting('site_in_dev_mode');
 		
@@ -47,7 +53,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 				$devModeSetting = 0;
 			} else {
 				
-				$label = ze\admin::phrase('Site is in development mode for the next');
+				$label = ze\admin::phrase('Site is in developer mode for the next');
 				
 				$showSeconds = true;
 				$showMinutes = true;
@@ -84,7 +90,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 			}
 		}
 		
-		$values['site/site_mode'] = $devModeSetting? 'dev' : 'prod';
+		$values['site/enable_dev_mode'] = (bool) $devModeSetting;
 		$values['site/site_in_dev_mode'] = $devModeSetting;
 	}
 
@@ -105,7 +111,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if ($fields['site/site_enabled']['pressed']) {
+		if ($values['site/site_enabled']) {
 		 	$moduleErrors = '';
 			if (ze\dbAdm::checkIfUpdatesAreNeeded($moduleErrors, $andDoUpdates = false)) {
 				$box['tabs']['site']['errors'][] =
@@ -138,14 +144,25 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 				}
 			}
 		
-		} else {
-			if (!$values['site/site_disabled_title']) {
-				$box['tabs']['site']['errors'][] =
-					ze\admin::phrase('Please enter a browser title.');
-			}
-			if (!$values['site/site_disabled_message']) {
-				$box['tabs']['site']['errors'][] =
-					ze\admin::phrase('Please enter a message.');
+		}
+		
+		//Show a confirmation when trying to enable or disable a site
+		unset($box['confirm']);
+		if (empty($box['tabs']['site']['errors'])) {
+			if ($values['site/site_enabled'] && !ze::setting('site_enabled')) {
+				$box['confirm'] = [
+					'show' => true,
+					'message_type' => 'warning',
+					'message' => ze\admin::phrase('You are about to enable this site, and make it visible to site visitors. Are you sure you wish to enable the site?'),
+					'button_message' => ze\admin::phrase('Enable site'),
+				];
+			} elseif (!$values['site/site_enabled'] && ze::setting('site_enabled')) {
+				$box['confirm'] = [
+					'show' => true,
+					'message_type' => 'warning',
+					'message' => ze\admin::phrase('You are about to disable this site, which will make it no longer visible to site visitors. Are you sure you wish to disable the site?'),
+					'button_message' => ze\admin::phrase('Disable site'),
+				];
 			}
 		}
 	}
@@ -154,10 +171,8 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 	
 		if (ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
-			ze\site::setSetting('site_disabled_title', $values['site/site_disabled_title']);
-			ze\site::setSetting('site_disabled_message', $values['site/site_disabled_message']);
 			
-			if ($fields['site/site_enabled']['pressed']) {
+			if ($values['site/site_enabled']) {
 				ze\site::setSetting('site_enabled', 1);
 				$box['key']['id'] = 'site_enabled';
 			} else {
@@ -165,7 +180,7 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 				$box['key']['id'] = 'site_disabled';
 			}
 			
-			if ($values['site/site_mode'] == 'prod') {
+			if (!$values['site/enable_dev_mode']) {
 				$devModeSetting = 0;
 			} else {
 				$devModeSetting = $values['site/site_in_dev_mode'];

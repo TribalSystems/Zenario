@@ -76,8 +76,25 @@ plugin_settings:
                     value: 'Online'
                     visible_if: lib.value('show_online_when_event_is_online')
                 show_address:
-                    label: 'Show address if event has non-database address'
+                    label: 'Show address if event has a physical location or address'
                     type: checkbox
                     plugin_setting:
                         name: show_address
+                    redraw_onchange: true
+                show_at_location_text:
+                    indent: 1
+                    label: 'Show "At location" when event has a physical location or address'
+                    type: checkbox
+                    plugin_setting:
+                        name: show_at_location_text
+                    visible_if: lib.value('show_address')
+                    redraw_onchange: true
+                at_location_text:
+                    indent: 2
+                    label: 'At location text:'
+                    type: text
+                    plugin_setting:
+                        name: at_location_text
+                    value: 'At location'
+                    visible_if: lib.value('show_address') && lib.value('show_at_location_text')
     module_class_name: zenario_ctype_event

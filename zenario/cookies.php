@@ -43,15 +43,35 @@ if (isset($_REQUEST['check_cookies_enabled'])) {
 	exit;
 }
 
-
 ze\cookie::startSession();
 if (!empty($_REQUEST['clear_admin_cookie'])) {
 	ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
 	ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
 	ze\cookie::clear('COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED');
 
-} elseif (!empty($_REQUEST['accept_cookies'])) {
+} elseif (!empty($_REQUEST['accept_cookies']) || !empty($_REQUEST['cookie_accept_all'])) {
+	ze\cookie::clear('cookies_accepted');
 	ze\cookie::setConsent();
+
+} elseif (!empty($_REQUEST['cookie_save_preferences'])) {
+	ze\cookie::clear('cookies_accepted');
+
+	$cookieTypes = [];
+	if (isset($_REQUEST['functionality'])) {
+		$cookieTypes[] = 'functionality';
+	}
+	if (isset($_REQUEST['analytics'])) {
+		$cookieTypes[] = 'analytics';
+	}
+	if (isset($_REQUEST['social_media'])) {
+		$cookieTypes[] = 'social_media';
+	}
+	
+	if (!empty($cookieTypes)) {
+		ze\cookie::setConsent(implode(',', $cookieTypes));
+	} else {
+		ze\cookie::setNoConsent();
+	}
 
 } else {
 	ze\cookie::setNoConsent();

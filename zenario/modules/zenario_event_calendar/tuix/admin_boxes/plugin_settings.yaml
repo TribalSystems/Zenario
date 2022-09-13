@@ -18,6 +18,60 @@ plugin_settings:
                         year_view: Show months of the year
                     value: month_view
                     format_onchange: Yes
+                start_month:
+                    label: 'Start month:'
+                    plugin_setting:
+                        name: start_month
+                    type: select
+                    values:
+                        January:
+                            ord: 1
+                            label: January
+                        February:
+                            ord: 2
+                            label: February
+                        March:
+                            ord: 3
+                            label: March
+                        April:
+                            ord: 4
+                            label: April
+                        May:
+                            ord: 5
+                            label: May
+                        June:
+                            ord: 6
+                            label: June
+                        July:
+                            ord: 7
+                            label: July
+                        August:
+                            ord: 8
+                            label: August
+                        September:
+                            ord: 9
+                            label: September
+                        October:
+                            ord: 10
+                            label: October
+                        November:
+                            ord: 11
+                            label: November
+                        December:
+                            ord: 12
+                            label: December
+                    value: January
+                    indent: 1
+                    visible_if:
+                        lib.valueIs: view_mode, year_view
+                display_year_beside_jan_month_name:
+                    label: 'Display year beside January month name'
+                    plugin_setting:
+                        name: display_year_beside_jan_month_name
+                    type: checkbox
+                    indent: 1
+                    visible_if:
+                        lib.valueIs: view_mode, year_view
                 months_format:
                     label: 'Months format:'
                     plugin_setting:
@@ -29,7 +83,7 @@ plugin_settings:
                     value: months_short_name
                     indent: 1
                 first_day_of_week:
-                    label: 'Month view day 1:'
+                    label: 'Week starts on:'
                     plugin_setting:
                         name: first_day_of_week
                     type: select
@@ -205,10 +259,10 @@ plugin_settings:
                         lib.value: enable_popup
                     validation:
                         required_if_not_hidden: Please select the date format.
-                show_sticky_images:
+                show_featured_image:
                     indent: 1
                     plugin_setting:
-                        name: show_sticky_images
+                        name: show_featured_image
                     label: "Show featured image"
                     type: checkbox
                     value: ""

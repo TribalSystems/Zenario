@@ -3,11 +3,12 @@ zenario_export_content_items:
     key:
         id: ''
         type: ''
+        wasFiltered: false
+        exportDuplicates: false
     title: Export
     hide_tab_bar: Yes
     save_button_message: Export
     cancel_button_message: Cancel
-    max_height: 350
     tabs:
         download:
             label: File

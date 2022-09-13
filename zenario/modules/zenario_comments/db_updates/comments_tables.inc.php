@@ -45,7 +45,7 @@ _sql
 		`signature` varchar(255) NOT NULL default '',
 		`email_upon_pm` tinyint(1) NOT NULL default '0',
 		PRIMARY KEY  (`user_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 
@@ -89,7 +89,7 @@ _sql
 		PRIMARY KEY  (`user_id`, `content_id`, `content_type`, `forum_id`, `thread_id`),
 		INDEX (`forum_id`, `thread_id`),
 		INDEX (`content_id`, `content_type`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 );

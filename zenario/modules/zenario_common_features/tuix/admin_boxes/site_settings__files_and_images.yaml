@@ -32,17 +32,26 @@ site_settings:
                 #        html: '&nbsp;'
 
         image_privacy:
-            label: Image privacy
+            label: Images
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
+                image_privacy:
+                    type: grouping
+                og_image:
+                    type: grouping
+                    snippet:
+                        label: OG (Open Graph) settings
+                        label_class: subheading
                 description:
+                    grouping: image_privacy
                     full_width: true
                     snippet:
                         html: |
                             This tab lets you control whether images on your site appear in search engines.
                 default_image_privacy:
+                    grouping: image_privacy
                     site_setting:
                         name: default_image_privacy
                     label: 'Default image privacy:'
@@ -61,8 +70,33 @@ site_settings:
                             label: Auto
                             note_below: |
                                 Images will have the Auto state when first uploaded, but will be set to Public if on a public content item, or Private if on a private content item. (Shown in the Organizer Images panel with an orange border, but this changes once the image changes to Public or Private.)
+                og_image_settings_description:
+                    grouping: og_image
+                    full_width: true
+                    snippet:
+                        html: |
+                            Zenario generates an OG image for a content item whenever it has an image flagged as the featured image.
+                            The original image my be larger, but Zenario will serve it at the size specified here or smaller. (Manual crop and zoom is not available for this.)
+                og_image_max_width:
+                    grouping: og_image
+                    site_setting:
+                        name: og_image_max_width
+                    label: "Maximum width:"
+                    type: text
+                    value: 1200
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;px'
+                og_image_max_height:
+                    grouping: og_image
+                    site_setting:
+                        name: og_image_max_height
+                    label: "Maximum height:"
+                    type: text
+                    value: 630
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;px'
         image_sizes:
-            label: Image thumbnails
+            label: Thumbnails
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -164,7 +198,7 @@ site_settings:
                     post_field_html: '&nbsp;pixels'
         
         image_resizing:
-            label: Image resizing (advanced)
+            label: Resizing (advanced)
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -261,7 +295,7 @@ site_settings:
                     validation:
                         numeric: 'The value must be an integer between 80 and 100.'
         filesizes:
-            label: File Upload Sizes
+            label: File upload size
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -273,16 +307,15 @@ site_settings:
                 content_max_filesize:
                     site_setting:
                         name: content_max_filesize
-                    label: 'Maximum Content File Size:'
+                    label: 'Zenario maximum file size:'
                     type: text
                     value: 20
                     note_below: >
-                        This allows you to set a maximum allowed uploadable file
-                        size (in bytes) for Pictures, Audio, Video, and other
-                        Content Types.
+                        Zenario's limit for the maximum uploadable file size
+                        for Documents, Pictures, Audio and other content types.
                     validation:
-                        required: Please enter a Maximum Content File Size.
-                        numeric: The Maximum Content File Size must be numeric.
+                        required: Please enter a maximum content file size.
+                        numeric: Must be numeric.
                     decimal_places: ""
                 content_max_filesize_unit:
                     site_setting:
@@ -301,11 +334,11 @@ site_settings:
                     redraw_onchange: true
                     hide_if_empty: true
                 apache_max_filesize:
-                    label: 'Largest Possible Upload Size:'
+                    label: 'Server-wide maximum uploadable file size:'
                     type: text
                     show_as_a_span: true
                     note_below: |
-                        This is the size of the largest file that can be uploaded to your server. Your server administrator can change this by changing the server's Apache Config (it is the lesser of post_max_size and upload_max_filesize as set in the php.ini file).
+                        The size of the largest file that can be uploaded to your server. Your server administrator can change this by changing the server's Apache Config (it is the lesser of upload_max_filesize and post_max_size as set in the php.ini file, which is usually in /etc/php/[version]/apache/php.ini).
                 max_allowed_packet:
                     label: 'MySQL max_packet_size:'
                     type: text
@@ -317,7 +350,7 @@ site_settings:
                                                         Your server administrator can change this by changing the <code>max_allowed_packet</code> setting
                                                         in the server's MySQL configuration.
         file_downloads:
-            label: File Downloads
+            label: File downloads
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -341,6 +374,12 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Document tags may be used when listing multiple hierarchal documents in a folder to determine which documents should be displayed to visitors.
+                            They are for internal administration only and are not visible to regular visitors.
                 enable_document_tags:
                     site_setting:
                         name: enable_document_tags

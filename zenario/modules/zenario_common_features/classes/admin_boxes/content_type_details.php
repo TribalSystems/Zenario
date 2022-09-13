@@ -62,6 +62,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		//Always boolean
 		$values['details/auto_flag_feature_image'] = $details['auto_flag_feature_image'];
 		$values['details/enable_categories'] = $details['enable_categories'];
+		$values['details/enable_css_tab'] = $details['enable_css_tab'];
 		$values['details/allow_pinned_content'] = $details['allow_pinned_content'];
 		$values['details/when_creating_put_title_in_body'] = $details['when_creating_put_title_in_body'];
 		
@@ -101,11 +102,10 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		
 		switch ($box['key']['id']) {
 			case 'html':
-			case 'document':
 			case 'picture':
 			case 'video':
 			case 'audio':
-				//HTML, Document, Picture, Video and Audio fields cannot currently be mandatory
+				//HTML, Picture, Video and Audio fields cannot be made to be mandatory
 				$fields['details/description_field_mandatory']['hidden'] =
 				$fields['details/keywords_field_mandatory']['hidden'] =
 				$fields['details/summary_field_mandatory']['hidden'] =
@@ -198,6 +198,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			//Always boolean
 			$vals['auto_flag_feature_image'] = $values['details/auto_flag_feature_image'];
 			$vals['enable_categories'] = $values['details/enable_categories'];
+			$vals['enable_css_tab'] = $values['details/enable_css_tab'];
 			$vals['allow_pinned_content'] = $values['details/allow_pinned_content'];
 			$vals['when_creating_put_title_in_body'] = $values['details/when_creating_put_title_in_body'];
 			$vals['auto_set_release_date'] = ($values['details/auto_set_release_date'] && !$values['details/release_date_field_mandatory'] && $values['details/release_date_field']);

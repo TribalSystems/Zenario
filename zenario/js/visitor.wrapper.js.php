@@ -29,39 +29,69 @@
 header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
-ze\cache::useBrowserCache('zenario-inc-js-'. LATEST_REVISION_NO);
+$libs = $_GET['libs'] ?? '';
+
+ze\cache::useBrowserCache('zenario-inc-js-'. LATEST_REVISION_NO. '-'. $libs);
 ze\cache::start();
 
 
-//Run pre-load actions
 
+
+//Run pre-load actions
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
 
+$libs = array_flip(explode(',', $libs));
+
 
 ze\cache::incJS('zenario/js/base_definitions');
 
-//Include Modernizr
-ze\cache::incJS('zenario/libs/manually_maintained/mit/modernizr/modernizr');
 
-//Include the underscore library
+//Include Modernizr site-wide in the wrapper if requested.
+//If not requested, it won't be included at all.
+if (isset($libs['m'])) {
+	ze\cache::incJS('zenario/libs/manually_maintained/mit/modernizr/modernizr');
+}
+
+
+//Include the underscore utility library (mandatory, as it's used in the core library)
 ze\cache::incJS('zenario/libs/manually_maintained/mit/underscore/underscore');
 
 //Include all of the standard JavaScript libraries for the CMS
 ze\cache::incJS('zenario/js/visitor');
 ze\cache::incJS('zenario/reference/plugin_base_class');
 
-//Include jQuery modules and some other third-party libraries
+//Include our easing options for jQuery animations
 ze\cache::incJS('zenario/js/easing');
-ze\cache::incJS('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox');
-ze\cache::incJS('zenario/libs/manually_maintained/mit/doubletap-to-go/jquery.doubletaptogo');
-ze\cache::incJS('zenario/libs/manually_maintained/bsd/javascript_md5/md5');
+
+//Include Lazy Load library
 ze\cache::incJS('zenario/libs/yarn/jquery-lazy/jquery.lazy');
 
+//Add a small checksum library. We have a couple of core functions that need to use checksums,
+//and believe it or not JavaScript doesn't have a checksum-generating function built in!
+ze\cache::incJS('zenario/libs/yarn/js-crc/src/crc');
+
+
+//Include doubletaptogo site-wide in the wrapper if requested.
+//If not requested, it will be included separately, and only on pages where a plugin claims to need it.
+if (isset($libs['dt'])) {
+	ze\cache::incJS('zenario/libs/yarn/jquery-doubletaptogo/dist/jquery.dcd.doubletaptogo');
+}
+
+//Include colorbox site-wide in the wrapper if requested.
+//If not requested, it will be included separately, and only on pages where a plugin claims to need it.
+if (isset($libs['cb'])) {
+	ze\cache::incJS('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox');
+}
+
+
+//Write down the path to tinyMCE, for the tinyMCE autoloader to use if needed
 echo '
 zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.min.js";';
 
+
+//Some misc fixes to run when the page has finished loading
 ze\cache::incJS('zenario/js/visitor.ready');
 
 

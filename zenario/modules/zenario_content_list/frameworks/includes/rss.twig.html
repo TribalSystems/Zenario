@@ -4,18 +4,36 @@
 		<atom:link href="{{RSS_Link}}" rel="self" type="application/xml" />
 		<title>{{Title}}</title>
 		<link>{{Link}}</link>
-		<description>{{Description}}</description>
+		{% if Description %}
+			<description>{{Description}}</description>
+		{% endif %}
+		{% if Language %}
+			<language>{{Language}}</language>
+		{% endif %}
 		
 		{% for item in RSS_Item %}
 			<item>
-				<title>{{item.Title}}</title>
-				<description>{{item.Excerpt_Text}}</description>
-				<link>{{item.Full_Link}}</link>
-				<guid>{{item.Full_Link}}</guid>
-				{% if item.Language %}
-					<language>{{item.Language}}</language>
+				{% if Show_item_title %}
+					<title>{{item.Title}}</title>
 				{% endif %}
-				{% if item.Date %}
+
+				{% if Show_item_description %}
+					<description>{{item.Excerpt_Text}}</description>
+				{% endif %}
+
+				{% if Show_item_link %}
+					<link>{{item.Full_Link}}</link>
+				{% endif %}
+
+				{% if Show_item_guid %}
+					<guid>{{item.Full_Link}}</guid>
+				{% endif %}
+
+				{% if Show_item_author %}
+					<author>{{item.Author}}</author>
+				{% endif %}
+
+				{% if Show_item_publication_date %}
 					<pubDate>{{item.Date}}</pubDate>
 				{% endif %}
 			</item>

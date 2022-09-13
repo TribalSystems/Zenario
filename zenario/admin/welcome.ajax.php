@@ -246,12 +246,15 @@ if ($systemRequirementsMet && $installed) {
 		
 			if (!$admin) {
 				$tags['tabs']['new_admin']['errors'][] = ze\admin::phrase('This link is invalid or has expired. Please contact an administrator.');
-				$fields['new_admin/description']['hidden'] = true;
-				$fields['new_admin/password']['hidden'] = true;
-				$fields['new_admin/re_password']['hidden'] = true;
-				$fields['new_admin/save_password_and_login']['hidden'] = true;
+				$fields['new_admin/description']['hidden'] =
+				$fields['new_admin/password']['hidden'] =
+				$fields['new_admin/re_password']['hidden'] =
+				$fields['new_admin/save_password_and_login']['hidden'] =
+				$fields['new_admin/accept_box']['hidden'] =
+				$fields['new_admin/remember_me']['hidden'] = true;
 			} else {
 				ze\lang::applyMergeFields($fields['new_admin/description']['snippet']['html'], $admin);
+				$values['new_admin/username'] = $admin['username'];
 				$loggedIn = ze\welcome::newAdminAJAX($source, $tags, $fields, $values, $changes, $getRequest, $admin['id']);
 		
 				if ($loggedIn) {
@@ -341,7 +344,11 @@ if ($systemRequirementsMet && $installed) {
 				$needToChangePassword = ($task == 'change_password' || ze\row::get('admins', 'password_needs_changing', $_SESSION['admin_userid']));
 			
 				if ($needToChangePassword) {
-					ze\welcome::prepareAdminWelcomeScreen('change_password', $source, $tags, $fields, $values, $changes);			
+					ze\welcome::prepareAdminWelcomeScreen('change_password', $source, $tags, $fields, $values, $changes);
+
+					$adminUsername = ze\row::get('admins', 'username', ['id' => $_SESSION['admin_userid']]);
+					$values['change_password/username'] = $adminUsername;
+					
 					$needToChangePassword = !ze\welcome::changePasswordAJAX($source, $tags, $fields, $values, $changes, $task);
 				}
 			
@@ -349,7 +356,7 @@ if ($systemRequirementsMet && $installed) {
 				if (!$needToChangePassword) {
 					//Allow the Admin to pass the welcome page at this point
 					$_SESSION['admin_logged_in'] = true;
-					unset($_SESSION['last_item']);
+					unset($_SESSION['last_item'], $_SESSION['page_mode'], $_SESSION['page_toolbar']);
 				
 					//Don't show the diagnostics page if someone is performing the site reset,
 					//reload_sk or change password tasks.

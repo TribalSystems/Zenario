@@ -1,0 +1,35 @@
+# This is the list of images to insert into the database when Zenario is reset or installed.
+# Ensure that these are in the right order, as the first one will get id=1, then id 2 etc.
+imagelist:
+    -
+        name: pink_petals.png
+        alt_tag: Pink petals on the ground
+        mime_type: image/png
+    -
+        name: apples-green.jpg
+        alt_tag: Green apples
+        mime_type: image/jpeg
+    -
+        name: apples-red.jpg
+        alt_tag: Red apples
+        mime_type: image/jpeg
+    -
+        name: alliums.jpg
+        alt_tag: Purple alliums
+        mime_type: image/jpeg
+    -
+        name: field.jpg
+        alt_tag: Field of wheat
+        mime_type: image/jpeg
+    -
+        name: flower.jpg
+        alt_tag: Bright red flower
+        mime_type: image/jpeg
+    -
+        name: seashore.jpg
+        alt_tag: Sea shore with yacht in the distance
+        mime_type: image/jpeg
+    -
+        name: wheat.jpg
+        alt_tag: Ears of wheat close up
+        mime_type: image/jpeg

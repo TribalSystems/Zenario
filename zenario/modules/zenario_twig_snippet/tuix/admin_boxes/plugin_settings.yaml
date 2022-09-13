@@ -4,6 +4,7 @@ plugin_settings:
     module_class_name: zenario_twig_snippet
     tabs:
         first_tab:
+            label: 'Twig code'
             fields:
                 html:
                     label: 'Twig code:'
@@ -38,25 +39,6 @@ plugin_settings:
                     language: javascript
                     style: >
                         height: 25em;
-                minify:
-                    type: submit
-                    value: ' ▼ Minify ▼ '
-                    format_onchange: true
-                    side_note: |
-                        Press this button to minify your JavaScript code
-                minified_javascript:
-                    plugin_setting:
-                        name: minified_javascript
-                    label: 'Minified code:'
-                    type: code_editor
-                    value: ""
-                    dont_trim: true
-                    language: javascript
-                    style: >
-                        height: 4em;
-                    note_below: |
-                        If provided, the minified code will be used instead of your JavaScript code
-                        for a smaller page-size.
         caching:
             label: Plugin caching
             fields:

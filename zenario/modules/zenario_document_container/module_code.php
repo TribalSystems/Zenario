@@ -37,6 +37,14 @@ class zenario_document_container extends ze\moduleBaseClass {
 	protected $datasetFields = [];
 	
 	public function init() {
+		//Require the lazy-load library if lazy-loading thumbnails.
+		//Note: due to some bugs when using the "Auto" option for this library, we've removed
+		//the option to select "Auto" for this library, so this line is currently not needed.
+		//if ($this->setting('show_thumbnails')
+		// && $this->setting('lazy_load_images')) {
+		//	ze::requireJsLib('zenario/libs/yarn/jquery-lazy/jquery.lazy.min.js');
+		//}
+		
 		return true;
 	}
 	

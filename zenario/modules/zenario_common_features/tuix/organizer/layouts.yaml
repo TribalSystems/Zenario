@@ -72,8 +72,8 @@ zenario__layouts:
                     format: enum
                     values:
                         active: Available
-                        active_default: Available; default layout for content type
-                        suspended: Archived
+                        active_default: Default layout for content type
+                        suspended: Retired
                     width: large
                 cols:
                     db_column: l.cols
@@ -202,12 +202,6 @@ zenario__layouts:
                         item.status == 'suspended'
                 
             item_buttons:
-                settings:
-                    priv: _PRIV_VIEW_TEMPLATE
-                    hide_in_select_mode: true
-                    label: Edit layout settings
-                    admin_box:
-                        path: zenario_layout
                 edit_grid:
                     priv: _PRIV_EDIT_TEMPLATE
                     hide_in_select_mode: true
@@ -224,6 +218,12 @@ zenario__layouts:
                         escKey: false
                         transition: none
                         css_class: zenario_grid_maker
+                settings:
+                    priv: _PRIV_VIEW_TEMPLATE
+                    hide_in_select_mode: true
+                    label: Edit layout settings
+                    admin_box:
+                        path: zenario_layout
                 view_dropdown:
                     label: View
                     multiple_select: true
@@ -260,7 +260,7 @@ zenario__layouts:
                 view_slots:
                     parent: view_dropdown
                     hide_in_select_mode: true
-                    label: List of slots
+                    label: Slots and plugins on this layout
                     link:
                         path: zenario__content/panels/slots
                         refiner: layout
@@ -269,7 +269,7 @@ zenario__layouts:
                 head_slot_layers:
                     parent: view_dropdown
                     priv: _PRIV_MANAGE_ITEM_SLOT
-                    label: HTML in head of page
+                    label: Common HTML in <head>
                     admin_box:
                         path: zenario_head_foot_slot
                         key:
@@ -279,7 +279,7 @@ zenario__layouts:
                 foot_slot_layers:
                     parent: view_dropdown
                     priv: _PRIV_MANAGE_ITEM_SLOT
-                    label: HTML at foot of page
+                    label: Common HTML in foot
                     admin_box:
                         path: zenario_head_foot_slot
                         key:
@@ -303,13 +303,13 @@ zenario__layouts:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_TEMPLATE
                     hide_in_select_mode: true
-                    label: Restore
+                    label: Restore for use
                     multiple_select: true
-                    multiple_select_tooltip: Restore selected Layouts
+                    multiple_select_tooltip: Restore selected layouts for use
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to restore the layout "[[code]] [[name]]"?'
-                            multiple_select_message: Are you sure you wish to restore the selected layouts?
+                            message: 'Are you sure you wish to restore the layout "[[code]] [[name]]" so it is again available for use?'
+                            multiple_select_message: Are you sure you wish to restore the selected layouts so they are again available for use?
                             button_message: Restore
                             cancel_button_message: Cancel
                             message_type: warning

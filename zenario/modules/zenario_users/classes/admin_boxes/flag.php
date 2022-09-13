@@ -296,6 +296,9 @@ class zenario_users__admin_boxes__flag extends ze\moduleBaseClass {
 						ze\row::update('users', [$dbColumn => $box['key']['remove'] ? 0 : 1], $userId);
 					}
 					
+					$cols = [];
+					ze\admin::setUserLastUpdated($cols, false);
+					ze\userAdm::save($cols, $userId);
 				}
 			}
 		}

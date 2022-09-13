@@ -1,33 +1,11 @@
-{% if Show_Sticky_Image %}
+{% if Show_Featured_Image %}
 	<div class="sticky_image">
 		{% if LINKS_IN_INCLUDES %}
 			<a {{item.Link}}{{item.Target_Blank}}>
 		{% endif %}
 		
-		{% if item.Sticky_Image %}
-			<picture>
-				{% set i = 0 %}
-
-				{# WebP source: 1 source, responsive to retina setting. #}
-				{% if item.Sticky_Image_WebP %}
-					{% set i = i + 1 %}
-					<source id="{{containerId}}_source_{{i}}" srcset="{{item.Sticky_Image_WebP|e}}" type="image/webp">
-				{% endif %}
-
-				{# Non-WebP retina source #}
-				{% if item.Sticky_Image_Retina_Srcset %}
-					{% set i = i + 1 %}
-					<source id="{{containerId}}_source_{{i}}" srcset="{{item.Sticky_Image_Retina_Srcset|e}}" type="{{item.Sticky_Image_Mime_Type|e}}">
-				{% endif %}
-
-				{# Non-WebP fallback #}
-				<img class="{{item.Sticky_Image_Css_Class|e}}"
-					alt="{{item.Sticky_Image_Alt|e}}"
-					src="{{item.Sticky_Image_Src|e}}"
-					type="{{item.Sticky_Image_Mime_Type|e}}"
-					style="width: {{item.Sticky_Image_Width|e}}px; height: {{item.Sticky_Image_Height|e}}px;"
-				/>
-			</picture>
+		{% if item.Featured_Image_HTML %}
+			{{item.Featured_Image_HTML}}
 		{% endif %}
 
 		{% if LINKS_IN_INCLUDES %}

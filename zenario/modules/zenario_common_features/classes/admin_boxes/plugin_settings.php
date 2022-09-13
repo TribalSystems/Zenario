@@ -196,8 +196,31 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			unset($box['identifier']);
 		
 		} elseif ($box['key']['eggId']) {
-			$box['identifier']['label'] = ze\admin::phrase('Nested plugin');
-			$box['identifier']['value'] = ' ';
+			//Show different identifier for nested plugins, depending on whether they're in a nest
+			//or a slideshow, and whether the nested plugin is a banner.
+			switch ($instance['class_name']) {
+				case 'zenario_slideshow_simple':
+					if ($module['class_name'] == 'zenario_banner') {
+						
+						$imageId = ze\plugin::setting('image', $box['key']['instanceId'], $box['key']['eggId']);
+						
+						if ($imageId) {
+							if ($details = ze\row::get('files', ['id', 'short_checksum'], $imageId)) {
+								$box['identifier']['value'] = ze\admin::phrase('Image ID [[id]], checksum "[[short_checksum]]"', $details);
+								$box['identifier']['label'] = '';
+								break;
+							}
+						}
+					}
+				case 'zenario_slideshow':
+					$box['identifier']['label'] = ze\admin::phrase('Plugin in slideshow');
+					$box['identifier']['value'] = ' ';
+					break;
+				default:
+					$box['identifier']['label'] = ze\admin::phrase('Nested plugin');
+					$box['identifier']['value'] = ' ';
+					break;
+			}
 			
 		} else {
 			$box['identifier']['value'] = ze\plugin::codeName($box['key']['instanceId'], $box['key']['moduleClassName']);
@@ -298,7 +321,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 								}
 			
 								$tab['edit_mode']['enabled'] = true;
-								$tab['edit_mode']['always_on'] = true;
 								$tab['edit_mode']['enable_revert'] = true;
 							}
 						
@@ -411,14 +433,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$tags = ze\tuix::readFile(CMS_ROOT . $path);
 				if ($tags && isset($tags['description']) && $tags['description']) {
 					$moduleDescription = $tags['description'];
-			
-				//check inheritance 
-				} else if ($tags && isset($tags['inheritance']['inherit_description_from_module']) && $tags['inheritance']['inherit_description_from_module']) {
-					$path = ze\moduleAdm::descriptionFilePath($tags['inheritance']['inherit_description_from_module']);
-					$tags = ze\tuix::readFile(CMS_ROOT . $path);
-					if ($tags && isset($tags['description']) && $tags['description']) {
-						$moduleDescription = $tags['description'];
-					}
 				}
 				$fields['last_tab/module_description']['snippet']['html'] = 
 					'<div class="module_description">' . $moduleDescription . '</div>';
@@ -464,7 +478,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				//Load the values from the database
 				if ($box['key']['eggId']) {
 					$sql = "
-						SELECT name_or_title, framework, css_class
+						SELECT name_or_slide_label, framework, css_class
 						FROM ". DB_PREFIX. "nested_plugins
 						WHERE id = ". (int) $box['key']['eggId'];
 	
@@ -699,6 +713,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			
 			
 				if (!empty($values['framework_tab/framework'])) {
+					$fields['framework_tab/custom_framework_info']['hidden'] = true;
 
 					$module = ze\module::details($box['key']['moduleId']);
 
@@ -718,6 +733,16 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							$fields['framework_tab/framework_source']['language'] = $frameworkFile;
 							$fields['framework_tab/framework_path']['hidden'] = false;
 							$fields['framework_tab/framework_path']['snippet']['label'] = $frameworkFile;
+						}
+
+						//If this is a custom framework, show a warning icon and explanation note...
+						$frameworkParts = explode('/', $frameworkFile);
+						if ($frameworkParts[0] == 'zenario_custom') {
+							$fields['framework_tab/framework_path']['row_class'] = 'zenario_fbWarning';
+							$fields['framework_tab/custom_framework_info']['hidden'] = false;
+						//... or just an info icon if this is a core framework.
+						} else {
+							$fields['framework_tab/framework_path']['row_class'] = 'zenario_fbInfo zenario_fbInfo_small';
 						}
 
 					} else {
@@ -1075,7 +1100,13 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 													$fileIds = [];
 													foreach (ze\ray::explodeAndTrim($value['value']) as $file) {
 														if ($location = ze\file::getPathOfUploadInCacheDir($file)) {
-															$fileIds[] = ze\file::addToDatabase('image', $location);
+															$usage = $field['upload']['usage'] ?? 'image';
+
+															if (!empty($field['upload']['location']) && $field['upload']['location'] == 'docstore') {
+																$fileIds[] = ze\file::addToDocstoreDir($usage, $location);
+															} else {
+																$fileIds[] = ze\file::addToDatabase($usage, $location);
+															}
 														} else {
 															$fileIds[] = $file;
 														}
@@ -1260,7 +1291,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					ze\row::set('plugin_settings', $nestedvalue, $nestedpk);
 				}
 				if($box['key']['eggId']) {	
-					ze\row::update('nested_plugins', ['name_or_title' => mb_substr($eggName, 0, 250, 'UTF-8')], $box['key']['eggId']);
+					ze\row::update('nested_plugins', ['name_or_slide_label' => mb_substr($eggName, 0, 250, 'UTF-8')], $box['key']['eggId']);
 				}
 
 				if ($instance['content_id']) {

@@ -1,7 +1,7 @@
 {# Required to use Twig functions #}
 {% import _self as self %}
 
-{% macro populateResults(Type) %}
+{% macro populateResults(Type, Show_scores) %}
 	{% for item in Type %}
 	<a href="{{item.url}}">
 		<div class="search_result {% if item.privacy != 'public' %} private {% endif %}">
@@ -84,12 +84,12 @@
 				{% endif %}
 
                 <input
-					id="{{Container_Id}}_search_input_box"	
+					id="{{Container_Id}}_search_input_box"
 					type="text"
 					class="search_input_box"
-					name="searchString" 
+					name="searchString"
 
-                	{% if Placeholder %}
+					{% if Placeholder %}
 						placeholder="{{Placeholder_Phrase|trans}}"
 					{% endif %}
 
@@ -160,7 +160,7 @@
 					{% endif %}
 
 					{% if Html_Page_Search_Results %}
-						{{self.populateResults(Html_Page_Search_Results)}}
+						{{self.populateResults(Html_Page_Search_Results, Show_scores)}}
 					{% endif %}
 
 					{% if Html_Page_Search_No_Results %}
@@ -185,7 +185,7 @@
 					{% endif %}
 					
 					{% if Document_Search_Results %}
-						{{self.populateResults(Document_Search_Results)}}
+						{{self.populateResults(Document_Search_Results, Show_scores)}}
 					{% endif %}
 
 					{% if Document_Search_No_Results %}
@@ -210,7 +210,7 @@
 					{% endif %}
 
 					{% if News_Search_Results %}
-						{{self.populateResults(News_Search_Results)}}
+						{{self.populateResults(News_Search_Results, Show_scores)}}
 					{% endif %}
 
 					{% if News_Search_No_Results %}
@@ -221,6 +221,35 @@
 
 					{% if Mode == 'search_entry_box' and (News_Search_Results or News_Search_No_Results) %}
 						</div>
+					{% endif %}
+
+
+
+					{% if Mode == 'search_entry_box' and (Blog_Search_Results or Blog_Search_No_Results) %}
+						{% set Column = Column + 1 %}
+						<div id="{{Container_Id}}_blog_results" class="column_{{Column}} column  column_blog">
+					{% endif %}
+
+					{% if Mode == 'search_entry_box' and Blog_Column_Heading_Text and not Blog_Search_No_Results %}
+						<span class="column_title">{{Blog_Column_Heading_Text|e}}</span>
+					{% endif %}
+
+					{% if Blog_Search_Results %}
+						{{self.populateResults(Blog_Search_Results, Show_scores)}}
+					{% endif %}
+
+					{% if Blog_Search_No_Results %}
+						<div class="search_no_results">
+							<p>{{Blog_No_Results_Text|e}}</p>
+						</div>
+					{% endif %}
+
+					{% if Mode == 'search_entry_box' and (Blog_Search_Results or Blog_Search_No_Results) %}
+						</div>
+					{% endif %}
+
+					{% if Mode == 'search_entry_box' and All_results_without_limit > this.setting('maximum_results_number') %}
+						<p class="search_column_more">{{Press_enter_to_see_all_results_phrase|e}}</p>
 					{% endif %}
 				</div>
 			{% endif %}

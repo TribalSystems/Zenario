@@ -146,9 +146,9 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 			}
 		} elseif ($_POST['copy_to_image_library'] ?? false) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
-				if ($file = \ze\row::get('files', ['filename', 'location', 'path'], $id)) {
-					$location = \ze\file::docstorePath($file['path']);
-					\ze\file::addToDatabase('image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false);
+				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
+					$location = ze\file::docstorePath($file['path']);
+					ze\file::addToDatabase('image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, false, false, false, false, $file['image_credit']);
 				}
 			}
 		} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {

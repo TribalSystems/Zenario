@@ -32,42 +32,40 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		//For the most part we can use the Banner Module's admin box methods for our plugin settings,
-        //however we will need a few tweaks as our plugin settings differ slightly.
-        
-        parent::fillAdminBox($path, $settingGroup, $box, $fields, $values);
+		$fields['first_tab/image']['side_note'] =
+			ze\admin::phrase('If a JPG or PNG image is selected, Zenario will create and display a WebP version of the image. Fallback logic will be used for browsers which do not support WebP.');
+		
 		$box['css_class'] .= ' zenario_fab_multiple_image_container';
-		$box['tabs']['image_and_link']['fields']['canvas']['label'] = ze\admin::phrase('Thumbnail image canvas:');
 
-		if (!$values['image_and_link/canvas']) {
-			$box['tabs']['image_and_link']['fields']['canvas']['value'] = 'fixed_width_and_height';
+		if (!$values['first_tab/canvas']) {
+			$box['tabs']['first_tab']['fields']['canvas']['value'] = 'fixed_width_and_height';
 		}
 
-		if (!$values['image_and_link/width']) {
-			$box['tabs']['image_and_link']['fields']['width']['value'] = 375;
+		if (!$values['first_tab/width']) {
+			$box['tabs']['first_tab']['fields']['width']['value'] = 375;
 		}
 
-		if (!$values['image_and_link/height']) {
-			$box['tabs']['image_and_link']['fields']['height']['value'] = 250;
+		if (!$values['first_tab/height']) {
+			$box['tabs']['first_tab']['fields']['height']['value'] = 250;
 		}
 
-		if (!$values['image_and_link/enlarge_canvas']) {
-			$box['tabs']['image_and_link']['fields']['enlarge_canvas']['value'] = 'fixed_width_and_height';
+		if (!$values['links/enlarge_canvas']) {
+			$box['tabs']['links']['fields']['enlarge_canvas']['value'] = 'fixed_width_and_height';
 		}
 
-		if (!$values['image_and_link/enlarge_width']) {
-			$box['tabs']['image_and_link']['fields']['enlarge_width']['value'] = 900;
+		if (!$values['links/enlarge_width']) {
+			$box['tabs']['links']['fields']['enlarge_width']['value'] = 900;
 		}
 
-		if (!$values['image_and_link/enlarge_height']) {
-			$box['tabs']['image_and_link']['fields']['enlarge_height']['value'] = 600;
+		if (!$values['links/enlarge_height']) {
+			$box['tabs']['links']['fields']['enlarge_height']['value'] = 600;
 		}
 
 		$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tzip~k{"id"%3A"external_programs"}';
 		$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 		$linkEnd = '</a>';
 
-		$fields['image_and_link/zip_archive_name']['note_below'] = ze\admin::phrase(
+		$fields['links/zip_archive_name']['note_below'] = ze\admin::phrase(
 			"Files up to a limit of [[max_unpacked_size]] MB will be made available to visitor, value set in [[link_start]]site settings[[link_end]]. Where total of file sizes exceeds this, multiple volumes will be offered.",
 			[
 				'link_start' => $linkStart,
@@ -75,17 +73,47 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 				'max_unpacked_size' => ze::setting('max_unpacked_size')
 			]
 		);
+
+		//Check that docstore exists and is writable
+		$docstoreWarning = '';
+		$dir = ze::setting('docstore_dir');
+		if ($dir) {
+			if (!is_dir($dir . '/')) {
+				$docstoreWarning = 'Warning: docstore folder does not exist. Saving is disabled. Check the [[site_settings_link]].';
+			} elseif (!is_writable($dir)) {
+				$docstoreWarning = 'Warning: docstore folder is not writable. Saving is disabled. Check the [[site_settings_link]].';
+			}
+		} else {
+			$docstoreWarning = 'Warning: docstore path not set. Saving is disabled. Check the [[site_settings_link]].';
+		}
+
+		if ($docstoreWarning) {
+			$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//files_and_images~.site_settings~tdocstore_dir~k{\"id\"%3A\"files_and_images\"}' target='_blank'>site settings</a>";
+			$box['tabs']['first_tab']['notices']['docstore_warning']['message'] = ze\admin::phrase($docstoreWarning, ['site_settings_link' => $siteSettingsLink]);
+			$box['tabs']['first_tab']['notices']['docstore_warning']['show'] = true;
+
+			$fields['first_tab/image']['disabled'] = true;
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
+
+				$retinaSideNote = "If the source image is large enough,
+                            the resized image will be output at twice its displayed width &amp; height
+                            to appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.";
+				
+				$cID = $cType = $pictureCID = $pictureCType = $imageId = false;
 				
 				//For every picked image on the Images tab, we need to make a copy of the template fields.
 				$ord = 0;
 				$valuesInDB = false;
 				$enlargeImageOptionPicked = false;
-				$imageIds = ze\ray::explodeAndTrim($values['image_and_link/image']);
+				$imageIds = ze\ray::explodeAndTrim($values['first_tab/image']);
 				foreach ($imageIds as $imageId) {
 					if (!isset($box['tabs']['links']['fields']['image_'. $imageId])) {
 						//Copy the template files, replacing znz with the id of the image
@@ -173,91 +201,29 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 					}
 				}
 				
-				//Try to use the Banner plugin's formatAdminBox() method for some things
-				$fields['image_and_link/image_source']['hidden'] = true;
-				$values['image_and_link/link_type'] = $enlargeImageOptionPicked? '_ENLARGE_IMAGE' : '';
-				parent::formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+				$values['first_tab/link_type'] = $enlargeImageOptionPicked? '_ENLARGE_IMAGE' : '';
 				
-				//This next line is a work-around for a bug.
-				//The multiple image container always uses images, and doesn't use anything
-				//that's not an image. We always want to show the options for the image canvas.
-				//The formatAdminBox() from the banner isn't quite designed for showing options
-				//for multiple images, it assumes they'll be just one image, so sometimes we
-				//get a glitch in the above function call where it hides the settings for image canvas.
-				//The line below just overrides that if it happens, and makes sure that they are shown.
-				$this->showHideImageOptions($fields, $values, 'image_and_link', $hidden = false);
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden = false);
 				
-				//Tweak/remove some of the banner plugin's options
-				//(Note that these aren't done in our TUIX file because they would be
-				// overridden in zenario_banner::formatAdminBox(),
-				// so we need to override them here!)
-				foreach ($box['tabs']['image_and_link']['fields'] as $fieldName => &$field) {
-					
-					//Ignore core fields here
-					if (isset($field['class_name']) && $field['class_name'] == 'zenario_common_features') {
-						continue;
-					}
-					
-					switch ($fieldName) {
-						//Always show the image, canvas and zip download options...
-						case 'image':
-						case 'canvas':
-						case 'lazy_load':
-						case 'show_caption_on_image':
-						case 'show_caption_on_enlarged_image':
-						case 'show_link_to_download_original':
-						case 'show_image_uploaded_date':
-						case 'zip_archive_enabled':
-							$field['hidden'] = false;
-							break;
-						
-						//...use the logic from the Banner plugin for some fields...
-						case 'width':
-						case 'height':
-						case 'offset':
-						case 'retina':
-						case 'enlarge_canvas':
-						case 'enlarge_width':
-						case 'enlarge_height':
-							break;
-						
-						//...follow the visibility settings...
-						case 'show_file_size':
-						case 'zip_archive_name':
-						case 'show_caption_above_thumbnail':
-							break;
-						
-						//...and always hide anything else.
-						default:
-							$field['hidden'] = true;
-							unset($field['plugin_setting']);
-							continue 2;
-					}
-					
-					//The multiple image container plugin uses one level less of indents than the banner plugin
-					//When we first open the FAB, reduce any indent by 1
-					if (isset($field['indent']) && ($_REQUEST['_fill'] ?? false)) {
-						$field['indent'] -= 1;
-					}
+				$fields['links/enlarge_canvas']['side_note'] = ze\admin::phrase('This only has effect when you select "Enlarge image in a floating box" for an image.');
+
+				$hidden = $values['first_tab/link_type'] != '_ENLARGE_IMAGE';
+				$this->showHideImageOptions($fields, $values, 'links', $hidden, 'enlarge_');
+				if ($values['links/enlarge_canvas'] != "unlimited") {
+					$fields['links/enlarge_canvas']['side_note'] = $retinaSideNote;
+				} else {
+					$fields['links/enlarge_canvas']['side_note'] = "";
 				}
 				
-				$fields['image_and_link/enlarge_canvas']['side_note'] = ze\admin::phrase('This only has effect when you select "Enlarge image in a floating box" for an image.');
-				
-				$fields['first_tab/text']['hidden'] =
-				$fields['first_tab/more_link_text']['hidden'] = true;
-				unset($fields['first_tab/text']['plugin_setting']);
-				unset($fields['first_tab/more_link_text']['plugin_setting']);
-				
 				//Make sure the "Captions, links, enlarging" tab is never blank.
-				$box['tabs']['links']['fields']['no_captions']['hidden'] = !empty($values['image_and_link/image']);
-				
+				$box['tabs']['links']['fields']['no_captions']['hidden'] = !empty($values['first_tab/image']);
 				
 				break;
 		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$imageIds = ze\ray::explodeAndTrim($values['image_and_link/image']);
+		$imageIds = ze\ray::explodeAndTrim($values['first_tab/image']);
 		foreach ($imageIds as $imageId) {
 			if (!empty($values['links/link_type_'. $imageId])) {
 				switch ($values['links/link_type_'. $imageId]) {
@@ -266,12 +232,14 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 							$fields['links/hyperlink_target_'. $imageId]['error'] = true;
 							$box['tabs']['links']['errors']['no_content_item'] = ze\admin::phrase('Please select a content item');
 						}
+
 						if ($values['links/link_to_anchor_'. $imageId]) {
 							if (!$values['links/hyperlink_anchor_'. $imageId]) {
 								$fields['links/hyperlink_anchor_'. $imageId]['error'] = true;
 								$box['tabs']['links']['errors']['no_anchor_name'] = ze\admin::phrase('Please enter an anchor name');
 							}
 						}
+
 						break;
 					
 					case '_EXTERNAL_URL':
@@ -279,6 +247,7 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 							$fields['links/url_'. $imageId]['error'] = true;
 							$box['tabs']['links']['errors']['no_url'] = ze\admin::phrase('Please enter a URL');
 						}
+
 						break;
 				}
 			}
@@ -293,11 +262,11 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 		if ($path == 'plugin_settings') {
 			
 			//Make sure all images selected are stored in the docstore, and have the "usage" column value 'mic'.
-			if ($values['image_and_link/image']) {
+			if ($values['first_tab/image']) {
 				$sql = '
 					SELECT id, filename
 					FROM ' . DB_PREFIX . 'files
-					WHERE id IN (' . ze\escape::in($values['image_and_link/image'], 'numeric') . ')
+					WHERE id IN (' . ze\escape::in($values['first_tab/image'], 'numeric') . ')
 					AND location = "db"';
 				
 				$result = ze\sql::select($sql);

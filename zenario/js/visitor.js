@@ -58,7 +58,12 @@ zenario.lib(function(
 		di,
 		docClasses = {},
 		docClassesSplit = document.body.className.split(' '),
-		zenarioCSSJSVersionNumber;
+		zenarioCSSJSVersionNumber,
+		canSetAllCookies,
+		canSetNecessaryCookies,
+		canSetFunctionalCookies,
+		canSetAnalyticCookies,
+		canSetSocialCookies;
 	
 	for (di in docClassesSplit) {
 		docClasses[docClassesSplit[di]] = true;
@@ -1379,6 +1384,21 @@ zenario.applyMergeFields = function(text, mrg, getMergeField) {
 	}
 	
 	return trans;
+};
+
+zenario.applyMergeFieldsN = function(text, pluralText, n, mrg, getMergeField) {
+	mrg = mrg || {};
+	
+	if (defined(pluralText) && (1*n) !== 1) {
+		
+		if (!defined(mrg.count)) {
+			mrg.count = n;
+		}
+		
+		text = pluralText;
+	}
+	
+	return zenario.applyMergeFields(text, mrg, getMergeField);
 };
 
 
@@ -2966,7 +2986,7 @@ zenario.microTemplate = function(template, data, filter, microTemplates, i, preM
 
 	} else {
 		//Custom/one-off templates
-		var checksum = 'microtemplate_' + hex_md5(template);
+		var checksum = 'microtemplate_' + crc32(template);
 		
 		if (!defined(microTemplates[checksum])) {
 			microTemplates[checksum] = template;
@@ -3213,11 +3233,13 @@ zenario.setChildrenToTheSameHeight = function(path) {
 };
 
 //Add jQuery elements automatically by class name
-zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
+zenario.addJQueryElements = function(path, adminFacing, beingEdited, firstLoad) {
 	
 	if (!path || !defined(path)) {
 		path = '';
 	}
+	
+	var noWebPSupport = $('body').hasClass('no_webp');
 	
 	//If the "Show menu structure in friendly URLs" setting is set, watch out for any links, e.g.:
 		//<a href="#top">
@@ -3226,32 +3248,72 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited) {
 	//Note: this can break some modules that depend on links like above remaining unedited, e.g. the mmenu
 	//jquery library used in zenario_menu_responsive_push_pull. To work around this such links with the 
 	//with a class starting with "mm-" will be ignored by the code below.
-	if (!beingEdited && zenario.slashesInURL) {
-		$(path + 'a[href^="#"]').not('[class^="mm-"]').each(function(i, el) {
+	
+	//Another note: there is a copy of this function in visitor.js
+	if (!firstLoad && !beingEdited && zenario.slashesInURL) {
+		$(path + ('a[href^="#"]:not([class^="mm-"])')).each(function(i, el) {
 			el.href = location.pathname + location.search + el.href.replace(URLBasePath, '');
 		});
 	}
 	
 	zenario.setChildrenToTheSameHeight(path);
 	
-	//Initiate the jQuery plugin for lazy-loading images
-	$(path + 'img.lazy').Lazy();
+	if ($.Lazy) {
+		//Some fallback logic for Lazy loading images on browsers with no WebP support
+		if (noWebPSupport) {
+			$(path + 'img.lazyWebP').each(function(i, el) {
+				var $img = $(el),
+					src = $img.data('no-webp-src'),
+					srcset = $img.data('no-webp-srcset'),
+					type = $img.data('no-webp-type');
+			
+				if (src) {
+					$img.data('src', src)
+						.attr('data-src', src);
+				}
+				if (srcset) {
+					$img.data('srcset', srcset)
+						.attr('data-srcset', srcset);
+				}
+				if (type) {
+					$img.attr('type', type);
+				}
+			});
+		}
+	
+		//Initiate the jQuery plugin for lazy-loading images
+		$(path + 'img.lazy').Lazy();
+	}
 	
 	//Fancybox/Lightbox replacement
-	$(path + "a[rel^='colorbox'], a[rel^='lightbox']").colorbox({
-		title: function() { return $(this).attr('data-box-title'); },
-		className: function() { return $(this).attr('data-box-className'); },
-		maxWidth: '100%',
-		maxHeight: '100%'
-	});
+	if ($.colorbox) {
+		$(path + "a[rel^='colorbox'], a[rel^='lightbox']").colorbox({
+			href: function() {
+			
+				//Allow support for WebP images
+				var href = $(this).attr('href'),
+					webp = $(this).attr('data-webp-href');
+			
+				if (!noWebPSupport && webp) {
+					return webp;
+				}
+			
+				return href;
+			},
+			title: function() { return $(this).attr('data-box-title'); },
+			className: function() { return $(this).attr('data-box-className'); },
+			maxWidth: '100%',
+			maxHeight: '100%'
+		});
 	
-	$(path + "a[rel^='colorbox_no_arrows']").colorbox({
-		title: function() { return $(this).attr('data-box-title'); },
-		className: function() { return $(this).attr('data-box-className'); },
-		maxWidth: '100%',
-		maxHeight: '100%',
-		rel: false
-	});
+		$(path + "a[rel^='colorbox_no_arrows']").colorbox({
+			title: function() { return $(this).attr('data-box-title'); },
+			className: function() { return $(this).attr('data-box-className'); },
+			maxWidth: '100%',
+			maxHeight: '100%',
+			rel: false
+		});
+	}
 	
 	if (zenario.browserIsIE(9)) {
 		$(path + 'input[placeholder]').placeholder();
@@ -3837,7 +3899,7 @@ zenario.sClear = function(session) {
 		storage = window.localStorage;
 	}
 	
-	if (!zenario.canSetCookie || !storage) {
+	if (!zenario.canSetCookie('functionality') || !storage) {
 		delete zenario.ls[type];
 		zenario.ls[type] = {};
 	} else {
@@ -3855,7 +3917,7 @@ zenario.sSetItem = function(session, name, data, isObject, retry) {
 		storage = window.localStorage;
 	}
 	
-	if (!zenario.canSetCookie || !storage) {
+	if (!zenario.canSetCookie('functionality') || !storage) {
 		zenario.ls[type][name] = data;
 	
 	} else {
@@ -3885,7 +3947,7 @@ zenario.sGetItem = function(session, name, isObject) {
 		storage = window.localStorage;
 	}
 	
-	if (!zenario.canSetCookie || !storage) {
+	if (!zenario.canSetCookie('functionality') || !storage) {
 		return zenario.ls[type][name];
 	
 	} else {
@@ -3919,7 +3981,11 @@ zenario.init = function(
 	symbolsInPassword,
 	
 	indexDotPHP,
-	canSetCookie,
+	canSetAllCookiesInput,
+	canSetNecessaryCookiesInput,
+	canSetFunctionalCookiesInput,
+	canSetAnalyticCookiesInput,
+	canSetSocialCookiesInput,
 	
 	equivId,
 	cID,
@@ -3949,7 +4015,11 @@ zenario.init = function(
 	}
 	
 	zenario.indexDotPHP = indexDotPHP;
-	zenario.canSetCookie = canSetCookie;
+	canSetAllCookies = canSetAllCookiesInput;
+	canSetNecessaryCookies = canSetNecessaryCookiesInput;
+	canSetFunctionalCookies = canSetFunctionalCookiesInput;
+	canSetAnalyticCookies = canSetAnalyticCookiesInput;
+	canSetSocialCookies = canSetSocialCookiesInput;
 
 	zenario.equivId = equivId || undefined;
 	zenario.cID = cID || undefined;
@@ -3983,6 +4053,39 @@ zenario.init = function(
 	//Enable the resize handler
 	//(This was defined in body.js, but not immediately enabled.)
 	$(window).resize(zenario.resize);
+};
+
+zenario.canSetCookie = function(type) {
+	
+	if (!type) {
+		return !!canSetAllCookies;
+	}
+	
+	switch (type) {
+		case 'necessary':
+			return !!canSetNecessaryCookies;
+		case 'functionality':
+			return !!canSetFunctionalCookies;
+		case 'analytics':
+			return !!canSetAnalyticCookies;
+		case 'social_media':
+			return !!canSetSocialCookies;
+	}
+};
+
+//Open the cookie consent box
+zenario.manageCookies = function() {
+	
+	var url = 'zenario/cookie_message.php?type=popup_only';
+	
+	//If the visitor previously accepted cookies or made choices, try to load their choices
+	if (canSetNecessaryCookies) {
+		url += '&funOn=' + 1*canSetFunctionalCookies
+			+ '&anOn=' + 1*canSetAnalyticCookies
+			+ '&socialOn=' + 1*canSetSocialCookies;
+	}
+	
+	$.getScript(url);
 };
 
 

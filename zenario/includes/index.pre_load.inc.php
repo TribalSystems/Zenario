@@ -35,7 +35,7 @@ function zenarioPageCacheDir(&$requests, $type = 'index') {
 	return
 		$type. '-'. substr(preg_replace('/[^\w_]+/', '-', $text), 1, 33).
 		ze::hash64($text. ($_SERVER['HTTP_HOST'] ?? ''), 16). '-'.
-		(empty($_COOKIE['cookies_accepted'])? (empty($_SESSION['cookies_rejected'])? '' : 'r') : 'a');
+		(empty($_COOKIE['cookies_accepted'])? (empty($_SESSION['unnecessary_cookies_rejected'])? '' : 'r') : 'a');
 }
 
 
@@ -70,10 +70,29 @@ function zenarioPageCacheLogStats($stats) {
 }
 
 
-//Don't allow page caching if an Admin is logged in
-//Also don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set,
-//as they're probably about to be automatically logged in
-if (!isset($_SESSION['admin_logged_into_site'])
+//Check cookie acceptence.
+//Caching supports the simple options; i.e. undecided (""), accepted ("a") and rejected ("r").
+//If someone accepts some but not others, we don't support caching like this and should turn caching off.
+$simpleCookieOptions = true;
+$cookiesAccepted = $_COOKIE['cookies_accepted'] ?? '';
+if ($cookiesAccepted && $cookiesAccepted != '1') {
+	$cookiesAccepted = array_flip(explode(',', $cookiesAccepted));
+	
+	$numCookieOptions =
+		(int) isset($cookiesAccepted['functionality'])
+	 +	(int) isset($cookiesAccepted['analytics'])
+	 +	(int) isset($cookiesAccepted['social_media']);
+	
+	$simpleCookieOptions = $numCookieOptions == 3;
+}
+
+
+//A couple more checks for whether caching should be on or off.
+//Don't allow page caching if an Admin is logged in.
+//Don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set,
+//as they're probably about to be automatically logged in.
+if ($simpleCookieOptions
+ && !isset($_SESSION['admin_logged_into_site'])
  && !(empty($_SESSION['extranetUserID']) && isset($_COOKIE['LOG_ME_IN_COOKIE']))) {
 	
 	//Work out what cache-flags to use:

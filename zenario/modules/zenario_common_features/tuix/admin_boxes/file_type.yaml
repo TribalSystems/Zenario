@@ -12,7 +12,6 @@ zenario_file_type:
             label: Extension
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 type:
                     label: 'Extension:'

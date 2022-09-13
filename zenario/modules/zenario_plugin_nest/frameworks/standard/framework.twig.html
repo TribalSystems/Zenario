@@ -1,3 +1,36 @@
+{% set nest_type = this.setting('nest_type') %}
+
+{% if nest_type == 'buttons' %}
+	{% set showButtons = true %}
+	{% set showTabs = false %}
+	{% set showTabNames = false %}
+
+{% elseif nest_type == 'indicator' %}
+	{% set showButtons = false %}
+	{% set showTabs = true %}
+	{% set showTabNames = false %}
+
+{% elseif nest_type == 'indicator_and_buttons' %}
+	{% set showButtons = true %}
+	{% set showTabs = true %}
+	{% set showTabNames = false %}
+
+{% elseif nest_type == 'tabs' %}
+	{% set showButtons = false %}
+	{% set showTabs = true %}
+	{% set showTabNames = true %}
+
+{% elseif nest_type == 'tabs_and_buttons' %}
+	{% set showButtons = true %}
+	{% set showTabs = true %}
+	{% set showTabNames = true %}
+
+{% else %}
+	{% set showButtons = false %}
+	{% set showTabs = false %}
+	{% set showTabNames = false %}
+{% endif %}
+
 <div class="nest_wrap">
 	{% if this.setting('show_heading') %}
 		<div class="nest_title">
@@ -10,15 +43,17 @@
 	{% endif %}
 	
 	{% if Tabs %}
-		{% if this.setting('show_tabs') %}
-			<div class="nest_tabs">
+		{% if showTabs %}
+			<div class="nest_tabs {% if nest_type == 'indicator' or nest_type == 'indicator_and_buttons' %} indicators {% endif %}">
 				{% for Tab in Tabs %}
-					{% if Tab.Tab_Link or Tab.Tab_Name %}
+					{% if Tab.Tab_Link or Tab.Tab_Name or not showTabNames %}
 						<ul>
 							<li class="{{Tab.Class|e}}">
-								<div class="left_end"></div>
+								{% if showTabNames %}
 									<a {{Tab.Tab_Link}}>{{Tab.Tab_Name}}</a>
-								<div class="right_end"></div>
+								{% else %}
+									<a {{Tab.Tab_Link}}></a>
+								{% endif %}
 							</li>
 						</ul>
 					{% endif %}
@@ -106,7 +141,7 @@
 		</div>
 	{% endif %}
 	
-	{% if this.setting('show_next_prev_buttons') %}
+	{% if showButtons %}
 		<a {{Prev_Link}} class="prev{{Prev_Disabled}}">
 			<div>
 				<span>{{this.phrase('&lt; Prev')}}</span>

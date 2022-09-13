@@ -27,8 +27,12 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-class zenario_multiple_image_container extends zenario_banner {
+class zenario_multiple_image_container extends ze\moduleBaseClass {
 	
+	protected $mergeFields = [];
+	
+	protected $empty = false;
+	protected $request = '';
 	protected $zipArchiveName;
 	
 	public function init() {
@@ -41,41 +45,33 @@ class zenario_multiple_image_container extends zenario_banner {
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
 		
 		$allIds = [];
-		$width = $height = $url = $widthFullSize = $heightFullSize = $urlFullSize = false;
+		
 		foreach (ze\ray::explodeAndTrim($this->setting('image'), true) as $imageId) {
 			if (($imageId = (int) trim($imageId))
-			 && ($image = ze\row::get('files', ['id', 'alt_tag', 'title', 'floating_box_title', 'size', 'created_datetime'], $imageId))
-			 && ((ze\file::imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))))) {
-				
-				if (!isset($this->mergeFields['Images'])) {
-					$this->mergeFields['Images'] = [];
-				}
+			 && ($image = ze\row::get('files', [
+			 	'id', 'alt_tag', 'title', 'floating_box_title', 'image_credit',
+			 	'size', 'created_datetime'
+			 ], $imageId))) {
 				
 				$imageMF = [
-					'Alt' => $this->phrase($image['alt_tag']),
-					'Src' => $url,
-					'Title' => $this->phrase($image['title']),
-					'Width' => $width,
-					'Height' => $height,
-					'Popout' => false];
+					'Popout' => false
+				];
 				
-				if ($this->setting('link_type_'. $imageId) == '_ENLARGE_IMAGE'
-				 && (ze\file::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas')))) {
-					
-					$imageMF['Floating_Box'] = [
-						'Src' => $urlFullSize,
-						'Width' => $widthFullSize,
-						'Height' => $heightFullSize,
-						'Title' => $this->phrase($image['floating_box_title'])];
-				} else {
-					
-					$cID = $cType = false;
-					$this->setupLink($imageMF, $cID, $cType, $useTranslation = true, 'link_type_'. $imageId, 'hyperlink_target_'. $imageId, 'target_blank_'. $imageId, 'url_'. $imageId, $imageId);
+				$cssRules = [];
+				$imageMF['Image_HTML'] = ze\file::imageHTML(
+					$cssRules, $preferInlineStypes = true,
+					$imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('retina'), $this->setting('webp'),
+					$image['alt_tag'], $htmlID = '', $cssClass = '', $styles = '', 'title="'. htmlspecialchars($this->phrase($image['title'])). '"',
+					$showAsBackgroundImage = false, $this->setting('lazy_load')
+				);
+				
+				if ($this->setting('show_image_credit_on_thumbnail') && !empty($image['image_credit'])) {
+					$imageMF['Image_Credit'] = true;
+					$imageMF['Image_Credit_Text'] = $image['image_credit'];
 				}
 				
-				
-				if ($text = $this->setting('image_title_'. $imageId)) {
-					$imageMF['Text'] = $text;
+				if ($caption = (string) $this->setting('image_title_'. $imageId)) {
+					$imageMF['Caption'] = $caption;
 				}
 				
 				if ($this->setting('show_link_to_download_original')) {
@@ -90,31 +86,85 @@ class zenario_multiple_image_container extends zenario_banner {
 					$imageMF['Uploaded_Date'] = ze\date::format($image['created_datetime'], '_MEDIUM');
 				}
 				
+				
+				if ($this->setting('link_type_'. $imageId) == '_ENLARGE_IMAGE') {
+					
+					$width = $height = $url = $webPURL = $isRetina = $mimeType = false;
+					if (ze\file::imageAndWebPLink($width, $height, $url, $this->setting('enlarge_webp'), $webPURL, false, $isRetina, $mimeType, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas'))) {
+						
+						ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+						
+						$imageMF['Enlarge_Image'] = true;
+						$imageMF['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box" ';
+					
+						if ($webPURL) {
+							$imageMF['Image_Link_Href'] .= ' data-webp-href="'. htmlspecialchars($webPURL). '"';
+						}
+						
+						if ($this->setting('show_image_credit_on_enlarged_image') && !empty($image['image_credit'])) {
+							$icText = $this->phrase('Credit: [[image_credit]]', $image);
+							
+							if (empty($caption)) {
+								$cbCaption = htmlspecialchars($icText);
+							} else {
+								$cbCaption = htmlspecialchars($caption). ' ('. htmlspecialchars($icText). ')';
+							}
+						} else {
+							$cbCaption = '';
+							if (empty($caption)) {
+								$cbCaption = '';
+							} else {
+								$cbCaption = htmlspecialchars($caption);
+							}
+						}
+						
+						if (!empty($imageMF['Uploaded_Date'])) {
+							$cbCaption .= '<span class="uploaded_date">'. htmlspecialchars($imageMF['Uploaded_Date']). '</span>';
+						}
+					
+						if (!empty($imageMF['File_Link'])) {
+							$cbCaption .= '<span class="download_link">';
+								$cbCaption .= '<a href="'. htmlspecialchars($imageMF['File_Link']). '" download>';
+									$cbCaption .= htmlspecialchars($this->phrase('Download original'));
+									
+									if (!empty($imageMF['File_Size'])) {
+										$cbCaption .= ' ('. htmlspecialchars($imageMF['File_Size']). ')';
+									}
+								$cbCaption .= '</a>';
+							$cbCaption .= '</span>';
+						}
+						
+						if (empty($cbCaption)) {
+							$imageMF['Image_Link_Href'] .= ' data-box-className="multiple_image_container caption_hidden"';
+						} else {
+							$imageMF['Image_Link_Href'] .= ' data-box-className="multiple_image_container"';
+							$imageMF['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($cbCaption). '"';
+						}
+					}
+				
+				} else {
+					$cID = $cType = false;
+					$this->setupLink($imageMF, $cID, $cType, $useTranslation = true, 'link_type_'. $imageId, 'hyperlink_target_'. $imageId, 'target_blank_'. $imageId, 'url_'. $imageId, $imageId);
+				}
+				
+				
+				if (!isset($this->mergeFields['Images'])) {
+					$this->mergeFields['Images'] = [];
+				}
 				$this->mergeFields['Images'][] = $imageMF;
 
 				$allIds[] = $imageId;
 			}
 		}
 		
-		$this->mergeFields['Text'] = $this->setting('text');
-		$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
+		$this->mergeFields['Title'] = $this->setting('title');
 		$this->mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h2';
 		
 		if (!$this->isVersionControlled && $this->setting('translate_text')) {
-			if ($this->mergeFields['Text']) {
-				$this->replacePhraseCodesInString($this->mergeFields['Text']);
-			}
 			if ($this->mergeFields['Title']) {
 				$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
 			}
 		}
-		
-		$this->mergeFields['Show_caption_on_image'] = $this->setting('show_caption_on_image');
-		$this->mergeFields['Show_caption_above_thumbnail'] = $this->setting('show_caption_above_thumbnail');
-		$this->mergeFields['Show_caption_on_enlarged_image'] = $this->setting('show_caption_on_enlarged_image');
-		$this->mergeFields['Show_link_to_download_original'] = $this->setting('show_link_to_download_original');
-		$this->mergeFields['Show_file_size'] = $this->setting('show_file_size');
-		$this->mergeFields['Show_image_uploaded_date'] = $this->setting('show_image_uploaded_date');
 		
 		if ($this->setting('zip_archive_enabled')) {
 			if (($this->zipArchiveName = $this->setting('zip_archive_name')) == ''){
@@ -139,7 +189,6 @@ class zenario_multiple_image_container extends zenario_banner {
 		//Don't show empty Banners
 		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty
 		if (empty($this->mergeFields['Images'])
-		 && empty($this->mergeFields['Text'])
 		 && empty($this->mergeFields['Title'])) {
 			$this->empty = true;
 			return false;
@@ -395,5 +444,184 @@ class zenario_multiple_image_container extends zenario_banner {
 	
 	function getZipArchiveName() {
 		return $this->zipArchiveName;
+	}
+
+	protected function setupLink(&$mergeFields, &$cID, &$cType, $useTranslation = true, $link_type = 'link_type', $hyperlink_target = 'hyperlink_target', $target_blank = 'target_blank', $url = false, $imageId='') {
+		
+		$mergeFields['Target_Blank'] = '';
+		$link = $downloadFile = $cID = $cType = false;
+		$linkExists = false;
+		$linkTo = $this->setting($link_type);
+		
+		//Check to see if an item is set in the hyperlink_target setting 
+		if ($linkTo == '_CONTENT_ITEM'
+		 && ($linkExists = $this->getCIDAndCTypeFromSetting($cID, $cType, $hyperlink_target, $useTranslation))) {
+			
+			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
+			
+			if ($downloadFile) {
+				$this->request = 'download=1';
+			}
+			
+			if (!$this->isVersionControlled && $useTranslation) {
+				$link = ze\link::toItemInVisitorsLanguage($cID, $cType, $fullPath = false, $this->request);
+			} else {
+				$link = ze\link::toItem($cID, $cType, $fullPath = false, $this->request);
+			}
+
+			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
+			    $link .= '#' . $anchor;
+			}
+			if ($this->setting('link_to_anchor_'. $imageId) && ($anchor = $this->setting('hyperlink_anchor_'. $imageId))) {
+			    $link .= '#' . $anchor;
+			}
+			//Use the Theme Section for a Masthead with a link and set the link
+			$mergeFields['Image_Link_Href'] =
+				'href="'. htmlspecialchars($link). '"';
+			
+			if ($downloadFile) {
+				$mergeFields['Target_Blank'] = ' onclick="'. htmlspecialchars(ze\file::trackDownload($link)). '"';
+			}
+			
+			
+			$this->allowCaching(
+				$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$this->clearCacheBy(
+				$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			
+			//Check the Privacy settings on this banner
+			if (!ze\priv::check()) {
+				switch ($this->setting('hide_private_item')) {
+					case '_LOGGED_IN':
+						if (empty($_SESSION['extranetUserID'])) {
+							return false;
+						}
+						break;
+					
+					case '_LOGGED_OUT':
+						if (!empty($_SESSION['extranetUserID'])) {
+							return false;
+						}
+						break;
+					
+					case '_PRIVATE':
+						if (!ze\content::checkPerm($cID, $cType)) {
+							return false;
+						}
+						break;
+					
+					default:
+						$this->allowCaching(
+							$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+				}
+			}
+		
+		} else
+		if ($linkTo == '_DOCUMENT'
+		 && ($documentId = $this->setting('document_id'))
+		 && ($linkExists = (bool) $link = ze\file::getDocumentFrontEndLink($documentId))) {
+			
+			$document = ze\row::get('documents', ['filename', 'privacy'], ['id' => $documentId]);
+			$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => ze::$equivId]);
+
+			//Always show public documents,
+			//Don't show private documents on public content items.
+			if ($document['privacy'] == 'public' || ($document['privacy'] == 'private' && $contentItemPrivacy != 'public' && $contentItemPrivacy != 'logged_out')) {
+				//Use the Theme Section for a Masthead with a link and set the link
+				$mergeFields['Image_Link_Href'] =
+					'href="'. htmlspecialchars($link). '"';
+		
+				$mergeFields['Target_Blank'] = ' onclick="'. htmlspecialchars(ze\file::trackDownload($link)). '"';
+		
+				$downloadFile = true;
+				
+				//Only allow caching for public documents.
+				if ($document['privacy'] == 'public') {
+					$this->allowCaching(
+						$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+					$this->clearCacheBy(
+						$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+				}
+			} else {
+				if (ze\admin::id()) {
+					$mergeFields['privacy_warning'] = true;
+					$mergeFields['filename'] = $document['filename'];
+					$mergeFields['privacy'] = $document['privacy'];
+				}
+			}
+			
+		} else {
+			$this->allowCaching(
+				$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$this->clearCacheBy(
+				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			
+			// If the content item this banner was linking to has been removed, update setting to no-link
+			if ($linkTo == '_CONTENT_ITEM' && !$linkExists) {
+				
+				if (!ze\content::getCIDAndCTypeFromTagId($cID, $cType, $this->setting($hyperlink_target))
+				 || !(($equivId = ze\content::equivId($cID, $cType))
+				   && ze\row::exists('content_items', ['equiv_id' => $equivId, 'type' => $cType, 'status' => ['!1' => 'trashed', '!2' => 'deleted']]))) {
+					
+					//Don't update the settings if this was just a preview!
+					if (empty($_POST['overrideSettings'])) {
+						$this->setSetting($link_type, '_NO_LINK', true);
+						$this->setSetting($hyperlink_target, '', true);
+						$this->setSetting($target_blank, '', true);
+					}
+				}
+			
+			//If a document that this banner was linking to has been removed, update the settingas not no-link as well.
+			} elseif ($linkTo == '_DOCUMENT' && !$linkExists) {
+				
+				if (ze::isAdmin()) {
+					if ($document = ze\row::get('documents', ['filename', 'privacy'], ['id' => $documentId])) {
+						
+						if ($document['privacy'] == 'offline') {
+							$mergeFields['privacy_warning'] = true;
+							$mergeFields['filename'] = $document['filename'];
+							$mergeFields['privacy'] = $document['privacy'];
+						}
+					
+					} else {
+						//Don't update the settings if this was just a preview!
+						if (empty($_POST['overrideSettings'])) {
+							$this->setSetting($link_type, '_NO_LINK', true);
+							$this->setSetting('document_id', '', true);
+						}
+					}
+				}
+			
+			} elseif ($linkTo == '_EXTERNAL_URL') {
+				if (!$url) {
+					$url = 'url';
+				}
+				
+				if ($link = $this->setting($url)) {
+					$mergeFields['Image_Link_Href'] =
+						'href="'. htmlspecialchars($link). '"';
+				}
+			
+			}  elseif ($linkTo == '_EMAIL') {
+				$url = 'email_address';
+				if ($link = $this->setting($url)) {
+					$mergeFields['Image_Link_Href'] =
+						'href="'. htmlspecialchars($link). '"';
+				}
+			}
+		}
+		
+		if ($link && ($openIn = $this->setting($target_blank))) {
+			
+			$mergeFields['Target_Blank'] .= ' target="_blank"';
+			
+			if (!$downloadFile && $openIn == 2) {
+				ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+				
+				$mergeFields['Target_Blank'] .= ' onclick="if (window.$) { $.colorbox({href: \''. ze\escape::js($link). '\', iframe: true, width: \'95%\', height: \'95%\'}); return false; }"';
+			}
+		}
+		
+		return true;
 	}
 }

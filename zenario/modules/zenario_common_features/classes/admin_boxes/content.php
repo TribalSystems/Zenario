@@ -31,6 +31,41 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
+		//Experimental feature that lets an admin edit multiple content items by
+		//selecting multiple in Organizer, but then editing them one at a time.
+		//If there are multiple ids in the id, enable openNextMode.
+		if (!empty($box['key']['id'])
+		 && false !== strpos($box['key']['id'], ',')) {
+			$box['key']['openNextMode'] = true;
+		}
+		
+		//When we are using openNextMode, put the first id we're editing $box['key']['id']
+		//and any remaining ids into $box['key']['nextIds'].
+		if ($box['key']['openNextMode']) {
+			$ids = ze\ray::explodeAndTrim($box['key']['id']);
+			$box['key']['id'] = array_shift($ids);
+			
+			if (!empty($ids)) {
+				$box['key']['nextIds'] = implode(',', $ids);
+			}
+			
+			//Clear some imcompatible features to avoid bugs
+			$box['key']['cID'] =
+			$box['key']['cType'] =
+			$box['key']['cVersion'] =
+			$box['key']['from_cID'] =
+			$box['key']['from_cType'] =
+			$box['key']['target_cType'] =
+			$box['key']['source_cID'] =
+			$box['key']['source_cVersion'] =
+			$box['key']['translate'] =
+			$box['key']['equivId'] =
+			$box['key']['duplicate'] =
+			$box['key']['duplicate_from_menu'] = '';
+		}
+		
+		
+		
 		//Try to set an example URL format, for use in the SEO preview box
 		$sql = "
 			SELECT ci.id, ci.type, ci.equiv_id, ci.alias, ci.language_id
@@ -145,6 +180,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$box['key']['source_cID'] = $_REQUEST['cID'] ?? false;
 				$box['key']['cType'] = $_REQUEST['cType'] ?? false;
 				$box['key']['cID'] = '';
+			} else {
+				$numEnabledLanguages = ze\lang::count();
+				if ($numEnabledLanguages == 1) {
+					$box['key']['target_language_id'] = ze::$defaultLang;
+				}
 			}
 
 			if (isset($fields['meta_data/release_date'])) {
@@ -199,14 +239,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 
 		//If creating a new Content Item from the Content Items (and missing translations) in Language Panel,
-		//or the Content Items in the Language X Panel, don't allow the language to be changed
+		//or the Content Items in the language X Panel, don't allow the language to be changed
 		if (($_GET['refinerName'] ?? false) == 'language'
 		 || (isset($_GET['refiner__language_equivs']) && ($_GET['refiner__language'] ?? false))) {
 			$box['key']['target_language_id'] = $_GET['refiner__language'] ?? false;
 		}
 		
 		
-		//Only allow the language to be changed when duplicating or translating
+		//Only allow the language to be changed when duplicating or translating.
+		//Also only allow if there is more than 1 language enabled on the site.
 		$lockLanguageId = false;
 		if ($box['key']['target_language_id'] || $box['key']['duplicate'] || $box['key']['translate']) {
 			$lockLanguageId = true;
@@ -282,6 +323,61 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$allowPinning = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $box['key']['cType']]);
 		$fields['meta_data/pinned']['hidden'] = !$allowPinning;
 
+		//Pinning
+		if ($allowPinning) {
+			$scheduledTaskManagerIsRunning = ze\module::inc('zenario_scheduled_task_manager');
+			$masterSwitchIsOn = $scheduledTaskManagerIsRunning && zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false);
+			$cronTabConfiguredCorrectly = $scheduledTaskManagerIsRunning && zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true);
+			$jobUnpinContentIsEnabled = $scheduledTaskManagerIsRunning && zenario_scheduled_task_manager::checkScheduledTaskRunning('jobUnpinContent');
+			//Scheduled Task Manager status
+			if ($scheduledTaskManagerIsRunning) {
+				if (!$masterSwitchIsOn || !$cronTabConfiguredCorrectly || !$jobUnpinContentIsEnabled) {
+					$fields['meta_data/pinned_duration']['values']['fixed_duration']['disabled'] =
+					$fields['meta_data/pinned_duration']['values']['fixed_date']['disabled'] =
+					$fields['meta_data/unpin_date']['disabled'] =
+					$fields['meta_data/pinned_fixed_duration_value']['disabled'] =
+					$fields['meta_data/pinned_fixed_duration_unit']['disabled'] = true;
+				}
+			} else {
+				//If STM is not running, then hide the timed unpinning options.
+				//Please note: there is additional code below for existing content items
+				//which checks if there already is a value selected despite STM not running.
+				$fields['meta_data/pinned_duration']['values']['fixed_duration']['hidden'] =
+				$fields['meta_data/pinned_duration']['values']['fixed_date']['hidden'] =
+				$fields['meta_data/unpin_date']['hidden'] =
+				$fields['meta_data/pinned_fixed_duration_value']['hidden'] =
+				$fields['meta_data/pinned_fixed_duration_unit']['hidden'] = true;
+			}
+
+			//Disable timed unpinning if needed
+			if (!$scheduledTaskManagerIsRunning) {
+				$fields['meta_data/pinned_duration']['values']['fixed_date']['side_note'] =
+				$fields['meta_data/pinned_duration']['values']['fixed_duration']['side_note'] = ze\admin::phrase(
+					'Scheduled unpinning is not available. The Scheduled Task Manager is not installed.'
+				);
+			} elseif (!$masterSwitchIsOn) {
+				$fields['meta_data/pinned_duration']['values']['fixed_date']['side_note'] =
+				$fields['meta_data/pinned_duration']['values']['fixed_duration']['side_note'] = ze\admin::phrase(
+					'Scheduled unpinning is not available. The Scheduled Task Manager is enabled, but the master switch is Off.'
+				);
+			} elseif (!$cronTabConfiguredCorrectly) {
+				$fields['meta_data/pinned_duration']['values']['fixed_date']['side_note'] =
+				$fields['meta_data/pinned_duration']['values']['fixed_duration']['side_note'] = ze\admin::phrase(
+					'Scheduled unpinning is not available. The Scheduled Task Manager is installed and the master switch is On, but the crontab is not set up correctly.'
+				);
+			} elseif (!$jobUnpinContentIsEnabled) {
+				$fields['meta_data/pinned_duration']['values']['fixed_date']['side_note'] =
+				$fields['meta_data/pinned_duration']['values']['fixed_duration']['side_note'] = ze\admin::phrase(
+					'Scheduled unpinning is not available. The Scheduled Task Manager is set up correctly, but the scheduled unpinning task (jobUnpinContent) is not enabled.'
+				);
+			}
+
+			if (!$scheduledTaskManagerIsRunning || !$masterSwitchIsOn || !$cronTabConfiguredCorrectly || !$jobUnpinContentIsEnabled) {
+				$fields['meta_data/pinned_duration']['values']['fixed_date']['disabled'] =
+				$fields['meta_data/pinned_duration']['values']['fixed_duration']['disabled'] = true;
+			}
+		}
+
 		if ($content) {
 			//On the language selector, disable languages for which translations already exist,
 			//and mark the currently selected language.
@@ -350,22 +446,26 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						
 						$className = ze\module::className($slot['module_id']);
 						
-						if ($className == 'zenario_slideshow_simple') {
+						switch ($className) {
+							case 'zenario_plugin_nest':
+								$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this nest - ');
+								$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same nest');
+								break;
+								
+							case 'zenario_slideshow':
+							case 'zenario_slideshow_simple':
+								$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this slideshow - ');
+								$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same slideshow');
+								break;
 							
-							$fields['plugins/action'. $suffix]['empty_value'] = "- Select what to do with this slideshow -";
-							$fields['plugins/action'. $suffix]['values']['original']['label'] = "Use same slideshow";
-							
-						} elseif ($className == 'zenario_plugin_nest') {
-							$fields['plugins/action'. $suffix]['empty_value'] = "- Select what to do with this nest -";
-							$fields['plugins/action'. $suffix]['values']['original']['label'] = "Use same nest";
-							
-						} else {
-							$fields['plugins/action'. $suffix]['empty_value'] = "- Select what to do with this plugin -";
-							$fields['plugins/action'. $suffix]['values']['original']['label'] = "Use same plugin";
-							
+							default:
+								$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this plugin - ');
+								$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same plugin');
+								break;
 						}
-						$fields['plugins/action'. $suffix]['values']['duplicate']['label'] = "Make a copy";
-						$fields['plugins/action'. $suffix]['values']['empty']['label'] = "Leave the slot empty";
+						
+						$fields['plugins/action'. $suffix]['values']['duplicate']['label'] = ze\admin::phrase('Make a copy');
+						$fields['plugins/action'. $suffix]['values']['empty']['label'] = ze\admin::phrase('Leave the slot empty');
 						
 						$fields['plugins/action'. $suffix]['values']['original']['ord'] = 1;
 						$fields['plugins/action'. $suffix]['values']['duplicate']['ord'] = 1.1;
@@ -466,6 +566,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['file/s3_file_id'] = $version['s3_file_id'];
 				$values['file/s3_file_name'] = $version['s3_filename'];
 				
+				if ($box['key']['duplicate'] || $box['key']['translate']) {
+					$values['meta_data/menu_text'] = $values['meta_data/title'];
+				}
+				
 				//If a file has already been selected, don't rely on Zenario's standard function for
 				//automatically looking up the label, as the internal filename might have been changed
 				//and be different to the one used here. Specifically use this filename.
@@ -499,6 +603,45 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 
 				$values['meta_data/pinned'] = $version['pinned'];
+				$values['meta_data/pinned_duration'] = $version['pinned_duration'];
+				$values['meta_data/unpin_date'] = $version['unpin_date'];
+				$values['meta_data/pinned_fixed_duration_value'] = $version['pinned_fixed_duration_value'];
+				$values['meta_data/pinned_fixed_duration_unit'] = $version['pinned_fixed_duration_unit'];
+
+				if ($allowPinning) {
+					if ($values['meta_data/pinned'] && ze::in($values['meta_data/pinned_duration'], 'fixed_date', 'fixed_duration')) {
+						if (!$scheduledTaskManagerIsRunning) {
+							$fields['meta_data/pinned_error_scheduled_task_manager_not_running']['hidden'] = false;
+						} elseif (!$masterSwitchIsOn) {
+							$fields['meta_data/pinned_error_scheduled_task_master_switch_is_off']['hidden'] = false;
+						} elseif (!$cronTabConfiguredCorrectly) {
+							$fields['meta_data/pinned_error_scheduled_task_master_not_set_up_correctly']['hidden'] = false;
+						} elseif (!$jobUnpinContentIsEnabled) {
+							$fields['meta_data/pinned_error_scheduled_task_master_job_not_running']['hidden'] = false;
+						}
+
+						if (!$masterSwitchIsOn || !$cronTabConfiguredCorrectly || !$jobUnpinContentIsEnabled) {
+							$fields['meta_data/pinned_duration']['values']['fixed_duration']['hidden'] =
+							$fields['meta_data/pinned_duration']['values']['fixed_date']['hidden'] =
+							$fields['meta_data/unpin_date']['hidden'] =
+							$fields['meta_data/pinned_fixed_duration_value']['hidden'] =
+							$fields['meta_data/pinned_fixed_duration_unit']['hidden'] = false;
+						}
+
+						$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
+						$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
+						$linkEnd = "</a>";
+						$errorFields = [
+							'pinned_error_scheduled_task_manager_not_running',
+							'pinned_error_scheduled_task_master_switch_is_off',
+							'pinned_error_scheduled_task_master_not_set_up_correctly',
+							'pinned_error_scheduled_task_master_job_not_running'
+						];
+						foreach ($errorFields as $errorField) {
+							ze\lang::applyMergeFields($fields['meta_data/' . $errorField]['snippet']['html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+						}
+					}
+				}
 				
 				if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {
 					$values['meta_data/lock_summary_view_mode'] =
@@ -538,6 +681,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$storageString .= ", folder name [[folder_name]].";
 				} else {
 					$storageString .= ".";
+				}
+				
+				if ($fileInfo['path'] && !ze\file::docstorePath($fileInfo['path'])) {
+					ze\lang::applyMergeFields($fields['file/file_is_missing']['snippet']['html'], ['path' => $fileInfo['path']]);
+					$fields['file/file_is_missing']['hidden'] = false;
 				}
 
 				$fields['file/file']['note_below'] = ze\admin::phrase($storageString, ['storage_location' => $fileInfo['location'] ?? '', 'folder_name' => $fileInfo['path'] ?? '']);
@@ -673,7 +821,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				if (is_array($tab) && isset($tab['edit_mode'])) {
 					$tab['edit_mode']['enabled'] = true;
 					$tab['edit_mode']['on'] = true;
-					$tab['edit_mode']['always_on'] = true;
 				}
 			}
 
@@ -945,6 +1092,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$fields['file/s3_file_upload']['hidden'] = true;
 			$fields['file/s3_mime_type']['hidden'] = true;
 		}
+
+		if (!$contentType['enable_css_tab']) {
+			$box['tabs']['css']['hidden'] = true;
+		}
 	}
 	
 
@@ -1032,13 +1183,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$specialPage = false;
 		}
 
-		$titleCounterHTML = '
-			<div class="snippet__title" >
-				<div id="snippet__title_length" class="[[initial_class_name]]">
-					<span id="snippet__title_counter">[[initial_characters_count]]</span>
-				</div>
-			</div>';
-
 		$descriptionCounterHTML = '
 			<div class="snippet__description" >
 				<div id="snippet__description_length" class="[[initial_class_name]]">
@@ -1054,25 +1198,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			</div>';
 
 
-	
-		if (strlen($values['meta_data/title'])<1) {
-			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_red', $titleCounterHTML);
+		if (strlen($values['meta_data/title']) < 1) {
 			$fields['meta_data/title']['note_below'] = 'Please enter a title.';
-		} elseif (strlen($values['meta_data/title'])<20)  {
-			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_orange', $titleCounterHTML);
+		} elseif (strlen($values['meta_data/title']) < 20)  {
 			$fields['meta_data/title']['note_below'] = 'For good SEO, make the title longer.';
-		} elseif (strlen($values['meta_data/title'])<40)  {
-			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_yellow', $titleCounterHTML);
+		} elseif (strlen($values['meta_data/title']) < 40)  {
 			$fields['meta_data/title']['note_below'] = 'For good SEO, make the title a little longer.';
-		} elseif (strlen($values['meta_data/title'])<66)  {
-			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_green', $titleCounterHTML);
+		} elseif (strlen($values['meta_data/title']) < 66)  {
 			$fields['meta_data/title']['note_below'] = 'This is a good title length for SEO.';
 		} else {
-			$titleCounterHTML = str_replace('[[initial_class_name]]', 'title_yellow', $titleCounterHTML);
 			$fields['meta_data/title']['note_below'] = 'The title may not be fully visible in search engine results.';
 		}
-		$titleCounterHTML = str_replace('[[initial_characters_count]]', strlen($values['meta_data/title']), $titleCounterHTML);
-		$box['tabs']['meta_data']['fields']['title']['post_field_html'] = $titleCounterHTML;
+
+		$fields['meta_data/title']['onclick'] = $fields['meta_data/title']['oninput'];
 
 
 		if (strlen($values['meta_data/description'])<1) {
@@ -1238,7 +1376,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$cID = $cType = false;
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $box['key']['id']);
 			$equivId = ze\content::equivId($cID, $cType);
-			$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId]);
+			$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId, 'type' => $cType]);
 			
 			if ($contentItemPrivacy != 'public') {
 				unset($fields['meta_data/title']['post_field_html']);
@@ -1342,6 +1480,36 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$fields['meta_data/suggest_alias_from_title']['style'] = 'display:none';
 		} else {
 			$fields['meta_data/suggest_alias_from_title']['style'] = '';
+		}
+
+		unset($fields['meta_data/pinned_fixed_duration_value']['note_below']);
+		$allowPinning = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $box['key']['cType']]);
+		if ($allowPinning && $values['meta_data/pinned'] && $values['meta_data/pinned_duration'] == 'fixed_duration') {
+			if (preg_match('/^[0-9]{1,2}$/', $values['meta_data/pinned_fixed_duration_value'])) {
+				//Work out the unpin date
+				$newEndDate = new DateTime();
+				$newEndDate->setTime(00, 00);
+				//Work out if this is supposed to be singular day/week or plural days/weeks.
+				if ($values['meta_data/pinned_fixed_duration_value'] > 1) {
+					$unit = $values['meta_data/pinned_fixed_duration_unit'] . 's';
+				} else {
+					$unit = $values['meta_data/pinned_fixed_duration_unit'];
+				}
+
+				//Example: "+1 day". "+2 weeks" etc.
+				$newEndDate->modify('+' . $values['meta_data/pinned_fixed_duration_value'] . ' ' . $unit);
+				$unpinDate = ze\admin::formatDate($newEndDate);
+
+				$taskId = (int) ze\row::get('jobs', 'id', ['job_name' => 'jobUnpinContent']);
+				$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks//' . $taskId . '~.zenario_job~ttime_and_day~k{"id"%3A"' . $taskId . '"}';
+				$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
+				$linkEnd = "</a>";
+				
+				$fields['meta_data/pinned_fixed_duration_value']['note_below'] = ze\admin::phrase(
+					'Will be unpinned on the first run of scheduled task jobUnpinContent on or after [[date_and_time]]. [[link_start]]Click for more info.[[link_end]]',
+					['date_and_time' => $unpinDate, 'link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+			}
 		}
 		
 		
@@ -1474,6 +1642,29 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if ($errorsOnTab) {
 			$fields['plugins/table_end']['error'] = ze\admin::phrase('Please select an action for each plugin.');
 		}
+
+		//Pinned duration
+		if ($values['meta_data/pinned'] && ze::in($values['meta_data/pinned_duration'], 'fixed_date', 'fixed_duration')) {
+			if ($values['meta_data/pinned_duration'] == 'fixed_date') {
+				if (!$values['meta_data/unpin_date']) {
+					$fields['meta_data/unpin_date']['error'] = ze\admin::phrase('Please select the unpin date.');
+				} else {
+					$dateFrom = new DateTime();
+					$timestampFrom = $dateFrom->getTimestamp();
+
+					$dateTo = new DateTime($values['meta_data/unpin_date']);
+					$timestampTo = $dateTo->getTimestamp();
+
+					if ($timestampFrom > $timestampTo) {
+						$fields['meta_data/unpin_date']['error'] = ze\admin::phrase('The unpin date cannot be in the past or on the same day.');
+					}
+				}
+			} elseif ($values['meta_data/pinned_duration'] == 'fixed_duration') {
+				if (!preg_match('/^[0-9]{1,2}$/', $values['meta_data/pinned_fixed_duration_value']) || $values['meta_data/pinned_fixed_duration_value'] < 1 || $values['meta_data/pinned_fixed_duration_value'] > 99) {
+					$fields['meta_data/pinned_fixed_duration_value']['error'] = ze\admin::phrase('The value needs to be a whole number between 1 and 99.');
+				}
+			}
+		}
 	}
 	
 	
@@ -1500,7 +1691,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (($isNewContentItem && !$box['key']['create_from_content_panel']) || $box['key']['duplicate']) {
 			$_SESSION['page_toolbar'] = 'edit';
 			$_SESSION['page_mode'] = 'edit';
-			$_SESSION['last_item'] = $box['key']['cType'].  '_'. $box['key']['cID'];
+			$_SESSION['last_item'] = $box['key']['cType'].  '_'. $box['key']['cID']. '.'. $box['key']['cVersion'];
 
 			if ($box['key']['duplicate']) {
 				$_SESSION['zenario__content_item_duplicated'] = true;
@@ -1528,7 +1719,45 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$version['writer_id'] = $values['meta_data/writer_id'];
 			$version['in_sitemap'] = !$values['meta_data/exclude_from_sitemap'];
 			$version['apply_noindex_meta_tag'] = ($values['meta_data/exclude_from_sitemap'] && $values['meta_data/apply_noindex_meta_tag']);
+
+			//Pinned status
 			$version['pinned'] = $values['meta_data/pinned'];
+
+			//Default values in case a content item is not pinned
+			$version['pinned_duration'] =
+			$version['unpin_date'] =
+			$version['pinned_fixed_duration_unit'] = null;
+			$version['pinned_fixed_duration_value'] = 0;
+
+			if ($values['meta_data/pinned']) {
+				$version['pinned_duration'] = $values['meta_data/pinned_duration'];
+
+				switch ($values['meta_data/pinned_duration']) {
+					case 'fixed_date':
+						$version['unpin_date'] = $values['meta_data/unpin_date'];
+						break;
+					case 'fixed_duration':
+						$version['pinned_fixed_duration_value'] = (int) $values['meta_data/pinned_fixed_duration_value'];
+						$version['pinned_fixed_duration_unit'] = $values['meta_data/pinned_fixed_duration_unit'];
+						
+						//Work out the unpin date
+						$newEndDate = new DateTime();
+						//Work out if this is supposed to be singular day/week or plural days/weeks.
+						if ($values['meta_data/pinned_fixed_duration_value'] > 1) {
+							$unit = $values['meta_data/pinned_fixed_duration_unit'] . 's';
+						} else {
+							$unit = $values['meta_data/pinned_fixed_duration_unit'];
+						}
+
+						//Example: "+1 day". "+2 weeks" etc.
+						$newEndDate->modify('+' . $values['meta_data/pinned_fixed_duration_value'] . ' ' . $unit);
+						$version['unpin_date'] = $newEndDate->format('Y-m-d H:i:s');
+						break;
+					case 'until_unpinned':
+						//Do nothing, the values are already set
+						break;
+				}
+			}
 	
 			//Try and ensure that we use relative URLs where possible
 			ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['meta_data']['fields']['content_summary']);
@@ -1600,7 +1829,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (ze\ring::engToBoolean($box['tabs']['file']['edit_mode']['on'] ?? false)) {
 			if ($values['file/file']
 			 && ($path = ze\file::getPathOfUploadInCacheDir($values['file/file']))
-			 && ($filename = preg_replace('/([^.a-z0-9]+)/i', '_', basename($path)))
+			 && ($filename = preg_replace('/([^.a-z0-9_\(\)\[\]]+)/i', '-', basename($path)))
 			 && ($fileId = ze\file::addToDocstoreDir('content', $path, $filename))) {
 				$version['file_id'] = $fileId;
 				$version['filename'] = $filename;
@@ -1733,6 +1962,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
+		//Save the menu.
+		//Please note: If duplicating a content item which is attached to a menu node,
+		//the code below will make sure the new menu node has the same privacy setting.
 		$this->saveMenu($box, $fields, $values, $changes, $equivId);
 	}
 	
@@ -1842,11 +2074,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$values['meta_data/parent_path_of__menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load']=$parentPath[0];
 						$values['meta_data/path_of__menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load'] = $mPath." [level ".count($mpathArr)."]";
 					}
-				}
-				else
-				{
+				} else {
 					$values['meta_data/path_of__menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load'] = $menu['name']." [level 1]";
 				}
+				$fields['meta_data/no_menu_warning']['hidden'] = true;
+			} elseif (empty($contentType['prompt_to_create_a_menu_node'])) {
 				$fields['meta_data/no_menu_warning']['hidden'] = true;
 			}
 		
@@ -1990,6 +2222,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				
 					if ($menuId = array_shift($menuIds)) {
 						ze\menuAdm::saveText($menuId, $values['meta_data/language_id'], ['name' => $values['meta_data/menu_text']]);
+
+						if ($box['key']['duplicate']) {
+							//If duplicating a content item which is attached to a menu node,
+							//check its privacy setting, and copy to the new menu node.
+							$currentMenu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']);
+							if (!empty($currentMenu)) {
+								ze\row::set('menu_nodes', ['hide_private_item' => $currentMenu['hide_private_item']], ['id' => $menuId]);
+							}
+						}
 					}
 				}
 			}

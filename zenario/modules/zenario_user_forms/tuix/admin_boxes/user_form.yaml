@@ -13,7 +13,6 @@ zenario_user_form:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
             ord: 1
             fields:
                 last_page_visibility:
@@ -31,14 +30,13 @@ zenario_user_form:
                     side_note: This name is for admin use only and will not be seen by visitors
                 show_title:
                     ord: 2
-                    label: 'Show a title'
+                    label: 'Show a title above the form'
                     type: checkbox
                     redraw_onchange: true
                 title:
                     ord: 3
                     label: 'Form title:'
                     type: text
-                    side_note: The title will be displayed above a form to visitors
                     validation:
                         required_if_not_hidden: 'Please enter a title.'
                     visible_if: zenarioAB.value('show_title');
@@ -48,14 +46,16 @@ zenario_user_form:
                     label: 'Title tag:'
                     type: select
                     values:
-                        h1: Heading 1
-                        h2: Heading 2
-                        h3: Heading 3
-                        h4: Heading 4
-                        h5: Heading 5
-                        h6: Heading 6
-                        p: Paragraph
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
                     value: h2
+                    side_note: |
+                        You can choose the HTML tag to use for the form title
                     visible_if: zenarioAB.value('show_title');
                     indent: 1
                 submit_button_text:
@@ -86,16 +86,21 @@ zenario_user_form:
                     side_note: |
                         This allows extranet users to save their progress on a form and come back later to fill it in. 
                         Only extranet users will be able to see this form.
-                    redraw_onchange: true
-        
-                partial_completion_mode__auto:
+                    format_onchange: true
+                extranet_module_not_running_snippet:
+                    indent: 1
                     ord: 13.1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">In order to use this feature, the Extranet Base Module must be running.</div>
+                partial_completion_mode__auto:
+                    ord: 13.2
                     type: checkbox
                     label: Automatically save when changing form step
                     visible_if: zenarioAB.value('allow_partial_completion')
                     indent: 1
                 partial_completion_mode__button:
-                    ord: 13.2
+                    ord: 13.3
                     type: checkbox
                     label: Show a save button on each form step
                     visible_if: zenarioAB.value('allow_partial_completion')
@@ -219,7 +224,6 @@ zenario_user_form:
             label: Actions
             edit_mode:
                 enabled: true
-                always_on: true
             ord: 2
             fields:
                 actions_desc: 
@@ -687,7 +691,6 @@ zenario_user_form:
             ord: 100
             edit_mode:
                 enabled: true
-                always_on: true
             notices:
                 scheduled_task_not_running:
                     type: warning
@@ -754,7 +757,6 @@ zenario_user_form:
             ord: 3
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 anti_spam_tab_description:
                     full_width: true
@@ -792,5 +794,4 @@ zenario_user_form:
             label: Translations
             edit_mode:
                 enabled: true
-                always_on: true
             fields:

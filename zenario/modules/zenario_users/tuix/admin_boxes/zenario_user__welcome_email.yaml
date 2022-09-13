@@ -9,7 +9,6 @@ zenario_user__welcome_email:
             label: Activation email
             edit_mode:
                 enabled: Yes
-                always_on: Yes
             fields:
                 non_plain_text_info:
                     ord: 1.1

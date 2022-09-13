@@ -50,7 +50,7 @@ _sql
 		PRIMARY KEY  (`id`),
 		INDEX (`content_id`, `content_type`),
 		INDEX (`date_updated`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 //Create a table to store information on threads in each forum
@@ -86,7 +86,7 @@ _sql
 		INDEX (`rating`),
 		INDEX `last_updated_order` (`forum_id`, `last_updated_order`),
 		FULLTEXT INDEX (`title`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 //Create a table to store user posts
@@ -113,7 +113,7 @@ _sql
 		INDEX (`employee_post`),
 		INDEX (`rating`),
 		FULLTEXT INDEX (`message_text`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 //Create tables to store which threads a user has/has not read
@@ -134,7 +134,7 @@ _sql
 		INDEX (`forum_id`, `reader_id`),
 		INDEX (`forum_id`, `unread_from`),
 		INDEX (`forum_id`, `unread_to`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 
@@ -240,7 +240,7 @@ _sql
 		PRIMARY KEY  (`id`),
 		UNIQUE (`post_id`, `file_id`),
 		KEY(`file_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 );
 
@@ -275,22 +275,22 @@ if (ze\dbAdm::needRevision(160)) {
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 ze\dbAdm::revision( 170
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `new_thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `new_thread_content_type` varchar(20) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `thread_content_type` varchar(20) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `thread_content_type` varchar(20) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` SET `title` = SUBSTR(`title`, 1, 250) WHERE CHAR_LENGTH(`title`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` MODIFY COLUMN `title` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]threads` MODIFY COLUMN `title` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts` MODIFY COLUMN `message_text` text CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts` MODIFY COLUMN `message_text` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads` MODIFY COLUMN `caption` varchar(60) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]user_posts_uploads` MODIFY COLUMN `caption` varchar(60) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 
 ); 

@@ -76,13 +76,12 @@ body.zenario_being_edited .zenario_slotAdminControlBox,
 
 body.zenario_pageMode_preview .zenario_slotAdminControlBox,
 body.zenario_pageMode_menu .zenario_slotAdminControlBox,
-body.zenario_pageMode_rollback .zenario_slotAdminControlBox,
-body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled.zenario_pageModeIsnt_layout .zenario_slotAdminControlBox,
 body.zenario_pageMode_edit .zenario_hideInEditMode,
 body.zenario_pageMode_edit_disabled .zenario_hideInEditMode,
 body.zenario_pageMode_layout .zenario_hideInLayoutMode,
-body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slotAdminControlBox/*,
-body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode .zenario_slotAdminControlBox*/ {
+body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slotAdminControlBox,
+body.zenario_pageMode_rollback .zenario_hideSlotInEditMode .zenario_slotAdminControlBox,
+body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled.zenario_pageModeIsnt_rollback.zenario_pageModeIsnt_layout .zenario_slotAdminControlBox {
 	display: none;
 }
 
@@ -389,18 +388,18 @@ div.zenario_missing_slots {
 
 /*  Hide/Show "Only show on small screens" slots in Admin Mode on the Menu/Edit/Layout tabs only when zenario_show_empty_slots_and_mobile_only_slots is on */
 
-.responsive_only {
+.slot.responsive_only {
 	display:none;
 }
 
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .container .responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .container .responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .container .responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .container .responsive_only {
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .slot.responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .slot.responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .slot.responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .slot.responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .container .slot.responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .container .slot.responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .container .slot.responsive_only,
+body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .container .slot.responsive_only {
 	display: block;
 }
 

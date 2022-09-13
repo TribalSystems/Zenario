@@ -1,0 +1,203 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: libs
+    title: Editing settings for JavaScript libraries
+    tabs:
+        libs:
+            label: JavaScript libraries
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            
+            fields:
+                desc.alwaysOn:
+                    snippet:
+                        p: |
+                            The following are always included by Zenario and are always available.
+                            This cannot be changed, as Zenario needs them to function.
+                lib.jquery.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://jquery.com/" target="_blank">
+                                    jQuery</a>
+                                <span>(32.0 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                A fast, small, and feature-rich JavaScript library.
+                                It makes things like HTML document traversal and manipulation, event handling, animation,
+                                and Ajax much simpler with an easy-to-use API that works across a multitude of browsers.
+                            </p>
+                lib.jquery: &libAlwaysOn
+                    same_row: true
+                    type: radios
+                    readonly: true
+                    disabled: true
+                    cols: 2
+                    value: 1
+                    values:
+                        1:
+                            label: "On"
+                lib.lazy.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="http://jquery.eisbehr.de/lazy/" target="_blank">
+                                    jQuery Lazy</a>
+                                <span>(3.5 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                A lightweight but powerful delayed content, image and background lazy-loading plugin for jQuery.
+                            </p>
+                lib.lazy: *libAlwaysOn
+                lib.jqueryui.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://jqueryui.com/" target="_blank">
+                                    jQuery UI: Core and Effects</a>
+                                <span>(14.6 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                A curated set of user interface interactions, effects, widgets, and themes built on top of the jQuery JavaScript Library.
+                            </p>
+                lib.jqueryui: *libAlwaysOn
+                lib.jqueryui.tooltip.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://jqueryui.com/tooltip/" target="_blank">
+                                    jQuery UI: Tooltips</a>
+                                <span>(3.3 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                Customizable, themeable tooltips, replacing native tooltips.
+                            </p>
+                lib.jqueryui.tooltip: *libAlwaysOn
+                lib.underscore.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://underscorejs.org/" target="_blank">
+                                    Underscore.js</a>
+                                <span>(8.5 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                A utility-belt library for JavaScript that provides support for the usual functional suspects
+                                 (each, map, reduce, filter...) without extending any core JavaScript objects.
+                            </p>
+                lib.underscore: *libAlwaysOn
+                lib.zenario.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a>
+                                    Zenario's core JavaScript library</a>
+                                <span>(11.8 kB)<span>
+                            </p>
+                lib.zenario: *libAlwaysOn
+
+                
+                desc.optional:
+                    snippet:
+                        p: |
+                            The following are not included by default.
+                            If you wish to use them in your HTML/CSS, set these options to include them.
+                
+                lib.modernizr.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://github.com/Modernizr/Modernizr" target="_blank">
+                                    Modernizr</a>
+                                <span>(8.4 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                A JavaScript library that detects HTML5 and CSS3 features in the user’s browser.
+                            </p>
+                lib.modernizr:
+                    site_setting:
+                        name: lib.modernizr
+                    same_row: true
+                    type: radios
+                    cols: 2
+                    value: 0
+                    values:
+                        0:
+                            ord: 2
+                            label: "Off"
+                        1:
+                            ord: 1
+                            label: "On"
+                            # N.b. in YAML, the "0" option in an array always needs to be defined first, even if I actually want to show it second.
+                
+                
+                desc.auto:
+                    snippet:
+                        p: |
+                            The following are included by plugins automatically, but only where needed.
+                            If you wish to use them in your HTML/CSS, set these options to always include them.
+
+                lib.colorbox.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="http://www.jacklmoore.com/colorbox/" target="_blank">
+                                    Colorbox</a>
+                                <span>(6.0 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                A lightweight customizable lightbox plugin for jQuery.
+                            </p>
+                lib.colorbox:
+                    site_setting:
+                        name: lib.colorbox
+                    same_row: true
+                    type: radios
+                    cols: 2
+                    value: 0
+                    values:
+                        0:
+                            ord: 2
+                            label: Auto
+                        1:
+                            ord: 1
+                            label: "On"
+                            # N.b. in YAML, the "0" option in an array always needs to be defined first, even if I actually want to show it second.
+                
+                lib.doubletaptogo.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://github.com/dachcom-digital/jquery-doubletaptogo" target="_blank">
+                                    Double Tap to Go</a>
+                                <span>(1.7 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                Brings drop-down navigation tapping for touch devices. Built as jQuery Plugin.
+                            </p>
+                lib.doubletaptogo:
+                    site_setting:
+                        name: lib.doubletaptogo
+                    same_row: true
+                    type: radios
+                    cols: 2
+                    value: 0
+                    values:
+                        0:
+                            ord: 2
+                            label: Auto
+                        1:
+                            ord: 1
+                            label: "On"
+                            # N.b. in YAML, the "0" option in an array always needs to be defined first, even if I actually want to show it second.

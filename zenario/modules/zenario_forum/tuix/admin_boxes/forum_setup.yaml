@@ -14,7 +14,6 @@ zenario_forum_setup:
             edit_mode:
                 enabled: Yes
                 on: Yes
-                always_on: Yes
             fields:
                 view_thread:
                     full_width: Yes

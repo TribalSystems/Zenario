@@ -1,9 +1,14 @@
 {# If a title has been set show the title. #}
 {% if Title %}
 	<div class="banner_title">
-		<{{Title_Tags}}>{{Title}}</{{Title_Tags}}>
+		<{{Title_Tags}}>{{Title|e}}</{{Title_Tags}}>
 	</div>
 {% endif %}
+
+
+{% set Show_Caption = this.setting('show_caption_on_image') %}
+{% set Show_Top_Caption = Show_Caption and this.setting('show_caption_above_thumbnail') %}
+{% set Show_Bottom_Caption = Show_Caption and not Show_Top_Caption %}
 
 
 	
@@ -15,63 +20,48 @@
 	<div class="banner_images"> 
 		{% for Image in Images %}
 			<div class="banner_image"> 
-				{% if Show_caption_above_thumbnail and Show_caption_on_image and Image.Text %}
-					<div class="title">{{Image.Text}}</div>
+				{% if Show_Top_Caption and Image.Caption %}
+					<div class="title">{{Image.Caption|e}}</div>
 				{% endif %}
-				{% if Image.Floating_Box %} 
-					<a
-						rel="colorbox"
-						href="{{Image.Floating_Box.Src|escape}}"
-						{% if Show_caption_on_enlarged_image %}
-							data-box-title='
-								{% if Image.Text %}
-									{{Image.Text|e}}
-								{% endif %}
-								{% if Show_image_uploaded_date and Image.Uploaded_Date %}
-									<span class="uploaded_date">{{Image.Uploaded_Date|e}}</span>
-								{% endif %}
-								{% if Show_link_to_download_original %}
-									<span class="download_link">
-										<a href="{{Image.File_Link}}" download>{{"Download original"|trans}}
-											{% if Show_file_size and Image.File_Size %} ({{Image.File_Size}}){% endif %}
-										</a>
-									</span>
-								{% endif %}
-							'
-						{% endif %}
-						data-box-className="multiple_image_container{% if not Image.Text %} caption_hidden{% endif %}"
-					>
-				{% elseif Image.Image_Link_Href %} 
+				
+				
+				{% if Image.Image_Link_Href %} 
 					<a {{Image.Image_Link_Href}}{{Image.Target_Blank}}>
+				{% else %}
+					<div class="banner_image_wrap">
 				{% endif %}
 					
-					{% if this.setting('lazy_load') %} 
-						<img class="lazy" data-src="{{Image.Src|escape}}" alt="{{Image.Alt|escape}}" title="{{Image.Title|escape}}" width="{{Image.Width|escape}}" height="{{Image.Height|escape}}"/>
-					{% else %}
-						<img src="{{Image.Src|escape}}" alt="{{Image.Alt|escape}}" title="{{Image.Title|escape}}" width="{{Image.Width|escape}}" height="{{Image.Height|escape}}"/>
+					{{Image.Image_HTML}}
+					
+					{% if Image.Image_Credit %}
+						<span class="banner_image_credit">{{Image.Image_Credit_Text|e}}</span>
 					{% endif %}
 				
-				{% if Image.Floating_Box %} 
+					{% if Image.Enlarge_Image %} 
 						<span class="banner_image_zoom" title="{{'Enlarge this image'|trans}}">{{"Enlarge this image"|trans}}</span>
+					{% endif %}
+				
+				{% if Image.Image_Link_Href %} 
 					</a>
-				{% elseif Image.Image_Link_Href %} 
-					</a>
-				{% endif %}
-
-				{% if not Show_caption_above_thumbnail and Show_caption_on_image and Image.Text %}
-					<div class="title">{{Image.Text}}</div>
-				{% endif %}
-
-				{% if Show_image_uploaded_date and Image.Uploaded_Date %}
-					<span class="uploaded_date">{{Image.Uploaded_Date}}</span>
+				{% else %}
+					</div>
 				{% endif %}
 				
-				{% if Show_link_to_download_original %}
+
+				{% if Show_Bottom_Caption and Image.Caption %}
+					<div class="title">{{Image.Caption|e}}</div>
+				{% endif %}
+
+				{% if this.setting('show_image_uploaded_date') and Image.Uploaded_Date %}
+					<span class="uploaded_date">{{Image.Uploaded_Date|e}}</span>
+				{% endif %}
+				
+				{% if this.setting('show_link_to_download_original') %}
 					<span class="download_link">
-						<a href="{{Image.File_Link}}" download>
+						<a href="{{Image.File_Link|e}}" download>
 							{{"Download original"|trans}}
-							{% if Show_file_size and Image.File_Size %}
-								({{Image.File_Size}})
+							{% if this.setting('show_file_size') and Image.File_Size %}
+								({{Image.File_Size|e}})
 							{% endif %}
 						</a>
 					</span>
@@ -79,9 +69,4 @@
 			</div>
 		{% endfor %}
 	</div>
-{% endif %}
-
-{# If text has been set show the text. #}
-{% if Text %}
-	<div class="banner_text">{{Text}}</div>
 {% endif %}

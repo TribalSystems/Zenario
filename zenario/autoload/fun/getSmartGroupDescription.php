@@ -34,7 +34,7 @@ if (!$smartGroup = \ze\row::get('smart_groups', ['intended_usage', 'must_match']
 
 $rules = \ze\row::getAssocs(
 	'smart_group_rules',
-	['type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id','activity_band_id', 'not', 'value'],
+	['type_of_check', 'field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'role_id', 'timer_template_id', 'activity_band_id', 'not', 'value'],
 	['smart_group_id' => $smartGroupId],
 	'ord'
 );
@@ -150,7 +150,27 @@ foreach ($rules as $rule) {
 		case 'not_in_a_group':
 			
 			$descs[] = \ze\admin::phrase('Is not a member of any group');
-			break;		
+			break;
+		case 'has_a_current_timer':
+			if ($ZENARIO_USER_TIMERS_PREFIX = ze\module::prefix('zenario_user_timers', $mustBeRunning = true)) {
+				if ($rule['timer_template_id']) {
+					$timer = ze\row::get($ZENARIO_USER_TIMERS_PREFIX . 'user_timer_templates', ['name'], ['id' => $rule['timer_template_id']]);
+					$descs[] = \ze\admin::phrase('Has a current timer [[name]]', $timer);
+				} else {
+					$descs[] = \ze\admin::phrase('Has any current timer');
+				}
+			}
+			break;
+		case 'has_no_current_timer':
+			if ($ZENARIO_USER_TIMERS_PREFIX = ze\module::prefix('zenario_user_timers', $mustBeRunning = true)) {
+				if ($rule['timer_template_id']) {
+					$timer = ze\row::get($ZENARIO_USER_TIMERS_PREFIX . 'user_timer_templates', ['name'], ['id' => $rule['timer_template_id']]);
+					$descs[] = \ze\admin::phrase('Has an expired timer [[name]] and no current timer', $timer);
+				} else {
+					$descs[] = \ze\admin::phrase('Has any expired timer and no active timers');
+				}
+			}
+			break;
 		case 'activity_band':
 			if($rule['activity_band_id']
 			&& $ZENARIO_USER_ACTIVITY_BANDS_PREFIX = \ze\module::prefix('zenario_user_activity_bands', $mustBeRunning = true)){

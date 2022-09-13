@@ -50,7 +50,13 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	protected function openEditor() {
 		//$text = str_replace([" ", "\n", "\r", "\t", ""], '', strip_tags($this->setting('html')));
 		$text = $this->setting('html');
-		$summary = trim(strip_tags(ze\row::get('content_item_versions', 'content_summary', ['id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion])));
+		$contentItemSummary = ze\row::get('content_item_versions', 'content_summary', ['id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion]);
+		if ($contentItemSummary) {
+			$summary = trim(strip_tags($contentItemSummary));
+		} else {
+			$summary = '';
+		}
+
 		$summaryMatches =
 			$summary == trim(strip_tags($text))
 		 || $summary == trim(strip_tags(zenario_wysiwyg_editor::generateSummary($text)));

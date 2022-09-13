@@ -1,0 +1,32 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Home Link User Redirector
+description: |
+            <p>
+                This module is designed for extranet sites in which there are several private "welcome" or "start" pages, with these pages being intended for members of different groups, or users with different roles. It ensures that when logged-in users click a Home link (e.g. the site's logo in a banner, or any link to the home page), they are directed to their relevant private starting page.
+            </p>
+            <p>
+                For example, if a user in group A is logged in to the site, and clicks a Home link, they will be taken to group A's "welcome" page. People who are in group B can similarly be taken to group B's "welcome" page. A number of rules can be created, based on group memberships, or people with certain roles (role support requires the Organization Manager module). Typically you should also give this module's plugin a fallback rule, so as to send users who are not in a named group (or with a named role) to some default page, such as the main home page.
+            </p>
+            <p>
+                For normal redirection that is performed a user logs in, do not use this plugin! You should apply the rules on the Login plugin.
+            </p>
+            <p>
+                To use this module, you should create a "user redirector" HTML page, and make it private for all extranet users, and then put this plugin in any slot on that page. Then change every link to the "home" page for which you wish redirection to occur, to link to this new HTML page containing the plugin. The, anyone who is already logged in and clicks a Home link, will be put through this plugin's rules and be redirected to their correct private starting page.
+            </p>
+category: pluggable
+keywords: >
+    extranet, first, group, login, redirect, signin, user, welcome, redirect, 301, 302, role, signin
+
+# Reminder: you need to increment the LATEST_REVISION_NO in this module's
+# latest_revision_no.inc.php file if you change any of the fields below:
+is_pluggable: true
+plugin_must_be_on_private_page: true
+can_be_version_controlled: false
+default_framework: standard
+default_instance_name: Extranet User Redirector

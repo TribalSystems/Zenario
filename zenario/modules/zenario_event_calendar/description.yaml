@@ -7,11 +7,23 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Event Calendar
 description: |
-    <p>This module allows the display of a calendar of events.</p>
-    <p>When started, the module will allow a plugin to be created, and you should place this in a slot on the content item (e.g. the HTML home page) where you would like the calendar to be shown.</p>
-    <p>The calendar can be either in month-view or year-view format, and any days/months that contain events (Event content items) will be highlighted.</p>
-    <p>When a visitor clicks on a day or month, it displays a popup panel, inside which are summary details of the relevant events. There can be a link to the Event content item for the event.</p>
-    <p>You can set the filter to display all Event content items, or limit the calendar to display just Events in a given category.</p>
+    <p>This module allows a Zenario site to display events in a calendar-like display.
+        </p>
+    <p>
+        It requires the Event content type to be running, as it displays details of those events.
+    </p>
+    <p>
+        After starting the module, create a plugin of this module, and then place this in a slot on the content item (e.g. the HTML home page) where you would like the calendar to be shown.
+    </p>
+    <p>
+        The calendar can be either in month-view or year-view format, and any days/months that contain events (Event content items) will be highlighted.
+    </p>
+    <p>
+        When a visitor clicks on a day or month, it displays a popup panel, inside which are summary details of the relevant events. There can be a link to the Event content item for the event.
+    </p>
+    <p>
+        You can set the filter to display all Event content items, or limit the calendar to display just Events in a given category.
+    </p>
 category: pluggable
 keywords: calendar, day, event, events, future, month, week, year
 

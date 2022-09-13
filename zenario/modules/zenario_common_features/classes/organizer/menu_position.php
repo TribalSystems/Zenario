@@ -39,7 +39,7 @@ class zenario_common_features__organizer__menu_position extends ze\moduleBaseCla
 			if ($parentId) {
 				$pathsByParents[$parentId] = ze\menuAdm::pathWithSection($parentId, false, $this->seperator) . $this->seperator;
 			} else {
-				$pathsByParents[$parentId] = ze\menu::sectionName(ze\row::get('menu_nodes', 'section_id', $item['section_id'])). $this->seperator;
+				$pathsByParents[$parentId] = ze\menu::sectionName($item['section_id']). $this->seperator;
 			}
 		}
 		

@@ -1,6 +1,6 @@
 zenario_delete_form_field:
     title: ""
-    max_height: 100
+    max_height: 350
     hide_tab_bar: true
     save_button_message: Delete
     cancel_button_message: Cancel

@@ -9,7 +9,6 @@ zenario_user__convert_to_user:
             label: Convert to user
             edit_mode:
                 enabled: Yes
-                always_on: Yes
             fields:
                 activate_user_info:
                     ord: 1

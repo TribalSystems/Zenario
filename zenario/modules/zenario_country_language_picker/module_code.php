@@ -33,6 +33,8 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 	protected $data = [];
 	
 	public function init() {
+		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		
 		if (empty($_COOKIE['country_id']) && empty($_COOKIE['user_lang'])) {
 			if (empty($_SESSION['country_id']) || empty($_SESSION['user_lang'])) {
 				$showPicker = true;

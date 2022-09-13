@@ -11,7 +11,6 @@ zenario_setup_module:
             hidden: true
             edit_mode:
                 enabled: true
-                always_on: true
                 enable_revert: false
             fields:
                 description:
@@ -22,7 +21,6 @@ zenario_setup_module:
             hidden: true
             edit_mode:
                 enabled: true
-                always_on: true
                 enable_revert: false
             fields:
                 module_start_desc:

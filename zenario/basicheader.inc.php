@@ -211,7 +211,45 @@ class ze {
 		}
 		
 		if (!ze::$eSent) {
-			ze\db::reportError('PHP error at', $errstr, 'in '. $errfile, 'at line '. $errline);
+			$errorType = '';
+			switch ($errno) {
+				//"Error"
+				case 1: //E_ERROR
+				case 4: //E_PARSE
+				case 16: //E_CORE_ERROR
+				case 64: //E_COMPILE_ERROR
+				case 256: //E_USER_ERROR
+				case 4096: //E_RECOVERABLE_ERROR
+					$errorType = "error";
+					break;
+				
+				//"Warning"
+				case 2: //E_WARNING
+				case 32: //E_CORE_WARNING
+				case 128: //E_COMPILE_WARNING
+				case 512: //E_USER_WARNING
+					$errorType = "warning";
+					break;
+				
+				//"Notice"
+				case 8: //E_NOTICE
+				case 1024: //E_USER_NOTICE
+				case 8192: //E_DEPRECATED
+				case 16384: //E_USER_DEPRECATED
+					$errorType = "notice";
+					break;
+				
+				//"Strict"
+				case 2048: //E_STRICT
+					$errorType = "strict warning";
+					break;
+				
+				default:
+					$errorType = "error";
+					break;
+			}
+			
+			ze\db::reportError('PHP ' . $errorType . ' at', $errstr, 'in '. $errfile, 'at line '. $errline);
 		}
 		
 		ze::$eSent = true;
@@ -489,7 +527,7 @@ class ze {
 	//Returns true if a $_SESSION variable does not affect caching (or is already covered by another existing category)
 	public static function cacheFriendlySessionVar($var) {
 		return substr($var, 0, 11) == 'can_cache__'
-			|| in_array($var, ['cookies_rejected', 'extranetUserID', 'extranetUser_firstname', 'user_lang', 'destCID', 'destCType', 'destURL', 'destTitle']);
+			|| in_array($var, ['unnecessary_cookies_rejected', 'extranetUserID', 'extranetUser_firstname', 'user_lang', 'destCID', 'destCType', 'destURL', 'destTitle']);
 	}
 	
 	

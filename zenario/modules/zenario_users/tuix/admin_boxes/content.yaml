@@ -64,6 +64,8 @@ zenario_content:
                     validation:
                         required_if_not_hidden: Please select a group
                 smart_group_id:
+                    #If no smart groups are defined, this field will not be displayed.
+                    #It will be hidden in the PHP class, and its visible_if logic will be removed.
                     indent: 1
                     visible_if: >
                         zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
@@ -71,6 +73,14 @@ zenario_content:
                     empty_value: ' -- Select -- '
                     validation:
                         required_if_not_hidden: Please select a smart group
+                no_smart_groups_defined:
+                    #If there are smart groups defined, this field will not be displayed.
+                    #It will be unset in the PHP class.
+                    indent: 1
+                    snippet:
+                        html: 'No smart groups defined'
+                    visible_if: >
+                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
                 role_ids:
                     indent: 1
                     visible_if: >

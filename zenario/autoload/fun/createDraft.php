@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 if (!\ze\contentAdm::isCTypeRunning($cType)) {
 	echo
 		\ze\admin::phrase(
-			'Drafts of "[[cType]]" type Content Items cannot be created as their handler Module is missing or not running.',
+			'Content items of type "[[cType]]" cannot be created as their handler module is missing or not running.',
 			['cType' => $cType]);
 	exit;
 }
@@ -109,7 +109,7 @@ if (!$cIDTo || !($content = \ze\row::get('content_items', true, ['id' => $cIDTo,
 \ze\row::set('content_items', $content, ['id' => $content['id'], 'type' => $content['type']]);
 
 
-//Check to see if the Source Content Item version has been set, and actually exists
+//Check to see if the source content item version has been set, and actually exists
 if (!$cIDFrom
  || !$cTypeFrom
  || !($cVersionFrom = $cVersionFrom ?: \ze\content::latestVersion($cIDFrom, $cTypeFrom))
@@ -134,7 +134,7 @@ if (!$cIDFrom
 	}
 	
 	if (!empty($contentTypeDetails['release_date_field'])
-	 && $contentTypeDetails['release_date_field'] != 'hidden') {
+	 && $contentTypeDetails['release_date_field'] == 'mandatory') {
 		$version['release_date'] = \ze\date::ymd();
 	}
 	

@@ -804,6 +804,49 @@
 			}
 		});
 		
+		//Add JS for sortable selection fields:
+		//Remember which values are in the left group, and which in the right group.
+		//Every time a value is moved over, or the order changes, update Zenario's hidden inputs.
+		//Also if the field is supposed to display the order, add the ordinals.
+		$(function() {
+			$("#" + containerId + "_sortable1, #" + containerId + "_sortable2").sortable({
+				connectWith: ".connectedSortable",
+				update: function(event, ui) {
+					var leftGroupEl = $("#" + containerId + "_sortable1");
+					var leftGroupValues = String(leftGroupEl.sortable("toArray", {attribute: 'data-value'}));
+					
+					var leftGroupValuesEl = $("#" + containerId + "_sortable1_values");
+					leftGroupValuesEl.val(leftGroupValues);
+					
+					var rightGroupEl = $("#" + containerId + "_sortable2");
+					var rightGroupValues = rightGroupEl.sortable("toArray", {attribute: 'data-value'});
+					
+					var rightGroupValuesEl = $("#" + containerId + "_sortable2_values");
+					rightGroupValuesEl.val(rightGroupValues);
+					
+					// var sortableListOfValuesSelector = $("#" + containerId + "_sortable_selection_list_of_values");
+// 					if (sortableListOfValuesSelector && sortableListOfValuesSelector.attr('data-value') == 1) {
+// 						var sortableListOfValuesSelectorValues = $("#" + containerId + "_sortable_selection_list_of_values > option");
+// 						var sortableListOfValuesArray = [];
+// 						sortableListOfValuesSelectorValues.each(function () {
+// 							sortableListOfValuesArray[this.value] = this.text;
+// 						});
+// 						
+// 						var rightGroupEl = $("#" + containerId + "_sortable2 li");
+// 						if (rightGroupEl.length > 0) {
+// 							var iteration = 0;
+// 							rightGroupEl.each(function () {
+// 								iteration++;
+// 								var $li = $(this);
+// 								console.log($li);
+// 								$li.text = iteration + '. ' + sortableListOfValuesArray[this.value];
+// 							});
+// 						}
+// 					}
+				}
+			}).disableSelection();
+		});
+		
 		function sortByOrd(a, b) {
 			if (a.ord < b.ord) 
 				return -1;

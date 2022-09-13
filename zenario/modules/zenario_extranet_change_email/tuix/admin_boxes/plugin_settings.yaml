@@ -11,35 +11,34 @@ plugin_settings:
                         name: confirmation_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Template for Email Confirmations:'
+                    label: 'Template for initial email verification:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
                         required: "Please select an email template."
                     value: zenario_extranet_change_email__to_user_email_change_en
                     note_below: 'By default this plugin uses the email template with code "zenario_extranet_change_email__to_user_email_change_en".'
                     side_note: >
-                        Please see the Module description to get a full list of
-                        Merge Fields which can be used in the selected Email
-                        Template.
+                        Please see the module description to get a full list of
+                        merge fields which can be used in the selected email template.
                 
                 email_change_successful_email_template:
                     plugin_setting:
                         name: email_change_successful_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: '"Email change successful" email template:'
+                    label: 'Template for post-change notification:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
                         required: "Please select an email template."

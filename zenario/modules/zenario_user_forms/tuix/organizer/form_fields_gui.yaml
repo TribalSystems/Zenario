@@ -98,10 +98,28 @@ zenario__user_forms:
                             name:
                                 hidden: true
                             label:
+                                visible_if: |
+                                    item.type != 'section_spacer'
                                 label: 'Label:'
                                 type: text
                                 maxlength: 250
                                 note_below: This will be the field label as seen by the user.
+                                is_phrase: true
+                            text_above_left_group:
+                                visible_if: |
+                                    item.type == 'sortable_selection'
+                                label: 'Text above left group:'
+                                type: text
+                                maxlength: 250
+                                note_below: This will be the text above the left group as seen by the user.
+                                is_phrase: true
+                            text_above_right_group:
+                                visible_if: |
+                                    item.type == 'sortable_selection'
+                                label: 'Text above right group:'
+                                type: text
+                                maxlength: 250
+                                note_below: This will be the text above the right group as seen by the user.
                                 is_phrase: true
                             description:
                                 visible_if: |
@@ -168,7 +186,7 @@ zenario__user_forms:
                             
                             readonly_or_mandatory:
                                 visible_if: |
-                                    ['section_description', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1
+                                    ['section_description', 'section_spacer', 'repeat_start', 'restatement', 'calculated'].indexOf(item.type) == -1
                                 label: 'Mandatory / Read-only:'
                                 type: select
                                 values:
@@ -319,7 +337,7 @@ zenario__user_forms:
                             
                             note_to_user:
                                 visible_if: |
-                                    ['section_description', 'repeat_start'].indexOf(item.type) == -1
+                                    ['section_description', 'section_spacer', 'repeat_start'].indexOf(item.type) == -1
                                 label: 'Note below field (HTML):'
                                 type: textarea
                                 maxlength: 250
@@ -327,7 +345,7 @@ zenario__user_forms:
                                 is_phrase: true
                             show_in_summary: *show_in_summary
                                 visible_if: |
-                                    item.type == 'section_description'
+                                    item.type == 'section_description' || item.type == 'section_spacer'
                                 
                             value_prefix:
                                 label: 'Value prefix:'
@@ -357,7 +375,7 @@ zenario__user_forms:
                     values:
                         label: Values
                         visible_if: |
-                            ['select', 'radios', 'checkboxes', 'text'].indexOf(item.type) != -1 && ['first_name', 'last_name', 'email'].indexOf(item.db_column) == -1
+                            ['select', 'radios', 'checkboxes', 'sortable_selection', 'text'].indexOf(item.type) != -1 && ['first_name', 'last_name', 'email'].indexOf(item.db_column) == -1
                         fields:
                             enable_suggested_values:
                                 visible_if: |
@@ -429,7 +447,7 @@ zenario__user_forms:
                         fields:
                             merge_name:
                                 visible_if: |
-                                    item.type != 'section_description' && item.type != 'restatement' && item.type != 'repeat_start'
+                                    item.type != 'section_description' && item.type != 'section_spacer' && item.type != 'restatement' && item.type != 'repeat_start'
                                 snippet:
                                     html: ''
                             preload_dataset_field_user_data:
@@ -455,7 +473,7 @@ zenario__user_forms:
                                 type: checkbox
                             default_value_options:
                                 visible_if: |
-                                    !item.dataset_field_id && (['checkboxes', 'section_description', 'repeat_start', 'attachment', 'restatement', 'document_upload', 'calculated'].indexOf(item.type) == -1)
+                                    !item.dataset_field_id && (['checkboxes', 'section_description', 'section_spacer', 'repeat_start', 'attachment', 'restatement', 'document_upload', 'calculated'].indexOf(item.type) == -1)
                                 label: 'Pre-populate field:'
                                 type: radios
                                 format_onchange: true
@@ -567,7 +585,7 @@ zenario__user_forms:
                                 note_below: CSS class for a wrapper div around this field. Fields above/below this one with the same wrapper div class will be put within the same div.
                             custom_code_name:
                                 visible_if: |
-                                    item.type != 'section_description'
+                                    item.type != 'section_description' && item.type != 'section_spacer'
                                 label: 'Custom field code name:'
                                 type: text
                                 maxlength: 250

@@ -1441,11 +1441,7 @@ class moduleAPI {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	/**
-	 * Utility function to get system default icons for document extensions
-	 * @param String $ext
-	 * @param Array $outArray
-	 */
+	//Utility function to get system default icons for document extensions
 	protected function getStyledExtensionIcon($ext, &$outArray) {
 		$styledExtensions = [
 				'avi' => 'avi',

@@ -8,19 +8,19 @@ import:
 
 style_formats:
 	-
-		title: "Image no padding"
+		title: "Button-style link"
+		selector: "a"
+		classes: "nice_button"
+	-
+		title: "Image without padding"
 		selector: "img"
 		classes: "image_no_padding"
 	-
-		title: "Link like button"
-		selector: "a"
-		classes: "nice_button"
+		title: "Paragraph highlight blue"
+		block: "div"
+		classes: "paragraph_highlight"
 	-
 		title: "Paragraph tip info"
 		selector: "p"
 		classes: "tip_info"
-	-
-		title: "Section title"
-		selector: "p"
-		classes: "section_title"
 

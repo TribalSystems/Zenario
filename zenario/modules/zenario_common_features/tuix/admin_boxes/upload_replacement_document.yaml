@@ -9,7 +9,6 @@ zenario_upload_replacement_document:
         file:
             edit_mode:
                 on: true
-                always_on: true
                 enabled: true
             label: Details
             fields:

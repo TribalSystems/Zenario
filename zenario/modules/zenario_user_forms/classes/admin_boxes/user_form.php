@@ -446,6 +446,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				}
 			}
 		}
+
+		if (ze\module::inc('zenario_extranet')) {
+			$fields['details/extranet_module_not_running_snippet']['hidden'] = true;
+		}
 	}
 	
 	protected function fillFieldValues(&$fields, &$rec){
@@ -629,6 +633,48 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		} else {
 		    $fields['data/consent_field']['hidden'] = true;
 		}
+
+		if ($values['details/allow_partial_completion']) {
+			$numDaysOrWeeks = '';
+			switch (ze::setting('period_to_delete_the_form_partial_responses')) {
+				case 7:
+					$numDaysOrWeeks = '1 week';
+					break;
+				case 30:
+					$numDaysOrWeeks = '1 month';
+					break;
+				case 90:
+				default:
+					$numDaysOrWeeks = '3 months';
+					break;
+				case 365:
+					$numDaysOrWeeks = '1 year';
+					break;
+				case 730:
+					$numDaysOrWeeks = '2 years';
+					break;
+				case 'never_delete':
+					break;
+			}
+
+			$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{\"id\"%3A\"data_protection\"}' target='_blank'>";
+			$linkEnd = "</a>";		
+			
+			if ($numDaysOrWeeks) {
+				$durationSnippet = ze\admin::phrase(
+					'Data entered by users on forms and not submitted will be stored for [[num_days_or_weeks]], and then deleted. See [[link_start]]Data Protection[[link_end]] site setting.',
+					['num_days_or_weeks' => $numDaysOrWeeks, 'link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+			} else {
+				$durationSnippet = ze\admin::phrase(
+					'Data entered by users on forms and not submitted will be stored forever. See [[link_start]]Data Protection[[link_end]] site setting.',
+					['num_days_or_weeks' => $numDaysOrWeeks, 'link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+			}
+			$fields['details/allow_partial_completion']['note_below'] = $durationSnippet;
+		} else {
+			unset($fields['details/allow_partial_completion']['note_below']);
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -662,12 +708,13 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$errors = &$box['tabs']['data']['errors'];
 		// Create an error if the form is doing nothing with data
 		if ($saving
-			&& !$box['key']['type']
 			&& empty($values['data/save_data'])
 			&& empty($values['data/save_record'])
 			&& empty($values['data/send_signal'])
 			&& empty($values['data/send_email_to_user'])
-			&& empty($values['data/send_email_to_admin'])) {
+			&& empty($values['data/send_email_to_admin'])
+			&& empty($values['data/update_linked_fields'])
+		) {
 			$errors[] = ze\admin::phrase('This form is currently not using the data submitted in any way. Please select at least one of the following options.');
 		}
 		

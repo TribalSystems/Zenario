@@ -36,12 +36,9 @@ zenario_content_type_details:
                     label: 'Name (plural):'
                     type: text
                     maxlength: "255"
-                when_creating:
-                    label: 'When creating:'
                 
                 default_layout_id:
-                    indent: 1
-                    label: 'Default layout:'
+                    label: 'Default layout for new content items:'
                     pick_items:
                         path: ""
                         #target_path: zenario__layouts/panels/layouts
@@ -53,8 +50,7 @@ zenario_content_type_details:
                         hide_remove_button: true
                 
                 default_permissions:
-                    indent: 1
-                    label: 'Default permissions for content items:'
+                    label: 'Default permissions for new content items:'
                     type: radios
                     values:
                         public:
@@ -62,25 +58,22 @@ zenario_content_type_details:
                         logged_in:
                             label: Private, only show to extranet users
                 
-                menu_nodes:
-                    indent: 1
-                    label: 'Menu nodes:'
-                
                 prompt_to_create_a_menu_node:
+                    label: 'Menu node policy:'
                     visible_if: tuix.key.id != 'html'
-                    indent: 2
                     type: radios
                     values:
                         prompt:
-                            label: Prompt the administrator to create a menu node, and show a warning if they do not
+                            label: |
+                                Prompt the administrator to create a menu node, warn if they don't
                         dont_prompt:
                             disabled_if: tuix.key.id == 'html'
-                            label: Do not prompt the administrator to create a menu node, and show no warning if they do not
+                            label: |
+                                Don't prompt the administrator to create a menu node
                     value: prompt
                 
                 menu_node_position_edit:
                     visible_if: tuix.key.id != 'html'
-                    indent: 2
                     label: 'Menu position:'
                     type: radios
                     values:
@@ -92,7 +85,6 @@ zenario_content_type_details:
                     value: suggest
                 
                 hide_private_item:
-                    indent: 2
                     label: 'Default privacy for menu nodes:'
                     type: select
                     values:
@@ -113,13 +105,17 @@ zenario_content_type_details:
                         when the menu node is displayed.
                 
                 hide_menu_node:
-                    indent: 2
-                    label: 'Invisible in menu navigation'
+                    label: 'Make menu node invisible'
                     type: checkbox
                     side_note: |
                         Make the auto-created menu node be invisible
                         (will appear in a breadcrumb trail but not in the menu navigation).
+                        It can be made visible later.
                 
+                other_options:
+                    label: |
+                        Other options:
+
                 auto_flag_feature_image:
                     label: 'Flag the first-uploaded image as the featured image'
                     type: checkbox
@@ -128,6 +124,11 @@ zenario_content_type_details:
                         When a content item has a featured image, that image can appear on a content summary list.
                         Check here to make the image first uploaded to a content item be made the featured image.
                 
+                enable_css_tab:
+                    label: 'Enable editing of CSS class and page background for content item'
+                    type: checkbox
+                    onoff: true
+
                 enable_categories:
                     label: 'Enable support for categories'
                     type: checkbox
@@ -186,7 +187,8 @@ zenario_content_type_details:
                 auto_set_release_date:
                     indent: 1
                     hide_if_previous_outdented_value_isnt: 1
-                    label: 'Set release date when publishing if not already set'
+                    label: |
+                        If empty when publishing content item, auto-set to today's date
                     type: checkbox
                     visible_if: (lib.value('release_date_field') && !lib.value('release_date_field_mandatory'))
                 writer_field:

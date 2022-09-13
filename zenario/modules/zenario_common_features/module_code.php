@@ -307,6 +307,37 @@ class zenario_common_features extends ze\moduleBaseClass {
 		
 		return $action;
 	}
+
+	public static function jobUnpinContent($serverTime) {
+		$sql = "
+			SELECT v.id, v.type, v.version, c.status
+			FROM ". DB_PREFIX. "content_item_versions AS v
+			INNER JOIN ". DB_PREFIX. "content_items AS c
+			   ON c.id = v.id
+			  AND c.type = v.type
+			WHERE v.pinned = 1
+			AND v.pinned_duration IN ('fixed_date', 'fixed_duration')
+			AND v.unpin_date <= STR_TO_DATE('". ze\escape::sql($serverTime). "', '%Y-%m-%d %H:%i:%s')";
+		$result = ze\sql::select($sql);
+		
+		$action = false;
+		while ($citem = ze\sql::fetchAssoc($result)) {
+			$action = true;
+			echo ze\admin::phrase('Unpinned content item [[tag]]', ['tag' => ze\content::formatTag($citem['id'], $citem['type'])]), "\n";
+			
+			// Update scheduled time
+			ze\row::update('content_item_versions',
+				['pinned' => 0, 'pinned_duration' => null, 'pinned_fixed_duration_value' => 0, 'pinned_fixed_duration_unit' => null, 'unpin_date' => null],
+				['id' => $citem['id'], 'type' => $citem['type'], 'version' => $citem['version']]
+			);
+		}
+		
+		if (!$action) {
+			echo ze\admin::phrase('No content items to publish'), "\n";
+		}
+		
+		return $action;
+	}
 	
 	//A scheduled task to delete stored content
 	public static function jobDataProtectionCleanup() {

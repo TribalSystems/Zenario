@@ -282,8 +282,8 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			}
 			
 			$url = '';
-			$width = (int)$this->setting('sticky_image_width');
-			$height = (int)$this->setting('sticky_image_height');
+			$width = (int)$this->setting('image_width');
+			$height = (int)$this->setting('image_height');
 			$img_tag = '';
 			if($row['alt_tag']) $alt_tag=" alt='" . $row['alt_tag'] . "'"; else $alt_tag=" alt='" . $row['client_name'] . "'";
 			

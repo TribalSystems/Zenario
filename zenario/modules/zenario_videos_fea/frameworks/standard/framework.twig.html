@@ -94,7 +94,8 @@
 	{% endif %}
 
 {% elseif mode == 'new_video' or mode == 'edit_video' %}
-	{% do requireJsLib(module_loc ~ 'js/new_video_edit_video.js') %}
+	{# Currently disabled until we replace the upload library. #}
+	{# do requireJsLib(module_loc ~ 'js/new_video_edit_video.js') #}
 	
 	<div class="zfea_edit_box">
 		{% if last_updated %}
@@ -127,7 +128,8 @@
 				</p>
 			</div>
 			<div id="selection_buttons">
-				<button type="button" id="upload_a_video" onclick="selectionButtonsOnclick(event);">{{"Upload a video"|trans}}</button>
+				{# Uploading videos is currently disabled. Need to replace the upload library. #}
+				{# <button type="button" id="upload_a_video" onclick="selectionButtonsOnclick(event);">{{"Upload a video"|trans}}</button>#}
 				<button type="button" id="add_video_by_url" onclick="selectionButtonsOnclick(event);">{{"Add a video by URL"|trans}}</button>
 			</div>
 		{% endif %}
@@ -243,7 +245,6 @@
 		{% endif %}
 	</div>
 	
-	{% do requireJsLib('zenario/libs/yarn/vimeo-upload/vimeo-upload.js') %}
 	<script>
 		{% set token = ze('', 'setting', 'vimeo_access_token') %}
 		var token = "{{token}}";

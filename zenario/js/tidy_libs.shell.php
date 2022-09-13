@@ -63,6 +63,9 @@ function removeUnwantedComposerCode($path) {
 }
 
 removeUnwantedCode('classlist-polyfill');
+removeUnwantedCode('lodash.get');	//Unwanted (dev?) dependancy from cytoscape
+removeUnwantedCode('lodash.set');
+removeUnwantedCode('lodash.topath');
 removeUnwantedCode('lodash.debounce');
 removeUnwantedCode('lodash.throttle');
 removeUnwantedCode('heap');
@@ -77,7 +80,10 @@ removeUnwantedCode('jquery/dist/core.js');
 removeUnwantedCode('jquery/dist/jquery.slim.js');
 removeUnwantedCode('jquery/dist/jquery.slim.min.js');
 removeUnwantedCode('jquery/dist/jquery.slim.min.map');
+removeUnwantedCode('jquery-doubletaptogo/src');
 removeUnwantedCode('jquery-lazy/node_modules');
+removeUnwantedCode('js-crc/build');
+removeUnwantedCode('js-crc/tests');
 removeUnwantedCode('rcrop/demos');
 removeUnwantedCode('rcrop/libs');
 removeUnwantedCode('respond.js/cross-domain');

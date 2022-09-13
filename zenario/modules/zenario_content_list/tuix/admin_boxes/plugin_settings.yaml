@@ -23,7 +23,7 @@ plugin_settings:
                     type: snippet
                     grouping: content_item_filters
                     snippet: 
-                        html: "This Content Summary List (CSL) plugin can automatically display links to other content items according to the rules you define here."
+                        html: "Content Summary List (CSL) plugins automatically display a list of content items. Define rules here, to determine which content items are listed and how they appear."
                 content_type:
                     plugin_setting:
                         name: content_type
@@ -218,25 +218,16 @@ plugin_settings:
                     grouping: content_item_filters
                     label: 'Menu node type:'
                     type: select
-                    value: "0"
+                    value: "1"
                     values:
                         - 
-                            label: Use unique and primary menu nodes
+                            label: Ignore secondary menu nodes
                         - 
-                            label: Use unique, primary and secondary menu nodes
+                            label: Use all menu nodes
                     side_note: >
                         Whether to only use content items' "true" positions in the menu, or to also use
                         secondary menu nodes.
                     indent: 1
-                show_category_name:
-                    plugin_setting:
-                        name: show_category_name
-                    label: 'Show category names'
-                    grouping: category_filters
-                    type: checkbox
-                    value: ""
-                    redraw_onchange: true
-                    side_note: "Only the names categories marked as "public" will be shown."
                 category_html_text:
                     grouping: category_filters
                     snippet:
@@ -293,6 +284,17 @@ plugin_settings:
                             label: Only show content items that are in ALL of the selected categories
                     visible_if:
                         zenarioAB.valueIn: category_filters_dropdown, choose_categories_to_display_or_omit, show_content_with_matching_categories
+                show_category_name:
+                    indent: 1
+                    plugin_setting:
+                        name: show_category_name
+                    label: 'Show category names to administrators'
+                    grouping: category_filters
+                    type: checkbox
+                    value: ""
+                    visible_if: |
+                        zenarioAB.valueIn('category_filters_dropdown', 'choose_categories_to_display_or_omit', 'show_content_with_matching_categories')
+                    side_note: "Both public and private categories will be shown; only displayed to administrators"
                 
                 
                 enable_omit_category:
@@ -325,6 +327,26 @@ plugin_settings:
         overall_list:
             label: Overall list
             fields:
+                overall_list_intro:
+                    type: snippet
+                    snippet: 
+                        html: |
+                            Use this tab to determine how the overall result list of content items should appear, and RSS options.
+                options:
+                    type: grouping
+                    #Anything that isn't an RSS setting will be in this grouping.
+                    #This is assigned in PHP fillAdminBox() method.
+                rss:
+                    type: grouping
+                    snippet:
+                        label: RSS feed
+                        label_class: subheading
+                rss_each_item:
+                    type: grouping
+                    snippet:
+                        label: |
+                            For each item in RSS feed:
+                        label_class: subheading
                 translate_text:
                     plugin_setting:
                         name: translate_text
@@ -336,9 +358,10 @@ plugin_settings:
                 show_headings:
                     plugin_setting:
                         name: show_headings
-                    label: 'If results:'
+                    label: 'If some content items match the filter:'
                     type: select
-                    empty_value: "Don't show a heading"
+                    empty_value: |
+                        Don't show a heading
                     values:
                         1:
                             label: Show a heading
@@ -349,7 +372,8 @@ plugin_settings:
                     plugin_setting:
                         name: heading_if_items
                         translate: true
-                    label: Heading
+                    label: |
+                        Heading text:
                     type: text
                     value: 'List of Content'
                     indent: 1
@@ -359,21 +383,23 @@ plugin_settings:
                     label: 'Title heading tags'
                     type: select
                     values: &tags
-                        h1: Heading 1
-                        h2: Heading 2
-                        h3: Heading 3
-                        h4: Heading 4
-                        h5: Heading 5
-                        h6: Heading 6
-                        p: Paragraph
-                    value: h1
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: h2
                     same_row: true
                 show_headings_if_no_items:
                     plugin_setting:
                         name: show_headings_if_no_items
-                    label: 'If no results:'
+                    label: |
+                        If no content items match the filter:
                     type: select
-                    empty_value: "Hide the plugin's output from visitors"
+                    empty_value: |
+                        Show no output
                     values:
                         1:
                             label: Show a heading
@@ -384,7 +410,8 @@ plugin_settings:
                     plugin_setting:
                         name: heading_if_no_items
                         translate: true
-                    label: No items heading
+                    label: |
+                        Heading text if no items to list:
                     type: text
                     value: 'No content to list'
                     indent: 1
@@ -470,7 +497,8 @@ plugin_settings:
                 show_more_link:
                     plugin_setting:
                         name: show_more_link
-                    label: 'For overall list, show an additional link to a content item'
+                    label: |
+                        For overall list, show a link to a "more info" content item
                     type: checkbox
                     value: "0"
                     side_note: >
@@ -483,7 +511,8 @@ plugin_settings:
                         name: more_link_text
                         is_searchable_content: true
                         translate: true
-                    label: 'More link text:'
+                    label: |
+                        "More info" link text:
                     type: text
                     width: "150"
                     maxlength: "255"
@@ -493,7 +522,8 @@ plugin_settings:
                     plugin_setting:
                         name: more_hyperlink_target
                         foreign_key_to: content
-                    label: 'Link destination:'
+                    label: |
+                        "More info" link destination:
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -505,16 +535,12 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select a content item
                     indent: 1
-                enable_rss:
-                    plugin_setting:
-                        name: enable_rss
-                    label: 'Generate RSS feed'
-                    type: checkbox
-                    value: "0"
+                
                 zip_archive_enabled:
                     visible_if: |
                         (zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture')
-                    label: 'Offer to create zip of downloads'
+                    label: |
+                        For content items with files, offer to create zip of downloads
                     type: checkbox
                     plugin_setting:
                         name: zip_archive_enabled
@@ -536,13 +562,129 @@ plugin_settings:
                     post_field_html: '.zip'
                     note_below: ''
                 
+                enable_rss:
+                    grouping: rss
+                    plugin_setting:
+                        name: enable_rss
+                    label: 'Generate RSS feed'
+                    type: checkbox
+                    value: "0"
+                    format_onchange: true
+                rss_include_channel_title:
+                    grouping: rss
+                    indent: 1
+                    label: 'Include channel title (content item's title)'
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                    visible_if: lib.value('enable_rss')
+                rss_include_channel_link:
+                    grouping: rss
+                    indent: 1
+                    label: 'Include channel link (content item's URL)'
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                    visible_if: lib.value('enable_rss')
+                rss_include_channel_description:
+                    grouping: rss
+                    indent: 1
+                    label: 'Include channel description'
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                    visible_if: lib.value('enable_rss')
+                rss_channel_description:
+                    grouping: rss
+                    plugin_setting:
+                        name: rss_channel_description
+                    indent: 2
+                    label: 'Channel description:'
+                    type: text
+                    #Default value is set in PHP.
+                    visible_if: lib.value('enable_rss') && lib.value('rss_include_channel_description')
+                    validation:
+                        required_if_not_hidden: 'Please enter the channel description.'
+                rss_include_language_id:
+                    grouping: rss
+                    plugin_setting:
+                        name: rss_include_language_id
+                    indent: 1
+                    label: 'Include language ID'
+                    type: checkbox
+                    value: 0
+                    visible_if: lib.value('enable_rss')
+                    redraw_onchange: true
+                rss_language_id:
+                    grouping: rss
+                    plugin_setting:
+                        name: rss_language_id
+                    indent: 2
+                    label: 'Language ID:'
+                    type: text
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    #Default value is set in PHP.
+                    visible_if: lib.value('enable_rss') && lib.value('rss_include_language_id')
+                    validation:
+                        required_if_not_hidden: 'Please enter the language ID.'
+                
+                rss_include_item_title:
+                    plugin_setting:
+                        name: rss_include_item_title
+                    grouping: rss_each_item
+                    label: 'Include browser title'
+                    type: checkbox
+                    value: 0
+                rss_include_item_description:
+                    plugin_setting:
+                        name: rss_include_item_description
+                    grouping: rss_each_item
+                    label: 'Include meta description'
+                    type: checkbox
+                    value: 0
+                rss_include_item_link:
+                    plugin_setting:
+                        name: rss_include_item_link
+                    grouping: rss_each_item
+                    label: 'Include link to item'
+                    type: checkbox
+                    value: 0
+                rss_include_item_guid:
+                    plugin_setting:
+                        name: rss_include_item_guid
+                    grouping: rss_each_item
+                    label: 'Include item guid'
+                    type: checkbox
+                    value: 0
+                rss_include_item_author:
+                    plugin_setting:
+                        name: rss_include_item_author
+                    grouping: rss_each_item
+                    label: 'Include writer name'
+                    type: checkbox
+                    value: 0
+                rss_include_item_publication_date:
+                    plugin_setting:
+                        name: rss_include_item_publication_date
+                    grouping: rss_each_item
+                    label: 'Include release date'
+                    type: checkbox
+                    value: 0
+                
         each_item:
             label: Each item
             fields:
+                each_item_intro:
+                    type: snippet
+                    snippet: 
+                        html: |
+                            Use this tab to determine how each listed content item should be displayed.
                 show_titles:
                     plugin_setting:
                         name: show_titles
-                    label: "Show title"
+                    label: |
+                        Show meta data title of each content item listed
                     type: checkbox
                     value: "1"
                     redraw_onchange: true
@@ -555,18 +697,24 @@ plugin_settings:
                     value: h2
                     same_row: true
                     side_note: |
-                        Choose the HTML tag for the title.
+                        Choose the HTML tag style to use for each title
                     visible_if: zenarioAB.value('show_titles')
                 show_language:
                     plugin_setting:
                         name: show_language
-                    label: 'Show content item language'
+                    label: |
+                        Show each content item's language
+                    side_note: |
+                        Every content item has a language code. On a multi-lingual site you may wish to display that code.
                     type: checkbox
                     value: ""
                 show_text_preview:
                     plugin_setting:
                         name: show_text_preview
-                    label: 'Show text preview'
+                    label: |
+                        Show content item's preview
+                    side_note: |
+                        Content items can have a Preview field (provided their content type settings enable this), which can be a descriptive field but with simple HTML formatting.
                     type: checkbox
                     redraw_onchange: true
                     value: true
@@ -583,50 +731,20 @@ plugin_settings:
                         description:
                             label: "Item's description"
                     visible_if: zenarioAB.value('show_text_preview')
-                show_sticky_images:
+                show_featured_image:
                     plugin_setting:
-                        name: show_sticky_images
-                    label: "Show featured image"
+                        name: show_featured_image
+                    label: |
+                        Show thumbnail of each content item's featured image
                     type: checkbox
                     value: ""
                     format_onchange: true
                     side_note: |
-                        Show the featured image of each content item, if it has one.
-                fall_back_to_default_image:
-                    plugin_setting:
-                        name: fall_back_to_default_image
-                    label: Fall back to default image
-                    type: checkbox
-                    format_onchange: true
-                    side_note: |
-                        If the content item being listed doesn't have a featured image, then display a default image instead.
-                    indent: 1
-                default_image_id:
-                    plugin_setting:
-                        name: default_image_id
-                    label: 'Default image:'
-                    upload:
-                        multi: false
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
-                        reorder_items: false
-                    pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
-                    indent: 2
-                    validation:
-                        required_if_not_hidden: Please choose a default image.
+                        Every content item can have a "featured image" attached, whether it's visible on that content item or not. You can choose to display it here as a thumbnail.
                 canvas:
                     plugin_setting:
                         name: canvas
+                        save_value_when_hidden: true
                     label: 'Image canvas:'
                     type: select
                     values:
@@ -646,16 +764,16 @@ plugin_settings:
                 retina:
                     plugin_setting:
                         name: retina
-                    label: 'Treat as a retina image'
+                    label: |
+                        Treat as a retina image (display at double density)
                     type: checkbox
                     value: ""
-                    side_note: |
-                        Display image at double density.
                     enable_microtemplates_in_properties: true
                     same_row: true
                 width:
                     plugin_setting:
                         name: width
+                        save_value_when_hidden: true
                     label: 'Width:'
                     type: text
                     validation:
@@ -669,6 +787,7 @@ plugin_settings:
                 height:
                     plugin_setting:
                         name: height
+                        save_value_when_hidden: true
                     type: text
                     label: 'Height:'
                     validation:
@@ -679,10 +798,54 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
+                webp:
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    plugin_setting:
+                        name: webp
+                        save_value_when_hidden: true
+                    type: checkbox
+                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    value: 1
+                fall_back_to_default_image:
+                    plugin_setting:
+                        name: fall_back_to_default_image
+                    label: |
+                        If item has no featured image, display a fall-back image instead
+                    type: checkbox
+                    format_onchange: true
+                    side_note: |
+                        When a content item doesn't have a featured image, then display a fall-back image instead.
+                    indent: 1
+                default_image_id:
+                    plugin_setting:
+                        name: default_image_id
+                    label: 'Fall-back image:'
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    indent: 2
+                    validation:
+                        required_if_not_hidden: |
+                            Please upload or choose a fall-back image to display when an item doesn't have a featured image.
                 show_filename:
                     visible_if: |
                         zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture' || zenarioAB.value('content_type', 'first_tab') == 'all'
-                    label: 'Show file name where relevant'
+                    label: |
+                        Show filename where content item has a file attachment
                     side_note: |
                         Applies to Document and Picture content items only.
                     type: checkbox
@@ -691,7 +854,8 @@ plugin_settings:
                 show_file_size:
                     visible_if: |
                         zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture' || zenarioAB.value('content_type', 'first_tab') == 'all'
-                    label: 'Show file size where relevant'
+                    label: |
+                        Show file size where content item has a file attachment
                     side_note: |
                         Applies to Document and Picture content items only.
                     type: checkbox
@@ -707,7 +871,8 @@ plugin_settings:
                     side_note: |
                         For Documents, link to the download page; if not checked, direct link to the file.
                 show_permalink:
-                    label: 'Show permalink'
+                    label: |
+                        Show permalink to content item
                     plugin_setting:
                         name: show_permalink
                     type: checkbox
@@ -716,7 +881,8 @@ plugin_settings:
                 show_dates:
                     plugin_setting:
                         name: show_dates
-                    label: "Show release date/time"
+                    label: |
+                        Show each content item's release date
                     type: checkbox
                     value: "0"
                     format_onchange: true
@@ -742,100 +908,19 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: show_times
-                    label: 'Show time'
+                    label: |
+                        Show time as well
                     type: checkbox
                 show_author:
                     plugin_setting:
                         name: show_author
-                    label: "Show content item writer name"
+                    label: |
+                        Show each content item's writer's name
                     type: checkbox
                     value: "0"
                     side_note: |
                         Will display the writer name. Usually only for Blog or News content items, but depends on settings for each content type.
                 
-                #As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
-                #Commenting out the code in case we want it back in the future.
-                
-                # show_author_image:
-                #     plugin_setting:
-                #         name: show_author_image
-                #     label: "Show writer's photo"
-                #     type: checkbox
-                #     value: "0"
-                #     format_onchange: true
-                #     side_note: |
-                #         Will display the writer's photo, if set. Usually only for Blog or News content items, but depends on settings for each content type.
-                # author_canvas:
-                #     plugin_setting:
-                #         name: author_canvas
-                #     label: 'Author image canvas'
-                #     type: select
-                #     value: unlimited
-                #     values:
-                #         unlimited:
-                #             label: Unlimited size
-                #         fixed_width:
-                #             label: Constrain by width
-                #         fixed_height:
-                #             label: Constrain by height
-                #         fixed_width_and_height:
-                #             label: Constrain by width and height
-                #         crop_and_zoom:
-                #             label: Crop and zoom
-                #     format_onchange: true
-                #     indent: 1
-                # author_width:
-                #     plugin_setting:
-                #         name: author_width
-                #     label: 'Width:'
-                #     type: text
-                #     validation:
-                #         required_if_not_hidden: Please enter a width in pixels.
-                #         numeric: The width must be a number.
-                #     value: ""
-                #     maxlength: "5"
-                #     style: 'width: 5em;'
-                #     post_field_html: '&nbsp;pixels'
-                #     indent: 2
-                # author_height:
-                #     plugin_setting:
-                #         name: author_height
-                #     label: 'Height:'
-                #     type: text
-                #     validation:
-                #         required_if_not_hidden: Please enter a height in pixels.
-                #         numeric: The height must be a number.
-                #     value: ""
-                #     maxlength: "5"
-                #     style: 'width: 5em;'
-                #     post_field_html: '&nbsp;pixels'
-                #     indent: 2
-                # author_offset:
-                #     plugin_setting:
-                #         name: author_offset
-                #     label: 'Offset:'
-                #     type: text
-                #     style: 'width: 50px;'
-                #     value: "0"
-                #     slider:
-                #         min: "-10"
-                #         max: "10"
-                #         before_field: true
-                #         style: 'width: 200px;'
-                #     side_note: |
-                #         Moving the slider to the left will move the image left or down;
-                #         moving the slider to the right will move the image right or up.
-                #     indent: 2
-                # author_retina:
-                #     indent: 1
-                #     plugin_setting:
-                #         name: author_retina
-                #     label: 'This is a retina image'
-                #     type: checkbox
-                #     value: ""
-                #     side_note: |
-                #         Display image at double density.
-                #     enable_microtemplates_in_properties: true
                 hide_private_items:
                     plugin_setting:
                         name: hide_private_items
@@ -843,12 +928,13 @@ plugin_settings:
                     type: select
                     format_onchange: true
                     value: "1"
-                    empty_value: "Show to all visitors"
+                    empty_value: |
+                        Show to everyone
                     values:
                         1:
-                            label: Only show to authorized Users
+                            label: Only show to authorized extranet users
                         2:
-                            label: Show disabled link if User is not authorized
+                            label: List the item, but omit the link, if user is not authorized to access it
                         3:
                             label: Call a module's static method to decide (advanced)
                 hide_private_items_class_name:
@@ -874,11 +960,11 @@ plugin_settings:
                 show_content_items_lowest_category:
                     plugin_setting:
                         name: show_content_items_lowest_category
-                    label: Show category
+                    label: Show category name if unique
                     type: checkbox
                     value: ""
                     side_note: |
-                        The content items linked with one public category will be displayed underneath each content item. The content items linked with more than one public category will not be displayed. Private categories will not be shown.
+                        Provided the item is in a single public category, that category name will be displayed for each content item listed.
                 simple_access_cookie_required:
                     plugin_setting:
                         name: simple_access_cookie_required
@@ -932,6 +1018,11 @@ plugin_settings:
                         This will disrupt any pagination you attempt to apply, so we recommend
                         turning pagination off in this case.
             fields:
+                pagination_intro:
+                    type: snippet
+                    snippet: 
+                        html: |
+                            Use this tab to determine whether to paginate the overall list, and how.
                 show_pagination:
                     plugin_setting:
                         name: show_pagination

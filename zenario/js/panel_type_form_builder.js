@@ -446,7 +446,7 @@ methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
 	//Copy from existing field
 	} else if (copyFromFieldId) {
 		field = JSON.parse(JSON.stringify(thus.getItem('field', copyFromFieldId)));
-		if (field.type == 'checkboxes' || field.type == 'select' || field.type == 'radios') {
+		if (field.type == 'checkboxes' || type == 'sortable_selection'  || field.type == 'select' || field.type == 'radios') {
 			var lov = field.lov;
 			delete(field.lov);
 			
@@ -462,7 +462,7 @@ methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
 		field.label = 'Untitled';
 		field.name = 'Untitled ' + thus.getFieldReadableType(type).toLowerCase();
 		
-		if (type == 'checkboxes' || type == 'radios' || type == 'select') {
+		if (type == 'checkboxes' || type == 'sortable_selection' || type == 'radios' || type == 'select') {
 			field.lov = {};
 			for (var i = 1; i <= 3; i++) {
 				thus.addFieldValue(field, 'Option ' + i);
@@ -1988,6 +1988,8 @@ methods.getFieldReadableType = function(item) {
 			return 'Step';
 		case 'section_description':
 			return 'Subheading';
+		case 'section_spacer':
+			return 'Spacer';
 		case 'calculated':
 			return 'Calculated';
 		case 'restatement':
@@ -1998,6 +2000,8 @@ methods.getFieldReadableType = function(item) {
 			return 'End of repeating section';
 		case 'document_upload':
 			return 'Multi-upload';
+		case 'sortable_selection':
+			return 'Sortable selection';
 		default:
 			return 'Unknown';
 		

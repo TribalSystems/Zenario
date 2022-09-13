@@ -1,14 +1,20 @@
+.zenario_sking table tr th,
+.zenario_sking table tr td {
+	vertical-align:top;
+}
+
 /* Buttons
 --------------------------------------------------------------------------------------------------*/
 
-.zenario_skin input[type='submit'],
-.zenario_skin input[type='button'],
-.zenario_skin button,
+.zenario_slot:not(.zenario_comments) input[type='submit'],
+.zenario_slot:not(.zenario_comments) input[type='button'],
+.zenario_slot:not(.zenario_comments) button,
 .banner_more_button .banner_more a,
 .extranet_wrap .extranet_view_profile .extranet_links a,
 a.nice_button,
 .zenario_user_forms .repeat_block_buttons .add,
-.zenario_ctype_event .event_more_info a {
+.zenario_ctype_event .event_more_info a,
+.zenario_ctype_document_search .search_results .result .result_info a {
 	display:inline-block;
 	min-width:120px;
 	height:45px;
@@ -18,9 +24,6 @@ a.nice_button,
 	background:#000;
 	color:#FFF;
 	text-align:center;
-	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	border-radius: 6px;
 	-webkit-transition: all 0.2s ease-in-out;
   	-moz-transition: all 0.2s ease-in-out;
   	-o-transition: all 0.2s ease-in-out;
@@ -28,43 +31,69 @@ a.nice_button,
   	cursor:pointer;
 }
 
-.zenario_skin input[type='submit']:hover,
-.zenario_skin input[type='button']:hover,
-.zenario_skin button:hover,
+.zenario_slot:not(.zenario_comments) input[type='submit']:hover,
+.zenario_slot:not(.zenario_comments) input[type='button']:hover,
+.zenario_slot:not(.zenario_comments) button:hover,
 .extranet_wrap a.nice_button:hover,
 .banner_title_button .banner_title a:hover,
 .banner_more_button .banner_more a:hover,
 .extranet_wrap .extranet_view_profile .extranet_links a:hover,
 a.nice_button:hover,
 .zenario_user_forms .repeat_block_buttons .add:hover,
-.zenario_ctype_event .event_more_info a:hover {
+.zenario_ctype_event .event_more_info a:hover,
+.zenario_ctype_document_search .search_results .result .result_info a:hover {
 	background:#b8babc;
 	color:#282e35;
 	text-decoration:none;
 }
 
+.light.banner_more_button .banner_more a {
+	background:#FFF;
+	color:#000;
+}
+
+.light.banner_more_button .banner_more a:hover {
+	background:#b8babc;
+	color:#282e35;
+}
+
 /* Small buttons */
 
-.zenario_user_forms .repeat_block_buttons .add {
+.zenario_user_forms .repeat_block_buttons .add,
+.zenario_ctype_document_search .search_results .result .result_info a {
 	min-width:auto;
 	height: 30px;
 	line-height: 28px;
 	font-size:0.9em;
 }
 
-/* Aligment
+/* Aligment and colors options
 --------------------------------------------------------------------------------------------------*/
 
 .align_left {
-	text-align:right;
+	text-align:left;
 }
 
 .align_center {
 	text-align:center;
 }
 
+.align_center img {
+	margin:auto;
+}
+
 .align_right {
 	text-align:right;
+}
+
+.dark,
+.dark a {
+	color:#000;
+}
+
+.light,
+.light a {
+	color:#FFF;
 }
 
 /* Sections titles
@@ -165,7 +194,7 @@ p.phone:before {
 }
 
 .extranet_wrap .extranet_welcome_text {
-	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+	font-family: 'cardoregular','Times New Roman','Georgia',serif;
 	color:#000;
 }
 
@@ -222,6 +251,141 @@ p.phone:before {
 	right:-145px;
 }
 
+.extranet_wrap .screen_name_confirmed_info {
+	margin-bottom:30px;
+}
+
+/* Image Credits, banner and MIC plugin
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_banner .banner_image {
+	display:inline-block;
+	overflow:hidden;
+}
+
+.zenario_banner .banner_wrap_inner > a,
+.zenario_banner .banner_image,
+.zenario_multiple_image_container .banner_image,
+.zenario_multiple_image_container .banner_image > a,
+.zenario_multiple_image_container .banner_image > .banner_image_wrap {
+	position:relative;
+}
+
+span.banner_image_credit {
+	font-size:12px;
+	color:#333;
+}
+
+body.desktop span.banner_image_credit {
+	letter-spacing:0.02em;
+}
+
+.zenario_banner .banner_wrap_inner > a span.banner_image_credit,
+.zenario_banner .banner_image span.banner_image_credit,
+body.desktop .zenario_multiple_image_container .banner_image span.banner_image_credit {
+	position:absolute;
+	left:0;
+	bottom:0;
+	padding:0 8px;
+	background:rgba(255,255,255,0.4);
+  	-webkit-transform: translateY(100%) rotate(-90deg);
+  	-moz-transform: translateY(100%) rotate(-90deg);
+  	transform: translateY(100%) rotate(-90deg);
+  	-webkit-transform-origin: 0 0;
+  	-moz-transform-origin: 0 0;
+  	transform-origin: 0 0;
+  	white-space:nowrap;
+}
+
+.zenario_banner .banner_image picture + span.banner_image_credit,
+body.desktop .zenario_multiple_image_container .banner_image picture + span.banner_image_credit {
+  	-webkit-transform-origin: -2px -2px;
+  	-moz-transform-origin: -2px -2px;
+  	transform-origin: -2px -2px;
+}
+
+.zenario_banner .banner_wrap_inner > a:hover span.banner_image_credit,
+body.desktop .zenario_multiple_image_container .banner_image a:hover span.banner_image_credit {
+	text-decoration:none;
+}
+
+body.desktop .zenario_multiple_image_container .banner_image > picture + span.banner_image_credit {
+	bottom:auto;
+  	-webkit-transform: rotate(-90deg);
+  	-moz-transform: rotate(-90deg);
+  	transform: rotate(-90deg);
+}
+
+body.mobile .zenario_banner .banner_wrap_inner > a span.banner_image_credit,
+body.mobile .zenario_banner .banner_image span.banner_image_credit {
+	max-width: 50%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+body.mobile .zenario_multiple_image_container .banner_image span.banner_image_credit {
+	display:block;
+	text-align:left;
+	color:#777;
+}
+
+/* Cookies consent message
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h1, 
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h2, 
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h3 {
+	font-family:'cardoregular','Times New Roman','Georgia',serif;
+	line-height:1.3em;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h1 {
+	font-size:2.5em;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h2 {
+	font-size:2.2em;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h3 {
+	font-size:1.8em;
+}
+
+.zenario_skin .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info h5 {
+	font-family:Verdana,Arial,Helvetica,Sans-Serif;
+	margin:0;
+}
+
+.zenario_skin .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input {
+	line-height:1em;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input.cookie_save_preferences:hover {
+	color:#FFF;
+}
+
+div.zenario_cookie_consent,
+.zenario_cookie_consent_manage_popup .switch input:checked + .slider,
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input,
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input.cookie_save_preferences:hover,
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:hover:before, 
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:hover:after {
+	background-color:rgb(0,101,155);
+}
+
+div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
+	background-color:rgb(0,101,155);
+}
+
+.zenario_cookie_consent_manage_popup .switch input:disabled + .slider {
+	opacity:0.5;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input.cookie_save_preferences:hover {
+	border-color:rgb(0,101,155);
+}
+
 /* Pagination
 --------------------------------------------------------------------------------------------------*/
 
@@ -234,9 +398,6 @@ p.phone:before {
 	display:inline-block;
     margin: 0 1px 5px;
     padding: 0 8px 3px;
-    -webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
 	color:#FFF;
 	background:#555;
    	-webkit-transition: all 0.2s ease-in-out;
@@ -369,8 +530,14 @@ p.phone:before {
 /* Pinned
 --------------------------------------------------------------------------------------------------*/
 
-.zenario_slot .pinned {
+.zenario_slot .pinned,
+.zenario_slot .pinned_icon:after,
+.zenario_slot .pinned_text {
 	color:#5F9EA0;
+}
+
+.zenario_slot .pinned_text {
+	font-size: 90%;
 }
 
 /* Shared links

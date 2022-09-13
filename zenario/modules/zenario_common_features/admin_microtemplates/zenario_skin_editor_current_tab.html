@@ -1,3 +1,7 @@
 <form onsubmit="return false;">
+	<div class="zenario_abtab_tooltip">
+		<p><code>{{m.tuix.tabs[m.tuix.tab].custom__filepath|escape}}</code></p>
+		<p>{{m.tuix.tabs[m.tuix.tab].custom__description|escape}}</p>
+	</div>
 	{{zenarioT.microTemplate('zenario_skin_editor_row', m.rows)}}
 </form>

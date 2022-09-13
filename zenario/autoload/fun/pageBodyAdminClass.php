@@ -64,7 +64,7 @@ if (\ze::$cVersion == \ze::$adminVersion) {
 //Default to preview mode
 //If this Content Item is not the same Content Item as last time, default to Preview mode
 if (empty($_SESSION['page_mode'])
- || (!empty($_SESSION['last_item']) && $_SESSION['last_item'] != \ze::$cType. '_'. \ze::$cID)) {
+ || (!empty($_SESSION['last_item']) && $_SESSION['last_item'] != \ze::$cType. '_'. \ze::$cID. '.'. \ze::$cVersion)) {
 	$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 }
 
@@ -77,7 +77,7 @@ if (empty($_SESSION['page_mode'])
 
 
 
-$_SESSION['last_item'] = \ze::$cType. '_'. \ze::$cID;
+$_SESSION['last_item'] = \ze::$cType. '_'. \ze::$cID. '.'. \ze::$cVersion;
 
 //Check that we're about to use a toolbar that exists
 if (!\ze::$cID || !isset($toolbars[($_SESSION['page_toolbar'] ?? false)])) {

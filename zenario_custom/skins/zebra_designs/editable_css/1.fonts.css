@@ -11,7 +11,7 @@
 .zenario_skin h5,
 .zenario_skin h6,
 #colorbox h1, #colorbox h2, #colorbox h3, #colorbox h4, #colorbox h5, #colorbox h6 {
-	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+	font-family: 'cardoregular','Times New Roman','Georgia',serif;
 }
 
 .zenario_skin table {
@@ -128,45 +128,6 @@
 .zenario_skin table tr td {
 	border:1px solid #ccc;
 	padding:10px;
-}
-
-.zenario_skin blockquote {
-  	position: relative; 
-    text-align: center;
-    padding: 1rem 1.2rem;
-    width: 80%;  /* create space for the quotes */
-    color: #484748;
-    margin: 30px auto 2rem;
-	background:
-    linear-gradient(to right, #000000 4px, transparent 4px) 0 100%,
-    linear-gradient(to left, #000000 4px, transparent 4px) 100% 0,
-    linear-gradient(to bottom, #000000 4px, transparent 4px) 100% 0,
-    linear-gradient(to top, #000000 4px, transparent 4px) 0 100%;
-    background-repeat: no-repeat;
-    background-size: 20px 20px;
-    font-style:italic;
-}
-
-.zenario_skin blockquote:before,
-.zenario_skin blockquote:after{
-    font-family: FontAwesome;
-    position: absolute;
-    color: #000000;
-    font-size: 34px;
-}
-
-.zenario_skin blockquote:before{
-    content: "\f10d";
-    top: -12px;
-    margin-right: -20px;
-    right: 100%;
-}
-.zenario_skin blockquote:after{
-    content: "\f10e";
-    margin-left: -20px;
-    left: 100%;  
-    top: auto;
-    bottom: -20px;
 }
 
 /*  Styles for text.

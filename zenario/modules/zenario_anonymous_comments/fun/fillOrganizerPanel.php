@@ -33,7 +33,7 @@ switch ($path) {
 		foreach ($panel['items'] as $id => &$item) {
 			$item['comment_on_page'] =
 				ze\admin::phrase(
-					'Pending Comment on "[[page_title]]", left on [[comment_last_edit]]', 
+					'Pending comment on "[[page_title]]", left on [[comment_last_edit]]', 
 					[
 						'page_title' => ze\link::toItem($item['content_id'], $item['content_type'], $fullPath = false, $request = '', $alias = false, $autoAddImportantRequests = false, $forceAliasInAdminMode = true),
 						'comment_last_edit' => ze\admin::formatDateTime($item['comment_last_edit'])]);

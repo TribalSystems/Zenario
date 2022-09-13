@@ -344,14 +344,14 @@ class zenario_pro_features extends zenario_common_features {
 		
 				//Check if the scheduled task manager is running
 				if (!ze\module::inc('zenario_scheduled_task_manager')) {
-					echo '~~', ze\admin::phrase('The Scheduled Tasks Manager is not installed.');
+					echo '~~', ze\admin::phrase('The Scheduled Tasks Manager module is not running.');
 					return;
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
-					echo '~jobs_not_running~', ze\admin::phrase('The Scheduled Tasks Manager is installed, but the master switch is not enabled.');
+					echo '~jobs_not_running~', ze\admin::phrase('The Scheduled Tasks Manager module is running, but the master switch is Off and so tasks are not being run.');
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
-					echo '~jobs_not_running~', ze\admin::phrase('The Scheduled Tasks Manager is installed, but not correctly configured in your crontab');
+					echo '~jobs_not_running~', ze\admin::phrase('The Scheduled Tasks Manager module is running, but not correctly configured in the crontab.');
 		
 				} else {
 					echo '~jobs_running~', ze\admin::phrase('The Scheduled Tasks Manager is running');
@@ -494,7 +494,7 @@ class zenario_pro_features extends zenario_common_features {
 			if ($isXML) {
 				$f .= '>'. ze\escape::xml($addTitle);
 			} else {
-				$f .= '" title="'. htmlspecialchars($addTitle). '">';
+				$f .= '" title="'. ($addTitle ? htmlspecialchars($addTitle) : ''). '">';
 			}
 		} else {
 			if ($isXML) {

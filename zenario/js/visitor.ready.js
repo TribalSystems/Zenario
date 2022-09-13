@@ -37,6 +37,13 @@
 */
 
 
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario
+) {
+
 
 zenario.mtSettings = {
 	variable: "m",
@@ -53,7 +60,7 @@ $(document)
 	
 	.ready(function() {
 		//Add tooltips and other jQuery elements to the page after it has loaded
-		zenario.addJQueryElements();
+		zenario.addJQueryElements(undefined, undefined, undefined, true);
 		
 		var	baseURL = URLBasePath,
 			baseURLlen = baseURL.length;
@@ -72,3 +79,5 @@ $(document)
 			}
 		});
 	});
+	
+});

@@ -48,15 +48,7 @@ ze\dbAdm::revision( 44390
 		`revision_no` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`path`,`patchfile`),
 		KEY `revision_no` (`revision_no`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
-_sql
-
-
-//Fix a mistake where a table had the wrong character-set chosen by mistake.
-);	ze\dbAdm::revision( 46200
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX_DA]]data_archive_revision_numbers`
-	CONVERT TO CHARACTER SET utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 );
@@ -81,4 +73,46 @@ if (ze\dbAdm::needRevision(46500)) {
 	}
 	
 	ze\dbAdm::revision(46500);
+}
+
+
+//Automatically convert any table that's not using utf8mb4
+if (ze\dbAdm::needRevision(55151)) {
+	
+	foreach (ze\sql\da::fetchValues("
+		SELECT `TABLE_NAME`
+		FROM information_schema.tables
+		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME_DA). "'
+		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX_DA). "%'
+		  AND `TABLE_COLLATION` IN ('utf8_general_ci', 'utf8mb4_general_ci')
+	") as $tableName) {
+		ze\sql\da::update("
+			ALTER TABLE `". ze\escape::sql($tableName). "`
+			CHARACTER SET ". ze\escape::sql(ZENARIO_TABLE_CHARSET). " COLLATE ". ze\escape::sql(ZENARIO_TABLE_COLLATION). "
+		");
+	}
+	
+	//Agressively go after any columns that are in the wrong characterset
+	foreach (ze\sql\da::fetchValues("
+		SELECT `TABLE_NAME`
+		FROM information_schema.tables
+		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME_DA). "'
+		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX_DA). "%'
+		  AND `TABLE_COLLATION` IN ('utf8_general_ci', 'utf8mb4_general_ci', '". ze\escape::sql(ZENARIO_TABLE_COLLATION). "')
+	") as $tableName) {
+		if ($createTable = ze\sql\da::fetchRow("SHOW CREATE TABLE `". ze\escape::sql($tableName). "`")) {
+			$start = strpos($createTable[1], '(');
+			$end = strrpos($createTable[1], ')');
+			$cols = explode(",\n", substr($createTable[1], $start + 1, $end - $start - 1));
+		
+			foreach ($cols as $col) {
+				if (preg_match('@\bCHARACTER SET utf8\w*\b@', $col)) {
+					//echo("\n\n". $col. "\nALTER TABLE `". ze\escape::sql($tableName). "` MODIFY COLUMN ". preg_replace('@\bCHARACTER SET utf8\w*\b@', '', $col));
+					ze\sql\da::update("ALTER TABLE `". ze\escape::sql($tableName). "` MODIFY COLUMN ". preg_replace('@\bCHARACTER SET utf8\w*\b@', '', $col));
+				}
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(55151);
 }

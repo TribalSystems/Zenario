@@ -7,12 +7,8 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Logout
 description: |
-    <p>This Module allows Extranet Users to log out of your site.</p>
-            <p>When you install this Module it will automatically create a Logout page on your site.</p>
-            <p>The default behaviour is to have just one Logout page,
-                however you may create a Logout page for each Language on your site
-                by creating translations of the original Logout page in each Language.</p>
-             <p>Users can then log out of the Extranet system by navigating to the Logout page.</p>
+    <p>This module allows extranet users to log out of your site.</p>
+            <p>When installed, it will creates a Logout page on the site.</p>
 category: pluggable
 keywords: extranet, logout, user
 

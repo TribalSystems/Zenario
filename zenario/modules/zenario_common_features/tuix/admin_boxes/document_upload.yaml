@@ -8,7 +8,6 @@ zenario_document_upload:
             label: Document source
             edit_mode:
                 on: true
-                always_on: true
                 enabled: true
             fields:
                 document__upload:

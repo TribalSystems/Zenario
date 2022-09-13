@@ -47,15 +47,19 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 				}
 
 				if (!$values['content_types/html_column_width']) {
-					$values['content_types/html_column_width'] = 33.33;
+					$values['content_types/html_column_width'] = 25;
 				}
 
 				if (!$values['content_types/document_column_width']) {
-					$values['content_types/document_column_width'] = 33.33;
+					$values['content_types/document_column_width'] = 25;
 				}
 
 				if (!$values['content_types/news_column_width']) {
-					$values['content_types/news_column_width'] = 33.33;
+					$values['content_types/news_column_width'] = 25;
+				}
+
+				if (!$values['content_types/blog_column_width']) {
+					$values['content_types/blog_column_width'] = 25;
 				}
 
 				if (!$values['first_tab/title_char_limit_value']) {
@@ -71,6 +75,12 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$fields['first_tab/let_user_select_language']['hidden'] = true;
 				}
 
+				foreach (['document', 'news', 'blog'] as $cType) {
+					if (ze\module::isRunning('zenario_ctype_' . $cType)) {
+						unset($box['tabs']['content_types']['fields'][$cType . '_ctype_not_running_warning']);
+					}
+				}
+
 				break;
 		}
 	}
@@ -80,7 +90,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 			case 'plugin_settings':
 				$fields['first_tab/hide_private_items']['hidden'] = !$values['first_tab/show_private_items'];
 				
-				foreach (['html', 'document', 'news'] as $contentType) {
+				foreach (['html', 'document', 'news', 'blog'] as $contentType) {
 					$hidden = !$values['content_types/search_' . $contentType] || !$values['content_types/' . $contentType . '_show_feature_image'];
 					$this->showHideImageOptions($fields, $values, 'content_types', $hidden, $contentType . '_feature_image_');
 
@@ -99,6 +109,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 								break;
 							case 'news':
 								$columnHeadingText = 'News articles';
+								break;
+							case 'blog':
+								$columnHeadingText = 'Blog posts';
 								break;
 						}
 
@@ -121,6 +134,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 								break;
 							case 'news':
 								$noResultsText = 'No news articles found';
+								break;
+							case 'blog':
+								$noResultsText = 'No blog posts found';
 								break;
 						}
 
@@ -184,10 +200,15 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$enabledColumns[] = 'news';
 				}
 
+				if ($values['content_types/search_blog']) {
+					$enabledColumns[] = 'blog';
+				}
+
 				if (empty($enabledColumns)) {
 					$fields['content_types/search_html']['error'] =
 					$fields['content_types/search_document']['error'] =
-					$fields['content_types/search_news']['error'] = ze\admin::phrase('Please select at least 1 content type.');
+					$fields['content_types/search_news']['error'] =
+					$fields['content_types/search_blog']['error'] = ze\admin::phrase('Please select at least 1 content type.');
 				} else {
 					$columnWidthSum = 0;
 					foreach ($enabledColumns as $enabledColumn) {

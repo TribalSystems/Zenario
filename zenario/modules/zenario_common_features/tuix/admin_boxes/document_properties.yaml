@@ -12,7 +12,6 @@ zenario_document_properties:
             label: Document metadata
             edit_mode:
                 on: Yes
-                always_on: Yes
                 enabled: Yes
             fields:
                 document_extension:

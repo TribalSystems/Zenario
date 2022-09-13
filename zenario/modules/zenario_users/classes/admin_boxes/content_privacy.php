@@ -64,6 +64,13 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		
 		$fields['privacy/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
 		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
+
+		if (count($fields['privacy/smart_group_id']['values']) > 0) {
+			unset($box['tabs']['privacy']['fields']['no_smart_groups_defined']);
+		} else {
+			unset($fields['privacy/smart_group_id']['visible_if']);
+			$fields['privacy/smart_group_id']['hidden'] = true;
+		}
 		
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
 			$fields['privacy/role_ids']['values'] = self::getRoleTypesIndexedByIdOrderedByName();

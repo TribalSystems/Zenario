@@ -43,6 +43,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 	protected $keywords = '';
 	
 	public function init() {
+		$defaultTab = $this->setting('search_html')? 'html' : ($this->setting('search_document')? 'document' : (($this->setting('search_news')? 'news' : 'blog')));
+
 		if ($_REQUEST['clearSearch'] ?? false) {
 			$_REQUEST['language_id'] = $_POST['language_id'] = '0';
 			$_REQUEST['category00_id'] = $_POST['category00_id'] = '0';
@@ -53,10 +55,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$_REQUEST['ctab'] = $_POST['ctab'] = $defaultTab;
 		}
 		
-		$defaultTab = $this->setting('search_html')? 'html' : ($this->setting('search_document')? 'document' : 'news');
 		$this->cTypeToSearch = (($_REQUEST['ctab'] ?? false) ?: $defaultTab);
 		//Catch the case where a hacker is trying to break the page
-		if (!ze::in($this->cTypeToSearch, 'html', 'document', 'news')) {
+		if (!ze::in($this->cTypeToSearch, 'html', 'document', 'news', 'blog')) {
 			$this->cTypeToSearch = $defaultTab;
 		}
 		
@@ -111,10 +112,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		}
 
 		if ($this->setting('mode') == 'search_entry_box') {
-			$this->styles[] = '#' . $this->containerId . '_search_results { display: flex; }';
 			$this->styles[] = 'body.mobile #' . $this->containerId . '_search_results { display: block; }';
 			
-			foreach (['html', 'document', 'news'] as $contentType) {
+			foreach (['html', 'document', 'news', 'blog'] as $contentType) {
 				if ($this->setting('search_' . $contentType)) {
 					$this->styles[] = '#' . $this->containerId . '_' . $contentType . '_results { width: ' . $this->setting($contentType . '_column_width') . '% }';
 					$this->styles[] = 'body.mobile #' . $this->containerId . '_' . $contentType . '_results { width: 100% }';
@@ -209,6 +209,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		if ($this->setting('search_news')) {
 			$this->fields['news'] = $fields;
 		}
+
+		if ($this->setting('search_blog')) {
+			$this->fields['blog'] = $fields;
+		}
 	}
 	
 	public function showSlot() {
@@ -244,6 +248,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			if ($this->setting('search_news')) {
 				$this->mergeFields['News_Column_Width'] = $this->setting('news_column_width');
 			}
+
+			if ($this->setting('search_blog')) {
+				$this->mergeFields['Blog_Column_Width'] = $this->setting('blog_column_width');
+			}
 		}
 		
 		$this->drawSearchBox();
@@ -259,6 +267,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			} else {
 				$this->mergeFields['Search_Result_Rows'] = true;
 			}
+			
+			$this->mergeFields['All_results_without_limit'] = 0;
+			$this->mergeFields['Press_enter_to_see_all_results_phrase'] = $this->phrase('Press Enter to see all results');
+			
 			foreach ($this->results as $type => &$result) {
 				if ($this->mergeFields['Mode'] == 'search_page' && $type != $this->cTypeToSearch) {
 					continue;
@@ -294,6 +306,20 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							}
 						}
 						break;
+					case 'blog':
+						$this->mergeFields['Blog_Column_Heading_Text'] = $this->phrase($this->setting('blog_column_heading_text'));
+
+						if ($result['Record_Count']) {
+							$this->mergeFields['Search_Result_Rows'] = true;
+							$this->mergeFields['Blog_Search_Results'] = $result['search_results'];
+						} else {
+							$this->mergeFields['Blog_Search_No_Results'] = true;
+
+							if ($this->setting('blog_show_message_if_no_results') && $this->setting('blog_no_results_text')) {
+								$this->mergeFields['Blog_No_Results_Text'] = $this->phrase($this->setting('blog_no_results_text'));
+							}
+						}
+						break;
 					default:
 						$this->mergeFields['Html_Page_Column_Heading_Text'] = $this->phrase($this->setting('html_column_heading_text'));
 
@@ -307,6 +333,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 								$this->mergeFields['Html_No_Results_Text'] = $this->phrase($this->setting('html_no_results_text'));
 							}
 						}
+				}
+
+				if (ze::in($type, 'document', 'news', 'html', 'blog')) {
+					$this->mergeFields['All_results_without_limit'] += $result['All_results_without_limit'];
 				}
 
 				if ($result['Record_Count']) {
@@ -327,7 +357,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 		if ($this->mergeFields['Mode'] == 'search_entry_box') {
 			$columnsCount = 0;
-			foreach (['html', 'document', 'news'] as $contentType) {
+			foreach (['html', 'document', 'news', 'blog'] as $contentType) {
 				if ($this->setting('search_' . $contentType)) {
 					$columnsCount++;
 				}
@@ -373,7 +403,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		//Launch a search on each Content Type in turn
 		$this->results = [];
 
-		$this->releaseDateSetting = ze\row::getAssocs('content_types', 'release_date_field', ['content_type_id' => ['html', 'document', 'news']]);
+		$this->releaseDateSetting = ze\row::getAssocs('content_types', 'release_date_field', ['content_type_id' => ['html', 'document', 'news', 'blog']]);
 
 		$contentPluginSettings = [];
 		foreach($this->fields as $cType => $fields) {
@@ -406,6 +436,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 			if ($this->setting('search_news')) {
 				$contentTypes[] = 'news';
+			}
+
+			if ($this->setting('search_blog')) {
+				$contentTypes[] = 'blog';
 			}
 		}
 
@@ -626,19 +660,44 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			//Calculate the search terms
 			$searchTerms = ze\content::searchtermParts($this->searchString);
 
-			if ($searchTerms && count($searchTerms) > 0) {
+			//Get a list of MySQL stop-words to exclude.
+			$stopWordsSql = "
+				SELECT value FROM INFORMATION_SCHEMA.INNODB_FT_DEFAULT_STOPWORD";
+			$stopWords = ze\sql::fetchValues($stopWordsSql);
+
+			//Remove the stop words from search.
+			$searchTermsWithoutStopWords = $searchTerms;
+			foreach ($searchTerms as $searchTerm => $searchTermType) {
+				if (in_array($searchTerm, $stopWords)) {
+					unset($searchTermsWithoutStopWords[$searchTerm]);
+				}
+			}
+
+			$searchTermsAreAllStopWords = true;
+			if (!empty($searchTermsWithoutStopWords) && count($searchTermsWithoutStopWords) > 0) {
+				$searchTermsAreAllStopWords = false;
+			}
+			unset($searchTermsWithoutStopWords);
+
+			if ($searchTerms && !$searchTermsAreAllStopWords && count($searchTerms) > 0) {
 				$sqlScore = ", (";
 
 				foreach ($searchTerms as $searchTerm => $searchTermType) {
 					
 					$wildcard = "*";
 
-					if ($whereStatementFirstLine) {
-						$sqlWhere .= "
-							( ";
+					$searchTermIsAStopWord = in_array($searchTerm, $stopWords);
+
+					if (!$searchTermsAreAllStopWords && !$searchTermIsAStopWord) {
+						if ($whereStatementFirstLine) {
+							$sqlWhere .= "
+								( ";
+						} else {
+							$sqlWhere .= "
+								AND (";
+						}
 					} else {
-						$sqlWhere .= "
-							AND (";
+						continue;
 					}
 
 					$whereStatementFirstLine = true;
@@ -649,39 +708,48 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 								$useCC = true;
 							}
 							
-							if ($sqlWhere) {
-								if (!$scoreStatementFirstLine) {
-									$sqlScore .= " + ";
-								}
-								$scoreStatementFirstLine = false;
+							if (!$scoreStatementFirstLine) {
+								$sqlScore .= " + ";
+							}
+							$scoreStatementFirstLine = false;
 
-								if (!$whereStatementFirstLine) {
-									$sqlWhere .= " OR ";
-								}
+							if ($sqlWhere && !$whereStatementFirstLine && !$searchTermIsAStopWord) {
+								$sqlWhere .= " OR ";
 							}
 
 							$whereStatementFirstLine = false;
 								
 							if ($field['name'] == 'v.filename') {
-								$sqlWhere .= "
-									(". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%')";
+								if (!$searchTermsAreAllStopWords && !$searchTermIsAStopWord) {
+									$sqlWhere .= "
+										(". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%')";
+								}
+
 								$sqlScore .= "
 									((". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%') OR  (" . $field['name']." RLIKE '[\-_ ]+" . ze\escape::sql($searchTerm) . "')) * ". $field['weighting'];
 							} elseif ($field['name'] == 'c.alias') {
-								$sqlWhere .= "
-									(". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%' OR " . $field['name']." RLIKE '[\-_]+" . ze\escape::sql($searchTerm) . "')";
+								if (!$searchTermsAreAllStopWords && !$searchTermIsAStopWord) {
+									$sqlWhere .= "
+										(". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%' OR " . $field['name']." RLIKE '[\-_]+" . ze\escape::sql($searchTerm) . "')";
+								}
+
 								$sqlScore .= "
 									((". $field['name']. " LIKE '". ze\escape::sql($searchTerm). "%') OR (" . $field['name']." RLIKE '[\-_]+" . ze\escape::sql($searchTerm) . "')) * ". $field['weighting'];
 							} else {
-								$sqlWhere .= "
-									MATCH (". $field['name']. ") AGAINST ('". ze\escape::sql($searchTerm) . $wildcard. "' IN BOOLEAN MODE)";
+								if (!$searchTermsAreAllStopWords && !$searchTermIsAStopWord) {
+									$sqlWhere .= "
+										MATCH (". $field['name']. ") AGAINST ('". ze\escape::sql($searchTerm) . $wildcard. "' IN BOOLEAN MODE)";
+								}
+
 								$sqlScore .= "
 									MATCH (". $field['name']. ") AGAINST ('". ze\escape::sql($searchTerm) . $wildcard . "' IN BOOLEAN MODE) * ". $field['weighting'];
 							}
 						}
 					}
 					
-					$sqlWhere .= ")";
+					if (!$searchTermsAreAllStopWords && !$searchTermIsAStopWord) {
+						$sqlWhere .= ")";
+					}
 				}
 				
 				$sqlScore .= "
@@ -727,6 +795,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		if ($sqlWhere) {
 			$sql .= "
 				AND (". $sqlWhere. ")";
+		} else {
+			$sql .= "
+				AND false";
 		}
 			  
 		if ($cType != '%all%') {
@@ -774,6 +845,13 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				$result = ze\sql::select($sqlFields. $sqlScore. $sql);
 			}
 		}
+		
+		//Debug code for displaying the SQL. For this to work:
+		//- the if/else block just above needs to be commented out,
+		//- the code below needs to be uncommented.
+		
+		// echo '<pre>' . $sqlFields. $sqlScore. $sql . '</pre>';
+		// die;
 
 		$tempTableInsertSql = "
 			INSERT INTO " . ze\escape::sql($tempTableName1WithPrefix) . "
@@ -840,15 +918,13 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$useCC = true;
 						}
 						
-						if ($sqlWhere) {
-							if (!$scoreStatementFirstLine) {
-								$sqlScore .= " + ";
-							}
-							$scoreStatementFirstLine = false;
+						if (!$scoreStatementFirstLine) {
+							$sqlScore .= " + ";
+						}
+						$scoreStatementFirstLine = false;
 
-							if (!$whereStatementFirstLine) {
-								$sqlWhere .= " OR ";
-							}
+						if ($sqlWhere && !$whereStatementFirstLine) {
+							$sqlWhere .= " OR ";
 						}
 
 						$whereStatementFirstLine = false;
@@ -1024,7 +1100,13 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		// }
 
 		//Step 5: Load the results and pass them to the framework.
-		//Add fields to the query
+		//Add fields to the query:
+
+		//Count (used later)...
+		$resultsCountSql = "
+			SELECT COUNT(*)";
+
+		//... and actual columns
 		$resultsSql = "
 			SELECT v.id, v.type, score, tc.privacy";
 		foreach ($fields as $field) {
@@ -1045,6 +1127,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
 		}
 
+		$resultsCountSql .= $sqlFrom;
 		$resultsSql .= $sqlFrom;
 
 		$resultsSql .= "
@@ -1064,6 +1147,11 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				LIMIT ". (int)$pageSize;
 		}
 
+		//Get the count...
+		$result = ze\sql::select($resultsCountSql);
+		$resultsCountWithoutLimit = ze\sql::fetchValue($result);
+
+		//... and the rows.
 		$result = ze\sql::select($resultsSql);
 		
 		while ($row = ze\sql::fetchAssoc($result)) {
@@ -1086,6 +1174,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		ze\sql::update($dropTempTable2Sql);
 		
 		return [
+			"All_results_without_limit" => $resultsCountWithoutLimit,
 			"Record_Count" => $recordCount,
 			"search_results" => $searchresults,
 			"pagination" => $pagination,

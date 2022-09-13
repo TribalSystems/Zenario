@@ -38,7 +38,7 @@ _sql
 		`english_name` varchar(255),
 		`active` tinyint(1),
 		PRIMARY KEY (`id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 , 
 <<<_sql
@@ -303,7 +303,7 @@ _sql
 		`name` varchar(255),
 		`active` tinyint(1),
 		PRIMARY KEY (`id`,`country_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 );
 ze\dbAdm::revision(16
@@ -688,6 +688,20 @@ _sql
 	UPDATE [[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
 	SET english_name = "Taiwan"
 		WHERE id = "TW"
+_sql
+
+
+//In 9.3, we're going through and fixing the character-set on several columns that should
+//have been using "ascii"
+);	ze\dbAdm::revision(80
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries`
+	MODIFY COLUMN `id` varchar(5) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions`
+	MODIFY COLUMN `country_id` varchar(5) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
 _sql
 
 

@@ -192,7 +192,8 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			
 			$internalTarget = $item['target_loc'] == 'int' && $item['equiv_id'];
 	        
-	        $item['css_class'] = ze\menuAdm::cssClass($item);
+	        $item['row_class'] = '';
+			$item['css_class'] = ze\menuAdm::cssClass($item);
 	        
 			if ($internalTarget) {
 				if ($item['redundancy'] == 'unique') {
@@ -269,7 +270,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				$item['ghost'] = true;
 		
 				$item['name'] = ze\menu::name($id, $panel['key']['languageId'], '[[name]] [[[language_id]], untranslated]');
-				$item['row_class'] = 'organizer_untranslated_menu_node';
+				$item['row_class'] .= ' organizer_untranslated_menu_node';
 				$item['tooltip'] = ze\admin::phrase('This menu node has not been translated into [[language_name]].', $mrg);
 		
 				if ($isFlatView) {

@@ -18,10 +18,16 @@ site_settings:
                             label: Delete after 1 day
                         7:
                             label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
                         30:
                             label: Delete after 1 month
                         90:
                             label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
                         365:
                             label: Delete after 1 year
                         730: 
@@ -57,11 +63,45 @@ site_settings:
                             label: Delete after 1 day
                         7:
                             label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
                         30:
                             label: Delete after 1 month
                         90:
                             label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
                         365:
                             label: Delete after 1 year
                         730: 
                             label: Delete after 2 years
+                
+                period_to_delete_the_form_partial_responses:
+                    label: 'If save-until-later enabled, how long should partial response form data be saved?'
+                    site_setting:
+                        name: period_to_delete_the_form_partial_responses
+                    ord: 5
+                    type: select
+                    
+                    values:
+                        7:
+                            label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
+                        365:
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+                        never_delete:
+                            label: Save forever  
+                    value: 90

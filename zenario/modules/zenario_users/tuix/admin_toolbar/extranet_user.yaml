@@ -31,7 +31,7 @@ sections:
                         openFromAdminToolbar: true
             
             logged_out:
-                label: Anonymous visitor
+                label: Viewing as anonymous visitor
             impersonate_previous:
                 priv: _PRIV_IMPERSONATE_USER
                 parent: logged_out

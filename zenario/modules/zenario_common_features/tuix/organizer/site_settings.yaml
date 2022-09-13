@@ -13,15 +13,21 @@ zenario__administration:
                     title: Settings
                     show_by_default: true
                     searchable: true
+                    disallow_sorting: true
+                    always_show: true
                     width: xlarge
                 desc:
                     width: xxlarge
                     title: Description
                     show_by_default: true
+                    disallow_sorting: true
+                    always_show: true
                     searchable: true
                 keywords:
                     title: Keywords
                     searchable: true
+                    hidden: true
+                    
             item:
                 name: Settings
                 names: Settings
@@ -102,6 +108,11 @@ zenario__administration:
                     name: Site-wide <head> and <body> HTML
                     desc: |
                         Add HTML to the <head> or <body> tag of all pages on your site.
+                libs:
+                    name: JavaScript libraries
+                    desc: >
+                        Control which JavaScript libraries are included site-wide.
+                    keywords: library libraries js javascript
                 urls_and_xml_sitemap:
                     name: URL format, aliases and XML sitemap
                     desc: Settings that affect how URLs for your site are generated, and to enable an XML sitemap.

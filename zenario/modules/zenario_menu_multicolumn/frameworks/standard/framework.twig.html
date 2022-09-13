@@ -29,4 +29,5 @@
 	</ul>
 {% endfor %}
 
+{% do this.requireJsLib('zenario/libs/yarn/jquery-doubletaptogo/dist/jquery.dcd.doubletaptogo.min.js') %}
 {% do this.jQuery('#' ~ containerId ~ ' > ul > li > a.has_child', 'doubleTapToGo') %}

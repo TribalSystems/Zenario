@@ -279,9 +279,11 @@ class ring {
 			 && $item->attributes->length) {
 				foreach ($item->attributes as $a => $b) {
 				
-					//Always allow hrefs in links, and srcs in images
-					if ($a == 'href' && $item->tagName == 'a') {
-					} elseif ($a == 'src' && $item->tagName == 'img') {
+					//Always allow:
+					//- href and rel in links,
+					//- src in images.
+					if ($item->tagName == 'a' && ($a == 'href' || $a == 'rel')) {
+					} elseif ($item->tagName == 'img' && $a == 'src') {
 				
 					} elseif ($a == 'style') {
 						$styles = [];

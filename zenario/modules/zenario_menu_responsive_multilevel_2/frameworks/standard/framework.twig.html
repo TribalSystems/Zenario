@@ -4,7 +4,15 @@
 	<ul>
 		{% for node in nodes %}
 			<li class="{{node.Class}}">
+				{% if node.Inactive_Open_Tag %}
+					{{node.Inactive_Open_Tag}}
+				{% endif %}
+
 				{{node.Hyperlink}}
+
+				{% if node.Inactive_Close_Tag %}
+					{{node.Inactive_Close_Tag}}
+				{% endif %}
 				
 				{% if node.children %}
 					{{ self.childNodes(node.children) }}
@@ -31,9 +39,22 @@
 		</div>
 	{% endif %}
 
+	{% set Title = this.getTitleMergeFields() %}
+	{% if Title %}
+		<li><h2 class="side_menu_title"><a href="{{Title.Parent_Link}}">{{Title.Parent_Name}}</a></h2></li>
+	{% endif %}
+
 	{% for node in nodes %}
 		<li class="{{node.Class}}">
+			{% if node.Inactive_Open_Tag %}
+				{{node.Inactive_Open_Tag}}
+			{% endif %}
+			
 			{{node.Hyperlink}}
+
+			{% if node.Inactive_Close_Tag %}
+				{{node.Inactive_Close_Tag}}
+			{% endif %}
 			
 			{% if node.children %}
 				{{ self.childNodes(node.children) }}

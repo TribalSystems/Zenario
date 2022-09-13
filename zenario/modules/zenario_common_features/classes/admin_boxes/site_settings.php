@@ -72,6 +72,18 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 		}
+		
+		if (isset($fields['admin_login/zenario_logo'])) {
+			$senarioLogo = \ze\link::absolute(). 'zenario/admin/images/zenario-logo-diamond.svg';
+			$logoWidth = 50;
+			$logoHeight = 38;
+			$fields['admin_login/zenario_logo']['snippet']['html'] = '<img src="' . htmlspecialchars($senarioLogo) . '" width="' . (int) $logoWidth . '" height="' . (int) $logoHeight . '">';
+		}
+		
+		if (isset($fields['admin_login/site_disabled_title'])) {
+			$values['admin_login/site_disabled_title'] = ze::setting('site_disabled_title');
+			$values['admin_login/site_disabled_message'] = ze::setting('site_disabled_message');
+		}
 
 		if (isset($fields['admin_domain/admin_domain_is_public'])) {
 			$fields['admin_domain/admin_domain_is_public']['value'] = !ze\link::adminDomainIsPrivate();
@@ -283,19 +295,17 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
-		//Options for setting individual cookies only available with cookie consent module
-		$fields['cookies/individual_cookie_consent']['hidden'] = !ze\module::inc('zenario_cookie_consent_status');
-		
 		//Load phrases for cookie messages
 		if (isset($fields['cookies/cookie_require_consent'])) {
-			$values['cookies/_COOKIE_CONSENT_IMPLIED_MESSAGE'] = $this->loadPhrase(true, '_COOKIE_CONSENT_IMPLIED_MESSAGE');
-			$values['cookies/_COOKIE_CONSENT_CONTINUE'] = $this->loadPhrase(false, '_COOKIE_CONSENT_CONTINUE');
-			
-			$values['cookies/_COOKIE_CONSENT_MESSAGE'] = $this->loadPhrase(true, '_COOKIE_CONSENT_MESSAGE');
-			$values['cookies/_COOKIE_CONSENT_ACCEPT'] = $this->loadPhrase(false, '_COOKIE_CONSENT_ACCEPT');
-			$values['cookies/_COOKIE_CONSENT_MANAGE'] = $this->loadPhrase(false, '_COOKIE_CONSENT_MANAGE');
-			$values['cookies/_COOKIE_CONSENT_REJECT'] = $this->loadPhrase(false, '_COOKIE_CONSENT_REJECT');
-			$values['cookies/_COOKIE_CONSENT_CLOSE'] = $this->loadPhrase(false, '_COOKIE_CONSENT_CLOSE');
+			$values['cookies/_COOKIE_BOX1_01_IMPLIED_MSG'] = $this->loadPhrase(true, '_COOKIE_BOX1_01_IMPLIED_MSG');
+			$values['cookies/_COOKIE_BOX1_02_CONTINUE_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX1_02_CONTINUE_BTN');
+			$values['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG'] = $this->loadPhrase(true, '_COOKIE_BOX1_03_COOKIE_CONSENT_MSG');
+
+			$values['cookies/_COOKIE_BOX2_01_INTRO_MSG'] = $this->loadPhrase(true, '_COOKIE_BOX2_01_INTRO_MSG');
+			$values['cookies/_COOKIE_BOX2_02_ACCEPT_ALL_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX2_02_ACCEPT_ALL_BTN');
+			$values['cookies/_COOKIE_BOX1_04_MANAGE_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX1_04_MANAGE_BTN');
+			$values['cookies/_COOKIE_BOX1_05_ACCEPT_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX1_05_ACCEPT_BTN');
+			$values['cookies/_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN');
 			
 			//If multiple languages are enabled, make it clear you're just editing the phrases in the default language
 			$numLanguages = ze\lang::count();
@@ -303,14 +313,15 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				
 				$mrg = ['lang' => ze\lang::name(ze::$defaultLang)];
 				
-				$fields['cookies/_COOKIE_CONSENT_MESSAGE']['label'] =
-				$fields['cookies/_COOKIE_CONSENT_IMPLIED_MESSAGE']['label'] = ze\admin::phrase('Message in [[lang]]', $mrg);
-				
-				$fields['cookies/_COOKIE_CONSENT_CONTINUE']['label'] = ze\admin::phrase('"Continue" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_CONSENT_ACCEPT']['label'] = ze\admin::phrase('"Accept cookies" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_CONSENT_MANAGE']['label'] = ze\admin::phrase('"Manage cookies" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_CONSENT_REJECT']['label'] = ze\admin::phrase('"Reject cookies" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_CONSENT_CLOSE']['label'] = ze\admin::phrase('"Close" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_BOX1_01_IMPLIED_MSG']['label'] = ze\admin::phrase('Initial message in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_BOX1_02_CONTINUE_BTN']['label'] = ze\admin::phrase('"Continue" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG']['label'] =
+
+				$fields['cookies/_COOKIE_BOX2_01_INTRO_MSG']['label'] = ze\admin::phrase('"Manage cookies" popup message in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_BOX2_02_ACCEPT_ALL_BTN']['label'] = ze\admin::phrase('"Allow all cookies" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_BOX1_04_MANAGE_BTN']['label'] = ze\admin::phrase('"Manage cookies" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_BOX1_05_ACCEPT_BTN']['label'] = ze\admin::phrase('"Accept cookies" button text in [[lang]]', $mrg);
+				$fields['cookies/_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN']['label'] = ze\admin::phrase('"Save preferences" button text in [[lang]]', $mrg);
 			}
 		}
 		
@@ -365,14 +376,15 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 			
 		} elseif ($settingGroup == 'dirs') {
-            $warnings = ze\welcome::getBackupWarningsWithoutHtmlLinks();
-            if (!empty($warnings) && isset($warnings['show_warning'])) {
-                if (isset($warnings['snippet']['html'])) {
-                    $box['tabs']['automated_backups']['notices']['show_warning_message']['message']= $warnings['snippet']['html'];
-                }
-            } else {
-                $box['tabs']['automated_backups']['notices']['show_warning_message']['show'] = false;
-            }
+            		$warnings = ze\welcome::getBackupWarningsWithoutHtmlLinks();
+            		if (!empty($warnings) && isset($warnings['show_warning'])) {
+                		if (isset($warnings['snippet']['html'])) {
+                    			$box['tabs']['automated_backups']['notices']['show_warning_message']['message']= $warnings['snippet']['html'];
+                		}
+            		} else {
+                		$box['tabs']['automated_backups']['notices']['show_warning_message']['show'] = false;
+			}
+			$values['restore_policy/allow_restore'] = RESTORE_POLICY;
 		}
 		$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 		$fields['email/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store sent email logs.', ['link' => htmlspecialchars($link)]);
@@ -927,6 +939,17 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if (isset($values['webp_images/webp_quality']) && !ctype_digit($values['webp_images/webp_quality'])) {
 			$fields['webp_images/webp_quality']['error'] = ze\admin::phrase('The value must be an integer.');
 		}
+
+		if ($settingGroup == 'logos_and_branding') {
+			if (!$values['admin_login/site_disabled_title']) {
+				$box['tabs']['admin_login']['errors'][] =
+					ze\admin::phrase('Please enter a browser title.');
+			}
+			if (!$values['admin_login/site_disabled_message']) {
+				$box['tabs']['admin_login']['errors'][] =
+					ze\admin::phrase('Please enter a message.');
+			}
+		}
 	}
 	
 	
@@ -989,7 +1012,13 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					
 							//Handle file pickers
 							if (!empty($field['upload'])) {
-								if ($filepath = ze\file::getPathOfUploadInCacheDir($value)) {
+								//If a file ID from the database has been selected, check if it's a file
+								//from the site settings pool, and copy it into the pool if it's not.
+								if (is_numeric($value)) {
+									$value = ze\file::copyInDatabase('site_setting', $value);
+								
+								//Add new uploads into the pool.
+								} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($value)) {
 									$value = ze\file::addToDatabase('site_setting', $filepath);
 								}
 								$changesToFiles = true;
@@ -1051,6 +1080,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 
+		if ($settingGroup == 'logos_and_branding') {
+			ze\site::setSetting('site_disabled_title', $values['admin_login/site_disabled_title']);
+			ze\site::setSetting('site_disabled_message', $values['admin_login/site_disabled_message']);
+		}
+
 		//Tidy up any files in the database 
 		if ($changesToFiles) {
 			$sql = "
@@ -1073,22 +1107,20 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			
 			switch ($values['cookies/cookie_require_consent']) {
 				case 'implied':
-					$this->savePhrase(true, '_COOKIE_CONSENT_IMPLIED_MESSAGE', $values['cookies/_COOKIE_CONSENT_IMPLIED_MESSAGE']);
-					$this->savePhrase(false, '_COOKIE_CONSENT_CONTINUE', $values['cookies/_COOKIE_CONSENT_CONTINUE']);
+					$this->savePhrase(true, '_COOKIE_BOX1_01_IMPLIED_MSG', $values['cookies/_COOKIE_BOX1_01_IMPLIED_MSG']);
+					$this->savePhrase(false, '_COOKIE_BOX1_02_CONTINUE_BTN', $values['cookies/_COOKIE_BOX1_02_CONTINUE_BTN']);
 					break;
 			
 				case 'explicit':
-					$this->savePhrase(true, '_COOKIE_CONSENT_MESSAGE', $values['cookies/_COOKIE_CONSENT_MESSAGE']);
-					$this->savePhrase(false, '_COOKIE_CONSENT_ACCEPT', $values['cookies/_COOKIE_CONSENT_ACCEPT']);
-					$this->savePhrase(false, '_COOKIE_CONSENT_CLOSE', $values['cookies/_COOKIE_CONSENT_CLOSE']);
+					$this->savePhrase(true, '_COOKIE_BOX1_03_COOKIE_CONSENT_MSG', $values['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG']);
+					$this->savePhrase(false, '_COOKIE_BOX1_04_MANAGE_BTN', $values['cookies/_COOKIE_BOX1_04_MANAGE_BTN']);
+					$this->savePhrase(false, '_COOKIE_BOX1_05_ACCEPT_BTN', $values['cookies/_COOKIE_BOX1_05_ACCEPT_BTN']);
+
+					$this->savePhrase(true, '_COOKIE_BOX2_01_INTRO_MSG', $values['cookies/_COOKIE_BOX2_01_INTRO_MSG']);
+					$this->savePhrase(false, '_COOKIE_BOX2_02_ACCEPT_ALL_BTN', $values['cookies/_COOKIE_BOX2_02_ACCEPT_ALL_BTN']);
+					$this->savePhrase(false, '_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN', $values['cookies/_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN']);
 					
-					if ($values['cookies/cookie_consent_type__explicit'] == 'message_accept_reject') {
-						$this->savePhrase(false, '_COOKIE_CONSENT_REJECT', $values['cookies/_COOKIE_CONSENT_REJECT']);
-					}
 					
-					if ($values['cookies/individual_cookie_consent']) {
-						$this->savePhrase(false, '_COOKIE_CONSENT_MANAGE', $values['cookies/_COOKIE_CONSENT_MANAGE']);
-					}
 					break;
 			}
 		}

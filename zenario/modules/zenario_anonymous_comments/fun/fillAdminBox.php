@@ -71,7 +71,7 @@ switch ($path) {
 			if (!empty($field['note_below'])
 			 && $field['note_below'] == '_insert_email_template_note_here_') {
 				$field['note_below'] =
-					ze\admin::phrase('Please see the <a href="[[link]]" target="_blank">Module description</a> to get a full list of merge fields which can be used in the selected email template.',
+					ze\admin::phrase('Please see the <a href="[[link]]" target="_blank">module description</a> to get a full list of merge fields which can be used in the selected email template.',
 						['link' => htmlspecialchars(
 							ze\link::absolute().
 							'organizer.php#zenario__modules/panels/modules//'. $box['key']['moduleId']. '/')]);

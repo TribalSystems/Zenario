@@ -13,7 +13,6 @@ zenario_writer_profile:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
             notices:
                 admin_acc_trashed:

@@ -73,11 +73,6 @@ public static function trimData(&$data) {
 		
 		//Remove a deprecated property
 		unset($cell['type']);
-		
-		//"height = small" is the default, there's no need to include it as it just pads the data out
-		if (isset($cell['height']) && !\ze::in($cell['height'], 'xxlarge', 'xlarge', 'large', 'medium')) {
-			unset($cell['height']);
-		}
 	}
 }
 
@@ -460,7 +455,7 @@ body.ie7 .container {
 public static function generateHTML(&$html, &$data, &$slots) {
 	
 	$meta = [];
-	foreach (['cols', 'minWidth', 'maxWidth', 'fluid', 'responsive', 'bp1', 'bp2'] as $var) {
+	foreach (['cols', 'minWidth', 'maxWidth', 'fluid', 'responsive'] as $var) {
 		if (isset($data[$var])) {
 			$meta[$var] = $data[$var];
 		} else {
@@ -625,9 +620,12 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 			//A break with no slot
 			} else {
 				//Add any custom html
-				if (!empty($line['line'][0]['html'])) {
-					$html .= "\n". $line['line'][0]['html'];
-				}
+				
+				//We used to allow custom HTML in a grid-break, but this ability has been
+				//removed as it wasn't being used.
+				#if (!empty($line['line'][0]['html'])) {
+				#	$html .= "\n". $line['line'][0]['html'];
+				#}
 			}
 			
 			//Note down the CSS class for the next grid
@@ -726,27 +724,9 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 					} elseif (!empty($line['line'][$i]['slot']) && !empty($line['line'][$i]['name'])) {
 						$html .= ' slot ';
 						
-						switch ($line['line'][$i]['height'] ?? false) {
-							case 'xxlarge':
-								$height = 5;
-								$html .= 'xxlarge_slot';
-								break;
-							case 'xlarge':
-								$height = 4;
-								$html .= 'xlarge_slot';
-								break;
-							case 'large':
-								$height = 3;
-								$html .= 'large_slot';
-								break;
-							case 'medium':
-								$height = 2;
-								$html .= 'medium_slot';
-								break;
-							default:
-								$height = 1;
-								$html .= 'small_slot';
-						}
+						//N.b. the ability to set custom heights for slots has been removed in version 9.3.
+						//Everything now works as if you chose the "small" option.
+						$height = 1;
 						
 						$line['height'] = max(
 							$line['height'],
@@ -930,22 +910,9 @@ public static function generateThumbnailR(
 					
 					if (!empty($cell['name'])) {
 						
-						switch ($cell['height'] ?? false) {
-							case 'xxlarge':
-								$height = 5;
-								break;
-							case 'xlarge':
-								$height = 4;
-								break;
-							case 'large':
-								$height = 3;
-								break;
-							case 'medium':
-								$height = 2;
-								break;
-							default:
-								$height = 1;
-						}
+						//N.b. the ability to set custom heights for slots has been removed in version 9.3.
+						//Everything now works as if you chose the "small" option.
+						$height = 1;
 						
 						$y3 = $y + $height * $rowSize + ($height - 1) * $vMarginSize;
 						

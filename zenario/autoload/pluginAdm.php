@@ -76,7 +76,7 @@ class pluginAdm {
 			'module_id' => $moduleId,
 			'name' => $instanceName,
 			'is_nest' => $moduleId == \ze\module::id('zenario_plugin_nest'),
-			'is_slideshow' => $moduleId == \ze\module::id('zenario_slideshow')
+			'is_slideshow' => $moduleId == \ze\module::id('zenario_slideshow') || $moduleId == \ze\module::id('zenario_slideshow_simple')
 		];
 		$instanceId = \ze\row::insert('plugin_instances', $instance);
 	
@@ -447,7 +447,7 @@ class pluginAdm {
 				$values['slot_name'] = $slotName;
 			}
 			$values['is_nest'] = $instance['module_id'] == \ze\module::id('zenario_plugin_nest');
-			$values['is_slideshow'] = $instance['module_id'] == \ze\module::id('zenario_slideshow');
+			$values['is_slideshow'] = $instance['module_id'] == \ze\module::id('zenario_slideshow') || $instance['module_id'] == \ze\module::id('zenario_slideshow_simple');
 	
 			$oldInstanceId = $instanceId;
 			$instanceId = \ze\row::insert('plugin_instances', $values);
@@ -477,7 +477,7 @@ class pluginAdm {
 					hierarchical_var,
 					global_command,
 					states,
-					name_or_title,
+					name_or_slide_label,
 					privacy,
 					smart_group_id,
 					module_class_name,
@@ -507,7 +507,7 @@ class pluginAdm {
 					hierarchical_var,
 					global_command,
 					states,
-					name_or_title,
+					name_or_slide_label,
 					privacy,
 					smart_group_id,
 					module_class_name,
@@ -1158,7 +1158,7 @@ class pluginAdm {
 				states,
 				show_back,
 				show_refresh,
-				name_or_title,
+				name_or_slide_label,
 				cols, small_screens
 			FROM ". DB_PREFIX. "nested_plugins
 			WHERE id = ". (int) $eggId;
@@ -1174,12 +1174,12 @@ class pluginAdm {
 
 	//Formerly "getNestedPluginName()"
 	public static function nestedPluginName($id) {
-		return \ze\row::get('nested_plugins', 'name_or_title', $id);
+		return \ze\row::get('nested_plugins', 'name_or_slide_label', $id);
 	}
 
 	//Formerly "conductorEnabled()"
 	public static function conductorEnabled($instanceId) {
-		return (bool) \ze\row::get('plugin_settings', 'value', ['instance_id' => $instanceId, 'name' => 'enable_conductor', 'egg_id' => 0]);
+		return \ze\plugin::setting('nest_type', $instanceId) == 'conductor';
 	}
 	
 	
@@ -1335,7 +1335,7 @@ class pluginAdm {
 
 		//Look for slides with no back links going from them. These are top-level slides
 		$sql = '
-			SELECT slide.id, slide.slide_num, slide.name_or_title, slide.states
+			SELECT slide.id, slide.slide_num, slide.name_or_slide_label, slide.states
 			FROM '. DB_PREFIX. 'nested_plugins AS slide
 			LEFT JOIN '. DB_PREFIX. 'nested_paths AS path
 			   ON path.instance_id = slide.instance_id
@@ -1379,7 +1379,7 @@ class pluginAdm {
 				foreach ($states as $fromState => $fromSlide) {
 				
 					$sql = '
-						SELECT slide.id, slide.slide_num, slide.name_or_title, slide.states, path.request_vars, path.hierarchical_var, path.to_state
+						SELECT slide.id, slide.slide_num, slide.name_or_slide_label, slide.states, path.request_vars, path.hierarchical_var, path.to_state
 						FROM '. DB_PREFIX. 'nested_paths AS path
 						INNER JOIN '. DB_PREFIX. 'nested_plugins AS slide
 						   ON path.instance_id = slide.instance_id

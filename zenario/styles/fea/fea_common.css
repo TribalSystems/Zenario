@@ -3319,7 +3319,7 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 }
 
 /*  Hide the subtitles in the smart breadcrumbs if this isn't a touch-enabled device  */
-body.no_touching .zenario_plugin_nest .zenario_breadcrumbs ul.smart_breadcrumbs .sb_title {
+body.non_touchscreen .zenario_plugin_nest .zenario_breadcrumbs ul.smart_breadcrumbs .sb_title {
 	display: none;
 }
 
@@ -3871,41 +3871,41 @@ body.mobile .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_v
 /*  Toggles. Styles for the on/off switches, 
 	Style 1: with tick and cross */
 
-.onoffswitch .onoffswitch-label {
+.zenario_skin .onoffswitch .onoffswitch-label {
 	width:calc(100% - 4px); /* clear */
 }
 
-.onoffswitch {
+.zenario_skin .onoffswitch {
 	width:78px;
 }
 
-.onoffswitch-switch {
+.zenario_skin .onoffswitch-switch {
 	right:47px;
 }
 
-.zfea_form_row label.onoffswitch-label {
+.zenario_skin .zfea_form_row label.onoffswitch-label {
 	display:block;
 	padding:0;
 }
 
-.onoffswitch-inner::before,
-.onoffswitch-inner::after {
+.zenario_skin .onoffswitch-inner::before,
+.zenario_skin .onoffswitch-inner::after {
 	font-family: "FontAwesome";
 	font-size: 18px;
 }
 
-.onoffswitch-inner::before {
+.zenario_skin .onoffswitch-inner::before {
 	content: "\f00c";
 	background-color:#32bb82;
 }
 
-.onoffswitch-inner::after {
+.zenario_skin .onoffswitch-inner::after {
 	content: "";
 	background-color:#aeaeae;
 	color:#666;
 }
 
-.onoffswitch-label,
-.onoffswitch-switch {
+.zenario_skin .onoffswitch-label,
+.zenario_skin .onoffswitch-switch {
 	border:1px solid #687780;
 }

@@ -1,10 +1,9 @@
 site_settings:
-    setting_group: zenario_error_log__site_settings_group
-    title: |
-        Settings for Error Log
+    setting_group: data_protection
     tabs:
-        details:
-            label: Details
+        404_log:
+            label: 404 log
+            ord: 21
             edit_mode:
                 enabled: Yes
             fields:

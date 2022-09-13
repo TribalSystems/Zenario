@@ -62,8 +62,7 @@ if (($_REQUEST['mID'] ?? false) && ($_POST['menu_item'] ?? false)) {
 		ze\contentAdm::deleteDraft($cID, $cType);
 		
 		//Deleting a Draft in the front-end should automatically switch you to Preview mode
-		$_SESSION['last_item'] = $cType. '_'. $cID;
-		$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
+		unset($_SESSION['last_item'], $_SESSION['page_mode'], $_SESSION['page_toolbar']);
 		
 		//If this was just trashed or deleted, go back up one level in the menu, or go to the homepage.
 		switch (ze\content::status($cID, $cType)) {

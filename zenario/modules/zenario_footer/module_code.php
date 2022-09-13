@@ -55,4 +55,13 @@ class zenario_footer extends zenario_menu {
 		
 		return true;
 	}
+
+	function showSlot() {
+		if ($this->setting('show_visitor_cookie_management_link') && ze::setting('cookie_require_consent') == 'explicit') {
+			$this->mergeFields['Visitor_cookie_management'] = true;
+			$this->mergeFields['Manage_cookies_phrase'] = ze\lang::phrase($this->setting('manage_cookies_phrase'));
+		}
+
+		parent::showSlot();
+	}
 }

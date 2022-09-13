@@ -141,6 +141,16 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 						'request' =>
 							['set_cols' => 1, 'cols' => $i]]];
 		}
+		
+		//Don't show the "paste" button if there are no plugins flagged to copy
+		if (empty($_SESSION['zenario_copy_plugin']['ids'])) {
+			unset($panel['item_buttons']['paste']);
+			unset($panel['item_buttons']['insert']);
+		
+		} elseif (isset($panel['item_buttons']['insert'])) {
+			$panel['item_buttons']['paste']['label'] = ze\admin::nphrase('Paste plugin', 'Paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
+			$panel['item_buttons']['insert']['label'] = ze\admin::nphrase('Insert/paste plugin', 'Insert/paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
+		}
 	}
 	
 	protected function setTitleAndCheckPermissions($path, &$panel, $refinerName, $refinerId, $mode, $instance) {
@@ -220,7 +230,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 					}
 				}
 				if (!empty($item['is_slide'])) {
-					$item['name_or_title'] = zenario_plugin_nest::formatTitleTextAdmin($item['name_or_title']);
+					$item['name_or_slide_label'] = zenario_plugin_nest::formatTitleTextAdmin($item['name_or_slide_label']);
 				}
 			}
 		}
@@ -269,7 +279,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 					}
 					
 					if (!empty($toText)) {
-						$item['name_or_title'] .= ' | '. implode(', ', $toText);
+						$item['name_or_slide_label'] .= ' | '. implode(', ', $toText);
 					}
 				}
 
@@ -449,8 +459,57 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 			
 		} elseif (ze::post('reorder')) {
 			//Each specific Nest may have it's own rules for ordering, so be sure to call the correct reorder method for this Nest
-			self::reorderNest(ze::post('refiner__nest'), explode(',', $ids), $_POST['ordinals'], $_POST['parent_ids']);
-			self::resyncNest($instanceId);
+			self::reorderNest(ze::post('refiner__nest'), explode(',', $ids), $_POST['ordinals'], $_POST['parent_ids'], $instance);
+			self::resyncNest($instanceId, $instance);
+		
+		
+		//If the admin selects one or more nested plugins to copy, put their IDs along with a
+		//little bit of info on what was copied into a session variable to remember it.
+		} elseif (ze::post('copy')) {
+			$eggIds = [];
+			$allBanners = true;
+			$bannerId = ze\module::id('zenario_banner');
+			foreach (ze\ray::explodeAndTrim($ids, true) as $eggId) {
+				if ($egg = ze\row::get('nested_plugins', ['module_id'], ['id' => $eggId, 'is_slide' => 0])) {
+					$eggIds[] = $eggId;
+					
+					if ($egg['module_id'] != $bannerId) {
+						$allBanners = false;
+					}
+				}
+			}
+			
+			if (!empty($eggIds)) {
+				$_SESSION['zenario_copy_plugin'] = [];
+				$_SESSION['zenario_copy_plugin']['ids'] = $eggIds;
+				$_SESSION['zenario_copy_plugin']['eggs'] = true;
+				$_SESSION['zenario_copy_plugin']['all_banners'] = $allBanners;
+				
+				echo '<!--Toast_Type:success-->';
+				echo '<!--Toast_Message:'. ze\escape::hyp(ze\admin::nphrase('Plugin copied', '[[count]] plugins copied', count($eggIds))). '-->';
+			}
+			
+		
+		//Handle pasting what was just copied
+		} elseif (ze::post('paste')) {
+			$newEggIds = [];
+			
+			if (!empty($_SESSION['zenario_copy_plugin']['ids'])) {
+				foreach ($_SESSION['zenario_copy_plugin']['ids'] as $sourceId) {
+					if ($newEggId = static::copyPastePlugin(
+						$sourceId,
+						!empty($_SESSION['zenario_copy_plugin']['eggs']),
+						$instanceId,
+						$ids,
+						$mustBeBanner = false
+					)) {
+						$newEggIds[] = $newEggId;
+					}
+				}
+			}
+			
+			unset($_SESSION['zenario_copy_plugin']);
+			return implode(',', $newEggIds);
 		}
 	}
 	

@@ -6,11 +6,14 @@ plugin_settings:
             label: Feed
             fields:
                 feed_source:
-                    label: 'Feed Source:'
+                    label: 'Feed source:'
                     plugin_setting:
                         name: feed_source
                     type: text
-                    value: 
+                    value: ''
+                    validation:
+                        required: 'Please enter the feed source.'
+
                 cache:
                     label: 'Time in minutes to cache feed content:'
                     type: select
@@ -47,21 +50,22 @@ plugin_settings:
             label: Display
             fields:
                 title:
-                    label: 'Title on slot:'
+                    label: 'Title:'
                     plugin_setting:
                         name: title
                     type: radios
                     values:
                         use_feed_title:
                             ord: "1"
-                            label: Use feed title
+                            label: |
+                                Use feed's title
                         dont_show:
                             ord: "2"
-                            label: "Don't show title"
+                            label: "Don't show a title"
                         use_custom_title:
                             ord: "3"
-                            label: Use custom title
-                    value: use_custom_title
+                            label: 'Use a custom title...'
+                    value: use_feed_title
                     format_onchange: Yes
                 feed_title:
                     label: 'Custom title:'
@@ -76,7 +80,8 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: title_tags
-                    label: Title tags
+                    label: |
+                        Overall title tag style:
                     value: h1
                     type: select
                     values: &tags
@@ -105,7 +110,7 @@ plugin_settings:
                             label: p
                             ord: 8
                 number_feeds_to_show:
-                    label: 'Number of feeds to show:'
+                    label: 'Number of feed items to show:'
                     type: select
                     plugin_setting:
                         name: number_feeds_to_show
@@ -144,7 +149,7 @@ plugin_settings:
                 feed_title_tags:
                     plugin_setting:
                         name: feed_title_tags
-                    label: Feed title tags
+                    label: 'Item tag style:'
                     value: h2
                     type: select
                     values: *tags
@@ -165,7 +170,8 @@ plugin_settings:
                     value: dont_show
                     format_onchange: Yes
                 date_format:
-                    label: 'Date Format:'
+                    indent: 1
+                    label: 'Date format:'
                     type: radios
                     plugin_setting:
                         name: date_format
@@ -198,7 +204,7 @@ plugin_settings:
                             label: By title A-Z
                     value: desc
         target_link:
-            label: Link Target Window
+            label: Link target window
             fields:
                 target:
                     label: 'Open feed link:'
@@ -207,9 +213,9 @@ plugin_settings:
                     type: radios
                     values:
                         same_window:
-                            label: Same window
+                            label: In the same window
                         new_window:
-                            label: New window
+                            label: In a new window
                     value: same_window
         filtering:
             label: Filtering
@@ -233,6 +239,7 @@ plugin_settings:
                     value: do_no_filter
                     format_onchange: Yes
                 regexp:
+                    indent: 1
                     label: 'Use this regular expression:'
                     plugin_setting:
                         name: regexp

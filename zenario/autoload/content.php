@@ -483,7 +483,7 @@ class content {
 	//Try to work out what content item is being accessed
 	//n.b. \ze\link::toItem() and \ze\content::resolveFromRequest() are essentially opposites of each other...
 	//Formerly "resolveContentItemFromRequest()"
-	public static function resolveFromRequest(&$cID, &$cType, &$redirectNeeded, &$aliasInURL, $get, $request, $post) {
+	public static function resolveFromRequest(&$cID, &$cType, &$redirectNeeded, &$aliasInURL, &$reqLangId, $get, $request, $post) {
 		$aliasInURL = '';
 		$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = $hierarchicalAliasInURL = false;
 		$adminMode = \ze::isAdmin();
@@ -1343,10 +1343,10 @@ class content {
 	}
 
 	//Formerly "formatTagFromTagId()"
-	public static function formatTagFromTagId($tagId) {
+	public static function formatTagFromTagId($tagId, $neverAddLanguage = false) {
 		$cID = $cType = false;
 		if (\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
-			return \ze\content::formatTag($cID, $cType);
+			return \ze\content::formatTag($cID, $cType, -1, false, $neverAddLanguage);
 		} else {
 			return false;
 		}

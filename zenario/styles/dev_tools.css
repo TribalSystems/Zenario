@@ -32,69 +32,129 @@ body {
 	overflow: hidden;
 }
 
+body p {
+	margin:0;
+}
+
+body input[type="button"] {
+	height:24px;
+	line-height:24px;
+	padding:0 10px;
+	border: 0;
+	background: #1d6eb6;
+	color: #fff;
+	border-radius:2px;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+	cursor:pointer;
+}
+
+body input[type="button"]:hover {
+	background-color:#2885d7;
+}
+
 #toolbar,
+#lowerbar,
 #editor { 
 	left: 0;
 	right: 25%;
 }
-#sidebar {
-	left: 75%;
-	right: 0;
-}
 
 #toolbar {
+	height: 49px;
 	top: 0;
 	position: absolute;
-	background: #e0e0e0;
-	height: 40px;
+	border-bottom:1px solid #abc5cd;
+	line-height:1.5em;
+	padding:10px;
 }
 
-#toolbar div.ssh_links {
-	display: inline-block;
-    position: relative;
-    z-index: 999999;
-    cursor: pointer;
-    border: 1px #a0a0a0 dashed;
-}
-#toolbar div.ssh_links ul {
-	display: none;
+#lowerbar {
+	height: 39px;
+	bottom: 0;
 	position: absolute;
-	list-style-type: none;
-    margin: 0;
-    padding: 0;
-    background: #eeeeee;
-    border: 1px #606060 solid;
-    border-top: none;
+	border-top:1px solid #abc5cd;
+	padding:10px 20px;
 }
 
-#toolbar div.ssh_links:hover ul {
-	display: block;
-}
-
-#toolbar div.ssh_links ul li {
-    margin: 0;
-    padding: 2px;
-    border-top: #606060 solid 1px;
+#toolbar,
+#lowerbar {
+	background: #dcf5fd;
 }
 
 #editor { 
-	top: 40px;
+	/*top: 60px;
 	position: absolute;
-	bottom: 0px;
+	bottom: 60px;*/
+	
+	width:75%;
+	height:calc(100vh - 130px);
+	position:relative;
+	z-index:9;
+	top:70px;
+	direction:initial;
+	
 }
 #sidebar {
 	top: 0;
 	bottom: 0;
+	left: calc(75% - 1px);
+	right: 0;
 	position: absolute;
 	height: 100%;
 	background: #f0f0f0;
+	border-left:1px solid #ccc;
 }
+
+#sidebar a {
+	color:#1d6eb6;
+}
+
 #sidebar.sidebarEmpty {
 	background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 25px, #d0d0d0 25px, #d0d0d0 50px);
 }
 
-#sidebar .sidepanel_title {
-	font-weight: bold;
+#sidebar .sidepanel_header,
+#sidebar .info {
+	background:#d3d3d3;
+	padding:6px 10px;
+}
+
+#sidebar .sidepanel_header + .sidepanel_header {
+	padding-top:0;
+}
+
+#sidebar .sidepanel_header table {
+	border-spacing:0;
+}
+
+#sidebar .sidepanel_header table,
+#sidebar .sidepanel_header table th,
+#sidebar .sidepanel_header table td {
+	padding:0;
+	margin:0;
+}
+
+#sidebar .sidepanel_header table.selected_path td code {
+	display: inline-block;
+  	background: #f5f892;
+  	padding: 1px 5px;
+}
+
+#sidebar .sidepanel_header span.info_icon {
+	font-size:16px;
+}
+
+#sidebar .info {
+	background:#d3d3d3;
+	padding:10px 12px;
+	line-height:1.5em;
+}
+
+#sidebar .info .info_text,
+#sidebar .info .learn_yaml {
+	padding-top:8px;
 }
 
 .vscroll {
@@ -109,19 +169,67 @@ body {
 }
 
 
+#toolbar h1 {
+	margin: 0;
+	padding: 0 0 2px;
+	font-size: 15px;
+}
+
+#toolbar div.toolbar_content {
+	position:relative;
+	float: left;
+	width:calc(100% - 270px - 40px);
+	padding-left:40px;
+	max-height:50px;
+}
+
+#toolbar div.toolbar_content p {
+	line-height:1.35em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+#toolbar div.toolbar_content .zenario_debug {
+	position:absolute;
+	left:0;
+}
+
+#toolbar div.toolbar_content .zenario_debug div {
+	width: 28px;
+	height: 28px;
+	background-size:18px 18px;
+}
+
+#toolbar div.buttons {
+	float: right;
+	width:270px;
+	padding-top:5px;
+}
+
+#toolbar div.buttons input {
+	margin-left:5px;
+}
 
 
-#toolbar select {
+#lowerbar select {
 	width: auto;
 }
 
-#toolbar .asterisk_explination {
+#lowerbar .asterisk_explination {
 	line-height: 1em;
-	font-size: 0.7em;
+	font-size: 0.75em;
 	font-style: italic;
-	margin-left: 75px;
+	margin-left: 10px;
+	padding-top:4px;
 }
 
+
+#sidebar .sidepanel_title {
+	font-weight: bold;
+}
 
 #sidebar .tagPath li.active {
 	color: black;
@@ -143,20 +251,25 @@ body {
 	margin: 0;
 }
 
-#sidebar .properties_table td.property_name {
-	text-align: right;
+#sidebar .properties_table {
+	width:100%;
+  	border-collapse: collapse;
+  	border-top:1px solid #aaa;
+  	border-bottom:1px solid #aaa;
 }
 
 #sidebar .properties_table td {
 	border-top: 1px solid #a0a0a0;
 }
 
-#sidebar .property td.property_name input {
+#sidebar .property td.property_name > span {
 	background: white;
+	color:#0c2193;
 	border: #c0c0c0 1px solid;
-	border-radius: 3px;
-	padding: 0px 3px;
-	width: 85%;
+	border-radius: 2px;
+	padding: 0px 5px;
+	width: calc(100% - 30px);
+	display: inline-block;
 	float: left;
 	position: relative;
 	left: 3px;
@@ -171,15 +284,16 @@ body {
 	color: #e00000;
 	float: right;
 	position: relative;
-	right: 10px;
-	top: 2px;
+	left: 2px;
+	right: 2px;
+	top: 0;
 }
 
-#sidebar .undefined_property td.property_name input {
-	background: #e0e0e0;
+#sidebar .undefined_property td.property_name > span {
+	color:#867f7f;
 }
 
-#sidebar .undefined_property.required td.property_name input {
+#sidebar .undefined_property.required td.property_name > span {
 	background: #ffd0d0;
 }
 
@@ -206,7 +320,9 @@ body {
 	max-width: 900px;
 	font-style: normal;
 	font-weight: normal;
-	font-size: 14px;
+	font-size: 12px;
+	line-height:1.5em;
+	padding:10px 15px;
 }
 
 .editor_tooltip p,
@@ -227,6 +343,7 @@ body {
 }
 
 #toolbar,
+#lowerbar,
 #sidebar,
 .editor_tooltip,
 .zenario_devtools_tooltip {
@@ -234,6 +351,30 @@ body {
 }
 
 #toolbar,
+#lowerbar,
 #sidebar {
-	font-size: 13px;
+	font-size: 12px;
+}
+
+#editor.ace-tm .ace_marker-layer .ace_active-line {
+	background:#f5f892;
+}
+
+/* RESPONSIVE STYLES
+--------------------------------------------------------------------------------------------------*/
+
+/* Layout max-width: 1024px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1025px) {
+		
+		#toolbar {
+			height:69px;
+		}
+		
+		#editor {
+			height:calc(100vh - 150px);
+			top:90px;
+		}
+	
 }

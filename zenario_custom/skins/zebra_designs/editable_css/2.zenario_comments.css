@@ -1,0 +1,274 @@
+.zenario_comments__default_style .list_of_comments {
+	border-top:2px solid #ccc;
+	padding-top:30px;
+}
+
+.zenario_comments__default_style .list_of_comments .comments_box {
+	overflow:hidden;
+	padding:20px 25px;
+	margin-bottom:15px;
+	background: #f7f7f7;
+	border:1px solid #d8d8d8;
+}
+
+.zenario_comments__default_style .list_of_comments .comments_box .user_info,
+.zenario_comments__default_style .list_of_comments .comments_box .date_posted,
+.zenario_comments__default_style .list_of_comments .user_info,
+.zenario_comments__default_style .list_of_comments .user_info a {
+	color:#084F67;
+}
+
+.zenario_comments__default_style .list_of_comments .comments_box .user_info .username:not(.email),
+.zenario_comments__default_style .list_of_comments .user_info .username a {
+	font-weight:bold;
+	font-size:1.125em;
+}
+
+.zenario_comments__default_style .list_of_comments .comments_box .date_posted,
+.zenario_comments__default_style .list_of_comments .comments_box .user_info .username.email,
+.zenario_comments__default_style .list_of_comments .user_info > .user_info_data > div {
+	font-size:0.813em;
+}
+
+.zenario_comments__default_style .list_of_comments .user_info > .user_info_data > div.username:first-child {
+	font-size:1em;
+}
+
+.zenario_comments__default_style .list_of_comments .comments_box .post_area {
+	padding-top:15px;
+}
+
+.zenario_comments__default_style .list_of_comments .comments_box .buttons {
+	padding-top:15px;
+	margin-top:40px;
+	border-top:1px solid #d8d8d8;
+
+}
+
+.zenario_comments__default_style .list_of_comments .comments_box .buttons .report {
+	float:right;
+}
+
+/* Form */
+
+.zenario_comments__default_style .list_of_comments .comments_label {
+	margin-bottom:8px;
+}
+
+.zenario_comments__default_style .list_of_comments .comments_field,
+.zenario_comments__default_style .list_of_comments .comments_form .user_info {
+	margin-bottom:15px;
+}
+
+.zenario_comments__default_style .list_of_comments .user_info {
+	overflow:hidden;
+	display:flex;
+}
+
+.zenario_comments__default_style .list_of_comments .user_info > .user_info_avatar img {
+	margin-right:20px;
+}
+
+.zenario_comments__default_style .list_of_comments .user_info > .user_info_data {
+	display: inline-block;
+  	align-self: flex-end;
+}
+
+.zenario_comments__default_style .list_of_comments .user_info > .user_info_data .online {
+	color:green;
+}
+
+/* Editor */
+
+.zenario_comments__default_style .zenario_tinymce_toolbar_container,
+.zenario_comments__default_style .mce-content-body {
+	border:1px solid #b8babc;
+}
+
+.zenario_comments__default_style .zenario_tinymce_toolbar_container {
+	border-bottom:0;
+	background:#f5f5f5;
+}
+
+.zenario_comments__default_style .zenario_tinymce_toolbar_container .mce-panel,
+.zenario_comments__default_style .zenario_tinymce_toolbar_container .mce-btn {
+	background:transparent;
+}
+
+.zenario_comments__default_style .zenario_tinymce_toolbar_container .mce-btn.mce-active, 
+.zenario_comments__default_style .zenario_tinymce_toolbar_container .mce-btn.mce-active:hover, 
+.zenario_comments__default_style .zenario_tinymce_toolbar_container .mce-btn.mce-active:focus, 
+.zenario_comments__default_style .zenario_tinymce_toolbar_container .mce-btn.mce-active:active {
+	background:#555c66;
+}
+
+.zenario_comments__default_style .zenario_tinymce_toolbar_container .mce-panel {
+	border:0;
+}
+
+.zenario_comments__default_style .mce-content-body {
+	padding:12px;
+	background:#f7fbfe;
+}
+
+.zenario_comments__default_style .mce-content-body blockquote,
+.zenario_comments__default_style .list_of_comments .comments_box .post_area blockquote {
+	background:#e9f0f4;
+	border:1px solid #e7e7e7;
+	padding:12px;
+	border-left:3px solid #2a98ce;
+	margin-bottom:15px;
+}
+
+.zenario_comments__default_style .mce-content-body blockquote,
+.zenario_comments__default_style .mce-content-body blockquote blockquote,
+.zenario_comments__default_style .list_of_comments .comments_box .post_area blockquote {
+	margin-top:15px;
+}
+
+/* Confirmation box */
+
+.zenario_comments__default_style form.delete_post,
+.zenario_comments__default_style form.lock_thread,
+.zenario_comments__default_style form.unlock_thread,
+.zenario_comments__default_style form.approve_post {
+	text-align:center;
+	margin-top:40px;
+}
+
+.zenario_comments__default_style .confirmation_box {
+	border:3px solid #777;
+	padding:30px;
+	width:100%;
+	max-width:600px;
+	margin:auto;
+	display:inline-block;
+	-webkit-border-radius: 15px;
+	border-radius: 15px;
+}
+
+.zenario_comments__default_style .confirmation_box .post_area {
+	font-size:1.125em;
+}
+
+.zenario_comments__default_style .confirmation_box .buttons {
+	display:inline-block;
+}
+
+/* Bottom buttons */
+
+.zenario_comments__default_style .list_of_comments > .buttons {
+	margin-top:40px;
+	text-align:center;
+}
+
+.zenario_comments__default_style .edit_post .comments_form,
+.zenario_comments__default_style .post_reply .comments_form,
+.zenario_comments__default_style .post_reply .comments_screening_notice,
+.zenario_comments__default_style form.report_post .comments_form {
+	text-align:center;
+}
+
+.zenario_comments__default_style .edit_post .comments_form > div,
+.zenario_comments__default_style .post_reply .comments_form > div,
+.zenario_comments__default_style form.report_post .comments_form > div {
+	text-align:left;
+}
+
+.zenario_comments__default_style .list_of_comments > .buttons > div,
+.zenario_comments__default_style .edit_post .comments_form > div.buttons,
+.zenario_comments__default_style .post_reply .comments_form > div.buttons,
+.zenario_comments__default_style form.report_post .comments_form > div.buttons {
+	display:table;
+	margin:0 auto 10px;
+}
+
+.zenario_comments__default_style .edit_post .comments_form > div.buttons,
+.zenario_comments__default_style .post_reply .comments_form > div.buttons,
+.zenario_comments__default_style form.report_post .comments_form > div.buttons {
+	margin-top:40px;
+}
+
+.zenario_comments__default_style .post_reply .comments_screening_notice {
+	padding-top:20px;
+	color:#2a98ce;
+}
+
+.zenario_comments__default_style .post_reply .comments_screening_notice:before {
+	font-family:"FontAwesome";
+	content:"\f05a";
+	padding-right:8px;
+}
+
+.zenario_comments__default_style .buttons .comments_description a {
+	color:#2a98ce;
+}
+
+/* Buttons */
+
+.zenario_comments .buttons input {
+	font-size:1em;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+}
+
+.zenario_comments__default_style .buttons,
+.zenario_comments__default_style .moderators_buttons,
+.zenario_comments__default_style .users_buttons {
+	overflow:hidden;
+	margin-top:20px;
+}
+
+.zenario_comments__default_style .i {
+	display: inline-block;
+    height: 35px;
+    line-height: 32px;
+    padding: 0 20px;
+    border: 0;
+    background: #000;
+    color: #FFF;
+    text-align: center;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.zenario_comments__default_style .main_btn .i {
+	background:#2a98ce;
+}
+
+.zenario_comments__default_style .i.cancel,
+.zenario_comments__default_style .control_btn .i.cancel {
+	background:#6d8892;
+}
+
+.zenario_comments__default_style .control_btn .i {
+	background:#2e7091;
+}
+
+.zenario_comments__default_style div.admin .i {
+	background:#b22f2f;
+}
+
+.zenario_comments__default_style .comments_box .control_btn .i {
+    height: 25px;
+    line-height: 22px;
+    padding: 0 15px;
+    font-size:0.813em;
+}
+
+.zenario_comments__default_style .control_btn input.i {
+	padding-bottom:3px;
+}
+
+.zenario_comments__default_style a.i:hover {
+	text-decoration:none;
+}
+
+
+.zenario_comments__default_style .control_btn,
+.zenario_comments__default_style .main_btn,
+.zenario_comments__default_style .forum_btn {
+	float:left;
+	margin-right:10px;
+}

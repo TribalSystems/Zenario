@@ -150,6 +150,9 @@ zenarioO.pi = false;
 zenarioO.inspectionView = false;
 
 
+var secondLevelNavCollapsed = false;
+
+
 
 
 //Create an instance of the admin forms library for the view options box
@@ -434,7 +437,7 @@ zenarioO.savePrefs = function(sync) {
 	
 	//We'll generate a new checksum so that others can tell that this is a change.
 	//We'll also remember the checksum to try and prevent accidentally loading an old checksum due to any race conditions.
-	zenarioO.previousPrefChecksums[zenarioO.prefsChecksum = request.checksum = hex_md5(request.prefs)] = true;
+	zenarioO.previousPrefChecksums[zenarioO.prefsChecksum = request.checksum = crc32(request.prefs)] = true;
 	
 	$.ajax({
 		type: 'POST',
@@ -3956,6 +3959,8 @@ zenarioO.setViewOptions = function() {
 						row_class: 'zenario_date_filters_for_field',
 						label: '<span class="zenario_date_filters_phrase">' + phrase.after + '</span>',
 						type: 'date',
+						allow_typing_in_date_field: true,
+						change_month_and_year: true,
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateAfter,
 						hidden: hidden,
@@ -3966,6 +3971,8 @@ zenarioO.setViewOptions = function() {
 						row_class: 'zenario_date_filters_for_field',
 						label: '<span class="zenario_date_filters_phrase">' + phrase.before + "</span>",
 						type: 'date',
+						allow_typing_in_date_field: true,
+						change_month_and_year: true,
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateBefore,
 						hidden: hidden,
@@ -4957,10 +4964,16 @@ zenarioO.setBackButton = function() {
 	if (!titles || titles.length == 0) {
 		get('organizer_branding_title').style.display = 'block';
 		domBackButton.style.display = 'none';
+		
+		$('#organizer_mainColumnsWrap').removeClass('organizer_mainColumns_hide_2LevelNav');
+		secondLevelNavCollapsed = false;
 	
 	} else {
 		get('organizer_branding_title').style.display = 'none';
 		domBackButton.style.display = 'block';
+		
+		$('#organizer_mainColumnsWrap').addClass('organizer_mainColumns_hide_2LevelNav');
+		secondLevelNavCollapsed = true;
 		
 		foreach (titles as i) {
 			data.buttons[i] = {
@@ -5283,10 +5296,7 @@ zenarioO.setNavigation = function(returnData) {
 				item_css_class = secondLevel.css_class;
 				
 				//If a CSS class wasn't set, attempt to look up the icons used in the target panel.
-				//(This is currently only needed for the Admin Toolbar, so I'm only
-				// doing the logic if the returnData variable is set.)
 				if (!item_css_class
-				 && returnData
 				 && (panelItemDefaults = zenarioO.followPathOnMap(path, 'item'))) {
 					item_css_class = panelItemDefaults.css_class;
 				}
@@ -5350,7 +5360,7 @@ zenarioO.getNavigation = function() {
 
 //For T12085, Menu links into Organizer from admin toolbar: make the nav 2 columns to avoid long menus
 zenarioO.splitCols = function(items) {
-	var i,
+	var i, halfWay,
 		di, deepArray = [[]];
 	
 	//console.log(items);
@@ -5372,9 +5382,11 @@ zenarioO.splitCols = function(items) {
 	for (di = 0; di < deepArray.length; ++di) {
 		items = deepArray[di];
 		
+		halfWay = Math.ceil(items.length / 2);
+		
 		deepArray[di] = [
-			_.filter(items, function(item, i) { return !(i % 2); }),
-			_.filter(items, function(item, i) { return i % 2; })
+			_.filter(items, function(item, i) { return i < halfWay; }),
+			_.filter(items, function(item, i) { return i >= halfWay; })
 		];
 	}
 	
@@ -5391,14 +5403,14 @@ zenarioO.setTopLevelNavScrollStatus = function($topLevelNav) {
 		$topLevelNav = $('#organizer_topLevelNav');
 	}
 	
-	var scrollLength = $('#organizer_topLevelNavInner').outerHeight() - $topLevelNav.innerHeight();
+	var scrollTop,
+		scrollLength = $('#organizer_topLevelNavInner').outerHeight() - $topLevelNav.innerHeight(),
+		needsScrollbars = scrollLength > 0;
 	
-	if (scrollLength <= 0) {
-		$('#organizer_topLevelNavScroll').hide();
-	} else {
-		$('#organizer_topLevelNavScroll').show();
-		
-		var scrollTop = $topLevelNav.scrollTop();
+	zenarioL.set(needsScrollbars, 'nav_scrolls', 'nav_doesnt_scroll');
+	
+	if (needsScrollbars) {
+		scrollTop = $topLevelNav.scrollTop();
 		
 		if (scrollTop > 0) {
 			$('#organizer_topLevelNavScrollUp').addClass('organizer_scrollActive');
@@ -6811,7 +6823,11 @@ zenarioO.size = function(refresh) {
 			}
 			
 			if (zenarioO.showLeftColumn) {
-				leftColAdjustment = 204;
+				if (secondLevelNavCollapsed) {
+					leftColAdjustment = 55;
+				} else {
+					leftColAdjustment = 204;
+				}
 				get('organizer_leftColumn').style.display = get('organizer_leftColumnOuter').style.display = '';
 			} else {
 				leftColAdjustment = 0;

@@ -1,22 +1,61 @@
-<div class="organizer_item">
-	<div
-		class="organizer_legend {{m.selected? 'legend_on' : ''|escape}}"
+<li class="{{m.selected? 'on' : ''|escape}}">
+	<div class="organizer_item">
+		<div
+			class="organizer_legend {{m.selected? 'legend_on' : ''|escape}}"
 		
-		<% if (m['data-intro']) { %>
-			data-intro="{{m['data-intro']|escape}}"
-		<% } %>
-		<% if (m['data-position']) { %>
-			data-position="{{m['data-position']|escape}}"
-		<% } %>
-		<% if (m['data-step']) { %>
-			data-step="{{m['data-step']|escape}}"
-		<% } %>
-	>
-		<a title="{{m.label|escape}}|{{m.tooltip|escape}}"
-			class="organizer_top_level_image {{m.css_class|escape}}"
-			href="{{m.href|escape}}"
-			onclick="{{m.onclick|escape}}">
-				<span></span>
-		</a>
+			<% if (m['data-intro']) { %>
+				data-intro="{{m['data-intro']|escape}}"
+			<% } %>
+			<% if (m['data-position']) { %>
+				data-position="{{m['data-position']|escape}}"
+			<% } %>
+			<% if (m['data-step']) { %>
+				data-step="{{m['data-step']|escape}}"
+			<% } %>
+		>
+			<a class="organizer_top_level_image {{m.css_class|escape}}"
+				href="{{m.href|escape}}"
+				onclick="{{m.onclick|escape}}">
+					<span></span>
+			</a>
+		</div>
 	</div>
-</div>
+	<% if (m.items && m.items.length) { %>
+		<% if (m.id == 'zenario__administration') { %>
+			<!-- Show the "Configuration" section using two columns -->
+			<% var hi, hBlock, vi, vBlock, vBlocks = zenarioO.splitCols(m.items); %>
+			<div class="
+				zenario_attld_vertical_blocks
+			
+				<% switch (_.size(vBlocks)) { %>
+					<% case 1: %>
+						zenario_attld_1_vertical_block
+						<% break; %>
+				
+					<% default: %>
+						zenario_attld_multiple_vertical_blocks
+						zenario_attld_{{_.size(vBlocks)}}_vertical_blocks
+				<% } %>
+			">
+				<% foreach (vBlocks as vi => vBlock) { %>
+					<div class="zenario_attld_vertical_block">
+						<div class="zenario_attld_horizontal_blocks">
+							<% foreach (vBlock as hi => hBlock) { %>
+								<% if (!_.isEmpty(hBlock)) { %>
+									<div class="zenario_attld_horizontal_block">
+										<ul>{{zenarioT.microTemplate('zenario_organizer_nav_second_level', hBlock)}}</ul>
+									</div>
+								<% } %>
+							<% } %>
+						</div>
+					</div>
+				<% } %>
+			</div>
+		<% } else { %>
+			<!-- Show all other sections using one column -->
+			<ul>
+				{{zenarioT.microTemplate('zenario_organizer_nav_second_level', m.items)}}
+			</ul>
+		<% } %>
+	<% } %>
+</li>

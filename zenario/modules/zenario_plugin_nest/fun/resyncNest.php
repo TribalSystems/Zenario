@@ -27,12 +27,18 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+if (empty($instance)) {
+	$instance = ze\plugin::details($instanceId);
+}
+
 $key = ['instance_id' => $instanceId];
 
-//Ensure there is at least one slide in the nest
-$key['is_slide'] = 1;
-if (!ze\row::exists('nested_plugins', $key)) {
-	self::addSlide($instanceId);
+//Except for simple slideshows, ensure there is at least one slide in the nest
+if ($instance['class_name'] != 'zenario_slideshow_simple') {
+	$key['is_slide'] = 1;
+	if (!ze\row::exists('nested_plugins', $key)) {
+		self::addSlide($instanceId);
+	}
 }
 
 
@@ -74,4 +80,6 @@ $key['cols'] = -1;
 ze\row::update('nested_plugins', ['cols' => 0], $key);
 
 //Update the request variables for the slides in this nest
-ze\pluginAdm::setSlideRequestVars($instanceId);
+if ($instance['class_name'] == 'zenario_plugin_nest') {
+	ze\pluginAdm::setSlideRequestVars($instanceId);
+}

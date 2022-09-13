@@ -63,7 +63,7 @@ _sql
 		`node_id` int(10) unsigned NOT NULL,
 		`top_of_column` tinyint(1),
 		PRIMARY KEY (`node_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 );

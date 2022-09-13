@@ -49,7 +49,7 @@ if ($module = ze\module::details($addPlugin)) {
 			'ord' => $ord,
 			'module_id' => $addPlugin,
 			'framework' => $module['default_framework'],
-			'name_or_title' => ($displayName ?: $module['display_name'])]);
+			'name_or_slide_label' => ($displayName ?: $module['display_name'])]);
 
 } else {
 	return false;

@@ -24,8 +24,52 @@
 	padding:20px;
 }
 
-.zenario_html_snippet img.image_no_padding {
-	padding:0;
+.zenario_html_snippet img[align="right"] {
+	padding-right:0;
+}
+
+.zenario_html_snippet img[align="left"] {
+	padding-left:0;
+}
+
+.zenario_html_snippet blockquote {
+  	position: relative; 
+    text-align: center;
+    padding: 1rem 1.2rem;
+    width: 80%;  /* create space for the quotes */
+    color: #484748;
+    margin: 30px auto 2rem;
+	background:
+    linear-gradient(to right, #000000 4px, transparent 4px) 0 100%,
+    linear-gradient(to left, #000000 4px, transparent 4px) 100% 0,
+    linear-gradient(to bottom, #000000 4px, transparent 4px) 100% 0,
+    linear-gradient(to top, #000000 4px, transparent 4px) 0 100%;
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    font-style:italic;
+}
+
+.zenario_html_snippet blockquote:before,
+.zenario_html_snippet blockquote:after{
+    font-family: FontAwesome;
+    position: absolute;
+    color: #000000;
+    font-size: 34px;
+}
+
+.zenario_html_snippet blockquote:before{
+    content: "\f10d";
+    top: -12px;
+    margin-right: -20px;
+    right: 100%;
+}
+
+.zenario_html_snippet blockquote:after{
+    content: "\f10e";
+    margin-left: -20px;
+    left: 100%;  
+    top: auto;
+    bottom: -20px;
 }
 
 .zenario_html_snippet p + h2,
@@ -73,7 +117,32 @@
 	opacity:0.85;
 }
 
-/* Tip
+/* Preformatted
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_html_snippet pre {
+	margin-bottom:15px;
+	padding:1em;
+	background:#f5f2f0;
+}
+
+/* Format class defined on description.yaml : Image no padding
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_html_snippet img.image_no_padding {
+	padding:0;
+}
+
+/* Format class defined on description.yaml : Paragraph highlight
+--------------------------------------------------------------------------------------------------*/
+.zenario_html_snippet .paragraph_highlight {
+	padding:15px;
+	margin-bottom:15px;
+	background:#2A46CE;
+	color:#FFF;
+}
+
+/* Format class defined on description.yaml : Paragraph tip info
 --------------------------------------------------------------------------------------------------*/
 
 .zenario_html_snippet p.tip_info {
@@ -99,4 +168,23 @@
     position: absolute;
     left: 15px;
     top: 15px;
+}
+
+/* Main site
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_html_snippet p.main_site_link {
+	margin:0;
+	padding:0 0 0 14px;
+	font-size:0.813em;
+}
+
+.zenario_html_snippet p.main_site_link:before {
+  	font-family: 'FontAwesome';
+  	content: "\f104";
+  	font-size: 16px;
+  	position: absolute;
+  	top: 0;
+  	left: 0;
+  	padding-right: 5px;
 }

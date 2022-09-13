@@ -293,7 +293,6 @@ site_settings:
             label: Test
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 description:
                     full_width: true

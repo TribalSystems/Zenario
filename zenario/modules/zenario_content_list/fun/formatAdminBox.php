@@ -33,7 +33,7 @@ switch ($path) {
 		//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
 		//Commenting out the code in case we want it back in the future.
 
-		// $fields['each_item/author_retina']['hidden'] = 
+		// $fields['each_item/image_2_retina']['hidden'] = 
 		// 	!$values['each_item/show_author_image'];
 		
 		$retinaSideNote = "If the source image is large enough,
@@ -46,11 +46,11 @@ switch ($path) {
 		//See the comment above.
 		
 		// $hidden = !$values['each_item/show_author_image'];
-		// $this->showHideImageOptions($fields, $values, 'each_item', $hidden, 'author_');
-		// if ($values['each_item/author_canvas'] != "unlimited") {
-		// 	$fields['each_item/author_canvas']['side_note'] = $retinaSideNote;
+		// $this->showHideImageOptions($fields, $values, 'each_item', $hidden, 'image_');
+		// if ($values['each_item/image_2_canvas'] != "unlimited") {
+		// 	$fields['each_item/image_2_canvas']['side_note'] = $retinaSideNote;
 		// } else {
-		// 	$fields['each_item/author_canvas']['side_note'] = "";
+		// 	$fields['each_item/image_2_canvas']['side_note'] = "";
 		// }
 		
 		$fields['overall_list/heading_if_items']['hidden'] = 
@@ -65,12 +65,12 @@ switch ($path) {
 		
 		$fields['each_item/retina']['hidden'] = 
 		$fields['each_item/fall_back_to_default_image']['hidden'] = 
-			!$values['each_item/show_sticky_images'];
+			!$values['each_item/show_featured_image'];
 		
 		$fields['each_item/default_image_id']['hidden'] = 
-			!($values['each_item/show_sticky_images'] && $values['each_item/fall_back_to_default_image']);
+			!($values['each_item/show_featured_image'] && $values['each_item/fall_back_to_default_image']);
 		
-		$hidden = !$values['each_item/show_sticky_images'];
+		$hidden = !$values['each_item/show_featured_image'];
 		$this->showHideImageOptions($fields, $values, 'each_item', $hidden);
 		if ($values['each_item/canvas'] != "unlimited") {
 			$fields['each_item/canvas']['side_note'] = $retinaSideNote;
@@ -208,6 +208,23 @@ switch ($path) {
 
 			$fields['overall_list/zip_archive_name']['placeholder'] = $placeholder;
 			$fields['overall_list/zip_archive_name']['side_note'] = $this->phrase($sideNote, ['placeholder' => $placeholder]);
+		}
+
+		//RSS
+		if ($values['overall_list/enable_rss']) {
+			$fields['overall_list/rss_include_item_title']['hidden'] =
+			$fields['overall_list/rss_include_item_description']['hidden'] =
+			$fields['overall_list/rss_include_item_link']['hidden'] =
+			$fields['overall_list/rss_include_item_author']['hidden'] =
+			$fields['overall_list/rss_include_item_publication_date']['hidden'] =
+			$fields['overall_list/rss_include_item_guid']['hidden'] = false;
+		} else {
+			$fields['overall_list/rss_include_item_title']['hidden'] =
+			$fields['overall_list/rss_include_item_description']['hidden'] =
+			$fields['overall_list/rss_include_item_link']['hidden'] =
+			$fields['overall_list/rss_include_item_author']['hidden'] =
+			$fields['overall_list/rss_include_item_publication_date']['hidden'] =
+			$fields['overall_list/rss_include_item_guid']['hidden'] = true;
 		}
 
 		break;

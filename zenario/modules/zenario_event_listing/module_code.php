@@ -96,7 +96,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			}
 			
 			$defaultImageURL = false;
-			if ($this->setting('show_sticky_images') && $this->setting('fall_back_to_default_image')) {
+			if ($this->setting('show_featured_image') && $this->setting('fall_back_to_default_image')) {
                 $width = 0;
                 $height = 0;
 			    ze\file::imageLink($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
@@ -111,7 +111,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			    $eventRow = [];
 				$eventRow['Link_To_Event'] = $this->linkToItem($row['id'], 'event');
 				
-				if ($this->setting('show_sticky_images')) {
+				if ($this->setting('show_featured_image')) {
 				    $stickyImageURL = $defaultImageURL;
 				    
                     $url = '';
@@ -716,17 +716,17 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				
 				$fields['each_item/retina']['hidden'] = 
                 $fields['each_item/fall_back_to_default_image']['hidden'] = 
-                    !$values['each_item/show_sticky_images'];
+                    !$values['each_item/show_featured_image'];
         
                 $fields['each_item/default_image_id']['hidden'] = 
-                    !($values['each_item/show_sticky_images'] && $values['each_item/fall_back_to_default_image']);
+                    !($values['each_item/show_featured_image'] && $values['each_item/fall_back_to_default_image']);
                    
                 $fields['each_item/show_location_name']['hidden'] = 
                 $fields['each_item/show_location_city']['hidden'] = 
                 $fields['each_item/show_location_country']['hidden'] = 
                 	!($values['each_item/show_location']);
                 	
-                $hidden = !$values['each_item/show_sticky_images'];
+                $hidden = !$values['each_item/show_featured_image'];
                 $this->showHideImageOptions($fields, $values, 'each_item', $hidden);
                 
                 $categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');

@@ -1,0 +1,448 @@
+.zenario_location_map_and_listing_2 {
+	/* This class will be applied to all plugins of this type. */
+}
+
+.zenario_location_map_and_listing_2 .zenario_lmal_location {
+	position:relative;
+}
+
+.zenario_location_map_and_listing_2 .zenario_front_end_picked_item_info {
+	position:absolute;
+	right:0;
+	top:0;
+}
+
+body.desktop .zenario_location_map_and_listing_2 .interface_header ul.mode {
+	display:none;
+}
+
+body.mobile .zenario_location_map_and_listing_2 .interface_header ul.mode {
+	display:block;
+	clear:both;
+	float:none;
+}
+
+body.mobile .zenario_location_map_and_listing_2 .interface_list_container,
+body.mobile .zenario_location_map_and_listing_2 .interface_map_container {
+	display:none;
+}
+
+body.mobile.mode_map .zenario_location_map_and_listing_2 .interface_map_container {
+	display:block;
+}
+
+body.mobile.mode_list .zenario_location_map_and_listing_2 .interface_list_container {
+	display:block;
+}
+
+.zenario_location_map_and_listing_2 .interface_body .interface_list_container .zenario_lmal_location {
+	cursor:pointer;
+}
+
+/* These CSS rules are important to the map appear */
+
+.zenario_location_map_and_listing_2 .zenario_lmal_map_iframe_wrap iframe {
+	width:100%;
+	height:500px;
+	border:0;
+}
+
+body.zenario_showing_plugin_without_layout,
+body.zenario_showing_plugin_without_layout.zenario_adminLoggedIn {
+	height:calc(100% - 1px);
+}
+
+body.zenario_showing_plugin_without_layout {
+	overflow:hidden;
+}
+
+body.zenario_showing_plugin_without_layout.zenario_adminLoggedIn > x-zenario-admin-slot-wrapper,
+body.zenario_showing_plugin_without_layout .zenario_location_map_and_listing_2,
+body.zenario_showing_plugin_without_layout .zenario_location_map_and_listing_2 > div {
+	height:100%;
+}
+
+/* Google map styles */
+
+.zenario_location_map_and_listing_2 div[class*="gm-"] button {
+	min-width:auto;
+}
+
+.zenario_location_map_and_listing_2 .gm-style-iw-d {
+	width:300px;
+	overflow:hidden;
+	font-size:'robotolight',Arial, Helvetica, sans-serif;
+	line-height:1.5em;
+}
+
+.zenario_location_map_and_listing_2 .gm-style-iw-d a {
+	color:#00659b;
+}
+
+.zenario_location_map_and_listing_2 .gm-style-iw-d #location_title {
+	color:#2a98ce;
+	font-size:1.1em;
+}
+
+.zenario_location_map_and_listing_2 .gm-style-iw-d .lmal_location_image {
+	float:left;
+	margin-right:10px;
+}
+
+.zenario_location_map_and_listing_2 .gm-style-iw-d .lmal_location_image img {
+	max-width:70px;
+}
+
+/* Default style class */
+
+.zenario_location_map_and_listing_2__default_style h2,
+.zenario_location_map_and_listing_2__default_style h3,
+.zenario_location_map_and_listing_2__default_style h5,
+.zenario_location_map_and_listing_2__default_style p {
+	margin:0;
+}
+
+.zenario_location_map_and_listing_2__default_style a {
+	color:#00659b;
+}
+
+.zenario_location_map_and_listing_2__default_style {
+	border:1px solid #eee;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container,
+.zenario_location_map_and_listing_2__default_style .zenario_lmal_map_iframe_wrap iframe {
+	height:550px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container {
+	overflow-y:auto;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header {
+	background:#EEE;
+	border-bottom:1px solid #FFF;
+	padding:15px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header:before,
+.zenario_location_map_and_listing_2__default_style .interface_header:after {
+	content: '.';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header:after {
+	clear: both;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters {
+	position:relative;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters #filter_button_and_dropdown {
+	float:left;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters #filter_button_and_dropdown h5.filter_button {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1em;
+	float:left;
+	
+	display:inline-block;
+	position:relative;
+	height:38px;
+	width:120px;
+	line-height:35px;
+	padding:0 30px 0 42px;
+	cursor:pointer;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters #filter_button_and_dropdown h5.filter_button,
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .filter_dropdown {
+	background:#00659b;
+	color:#FFF;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters h5.filter_button:before,
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters h5.filter_button:after {
+	font-family:"FontAwesome";
+	position:absolute;
+	top:0;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters h5.filter_button:before {
+	content:"\f1de";
+	font-size:22px;
+	left:12px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters h5.filter_button:after {
+	content:"\f107";
+	right:8px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .filter_dropdown {
+	width:300px;
+  	overflow: hidden;
+  	display:none;
+	position: absolute;
+  	z-index: 2;
+  	top: 38px;
+  	left: 0;
+	padding:10px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .filter_dropdown.active {
+	display:block;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .filter_dropdown .filter_dropdown_inner {
+	font-size:90%;
+	background:#fff;
+	color:#333;
+	text-align:center;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .filter_dropdown .filter_dropdown_inner .apply_filters_button {
+	cursor:pointer;
+	display:inline-block;
+	margin:10px;
+	padding:0 10px;
+	background:#2a98ce;
+	color:#FFF;
+	line-height:30px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .filter_dropdown .filter_dropdown_inner form {
+	text-align:left;
+	padding:10px;
+	border:1px solid #ccc;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .filter_dropdown_inner form > div[class*="interface_filter"] {
+	margin-bottom:5px;
+	background:#f4f4f9;
+	padding:5px 10px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .filter_dropdown_inner div[class*="interface_filter"] div[class*="interface_filter"] {
+	margin-left:15px;
+	clear:both;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .filter_dropdown_inner div[class*="interface_filter"] div[class*="interface_filter"] label {
+	display:block;
+	padding-top:5px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .selected_filters {
+	float:left;
+	max-width:calc(100% - 224px);
+	height:40px;
+	line-height:34px;
+	margin-left:10px;
+	padding:0 10px;
+  	white-space: nowrap;
+  	overflow: hidden;
+  	text-overflow: ellipsis;
+}
+
+body.mobile .zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .selected_filters {
+	float: none;
+    max-width: none;
+    clear:both;
+    margin:0;
+    padding:0;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .selected_filters > span {
+	font-size:0.846em;
+	display: inline-block;
+	background: rgba(42,152,206,0.2);
+	line-height: 1em;
+	padding: 4px 7px;
+	margin-right:4px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .selected_filters > span span.closing_button {
+	cursor:pointer;
+	
+	font-size: 8px;
+	display: inline-block;
+	line-height: 6px;
+	padding: 2px 3px 3px;
+	margin-left:3px;
+	border-radius: 50%;
+	font-weight: bold;
+	border: 1px solid #AAA;
+	background:#dfdfdf;
+	color: #AAA;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .selected_filters > span span.closing_button:hover {
+	color:#7b9eca;
+	border-color:#7b9eca;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .selected_filters > span {
+	-webkit-animation: change-background-color 2s; /* Safari 4+ */
+  	-moz-animation:    change-background-color 2s; /* Fx 5+ */
+  	-o-animation:      change-background-color 2s; /* Opera 12+ */
+  	animation:         change-background-color 2s; /* IE 10+ */
+}
+
+@-webkit-keyframes change-background-color {
+    0% { background:#FFBFBF; }
+    100% { background: rgba(60, 131, 187, 0.1); }
+}
+@-moz-keyframes change-background-color {
+    0% { background:#FFBFBF; }
+    100% { background: rgba(60, 131, 187, 0.1); }
+}
+@-o-keyframes change-background-color {
+    0% { background:#FFBFBF; }
+    100% { background: rgba(60, 131, 187, 0.1); }
+}
+@keyframes change-background-color {
+    0% { background:#FFBFBF; }
+    100% { background: rgba(60, 131, 187, 0.1); }
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header #interface_filters + ul.mode {
+	padding-top:15px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode,
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode li {
+	list-style:none;
+	margin:0;
+	padding:0;
+	display:inline-block;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode li {
+	padding:0 15px;
+	height:34px;
+	line-height:34px;
+	background:#777;
+	color:#FFF;
+	cursor:pointer;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode li.on {
+	background:#2a98ce;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode li:first-child {
+	margin-right:5px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode li:before {
+	font-family: "FontAwesome";
+  	padding-right: 10px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode li.mode_list::before {
+  content: "\f03a";
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_header ul.mode li.mode_map::before {
+  content: "\f041";
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body {
+	overflow:hidden;
+	background:#eff5f9;
+}
+
+body.desktop .zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container {
+	width:35%;
+	float:left;
+}
+
+body.desktop .zenario_location_map_and_listing_2__default_style .interface_body .interface_map_container {
+	width:65%;
+	float:right;
+}
+
+body.desktop .zenario_location_map_and_listing_2__default_style .interface_body .interface_map_container iframe {
+	float:left;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .title_div {
+	padding:15px;
+	border-bottom:1px solid #FFF;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .title_div h2 {
+	font-size:1.3em;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .zenario_lmal_location {
+	overflow:hidden;
+	padding:15px;
+	margin:5px;
+	background:#fff;
+	border:1px solid #eee;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .lmal_location_image {
+	float:left;
+	margin-right:10px;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .zenario_lmal_location h3 {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1em;
+	color:#2a98ce;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .zenario_lmal_location .zenario_lmal_filters_list,
+.zenario_location_map_and_listing_2 .gm-style-iw-d .lmal_location_content .zenario_lmal_filters_list,
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .zenario_lmal_location .zenario_lmal_contact_info,
+.zenario_location_map_and_listing_2 .gm-style-iw-d .lmal_location_content .zenario_lmal_contact_info {
+	font-size:85%;
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .zenario_lmal_location .zenario_lmal_contact_info span + span:before,
+.zenario_location_map_and_listing_2 .gm-style-iw-d .lmal_location_content .zenario_lmal_contact_info span + span:before {
+	content:" | ";
+}
+
+.zenario_location_map_and_listing_2__default_style .interface_body .interface_list_container .zenario_lmal_location .lmal_location_content {
+	overflow:hidden;
+}
+
+.zenario_location_map_and_listing_2 .gm-style-iw-d .lmal_location_content a:focus{
+	outline:none;
+	outline:0;
+}
+
+.zenario_lmal_marker__cafes_and_coffee {
+	width: 21px;
+	height: 21px;
+	display: block;
+	background: url("../images/icon_cafes_and_coffee.png") no-repeat center !important;
+	background-size:21px 21px !important;
+}
+
+#map {
+	display:none !important;
+}
+
+#map + .zenario_slot_padding {
+	display:none;
+}
+
+.zenario_location_map_and_listing_2 .gm-style iframe + div {
+	border:0 !important;
+}

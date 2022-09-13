@@ -31,6 +31,7 @@ class zenario_menu_responsive_multilevel_2 extends zenario_menu {
 	
 	public function init(){
 		if (parent::init()) {
+			ze::requireJsLib('zenario/libs/manually_maintained/mit/slimmenu/jquery.slimmenu.min.js');
 			if ($this->setting('show_link_to_home_page')) {
 				if ($tagId = $this->setting('home_page')) {
 					$cID = $cType = false;

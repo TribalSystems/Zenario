@@ -40,93 +40,39 @@ if ($topic == 'body_classes') {
 	?>
 		<h1>Zenario help: CSS classes that appear on the <code>&lt;body&gt;</code> tag</h1>
 		<p>
-			Zenario adds several CSS classes to the <code>&lt;body&gt;</code> tag of the page to help you
-			add styles in certain situations.
-			You can use these classes when writing styles.
+			Zenario adds the following CSS classes to the <code>&lt;body&gt;</code> tag.
 		</p>
 		
-		<pre>body.responds ... { ... }</pre>
+		<pre>body.fluid, body.fixed</pre>
 		<p>
-			This is set when using a grid layout that is responsive.
-			When the page is viewed on a mobile device,
-			the grid will be disabled and the slots will be displayed in one column.
+			Set according to whether the layout is set to Fluid or Fixed width.
 		</p>
 		
-		<pre>body.unresponsive ... { ... }</pre>
+		<pre>body.desktop</pre>
 		<p>
-			The opposite of the above, this is set when using a grid layout that is not responsive.
-			When the page is viewed on a mobile device,
-			the Grid layout will still be enabled and the viewer will be forced to scroll around to read the entire page.
+			Set when the layout is Responsive, and the client's current window width is wide enough to show the grid.
 		</p>
 		
-		<pre>body.mobile ... { ... }</pre>
+		<pre>body.mobile</pre>
 		<p>
-			This is set when using a responsive grid layout, and the grid is disabled because
-			the current width of the device is smaller than the minimum width of the grid.
+			Set when the layout is Responsive, and the client's current window width is narrower than the minimum width of the layout's grid
+			(such as when a mobile device is used), so that the grid becomes disabled.
 		</p>
 		
-		<pre>body.desktop ... { ... }</pre>
+		<pre>body.js, body.no_js</pre>
 		<p>
-			The opposite of the above, this is set when the current width of the device is large enough
-			to show the grid.
+			Set according to whether JavaScript is enabled in the client browser.
 		</p>
 		
-		<pre>body.underBP1 ... { ... }</pre>
+		<pre>body.retina, body.not_retina</pre>
 		<p>
-			If you set a custom break-point on your layout,
-			this is set when current width of the device is smaller than the custom break-point.
-		</p>
-		
-		<pre>body.overBP1 ... { ... }</pre>
-		<p>
-			The opposite of the above,
-			this is set when current width of the device is greater than or equal to the custom break-point.
-		</p>
-		
-		<pre>body.underBP2 ... { ... }</pre>
-		<p>
-			If you set a second custom break-point on your layout,
-			this is set when current width of the device is smaller than the second custom break-point.
-		</p>
-		
-		<pre>body.overBP2 ... { ... }</pre>
-		<p>
-			The opposite of the above,
-			this is set when current width of the device is greater than or equal to the second custom break-point.
-		</p>
-		
-		<pre>body.js ... { ... }</pre>
-		<p>
-			This is set when JavaScript is enabled in the visitor's browser.
-		</p>
-		
-		<pre>body.no_js ... { ... }</pre>
-		<p>
-			This is set when JavaScript is disabled in the visitor's browser.
-		</p>
-		
-		<pre>body.retina ... { ... }</pre>
-		<p>
-			This is set when a visitor has a high pixel density screen, and a browser that supports it.
+			Set according to whether client has a high pixel density screen, and a browser that supports it.
 			<code>1px</code> in your code may represent two (or more) pixels on the screen.
 		</p>
 		
-		<pre>body.not_retina ... { ... }</pre>
+		<pre>body.touchscreen, body.non_touchscreen</pre>
 		<p>
-			The opposite of the above,
-			this is set when a visitor has a standard pixel density
-			(i.e. <code>1px</code> in your code represents one pixel on the screen).
-		</p>
-		
-		<pre>body.touch ... { ... }</pre>
-		<p>
-			This is set when the visitor has a touch-screen, and a browser that supports it.
-		</p>
-		
-		<pre>body.no_touching ... { ... }</pre>
-		<p>
-			The opposite of the above,
-			this is set when there is no touch screen available.
+			Set according to whether the visitor is using a touchscreen, and a browser that supports it.
 		</p>
 		
 	<?php

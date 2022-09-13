@@ -221,7 +221,7 @@ function renamePluginSetting($moduleNames, $oldPluginSettingName, $newPluginSett
 		ze\sql::update($sql);
 	}
 
-	if ($checkNonNestedPlugins) {
+	if ($checkNestedPlugins) {
 		$sql = "
 			UPDATE IGNORE `". DB_PREFIX. "modules` AS m
 			INNER JOIN `". DB_PREFIX. "nested_plugins` AS np
@@ -300,4 +300,140 @@ if (ze\dbAdm::needRevision(53600)) {
 }
 
 
+//Rename a *lot* of inconsistent plugin settings
+if (ze\dbAdm::needRevision(55900)) {
+	renamePluginSetting(['zenario_content_list'], 'author_canvas', 'image_canvas', true, true);
+	renamePluginSetting(['zenario_content_list'], 'author_width', 'image_width', true, true);
+	renamePluginSetting(['zenario_content_list'], 'author_height', 'image_height', true, true);
+	renamePluginSetting(['zenario_content_list'], 'author_retina', 'image_retina', true, true);
+
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_canvas', 'image_canvas', true, true);
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_width', 'image_width', true, true);
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_height', 'image_height', true, true);
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_list_retina', 'image_retina', true, true);
+
+	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_canvas', 'image_canvas', true, true);
+	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_width', 'image_width', true, true);
+	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_height', 'image_height', true, true);
+	renamePluginSetting(['zenario_location_map_and_listing', 'zenario_location_map_and_listing_2'], 'list_view_thumbnail_retina', 'image_retina', true, true);
+
+	renamePluginSetting(['zenario_event_slideshow'], 'slide_canvas', 'image_canvas', true, true);
+	renamePluginSetting(['zenario_event_slideshow'], 'slide_width', 'image_width', true, true);
+	renamePluginSetting(['zenario_event_slideshow'], 'slide_height', 'image_height', true, true);
+	renamePluginSetting(['zenario_event_slideshow'], 'slide_retina', 'image_retina', true, true);
+
+	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_canvas', 'image_canvas', true, true);
+	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_width', 'image_width', true, true);
+	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_height', 'image_height', true, true);
+	renamePluginSetting(['zenario_conference_fea'], 'thumbnail_retina', 'image_retina', true, true);
+
+	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_canvas', 'image_canvas', true, true);
+	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_width', 'image_width', true, true);
+	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_height', 'image_height', true, true);
+	renamePluginSetting(['zenario_ctype_document'], 'sticky_image_retina', 'image_retina', true, true);
+
+	renamePluginSetting(['zenario_meta_data'], 'sticky_image_canvas', 'image_2_canvas', true, true);
+	renamePluginSetting(['zenario_meta_data'], 'sticky_image_width', 'image_2_width', true, true);
+	renamePluginSetting(['zenario_meta_data'], 'sticky_image_height', 'image_2_height', true, true);
+	renamePluginSetting(['zenario_meta_data'], 'sticky_image_retina', 'image_2_retina', true, true);
+
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_canvas', 'image_2_canvas', true, true);
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_width', 'image_2_width', true, true);
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_height', 'image_2_height', true, true);
+	renamePluginSetting(['zenario_user_profile_search'], 'photo_popup_retina', 'image_2_retina', true, true);
+
+	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_canvas', 'image_2_canvas', true, true);
+	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_width', 'image_2_width', true, true);
+	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_height', 'image_2_height', true, true);
+	renamePluginSetting(['zenario_location_map_and_listing'], 'map_view_thumbnail_retina', 'image_2_retina', true, true);
+	
+	renamePluginSetting(['zenario_content_list', 'zenario_event_listing', 'zenario_location_listing', 'zenario_blog_news_list', 'zenario_event_calendar', 'zenario_forum_list'], 'show_sticky_images', 'show_featured_image', true, true);
+	renamePluginSetting(['zenario_meta_data'], 'show_sticky_image', 'show_featured_image', true, true);
+	
+	renamePluginSetting(['zenario_meta_data'], 'show_feature_image_fallback', 'fall_back_to_default_image', true, true);
+	renamePluginSetting(['zenario_meta_data'], 'feature_image_fallback', 'default_image_id', true, true);
+	
+	
+	ze\dbAdm::revision(55900);
+}
+
+
+//Migrate the "nest type" and "slideshow type" plugin settings from being
+//stored as indiviudal checkboxes, to being stored as an enum.
+if (ze\dbAdm::needRevision(56290)) {
+	
+	$sql = "
+		SELECT
+			m.class_name,
+			pi.id AS instanceId,
+			psTabs.value AS show_tabs,
+			psButtons.value AS show_next_prev_buttons,
+			psConductor.value AS enable_conductor
+		FROM `". DB_PREFIX. "modules` AS m
+		INNER JOIN `". DB_PREFIX. "plugin_instances` AS pi
+		   ON pi.module_id = m.id
+		LEFT JOIN `". DB_PREFIX. "plugin_settings` AS psTabs
+		   ON psTabs.instance_id = pi.id
+		  AND psTabs.egg_id = 0
+		  AND psTabs.name = 'show_tabs'
+		LEFT JOIN `". DB_PREFIX. "plugin_settings` AS psButtons
+		   ON psButtons.instance_id = pi.id
+		  AND psButtons.egg_id = 0
+		  AND psButtons.name = 'show_next_prev_buttons'
+		LEFT JOIN `". DB_PREFIX. "plugin_settings` AS psConductor
+		   ON psConductor.instance_id = pi.id
+		  AND psConductor.egg_id = 0
+		  AND psConductor.name = 'enable_conductor'
+		WHERE m.class_name IN ('zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple')";
+	
+	foreach (ze\sql::fetchAssocs($sql) as $nest) {
+		
+		$isNest = $nest['class_name'] == 'zenario_plugin_nest';
+		
+		//Check what was selected for the existing options.
+		//Attempt to migrate to the most sensible option in the enum.
+		if ($isNest) {
+			if (!empty($nest['enable_conductor']) && $isNest) {
+				$nestType = 'conductor';
+		
+			} elseif (!empty($nest['show_tabs'])) {
+				if (!empty($nest['show_next_prev_buttons'])) {
+					$nestType = 'tabs_and_buttons';
+				} else {
+					$nestType = 'tabs';
+				}
+		
+			} else {
+				if (!empty($nest['show_next_prev_buttons'])) {
+					$nestType = 'buttons';
+				} else {
+					$nestType = 'permission';
+				}
+			}
+		} else {
+			if (!empty($nest['show_tabs'])) {
+				if (!empty($nest['show_next_prev_buttons'])) {
+					$nestType = 'indicator_and_buttons';
+				} else {
+					$nestType = 'indicator';
+				}
+		
+			} else {
+				if (!empty($nest['show_next_prev_buttons'])) {
+					$nestType = 'buttons';
+				} else {
+					$nestType = 'permission';
+				}
+			}
+		}
+		
+		ze\row::set('plugin_settings', ['value' => $nestType], [
+			'instance_id' => $nest['instanceId'],
+			'egg_id' => 0,
+			'name' => 'nest_type'
+		]);
+	}
+	
+	ze\dbAdm::revision(56290);
+}
 

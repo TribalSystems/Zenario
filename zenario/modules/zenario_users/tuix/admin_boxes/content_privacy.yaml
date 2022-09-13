@@ -3,7 +3,6 @@
 zenario_content_privacy:
     priv: _PRIV_EDIT_DRAFT
     hide_tab_bar: true
-    max_height: 600
     key:
         id: ""
         originalId: ""
@@ -23,38 +22,53 @@ zenario_content_privacy:
                     snippet: 
                         html: |
                            <p>Use this screen to edit permissions for this content item.</p>
-                           <p>The Extranet Base Module needs to be running in order to show options for making the item private.</p>
+                
+                privacy_settings_disabled_note:
+                    pre_field_html: '<div class="zenario_fbInfo">'
+                    snippet:
+                        html: 'The Extranet Base Module needs to be running in order to show options for making the item private.'
+                    post_field_html: '</div>'
+                    hidden: true
                 
                 privacy:
-                    label: 'Visibility:'
+                    label: 'Permission to access:'
                     type: radios
                     values:
                         public:
-                            label: Public, visible to everyone
+                            icon_class: content_privacy public
+                            label: 'Public: visible to everyone'
                         logged_in:
-                            label: Private, only show to extranet users
+                            icon_class: content_privacy logged_in
+                            label: 'Private: access is only for extranet users'
                         group_members:
-                            label: 'Private, only show to extranet users in group(s)...'
+                            icon_class: content_privacy group_members
+                            label: 'Private: access is only for extranet users in groups...'
                             split_values_if_selected: true
                         in_smart_group:
-                            label: 'Private, only show to extranet users in smart group...'
+                            icon_class: content_privacy smart_group
+                            label: 'Private: access is only for extranet users in the smart group...'
                             split_values_if_selected: true
                         logged_in_not_in_smart_group:
-                            label: 'Private, only show to extranet users NOT in smart group...'
+                            icon_class: content_privacy smart_group
+                            label: 'Private: access is only for extranet users NOT in the smart group...'
                             split_values_if_selected: true
                         with_role:
-                            label: 'Private, only show to extranet users with role...'
+                            icon_class: content_privacy with_role
+                            label: 'Private: access is only for extranet users with role...'
                             type: checkboxes
                             values: ""
                             checking_child_checks_parents: true
                             split_values_if_selected: true
                         logged_out:
-                            label: Public, only show to visitors who are NOT logged in
+                            icon_class: content_privacy logged_out
+                            label: 'Access is only for visitors who are NOT logged in (advanced)'
                         call_static_method:
+                            icon_class: content_privacy call_static_method
                             label: "Call a module's static method to decide (advanced):"
                             split_values_if_selected: true
                         send_signal:
-                            label: Send a signal to decide (advanced)
+                            icon_class: content_privacy send_signal
+                            label: 'Send a signal to decide (advanced)'
                     format_onchange: true
                     validation:
                         required_if_not_hidden: Please select a visibility option
@@ -66,15 +80,25 @@ zenario_content_privacy:
                     type: checkboxes
                     no_values_message: No groups defined
                     validation:
-                        required_if_not_hidden: Please select a group
+                        required_if_not_hidden: Please select a group.
                 smart_group_id:
+                    #If no smart groups are defined, this field will not be displayed.
+                    #It will be hidden in the PHP class, and its visible_if logic will be removed.
                     indent: 1
                     visible_if: >
                         zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
                     type: select
                     empty_value: ' -- Select -- '
                     validation:
-                        required_if_not_hidden: Please select a smart group
+                        required_if_not_hidden: Please select a smart group.
+                no_smart_groups_defined:
+                    #If there are smart groups defined, this field will not be displayed.
+                    #It will be unset in the PHP class.
+                    indent: 1
+                    snippet:
+                        html: 'No smart groups defined'
+                    visible_if: >
+                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
                 role_ids:
                     indent: 1
                     visible_if: >
@@ -82,7 +106,7 @@ zenario_content_privacy:
                     type: checkboxes
                     no_values_message: No roles defined
                     validation:
-                        required_if_not_hidden: Please select a role
+                        required_if_not_hidden: Please select a role.
                 at_location:
                     indent: 1
                     hide_with_previous_field: true
@@ -143,14 +167,13 @@ zenario_content_privacy:
                     snippet:
                         html: |
                             Content items with this permission
-                            will never appear in content summary lists,
-                            even if a user can access them.
+                            will never appear in Content Summary Lists.
                 
                 privacy_part_2:
                     snippet:
                         show_split_values_from: privacy
                     note_below: |
-                        Content items are always visible to logged in administrators.
+                        Content items are always visible to logged-in administrators.
 
     confirm:
         message: ''

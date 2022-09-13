@@ -24,7 +24,26 @@ plugin_settings:
                 show_missing_menu_nodes:
                     plugin_setting:
                         name: show_missing_menu_nodes
-                    label: 'Show missing Menu Nodes:'
+                    label: 'Where menu node translation is missing, show menu node in default language'
                     type: checkbox
                     value: ""
+                show_visitor_cookie_management_link:
+                    plugin_setting:
+                        name: show_visitor_cookie_management_link
+                    label: 'Show link to visitor cookie management'
+                    type: checkbox
+                    value: ""
+                    redraw_onchange: true
+                    side_note: 'This will only appear if the <a href=\'organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}\' target=\'_blank\'>cookie policy</a> is set to "Explicit consent".'
+                manage_cookies_phrase:
+                    indent: 1
+                    plugin_setting:
+                        name: manage_cookies_phrase
+                    label: '"Manage cookies" phrase:'
+                    type: text
+                    show_phrase_icon: true
+                    value: 'Manage cookies'
+                    visible_if: lib.value('show_visitor_cookie_management_link')
+                    validation:
+                        required_if_not_hidden: 'Please enter the "Manage cookies" phrase.'
     module_class_name: zenario_footer

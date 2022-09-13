@@ -3,7 +3,9 @@
 <% } %>
 <div id="organizer_topLevelNav">
 	<div id="organizer_topLevelNavInner">
-		{{zenarioT.microTemplate('zenario_organizer_nav_top_level', m.items)}}
+		<ul>
+			{{zenarioT.microTemplate('zenario_organizer_nav_top_level', m.items)}}
+		</ul>
 	</div>
 </div>
 <div class="organizer_sectionTitleTextAnd2ndLevelNav">
@@ -27,7 +29,7 @@
  -->
 	</div>
 	<div class="organizer_2ndLevelNav">
-		{{zenarioT.microTemplate('zenario_organizer_nav_second_level', m.items[m.selected1st].items)}}
+		{{zenarioT.microTemplate('zenario_organizer_nav_current_second_level', m.items[m.selected1st].items)}}
 	</div>
 </div>
 <div id="organizer_topLevelNavScroll">

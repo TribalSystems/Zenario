@@ -87,7 +87,8 @@ ze\content::pageFoot($prefix, false, false, false);
 
 ?>
 
-<script type="text/javascript" src="zenario/libs/yarn/vimeo-upload/vimeo-upload.js"></script>
+<!-- Uploading is disabled until we replace the library. -->
+<!-- <script type="text/javascript" src="zenario/libs/yarn/vimeo-upload/vimeo-upload.js"></script> -->
 <script type="text/javascript">
 
 	var noErrors = true;

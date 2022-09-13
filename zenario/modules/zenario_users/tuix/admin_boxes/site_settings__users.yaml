@@ -5,7 +5,7 @@ site_settings:
     title: Editing settings for Users/Contacts
     tabs:
         names:
-            label: Usernames and sign-in
+            label: Identifiers
             show_errors_after_field: description
             edit_mode:
                 enabled: true
@@ -43,9 +43,6 @@ site_settings:
                     type: checkbox
                     format_onchange: true
                     value: 1
-                    
-                    
-                
                 user_chars_from_first_name:
                     site_setting:
                         name: user_chars_from_first_name
@@ -138,18 +135,6 @@ site_settings:
                         label_class: subheading
                 zenario_extranet:
                     type: grouping
-                min_extranet_user_password_length:
-                    label: 'Minimum length:'
-                    grouping: password_requirements
-                    site_setting:
-                        name: min_extranet_user_password_length
-                    type: text
-                    note_below: |
-                        Length must be between 8 and 32 characters. We recommend 10 or longer.
-                    style: "width:50px;"
-                    validation:
-                        numeric: true
-                    note_below: Length must be between 8 and 32 characters.
                 min_extranet_user_password_score:
                     label: 'Minimum score:'
                     grouping: password_requirements
@@ -177,6 +162,23 @@ site_settings:
                                 1: Weak password, very guessable.<br />
                                 0: Very weak password, extremely guessable.<br />
                             </div><br /><br /><br />
+                min_extranet_user_password_length:
+                    label: 'Minimum length:'
+                    grouping: password_requirements
+                    site_setting:
+                        name: min_extranet_user_password_length
+                    type: text
+                    note_below: |
+                        Length must be between 8 and 32 characters. We recommend 10 or longer.
+                    style: "width:50px;"
+                    slider:
+                        range: min
+                        min: 8
+                        max: 32
+                        before_field: true
+                    validation:
+                        numeric: true
+                    note_below: Length must be between 8 and 32 characters.
                     # The <br /> tags above are required, as Extranet Base module adds its own field
                     # with pre- and post-field HTML, which blends with the snippet above.
                 
@@ -212,8 +214,34 @@ site_settings:
                 #         name: symbols_in_user_password
                 #     type: checkbox
                 #     value: false
+        activation_email_template:
+            label: "Activation"
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                Select the default email template for the activation of new users.
+                            </p>
+                default_activation_email_template:
+                    site_setting:
+                        name: default_activation_email_template
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: Yes
+                    value: zenario_users__to_user_account_activated
         groups:
-            label: Groups
+            label: Options
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -222,11 +250,22 @@ site_settings:
                 default_groups_dataset_tab:
                     site_setting:
                         name: default_groups_dataset_tab
-                    label: 'Default tab for Groups:'
+                    label: 'Default Groups tab in the User/Contact admin box:'
                     type: select
                     value: details
                     side_note: |
-                        When a group is created from the Groups panel, add the Group to this tab of the Edit User/Contacts admin box. Go to Datasets->Users to re-arrange.
+                        This defines which tab of User/Contact admin box contains the Groups checboxes. If creating a group, it will appear on this tab. Go to Datasets->Users to re-arrange.
+                max_user_image_filesize:
+                    site_setting:
+                        name: max_user_image_filesize
+                    label: 'Maximum user image file size:'
+                    type: text
+                    value: "50000"
+                    side_note: >
+                        Maximum allowed file size for avatar images uploaded by extranet users, in bytes.
+                    validation:
+                        required: Please enter a maximum user image file size.
+                        numeric: The number must be numeric.
         
         countries:
             label: Countries
@@ -303,7 +342,7 @@ site_settings:
                     value: 90
                     side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".
         inactive_user_email:
-            label: Inactive user email
+            label: Follow-up emails
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -314,7 +353,7 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                This option allow you send up to 2 emails to inactive users in different periods.
+                                This option allow you send up to 2 emails to users who are not logging in.
                             
                                 These emails will be sent by a scheduled task.
                             </p>
@@ -423,55 +462,6 @@ site_settings:
                     site_setting: 
                         name: user_dataset_field_to_receive_emails
                     type: select
-                    empty_value: ' -- Select -- '
+                    empty_value: '-- Select --'
                     value: ""
-        activation_email_template:
-            label: "Activation email template"
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
-            fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <p>
-                                Select the default email template for the activation of new users.
-                            </p>
-                default_activation_email_template:
-                    site_setting:
-                        name: default_activation_email_template
-                    label: 'Email template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/email_templates
-                        min_path: zenario__email_template_manager/panels/email_templates
-                        max_path: zenario__email_template_manager/panels/email_templates
-                        target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select email template...
-                        hide_remove_button: Yes
-                    value: zenario_users__to_user_account_activated
-        filesizes:
-            label: File Sizes
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
-            fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: This tab contains settings for file uploads.
-                max_user_image_filesize:
-                    site_setting:
-                        name: max_user_image_filesize
-                    label: 'Maximum User Image File Size:'
-                    type: text
-                    value: "50000"
-                    side_note: >
-                        Maximum allowed file size for avatar images uploaded by
-                        Extranet Users, in bytes.
-                    validation:
-                        required: Please enter a Maximum User Image File Size.
-                        numeric: The Maximum User Image File Size must be numeric.
 

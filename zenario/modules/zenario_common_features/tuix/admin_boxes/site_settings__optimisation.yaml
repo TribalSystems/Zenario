@@ -5,7 +5,7 @@ site_settings:
     title: Editing Zenario cache settings
     tabs:
         caching:
-            label: Caching and file wrappers
+            label: Caching and combining files
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -29,74 +29,72 @@ site_settings:
                     readonly: true
                     note_below: ''
                 
-                fab_use_cache_dir:
-                    ord: 997
-                    site_setting:
-                        name: fab_use_cache_dir
-                    label: 'Cache floating admin boxes (recommended)'
-                    type: checkbox
-                    value: 1
-                    note_below: |
-                        If enabled, files will be written to the <code>cache/</code> directory to
-                        help speed up the floating admin boxes.
-                        
-                        If you are running on a cloud server you may need to disable this.
-                
                 css_wrappers:
-                    ord: 998
+                    ord: 997
                     site_setting:
                         name: css_wrappers
                         value: visitors_only
-                    label: 'CSS file wrappers'
+                    label: |
+                            Combine skin CSS files:
                     type: select
                     values:
                         on:
-                            label: Always on
+                            label: Always combine files
                         visitors_only:
-                            label: On for visitors only (recommended)
+                            label: Combine files for visitors only, not admins (recommended)
                         off:
-                            label: Always off
+                            label: Always serve files separately
                     value: on
                     note_below: |
-                        Reduce the number of downloads by combining multiple CSS files together.
-                        This will make your website load faster, but designers may want to turn this off for easier debugging.
-                        (Core files for Zenario will always be combined.)
+                        Zenario can combine the multiple CSS files of a skin together into a single download.
+                        Having less individual files to download means less network connections in the browser
+                        and should make the website load faster,
+                        but we recommend turning this off while working on CSS for easier debugging.
+                        <br/>
+                        <em style="font-style: italic;">
+                            Core files for Zenario will always be combined, and this cannot be disabled.
+                        </em>
                 
                 js_wrappers:
-                    ord: 999
-                    label: 'JavaScript file wrappers'
+                    ord: 998
+                    label: |
+                        Combine plugin JavaScript files:
                     type: select
                     values:
                         on:
-                            label: Always on
+                            label: Always combine files
                     value: on
                     readonly: true
                     note_below: |
-                        Reduce the number of downloads by combining multiple JavaScript files together.
-                        (This cannot be disabled.)
+                        Zenario combines the multiple JavaScript files of plugins on a page into a single download.
+                        Having less individual files to download means less network connections in the browser
+                        and should make the website load faster.
+                        This cannot be disabled.
+                        <br/>
+                        <em style="font-style: italic;">
+                            Core files for Zenario will always be combined, and this also cannot be disabled.
+                        </em>
                 
                 defer_js:
                     site_setting:
                         name: defer_js
                     ord: 999
-                    label: 'Defer JavaScript in visitor mode'
+                    label: 'Defer JavaScript in visitor mode (recommended)'
                     type: checkbox
                     value: 1
                     note_below: |
-                        Deferring JavaScript will make your pages load more quickly, and is recommended in most cases.
+                        Deferring JavaScript will make your pages load more quickly, and is recommended.
                         <br/>
-                        It may cause custom or third-party JavaScript to break. If you have a script from a third-party
-                        that is not working, you may need to turn this setting off.
+                        If you add JavaScript from a third-party to the site, and find it is not working, it may help to turn this setting off.
                         
         
         clear_cache:
             priv: _PRIV_EDIT_SITE_SETTING
-            label: Clear the Cache
+            label: Clear the cache
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: true
-                always_on: true
             notices:
                 notice:
                     type: success

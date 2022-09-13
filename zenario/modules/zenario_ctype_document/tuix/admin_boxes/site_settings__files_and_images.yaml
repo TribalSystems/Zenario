@@ -79,7 +79,7 @@ site_settings:
                     indent: 1
                     site_setting:
                         name: local_file_link_text
-                    label: 'Show local file download link text:'
+                    label: 'Download link text for local files (applies to Content Summary Lists and Document content items):'
                     type: text
                     value: "Download"
                     visible_if: |
@@ -89,7 +89,7 @@ site_settings:
                     indent: 1
                     site_setting:
                         name: s3_file_link_text
-                    label: 'Show s3 file download link text:'
+                    label: 'Download link text for s3 files (applies to Content Summary Lists and Document content items):'
                     type: text
                     value: "Download from S3"
                     visible_if: |
@@ -107,7 +107,7 @@ site_settings:
                     indent: 1
                     site_setting:
                         name: show_format_and_size
-                    label: 'Show format and size'
+                    label: 'Show format and size (applies to Content Summary Lists)'
                     type: checkbox
                     value:  1
                     visible_if: |

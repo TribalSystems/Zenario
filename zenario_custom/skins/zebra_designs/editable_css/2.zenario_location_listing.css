@@ -1,0 +1,68 @@
+.zenario_location_listing {
+	/* This class will be applied to all plugins of this type. */
+}
+
+.zenario_location_listing__default_style .location_listing {
+	background:#eff5f9;
+	padding:10px 20px 20px;
+}
+
+.zenario_location_listing__default_style .single_location {
+	overflow:hidden;
+	margin-top:10px;
+	padding: 20px;
+	background: #fff;
+	border:1px solid #eee;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_sticky_image {
+	float:left;
+	margin-right:20px;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_description {
+	overflow:hidden;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_description h2 {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1.2em;
+	font-weight:600;
+	color:#282e35;
+	margin-bottom:5px;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_description .btn_single_location a {
+	display: inline-block;
+  	margin: 10px 0;
+  	padding: 0 10px;
+  	background: #000;
+  	color: #FFF;
+  	line-height: 30px;
+  	font-size:90%;
+  	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_description .btn_single_location a:hover {
+	background:#b8babc;
+	color:#282e35;
+	text-decoration:none;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_description span {
+	display:block;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_description span a {
+	color:#2a98ce;
+}
+
+.zenario_location_listing__default_style .single_location .single_location_description span.single_location_phone,
+.zenario_location_listing__default_style .single_location .single_location_description span.single_location_fax,
+.zenario_location_listing__default_style .single_location .single_location_description span.single_location_email,
+.zenario_location_listing__default_style .single_location .single_location_description span.single_location_url,
+.zenario_location_listing__default_style .single_location .single_location_description span.single_location_more_link {
+	font-size:85%;
+}

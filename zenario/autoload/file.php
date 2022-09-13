@@ -41,11 +41,11 @@ class file {
 	}
 
 	//Formerly "addFileFromString()"
-	public static function addFromString($usage, &$contents, $filename, $mustBeAnImage = false, $addToDocstoreDirIfPossible = false) {
+	public static function addFromString($usage, &$contents, $filename, $mustBeAnImage = false, $addToDocstoreDirIfPossible = false, $imageCredit = '') {
 	
 		if ($temp_file = tempnam(sys_get_temp_dir(), 'cpy')) {
 			if (file_put_contents($temp_file, $contents)) {
-				return self::addToDatabase($usage, $temp_file, $filename, $mustBeAnImage, true, $addToDocstoreDirIfPossible);
+				return self::addToDatabase($usage, $temp_file, $filename, $mustBeAnImage, true, $addToDocstoreDirIfPossible, false, false, false, false, $imageCredit);
 			}
 		}
 	
@@ -212,7 +212,8 @@ class file {
 	}
 
 	//Formerly "addFileToDatabase()"
-	public static function addToDatabase($usage, $location, $filename = false, $mustBeAnImage = false, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, $imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false) {
+	public static function addToDatabase($usage, $location, $filename = false, $mustBeAnImage = false, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, $imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '') {
+		//$overrideMimeType should only be specified when running the installer, because we don't yet have the proper handling for mime types
 		
 		//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
 		if ($usage == 'email'
@@ -233,14 +234,27 @@ class file {
 		}
 		
 		if ($filename === false) {
-			$filename = \ze\file::safeName(basename($location), true);
+			$filename = \ze\file::safeName(basename($location));
 		} else {
 			$filename = \ze\file::safeName($filename);
 		}
 
 		$file['filename'] = $filename;
-		$file['mime_type'] = \ze\file::mimeType($filename);
+		
+		if ($imageMimeType) {
+			$file['mime_type'] = $imageMimeType;
+		} else {
+			$file['mime_type'] = \ze\file::mimeType($filename);
+		}
+
 		$file['usage'] = $usage;
+
+		//The image credit column was added in Zenario 9.3, rev 55901.
+		//The code below will ensure that the Installer isn't trying to use it
+		//before the relevant DB update adds the new column.
+		if (!is_null(\ze::$dbL) && \ze::$dbL->checkTableDef(DB_PREFIX. 'files', 'image_credit')) {
+			$file['image_credit'] = $imageCredit;
+		}
 
 		if ($mustBeAnImage && !\ze\file::isImageOrSVG($file['mime_type'])) {
 			return false;
@@ -282,7 +296,7 @@ class file {
 
 
 		//Check if the file is an image and get its meta info
-		//(Note this logic is the same as in ze\file::check(), except it also saves the meta info.)
+		//(Note this logic is the same as in \ze\file::check(), except it also saves the meta info.)
 		if (\ze\file::isImageOrSVG($file['mime_type'])) {
 	
 			if (\ze\file::isImage($file['mime_type'])) {
@@ -316,42 +330,87 @@ class file {
 	
 			} else
 			if (function_exists('simplexml_load_string')) {
+				
+				//For SVGs, try to read the metadata from the image and get the width and height from it.
 				\ze::ignoreErrors();
 					$svg = simplexml_load_string(file_get_contents($location));
 				\ze::noteErrors();
 				
 				if ($svg) {
+					//There are lots of possible formats for this to watch out for.
+					//I've tried to be very flexible and code support for as many as I
+					//know. This code has suppose for setting the width and height in the
+					//following formats:
+						// width="123" height="456"
+						// width="123px" height="456px"
+						// width="100%" height="100%" viewbox="0 0 123 456"
+					//...and also any variation of those should work!
+					$vars = [];
 					foreach ($svg->attributes() as $name => $value) {
 						switch (strtolower($name)) {
 							case 'width':
-								$file['width'] = (int) $value;
-								break;
-				
 							case 'height':
-								$file['height'] = (int) $value;
+								$value = (string) $value;
+								if (is_numeric($value)) {
+									$vars[$name] = (int) $value;
+								} else {
+									$value2 = str_replace('px', '', $value);
+									if (is_numeric($value2)) {
+										$vars[$name] = (int) $value2;
+									} else {
+										$value2 = str_replace('%', '', $value);
+										if (is_numeric($value2)) {
+											$vars[$name. '%'] = (int) $value2;
+										}
+									}
+								}
 								break;
-				
 							case 'viewbox':
-					
-								$viewbox = explode(' ', (string) $value);
-					
-								if (empty($file['width']) && !empty($viewbox[2])) {
-									$file['width'] = (int) $viewbox[2];
+								$vb = explode(' ', (string) $value);
+								for ($i = 0; $i < 4; ++$i) {
+									if (isset($vb[$i]) && is_numeric($vb[$i])) {
+										$vars['vb'. $i] = (int) $vb[$i];
+									}
+									
 								}
-								if (empty($file['height']) && !empty($viewbox[3])) {
-									$file['height'] = (int) $viewbox[3];
-								}
+								break;
 						}
 					}
+					
+					//Set the width and height from the variables we just extracted.
+					//If we failed to do this, default to 100x100.
+					if (isset($vars['width'])) {
+						$file['width'] = $vars['width'];
+					
+					} elseif (isset($vars['vb0'], $vars['vb2'])) {
+						$file['width'] = (int) (($vars['vb2'] - $vars['vb0']) * ($vars['width%'] ?? 100) / 100);
+					
+					} else {
+						$file['width'] = 100;
+					}
+					
+					if (isset($vars['height'])) {
+						$file['height'] = $vars['height'];
+					
+					} elseif (isset($vars['vb1'], $vars['vb3'])) {
+						$file['height'] = (int) (($vars['vb3'] - $vars['vb1']) * ($vars['height%'] ?? 100) / 100);
+					
+					} else {
+						$file['height'] = 100;
+					}
+					
 				} else {
 					return false;
 				}
 			}
 	
-	
-			$filenameArray = explode('.', $filename);
-			$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
-			$file['alt_tag'] = $altTag;
+			if ($imageAltTag) {
+				$file['alt_tag'] = $imageAltTag;
+			} else {
+				$filenameArray = explode('.', $filename);
+				$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
+				$file['alt_tag'] = $altTag;
+			}
 		}
 
 
@@ -403,7 +462,8 @@ class file {
 			if (80 <= $jpeg_quality_limit && $jpeg_quality_limit <= 100) {
 				self::$options['jpegoptim_options'][2] = '--max='. $jpeg_quality_limit;
 			}
-		
+			
+			//advpng_path, jpegoptim_path, jpegtran_path, optipng_path
 			foreach (['advpng', 'jpegoptim', 'jpegtran', 'optipng'] as $program) {
 				if ($programPath = \ze\server::programPathForExec(\ze::setting($program. '_path'), $program, true)) {
 					self::$options[$program. '_bin'] = $programPath;
@@ -452,8 +512,6 @@ class file {
 				}
 				break;
 		}
-
-		self::createWebPFromImage($path, $mimeType);
 	
 		return true;
 	}
@@ -522,10 +580,12 @@ class file {
 	}
 
 	//If an image is set as public, add it to the public/images/ directory
-	public static function addPublicImage($imageId) {
-		//Note: this actually just works by calling the imageLink() function!
-		$width = $height = $url = null;
-		return \ze\file::imageLink($width, $height, $url, $imageId);
+	public static function addPublicImage($imageId, $makeWebP = true) {
+		
+		//Note: this actually just works by calling the function to get a link to the image.
+		$retina = false;
+		$width = $height = $url = $webPURL = $isRetina = $mimeType = null;
+		return \ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, $retina, $isRetina, $mimeType, $imageId);
 	}
 
 	//Look through all images in the database that are flagged as public, check if they're all there, and add them if not
@@ -742,15 +802,16 @@ class file {
 			$usage = 'image';
 		}
 	
-		if ($file = \ze\row::get('files', ['usage', 'filename', 'location', 'data', 'path'], ['id' => $existingFileId])) {
+		if ($file = \ze\row::get('files', ['usage', 'filename', 'location', 'path', 'image_credit'], ['id' => $existingFileId])) {
 			if ($file['usage'] == $usage) {
 				return $existingFileId;
 		
 			} elseif ($file['location'] == 'db') {
-				return self::addFromString($usage, $file['data'], ($filename ?: $file['filename']), $mustBeAnImage, $addToDocstoreDirIfPossible);
+				$data = \ze\row::get('files', 'data', ['id' => $existingFileId]);
+				return self::addFromString($usage, $data, ($filename ?: $file['filename']), $mustBeAnImage, $addToDocstoreDirIfPossible, $file['image_credit']);
 		
 			} elseif ($file['location'] == 'docstore' && ($location = self::docstorePath($file['path']))) {
-				return self::addToDatabase($usage, $location, ($filename ?: $file['filename']), $mustBeAnImage, $deleteWhenDone = false, $addToDocstoreDirIfPossible = true);
+				return self::addToDatabase($usage, $location, ($filename ?: $file['filename']), $mustBeAnImage, $deleteWhenDone = false, $addToDocstoreDirIfPossible = true, false, false, false, false, $file['image_credit']);
 			}
 		}
 	
@@ -1001,14 +1062,497 @@ class file {
 		return implode('.', $filename);
 	}
 	
+
+
+
+	
+	//Try to set the feature image (aka sticky image) for a link to a content item in the framework
+	const featureImageHTMLFromTwig = true;
+	public static function featureImageHTML(
+		$cID, $cType, $cVersion,
+		$useFallbackImage, $fallbackImageId,
+		$maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
+		$altTag, $htmlID = '', $cssClass = '', $styles = '', $attributes = ''
+	) {
+
+		if ($cType == 'picture') {
+			//Legacy code for Pictures
+			$imageId = \ze\row::get("content_item_versions", "file_id", ["id" => $cID, 'type' => $cType, "version" => $cVersion]);
+		} else {
+			$imageId = \ze\file::itemStickyImageId($cID, $cType, $cVersion);
+		} 
+		
+		if (!$imageId && $useFallbackImage) {
+			$imageId = $fallbackImageId;
+		}
+		
+		if ($imageId) {
+			$cssRules = [];
+			return \ze\file::imageHTML(
+				$cssRules, true,
+				$imageId, $maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
+				$altTag, $htmlID, $cssClass, $styles, $attributes
+			);
+		}
+		
+		return '';
+	}
+	
+	//Generate the HTML and CSS tags needed for an image on the page.
+	//This supports numerous different modes and features.
+	//N.b. some modes/features are not compatible with each other, and are mutualy exclusive:
+		//You may only use one of the two following options: Show as background image; Lazy Load
+		//Different options for mobile images cannot be used if the Lazy Load option is being used
+	const imageHTMLFromTwig = true;
+	public static function imageHTML(
+		&$cssRules, $preferInlineStypes,
+		$imageId, $maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
+		$altTag = '', $htmlID = '', $cssClass = '', $styles = '', $attributes = '',
+		$showAsBackgroundImage = false, $lazyLoad = false, $hideOnMob = false, $changeOnMob = false,
+		$mobImageId = false, $mobMaxWidth = false, $mobMaxHeight = false, $mobCanvas = false, $mobRetina = false, $mobWebP = true,
+		$sourceIDPrefix = '',
+		$showImageLinkInAdminMode = true, $imageLinkNum = 1, $alsoShowMobileLink = true, $mobImageLinkNum = 2
+	) {
+		//Get a link to the image. Also get retina/WebP links as well if requested.
+		$retinaSrcset = $webPSrcset = 
+		$baseURL = $retinaURL = $webPURL = $retinaWebPURL =
+		$width = $height = $mimeType = false;
+		if (\ze\file::imageHTMLInternal(
+			$imageId, $maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
+			$baseURL, $retinaURL, $webPURL, $retinaWebPURL,
+			$retinaSrcset, $webPSrcset,
+			$width, $height, $mimeType
+		)) {
+			$setMobDimensions =
+			$mobRetinaSrcset = $mobWebPSrcset =
+			$mobBaseURL = $mobRetinaURL = $mobWebPURL = $mobRetinaWebPURL =
+			$mobWidth = $mobHeight = $mobMimeType = false;
+			
+			//If in admin mode, add a specific CSS class to images.
+			if ($showImageLinkInAdminMode && \ze::isAdmin()) {
+				$cssClass .= ' zenario_image_properties zenario_image_id__'. $imageId. '__ zenario_image_num__'. $imageLinkNum. '__';
+				
+				if ($alsoShowMobileLink && $changeOnMob && $mobImageId != $imageId) {
+					$cssClass .= ' zenario_mob_image_id__'. $mobImageId. '__ zenario_mob_image_num__'. $mobImageLinkNum. '__';
+				}
+			}
+			
+			
+			//Show an image in the background.
+			//This mode:
+				//Requires you to provide a $htmlID for the image.
+				//Does not return any HTML.
+				//Outputs CSS rules for the image into the $cssRules array.
+			if ($showAsBackgroundImage) {
+				
+				//Add CSS rules for the images width/height/URL.
+				//The rules differ slightly if we are using WebP, as we need both the WebP
+				//image and support for a fallback.
+				if ($webPURL) {
+					$cssRules[] = '#'. $htmlID. ' {
+'.					'	display: block;
+'.					'	width: '. $width. 'px;
+'.					'	height: '. $height. 'px;
+'.					'	background-size: '. $width. 'px '. $height. 'px;
+'.					'	background-image: url(\''. htmlspecialchars($webPURL).  '\');
+'.					'	background-repeat: no-repeat;
+'.					'}';
+					$cssRules[] = 'body.no_webp #'. $htmlID. ' {
+'.					'	background-image: url(\''. htmlspecialchars($baseURL).  '\');
+'.					'}';
+				} else {
+					$cssRules[] = '#'. $htmlID. ' {
+'.					'	display: block;
+'.					'	width: '. $width. 'px;
+'.					'	height: '. $height. 'px;
+'.					'	background-size: '. $width. 'px '. $height. 'px;
+'.					'	background-image: url(\''. htmlspecialchars($baseURL).  '\');
+'.					'	background-repeat: no-repeat;
+'.					'}';
+				}
+				
+				//If we have a retina version of the image, add some extra rules to show this
+				//on retina screens.
+				if ($retinaURL) {
+					if ($retinaWebPURL) {
+						$cssRules[] = 'body.retina #'. $htmlID. ' {
+'.						'	background-image: url(\''. htmlspecialchars($retinaWebPURL).  '\');
+'.						'}';
+						$cssRules[] = 'body.retina.no_webp #'. $htmlID. ' {
+'.						'	background-image: url(\''. htmlspecialchars($retinaURL).  '\');
+'.						'}';
+					} else {
+						$cssRules[] = 'body.retina #'. $htmlID. ' {
+'.						'	background-image: url(\''. htmlspecialchars($retinaURL).  '\');
+'.						'}';
+					}
+				}
+				
+				//If we should hide the image on mobile, add one extra rule for this.
+				if ($hideOnMob) {
+					$cssRules[] = 'body.mobile #'. $htmlID. ' { display: none; }';
+				
+				//If we should show a different image on mobile, repeat some of the above logic
+				//and add some extra CSS rules for a mobile version.
+				} elseif ($changeOnMob) {
+					if (\ze\file::imageHTMLInternal(
+						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+						$mobBaseURL, $mobRetinaURL, $mobWebPURL, $mobRetinaWebPURL,
+						$mobRetinaSrcset, $mobWebPSrcset,
+						$mobWidth, $mobHeight, $mobMimeType
+					)) {
+						if ($mobWebPURL) {
+							$cssRules[] = 'body.mobile #'. $htmlID. ' {
+'.							'	width: '. $width. 'px;
+'.							'	height: '. $height. 'px;
+'.							'	background-size: '. $mobWidth. 'px '. $mobHeight. 'px;
+'.							'	background-image: url(\''. htmlspecialchars($mobWebPURL).  '\');
+'.							'}';
+							$cssRules[] = 'body.mobile.no_webp #'. $htmlID. ' {
+'.							'	background-image: url(\''. htmlspecialchars($mobBaseURL).  '\');
+'.							'}';
+						} else {
+							$cssRules[] = 'body.mobile #'. $htmlID. ' {
+'.							'	width: '. $width. 'px;
+'.							'	height: '. $height. 'px;
+'.							'	background-size: '. $mobWidth. 'px '. $mobHeight. 'px;
+'.							'	background-image: url(\''. htmlspecialchars($mobBaseURL).  '\');
+'.							'}';
+						}
+				
+						if ($mobRetinaURL) {
+							if ($mobRetinaWebPURL) {
+								$cssRules[] = 'body.mobile.retina #'. $htmlID. ' {
+'.								'	background-image: url(\''. htmlspecialchars($mobRetinaWebPURL).  '\');
+'.								'}';
+								$cssRules[] = 'body.mobile.retina.no_webp #'. $htmlID. ' {
+'.								'	background-image: url(\''. htmlspecialchars($mobRetinaURL).  '\');
+'.								'}';
+							} else {
+								$cssRules[] = 'body.mobile.retina #'. $htmlID. ' {
+'.								'	background-image: url(\''. htmlspecialchars($mobRetinaURL).  '\');
+'.								'}';
+							}
+						}
+						
+						//If the mobile version is displayed at a different width and height, we'll need to add a
+						//CSS rule to change that info too.
+						if ($mobWidth != $width
+						 || $mobHeight != $height) {
+							$cssRules[] = 'body.mobile #'. $htmlID. ' { width: '. $mobWidth. 'px; height: '. $mobHeight. 'px; }';
+						}
+					}
+				}
+				
+				
+				$html = '';
+				
+				$html .= "\n\t". 'id="'. htmlspecialchars($htmlID). '"';
+				
+				if ($cssClass !== '') {
+					$html .= "\n\t". 'class="'. htmlspecialchars($cssClass). '"';
+				}
+				
+				return $html;
+			
+			
+			//Lazy load an image
+			//This mode:
+				//Writes the URLs for the images needed onto the page, but not in a way that the browser will start loading them.
+				//Relies on the jQuery Lazy library to load them later.
+				//Has some supporting code in the zenario.addJQueryElements() function (in visitor.js) to trigger the load.
+				//Also uses some supporting code to add WebP support with fallbacks for non-WebP browsers.
+				//Does not currently support different images for mobile devices.
+			} elseif ($lazyLoad) {
+				
+				//This code mostly works by writing a normal image tag, but with a few odd exceptions
+				$html = '<img';
+				
+				//The "lazy" class is used to bind the Lazy Load logic to the image
+				$cssClass .= ' lazy';
+				
+				//Require the lazy-load library
+				//Note: due to some bugs when using the "Auto" option for this library, we've removed
+				//the option to select "Auto" for this library, so this line is currently not needed.
+				//\ze::requireJsLib('zenario/libs/yarn/jquery-lazy/jquery.lazy.min.js');
+				
+				if ($webPURL) {
+					//The "lazyWebP" class is used to bind the WebP fallback logic to the image
+					$cssClass .= ' lazyWebP';
+					
+					//Any image URL we will need when the image should be displayed is written to the image,
+					//but using data attributes instead of the attributes used in the HTML spec. This stops the
+					//browser loading them initially.
+					//When we do need to load them, they'll be swapped in by the jQuery Lazy library.
+					$html .= "\n\t". 'type="image/webp"';
+					$html .= "\n\t". 'data-no-webp-type="'. htmlspecialchars($mimeType). '"';
+					
+					$html .= "\n\t". 'data-src="'. htmlspecialchars($webPURL). '"';
+					$html .= "\n\t". 'data-no-webp-src="'. htmlspecialchars($baseURL). '"';
+					
+					if ($retinaSrcset) {
+						$html .= "\n\t". 'data-srcset="'. htmlspecialchars($webPSrcset). '"';
+						$html .= "\n\t". 'data-no-webp-srcset="'. htmlspecialchars($retinaSrcset). '"';
+					}
+				
+				} else {
+					$html .= "\n\t". 'type="'. htmlspecialchars($mimeType). '"';
+					$html .= "\n\t". 'data-src="'. htmlspecialchars($baseURL). '"';
+					
+					if ($retinaSrcset) {
+						$html .= "\n\t". 'data-srcset="'. htmlspecialchars($retinaSrcset). '"';
+					}
+				}
+				
+				if ($htmlID !== '') {
+					$html .= "\n\t". 'id="'. htmlspecialchars($htmlID). '"';
+				}
+				
+				if ($cssClass !== '') {
+					$html .= "\n\t". 'class="'. htmlspecialchars($cssClass). '"';
+				}
+		
+				$html .= "\n\t". 'style="';
+			
+				$html .= htmlspecialchars('width: '. $width. 'px; height: '. $height. 'px;');
+				$html .= ' ';
+				$html .= htmlspecialchars($styles);
+		
+				$html .= '"';
+				
+				if ($altTag !== '') {
+					$html .= "\n\t". 'alt="'. htmlspecialchars($altTag). '"';
+				}
+		
+				if ($attributes !== '') {
+					$html .= ' '. $attributes;
+				}
+				$html .= "\n". '/>';
+				
+				return $html;
+			
+			
+			//"No additional behaviour" mode - aka normal mode.
+			//This mode:
+				//Uses a <picture> tag with <source> tags inside to specify all of the possible links for an image.
+				//Tries to use inline styles to set information if requested and if possible, however some features do need to use CSS rules.
+			} else {
+				$html = '<picture>';
+					
+					//Count how many <source> tags we've used.
+					//If we've been asked to give the <source> tags IDs, we'll use this variable to give them each a different ID.
+					$sIdNum = 0;
+					
+					//Try to hide the image on mobile devices
+					if ($hideOnMob) {
+						if ($preferInlineStypes) {
+							//This is a bit annoying to do if we can't use CSS rules.
+							//As a hack to try and implement it, we'll add a blank source image.
+							$trans = \ze\link::absoluteIfNeeded(). 'zenario/admin/images/trans.png';
+					
+							$html .= "\n\t". '<source';
+								if ($sourceIDPrefix !== '') {
+									$html .= ' id="'. htmlspecialchars($sourceIDPrefix. ++$sIdNum). '"';
+								}
+							$html .= ' srcset="'. htmlspecialchars($trans. ' 1x, '. $trans. ' 2x'). '" media="(max-width: '. (\ze::$minWidth - 1). 'px)" type="image/png">';
+						
+						} else {
+							//So much easier to do if CSS is available!
+							$cssRules[] = 'body.mobile #'. $htmlID. ' { display: none; }';
+						}
+					
+					//Show a different image on a mobile device.
+					} elseif ($changeOnMob) {
+						if (\ze\file::imageHTMLInternal(
+							$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+							$mobBaseURL, $mobRetinaURL, $mobWebPURL, $mobRetinaWebPURL,
+							$mobRetinaSrcset, $mobWebPSrcset,
+							$mobWidth, $mobHeight, $mobMimeType
+						)) {
+							if ($mobRetinaSrcset) {
+								$mobSrcset = $mobBaseURL. ' 1x, '. $mobRetinaSrcset;
+							} else {
+								$mobSrcset = $mobBaseURL;
+							}
+							
+							//We'll set <source> tags with a media/max-width rule to supply a different image on a mobile device
+							if ($webPSrcset) {
+								$html .= "\n\t". '<source';
+									if ($sourceIDPrefix !== '') {
+										$html .= ' id="'. htmlspecialchars($sourceIDPrefix. ++$sIdNum). '"';
+									}
+								$html .= ' srcset="'. htmlspecialchars($mobWebPSrcset). '" media="(max-width: '. (\ze::$minWidth - 1). 'px)" type="image/webp">';
+							}
+						
+							$html .= "\n\t". '<source';
+								if ($sourceIDPrefix !== '') {
+									$html .= ' id="'. htmlspecialchars($sourceIDPrefix. ++$sIdNum). '"';
+								}
+							$html .= ' srcset="'. htmlspecialchars($mobSrcset). '" media="(max-width: '. (\ze::$minWidth - 1). 'px)" type="'. htmlspecialchars($mobMimeType). '">';
+							
+							//If we need to change the image's dimensions on mobile, we can't use inline styles, as they
+							//would overwrite the mobile options.
+							if ($mobWidth != $width
+							 || $mobHeight != $height) {
+								$preferInlineStypes = false;
+								$setMobDimensions = true;
+							}
+						}
+					}
+				
+				
+		
+					//If we have a WebP-version of the image, offer it as an alternate by setting a <source> tag
+					if ($webPSrcset) {
+						$html .= "\n\t". '<source';
+							if ($sourceIDPrefix !== '') {
+								$html .= ' id="'. htmlspecialchars($sourceIDPrefix. ++$sIdNum). '"';
+							}
+						$html .= ' srcset="'. htmlspecialchars($webPSrcset). '" type="image/webp">';
+					}
+		
+					//If we have a retina-version of the image, offer it as an alternate by setting a <source> tag
+					if ($retinaSrcset) {
+						$html .= "\n\t". '<source';
+							if ($sourceIDPrefix !== '') {
+								$html .= ' id="'. htmlspecialchars($sourceIDPrefix. ++$sIdNum). '"';
+							}
+						$html .= ' srcset="'. htmlspecialchars($retinaSrcset). '" type="'. htmlspecialchars($mimeType). '">';
+					}
+					
+					//Write out an actual image tag, with the basic version of the image in the src.
+					$html .= "\n\t". '<img';
+				
+						if ($htmlID !== '') {
+							$html .= "\n\t\t". 'id="'. htmlspecialchars($htmlID). '"';
+						}
+					
+						$html .= "\n\t\t". 'src="'. htmlspecialchars($baseURL). '"';
+				
+						if ($cssClass !== '') {
+							$html .= "\n\t\t". 'class="'. htmlspecialchars($cssClass). '"';
+						}
+						
+						if ($preferInlineStypes || $styles !== '') {
+							$html .= "\n\t\t". 'style="';
+						}
+						
+						//We need to set the width and height of the image. This can either be done using inline styles,
+						//or as a CSS rule.
+						if ($preferInlineStypes) {
+							$html .= htmlspecialchars('width: '. $width. 'px; height: '. $height. 'px;');
+						} else {
+							$cssRules[] = '#'. $htmlID. ' { width: '. $width. 'px; height: '. $height. 'px; }';
+						}
+						
+						//Set different width/height rules for mobile if needed.
+						if ($setMobDimensions) {
+							$cssRules[] = 'body.mobile #'. $htmlID. ' { width: '. $mobWidth. 'px; height: '. $mobHeight. 'px; }';
+						}
+				
+						if ($styles !== '') {
+							if ($preferInlineStypes) {
+								$html .= ' ';
+							}
+							$html .= htmlspecialchars($styles);
+						}
+						
+						if ($preferInlineStypes || $styles !== '') {
+							$html .= '"';
+						}
+				
+						$html .= "\n\t\t". 'type="'. htmlspecialchars($mimeType). '"';
+				
+						if ($altTag !== '') {
+							$html .= "\n\t\t". 'alt="'. htmlspecialchars($altTag). '"';
+						}
+				
+						if ($attributes !== '') {
+							$html .= ' '. $attributes;
+						}
+					$html .= "\n\t". '/>';
+				$html .= "\n". '</picture>';
+			
+				return $html;
+			}
+		} else {
+			return '';
+		}
+	}
+	
+	private static function imageHTMLInternal(
+		$imageId, $maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
+		&$baseURL, &$retinaURL, &$webPURL, &$retinaWebPURL,
+		&$retinaSrcset, &$webPSrcset,
+		&$width, &$height, &$mimeType
+	) {
+		//The "retina" option only applies to images using the "unlimited" canvas option. 
+		$retina = $retina || $canvas != 'unlimited';
+		
+		$baseURL = $retinaURL = $webPURL = $retinaWebPURL =
+		$retinaSrcset = $webPSrcset =
+		$width = $height = $baseURL = $webPURL = $isRetina = $mimeType = false;
+		
+		//Try and get a link to the image, and also a WebP version if requested.
+		if (\ze\file::imageAndWebPLink(
+			$width, $height, $baseURL, $makeWebP, $webPURL, $retina, $isRetina, $mimeType,
+			$imageId, $maxWidth, $maxHeight, $canvas
+		)) {
+			$webPSrcset = $webPURL;
+
+			//If this was a retina image, get a normal version of the image as well for standard displays
+			if ($isRetina) {
+				$sWidth = $sHeight = $sURL = $sWebPURL = false;
+				if (\ze\file::imageAndWebPLink(
+					$sWidth, $sHeight, $sURL, $makeWebP, $sWebPURL, false, $isRetina, $mimeType,
+					$imageId, $width, $height, $canvas == 'crop_and_zoom'? 'crop_and_zoom' : 'adjust'
+						//We already know the width and height of the image from the call above,
+						//so unless we're using the "crop_and_zoom" option, we don't need any
+						//special logic and can switch the canvas to "adjust".
+				)) {
+					$retinaURL = $baseURL;
+					$baseURL = $sURL;
+					$retinaSrcset = $retinaURL. ' 2x';
+					
+					if ($sWebPURL) {
+						$retinaWebPURL = $webPURL;
+						$webPURL = $sWebPURL;
+						$webPSrcset = $webPURL. ' 1x, '. $retinaWebPURL. ' 2x';
+					}
+				}
+			}
+			
+			return true;
+		}
+		
+		return false;
+	}
+
 	//Formerly "imageLink()"
 	public static function imageLink(
-		&$width, &$height, &$url, $fileId, $maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
+		&$width, &$height, &$url, $fileId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto',
 		$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
 	) {
-		$url =
-		$width = $height = false;
+		$webPURL = $mimeType = $isRetina = null;
+
+		return self::imageAndWebPLink(
+			$width, $height, $url, false, $webPURL, $retina, $isRetina, $mimeType,
+			$fileId, $maxWidth, $maxHeight, $canvas, $offset,
+			$fullPath, $privacy,
+			$useCacheDir, $internalFilePath, $returnImageStringIfCacheDirNotWorking
+		);
+	}
+	
+	public static function imageAndWebPLink(
+		&$width, &$height, &$url, $makeWebP, &$webPURL, $retina, &$isRetina, &$mimeType,
+		$fileId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$fullPath = false, $privacy = 'auto',
+		$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
+	) {
+		$madeWebP =
+		$url = $webPURL =
+		$width = $height = $isRetina = $mimeType = false;
 		
 		$maxWidth = (int) $maxWidth;
 		$maxHeight = (int) $maxHeight;
@@ -1022,21 +1566,22 @@ class file {
 	
 		//Check that this file exists, and is actually an image
 		if (!$fileId
-		 || !($image = \ze\row::get(
-						'files',
-						[
-							'privacy', 'mime_type', 'width', 'height',
-							'custom_thumbnail_1_width', 'custom_thumbnail_1_height', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height',
-							'thumbnail_180x130_width', 'thumbnail_180x130_height',
-							'checksum', 'short_checksum', 'filename', 'location', 'path'],
-						$fileId, $orderBy = [], $ignoreMissingColumns = true))
+		 || !($image = \ze\row::get('files', [
+				'privacy', 'mime_type', 'width', 'height',
+				'custom_thumbnail_1_width', 'custom_thumbnail_1_height', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height',
+				'thumbnail_180x130_width', 'thumbnail_180x130_height',
+				'checksum', 'short_checksum', 'filename', 'location', 'path'
+			], $fileId, $orderBy = [], $ignoreMissingColumns = true))
 		 || !(self::isImageOrSVG($image['mime_type']))) {
 			return false;
 		}
+		
+		$mimeType = $image['mime_type'];
 	
-		//SVG images do not need to use the retina image logic, as they are always crisp
-		if ($isSVG = $image['mime_type'] == 'image/svg+xml') {
+		//SVG images do not need to use the retina or webp logic, as they are always crisp
+		if ($isSVG = $mimeType == 'image/svg+xml') {
 			$retina = false;
+			$makeWebP = false;
 		}
 	
 		$imageWidth = (int) $image['width'];
@@ -1045,7 +1590,7 @@ class file {
 		$cropX = $cropY = $cropWidth = $cropHeight = $finalImageWidth = $finalImageHeight = false;
 	
 		//Special case for the "unlimited, but use a retina image" option
-		if ($retina && !$maxWidth && !$maxHeight) {
+		if ($retina && $canvas === 'unlimited') {
 			$cropX = $cropY = 0;
 			$maxWidth =
 			$cropWidth =
@@ -1053,6 +1598,7 @@ class file {
 			$maxHeight =
 			$cropHeight =
 			$finalImageHeight = $imageHeight;
+			$isRetina = true;
 	
 		} else {
 			//If no limits were set, use the image's own width and height
@@ -1064,8 +1610,8 @@ class file {
 			}
 			
 			\ze\file::scaleImageDimensionsByMode(
-				$image['mime_type'], $imageWidth, $imageHeight,
-				$maxWidth, $maxHeight, $mode, $offset,
+				$mimeType, $imageWidth, $imageHeight,
+				$maxWidth, $maxHeight, $canvas, $offset,
 				$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight,
 				$fileId
 			);
@@ -1076,6 +1622,7 @@ class file {
 			 && (2 * $finalImageHeight <= $imageHeight)) {
 				$finalImageWidth *= 2;
 				$finalImageHeight *= 2;
+				$isRetina = true;
 			
 			} else {
 				$retina = false;
@@ -1090,6 +1637,11 @@ class file {
 	
 		$imageNeedsToBeResized = $imageNeedsToBeCropped || $imageWidth != $finalImageWidth || $imageHeight != $finalImageHeight;
 		$pregeneratedThumbnailUsed = false;
+		
+		//SVGs are vector images and don't need resizing.
+		if ($isSVG) {
+			$imageNeedsToBeResized = false;
+		}
 		
 	
 		//Check the privacy settings for the image
@@ -1115,6 +1667,22 @@ class file {
 			if ($privacy != 'auto') {
 				$image['privacy'] = $privacy;
 				\ze\row::update('files', ['privacy' => $privacy], $fileId);
+				
+				//Catch the following very specific case:
+					//An image has just been uploaded and is still set to "auto".
+					//It's used in a plugin (e.g. a slideshow) that's on a public page.
+					//A resize is used, rather than a full sized image.
+				//In this case, as well as flipping the image to public, we need to add it to the public directory.
+				if ($privacy == 'public' && $imageNeedsToBeResized) {
+					
+					//N.b. if the " && $imageNeedsToBeResized" check wasn't in the if-statement above,
+					//and the state change in the database didn't happen,
+					//it would be possible to send the script into an infinite recursion loop, because
+					//the addPublicImage() function actually calls this function again (without a resize)
+					//to do its work!
+					
+					\ze\file::addPublicImage($fileId);
+				}
 			}
 		}
 	
@@ -1126,7 +1694,7 @@ class file {
 	
 	
 		//Combine the resize options into a string
-		switch ($mode) {
+		switch ($canvas) {
 			case 'unlimited':
 			case 'stretch':
 			case 'adjust':
@@ -1139,28 +1707,28 @@ class file {
 				break;
 			case 'crop_and_zoom':
 				//For crop and zoom mode, we need the crop-settings in the URL, so users don't see cached copies of old crop-settings
-				$settingCode = $mode. '_'. $finalImageWidth. 'x'. $finalImageHeight. '_'. $cropX. 'x'. $cropY. '_'. $cropWidth. 'x'. $cropHeight;
+				$settingCode = $canvas. '_'. $finalImageWidth. 'x'. $finalImageHeight. '_'. $cropX. 'x'. $cropY. '_'. $cropWidth. 'x'. $cropHeight;
 				break;
 			case 'resize_and_crop':
-				$settingCode = $mode. '_'. $finalImageWidth. 'x'. $finalImageHeight. '_'. $offset;
+				$settingCode = $canvas. '_'. $finalImageWidth. 'x'. $finalImageHeight. '_'. $offset;
 				break;
 			default:
-				$settingCode = $mode. '_'. $finalImageWidth. 'x'. $finalImageHeight;
+				$settingCode = $canvas. '_'. $finalImageWidth. 'x'. $finalImageHeight;
 		}
 		
 	
 		//If the $useCacheDir variable is set and the public/private directories are writable,
 		//try to create this image on the disk
 		$path = false;
+		$publicImagePath = false;
 		if ($useCacheDir && \ze\cache::cleanDirs()) {
 			//If this image should be in the public directory, try to create friendly and logical directory structure
 			if ($image['privacy'] == 'public') {
 				//We'll try to create a subdirectory inside public/images/ using the short checksum as the name
-				$path = \ze\cache::createDir($image['short_checksum'], 'public/images', false);
+				$path = $publicImagePath = \ze\cache::createDir($image['short_checksum'], 'public/images', false);
 			
 				//If this is a resize, we'll put the resize in another subdirectory using the code above as the name.
-				//(Note: Except for SVGs which are vector images and don't need resizing.)
-				if ($path && $imageNeedsToBeResized && !$isSVG) {
+				if ($path && $imageNeedsToBeResized) {
 					$path = \ze\cache::createDir($image['short_checksum']. '/'. $settingCode, 'public/images', false);
 				}
 		
@@ -1183,33 +1751,79 @@ class file {
 		$safeName = \ze\file::safeName($image['filename']);
 		$filepath = CMS_ROOT. $path. $safeName;
 		
+		if ($makeWebP) {
+			$webpName = implode('.', explode('.', $safeName, -1)). '.webp';
+			$webpPath = CMS_ROOT. $path. $webpName;
+		}
+		
 		//Look for the image inside the cache directory
 		if ($path && file_exists($filepath)) {
+			
+			//Catch the case where the regular image already exists, but we also need
+			//a WebP image, and that's not already there.
+			if ($makeWebP) {
+				if (file_exists($webpPath)) {
+					$madeWebP = true;
+				} else {
+					$madeWebP = \ze\file::convertToWebP($filepath, $webpPath, $mimeType);
+				}
+			}
 		
 			//If the image is already available, all we need to do is link to it
 			if ($internalFilePath) {
 				$url = $filepath;
+				
+				if ($madeWebP) {
+					$webPURL = $webpPath;
+				}
 		
 			} else {
 				if ($fullPath) {
-					$url = \ze\link::absolute();
+					$abs = \ze\link::absolute();
 				} else {
-					$url = \ze\link::absoluteIfNeeded();
+					$abs = \ze\link::absoluteIfNeeded();
 				}
-				$url .= $path. rawurlencode($safeName);
+				
+				$url = $abs. $path. rawurlencode($safeName);
+
+				if ($madeWebP) {
+					$webPURL = $abs. $path. rawurlencode($webpName);
+				}
 				
 				if ($retina) {
-					$width = (int) $finalImageWidth / 2;
-					$height = (int) $finalImageHeight / 2;
+					$width = (int) ($finalImageWidth / 2);
+					$height = (int) ($finalImageHeight / 2);
 				} else {
 					$width = $finalImageWidth;
 					$height = $finalImageHeight;
 				}
+				
 				return true;
 			}
 		}
-	
-		//Otherwise, create a resized version now
+		
+		
+		//Catch another obscure issue:
+			//A public image is missing from the pubic images directory.
+			//We're about to display a resized copy of the image.
+		//In this case, as well as creating the resized copy as normal,
+		//we should check if the full sized version of the image is in the public directory.
+		if ($imageNeedsToBeResized && $publicImagePath !== false) {
+			if (!file_exists(CMS_ROOT. $publicImagePath. $safeName)) {
+				
+				//N.b. if the " && $imageNeedsToBeResized" check wasn't in the if-statement above,
+				//and the file_exists() check wasn't made,
+				//it would be possible to send the script into an infinite recursion loop, because
+				//the addPublicImage() function actually calls this function again (without a resize)
+				//to do its work!
+				
+				\ze\file::addPublicImage($fileId);
+			}
+		}
+		
+		
+		//If there wasn't already an image we could use in the cache directory,
+		//create a resized version now.
 		if ($path || $returnImageStringIfCacheDirNotWorking) {
 		
 			//Where an image has multiple sizes stored in the database, get the most suitable size
@@ -1287,7 +1901,7 @@ class file {
 		
 			if ($imageNeedsToBeResized) {
 				\ze\file::scaleImageToSize(
-					$image['data'], $image['mime_type'],
+					$image['data'], $mimeType,
 					$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight
 				);
 			}
@@ -1297,18 +1911,6 @@ class file {
 				if ($imageNeedsToBeResized || $pregeneratedThumbnailUsed || $image['location'] == 'db') {
 					file_put_contents($filepath, $image['data']);
 					\ze\cache::chmod($filepath, 0666);
-
-					if (\ze::in($image['mime_type'], 'image/png', 'image/jpeg')) {
-						//Create and save a WebP version.
-						$fileParts = pathinfo($filepath);
-						$newPath = $fileParts['dirname'];
-						$newName = $fileParts['filename'] . '.webp';
-						$newFullPath = $newPath . '/' . $newName;
-			
-						if (is_file($filepath)) {
-							self::createWebPFromImage($filepath, $image['mime_type']);
-						}
-					}
 				
 					//Try to optimise the image, if the libraries are installed.
 					//Please note: private images will not be optimised, as they need to be re-generated periodically.
@@ -1320,17 +1922,35 @@ class file {
 						\ze\server::symlinkOrCopy($pathDS, $filepath);
 					}
 				}
-			
+				
+				//Create a WebP image as well if asked for
+				if ($makeWebP) {
+					if (file_exists($webpPath)) {
+						$madeWebP = true;
+					} else {
+						$madeWebP = \ze\file::convertToWebP($filepath, $webpPath, $mimeType);
+					}
+				}
+				
 				if ($internalFilePath) {
 					$url = $filepath;
-			
+				
+					if ($madeWebP) {
+						$webPURL = $webpPath;
+					}
+		
 				} else {
 					if ($fullPath) {
-						$url = \ze\link::absolute();
+						$abs = \ze\link::absolute();
 					} else {
-						$url = \ze\link::absoluteIfNeeded();
+						$abs = \ze\link::absoluteIfNeeded();
 					}
-					$url .= $path. rawurlencode($safeName);
+				
+					$url = $abs. $path. rawurlencode($safeName);
+
+					if ($madeWebP) {
+						$webPURL = $abs. $path. rawurlencode($webpName);
+					}
 				}
 			
 				if ($retina) {
@@ -1366,7 +1986,7 @@ class file {
 			$_SESSION['zenario_allowed_files'][$hash] =
 				[
 					'width' => $maxWidth, 'height' => $maxHeight,
-					'mode' => $mode, 'offset' => $offset,
+					'mode' => $canvas, 'offset' => $offset,
 					'id' => $fileId, 'useCacheDir' => $useCacheDir];
 		
 			$url = 'zenario/file.php?usage=resize&c='. $hash. ($retina? '&retina=1' : ''). '&filename='. rawurlencode($safeName);
@@ -1387,7 +2007,7 @@ class file {
 	const imageLinkArrayFromTwig = true;
 	//Formerly "imageLinkArray()"
 	public static function imageLinkArray(
-		$imageId, $maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
+		$imageId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
 	) {
 		$details = [
@@ -1397,7 +2017,7 @@ class file {
 			'height' => ''];
 	
 		if (self::imageLink(
-			$details['width'], $details['height'], $details['src'], $imageId, $maxWidth, $maxHeight, $mode, $offset,
+			$details['width'], $details['height'], $details['src'], $imageId, $maxWidth, $maxHeight, $canvas, $offset,
 			$retina, $fullPath, $privacy, $useCacheDir
 		)) {
 			$details['alt'] = \ze\row::get('files', 'alt_tag', $imageId);
@@ -1422,20 +2042,20 @@ class file {
 	
 	public static function retinaImageLink(
 		&$width, &$height, &$url, $imageId,
-		$maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
+		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
 	) {
-		return self::imageLink($width, $height, $url, $imageId, $maxWidth, $maxHeight, $mode, $offset, true, $fullPath, $privacy, $useCacheDir);
+		return self::imageLink($width, $height, $url, $imageId, $maxWidth, $maxHeight, $canvas, $offset, true, $fullPath, $privacy, $useCacheDir);
 	}
 
 	//Formerly "itemStickyImageLink()"
 	public static function itemStickyImageLink(
 		&$width, &$height, &$url, $cID, $cType, $cVersion = false,
-		$maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
+		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
 	) {
 		if ($imageId = self::itemStickyImageId($cID, $cType, $cVersion)) {
-			return self::imageLink($width, $height, $url, $imageId, $maxWidth, $maxHeight, $mode, $offset, $retina, $fullPath, $privacy, $useCacheDir);
+			return self::imageLink($width, $height, $url, $imageId, $maxWidth, $maxHeight, $canvas, $offset, $retina, $fullPath, $privacy, $useCacheDir);
 		}
 		return false;
 	}
@@ -1443,11 +2063,11 @@ class file {
 	//Formerly "itemStickyImageLinkArray()"
 	public static function itemStickyImageLinkArray(
 		$cID, $cType, $cVersion = false,
-		$maxWidth = 0, $maxHeight = 0, $mode = 'resize', $offset = 0,
+		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
 	) {
 		if ($imageId = self::itemStickyImageId($cID, $cType, $cVersion)) {
-			return self::imageLinkArray($imageId, $maxWidth, $maxHeight, $mode, $offset, $retina, $fullPath, $privacy, $useCacheDir);
+			return self::imageLinkArray($imageId, $maxWidth, $maxHeight, $canvas, $offset, $retina, $fullPath, $privacy, $useCacheDir);
 		}
 		return false;
 	}
@@ -1545,7 +2165,7 @@ class file {
 							$return_var = $output = false;
 							exec(
 								escapeshellarg($programPath).
-								' '.
+								' -enc UTF-8 -raw -eol unix '.
 								escapeshellarg($file).
 								' '.
 								escapeshellarg($temp_file),
@@ -1561,7 +2181,7 @@ class file {
 									$return_var = $output = false;
 									exec(
 										escapeshellarg($programPath).
-										' '.
+										' -enc UTF-8 -raw -eol unix '.
 										escapeshellarg($temp_pdf_file).
 										' '.
 										escapeshellarg($temp_file),
@@ -1573,8 +2193,15 @@ class file {
 							if ($return_var == 0) {
 								$extract = file_get_contents($temp_file);
 								unlink($temp_file);
+								
+								// Get rid of hyphens where words break across a newline
+								$extract = preg_replace ('/\xC2\xAD\n/', '', $extract);
 							
-								$extract = trim(utf8_encode(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract))));
+								// Get rid of other characters which may show as Â or â
+								$extract = preg_replace ('/[\xC2\xE2]/', '', $extract);
+							
+								$extract = trim(utf8_encode($extract));
+
 								return true;
 							}
 						}
@@ -1643,17 +2270,23 @@ class file {
 	}
 
 	//Formerly "safeFileName()"
-	public static function safeName($filename, $strict = false) {
+	public static function safeName($filename, $strict = false, $replaceSpaces = false) {
+		
+		if ($strict || $replaceSpaces) {
+			$filename = str_replace(' ', '-', $filename);
+		}
+		
 		if ($strict) {
 			$filename = preg_replace('@[^\w\.-]@', '', $filename);
 		} else {
 			$filename = str_replace(['/', '\\', ':', ';', '*', '?', '"', '<', '>', '|'], '', $filename);
 		}
+		
 		if ($filename === '') {
-			$filename = '_';
+			$filename = 'noname';
 		}
 		if ($filename[0] === '.') {
-			$filename[0] = '_';
+			$filename[0] = 'noname';
 		}
 		return $filename;
 	}
@@ -1785,7 +2418,7 @@ class file {
 	//Given an image size and a target size, resize the image by different conditions and return the values used in the calculations
 	public static function scaleImageDimensionsByMode(
 		$mimeType, $imageWidth, $imageHeight,
-		$maxWidth, $maxHeight, &$mode, $offset,
+		$maxWidth, $maxHeight, &$canvas, $offset,
 		&$cropX, &$cropY, &$cropWidth, &$cropHeight, &$finalImageWidth, &$finalImageHeight,
 		$fileId = 0
 	) {
@@ -1798,10 +2431,10 @@ class file {
 		
 		//Don't allow the "crop" modes for SVGs
 		if ($isSVG) {
-			switch ($mode) {
+			switch ($canvas) {
 				case 'crop_and_zoom':
 				case 'resize_and_crop':
-					$mode = 'stretch';
+					$canvas = 'stretch';
 			}
 		}
 		
@@ -1810,7 +2443,7 @@ class file {
 		$cropWidth = $imageWidth;
 		$cropHeight = $imageHeight;
 		
-		switch ($mode) {
+		switch ($canvas) {
 			//No limits, just leave the image size as it is
 			case 'unlimited':
 				$finalImageWidth = $imageWidth;
@@ -1882,8 +2515,6 @@ class file {
 						$bestCropHeight = $row['crop_height'];
 						$bestAspectRatioAngle = $row['aspect_ratio_angle'];
 					}
-					
-					//var_dump($sql, $row);
 				}
 				
 				//Slightly reduce either the width or the height of the cropped section
@@ -1956,19 +2587,19 @@ class file {
 			//then using resize mode.
 			case 'fixed_width':
 				$maxHeight = $allowUpscale? 999999 : $imageHeight;
-				$mode = 'resize';
+				$canvas = 'resize';
 				break;
 			
 			case 'fixed_height':
 				$maxWidth = $allowUpscale? 999999 : $imageWidth;
-				$mode = 'resize';
+				$canvas = 'resize';
 			
 			default:
-				$mode = 'resize';
+				$canvas = 'resize';
 		}
 		
 		//For "resize" mode, scale the image whilst maintaining aspect ratio
-		if ($mode == 'resize') {
+		if ($canvas == 'resize') {
 			$finalImageWidth = false;
 			$finalImageHeight = false;
 			\ze\file::resizeImage($imageWidth, $imageHeight, $maxWidth, $maxHeight, $finalImageWidth, $finalImageHeight, $allowUpscale);
@@ -1992,13 +2623,13 @@ class file {
 	//Formerly "resizeImageString()"
 	public static function resizeImageString(
 		&$image, $mimeType, &$imageWidth, &$imageHeight,
-		$maxWidth, $maxHeight, $mode = 'resize', $offset = 0
+		$maxWidth, $maxHeight, $canvas = 'resize', $offset = 0
 	) {
 		//Work out the new width/height of the image
 		$cropX = $cropY = $cropWidth = $cropHeight = $finalImageWidth = $finalImageHeight = false;
 		\ze\file::scaleImageDimensionsByMode(
 			$mimeType, $imageWidth, $imageHeight,
-			$maxWidth, $maxHeight, $mode, $offset,
+			$maxWidth, $maxHeight, $canvas, $offset,
 			$cropX, $cropY, $cropWidth, $cropHeight, $finalImageWidth, $finalImageHeight
 		);
 	
@@ -2137,34 +2768,24 @@ class file {
 		return false;
 	}
 
-	public static function formatSizeUnits($bytes){
-        if ($bytes >= 1073741824)
-        {
-            $bytes = number_format($bytes / 1073741824, 2) . ' GB';
-        }
-        elseif ($bytes >= 1048576)
-        {
-            $bytes = number_format($bytes / 1048576, 2) . ' MB';
-        }
-        elseif ($bytes >= 1024)
-        {
-            $bytes = number_format($bytes / 1024, 2) . ' KB';
-        }
-        elseif ($bytes > 1)
-        {
-            $bytes = $bytes . ' bytes';
-        }
-        elseif ($bytes == 1)
-        {
-            $bytes = $bytes . ' byte';
-        }
-        else
-        {
-            $bytes = '0 bytes';
+	public static function formatSizeUnits($bytes) {
+        if ($bytes >= 1073741824) {
+            $bytes = number_format($bytes / 1073741824, 2) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_GB');
+        } elseif ($bytes >= 1048576) {
+            $bytes = number_format($bytes / 1048576, 2) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_MB');
+        } elseif ($bytes >= 1024) {
+            $bytes = number_format($bytes / 1024, 2) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_KB');
+        } elseif ($bytes > 1) {
+            $bytes = $bytes . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_BYTES');
+        } elseif ($bytes == 1) {
+            $bytes = $bytes . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_BYTE');
+        } else {
+            $bytes = '0 ' . \ze\lang::phrase('_FILE_SIZE_UNIT_BYTES');
         }
 
         return $bytes;
 	}
+
 	public static function fileSizeBasedOnUnit($filevalue, $units) {
 		$calculatedFilesize = $filevalue;
 		if ($units == 'GB') {
@@ -2177,40 +2798,49 @@ class file {
 		return $calculatedFilesize;
 	}
 
-	public static function createWebPFromImage($path, $mimeType) {
-		if (\ze::in($mimeType, 'image/png', 'image/jpeg')) {
-			//Create and save a WebP version.
-			$fileParts = pathinfo($path);
-			$newPath = $fileParts['dirname'];
-			$newName = $fileParts['filename'] . '.webp';
-			$newFullPath = $newPath . '/' . $newName;
-
-			if ($mimeType == 'image/jpeg') {
-				$img = imagecreatefromjpeg($path);
-			} elseif ($mimeType == 'image/png') {
-				$img = imagecreatefrompng($path);
+	public static function convertToWebP($pathIn, $pathOut, $mimeType) {
+		
+		if (!is_callable('imagewebp')) {
+			return false;
+		}
+		
+		switch ($mimeType) {
+			case 'image/jpeg':
+				$img = imagecreatefromjpeg($pathIn);
+				break;
+			
+			case 'image/png':
+				$img = imagecreatefrompng($pathIn);
 
 				imagepalettetotruecolor($img);
 				imagealphablending($img, true);
 				imagesavealpha($img, true);
-			}
+				break;
 			
-			//In 9.2, a WebP quality slider was introduced.
-			//Set a fallback value before the DB update is applied
-			//to avoid a bug with very poor quality images.
-			$quality = (int) \ze::setting('webp_quality');
-			if (!$quality) {
-				$quality = 90;
-			}
-			
-			imagewebp($img, $newFullPath, $quality);
-			\ze\cache::chmod($newFullPath, 0666);
+			default:
+				return false;
+		}
+		
+		//In 9.2, a WebP quality slider was introduced.
+		//Set a fallback value before the DB update is applied
+		//to avoid a bug with very poor quality images.
+		$quality = (int) \ze::setting('webp_quality');
+		if (!$quality) {
+			$quality = 90;
+		}
+		
+		if (imagewebp($img, $pathOut, $quality)) {
+			\ze\cache::chmod($pathOut, 0666);
 
-			if (filesize($newFullPath) % 2 == 1) {
-				file_put_contents($newFullPath, "\0", FILE_APPEND);
+			if (filesize($pathOut) % 2 == 1) {
+				file_put_contents($pathOut, "\0", FILE_APPEND);
 			}
 
 			imagedestroy($img);
+		
+			return true;
+		} else {
+			return false;
 		}
 	}
 }

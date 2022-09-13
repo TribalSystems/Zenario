@@ -3,7 +3,6 @@
 site_settings:
     setting_group: embedding
     title: Options for embedding elements of this site in third-party sites
-    max_height: 400
     tabs:
         embedding:
             label: Embedding
@@ -16,26 +15,35 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                Zenario can permit elements of this website to be embedded in third-party sites. Slots on specific
-                                content items, or entire content items, can be embedded.
+                                Zenario allows slots on specific
+                                content items, or entire content items, to be embedded in other pages. 
                             </p>
                             <p>
-                                Use these options to control what elements of this site can be embedded, and which other sites
-                                are allowed to do this.
+                                This is done by putting an <code>iframe</code> tag on a page of that site,
+                                with it containing a reference to the element on this site.
+                            </p>
+                            <p>
+                                Use these options to control what elements of this site can be embedded on a third party site
+                                (i.e. a different domain name), and which such sites are allowed to do this.
+                            </p>
+                            <p>
+                                Embedding is always allowed on the same site.
                             </p>
                 xframe_options:
                     site_setting:
                         name: xframe_options
-                    label: 'Domains that can embed elements of this site:'
+                    label: |
+                       Embedding policy:
                     type: radios
                     value: this
                     values:
                         this:
-                            label: Block embedding from all third-party domains
+                            label: Block embedding by all third party sites (safest)
                         all:
-                            label: Allow any domain to embed (not recommended)
+                            label: Allow any third party site to embed (not recommended)
                         specific:
-                            label: 'Allow the following domains to embed:'
+                            label: |
+                                Allow sites on these domains to embed:
                     redraw_onchange: true
                 xframe_domains:
                     site_setting:
@@ -44,10 +52,10 @@ site_settings:
                         zenarioAB.valueIn: xframe_options, specific
                     indent: 1
                     type: text
-                    placeholder: eg. zenar.io, tribalsystems.uk
+                    placeholder: eg. zenar.io
                     note_below: |
-                        Comma-separate multiple domains, e.g. zenar.io, tribalsystems.uk.
-                        Do not include http.
+                            Do not include http:// or https://.
+                            If specifying several domains, use commas to separate them.
                     validation:
                         required_if_not_hidden: Please enter at least one domain
                 xframe_target:
@@ -65,7 +73,7 @@ site_settings:
                         all_slots:
                             label: Slots with any plugin
                         anything:
-                            label: Slots with any plugin and entire content items
+                            label: Slots with any nest or plugin, and entire content items
                     validation:
                         required_if_not_hidden: Please select what can be embedded
                 admin_mode_warning:

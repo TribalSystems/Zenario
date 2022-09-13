@@ -26,6 +26,28 @@ styles_fab_white: &styles_fab
                     value: If you remove this text, you'll get an error.
                     validation:
                         required: You removed the text and got an error!
+                checkbox_1:
+                    label: One checkbox
+                    type: checkbox
+                    value: 1
+                checkbox_2:
+                    label: Another checkbox
+                    type: checkbox
+                radio_1:
+                    name: rad
+                    label: One radio
+                    type: radio
+                    value: 1
+                radio_2:
+                    name: rad
+                    label: A different radio, but same name
+                    type: radio
+                checkboxes:
+                    label: Checkboxes
+                    cols: 3
+                    type: checkboxes
+                    values: directions
+                    value: 'left top,right bottom'
                 radios:
                     label: Radiogroups
                     cols: 3
@@ -83,13 +105,6 @@ styles_fab_white: &styles_fab
                         This is a side note
                     note_below: |
                         This is note below the field.
-                checkbox:
-                    label: Checkbox
-                    type: checkbox
-                checkboxes:
-                    label: Checkboxes
-                    type: checkboxes
-                    values: abc
                 hierarchical_checkboxes:
                     label: Hierarchical checkboxes
                     type: checkboxes
@@ -106,6 +121,10 @@ styles_fab_white: &styles_fab
         
         readonly_tab: *tab
             label: Read-only fields
+            edit_mode:
+                enabled: false
+        as_span: *tab
+            label: Fields displayed as spans
             edit_mode:
                 enabled: false
         editors:

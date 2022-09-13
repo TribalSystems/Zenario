@@ -5,21 +5,20 @@ copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
-display_name: Breadcrumbs
+display_name: Menu Breadcrumb Trail
 description: |
-    <p>This is an essential Module which displays a breadcrumb trail to the currently viewed Content Item.</p>
+    <p>This module makes a plugin that displays a menu navigation breadcrumb trail for the currently viewed content item.</p>
     
-    <p>The Menu Node name of your Home page (often the word "Home") is prepended, so that users see a breadcrumb trail of the form:</p>
+    <p>The menu node name of your home page ("Home" by default) is displayed at the start of the breadcrumb trail. For example, visitors on some page "Zenario" may see a breadcrumb trail of the form:</p>
     
-    <pre>Home > Products > Zenario > Pro </pre>
+    <pre>Home > Products > Zenario </pre>
     
-    <p>Each part of the breadcrumb trail is a hyperlink to the relevant page. You may customize the character separator (> in the above example) via the Module's settings.</p>
+    <p>Each word or part of the breadcrumb trail is a hyperlink to the relevant page, which will be a parent of the current page. You may customize the character separator (> in the above example) via the plugin's settings, or using CSS.</p>
     
-    <p>You can use this Module in connection with Invisible Menu Nodes. When a Menu Node is Invisible it will appear in the breadcrumb trail but not in the regular menu navigation.</p>
+    <p>If a menu node is flagged as "invisible", it will appear in the breadcrumb trail when a visitor is on the relevant content item, but it will be invisible in other menus.</p>
 category: pluggable
 keywords: >
-    nav, navigation, breadcrumb, crumb, cookie, trail, path,
-    location, glyph, hansel, gretel
+    nav, navigation, breadcrumb, crumb, trail, path, location
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
@@ -28,7 +27,7 @@ is_pluggable: true
 can_be_version_controlled: false
 nestable: true
 default_framework: standard
-default_instance_name: Untitled Breadcrumbs
+default_instance_name: Menu Breadcrumb Trail
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

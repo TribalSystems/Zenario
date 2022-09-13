@@ -128,6 +128,10 @@ zenarioSE.insertHTML = function(html, cb, isNewTab) {
 	
 	cb.done();
 	zenarioSE.size(true);
+	
+	if (zenarioT.showDevTools()) {
+		this.__lastFormHTML = html;
+	}
 };
 
 zenarioSE.addJQueryElementsToTab = function() {

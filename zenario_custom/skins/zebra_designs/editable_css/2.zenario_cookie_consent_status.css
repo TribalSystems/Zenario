@@ -1,0 +1,71 @@
+.zenario_cookie_consent_status form {
+	margin-top:20px;
+}
+
+.zenario_cookie_consent_status .cookie,
+.zenario_cookie_consent_status .cookie_form > div.cookie {
+	overflow:hidden;
+	padding:15px 20px;
+	background:#f8f8f8;
+	border-bottom:2px solid #FFF;
+	
+	display:flex;
+	justify-content: stretch;
+}
+
+.zenario_cookie_consent_status .cookie:nth-child(even),
+.zenario_cookie_consent_status .cookie_form > div.cookie:nth-child(even) {
+	background:#efefef;
+}
+
+.zenario_cookie_consent_status .cookie .cookie_info,
+.zenario_cookie_consent_status .cookie_form > div.cookie > div:nth-child(1) {
+	float:left;
+}
+
+.zenario_cookie_consent_status .cookie .cookie_info {
+	padding-left:25px;
+}
+
+.zenario_cookie_consent_status .cookie .switch,
+.zenario_cookie_consent_status .cookie_form > div.cookie > div:nth-child(2) {
+	float:right;
+}
+
+.zenario_cookie_consent_status .cookie_form > div.cookie > div:nth-child(2) {
+	padding-left:10px;
+}
+
+.zenario_cookie_consent_status .cookie_form > div > div.cookie_status {
+	font-weight:bold;
+	color:#000;
+}
+
+.zenario_cookie_consent_status .cookie_form > div > div.cookie_button a {
+	color:#2a98ce;
+}
+
+.zenario_cookie_consent_status .cookies_buttons {
+	margin-top:20px;
+	text-align:center;
+}
+
+.zenario_cookie_consent_status .cookies_buttons input {
+	margin:0 5px;
+}
+
+.zenario_cookie_consent_status .cookies_buttons input.cancel[type="submit"] {
+	background:#8a8a8a;
+}
+
+.zenario_cookie_consent_status .cookies_buttons input.cancel[type="submit"]:hover {
+	background:#b8babc;
+}
+
+.zenario_cookie_consent_status .switch input:checked + .slider {
+	background:#2a98ce;
+}
+
+.zenario_cookie_consent_status .switch input:disabled + .slider {
+    background: #CCC;
+}

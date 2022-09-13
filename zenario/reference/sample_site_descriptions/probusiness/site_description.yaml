@@ -45,6 +45,10 @@ apply_two_factor_authentication_by_ip: false
 # The length of time (in days) before an admin needs to verify access to their email again.
 two_factor_authentication_timeout: 30
 
+# Normally, when an admin logs in, Zenario will show the last IP address of that administrator.
+# Set this option to true to hide that info.
+hide_admin_ip_address_on_login: false
+
 
 # Style formats are class names that can be selected in the WYSIWYG Editor
 # under the Styles menu.

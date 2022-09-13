@@ -531,6 +531,11 @@ a.zenario_push_pull-hamburger {
 	top:10px;
 }
 
+.zenario_push_pull-menu .zenario_push_pull-listview .zenario_menu_node_special.contact a:before {
+	content:"\f095";
+	font-size:16px;
+}
+
 .zenario_push_pull-menu .zenario_push_pull-listview .zenario_menu_node_special.log_in a:before {
 	content:"\f007";
 }

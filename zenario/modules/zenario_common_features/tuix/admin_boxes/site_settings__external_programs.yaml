@@ -4,6 +4,39 @@ site_settings:
     setting_group: external_programs
     title: Editing settings for other server programs
     tabs:
+        apache:
+            label: Apache
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+                on: false
+                format_on_edit: true
+                format_on_cancel_edit: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                mod_deflate is an optional module for the Apache HTTP Server.
+                                It provides the DEFLATE output filter that allows output from the server to be compressed before being sent to the client over the network.
+                            </p>
+                            <p>If it is unavailable, Zenario will try to use <code>mod_php7</code> and <code>zlib.output_compression</code> instead.</p>
+                mod_deflate_check:
+                    site_setting:
+                        name: mod_deflate_check
+                        protect_from_database_restore: true
+                    label: 'mod_deflate check:'
+                    type: select
+                    value: warn_if_not_available
+                    empty_value: ' -- Do not check for mod_deflate -- '
+                    values:
+                        'warn_if_not_available':
+                            label: "Try to use mod_deflate and warn if not available"
+                    style: >
+                        margin-right: 0.5em;
+
+
         pdftotext:
             label: PDF->text
             edit_mode:

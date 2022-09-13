@@ -103,81 +103,193 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 				$fields['details/url']['readonly'] = true;
 			}
 		}
+
+		//Don't let the admin use the "Fetch" button if the API key is missing.
+		if (!ze::setting('vimeo_access_token')) {
+			$fields['details/fetch_vimeo_details']['disabled'] = true;
+
+			$href = 'organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tzenario_videos_manager__vimeo~k{"id"%3A"api_keys"}';
+			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+			$linkEnd = '</a>';
+			
+			$fields['details/fetch_vimeo_details']['note_below'] = ze\admin::phrase(
+				'The Vimeo API key is missing, so fetching data from Vimeo is disabled. An API key can be added in the [[link_start]]Site Settings[[link_end]].',
+				['link_start' => $linkStart, 'link_end' => $linkEnd]
+			);
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//"Fetch thumbnail and title" feature: for Youtube only
-		if (!empty($fields['details/fetch_youtube_settings']['pressed'])) {
-			if ($values['details/url']) {
-				$parsed = parse_url($values['details/url']);
-				if ($parsed) {
-					if (strpos($parsed['host'], 'youtube.com') !== false || strpos($parsed['host'], 'youtu.be') !== false) {
-						$videoId = false;
-						if (strpos($parsed['host'], 'youtube.com') !== false) {
-							$videoId = substr($parsed['query'], 2);
-						} elseif (strpos($parsed['host'], 'youtu.be') !== false) {
-							$videoId = substr($parsed['path'], 1);
+		$fields['details/fetch_youtube_details']['hidden'] = $fields['details/fetch_vimeo_details']['hidden'] = true;
+
+		$parsed = [];
+		if ($values['details/url']) {
+			$parsed = parse_url($values['details/url']);
+
+			if (strpos($parsed['host'], 'youtube.com') !== false) {
+				$fields['details/fetch_youtube_details']['hidden'] = false;
+			} elseif (strpos($parsed['host'], 'youtu.be') !== false) {
+				$fields['details/fetch_youtube_details']['hidden'] = false;
+			} elseif (strpos($parsed['host'], 'vimeo.com') !== false) {
+				$fields['details/fetch_vimeo_details']['hidden'] = false;
+			}
+		}
+		
+		//"Fetch thumbnail and title" feature:
+		if (!empty($fields['details/fetch_youtube_details']['pressed'])) {
+			//YouTube version
+			if ($values['details/url'] && $parsed) {
+				if (strpos($parsed['host'], 'youtube.com') !== false || strpos($parsed['host'], 'youtu.be') !== false) {
+					$videoId = false;
+					if (strpos($parsed['host'], 'youtube.com') !== false) {
+						$videoId = substr($parsed['query'], 2);
+					} elseif (strpos($parsed['host'], 'youtu.be') !== false) {
+						$videoId = substr($parsed['path'], 1);
+					}
+
+					$thumbnailUrl = false;
+					$apiUrl = 'https://www.youtube.com/oembed?format=json&url=http%3A//youtube.com/watch%3Fv%3D' . htmlspecialchars($videoId);
+					$data = file_get_contents($apiUrl);
+					if (!empty($data)) {
+						$json = json_decode($data, true);
+					}
+					
+					if ($videoId && !empty($json)) {
+						if (!$values['details/title'] && !empty($json['title'])) {
+							$values['details/title'] = $json['title'];
+						}
+
+						if (!empty($json['thumbnail_url'])) {
+							//Check if there is a thumbnail available.
+							//There may not be a max resolution thumbnail, so try smaller ones if needed.
+							$thumbnailUrl = $json['thumbnail_url'];
+
+							$sha = sha1($thumbnailUrl);
+							if (!\ze\cache::cleanDirs() || !($dir = \ze\cache::createDir($sha, 'uploads', false))) {
+								echo ze\admin::phrase('Zenario cannot currently receive uploaded files, because the private/ folder is not writeable.');
+							} else {
+								$filename = 'video_' . ze\escape::sql($videoId) . '_thumbnail.jpg';
+								$safeFileName = ze\file::safeName($filename);
+
+								$failed = false;
+								if (!file_exists($path = CMS_ROOT. $dir. $safeFileName) || !filesize($path = CMS_ROOT. $dir. $safeFileName)) {
+									touch($path);
+									ze\cache::chmod($path, 0666);
+
+									if ($in = fopen($thumbnailUrl, 'r')) {
+										$out = fopen($path, 'w');
+										while (!feof($in)) {
+											fwrite($out, fread($in, 65536));
+										}
+										fclose($out);
+										fclose($in);
+										
+										clearstatcache();
+										$failed = !filesize($path);
+									}
+								}
+
+								if (!$failed && ($mimeType = ze\file::mimeType($safeFileName)) && (ze\file::isImage($mimeType)) && ($image = @getimagesize($path))) {
+									$file = [
+										'filename' => $safeFileName,
+										'width' => $image[0],
+										'height' => $image[1],
+									];
+									$file['id'] = ze\ring::encodeIdForOrganizer($sha. '/'. $safeFileName. '/'. $file['width']. '/'. $file['height']);
+									$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
+									$file['label'] = $safeFileName . ' [' . $file['width'] . ' × ' . $file['height'] . ']';
+
+									$fields['details/image']['values'][$file['id']] = $file;
+									$values['details/image'] = $file['id'];
+								}
+							}
+						}
+					} else {
+						$fields['details/fetch_youtube_details']['error'] = ze\admin::phrase("Thumbnail not found. Please make sure the link is valid.");
+					}
+				}
+			} else {
+				$fields['details/url']['error'] = ze\admin::phrase("Please enter a valid URL beginning with https://");
+			}
+		} elseif (!empty($fields['details/fetch_vimeo_details']['pressed'])) {
+			//Vimeo version
+			if ($values['details/url'] && $parsed) {
+				if (strpos($parsed['host'], 'vimeo.com') !== false) {
+
+					if (strpos($values['details/url'], 'manage') !== false) {
+						$fields['details/url']['error'] = ze\admin::phrase('It looks like you entered a Vimeo video management link. Please check the URL again.');
+					} else {
+						$videoId = $parsed['path'];
+						if (substr($videoId, 0, 1) == '/') {
+							$videoId = substr($videoId, 1);
 						}
 
 						$thumbnailUrl = false;
-						$apiUrl = 'https://www.youtube.com/oembed?format=json&url=http%3A//youtube.com/watch%3Fv%3D' . htmlspecialchars($videoId);
-						$data = file_get_contents($apiUrl);
-						if (!empty($data)) {
-							$json = json_decode($data, true);
-						}
-						
-						if ($videoId && !empty($json)) {
-							if (!$values['details/title'] && !empty($json['title'])) {
-								$values['details/title'] = $json['title'];
-							}
 
-							if (!empty($json['thumbnail_url'])) {
-								//Check if there is a thumbnail available.
-								//There may not be a max resolution thumbnail, so try smaller ones if needed.
-								$thumbnailUrl = $json['thumbnail_url'];
+						$videoData = zenario_videos_manager::getVimeoVideoData($videoId);
 
-								$sha = sha1($thumbnailUrl);
-								if (!\ze\cache::cleanDirs() || !($dir = \ze\cache::createDir($sha, 'uploads', false))) {
-									echo ze\admin::phrase('Zenario cannot currently receive uploaded files, because the private/ folder is not writeable.');
-								} else {
-									$filename = 'video_' . ze\escape::sql($videoId) . '_thumbnail.jpg';
-									$safeFileName = ze\file::safeName($filename);
+						if (!empty($videoData) && is_array($videoData)) {
+							$params = ['url' => $videoData['link'], 'autoplay' => true];
+							$url = "https://vimeo.com/api/oembed.json?" . http_build_query($params);
+							
+							if ($url) {
+								$result = ze\curl::fetch($url);
+								if ($result && ($json = json_decode($result, true))) {
+									if (!$values['details/title'] && !empty($json['title'])) {
+										$values['details/title'] = $json['title'];
+									}
 
-									$failed = false;
-									if (!file_exists($path = CMS_ROOT. $dir. $safeFileName) || !filesize($path = CMS_ROOT. $dir. $safeFileName)) {
-										touch($path);
-										ze\cache::chmod($path, 0666);
-
-										if ($in = fopen($thumbnailUrl, 'r')) {
-											$out = fopen($path, 'w');
-											while (!feof($in)) {
-												fwrite($out, fread($in, 65536));
+									if (!empty($json['thumbnail_url'])) {
+										//Check if there is a thumbnail available.
+										//There may not be a max resolution thumbnail, so try smaller ones if needed.
+										$thumbnailUrl = $json['thumbnail_url'];
+			
+										$sha = sha1($thumbnailUrl);
+										if (!\ze\cache::cleanDirs() || !($dir = \ze\cache::createDir($sha, 'uploads', false))) {
+											echo ze\admin::phrase('Zenario cannot currently receive uploaded files, because the private/ folder is not writeable.');
+										} else {
+											$filename = 'video_' . ze\escape::sql($videoId) . '_thumbnail.jpg';
+											$safeFileName = ze\file::safeName($filename);
+			
+											$failed = false;
+											if (!file_exists($path = CMS_ROOT. $dir. $safeFileName) || !filesize($path = CMS_ROOT. $dir. $safeFileName)) {
+												touch($path);
+												ze\cache::chmod($path, 0666);
+			
+												if ($in = fopen($thumbnailUrl, 'r')) {
+													$out = fopen($path, 'w');
+													while (!feof($in)) {
+														fwrite($out, fread($in, 65536));
+													}
+													fclose($out);
+													fclose($in);
+													
+													clearstatcache();
+													$failed = !filesize($path);
+												}
 											}
-											fclose($out);
-											fclose($in);
-											
-											clearstatcache();
-											$failed = !filesize($path);
+			
+											if (!$failed && ($mimeType = ze\file::mimeType($safeFileName)) && (ze\file::isImage($mimeType)) && ($image = @getimagesize($path))) {
+												$file = [
+													'filename' => $safeFileName,
+													'width' => $image[0],
+													'height' => $image[1],
+												];
+												$file['id'] = ze\ring::encodeIdForOrganizer($sha. '/'. $safeFileName. '/'. $file['width']. '/'. $file['height']);
+												$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
+												$file['label'] = $safeFileName . ' [' . $file['width'] . ' × ' . $file['height'] . ']';
+			
+												$fields['details/image']['values'][$file['id']] = $file;
+												$values['details/image'] = $file['id'];
+											}
 										}
 									}
-
-									if (!$failed && ($mimeType = ze\file::mimeType($safeFileName)) && (ze\file::isImage($mimeType)) && ($image = @getimagesize($path))) {
-										$file = [
-											'filename' => $safeFileName,
-											'width' => $image[0],
-											'height' => $image[1],
-										];
-										$file['id'] = ze\ring::encodeIdForOrganizer($sha. '/'. $safeFileName. '/'. $file['width']. '/'. $file['height']);
-										$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
-										$file['label'] = $safeFileName . ' [' . $file['width'] . ' × ' . $file['height'] . ']';
-
-										$fields['details/image']['values'][$file['id']] = $file;
-										$values['details/image'] = $file['id'];
-									}
+								} else {
+									$fields['details/fetch_vimeo_details']['error'] = ze\admin::phrase("Thumbnail not found. Please make sure the link is valid.");
 								}
 							}
 						} else {
-							$fields['details/fetch_youtube_settings']['error'] = ze\admin::phrase("Thumbnail not found. Please make sure the link is valid.");
+							$fields['details/fetch_vimeo_details']['error'] = ze\admin::phrase("Thumbnail not found. Please make sure the link is valid.");
 						}
 					}
 				}
@@ -186,12 +298,21 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 			}
 		}
 
-		unset($fields['details/fetch_youtube_settings']['pressed']);
+		unset($fields['details/fetch_youtube_details']['pressed']);
+		unset($fields['details/fetch_vimeo_details']['pressed']);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if ($values['details/url'] && !filter_var($values['details/url'], FILTER_VALIDATE_URL)) {
 			$fields['details/url']['error'] = ze\admin::phrase("Please enter a valid URL beginning with https://");
+		} else {
+			$parsed = parse_url($values['details/url']);
+
+			if (strpos($parsed['host'], 'vimeo.com') !== false) {
+				if (strpos($values['details/url'], 'manage') !== false) {
+					$fields['details/url']['error'] = ze\admin::phrase('It looks like you entered a Vimeo video management link. Please check the URL again.');
+				}
+			}
 		}
 	}
 	

@@ -5,4 +5,13 @@
 .zenario_footer a {
 	display:inline-block;
 	padding:0 5px;
+	cursor:pointer;
+}
+
+.zenario_footer .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie {
+	text-align:left;
+}
+
+.zenario_skin .Gridbreak_Footer .zenario_footer .zenario_cookie_consent_manage_popup .cookie * {
+	color:#333;
 }

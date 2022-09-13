@@ -12,7 +12,6 @@ zenario_newsletter_template:
             label: Body
             edit_mode:
                 priv: _PRIV_EDIT_NEWSLETTER
-                always_on: true
                 enabled: true
             fields:
                 name:
@@ -45,7 +44,6 @@ zenario_newsletter_template:
             label: Advanced
             edit_mode:
                 priv: _PRIV_EDIT_NEWSLETTER
-                always_on: true
                 enabled: true
             fields:
                 desc:

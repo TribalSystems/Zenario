@@ -75,7 +75,9 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 			if ($tagId = $this->setting('registration_page')) {
 				$cID = $cType = false;
 				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-				$this->mergeFields['Registration_Link'] = $this->linkToItemAnchor($cID, $cType);
+				if (ze\content::checkPerm($cID, $cType)) {
+					$this->mergeFields['Registration_Link'] = $this->linkToItemAnchor($cID, $cType);
+				}
 			}
 		}
 		
@@ -83,7 +85,19 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 			if ($tagId = $this->setting('login_page')) {
 				$cID = $cType = false;
 				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-				$this->mergeFields['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
+				if (ze\content::checkPerm($cID, $cType)) {
+					$this->mergeFields['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
+				}
+			}
+		}
+
+		if ($this->setting('show_link_to_contact_page')) {
+			if ($tagId = $this->setting('contact_page')) {
+				$cID = $cType = false;
+				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+				if (ze\content::checkPerm($cID, $cType)) {
+					$this->mergeFields['Contact_Link'] = $this->linkToItemAnchor($cID, $cType);
+				}
 			}
 		}
 
@@ -91,7 +105,9 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 			if ($tagId = $this->setting('home_page')) {
 				$cID = $cType = false;
 				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-				$this->mergeFields['Home_Link'] = $this->linkToItemAnchor($cID, $cType);
+				if (ze\content::checkPerm($cID, $cType)) {
+					$this->mergeFields['Home_Link'] = $this->linkToItemAnchor($cID, $cType);
+				}
 			}
 		}
 		
@@ -120,7 +136,7 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 				}
 
 				if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $row)) {
-					if (!empty($row['children'])) {
+					if (!empty($row['children']) && (!$this->numLevels || $this->numLevels > 1)) {
 						$childrenExist = true;
 						$menuNodeMergeFields['hasChildren'] = true;
 
@@ -146,48 +162,56 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 				$childrenToProcess = $childrenArray;
 				$childrenArray = [];
 
-				foreach ($childrenToProcess[$parentDepth] as $parentId) {
-					$subchildrenMenuArray =
-						ze\menu::getStructure(
-							$cachingRestrictions,
-							$this->sectionId, $this->currentMenuId, $parentId,
-							$this->numLevels, $this->maxLevel1MenuItems, $this->language,
-							$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
-							$this->showInvisibleMenuItems,
-							$this->showMissingMenuNodes,
-							$this->requests,
-							ze\content::showUntranslatedContentItems()
-						);
+				if (!$this->numLevels || $depth <= $this->numLevels) {
+					foreach ($childrenToProcess[$parentDepth] as $parentId) {
+						$subchildrenMenuArray =
+							ze\menu::getStructure(
+								$cachingRestrictions,
+								$this->sectionId, $this->currentMenuId, $parentId,
+								$this->numLevels, $this->maxLevel1MenuItems, $this->language,
+								$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
+								$this->showInvisibleMenuItems,
+								$this->showMissingMenuNodes,
+								$this->requests,
+								ze\content::showUntranslatedContentItems()
+							);
 
-					foreach ($subchildrenMenuArray as $subchild) {
-						$childrenExist = true;
+						foreach ($subchildrenMenuArray as $subchild) {
+							$childrenExist = true;
 
-						if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $subchild)) {
-							$parentIdsAndNames[$subchild['mID']] = ['id' => $parentId, 'name' => $menuNodeMergeFields['Name']];
-							
-							$menuNodeMergeFields['parentId'] = $parentId;
-							$menuNodeMergeFields['parentName'] = $parentIdsAndNames[$parentId]['name'];
+							if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $subchild)) {
+								$parentIdsAndNames[$subchild['mID']] = ['id' => $parentId, 'name' => $menuNodeMergeFields['Name']];
+								
+								$menuNodeMergeFields['parentId'] = $parentId;
+								$menuNodeMergeFields['parentName'] = $parentIdsAndNames[$parentId]['name'];
 
-							$menuNodeMergeFields['childDivForNextButton'] = 'zz_child_of_node_' . $subchild['mID'];
+								$menuNodeMergeFields['childDivForNextButton'] = 'zz_child_of_node_' . $subchild['mID'];
 
-							if ($depth == 1) {
-								$menuNodeMergeFields['parentDivForNextButton'] = 'zz_node_' . $topLevelNodeId;
-							} elseif ($depth == 2) {
-								$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_node_' . $topLevelNodeId;
-								$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentId;
-								$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
-							} else {
-								$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_child_of_node_' . $parentIdsAndNames[$parentId]['id'];
-								$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentIdsAndNames[$subchild['mID']]['id'];
-								$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
+								if ($depth == 1 && (!$this->numLevels || $this->numLevels > 1)) {
+									$menuNodeMergeFields['parentDivForNextButton'] = 'zz_node_' . $topLevelNodeId;
+								} elseif ($depth == 2) {
+									$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_node_' . $topLevelNodeId;
+									$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentId;
+									
+									if (!$this->numLevels || (($depth + 1) <= $this->numLevels)) {
+										$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
+									}
+								} else {
+									$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_child_of_node_' . $parentIdsAndNames[$parentId]['id'];
+									$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentIdsAndNames[$subchild['mID']]['id'];
+									
+									if (!$this->numLevels || (($depth + 1) <= $this->numLevels)) {
+										$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
+									}
+								}
+
+								if (!empty($subchild['children']) && isset($menuNodeMergeFields['parentDivForNextButton'])) {
+									$menuNodeMergeFields['hasChildren'] = true;
+								}
+								
+								$childrenArray[$depth][] = $subchild['mID'];
+								$menuMergeFields[$depth][$parentId][$subchild['mID']] = $menuNodeMergeFields;
 							}
-
-							if (!empty($subchild['children'])) {
-								$menuNodeMergeFields['hasChildren'] = true;
-							}
-							
-							$childrenArray[$depth][] = $subchild['mID'];
-							$menuMergeFields[$depth][$parentId][$subchild['mID']] = $menuNodeMergeFields;
 						}
 					}
 				}
@@ -204,7 +228,14 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$fields['first_tab/reverse_order']['hidden'] = true;
 		$fields['first_tab/menu_show_all_branches']['hidden'] = true;
-		$fields['first_tab/menu_number_of_levels']['hidden'] = true;
+
+		$fields['first_tab/menu_number_of_levels']['values'] = [
+			'all' => ['ord' => 1, 'label' => "Generate all levels"],
+			'1' => ['ord' => 2, 'label' =>  "Only generate 1 level"],
+			'2' => ['ord' => 3, 'label' => "Only generate 2 levels"],
+			'3' => ['ord' => 4, 'label' => "Only generate 3 levels"],
+			'4' => ['ord' => 5, 'label' => "Only generate 4 levels"]
+		];
 		
 		if (!$box['key']['id']) {
 			if (isset($values['push_pull/home_page']) && !$values['push_pull/home_page']) {

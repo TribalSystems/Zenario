@@ -57,3 +57,45 @@ if (ze\dbAdm::needRevision(50950)) {
 	ze\dbAdm::revision(50950);
 }
 
+
+//Automatically convert any table that's not using utf8mb4
+if (ze\dbAdm::needRevision(55151)) {
+	
+	foreach (ze\sql::fetchValues("
+		SELECT `TABLE_NAME`
+		FROM information_schema.tables
+		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME). "'
+		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX). "%'
+		  AND `TABLE_COLLATION` IN ('utf8_general_ci', 'utf8mb4_general_ci')
+	") as $tableName) {
+		ze\sql::update("
+			ALTER TABLE `". ze\escape::sql($tableName). "`
+			CHARACTER SET ". ze\escape::sql(ZENARIO_TABLE_CHARSET). " COLLATE ". ze\escape::sql(ZENARIO_TABLE_COLLATION). "
+		");
+	}
+	
+	//Agressively go after any columns that are in the wrong characterset
+	foreach (ze\sql::fetchValues("
+		SELECT `TABLE_NAME`
+		FROM information_schema.tables
+		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME). "'
+		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX). "%'
+		  AND `TABLE_COLLATION` IN ('utf8_general_ci', 'utf8mb4_general_ci', '". ze\escape::sql(ZENARIO_TABLE_COLLATION). "')
+	") as $tableName) {
+		if ($createTable = ze\sql::fetchRow("SHOW CREATE TABLE `". ze\escape::sql($tableName). "`")) {
+			$start = strpos($createTable[1], '(');
+			$end = strrpos($createTable[1], ')');
+			$cols = explode(",\n", substr($createTable[1], $start + 1, $end - $start - 1));
+		
+			foreach ($cols as $col) {
+				if (preg_match('@\bCHARACTER SET utf8\w*\b@', $col)) {
+					//echo("\n\n". $col. "\nALTER TABLE `". ze\escape::sql($tableName). "` MODIFY COLUMN ". preg_replace('@\bCHARACTER SET utf8\w*\b@', '', $col));
+					ze\sql::update("ALTER TABLE `". ze\escape::sql($tableName). "` MODIFY COLUMN ". preg_replace('@\bCHARACTER SET utf8\w*\b@', '', $col));
+				}
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(55151);
+}
+

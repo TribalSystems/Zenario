@@ -64,11 +64,6 @@
     margin: auto;
 }
 
-.zenario_multiple_image_container .banner_images .banner_image img {
-	margin-top:5px;
-	margin-bottom:5px;
-}
-
 .zenario_multiple_image_container .banner_images .banner_image .title {
 	float:none;
 	color:#333;

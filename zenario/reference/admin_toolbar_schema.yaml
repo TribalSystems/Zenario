@@ -65,6 +65,16 @@ title: Admin Toolbar Schema
 
 type: object
 properties:
+    meta_info:
+        type: object
+        description: >
+            This contains variables that can be accessed later in various parts of the
+            JavaScript and/or MicroTemplate code.
+        additionalProperties:
+            type: string
+            description: >
+                A variable that can be accessed later in various parts of the
+                JavaScript and/or MicroTemplate code.
     toolbars:
         type: object
         description: >

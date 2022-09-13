@@ -1,8 +1,8 @@
 .onoffswitch{position:relative;width:63px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}.onoffswitch-checkbox{position:absolute;opacity:0;pointer-events:none}
-.onoffswitch-label{display:block;overflow:hidden;cursor:pointer;border:2px solid #999;border-radius:20px}.onoffswitch-inner{display:block;width:200%;margin-left:-100%;transition:margin .3s ease-in 0}
+.onoffswitch-label{display:block;overflow:hidden;cursor:pointer;border:2px solid #aaa;border-radius:20px}.onoffswitch-inner{display:block;width:200%;margin-left:-100%;transition:margin .3s ease-in 0}
 .onoffswitch-inner:before,.onoffswitch-inner:after{display:block;float:left;width:50%;height:30px;padding:0;line-height:30px;font-size:14px;color:white;font-family:Trebuchet,Arial,sans-serif;font-weight:bold;box-sizing:border-box}
-.onoffswitch-inner:before{content:"✓";padding-left:10px;background-color:#40a080;color:#fff}.onoffswitch-inner:after{content:"╳";padding-right:10px;background-color:#aaa;color:#202020;text-align:right}
-.onoffswitch-switch{display:block;width:18px;margin:6px;background:#fff;position:absolute;top:0;bottom:0;right:29px;border:2px solid #999;border-radius:20px;transition:all .3s ease-in 0}
+.onoffswitch-inner:before{content:"✓";padding-left:10px;background-color:#40a080;color:#fff}.onoffswitch-inner:after{content:"╳";padding-right:9px;background-color:#aaa;color:#202020;text-align:right}
+.onoffswitch-switch{display:block;width:18px;margin:6px;background:#fff;position:absolute;top:0;bottom:0;right:26px;border:2px solid #FFF;border-radius:20px;transition:all .3s ease-in 0}
 .onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-inner{margin-left:0}.onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-switch{right:0}
 .zenario_master_switch-wrap{position:fixed;top:89px;right:30px;width:142px;height:20px}.zenario_master_switch-text{float:left;display:block;font-size:11px;padding:0 5px 0 0;letter-spacing:.2px;color:#000}
 .zenario_master_switch{float:left;position:relative;width:50px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}.zenario_master_switch-checkbox{display:none}

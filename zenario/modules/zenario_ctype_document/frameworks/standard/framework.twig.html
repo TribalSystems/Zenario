@@ -24,6 +24,21 @@
 						{% endif %}
 					
 						<div class="document_details_content_details">
+							{% if Show_document_extra_data and Extra_data %}
+								{% for extraDataKey, extraDataValue in Extra_data %}
+									<p class="{{extraDataKey|e}}">{{extraDataValue|e}}</p>
+								{% endfor %}
+							{% endif %}
+
+							{% if Show_categories %}
+								<div class="categories">
+									{% if Categories %}
+										{{Categories|e}}
+									{% else %}
+										{{"This document is not in any category."|trans}}
+									{% endif %}
+								</div>
+							{% endif %}
 							{% if Aws_Link %}
 								{% if Published_Section %}
 									<p><span class="label">{{"Published:"|trans}} </span>{{Published}}</p>

@@ -105,13 +105,22 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		}
 		
 		var ruleNotMet = false,
-			load = {u: 'User', g: 'GET', p: 'POST', s: 'SESSION', c: 'COOKIE'},
+			load = {c: 'COOKIE', s: 'SESSION', g: 'GET', p: 'POST', u: 'User'},
 			by = {content: 'Content', menu: 'Menu', user: 'User', file: 'File', module: 'Module'},
 			
-			key = {u: 'Extranet user logged in', g: 'GET request*', p: 'POST request', s: 'Session variable†', c: 'Cookie (from this site)‡',
-					l: 'Location dependant logic',
-					content: 'Other content items, any changes to categories', menu: 'Menu nodes', user: "Users, and their group memberships",
-					file: 'Images and documents stored in Zenario', module: 'Any data added by a module'};
+			key = {
+				c: 'Cookie*',
+				s: 'Session variable†',
+				g: 'Additional GET parameters‡',
+				p: 'POST request',
+				u: 'Logged in extranet user',
+				l: 'Location dependant logic',
+				content: 'Other content items, any changes to categories',
+				menu: 'Menu nodes',
+				user: "Users, and their group memberships",
+				file: 'Images and documents stored in Zenario',
+				module: 'Any data added by a module'
+			};
 		
 		
 		if (type == 'Page') {
@@ -119,7 +128,7 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		}
 		
 		html += '<h2>The caching rules for this ' + lType + ' are as follows:</h2>';
-		html += '<table><tr><th>&nbsp;</th><th>' + type + ' requires</th><th>This request</th><th>Result</th></tr>';
+		html += '<table><tr><th>Request contents</th><th>This request</th><th>' + type + ' requirements</th><th>Result</th></tr>';
 		for (var i in load) {
 			ruleNotMet = zenarioCD.load[i] && !cache_if[i];
 			
@@ -128,8 +137,8 @@ zenarioCI.box = function(slotName, type, cantCache) {
 			}
 			
 			html += '<tr><th>' + zenario.htmlspecialchars(key[i]) + '</th>';
-			html += 	'<td class="zenario_cache_req">' + (cache_if[i]? 'Any' : '0') + '</td>';
-			html += 	'<td>' + (zenarioCD.load[i]? '1' : '0') + '</td>';
+			html += 	'<td>' + (zenarioCD.load[i]? 'Yes' : 'No') + '</td>';
+			html += 	'<td class="zenario_cache_req">' + (cache_if[i]? 'Either' : 'No') + '</td>';
 			html += 	'<td>' + (ruleNotMet? 'Can\'t cache' : 'OK to cache') + '</td></tr>';
 		}
 		html += '<tr class="zenario_cache_table_last_row"><th>Result</th><td>&nbsp;</td><td>&nbsp;</td><td>' + (css == 'zenario_not_cached'? 'Can\'t cache' : 'OK to cache') +  '</td></tr>';
@@ -158,12 +167,12 @@ zenarioCI.box = function(slotName, type, cantCache) {
 			html = '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' can be cached and was just served from the cache.</h1>' + html;
 		
 		} else {
-			html = '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' can be cached and was just written to the cache.</h1>' + html;
+			html = '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' can be cached. It was served from the database but has now been written to the cache for further requests.</h1>' + html;
 		}
 		
-		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(*)</span> <em>A page is considered unique for caching purposes according to its alias (or its <code>cID</code> and <code>cType</code>), and a &ldquo;<code>page</code>&rdquo; number when pagination is used, and any additional GET parameters such as <code>searchString</code>.</em></p>';
+		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(*)</span> <em>Some cookies do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlyCookieVar()</code> function in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
 		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(†)</span> <em>Some session variables do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlySessionVar()</code> function in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
-		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(‡)</span> <em>Some cookies do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlyCookieVar()</code> function in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
+		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(‡)</span> <em>A page is considered unique for caching purposes according to its alias (or its <code>cID</code> and <code>cType</code>), and a &ldquo;<code>page</code>&rdquo; number when pagination is used, and any additional GET parameters such as <code>searchString</code>.</em></p>';
 	}
 	
 	return '<x-zenario-cache-info class="' + css + '" title="' + zenario.htmlspecialchars('<div class="zenario_cache_box">' + html + '</div>') + '"></x-zenario-cache-info>';

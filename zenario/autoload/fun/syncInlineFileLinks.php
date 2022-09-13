@@ -57,44 +57,36 @@ if ($usage == 'image'
 		$checksum = $links[$i + 2];
 		$explode = explode('_', $links[$i + 3]);
 		$filename = $links[$i + 4];
-		$params = [
-			'mode' => $explode[0],
-			'width' => $width = (int) ($explode[1] ?? false),
-			'height' => $height = (int) ($explode[2] ?? false),
-			'offset' => $offset = (int) ($explode[3] ?? false)];
 		
-		$mode = 'unlimited';
-		if (\ze::in($params['mode'], 'unlimited', 'stretch', 'adjust', 'resize_and_crop', 'fixed_width', 'fixed_height', 'resize')) {
-			$mode = $explode[0];
+		//If we can get the checksum from the url, look up this file and process it.
+		//Also, only handle simple image resizes. Don't try to do anything with
+		//resize and crop, or crop and zoom images.
+		$needsChanging = false;
+		$changed = false;
+		$isSourceOrSimpleResize = empty($explode[0]) || is_numeric($explode[0]);
+		if ($checksum && $isSourceOrSimpleResize) {
 			
-			//Catch a mode name that got renamed
-			if ($mode == 'stretch') {
-				$mode = 'adjust';
+			$widthInURL = (int) ($explode[0] ?? false);
+			$heightInURL = (int) ($explode[1] ?? false);
+			
+			//Watch out for images that have been resized, either by resizing the image by dragging the handles
+			//on the corners in TinyME, or by manually specifying a width and height in the HTML source
+			$widthOnPage = $heightOnPage = $matches = false;
+			if ((preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+			 || (preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+				$widthOnPage = 1 * $matches[1];
 			}
-		}
+			if ((preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+			 || (preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+				$heightOnPage = 1 * $matches[1];
+			}
 	
-		//Watch out for images that have been resized, either by resizing the image by dragging the handles
-		//on the corners in TinyME, or by manually specifying a width and height in the HTML source
-		$width = $height = $matches = false;
-		if ((preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-		 || (preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
-			$width = $matches[1];
-		}
-		if ((preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-		 || (preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 5], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
-			$height = $matches[1];
-		}
-	
-		//If we can get the checksum from the url, look up this file and process it
-		$doSomething = false;
-		$doneSomething = false;
-		if ($checksum) {
 		
 			//Check to see if this is the checksum of an image, with the correct usage set
 			if (!isset($foundChecksums[$checksum])) {
 				$foundChecksums[$checksum] =
 					\ze\row::get('files',
-						['id', 'usage', 'filename', 'privacy', 'width', 'height', 'checksum', 'short_checksum'],
+						['id', 'usage', 'filename', 'mime_type', 'privacy', 'width', 'height', 'checksum', 'short_checksum'],
 						['usage' => $usage, 'short_checksum' => $checksum]);
 			}
 			$file = $foundChecksums[$checksum];
@@ -108,7 +100,7 @@ if ($usage == 'image'
 				if (!isset($foundChecksumsWithTheWrongUsage[$checksum])) {
 					if ($checksum
 					 && $checksumCol
-					 && ($existingFile = \ze\row::get('files', ['id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename'], [$checksumCol => $checksum]))
+					 && ($existingFile = \ze\row::get('files', ['id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename', 'mime_type'], [$checksumCol => $checksum]))
 					 && ($newId = ze\file::copyInDatabase($usage, $existingFile['id'], ($filename ?: $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;
@@ -121,37 +113,82 @@ if ($usage == 'image'
 
 				if ($file = $foundChecksumsWithTheWrongUsage[$checksum]) {
 					//Update the URL to the correct location
-					$doSomething = true;
+					$needsChanging = true;
 				}
 			}
-		
-		
-			//Don't worry about adding the width/height to the URL if they're not a resize
-			if ($file && $width == $file['width']) {
-				$width = false;
+			
+			
+			$isSVG = $file && $file['mime_type'] == 'image/svg+xml';
+			$knownDimensions = $file && $file['width'] && $file['height'];
+			
+			
+			//Watch out for the case where the width and height of the image is missing,
+			//or only one was specified.
+			//Try to correct these if we know what the width of height on the image is in the database
+			if ($knownDimensions) {
+				if ($isSVG) {
+					$widthInURL = $file['width'];
+					$heightInURL = $file['height'];
+				} else {
+					if ($widthInURL) {
+						if ($heightInURL) {
+						} else {
+							$heightInURL = (int) ((float) $file['height'] / (float) $file['width'] * (float) $widthInURL);
+							$needsChanging = true;
+						}
+					} else {
+						if ($heightInURL) {
+							$widthInURL = (int) ((float) $file['width'] / (float) $file['height'] * (float) $heightInURL);
+							$needsChanging = true;
+						} else {
+							$widthInURL = $file['width'];
+							$heightInURL = $file['height'];
+						}
+					}
+					if ($widthOnPage) {
+						if ($heightOnPage) {
+						} else {
+							$heightOnPage = (int) ((float) $file['height'] / (float) $file['width'] * (float) $widthOnPage);
+							$needsChanging = true;
+						}
+					} else {
+						if ($heightOnPage) {
+							$widthOnPage = (int) ((float) $file['width'] / (float) $file['height'] * (float) $heightOnPage);
+							$needsChanging = true;
+						} else {
+							$widthOnPage = $file['width'];
+							$heightOnPage = $file['height'];
+							$needsChanging = true;
+						}
+					}
+				}
 			}
-			if ($file && $height == $file['height']) {
-				$height = false;
+			
+			
+			//For raster images, compare the size we're trying to display vs the size
+			//of the image available. If there's enough detail, double the size and
+			//request a retina version of the image.
+			$widthForRetina = $widthOnPage;
+			$heightForRetina = $heightOnPage;
+			if ($knownDimensions) {
+				if ($widthOnPage && (2 * $widthOnPage <= $file['width'])) {
+					$widthForRetina *= 2;
+				}
+				if ($widthOnPage && (2 * $heightOnPage <= $file['height'])) {
+					$heightForRetina *= 2;
+				}
 			}
-		
-			if (!$width && !$height) {
-				$mode = 'unlimited';
+			
+			
+			//If the width and height used in the URL didn't look like they matched the
+			//dimensions used on the page, we'll need to change them
+			if ($widthInURL != $widthForRetina) {
+				$needsChanging = true;
 			}
-		
-			//If the image has a width/height listed against its attributes or inline styles,
-			//try to put that width/height in the parameters to the file.php program.
-			if ($params['mode'] != $mode) {
-				$doSomething = true;
+			if ($heightInURL != $heightForRetina) {
+				$needsChanging = true;
 			}
-			if ($params['width'] != $width) {
-				$doSomething = true;
-			}
-			if ($params['height'] != $height) {
-				$doSomething = true;
-			}
-			if ($params['offset'] != $offset) {
-				$doSomething = true;
-			}
+			
 			
 			//If we see a private image (or an "auto" image that's not
 			//on a public page) then attempt to switch back to using zenario/file.php URL
@@ -161,26 +198,29 @@ if ($usage == 'image'
 				
 				$html .= htmlspecialchars(
 					'zenario/file.php?c='. $checksum.
-					'&width='. $width. '&height='. $height.
+					($widthForRetina? '&width='. $widthForRetina : '').
+					($heightForRetina? '&height='. $heightForRetina : '').
 					'&filename='. rawurlencode($filename));
 				$htmlChanged = true;
-				$doneSomething = true;
+				$changed = true;
 			
 			//Otherwise attempt to regenerate the public link if needed
-			} elseif ($doSomething) {
+			} elseif ($needsChanging) {
 				$rememberWhatThisWas = \ze::$mustUseFullPath;
 				\ze::$mustUseFullPath = false;
 				
 				$url = '';
 				$dummyWidth = $dummyHeight = 0;
 				if (ze\file::imageLink(
-					$dummyWidth, $dummyHeight, $url, $file['id'], $width, $height,
-					$mode, $offset
+					$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
+					$mode = 'adjust', $offset = 0, $retina = true,
+					$fullPath = false, $privacy = 'public'
+
 				)) {
 					if (\ze\ring::chopPrefix('public/images/', $url)) {
 						$html .= htmlspecialchars($url);
 						$htmlChanged = true;			
-						$doneSomething = true;
+						$changed = true;
 					}
 				}
 				
@@ -195,7 +235,7 @@ if ($usage == 'image'
 		}
 		
 		//If we didn't do any conversion, leave the link exactly as it was
-		if (!$doneSomething) {
+		if (!$changed) {
 			$html .= 'public/images/'. $links[$i + 2]. '/'. $links[$i + 3]. $links[$i + 4];
 		}
 	
@@ -227,14 +267,14 @@ if (strpos($html, 'zenario/file.php') !== false) {
 	
 		//Watch out for images that have been resized, either by resizing the image by dragging the handles
 		//on the corners in TinyME, or by manually specifying a width and height in the HTML source
-		$width = $height = $matches = false;
+		$widthOnPage = $heightOnPage = $matches = false;
 		if ((preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
 		 || (preg_match('@[^\w\%-]width[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
-			$width = $matches[1];
+			$widthOnPage = $matches[1];
 		}
 		if ((preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
 		 || (preg_match('@[^\w\%-]height[^\w\%-]+(\d+)(\w*)[^\w\%-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
-			$height = $matches[1];
+			$heightOnPage = $matches[1];
 		}
 		
 		//Check the parameters of the image's URL, and attempt to loop through each request
@@ -252,17 +292,19 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			//Note down each request
 			$params[$request[$j+1]] = $request[$j+2];
 		}
+		$widthInURL = (int) ($params['width'] ?? false);
+		$heightInURL = (int) ($params['height'] ?? false);
 	
 		//If we can get the checksum from the url, look up this file and process it
-		$doSomething = false;
-		$doneSomething = false;
+		$needsChanging = false;
+		$changed = false;
 		if ($checksum = \ze::ifNull($params['c'] ?? false, $params['checksum'] ?? false)) {
 		
 			//Catch old checksums in base 16. Convert these to base 64 so the links will be shorter.
 			if (strlen($checksum) == 32
 			 && preg_match('/[^ABCDEFabcdef0-9]/', $checksum) === 0) {
 				$checksum = \ze::base16To64($checksum);
-				$doSomething = true;
+				$needsChanging = true;
 			}
 			
 			//Watch out for full checksums appearing in the URL.
@@ -272,7 +314,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				$checksumCol = 'short_checksum';
 			} else {
 				$checksumCol = 'checksum';
-				$doSomething = true;
+				$needsChanging = true;
 			}
 
 		
@@ -284,7 +326,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			if (!isset($foundChecksums[$checksum])) {
 				$foundChecksums[$checksum] =
 					\ze\row::get('files',
-						['id', 'usage', 'filename', 'privacy', 'width', 'height', 'checksum', 'short_checksum'],
+						['id', 'usage', 'filename', 'mime_type', 'privacy', 'width', 'height', 'checksum', 'short_checksum'],
 						['usage' => $usage, $checksumCol => $checksum]);
 			}
 			$file = $foundChecksums[$checksum];
@@ -309,42 +351,96 @@ if (strpos($html, 'zenario/file.php') !== false) {
 
 				if ($file = $foundChecksumsWithTheWrongUsage[$checksum]) {
 					//Update the URL to the correct location
-					$doSomething = true;
+					$needsChanging = true;
 				}
 			}
-		
-		
-			//Don't worry about adding the width/height to the URL if they're not a resize
-			if ($file && $width == $file['width']) {
-				$width = false;
+			
+			
+
+			$isSVG = $file && $file['mime_type'] == 'image/svg+xml';
+			$knownDimensions = $file && $file['width'] && $file['height'];
+			
+			
+			//Watch out for the case where the width and height of the image is missing,
+			//or only one was specified.
+			//Try to correct these if we know what the width of height on the image is in the database
+			if ($knownDimensions) {
+				if ($isSVG) {
+					$widthInURL = $file['width'];
+					$heightInURL = $file['height'];
+				} else {
+					if ($widthInURL) {
+						if ($heightInURL) {
+						} else {
+							$heightInURL = (int) ((float) $file['height'] / (float) $file['width'] * (float) $widthInURL);
+							$needsChanging = true;
+						}
+					} else {
+						if ($heightInURL) {
+							$widthInURL = (int) ((float) $file['width'] / (float) $file['height'] * (float) $heightInURL);
+							$needsChanging = true;
+						} else {
+							$widthInURL = $file['width'];
+							$heightInURL = $file['height'];
+						}
+					}
+					if ($widthOnPage) {
+						if ($heightOnPage) {
+						} else {
+							$heightOnPage = (int) ((float) $file['height'] / (float) $file['width'] * (float) $widthOnPage);
+							$needsChanging = true;
+						}
+					} else {
+						if ($heightOnPage) {
+							$widthOnPage = (int) ((float) $file['width'] / (float) $file['height'] * (float) $heightOnPage);
+							$needsChanging = true;
+						} else {
+							$widthOnPage = $file['width'];
+							$heightOnPage = $file['height'];
+							$needsChanging = true;
+						}
+					}
+				}
 			}
-			if ($file && $height == $file['height']) {
-				$height = false;
+			
+			
+			//For raster images, compare the size we're trying to display vs the size
+			//of the image available. If there's enough detail, double the size and
+			//request a retina version of the image.
+			$widthForRetina = $widthOnPage;
+			$heightForRetina = $heightOnPage;
+			if ($knownDimensions) {
+				if ($widthOnPage && (2 * $widthOnPage <= $file['width'])) {
+					$widthForRetina *= 2;
+				}
+				if ($widthOnPage && (2 * $heightOnPage <= $file['height'])) {
+					$heightForRetina *= 2;
+				}
 			}
+			
+			
+			//If the width and height used in the URL didn't look like they matched the
+			//dimensions used on the page, we'll need to change them
+			if ($widthInURL != $widthForRetina) {
+				$needsChanging = true;
+			}
+			if ($heightInURL != $heightForRetina) {
+				$needsChanging = true;
+			}
+			
 		
 			//Add a simple checksum to make it harder for visitors to randomly change the widths and heights as they wish just by changing the URL
 			$key = false;
-			if ($width || $height) {
-				$key = \ze::hash64($file['id']. '_'. $width. '_'. $height. '_'. $checksum, 10);
-			}
-		
-			//If the image has a width/height listed against its attributes or inline styles,
-			//try to put that width/height in the parameters to the file.php program.
-			if (($params['width'] ?? false) != $width) {
-				$doSomething = true;
-			}
-			if (($params['height'] ?? false) != $height) {
-				$doSomething = true;
-			}
-			if (($params['k'] ?? false) != $key) {
-				$doSomething = true;
+			if (($widthForRetina && (!$knownDimensions || $widthForRetina != $file['width']))
+			 && ($heightForRetina && (!$knownDimensions || $heightForRetina != $file['height']))) {
+				$key = \ze::hash64($file['id']. '_'. $widthForRetina. '_'. $heightForRetina. '_'. $checksum, 10);
 			}
 			
-			//Currently commented out:
-			//This bit of the code will would convert a file.php link to a link to the public/images/
-			//directory. As the CMS currently doesn't manage these too well, for now this is
-			//not enabled
-			/*
+			if (($params['k'] ?? false) != $key) {
+				$needsChanging = true;
+			}
+			
+			
 			//For public images (or images that are set to "auto" and about to be made public because
 			//we're publishing a public page that they are on), try to switch to the image's URL
 			//in the public directory.
@@ -359,24 +455,24 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				$rememberWhatThisWas = \ze::$mustUseFullPath;
 				\ze::$mustUseFullPath = false;
 				if (ze\file::imageLink(
-					$dummyWidth, $dummyHeight, $url, $file['id'], $width, $height,
-					$mode = 'adjust', $offset = 0,
-					$retina = false, $privacy = 'public',
-					$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
+					$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
+					$mode = 'adjust', $offset = 0, $retina = true,
+					$fullPath = false, $privacy = 'public',
 				)) {
 					if (\ze\ring::chopPrefix('public/images/', $url)) {
 						$html .= htmlspecialchars($url);
 						$htmlChanged = true;			
-						$doneSomething = true;
+						$changed = true;
 					}
 				}
 				\ze::$mustUseFullPath = $rememberWhatThisWas;
 			}
-			*/
+			
+			//bool(true) string(5) "image" string(6) "public" bool(false) string(103) "zenario/file.php?usage=resize&c=qbWD-Niu9h0MKBFPS6qXly2RF4E&retina=1&filename=seed-portfolio-image1.jpg" string(3) "nah"
 			
 			
 			//Regenerate/tidy up the URL if one of the other flags above was set
-			if ($doSomething && !$doneSomething) {
+			if ($needsChanging && !$changed) {
 				$html .= 'zenario/file.php?c=';
 				
 				if (!empty($file['short_checksum'])) {
@@ -389,12 +485,12 @@ if (strpos($html, 'zenario/file.php') !== false) {
 					$html .= $amp. 'usage='. rawurlencode($usage);
 				}
 			
-				if ($width !== false) {
-					$html .= $amp. 'width='. $width;
+				if ($widthForRetina !== false) {
+					$html .= $amp. 'width='. $widthForRetina;
 				}
 			
-				if ($height !== false) {
-					$html .= $amp. 'height='. $height;
+				if ($heightForRetina !== false) {
+					$html .= $amp. 'height='. $heightForRetina;
 				}
 			
 				if ($key !== false) {
@@ -406,7 +502,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				}
 			
 				$htmlChanged = true;
-				$doneSomething = true;
+				$changed = true;
 			}
 		
 		
@@ -417,7 +513,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 		}
 		
 		//If we didn't do any conversion, leave the link exactly as it was
-		if (!$doneSomething) {
+		if (!$changed) {
 			$html .= 'zenario/file.php?'. $links[$i + 2];
 		}
 	

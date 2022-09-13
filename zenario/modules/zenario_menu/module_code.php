@@ -65,14 +65,23 @@ class zenario_menu extends ze\moduleBaseClass {
 		$this->startFrom				= $this->setting('menu_start_from');
 
 		if ($this->moduleClassName == 'zenario_menu_responsive_push_pull') {
-			$this->numLevels = 0;
+			$numLevels = $this->setting('menu_number_of_levels');
+			if (!$numLevels || $numLevels == 'all') {
+				$this->numLevels = 0;
+			} else {
+				$this->numLevels = (int) $numLevels;
+			}
+
+			//In push-pull menu plugin, always show distant branches
+			//instead of trying to load the value of a hidden checkbox menu_show_all_branches.
+			$this->onlyFollowOnLinks = !(!$numLevels || $numLevels == 'all' || $numLevels > 1);
 		} else {
 			$this->numLevels = (int) $this->setting('menu_number_of_levels');
+			$this->onlyFollowOnLinks = !($this->setting('menu_show_all_branches') && ($this->setting('menu_number_of_levels') > 1));
 		}
 		
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
-		$this->onlyFollowOnLinks		= !($this->setting('menu_show_all_branches') && ($this->setting('menu_number_of_levels') > 1));
 		$this->onlyIncludeOnLinks		= false;
 		$this->showInvisibleMenuItems	= false;
 		$this->showMissingMenuNodes		= $this->setting('show_missing_menu_nodes');

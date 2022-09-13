@@ -1,0 +1,171 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_user_redirector
+    tabs:
+        first_tab:
+            fields:
+                show_welcome_page:
+                    plugin_setting:
+                        name: show_welcome_page
+                    type: radios
+                    value: _NEVER
+                    values:
+                        _NEVER:
+                            ord: "1"
+                            label: >
+                                Redirect to requested private content item, or else to the
+                                previous page viewed
+                        _ALWAYS:
+                            ord: "2"
+                            label: Redirect based on rules below
+                        _IF_NO_PREVIOUS_PAGE:
+                            ord: "3"
+                            label: >
+                                Redirect based on rules below (but if user requested a private content item other than home, this will take precedence)
+                    format_onchange: Yes
+                
+                rules:
+                    type: grouping
+                    visible_if: zenarioAB.value('show_welcome_page') != '_NEVER'
+                
+                number_of_redirect_rules:
+                    grouping: rules
+                    plugin_setting:
+                        name: number_of_redirect_rules
+                    type: hidden
+                    
+                add_redirect_rule:
+                    grouping: rules
+                    indent: 1
+                    ord: 999999998
+                    type: submit
+                    value: '+ Add a redirect rule'
+                
+                welcome_page:
+                    grouping: rules
+                    indent: 1
+                    ord: 999999999
+                    plugin_setting:
+                        name: welcome_page
+                        foreign_key_to: content
+                    label: 'Default redirect page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: >
+                            Please select a default redirect page
+                    side_note: "If the above rules are not met, redirect to the page selected here (e.g. user welcome page, or profile)."
+            
+            #Fields for redirect rules (multi-row)
+            redirect_rule_template_fields:
+                redirect_div_start__znz:
+                    <div id="field__znz">:
+                    type: text
+                    grouping: rules
+                    show_as_a_span: true
+                
+                redirect_rule_type__znz:
+                    indent: 2
+                    plugin_setting:
+                        name: redirect_rule_type__znz
+                    label: 'Redirect rule znz:'
+                    type: select
+                    grouping: rules
+                    empty_value: -- Select --
+                    values:
+                        group:
+                            label: Group
+                        role:
+                            label: Role
+                    redraw_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select a redirect rule type.
+                
+                remove__znz:
+                    same_row: true
+                    type: submit
+                    grouping: rules
+                    value: 'Delete'
+                
+                in_group_label__znz:
+                    indent: 3
+                    grouping: rules
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'group'
+                    snippet:
+                        label: 'If the user is in the group'
+                
+                redirect_rule_group__znz:
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'group'
+                    plugin_setting:
+                        name: redirect_rule_group__znz
+                    same_row: true
+                    type: select
+                    grouping: rules
+                    empty_value: -- Select --
+                    values: groups
+                    validation:
+                        required_if_not_hidden: Please select a group.
+                
+                in_group_redirect_label__znz:
+                    grouping: rules
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'group'
+                    same_row: true
+                    snippet:
+                        label: 'then redirect to...'
+                
+                has_role_label__znz:
+                    indent: 3
+                    grouping: rules
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'role'
+                    snippet:
+                        label: 'If the user has the role'
+                    
+                redirect_rule_role__znz:
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'role'
+                    plugin_setting:
+                        name: redirect_rule_role__znz
+                    same_row: true
+                    type: select
+                    grouping: rules
+                    empty_value: -- Select --
+                    values: roles
+                    validation:
+                        required_if_not_hidden: Please select a role.
+                
+                has_role_redirect_label__znz:
+                    visible_if: zenarioAB.value('redirect_rule_type__znz') == 'role'
+                    same_row: true
+                    grouping: rules
+                    snippet:
+                        label: 'at any location then redirect to...'
+                
+                redirect_rule_content_item__znz:
+                    indent: 3
+                    grouping: rules
+                    visible_if: zenarioAB.value('redirect_rule_type__znz')
+                    plugin_setting:
+                        name: redirect_rule_content_item__znz
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/content_type//html//
+                        min_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select content item...
+                    validation:
+                        required_if_not_hidden: Please select a content item.
+                
+                redirect_div_end__znz:
+                    </div>:
+                    type: text
+                    grouping: rules
+                    show_as_a_span: true
+    lovs:
+        groups: {}
+        roles: {}

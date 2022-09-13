@@ -56,7 +56,7 @@ _sql
 		`content_item_id` int(10) unsigned NULL,
 		`content_item_type` varchar(255) NULL,
 		PRIMARY KEY (`id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 ); ze\dbAdm::revision(3
 
@@ -77,7 +77,7 @@ _sql
 		`parent_id` int(10) unsigned NOT NULL DEFAULT 0,
 		`name` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 , <<<_sql
@@ -91,7 +91,7 @@ _sql
 		`ordinal` tinyint(1) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE (`name`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 , <<<_sql
@@ -106,7 +106,7 @@ _sql
 		`score_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE (`location_id`,`sector_id`,`score_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ); ze\dbAdm::revision(6
@@ -161,7 +161,7 @@ _sql
 	  `storekeeper_size` int(10) unsigned default NULL,
 	  PRIMARY KEY  (`location_id`,`checksum`),
 	  KEY `location_id` (`location_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ); ze\dbAdm::revision(11
@@ -183,7 +183,7 @@ _sql
 		`name` varchar(255) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`name`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 , <<<_sql
@@ -197,7 +197,7 @@ _sql
 		`score` int(10) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`accreditor_id`,`score`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 , <<<_sql
@@ -211,7 +211,7 @@ _sql
 		`accreditor_score_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE (`location_id`,`accreditor_score_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ); ze\dbAdm::revision(17
@@ -256,7 +256,7 @@ _sql
 		`sticky_flag` tinyint(1) NOT NULL DEFAULT 0,
 		PRIMARY KEY (`id`),
 		UNIQUE (`location_id`,`region_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ,<<<_sql
@@ -712,8 +712,8 @@ if (ze\dbAdm::needRevision(135)) {
 	$cols = ['label' => 'url last accessed:', 'is_system_field' => 0];
 	
 	if (ze\row::exists('custom_dataset_fields', $key)) {
-		$sql = "SELECT COUNT('last_accessed') as count FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
-			WHERE last_accessed IS NOT NULL AND last_accessed <> ''";
+		$sql = "SELECT COUNT('last_accessed') as `count` FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations 
+			WHERE last_accessed IS NOT NULL AND last_accessed <> DATE('')";
 		if (ze\sql::fetchValue($sql) > 0) {
 			//change to custom field
 			$fieldId = ze\row::set('custom_dataset_fields', $cols, $key);
@@ -858,83 +858,83 @@ _sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]accreditors` MODIFY COLUMN `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `address1` = SUBSTR(`address1`, 1, 250) WHERE CHAR_LENGTH(`address1`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address1` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address1` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `address2` = SUBSTR(`address2`, 1, 250) WHERE CHAR_LENGTH(`address2`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address2` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `address2` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `city` = SUBSTR(`city`, 1, 250) WHERE CHAR_LENGTH(`city`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `city` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `city` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `content_type` = SUBSTR(`content_type`, 1, 250) WHERE CHAR_LENGTH(`content_type`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `content_type` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `content_type` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `country_id` varchar(5) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `country_id` varchar(5) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `description` = SUBSTR(`description`, 1, 250) WHERE CHAR_LENGTH(`description`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `description` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `description` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `external_id` = SUBSTR(`external_id`, 1, 250) WHERE CHAR_LENGTH(`external_id`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `external_id` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `external_id` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `locality` = SUBSTR(`locality`, 1, 250) WHERE CHAR_LENGTH(`locality`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `locality` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `locality` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `postcode` = SUBSTR(`postcode`, 1, 250) WHERE CHAR_LENGTH(`postcode`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `postcode` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `postcode` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` SET `state` = SUBSTR(`state`, 1, 250) WHERE CHAR_LENGTH(`state`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `state` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` MODIFY COLUMN `state` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images` SET `filename` = SUBSTR(`filename`, 1, 250) WHERE CHAR_LENGTH(`filename`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images` MODIFY COLUMN `filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_images` MODIFY COLUMN `filename` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores` MODIFY COLUMN `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 
 
 ); ze\dbAdm::revision(166
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
-	ADD COLUMN `timezone` varchar(255) CHARACTER SET ascii NOT NULL default ''
+	ADD COLUMN `timezone` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default ''
 	AFTER `hide_pin`
 _sql
 
@@ -991,3 +991,21 @@ if (ze\dbAdm::needRevision(172)) {
 	
 	ze\dbAdm::revision(172);
 }
+
+
+
+
+//In 9.3, we're going through and fixing the character-set on several columns that should
+//have been using "ascii"
+ze\dbAdm::revision(180
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	MODIFY COLUMN `country_id` varchar(5) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL
+_sql
+
+);

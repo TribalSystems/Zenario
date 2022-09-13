@@ -1,5 +1,10 @@
 {% if show_pinned_icon %}
-	<div class="pinned pinned_icon"></div>
+	{% if show_title %}
+		{# Do nothing, the pinned icon will be on the title #}
+	{% else %}
+		<div class="pinned_icon pinned">
+		</div>
+	{% endif %}
 {% endif %}
 
 {% for key, meta_data in content %}
@@ -16,14 +21,15 @@
 			<img alt="{{meta_data.Writer_Alt}}" src="{{meta_data.Writer_Src}}"/>
 		</div>
 
-	{% elseif key == "show_sticky_image" %}
+	{% elseif key == "show_featured_image" %}
 		<div class="{{meta_data.class}}">
 			{% if show_labels %}
 				<{{meta_data.html_tag}}>
 				<span>{{meta_data.label}}:</span>
 				</{{meta_data.html_tag}}>
 			{% endif %}
-			<img alt="{{meta_data.Sticky_Image_Alt}}" src="{{meta_data.Sticky_Image_Src}}"/>
+			
+			{{meta_data.Featured_Image_HTML}}
 		</div>
 	
 	{% elseif key == "show_categories" %}
@@ -52,7 +58,7 @@
 	
 	{% else %}
 		<div class="{{meta_data.class}}">
-			<{{meta_data.html_tag}}>
+			<{{meta_data.html_tag}} {% if meta_data.class == 'page_title' and show_pinned_icon %} class="pinned_icon" {% endif %}>
 			{% if show_labels and meta_data.label %}
 				<span>{{meta_data.label}}:</span>
 			{% endif %}

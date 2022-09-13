@@ -81,9 +81,31 @@ if (!$cID
  && ($_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. 'index.php' || $_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. DIRECTORY_INDEX_FILENAME)
  && ($spareAlias = ze\row::get('spare_aliases', ['target_loc', 'content_id', 'content_type', 'ext_url'], ['alias' => $aliasInURL]))) {
 	
-	if ($spareAlias['target_loc'] == 'int' && $spareAlias['content_id']) {
+	if ($spareAlias['target_loc'] == 'int'
+	  && ($saID = $spareAlias['content_id'])
+	  && ($saType = $spareAlias['content_type'])) {
+		
+		//Catch the case where a vistor types a spare alias but also tries to add a language code to the URL as well.
+		//Try and get a translation of the content item in that language in this case.
+		if ($langIdInURL) {
+			$transID = $saID;
+			$transType = $saType;
+			if (ze\content::langEquivalentItem($transID, $transType, $langIdInURL, $checkVisible = true)) {
+				$saID = $transID;
+				$saType = $transType;
+			}
+		}
+		
+		//Try to keep any existing requests, except for ones regarding the content item
+		$requests = $_GET;
+		unset(
+			$requests['cID'],
+			$requests['cType'],
+			$requests['cVersion']
+		);
+		
 		header(
-			'location: '. ze\link::toItem($spareAlias['content_id'], $spareAlias['content_type']),
+			'location: '. ze\link::toItem($saID, $saType, false, $requests),
 			true, 301);
 		exit;
 	

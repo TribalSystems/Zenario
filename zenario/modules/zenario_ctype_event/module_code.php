@@ -154,13 +154,53 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				$this->data['Online_Text'] = $onlineText;
 			}
 
-			if (
-				ze::setting('zenario_ctype_event__location_field') != 'hidden'
-				&& ze::setting('zenario_ctype_event__location_text')
-				&& $this->setting('show_address')
-				&& $event['location']
-			) {
-				$this->data['Address_Text'] = $event['location'];
+			if (ze::setting('zenario_ctype_event__location_field') != 'hidden' && $this->setting('show_address')) {
+				//Check if this is an address of a location that exists in the DB,
+				//or an address not in DB.
+				if (ze\module::inc('zenario_location_manager') && $event['location_id']) {
+					$locationDetails = zenario_location_manager::getLocationDetails($event['location_id']);
+					if (!empty($locationDetails) && is_array($locationDetails)) {
+						$locationAddressFormatted = [];
+
+						//Loop through these fields...
+						$locationAddressFields = [
+							$locationDetails['address1'],
+							$locationDetails['address2'],
+							$locationDetails['locality'],
+							$locationDetails['city'],
+							$locationDetails['state'],
+							$locationDetails['postcode']
+						];
+
+						//... and make sure they're not blank.
+						foreach ($locationAddressFields as $locationAddressField) {
+							if ($locationAddressField) {
+								$locationAddressFormatted[] = $locationAddressField;
+							}
+						}
+
+						//Display the country name if possible.
+						if (ze\module::inc('zenario_country_manager')) {
+							$countryName = zenario_country_manager::getCountryName($locationDetails['country_id']);
+
+							if ($countryName) {
+								$locationAddressFormatted[] = $countryName;
+							}
+						}
+
+						if (!empty($locationDetails)) {
+							$this->data['Address_Text'] = implode(', ', $locationAddressFormatted);
+						}
+					}
+				} elseif (ze::setting('zenario_ctype_event__location_text') && $event['location']) {
+					$this->data['Address_Text'] = $event['location'];
+				}
+
+				if ($this->setting('show_at_location_text')) {
+					$atLocationText = $this->setting('at_location_text');
+
+					$this->data['At_Location_Text'] = $atLocationText;
+				}
 			}
 			
 			$this->data['Event_Details'] = true;
@@ -353,7 +393,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 									> ($end_time_hours * 100 + $end_time_minutes)
 							) && (!$values['zenario_ctype_event__when_and_where/late_evening_event'])) {
 	
-							$box['tabs']['zenario_ctype_event__when_and_where']['errors']['incorrect_time'] = ze\admin::phrase('The event cannot finish earlier than it starts. Please set the "Late evening Event" flag the Event runs past midnight.');
+							$box['tabs']['zenario_ctype_event__when_and_where']['errors']['incorrect_time'] = ze\admin::phrase('Check the end time. The event cannot finish earlier than it starts. Set the "Runs past midnight" flag if it runs past midnight.');
 						}							
 					}
 				}
@@ -409,11 +449,13 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 
 					$details['location'] = $details['location_id'] = '';
 
-					if (ze::setting('zenario_ctype_event__location_field') != 'hidden' && $values['zenario_ctype_event__when_and_where/at_location_checkbox']) {
-						if (ze::setting('zenario_ctype_event__location_text') && $values['zenario_ctype_event__when_and_where/at_physical_location'] == 'address_text') {
-							$details['location'] = $values['zenario_ctype_event__when_and_where/location'];
-						} elseif ($values['zenario_ctype_event__when_and_where/at_physical_location'] == 'location_picker') {
-							$details['location_id'] = $values['zenario_ctype_event__when_and_where/location_id'];
+					if (ze::setting('zenario_ctype_event__location_field') != 'hidden') {
+						if ($values['zenario_ctype_event__when_and_where/at_location_checkbox']) {
+							if (ze::setting('zenario_ctype_event__location_text') && $values['zenario_ctype_event__when_and_where/at_physical_location'] == 'address_text') {
+								$details['location'] = $values['zenario_ctype_event__when_and_where/location'];
+							} elseif ($values['zenario_ctype_event__when_and_where/at_physical_location'] == 'location_picker') {
+								$details['location_id'] = $values['zenario_ctype_event__when_and_where/location_id'];
+							}
 						}
 
 						$details['online'] = $values['zenario_ctype_event__when_and_where/online'];

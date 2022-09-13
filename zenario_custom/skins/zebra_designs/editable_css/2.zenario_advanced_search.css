@@ -187,12 +187,13 @@ body.desktop .zenario_advanced_search .search_button_panel .search_button {
 
 .zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results {
 	text-align:left;
+	width:100%;
 }
 
 .zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results {
 	position:relative;
+	overflow:hidden;
 	padding:15px;
-	display:flex;
 	background: #f3f6f8;
 	box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
@@ -200,9 +201,13 @@ body.desktop .zenario_advanced_search .search_button_panel .search_button {
 .zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .column_title {
     display: inline-block;
     padding: 0 0 15px 10px;
-	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+	font-family: 'cardoregular','Times New Roman','Georgia',serif;
     font-size: 1.3em;
     color: #000;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column {
+	float:left;
 }
 
 .zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_results .column.column_1 .column_title {
@@ -267,6 +272,21 @@ body.webkit .zenario_advanced_search .search_entry_box_panel .search_area .zenar
     -webkit-line-clamp: 2;
 }
 
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_column_more {
+    padding-right: 15px;
+    color: #555;
+    text-align: right;
+    font-weight: 600;
+    float:none;
+    clear:both;
+}
+
+.zenario_advanced_search .search_entry_box_panel .search_area .zenario_advanced_search_results .search_column_more:after {
+    font-family: "FontAwesome";
+    content: "\f105";
+    padding-left: 5px;
+}
+
 /* Common */
 
 .zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result {
@@ -311,10 +331,11 @@ body.webkit .zenario_advanced_search .search_entry_box_panel .search_area .zenar
 .zenario_advanced_search .search_area .zenario_advanced_search_results .search_results .search_result .search_result_content .breadcrumb {
 	color:#555;
 	font-size:0.813em;
+	line-height:1.4em;
 	overflow : hidden;
   	text-overflow: ellipsis;
   	display: -webkit-box;
-  	-webkit-line-clamp: 3;
+  	-webkit-line-clamp: 2;
   	-webkit-box-orient: vertical;
 }
 
@@ -389,7 +410,7 @@ body.webkit .zenario_advanced_search .search_entry_box_panel .search_area .zenar
 
 .zenario_advanced_search.zenario_advanced_search__in_mode__search_page .zenario_advanced_search_results .search_heading {
 	padding-bottom:20px;
-	font-family: 'cardoregular',Arial, Helvetica, sans-serif;
+	font-family: 'cardoregular','Times New Roman','Georgia',serif;
 	font-size: 1.3em;
 	color: #000;
 }

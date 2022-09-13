@@ -5,10 +5,8 @@ login:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 reset:
-                    full_width: true
                     snippet:
                         html: |
                             <h1>Zenario Administrator Login</h1>
@@ -21,9 +19,17 @@ login:
                                 Then please enter your details below.
                             </p>
                 description:
-                    full_width: true
                     snippet:
-                        html: "<h1 class='[[http_or_https_padlock]]'>Log in as a site administrator</h1>"
+                        h1: Log in as a site administrator
+                secure_connection:
+                    snippet:
+                        p_class: secure_connection
+                        p: Secure connection
+                not_secure_connection:
+                    snippet:
+                        p_class: not_secure_connection
+                        p: |
+                            Warning, you are connecting via http and so your credentials will not be sent securely.
                 username:
                     label: "Administrator username, or email address:"
                     type: text
@@ -49,6 +55,14 @@ login:
                     label: Remember me
                     note_below: |
                         If checked, Zenario will set a cookie on your browser, and you will see a convenient "LOGIN" button on the website front-end when not in admin mode.
+                admin_link:
+                    same_row: false
+                    row_class: row_form
+                    snippet:
+                        html: |
+                            <p>
+                                You can always log in by going to <br><a href="[[site_url]]admin" target="_blank">[[site_url]]<strong>admin</strong></a>.
+                            </p>
                 login:
                     value: Login
                     type: submit
@@ -62,7 +76,6 @@ login:
                 previous:
                     value: "Return to site front-end"
                     type: submit
-                    full_width: true
                     style: |
                         float: left;
                     class: return_front_end
@@ -72,10 +85,8 @@ login:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
-                    full_width: true
                     snippet:
                         html: |
                             <h1>Recover your administrator username/password</h1>
@@ -84,6 +95,7 @@ login:
                                 please enter your email address. Your username and a temporary password will
                                 be sent to you.
                             </p>
+
                 email:
                     label: "Email:"
                     type: text
@@ -92,7 +104,6 @@ login:
                 previous:
                     value: Back to login screen
                     type: submit
-                    full_width: true
                     style: |
                         float: left;
                 reset:

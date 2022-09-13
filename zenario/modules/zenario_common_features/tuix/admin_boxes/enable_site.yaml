@@ -10,7 +10,6 @@ zenario_enable_site:
             edit_mode: 
                 enabled: true
                 on: true
-                always_on: true
             show_errors_after_field: desc
             notices: 
                 checked: 
@@ -24,10 +23,10 @@ zenario_enable_site:
                         lib.tuix.key.isHead
                     html: true
                     message: |
-                            This site is running on the &ldquo;HEAD&rdquo; development codebase of Zenario
-                            (the constant <code>ZENARIO_IS_HEAD</code> is set to true in the file
-                            <code>zenario/admin/db_updates/latest_revision_no.inc.php</code>).
-                            Because of this, we recommend that you run the site in development mode, with the Auto option.
+                            This site is running on the &ldquo;HEAD&rdquo; development codebase of Zenario.
+                            (In <code>zenario/admin/db_updates/latest_revision_no.inc.php</code>
+                            the constant <code>ZENARIO_IS_HEAD</code> is set to true.)
+                            Because of this, we recommend that you run the site in developer mode, with the Auto option.
             fields: 
                 desc:
                     snippet:
@@ -36,67 +35,40 @@ zenario_enable_site:
                 
                 site_enabled:
                     indent: 1
-                    type: toggle
-                    pressed: true
+                    type: checkbox
+                    onoff: true
+                    label: Enable site
+                    value: 1
                     redraw_onchange: true
-                    enable_microtemplates_in_properties: true
-                    value: |
-                        <% if (lib.field('site_enabled').pressed) { %>✔ Site enabled
-                        <% } else { %>✘ Site disabled
-                        <% } %>
+                site_enabled_note:
+                    indent: 1
+                    visible_if:
+                        lib.value: site_enabled
                     note_below: |
-                        <% if (lib.field('site_enabled').pressed) { %>
-                            Click to disable this site.
-                        <% } else { %>
-                            Click to enable this site. Currently this site is disabled, and only visible in admin mode.
-                            You can define text for a holding page that visitors can see:
-                        <% } %>
-
-                site_disabled_title:
-                    indent: 2
-                    visible_if: |
-                        !lib.field('site_enabled').pressed
-                    label: "Browser title:"
-                    type: text
-                site_disabled_message:
-                    indent: 2
-                    hide_with_previous_field: true
-                    label: "Message:"
-                    type: editor
-                    dont_trim: true
-                    editor_options:
-                        convert_urls: true
-                        relative_urls: true
-                    rows: 4
-                    cols: 80
-                
-                
-                
+                        Click to disable this site.
+                site_disabled_note:
+                    indent: 1
+                    visible_if:
+                        lib.valueIsEmpty: site_enabled
+                    note_below: |
+                        Site disabled, and the front-end only visible when logged in as an administrator.
+                        You can define text for a holding page that visitors can see in the [[link_start]]Logos and branding[[link_end]] site setting.
                 
                 desc2:
                     snippet:
                         html: |
-                            Use this to switch the site between production and development mode.
-                site_mode:
+                            Use this to switch to enable developer mode.
+                enable_dev_mode:
                     indent: 1
-                    type: radios
-                    values:
-                        prod:
-                            label: Production mode
-                        dev:
-                            label: 'Development mode:'
+                    type: checkbox
+                    onoff: true
+                    label: Enable developer mode
                     redraw_onchange: true
-                    enable_microtemplates_in_properties: true
-                    note_below: |
-                        <% if (lib.value('site_mode') == 'prod') { %>
-                            In production mode the site will run more quickly for administrators,
-                            but if a developer changes a file,
-                            they will need to manually press the button below.
-                        <% } %>
                 
                 site_in_dev_mode:
                     indent: 2
-                    hide_if_previous_outdented_value_isnt: dev
+                    visible_if:
+                        lib.value: enable_dev_mode
                     type: radios
                     values:
                         3600:
@@ -119,17 +91,26 @@ zenario_enable_site:
                     redraw_onchange: true
                     enable_microtemplates_in_properties: true
                     note_below: |
-                        In development mode, when a developer changes a file within Zenario, the effect of any
+                        In developer mode, when a developer changes a file within Zenario, the effect of any
                         changes will be seen by administrators on next page load, so bypassing Zenario's cache;
                         but the site will run more slowly for administrators.
                         It will have no effect on regular website visitors or extranet users.
                         
                         <% if (lib.tuix.key.isHead) { %>
                             </br></br>
-                            By choosing Auto, development mode will be enabled so long as ZENARIO_IS_HEAD is still true.
-                            When the Zenario codebase becomes a branch, this constant will be set to false and the site
-                            will be automatically switched to production mode and remain in that state.
+                            By choosing Auto, developer mode will be enabled so long as ZENARIO_IS_HEAD is still true.
+                            When the Zenario codebase becomes a branch, this constant will be set to false and developer mode
+                            will be automatically switched off.
                         <% } %>
+                
+                dev_mode_disabled_note:
+                    indent: 1
+                    visible_if:
+                        lib.valueIsEmpty: enable_dev_mode
+                    note_below: |
+                        The site will run more quickly for administrators when developer mode is disabled,
+                        but if a developer changes a file,
+                        they will need to manually press the button below.
                 
                 
                 desc3:
@@ -137,7 +118,8 @@ zenario_enable_site:
                         html: >
                             <p>
                                 Click the following button to clear cache and check for changes.
-                                This should only be needed in production mode.
+                                You do not need to do this if developer mode is enabled, as performing
+                                a browser reload in admin mode will achieve the same result.
                             </p>
                 
                 clear_cache:

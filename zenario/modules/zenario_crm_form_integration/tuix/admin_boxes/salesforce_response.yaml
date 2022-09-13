@@ -12,7 +12,6 @@ zenario__salesforce_response:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 datetime:
                     label: 'Date/time:'

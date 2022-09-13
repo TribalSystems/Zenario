@@ -5,7 +5,6 @@ congratulations:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 blurb2:
                     full_width: true

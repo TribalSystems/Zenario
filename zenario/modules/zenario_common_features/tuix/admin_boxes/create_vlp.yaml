@@ -12,7 +12,6 @@ zenario_create_vlp:
             label: Details
             edit_mode:
                 enabled: Yes
-                always_on: Yes
             fields:
                 language_id:
                     label: 'Language code:'

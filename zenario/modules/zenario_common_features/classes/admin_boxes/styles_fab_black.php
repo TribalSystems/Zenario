@@ -35,7 +35,25 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__styles_fab_black extends  zenario_common_features {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		//...
+		
+		foreach ($box['tabs']['as_span']['fields'] as $codeName => &$field) {
+			$field['show_as_a_span_when_readonly'] = true;
+		}
+		
+		$fields['as_span/checkboxes']['value'] = 'left top,right bottom';
+		$fields['as_span/radios']['value'] =
+		$fields['as_span/select']['value'] = 'left top';
+		$fields['as_span/picker']['value'] = 'html_1';
+		$fields['as_span/text']['value'] =
+		$fields['as_span/textarea']['value'] = 'Hello world!';
+		
+		$fields['readonly_tab/checkboxes']['value'] = 'left top,right bottom';
+		$fields['readonly_tab/radios']['value'] =
+		$fields['readonly_tab/select']['value'] = 'left top';
+		$fields['readonly_tab/picker']['value'] = 'html_1';
+		$fields['readonly_tab/text']['value'] =
+		$fields['readonly_tab/textarea']['value'] = 'Hello world!';
+		
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

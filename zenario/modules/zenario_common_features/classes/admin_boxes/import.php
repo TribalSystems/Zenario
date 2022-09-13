@@ -44,6 +44,12 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 		$datasetId = $box['key']['dataset'];
 		$dataset = ze\dataset::details($datasetId);
 		$datasetFields = ze\datasetAdm::listCustomFields($datasetId, $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+
+		//Roles should not be listed as a potential option.
+		if (isset($datasetFields['tab__zenario_organization_manager__roles'])) {
+			unset($datasetFields['tab__zenario_organization_manager__roles']);
+		}
+
 		//Special fields for users dataset
 		if ($dataset['system_table'] == 'users') {
 			$datasetFields['name_split_on_first_space'] = [
@@ -54,6 +60,12 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				'ord' => 0.2, 
 				'label' => ze\admin::phrase('Name -> First Name, Last Name, split on last space')
 			];
+		}
+
+		foreach ($datasetFields as $datasetFieldId => $datasetField) {
+			if (!empty($datasetField['field_name']) && ze::in($datasetField['field_name'], "status", "screen_name_confirmed", "created_date", "modified_date", "last_login", "last_profile_update_in_frontend", "suspended_date")) {
+				$datasetFields[$datasetFieldId]['disabled'] = true;
+			}
 		}
 		$box['lovs']['dataset_fields'] = $datasetFields;
 	}
@@ -373,11 +385,19 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						$fieldName = $name . '_' . $i;
 						$field['ord'] = ++$ord;
 						if ($name == 'file_column_name') {
+							//Left-hand side column: "Field name in file"
 							$field['value'] = (string)$header;
 						} elseif ($name == 'file_column_match') {
+							//Middle column: "Database column"
 							$field['readonly'] = $blankHeader;
 							//Prefill this field if it matches any database column names
-							$field['value'] = $field['current_value'] = (string)($datasetFieldColumns[strtolower($header)] ?? false);
+							if (ze::in($header, "status", "screen_name_confirmed", "created_date", "modified_date", "last_login", "last_profile_update_in_frontend", "suspended_date")) {
+								$field['disabled'] = true;
+								$field['empty_value'] = $this->phrase('Cannot be imported');
+							} else {
+								$field['empty_value'] = $this->phrase('-- Omit field --');
+								$field['value'] = $field['current_value'] = (string)($datasetFieldColumns[strtolower($header)] ?? false);
+							}
 						}
 						$box['tabs']['headers']['fields'][$fieldName] = $field;
 					}

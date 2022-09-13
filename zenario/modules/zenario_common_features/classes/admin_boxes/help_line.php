@@ -79,7 +79,17 @@ class zenario_common_features__admin_boxes__help_line extends ze\moduleBaseClass
 				$subject,
 				$body,
 				$toaddress,
-				$addressToOverriddenBy
+				$addressToOverriddenBy,
+				$nameTo = false,
+				$addressFrom = false,
+				$nameFrom = false,
+				$attachments = [],
+				$attachmentFilenameMappings = [],
+				$precedence = 'bulk',
+				$isHTML = false,
+				false, false, false, false, '', '', 'To',
+				$ignoreDebugMode = true		//Help line requests should always be sent to the intended recipient,
+											//even if debug mode is on.
 			);
 			$msg = '<!--Message_Type:Success-->';
 			$msg .= '<p>'. ze\admin::phrase("Thanks for your message, we'll be in touch in the next 1 working day."). '</p>';

@@ -48,12 +48,18 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 			$box['key']['languageId'] = ze::$defaultLang;
 		}
 		
-		if (!$menu = ze\menu::details($box['key']['id'])) {
+		if (!$menu = ze\menu::details($box['key']['id'], $box['key']['languageId'])) {
 			exit;
 		}
 		
 		$box['key']['sectionId'] = $menu['section_id'];
 		$box['key']['parentMenuID'] = $menu['parent_id'];
+
+		if (ze\menu::isUnique($menu['redundancy'], $menu['equiv_id'], $menu['content_type'])) {
+			$menu['redundancy'] = 'unique';
+		}
+		
+		$box['identifier']['css_class'] = ze\menuAdm::cssClass($menu);
 		
 		if ($box['key']['parentMenuID']) {
 			$values['text/parent_path_of__menu_title'] = ze\menuAdm::path($box['key']['parentMenuID'], $box['key']['languageId']);

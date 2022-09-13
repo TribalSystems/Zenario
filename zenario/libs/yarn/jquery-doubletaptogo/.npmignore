@@ -1,0 +1,4 @@
+.idea
+node_modules
+src/lib
+src/scss/*.css

@@ -11,7 +11,6 @@ zenario_document_rename:
 			label: Details
 			edit_mode:
 				on: Yes
-				always_on: Yes
 				enabled: Yes
 			fields:
 				document_name:

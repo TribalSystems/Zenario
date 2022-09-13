@@ -373,7 +373,7 @@ if ($getUploadedFileInCacheDir) {
 			//If this is not an image, and is not a PDF that is being downloaded from Organizer,
 			//attempt to symlink the file to the private directory rather than load it all into memory in php
 			} else
-			if (($fileLink = ze\file::link($file['id'], ze\ring::random(24)))
+			if (($fileLink = ze\file::link($file['id'], ze\ring::random(24), 'files', false, $filename))
 			 && (!ze\ring::chopPrefix($fileLink, 'zenario/file.php'))) {
 				header('location: '. ze\link::absolute(). $fileLink);
 				exit;
@@ -443,6 +443,7 @@ if (isset($_GET['cacheFor'])) {
 if (!$filename && !empty($file['filename'])) {
 	$filename = $file['filename'];
 }
+
 if ($filename) {
 	if (($_REQUEST['download'] ?? false) || $usage == 'content') {
 		header('Content-Disposition: attachment; filename="'. urlencode($filename). '"');

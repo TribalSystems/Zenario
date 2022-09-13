@@ -9,7 +9,6 @@ zenario_user__activate:
             label: Email
             edit_mode:
                 enabled: Yes
-                always_on: Yes
             fields:
                 activate_user_info:
                     ord: 1

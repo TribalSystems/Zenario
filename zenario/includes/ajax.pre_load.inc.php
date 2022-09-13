@@ -39,9 +39,30 @@ function zenarioPageCacheDir(&$requests, $type = 'ajax') {
 }
 
 
-//Don't allow page caching if an Admin is logged in
-//Also don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set, as they're probably about to be automatically logged in
-if (!isset($_SESSION['admin_logged_into_site'])
+//Check cookie acceptence.
+//Caching supports the simple options; i.e. undecided (""), accepted ("a") and rejected ("r").
+//If someone accepts some but not others, we don't support caching like this and should turn caching off.
+$simpleCookieOptions = true;
+$cookiesAccepted = $_COOKIE['cookies_accepted'] ?? '';
+if ($cookiesAccepted && $cookiesAccepted != '1') {
+	$cookiesAccepted = array_flip(explode(',', $cookiesAccepted));
+	
+	$numCookieOptions =
+		(int) isset($cookiesAccepted['functionality'])
+	 +	(int) isset($cookiesAccepted['analytics'])
+	 +	(int) isset($cookiesAccepted['social_media']);
+	
+	$simpleCookieOptions = $numCookieOptions == 3;
+}
+
+
+//A few more checks for whether caching should be on or off.
+//Don't allow page caching if an Admin is logged in.
+//Don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set,
+//as they're probably about to be automatically logged in.
+//Don't try and cache calls to the refreshPlugin(), showFloatingBox(), showRSS() or showSlot() methods via AJAX
+if ($simpleCookieOptions
+ && !isset($_SESSION['admin_logged_into_site'])
  && !(empty($_SESSION['extranetUserID']) && isset($_COOKIE['LOG_ME_IN_COOKIE']))
  && ze::in($_REQUEST['method_call'] ?? false, 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
 	

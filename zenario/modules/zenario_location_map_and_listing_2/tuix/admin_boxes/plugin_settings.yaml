@@ -10,7 +10,7 @@ plugin_settings:
                     ord: 0
                     snippet:
                         html: |
-                            This plugin will show a map and a list of all of the active locations on your site.
+                            This plugin will show a Google Map and a list of all of locations on your site. The site must have a valid Google Maps API key, and "Maps JavaScript API", "Maps JavaScript API" and "Geocoding API" enabled in Google Cloud. Only locations that are "active" and with a pin will be shown.
                 front_end_features:
                     type: grouping
                     snippet:
@@ -130,12 +130,15 @@ plugin_settings:
                     values:
                         show_all_locations:
                             ord: 1
-                            label: "Show all locations"
-                        apply_a_filter:
+                            label: "Show all locations, without visitor Filter control"
+                        show_all_locations_with_filter:
                             ord: 2
-                            label: "Apply a filter"
+                            label: "Show all locations, with visitor Filter control"
+                        apply_a_filter:
+                            ord: 3
+                            label: "Apply a filter for initial results, with visitor Filter control"
                     value: show_all_locations
-                    redraw_onchange: true
+                    format_onchange: true
                 location_dataset_filter_level_1:
                     grouping: filter_locations
                     label: "Filter locations (level 1):"
@@ -149,6 +152,12 @@ plugin_settings:
                     format_onchange: true
                     validation:
                         required_if_not_hidden: "Please select a dataset field."
+                no_location_level_1_filters_found:
+                    grouping: filter_locations
+                    hidden: true
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">No filters found.</div>'
                 location_dataset_filter_level_2:
                     grouping: filter_locations
                     label: "Filter locations (level 2, optional):"
@@ -158,7 +167,13 @@ plugin_settings:
                     type: select
                     values: {}
                     empty_value: '-- Select --'
-                    visible_if: zenarioAB.value('location_display') == 'apply_a_filter'
+                    visible_if: (zenarioAB.value('location_dataset_filter_level_1') && zenarioAB.value('location_display') == 'apply_a_filter')
+                no_location_level_2_filters_found:
+                    grouping: filter_locations
+                    hidden: true
+                    indent: 2
+                    snippet:
+                        html: '<div class="zenario_fbWarning">No filters found.</div>'
                 exclude_dataset_filters:
                     grouping: filter_locations
                     label: "Exclude filters"
@@ -178,12 +193,6 @@ plugin_settings:
                     visible_if: zenarioAB.value('exclude_dataset_filters')
                     validation:
                         required_if_not_hidden: "Please select one or more dataset fields to exclude."
-                hide_filters_list:
-                    label: "Hide filters list"
-                    type: checkbox
-                    value: false
-                    plugin_setting:
-                        name: hide_filters_list
         display:
             label: "Display"
             fields:
@@ -191,20 +200,16 @@ plugin_settings:
                     plugin_setting:
                         name: show_images
                     type: checkbox
-                    label: 'Show location images on the list and in info windows'
+                    label: 'Show location images on the list and in map info boxes'
                     format_onchange: true
-                list_view_thumbnail_canvas:
+                image_canvas:
                     indent: 1
                     plugin_setting:
-                        name: list_view_thumbnail_canvas
-                    label: 'Image size on the list:'
-                    side_note: "Location info windows use the same image at half the size."
+                        name: image_canvas
+                    label: 'Show location thumbnail images at this size:'
+                    side_note: "Set the size at which to show images in the list. On-map info boxes will use the same image at 50% of this size."
                     type: select
-                    value: unlimited
                     values:
-                        unlimited:
-                            ord: true
-                            label: Unlimited size
                         fixed_width:
                             ord: "2"
                             label: Constrain by width
@@ -217,49 +222,34 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
+                    value: fixed_width_and_height
                     format_onchange: true
-                list_view_thumbnail_width:
+                image_width:
                     indent: 3
                     plugin_setting:
-                        name: list_view_thumbnail_width
+                        name: image_width
                     label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width in pixels.
                         numeric: The width must be a number.
-                    value: "200"
+                    value: 240
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                list_view_thumbnail_height:
+                image_height:
                     indent: 3
                     plugin_setting:
-                        name: list_view_thumbnail_height
+                        name: image_height
                     label: 'Height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a height in pixels.
                         numeric: The height must be a number.
-                    value: "200"
+                    value: 160
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                list_view_thumbnail_offset:
-                    indent: 3
-                    plugin_setting:
-                        name: list_view_thumbnail_offset
-                    label: 'Offset:'
-                    type: text
-                    style: 'width: 50px;'
-                    value: "0"
-                    slider:
-                        min: "-10"
-                        max: "10"
-                        before_field: true
-                        style: 'width: 200px;'
-                    note_below: |
-                        Moving the slider to the left will move the image left or down;
-                        moving the slider to the right will move the image right or up.
                 initial_map_position:
                     plugin_setting:
                         name: initial_map_position

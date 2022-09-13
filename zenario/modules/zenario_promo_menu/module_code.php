@@ -62,14 +62,15 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		
 		$this->menuArray['nodes'] =
 			ze\menu::getStructure($cachingRestrictions,
-							 $this->sectionId, $this->currentMenuId, $parentMenuId,
-							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
-							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
-							 $this->showInvisibleMenuItems,
-							 $this->showMissingMenuNodes,
-							 false,
-							 ze\content::showUntranslatedContentItems());
-							 
+				$this->sectionId, $this->currentMenuId, $parentMenuId,
+				$this->numLevels, $this->maxLevel1MenuItems, $this->language,
+				$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
+				$this->showInvisibleMenuItems,
+				$this->showMissingMenuNodes,
+				false,
+				ze\content::showUntranslatedContentItems()
+			);
+							
 		switch ($cachingRestrictions) {
 			case ze\menu::privateItemsExist:
 				$this->allowCaching(

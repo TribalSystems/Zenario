@@ -18,19 +18,19 @@ plugin_settings:
                     visible_if: zenarioAB.value('show_title')
                     plugin_setting:
                         name: title_tags
-                    label: 'Title heading tags'
+                    label: 'Title heading tag:'
                     type: select
                     values:
-                        h1: Heading 1
-                        h2: Heading 2
-                        h3: Heading 3
-                        h4: Heading 4
-                        h5: Heading 5
-                        h6: Heading 6
-                        p: Paragraph
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
                     value: h1
                     side_note: |
-                        Choose which HTML tags the title will be displayed in.
+                        Choose which HTML tags the title will be displayed in
                     indent: 1
                 show_filename_local_file:
                     plugin_setting:
@@ -63,9 +63,9 @@ plugin_settings:
                     side_note: Display the featured image of the content item if it exists.
                     format_onchange: Yes
                     indent: 1
-                sticky_image_canvas:
+                image_canvas:
                     plugin_setting:
-                        name: sticky_image_canvas
+                        name: image_canvas
                     label: 'Featured image canvas:'
                     type: select
                     value: fixed_width_and_height
@@ -88,9 +88,9 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 2
 
-                sticky_image_width:
+                image_width:
                     plugin_setting:
-                        name: sticky_image_width
+                        name: image_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -102,9 +102,9 @@ plugin_settings:
                     post_field_html: '&nbsp;pixels'
                     indent: 3
 
-                sticky_image_height:
+                image_height:
                     plugin_setting:
-                        name: sticky_image_height
+                        name: image_height
                     label: 'Height:'
                     type: text
                     validation:
@@ -134,6 +134,13 @@ plugin_settings:
                         to_file_itself:
                             label: "To file itself (only available on public content items)"
                     visible_if: zenarioAB.value('show_permalink')
+                show_document_extra_data:
+                    #Only appears if "Document content type: extra data" module is running.
+                    label: "Show document extra data"
+                    plugin_setting:
+                        name: show_document_extra_data
+                    type: checkbox
+                    value: 1
                 show_release_datetime:
                     label: "Show item's release date/time"
                     plugin_setting:
@@ -165,6 +172,13 @@ plugin_settings:
                     type: checkbox
                     value: "0"
                     indent: 1
+                
+                show_categories:
+                    label: "Show categories"
+                    plugin_setting:
+                        name: show_categories
+                    type: checkbox
+                    side_note: 'Only the categories marked as "public" will be shown.'
                 
                 show_details_and_link:
                     label: 'Target content item:'

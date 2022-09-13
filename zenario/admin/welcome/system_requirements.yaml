@@ -7,7 +7,6 @@ system_requirements:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description_unmet:
                     full_width: true

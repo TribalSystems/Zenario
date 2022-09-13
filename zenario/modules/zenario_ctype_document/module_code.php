@@ -114,8 +114,8 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		if($this->setting('show_default_stick_image')) {
 			$has_img = false;
 			if($this->setting('use_sticky_image')) {
-				$width = (int)$this->setting('sticky_image_width');
-				$height = (int)$this->setting('sticky_image_height');
+				$width = (int)$this->setting('image_width');
+				$height = (int)$this->setting('image_height');
 				$url = false;
 				
 				if ($this->setting('use_sticky_image') && (ze\file::itemStickyImageLink($width, $height, $url, $this->targetID, $this->targetType, $this->targetVersion, $width, $height))) {
@@ -236,6 +236,50 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			$this->mergeFields['Download_Local_File'] = $localFileDownload;
 			$this->mergeFields['Download_S3_File'] = $s3FileDownload;
 			$this->mergeFields['module_loc'] = ze::moduleDir('zenario_ctype_document');
+
+			if ($this->cType == 'document') {
+				if ($this->setting('show_categories')) {
+					$this->mergeFields['Show_categories'] = true;
+
+					$sql = "
+						SELECT GROUP_CONCAT(cat.name SEPARATOR ', ') AS categories
+						FROM " . DB_PREFIX . "category_item_link cil
+						INNER JOIN " . DB_PREFIX . "categories cat
+							ON cat.id = cil.category_id
+						INNER JOIN " . DB_PREFIX . "content_items c
+							ON cil.equiv_id = c.equiv_id
+						INNER JOIN " . DB_PREFIX . "content_item_versions v
+							ON v.id = c.id
+							AND v.type = c.type
+							AND v.tag_id = c.tag_id
+						WHERE cil.content_type = 'document'
+						AND v.id = " . (int) $this->cID . "
+						AND v.type = 'document'
+						AND v.version = " . (int) $this->cVersion . "
+						AND cat.parent_id = 0
+						AND cat.public = 1
+						GROUP BY cil.equiv_id";
+					$result = ze\sql::select($sql);
+					$this->mergeFields['Categories'] = ze\sql::fetchValue($result, 'equiv_id');
+				}
+
+				if ($this->setting('show_document_extra_data') && ze\module::inc('zenario_ctype_document_extra_data')) {
+					$this->mergeFields['Show_document_extra_data'] = true;
+
+					$documentExtraData = ze\module::sendSignal('signalGetContentItemExtraData', [$this->cID, $this->cType, $this->cVersion]);
+					if (
+						!empty($documentExtraData)
+						&& is_array($documentExtraData)
+						&& !empty($documentExtraData['zenario_ctype_document_extra_data'])
+						&& is_array($documentExtraData['zenario_ctype_document_extra_data'])
+					) {
+						$this->mergeFields['Extra_data'] = [];
+						foreach ($documentExtraData['zenario_ctype_document_extra_data'] as $extraDataKey => $extraDataValue) {
+							$this->mergeFields['Extra_data'][$extraDataKey] = $extraDataValue;
+						}
+					}
+				}
+			}
 		}
 		
 		if (!ze::isAdmin()) {
@@ -250,7 +294,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	function showSlot() {
 		if ($this->targetType != 'document') {
 			if ((int)($_SESSION['admin_userid'] ?? false)){
-				echo "This Plugin must be placed on a Document-type Content Item, or configured to point to another Document-type Content Item. Please check your Plugin Settings.";
+				echo "This plugin must be placed on a Document-type content item, or configured to point to another Document-type content item. Please check your plugin settings.";
 			}
 			return;
 		}
@@ -284,6 +328,20 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				$fields['first_tab/local_file']['label'] = ze\admin::phrase('Show local file Download button for immediate download (if local file exists)');
 				$fields['first_tab/s3_file']['label'] = ze\admin::phrase('Show S3 file Download button for immediate download');
 			}
+
+			//Extra option available if the "Document content type: extra data"
+			//module is running.
+			if (!ze\module::isRunning('zenario_ctype_document_extra_data')) {
+				unset($fields['first_tab/show_document_extra_data']);
+			}
+		} elseif ($path == 'zenario_content') {
+			if ($box['key']['cID'] && $box['key']['cType'] && ($box['key']['cType'] == 'document') && $box['key']['cVersion']) {
+				$extract = ze\row::get('content_cache', ['extract', 'extract_wordcount'], ['content_id' => $box['key']['cID'], 'content_type' => 'document', 'content_version' => $box['key']['cVersion']]);
+				if (!empty($extract) && is_array($extract)) {
+					$fields['file/text_extract']['value'] = $extract['extract'];
+					$fields['file/text_extract_word_count']['value'] = $extract['extract_wordcount'];
+				}
+			}
 		}
 	}
 	
@@ -299,7 +357,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		        
 		        $fields['first_tab/use_sticky_image']['hidden'] = !$values['first_tab/show_default_stick_image'];
 		        $hidden = !($values['first_tab/show_default_stick_image'] && $values['first_tab/use_sticky_image']);
-		        $this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'sticky_image_');
+		        $this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'image_');
 				
 				if (ze::setting('aws_s3_support')) {
 					$fields['first_tab/download_source']['hidden'] = false;
@@ -398,10 +456,6 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				if (isset($panel['collection_buttons']['zenario_ctype_document__create_multiple'])) {
 					if ($panel['key']['cType'] != 'document') {
 						unset($panel['collection_buttons']['zenario_ctype_document__create_multiple']);
-					} else {
-						$panel['collection_buttons']['zenario_ctype_document__create_multiple']['tooltip'] = 
-							ze\admin::phrase('Create multiple Documents in the Language "[[lang]]"',
-								['lang' => ze\lang::name((($panel['key']['language'] ?? false) ?: ze::$defaultLang))]);
 					}
 				}
 				
@@ -418,13 +472,6 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 					unset($panel['item_buttons']['zenario_ctype_document__rescan_extract']);
 				}
 				
-				foreach ($panel['items'] as &$item) {
-					if ($item['type'] == 'document') {
-						$item['traits']['is_document'] = true;
-						$item['traits']['no_animations'] = true;
-					}
-				}
-				
 				break;
 		}
 	}
@@ -432,7 +479,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__content/panels/content':
-				//Handle creating multiple Documents at once in Storekeeper
+				//Handle creating multiple Documents immediately in Organizer
 				if (($_POST['create_multiple'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', false, 'document')) {
 					$newIds = [];
 					
@@ -460,18 +507,21 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 								
 								echo
 									ze\admin::phrase(
-										'The file "[[file]]" is [[size]], which is more than the Maximum Content File Size ([[maxContentSize]]) as set in site settings, and so cannot be uploaded.',
+										'The file "[[file]]" is [[size]], which is more than the maximum content file size ([[maxContentSize]]) as set in site settings, and so cannot be uploaded.',
 										['file' => htmlspecialchars($_FILES['Filedata']['name']), 'size' => ze\file::fileSizeConvert(filesize($_FILES['Filedata']['tmp_name'])), 'maxContentSize' => ze\file::fileSizeConvert(ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit')))]);
 							
 							} else {
-								$filename = preg_replace('/([^.a-z0-9]+)/i', '_', $_FILES['Filedata']['name']);
+								$filename = preg_replace('/([^.a-z0-9_\(\)\[\]]+)/i', '-', $_FILES['Filedata']['name']);
+
+								$fileData = pathinfo($_FILES['Filedata']['name']);
+								$filenameForTitle = preg_replace('/([^.a-z0-9\-_\(\)\[\]\'\"]+)/i', ' ', $fileData['filename']);
 								
 								if ($fileId = ze\file::addToDocstoreDir('content', $_FILES['Filedata']['tmp_name'], $filename)) {
 									$cID = $cVersion = false;
 									ze\contentAdm::createDraft($cID, false, $cType, $cVersion, false, $languageId);
 									ze\row::set(
 										'content_item_versions',
-										['layout_id' => $layoutId, 'title' => $filename, 'filename' => $filename, 'file_id' => $fileId],
+										['layout_id' => $layoutId, 'title' => $filenameForTitle, 'filename' => $filename, 'file_id' => $fileId],
 										['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 									$newIds[] = $cType. '_'. $cID;
 									
@@ -496,17 +546,17 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		
 		$presignedUrl = '';
 		if (ze::setting('aws_s3_support')) {
-		$bucketArn = ze::setting('aws_s3_bucket');
-		$bucket = ltrim($bucketArn, 'arn:aws:s3:::');
-		$s3 = Aws\S3\S3Client::factory([
-			'credentials' => [
-				'key' => ze::setting('aws_s3_key_id'),
-				'secret' => ze::setting('aws_s3_secret_key')
-			],
-			'version' => 'latest',
-			'region' => ze::setting('aws_s3_region')
-		]);
-		$bucketResponse = $s3->doesBucketExist($bucket);
+			$bucketArn = ze::setting('aws_s3_bucket');
+			$bucket = ltrim($bucketArn, 'arn:aws:s3:::');
+			$s3 = Aws\S3\S3Client::factory([
+				'credentials' => [
+					'key' => ze::setting('aws_s3_key_id'),
+					'secret' => ze::setting('aws_s3_secret_key')
+				],
+				'version' => 'latest',
+				'region' => ze::setting('aws_s3_region')
+			]);
+			$bucketResponse = $s3->doesBucketExist($bucket);
 			if ($bucketResponse) {
 				$response = $s3->doesObjectExist($bucket, $keyName);
 				if ($response) {
@@ -698,18 +748,22 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		if ($showResultMessage) {
 			if ($stats['fails']) {
 				echo '<!--Message_Type:Error-->';
-				
 				if ($stats['successes']) {
 					echo ze\admin::phrase('[[successes]] extract(s) were updated. [[fails]] extract(s) could not be updated.', $stats);
 				} else {
 					echo ze\admin::phrase('[[fails]] extract(s) could not be updated.', $stats);
 				}
-			} else if ($stats['successes']) {
-				echo '<!--Message_Type:Success-->';
-				echo ze\admin::phrase('[[successes]] extract(s) were updated.', $stats);
 			} else {
-				echo '<!--Message_Type:Warning-->';
-				echo ze\admin::phrase('No extracts were updated.');
+				if ($stats['successes']==1) {
+					echo '<!--Message_Type:Success-->';
+					echo ze\admin::phrase('This document\'s extract was updated.', $stats);
+				} elseif ($stats['successes']>1) {
+					echo '<!--Message_Type:Success-->';
+					echo ze\admin::phrase('The extracts of [[successes]] documents were updated.', $stats);
+				} else {
+					echo '<!--Message_Type:Warning-->';
+					echo ze\admin::phrase('No extracts were updated.');
+				}
 			}
 		}
 	}

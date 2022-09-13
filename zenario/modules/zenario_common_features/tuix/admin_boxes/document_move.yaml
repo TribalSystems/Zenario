@@ -10,7 +10,6 @@ zenario_document_move:
             label: Details
             edit_mode:
                 on: Yes
-                always_on: Yes
                 enabled: Yes
             fields:
                 move_to_root:

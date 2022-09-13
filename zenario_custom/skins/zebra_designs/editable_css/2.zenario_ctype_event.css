@@ -1,0 +1,23 @@
+.zenario_ctype_event {
+	/* This class will be applied to all plugins of this type. */
+}
+
+/* This class will be applied to all plugins of this type,
+	unless overridden or removed for a specific plugin. */
+
+.zenario_ctype_event__default_style .Event_details {
+	position:relative;
+}
+.zenario_ctype_event__default_style .event_online_text {
+	color:#2a98ce;
+}
+
+.zenario_ctype_event__default_style .event_online_text:before {
+	font-family:"FontAwesome";
+	content:"\f108";
+	padding-right:5px;
+}
+
+.zenario_ctype_event__default_style .event_more_info {
+	margin-top:20px;
+}

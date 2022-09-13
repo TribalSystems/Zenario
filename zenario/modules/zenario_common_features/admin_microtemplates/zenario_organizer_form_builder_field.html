@@ -28,6 +28,15 @@
 				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', m.lov)}}
 			</div>
 		
+		<% } else if (m.type == 'sortable_selection') { %>
+			<span class="label">{{m.label|e}}</span>
+			<div id="organizer_form_field_values_{{m.id}}">
+				{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_sortable_selection_values_preview', m.lov)}}
+			</div>
+		
+		<% } else if (m.type == 'section_spacer') { %>
+			<span class="label">[Spacer]</span>
+		
 		<% } else if (m.type == 'date') { %>
 			<span class="label">{{m.label|e}}</span>
 			<input type="text" value="{{m.value}}" readonly class="datepicker"/>

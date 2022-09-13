@@ -123,23 +123,23 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 	public static function getVimeoPrivacySettingsFormattedNicely() {
 		$vimeoPrivacySettingsFormattedNicely = [
 			'anybody' => [
-				'label' => "Anybody",
-				'note' => "Anyone can view the video",
+				'label' => "Public/anybody",
+				'note' => "Vimeo 'Public', code 'anybody'. Anyone can view the video.",
 				'visitor_note' => "Anyone can view this video"
 			],
 			'disable' => [
-				'label' => "Disable",
-				'note' => "Hide video from vimeo.com, but the video can still be embedded on external sites. Non-shareable.",
+				'label' => "Hide from Vimeo/disable",
+				'note' => "Vimeo 'Hide from Vimeo' with code 'disable'. Hide video from Vimeo.com, but the video can still be embedded on external sites. Effectively non-shareable.",
 				'visitor_note' => "You may not share the link to this video"
 			],
 			'nobody' => [
-				'label' => "Nobody",
-				'note' => "Nobody but the owner can view the video",
+				'label' => "Only me/nobody",
+				'note' => "Vimeo 'Only me' with code 'nobody'. Nobody but the owner can view the video.",
 				'visitor_note' => "Nobody but the owner can view this video"
 			],
 			'unlisted' => [
-				'label' => "Unlisted",
-				'note' => "People with private link can view video, and it can be embedded and viewed on external sites. Shareable. (Requires Vimeo Plus/Pro/Business/Premium account.)",
+				'label' => "Private/unlisted",
+				'note' => "Vimeo 'Private' with code 'unlisted'. People with private link can view video, and it can be embedded and viewed on external sites. Effectively shareable. (Requires Vimeo Plus/Pro/Business/Premium account.)",
 				'visitor_note' => "You may share this video with others"
 			]
 		];

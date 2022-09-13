@@ -203,7 +203,7 @@ _sql
 );	ze\dbAdm::revision(46250
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
-	ADD COLUMN `hierarchical_var` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT ''
+	ADD COLUMN `hierarchical_var` varchar(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
 	AFTER `request_vars`
 _sql
 
@@ -353,17 +353,17 @@ _sql
 		`layout_for` enum('schema') NOT NULL,
 		`layout_for_id` int(10) unsigned NOT NULL,
 		`ord` smallint(4) unsigned NOT NULL default 1,
-		`name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
 		`privacy` enum('public', 'logged_out', 'logged_in', 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group', 'with_role') NOT NULL default 'public',
 		`smart_group_id` int(10) unsigned NOT NULL default 0,
-		`data` mediumtext CHARACTER SET utf8mb4,
+		`data` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
 		`created` datetime NOT NULL,
 		`last_edited` datetime default NULL,
 		`last_edited_admin_id` int(10) unsigned NOT NULL default 0,
 		`last_edited_user_id` int(10) unsigned NOT NULL default 0,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`layout_for`, `layout_for_id`, `ord`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] default CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
 _sql
 
 , <<<_sql
@@ -407,7 +407,7 @@ _sql
 );	if (ze\dbAdm::needRevision(47035) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'categories LIKE "code_name"')) ze\dbAdm::revision(47035
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]categories`
-	ADD COLUMN `code_name` varchar(255) CHARACTER SET ascii DEFAULT NULL AFTER `name`,
+	ADD COLUMN `code_name` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL AFTER `name`,
 	ADD UNIQUE KEY(`code_name`)
 _sql
 
@@ -694,7 +694,7 @@ _sql
 );	ze\dbAdm::revision(48630
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
-	ADD COLUMN `restrict_child_content_types` varchar(20) CHARACTER SET ascii NULL default NULL
+	ADD COLUMN `restrict_child_content_types` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NULL default NULL
 	AFTER `hide_private_item`
 _sql
 
@@ -834,13 +834,13 @@ _sql
 );	ze\dbAdm::revision(50150
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]languages`
-	ADD COLUMN `thousands_sep` varchar(1) CHARACTER SET utf8mb4 NOT NULL DEFAULT ','
+	ADD COLUMN `thousands_sep` varchar(1) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT ','
 	AFTER `search_type`
 _sql
 
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]languages`
-	ADD COLUMN `dec_point` varchar(1) CHARACTER SET utf8mb4 NOT NULL DEFAULT '.'
+	ADD COLUMN `dec_point` varchar(1) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '.'
 	AFTER `thousands_sep`
 _sql
 
@@ -891,7 +891,7 @@ _sql
 
 );	ze\dbAdm::revision(50192
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]job_logs` MODIFY COLUMN `note` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]]job_logs` MODIFY COLUMN `note` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 
 
@@ -919,9 +919,9 @@ _sql
 , <<<_sql
 	CREATE TABLE `[[DB_PREFIX]]tuix_customisations` (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		`name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
-		`custom_yaml` mediumtext CHARACTER SET utf8mb4 NULL,
-		`custom_json` mediumtext CHARACTER SET utf8mb4 NULL,
+		`name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+		`custom_yaml` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL,
+		`custom_json` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL,
 		`created` datetime DEFAULT NULL,
 		`created_admin_id` int(10) unsigned DEFAULT NULL,
 		`created_user_id` int(10) unsigned DEFAULT NULL,
@@ -932,7 +932,7 @@ _sql
 		`last_edited_username` varchar(255) DEFAULT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`name`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
 _sql
 
 
@@ -997,19 +997,19 @@ _sql
 , <<<_sql
 	CREATE TABLE `[[DB_PREFIX]]plugin_pages_by_mode` (
 		`equiv_id` int(10) unsigned NOT NULL,
-		`content_type` varchar(20) CHARACTER SET ascii NOT NULL,
+		`content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
 		`module_class_name` varchar(200) NOT NULL,
-		`mode` varchar(200) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`mode` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
 		PRIMARY KEY (`module_class_name`, `mode`),
 		UNIQUE KEY `content_type` (`content_type`,`equiv_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
 _sql
 
 //Add a "state" column to cover plugins in conductors
 ); ze\dbAdm::revision(50605
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
-	ADD COLUMN `state` char(2) CHARACTER SET ascii NOT NULL default ''
+	ADD COLUMN `state` char(2) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default ''
 _sql
 
 
@@ -1099,7 +1099,7 @@ _sql
 );	ze\dbAdm::revision(51300
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]tuix_snippets`
-	MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	MODIFY COLUMN `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 
 
@@ -1174,7 +1174,7 @@ _sql
 ); ze\dbAdm::revision( 51906
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
-	ADD COLUMN `s3_filename` varchar(250) CHARACTER SET utf8mb4 NOT NULL default '' AFTER `filename`
+	ADD COLUMN `s3_filename` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default '' AFTER `filename`
 _sql
 );	ze\dbAdm::revision(51907
 , <<<_sql
@@ -1326,7 +1326,7 @@ _sql
 	`cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
 	`small_screens` enum('show','hide','only','first') DEFAULT 'show',
 	PRIMARY KEY (`layout_id`,`slot_name`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 
@@ -1335,7 +1335,7 @@ _sql
 );	ze\dbAdm::revision( 53100
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]layouts` 
-	ADD COLUMN `json_data_hash`  varchar(8) CHARACTER SET ascii NOT NULL default 'xxxxxxxx'
+	ADD COLUMN `json_data_hash`  varchar(8) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default 'xxxxxxxx'
 	AFTER `json_data` 
 _sql
 
@@ -1460,10 +1460,10 @@ _sql
 	CREATE TABLE `[[DB_PREFIX]]writer_profiles` (
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 		`admin_id` int(10) unsigned default NULL,
-		`first_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
-		`last_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`first_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+		`last_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
 		`type` enum('administrator', 'external_writer') default NULL,
-		`email` varchar(250) CHARACTER SET utf8mb4 NOT NULL,
+		`email` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
 		`photo` int(10) unsigned DEFAULT NULL,
 		`profile` blob,
 		`created` datetime DEFAULT NULL,
@@ -1472,7 +1472,7 @@ _sql
 		`last_edited_admin_id` int(10) unsigned DEFAULT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE KEY (`admin_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] default CHARSET=utf8 
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
 _sql
 
 //Feature implemented in 9.2 and backpatched to 9.1. Check before attempting to add the column twice.
@@ -1532,53 +1532,7 @@ _sql
 		`crop_height` mediumint(6) NOT NULL,
 		PRIMARY KEY (`image_id`, `aspect_ratio_width`, `aspect_ratio_height`),
 		KEY (`image_id`, `aspect_ratio_angle`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] default CHARSET=utf8 
-_sql
-
-
-//Switch every banner and CSL plugin that previously used "resize and crop" mode to using
-//"crop and zoom" mode.
-//Note: This is just for banners, CSLs, nests and slideshows for now.
-//More plugins may come soon!
-);	ze\dbAdm::revision( 54800
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings` AS ps
-	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
-	   ON pi.id = ps.instance_id
-	INNER JOIN `[[DB_PREFIX]]modules` AS m
-	   ON m.id = pi.module_id
-	SET ps.value = 'crop_and_zoom'
-	WHERE ps.egg_id = 0
-	  AND m.class_name IN ('zenario_banner', 'zenario_content_list', 'zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple')
-	  AND (m.class_name, ps.name) IN (
-		('zenario_banner', 'canvas'),
-		('zenario_banner', 'mobile_canvas'),
-		('zenario_content_list', 'canvas'),
-		('zenario_plugin_nest', 'banner_canvas'),
-		('zenario_plugin_nest', 'mobile_canvas'),
-		('zenario_slideshow', 'banner_canvas'),
-		('zenario_slideshow', 'mobile_canvas'),
-		('zenario_slideshow_simple', 'banner_canvas'),
-		('zenario_slideshow_simple', 'mobile_canvas')
-	  )
-	  AND ps.value = 'resize_and_crop'
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_settings` AS ps
-	INNER JOIN `[[DB_PREFIX]]nested_plugins` AS np
-	   ON np.id = ps.egg_id
-	INNER JOIN `[[DB_PREFIX]]modules` AS m
-	   ON m.id = np.module_id
-	SET ps.value = 'crop_and_zoom'
-	WHERE ps.egg_id != 0
-	  AND m.class_name IN ('zenario_banner', 'zenario_content_list')
-	  AND (m.class_name, ps.name) IN (
-		('zenario_banner', 'canvas'),
-		('zenario_banner', 'mobile_canvas'),
-		('zenario_content_list', 'canvas')
-	  )
-	  AND ps.value = 'resize_and_crop'
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
 _sql
 
 
@@ -1600,10 +1554,175 @@ _sql
 _sql
 
 
+
+
+//
+//	Zenario 9.3
+//
+
+//In 9.3, we're going through and fixing the character-set on several columns that should
+//have been using "ascii"
+);	ze\dbAdm::revision(55140
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]centralised_lists`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	MODIFY COLUMN `tag_id` varchar(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_items`
+	MODIFY COLUMN `language_id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]email_templates`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]jobs`
+	MODIFY COLUMN `manager_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]jobs`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]languages`
+	MODIFY COLUMN `detect_lang_codes` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]languages`
+	MODIFY COLUMN `id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layout_slot_link`
+	MODIFY COLUMN `slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_text`
+	MODIFY COLUMN `language_id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'en'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]module_dependencies`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]module_dependencies`
+	MODIFY COLUMN `dependency_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules`
+	MODIFY COLUMN `class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules`
+	MODIFY COLUMN `vlp_class` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_item_link`
+	MODIFY COLUMN `slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_layout_link`
+	MODIFY COLUMN `slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_setting_defs`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]signals`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]signals`
+	MODIFY COLUMN `suppresses_module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]special_pages`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chain_privacy`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	MODIFY COLUMN `language_id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	MODIFY COLUMN `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+);	ze\dbAdm::revision(55150
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]email_templates`
+	MODIFY COLUMN `code` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
+
+);  ze\dbAdm::revision(55154
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `enable_css_tab` tinyint(1) NOT NULL default 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_types`
+	SET enable_css_tab = 1
+	WHERE content_type_id = 'html'
+_sql
+
+//Remove obsolete site settings
+);  ze\dbAdm::revision(55155
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name IN ('cookie_consent_type__explicit', 'individual_cookie_consent', 'manage_cookie_consent_content_item')
+_sql
+
+
 //Update the "alias" column to use utf8mb4.
 //However also cut the length down to 250 characters, just in case anyone is limited to 1,000 bytes in their key lengths.
 //Please note: this was backpatched to 9.1 and 9.2. However, this code should be safe to use more than once.
-);	ze\dbAdm::revision( 55051
+);	ze\dbAdm::revision( 55600
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]spare_aliases`
 	SET `alias` = SUBSTRING(`alias`, 1, 250)
@@ -1611,20 +1730,267 @@ _sql
 _sql
 
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]]spare_aliases` MODIFY COLUMN `alias` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 
-);	ze\dbAdm::revision( 55052
+//Remove unused cookie phrases
+);	ze\dbAdm::revision( 55602
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]visitor_phrases`
+	WHERE code IN ("_COOKIE_CONSENT_IMPLIED_MESSAGE", "_COOKIE_CONSENT_CONTINUE", "_COOKIE_CONSENT_MESSAGE", "_COOKIE_CONSENT_MANAGE", "_COOKIE_CONSENT_ACCEPT", "_COOKIE_CONSENT_SAVE_PREFERENCES", "_COOKIE_CONSENT_REJECT")
+_sql
+
+//Bring cookie consent for layouts and content item versions
+//in line with the HTML/Twig snippets.
+);	ze\dbAdm::revision( 55603
+//Migrate content item versions settings:
+//Head cc...
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	MODIFY COLUMN `head_cc` enum('not_needed', 'needed', 'specific_types', 'required') NOT NULL DEFAULT 'not_needed'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_item_versions`
+	SET head_cc = "needed"
+	WHERE head_cc = "required"
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	MODIFY COLUMN `head_cc` enum('not_needed', 'needed', 'specific_types') NOT NULL DEFAULT 'not_needed'
+_sql
+
+//... and foot cc.
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	MODIFY COLUMN `foot_cc` enum('not_needed', 'needed', 'specific_types', 'required') NOT NULL DEFAULT 'not_needed'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_item_versions`
+	SET foot_cc = "needed"
+	WHERE foot_cc = "required"
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	MODIFY COLUMN `foot_cc` enum('not_needed', 'needed', 'specific_types') NOT NULL DEFAULT 'not_needed'
+_sql
+
+//Migrate layouts settings:
+//Head cc...
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layouts`
+	MODIFY COLUMN `head_cc` enum('not_needed', 'needed', 'specific_types', 'required') NOT NULL DEFAULT 'not_needed'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]layouts`
+	SET head_cc = "needed"
+	WHERE head_cc = "required"
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layouts`
+	MODIFY COLUMN `head_cc` enum('not_needed', 'needed', 'specific_types') NOT NULL DEFAULT 'not_needed'
+_sql
+
+//... and foot cc.
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layouts`
+	MODIFY COLUMN `foot_cc` enum('not_needed', 'needed', 'specific_types', 'required') NOT NULL DEFAULT 'not_needed'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]layouts`
+	SET foot_cc = "needed"
+	WHERE foot_cc = "required"
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layouts`
+	MODIFY COLUMN `foot_cc` enum('not_needed', 'needed', 'specific_types') NOT NULL DEFAULT 'not_needed'
+_sql
+
+//Follow-up to revision 55603 above: add the specific_cookies column
+);	ze\dbAdm::revision( 55604
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `head_cc_specific_cookie_types` enum('functionality', 'analytics', 'social_media') DEFAULT NULL AFTER `head_cc`,
+	ADD COLUMN `foot_cc_specific_cookie_types` enum('functionality', 'analytics', 'social_media') DEFAULT NULL AFTER `foot_cc`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layouts`
+	ADD COLUMN `head_cc_specific_cookie_types` enum('functionality', 'analytics', 'social_media') DEFAULT NULL AFTER `head_cc`,
+	ADD COLUMN `foot_cc_specific_cookie_types` enum('functionality', 'analytics', 'social_media') DEFAULT NULL AFTER `foot_cc`
+_sql
+
+//Remove an obsolete site setting
+);	ze\dbAdm::revision( 55605
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name = "cookie_consent_for_extranet"
+_sql
+
+//Remove minified javascript from HTML and Twig snippets
+);	ze\dbAdm::revision( 55606
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]plugin_settings`
+	WHERE name = "minified_javascript"
+_sql
+
+//Add more control over how long a content item may be pinned
+);	ze\dbAdm::revision( 55607
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `pinned_duration` enum('fixed_date', 'fixed_duration', 'until_unpinned') DEFAULT NULL,
+	ADD COLUMN `pinned_fixed_duration_value` tinyint(2) NOT NULL default 0,
+	ADD COLUMN `pinned_fixed_duration_unit` enum('days', 'weeks') DEFAULT NULL,
+	ADD COLUMN `unpin_date` datetime DEFAULT NULL
+_sql
+
+);	ze\dbAdm::revision( 55608
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]writer_profiles`
 	DROP KEY `admin_id`,
 	ADD KEY (`admin_id`)
 _sql
 
+//Rename one of the values in an enum in the meta data plugin
+);	ze\dbAdm::revision( 55900
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_settings`
+	SET `value` = REPLACE(`value`, 'show_sticky_image', 'show_featured_image')
+	WHERE `name` = 'reorder_fields'
+_sql
+
+);	ze\dbAdm::revision( 55901
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	ADD COLUMN `image_credit` varchar(255) NOT NULL DEFAULT ''
+_sql
+
+);	ze\dbAdm::revision( 55902
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]spare_aliases`
+	MODIFY COLUMN `alias` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
+_sql
+
+//Fix a bug where simple slideshow instances were not flagged as slideshows
+);	ze\dbAdm::revision( 56250
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances`
+	SET is_slideshow = 1
+	WHERE module_id IN (
+		SELECT id
+		FROM `[[DB_PREFIX]]modules`
+		WHERE class_name = 'zenario_slideshow_simple'
+	)
+_sql
+
+//Remove the Google Maps Geocode site setting
+);	ze\dbAdm::revision( 56252
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name = "google_maps_geocode_api_key"
+_sql
+
+);	ze\dbAdm::revision( 56291
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]categories`
+	ADD COLUMN `created` datetime DEFAULT NULL,
+	ADD COLUMN `created_admin_id` int(10) unsigned DEFAULT NULL,
+	ADD COLUMN `last_edited` datetime DEFAULT NULL,
+	ADD COLUMN `last_edited_admin_id` int(10) unsigned DEFAULT NULL
+_sql
+
+
+//We're now refering to the labels for slides as "slide labels", and not "titles".
+//I'm renaming a column to try and make that a little more clear
+);	ze\dbAdm::revision( 56300
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	CHANGE COLUMN `name_or_title` `name_or_slide_label` varchar(250) COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
+_sql
+
+
+//Switch some plugins that previously used "resize and crop" mode to using
+//"crop and zoom" mode.
+//Note: Not all of the plugins have use "resize and crop" mode been converted and added to this list yet.
+//More plugins may come soon!
+);	ze\dbAdm::revision( 56350
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ps.instance_id
+	INNER JOIN `[[DB_PREFIX]]modules` AS m
+	   ON m.id = pi.module_id
+	SET ps.value = 'crop_and_zoom'
+	WHERE ps.egg_id = 0
+	  AND m.class_name IN (
+	  	'zenario_banner',
+	  	'zenario_content_list',
+	  	'zenario_location_listing',
+	  	'zenario_multiple_image_container',
+	  	'zenario_plugin_nest',
+	  	'zenario_slideshow',
+	  	'zenario_slideshow_simple'
+	  )
+	  AND (m.class_name, ps.name) IN (
+		('zenario_banner', 'canvas'),
+		('zenario_banner', 'mobile_canvas'),
+		('zenario_content_list', 'canvas'),
+		('zenario_location_listing', 'canvas'),
+		('zenario_multiple_image_container', 'canvas'),
+		('zenario_plugin_nest', 'banner_canvas'),
+		('zenario_plugin_nest', 'mobile_canvas'),
+		('zenario_slideshow', 'banner_canvas'),
+		('zenario_slideshow', 'mobile_canvas'),
+		('zenario_slideshow_simple', 'banner_canvas'),
+		('zenario_slideshow_simple', 'mobile_canvas')
+	  )
+	  AND ps.value = 'resize_and_crop'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_PREFIX]]nested_plugins` AS np
+	   ON np.id = ps.egg_id
+	INNER JOIN `[[DB_PREFIX]]modules` AS m
+	   ON m.id = np.module_id
+	SET ps.value = 'crop_and_zoom'
+	WHERE ps.egg_id != 0
+	  AND m.class_name IN (
+	  	'zenario_banner',
+	  	'zenario_content_list',
+	  	'zenario_location_listing',
+	  	'zenario_multiple_image_container'
+	  )
+	  AND (m.class_name, ps.name) IN (
+		('zenario_banner', 'canvas'),
+		('zenario_banner', 'mobile_canvas'),
+		('zenario_content_list', 'canvas'),
+		('zenario_location_listing', 'canvas'),
+		('zenario_multiple_image_container', 'canvas')
+	  )
+	  AND ps.value = 'resize_and_crop'
+_sql
+
+
+//Remove the "Cache floating admin boxes" site setting
+);	ze\dbAdm::revision( 56351
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name = "fab_use_cache_dir"
+_sql
+
 
 //Post branch fix.
 //Fix some bad data where some nests/slideshows were not flagged as nests/slideshows in the database.
-);	ze\dbAdm::revision( 55053
+//(N.b. this was added in an after-branch patch in 9.2 revision 55053, but is safe to repeat.)
+);	ze\dbAdm::revision( 56353
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
 		pi.is_nest = 0,

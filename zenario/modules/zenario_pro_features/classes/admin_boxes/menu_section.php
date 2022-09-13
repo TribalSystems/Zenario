@@ -36,7 +36,6 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 			$box['title'] = ze\admin::phrase('Renaming the Menu Section "[[section_name]]"', $section);
 		} else {
 			$box['key']['id'] = '';
-			$box['tabs']['menu_section']['edit_mode']['always_on'] = true;
 		}
 	}
 	

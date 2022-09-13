@@ -60,10 +60,53 @@ if (!$isAdmin
 echo '
 '. $scriptTag. ' src="', $prefix, 'libs/yarn/jquery/dist/jquery.min.js?', $v, '"></script>
 '. $scriptTag. ' src="', $prefix, 'libs/manually_maintained/mit/jquery/jquery-ui.visitor.min.js?', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w;
+
+//Have the option to include some common libraries in with the main wrapper, if enabled in the site settings.
+$libs = [];
+if (\ze::setting('lib.colorbox')) {
+	$libs[] = 'cb';
+}
+if (\ze::setting('lib.doubletaptogo')) {
+	$libs[] = 'dt';
+}
+if (\ze::setting('lib.lazy')) {
+	$libs[] = 'l';
+}
+if (\ze::setting('lib.modernizr')) {
+	$libs[] = 'm';
+}
+
+if ($libs !== []) {
+	echo '&amp;libs='. implode(',', $libs);
+}
+
+echo '"></script>';
 
 
 $currentLangId = \ze\content::currentLangId();
+
+if (\ze\cookie::canSetAll()) {
+	$canSetAll =
+	$canSetNecessary =
+	$canSetFunctional =
+	$canSetAnalytic =
+	$canSetSocial = true;
+
+} elseif (\ze\cookie::isDecided()) {
+	$canSetAll = false;
+	$canSetNecessary = true;
+	$canSetFunctional = \ze\cookie::canSet('functionality');
+	$canSetAnalytic = \ze\cookie::canSet('analytics');
+	$canSetSocial = \ze\cookie::canSet('social_media');
+
+} else {
+	$canSetAll =
+	$canSetNecessary =
+	$canSetFunctional =
+	$canSetAnalytic =
+	$canSetSocial = false;
+}
 
 //Write other related JavaScript variables to the page
 	//Note that page caching may cause the wrong user id to be set.
@@ -81,7 +124,11 @@ echo '
 	\ze\escape::js(\ze::setting('0_9_numbers_in_user_password')), '","',
 	\ze\escape::js(\ze::setting('symbols_in_user_password')), '","',
 	\ze\escape::js(DIRECTORY_INDEX_FILENAME), '",',
-	(int) \ze\cookie::canSet(), ',',
+	(int) $canSetAll, ',',
+	(int) $canSetNecessary, ',',
+	(int) $canSetFunctional, ',',
+	(int) $canSetAnalytic, ',',
+	(int) $canSetSocial, ',',
 	(int) \ze::$equivId, ',',
 	(int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",',
 	(int) \ze::$skinId, ',',
@@ -118,21 +165,27 @@ if ($isAdmin) {
 	//\ze::requireJsLib('zenario/libs/yarn/rcrop/src/js/rcrop.js', 'zenario/libs/yarn/rcrop/dist/rcrop.css');
 }
 
-if (\ze::$cID && \ze::$visLang && !$isWelcomeOrWizard) {
-	\ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. \ze::$visLang);
-}
-
 
 if ($isAdmin || $isWelcomeOrWizard) {
 	//...or on the admin-login screen
 	\ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
+	\ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.interactions.min.js');
 	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
+	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.progressbar.min.js');
 	\ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
 	\ze::requireJsLib('zenario/js/admin.wrapper.js.php');
 	\ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 }
 
+
+//Catch the case where a dev has requested a specific library that's already being included in the main wrapper
+if (\ze::setting('lib.colorbox')) {
+	unset(\ze::$jsLibs['zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js']);
+}
+if (\ze::setting('lib.doubletaptogo')) {
+	unset(\ze::$jsLibs['zenario/libs/yarn/jquery-doubletaptogo/dist/jquery.dcd.doubletaptogo.min.js']);
+}
 
 //Loop through all of the libraries we're trying to include
 foreach (\ze::$jsLibs as $lib => $stylesheet) {
@@ -379,47 +432,57 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML = false;
 	
 	$sql = "
-		SELECT foot_html, foot_cc, foot_visitor_only, foot_overwrite
+		SELECT foot_html, foot_cc, foot_cc_specific_cookie_types, foot_visitor_only, foot_overwrite
 		FROM ". DB_PREFIX. "content_item_versions
 		WHERE id = ". (int) \ze::$cID. "
 		  AND type = '". \ze\escape::asciiInSQL(\ze::$cType). "'
 		  AND version = ". (int) \ze::$cVersion;
 	$result = \ze\sql::select($sql);
-	$itemHTML = \ze\sql::fetchRow($result);
+	$itemHTML = \ze\sql::fetchAssoc($result);
 	
-	switch ($itemHTML[1]) {
-		case 'required':
-			\ze::$cookieConsent = 'require';
+	switch ($itemHTML['foot_cc']) {
 		case 'needed':
 			if (!\ze\cookie::canSet()) {
 				unset($itemHTML);
 			}
+			break;
+		case 'specific_types':
+			$cookieType = $itemHTML['foot_cc_specific_cookie_types'];
+			if (!(\ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
+				unset($itemHTML);
+			}
+			break;
 	}
 	
-	if (empty($itemHTML[3])) {
+	if (empty($itemHTML['foot_overwrite'])) {
 		$sql = "
-			SELECT foot_html, foot_cc, foot_visitor_only
+			SELECT foot_html, foot_cc, foot_cc_specific_cookie_types, foot_visitor_only
 			FROM ". DB_PREFIX. "layouts
 			WHERE layout_id = ". (int) \ze::$layoutId;
 		$result = \ze\sql::select($sql);
-		$templateHTML = \ze\sql::fetchRow($result);
+		$templateHTML = \ze\sql::fetchAssoc($result);
 		
-		switch ($templateHTML[1]) {
-			case 'required':
-				\ze::$cookieConsent = 'require';
+		switch ($templateHTML['foot_cc']) {
 			case 'needed':
 				if (!\ze\cookie::canSet()) {
 					unset($templateHTML);
 				}
+				break;
+			case 'specific_types':
+				$cookieType = $templateHTML['foot_cc_specific_cookie_types'];
+				if (!(\ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
+					unset($templateHTML);
+				}
+				break;
 		}
 		
-		if (!empty($templateHTML[0]) && (empty($templateHTML[2]) || !$isAdmin)) {
-			echo "\n\n". $templateHTML[0], "\n\n";
+		if (!empty($templateHTML['foot_html']) && (empty($templateHTML['foot_visitor_only']) || !$isAdmin)) {
+			echo "\n\n". $templateHTML['foot_html'], "\n\n";
 		}
 	}
 	
-	if (!empty($itemHTML[0]) && (empty($itemHTML[2]) || !$isAdmin)) {
-		echo "\n\n". $itemHTML[0], "\n\n";
+	if (!empty($itemHTML['foot_html']) && (empty($itemHTML['foot_visitor_only']) || !$isAdmin)) {
+		echo "\n\n". $itemHTML['foot_html'], "\n\n";
 	}
 }
 

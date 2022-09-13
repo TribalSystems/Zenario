@@ -56,11 +56,29 @@ zenario_head_foot_slot:
                             label: >
                                 HTML contains code that sets cookies; hide it when consent
                                 is not given by the visitor
-                        required:
+                        specific_types:
                             label: >
-                                HTML contains code that sets cookies; hide it and request
-                                consent until consent is given by the visitor
+                                HTML contains code that sets cookies; hide it
+                                until visitor accepts cookie type...
+                    redraw_onchange: true
                     note_below: If individual cookie consent is turned on for visitors, cookies set by this HTML will be considered "Necessary cookies".
+                cc_specific_cookie_types:
+                    indent: 1
+                    type: radios
+                    visible_if: "zenarioA.siteSettings.cookie_require_consent == 'explicit' && lib.value('cc') == 'specific_types'"
+                    value: functionality
+                    values:
+                        functionality:
+                            ord: 1
+                            label: 'Functionality cookies'
+                        analytics:
+                            ord: 2
+                            label: 'Analytics cookies'
+                        social_media:
+                            ord: 3
+                            label: 'Social media cookies'
+                    validation:
+                        required_if_not_hidden: 'Please select the cookie type. The output will be withheld until the visitor accepts this type of cookie or all cookies.'
                 output_in_admin_mode:
                     type: checkbox
                     label: Output in Admin Mode

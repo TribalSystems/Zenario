@@ -9,6 +9,12 @@ zenario__menu:
                 parentId: ""
                 deleteGrandChildExist: false
             title: All menu nodes
+            notice: 
+                show: true
+                type: information
+                message: |
+                    Click on the drag handles to change the order and hierarchy of the menu.
+                html: true
             db_items:
                 table: |
                     [[DB_PREFIX]]menu_nodes AS mi
@@ -157,6 +163,9 @@ zenario__menu:
                         )
                     item_link: content_item_or_url
                     show_by_default: true
+                restrict_child_content_types:
+                    db_column: mi.restrict_child_content_types
+                    hidden: true
                 equiv_id:
                     db_column: mi.equiv_id
                 document_id:
@@ -319,9 +328,8 @@ zenario__menu:
                     hide_when_children_are_not_visible: true
                 quick_add_to_menu:
                     priv: _PRIV_ADD_MENU_ITEM
-                    label: Create secondary node
+                    label: Create secondary menu node for this item
                     parent: action_dropdown
-                    tooltip: Create another menu node linking to this item
                     combine_items:
                         path: zenario__menu/panels/menu_position/refiners/create////
                         min_path: zenario__menu/panels/menu_position

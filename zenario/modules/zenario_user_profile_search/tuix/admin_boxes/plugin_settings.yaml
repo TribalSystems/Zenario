@@ -85,9 +85,9 @@ plugin_settings:
                     type: checkbox
                     format_onchange: Yes
 
-                photo_list_canvas:
+                image_canvas:
                     plugin_setting:
-                        name: photo_list_canvas
+                        name: image_canvas
                     label: 'Photo list canvas:'
                     type: select
                     value: unlimited
@@ -110,9 +110,9 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 1
 
-                photo_list_width:
+                image_width:
                     plugin_setting:
-                        name: photo_list_width
+                        name: image_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -123,9 +123,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                photo_list_height:
+                image_height:
                     plugin_setting:
-                        name: photo_list_height
+                        name: image_height
                     label: 'Height:'
                     type: text
                     validation:
@@ -144,9 +144,9 @@ plugin_settings:
                     type: checkbox
                     format_onchange: Yes
 
-                photo_popup_canvas:
+                image_2_canvas:
                     plugin_setting:
-                        name: photo_popup_canvas
+                        name: image_2_canvas
                     label: 'Photo popup canvas:'
                     type: select
                     value: unlimited
@@ -169,9 +169,9 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 1
 
-                photo_popup_width:
+                image_2_width:
                     plugin_setting:
-                        name: photo_popup_width
+                        name: image_2_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -182,9 +182,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                photo_popup_height:
+                image_2_height:
                     plugin_setting:
-                        name: photo_popup_height
+                        name: image_2_height
                     label: 'Height:'
                     type: text
                     validation:

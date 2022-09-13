@@ -33,10 +33,14 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!$details = ze\row::get(
 			'files',
-			['id', 'filename', 'mime_type', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum', 'privacy'],
+			['id', 'usage', 'filename', 'mime_type', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum', 'privacy', 'image_credit'],
 			$box['key']['id'])
 		) {
 			exit;
+		}
+		
+		if ($details['usage'] == 'mic') {
+			$box['key']['mic_image'] = true;
 		}
 		
 		$box['title'] = ze\admin::phrase('Editing properties of image "[[filename]]"', $details);
@@ -114,14 +118,14 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					INNER JOIN ". DB_PREFIX. "plugin_settings AS psW
 					   ON psW.instance_id = psC.instance_id
 					  AND psW.egg_id = psC.egg_id
-					  AND psW.name IN ('width', 'banner_width', 'mobile_width')
-					  AND (psC.name, psW.name) IN (('canvas', 'width'), ('banner_canvas', 'banner_width'), ('mobile_canvas', 'mobile_width'))
+					  AND psW.name IN ('width', 'banner_width', 'mobile_width', 'image_width', 'image_2_width')
+					  AND (psC.name, psW.name) IN (('canvas', 'width'), ('banner_canvas', 'banner_width'), ('mobile_canvas', 'mobile_width'), ('image_canvas', 'image_width'), ('image_2_canvas', 'image_2_width'))
 					INNER JOIN ". DB_PREFIX. "plugin_settings AS psH
 					   ON psH.instance_id = psC.instance_id
 					  AND psH.egg_id = psC.egg_id
-					  AND psH.name IN ('height', 'banner_height', 'mobile_height')
-					  AND (psC.name, psH.name) IN (('canvas', 'height'), ('banner_canvas', 'banner_height'), ('mobile_canvas', 'mobile_height'))
-					WHERE psC.name IN ('canvas', 'banner_canvas', 'mobile_canvas')
+					  AND psH.name IN ('height', 'banner_height', 'mobile_height', 'image_height', 'image_2_height')
+					  AND (psC.name, psH.name) IN (('canvas', 'height'), ('banner_canvas', 'banner_height'), ('mobile_canvas', 'mobile_height'), ('image_canvas', 'image_height'), ('image_2_canvas', 'image_2_height'))
+					WHERE psC.name IN ('canvas', 'banner_canvas', 'mobile_canvas', 'image_canvas', 'image_2_canvas')
 					  AND psC.value = 'crop_and_zoom'
 					  AND psC.instance_id = ". (int) $box['key']['instanceId']. "
 					  AND psC.egg_id IN (0, ". (int) $box['key']['eggId']. ")
@@ -218,18 +222,18 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					INNER JOIN ". DB_PREFIX. "plugin_settings AS psW
 					   ON psW.instance_id = psC.instance_id
 					  AND psW.egg_id = psC.egg_id
-					  AND psW.name IN ('width', 'banner_width', 'mobile_width')
-					  AND (psC.name, psW.name) IN (('canvas', 'width'), ('banner_canvas', 'banner_width'), ('mobile_canvas', 'mobile_width'))
+					  AND psW.name IN ('width', 'banner_width', 'mobile_width', 'image_width', 'image_2_width')
+					  AND (psC.name, psW.name) IN (('canvas', 'width'), ('banner_canvas', 'banner_width'), ('mobile_canvas', 'mobile_width'), ('image_canvas', 'image_width'), ('image_2_canvas', 'image_2_width'))
 					INNER JOIN ". DB_PREFIX. "plugin_settings AS psH
 					   ON psH.instance_id = psC.instance_id
 					  AND psH.egg_id = psC.egg_id
-					  AND psH.name IN ('height', 'banner_height', 'mobile_height')
-					  AND (psC.name, psH.name) IN (('canvas', 'height'), ('banner_canvas', 'banner_height'), ('mobile_canvas', 'mobile_height'))
+					  AND psH.name IN ('height', 'banner_height', 'mobile_height', 'image_height', 'image_2_height')
+					  AND (psC.name, psH.name) IN (('canvas', 'height'), ('banner_canvas', 'banner_height'), ('mobile_canvas', 'mobile_height'), ('image_canvas', 'image_height'), ('image_2_canvas', 'image_2_height'))
 					INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 					   ON pi.id = psC.instance_id
 					INNER JOIN ". DB_PREFIX. "modules AS m
 					   ON m.id = pi.module_id
-					WHERE psC.name IN ('canvas', 'banner_canvas', 'mobile_canvas')
+					WHERE psC.name IN ('canvas', 'banner_canvas', 'mobile_canvas', 'image_canvas', 'image_2_canvas')
 					  AND psC.value = 'crop_and_zoom'";
 
 				foreach (ze\sql::select($sql) as $setting) {
@@ -409,6 +413,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 
 			$box['tabs']['details']['fields']['floating_box_title']['value'] = $details['floating_box_title'];
 		}
+
+		$box['tabs']['details']['fields']['image_credit']['value'] = $details['image_credit'];
 		
 		
 		switch ($details['privacy']) {
@@ -428,7 +434,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				$mrg['link'] = ze\link::absolute(). $mrg['path'];
 				
 				$fields['details/privacy_public']['note_below'] =
-					ze\admin::phrase('This image can be publicly accessed via the URL [[link]], internal references to the image should be via [[path]]', $mrg);
+					ze\admin::phrase('Public: this image can be accessed publicly via the URL [[link]], internal references to the image should be via [[path]]', $mrg);
 				
 				if (!file_exists(CMS_ROOT. $mrg['path'])) {
 					$fields['details/missing_public_image']['hidden'] = false;
@@ -440,11 +446,38 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
+		$mimeType = ze\file::mimeType($values['details/filename']);
+		$mimeTypeFromDb = ze\row::get('files', 'mime_type', $box['key']['id']);
+
 		if (!$values['details/filename'] || !ze\file::guessAltTagFromname($values['details/filename'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a filename.');
+			//First check if just the extension is missing.
+			if ($values['details/filename']) {
+				if (!ze\file::isImageOrSVG($mimeType)) {
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a filename with a valid extension.');
+				}
+			} else {
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a filename.');
+			}
 		
-		} elseif (ze\file::mimeType($values['details/filename']) != ze\row::get('files', 'mime_type', $box['key']['id'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase("You must not change the file's extension.");
+		} elseif ($mimeType != $mimeTypeFromDb) {
+			switch ($mimeTypeFromDb) {
+				case 'image/gif':
+					$errorMessage = "This file is a GIF, so its extension must be .gif (upper or lower case).";
+					break;
+				case 'image/jpeg':
+					$errorMessage = "This file is a JPG, so its extension must be .jpg or .jpeg (upper or lower case).";
+					break;
+				case 'image/png':
+					$errorMessage = "This file is a PNG, so its extension must be .png (upper or lower case).";
+					break;
+				case 'image/svg+xml':
+					$errorMessage = "This file is an SVG, so its extension must be .svg (upper or lower case).";
+					break;
+				default:
+					$errorMessage = "You must not change the file's extension.";
+					break;
+			}
+			$box['tabs']['details']['errors'][] = ze\admin::phrase($errorMessage);
 		
 		} elseif ($values['details/filename'] !== ze\file::safeName($values['details/filename'])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename must not contain any of the following characters: \\ / : ; * ? " < > |');
@@ -506,6 +539,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		$details = [
 			'filename' => $values['details/filename'],
 			'alt_tag' => $values['details/alt_tag'],
+			'image_credit' => $values['details/image_credit']
 		];
 
 		if (!$box['key']['mic_image']) {

@@ -20,11 +20,6 @@ plugin_settings:
                 menu_show_all_branches:
                     plugin_setting:
                         name: menu_show_all_branches
-                show_parent_menu_node_text:
-                    plugin_setting:
-                        name: show_parent_menu_node_text
-                    type: checkbox
-                    label: "Show parent menu node text (if available)"
                 change_welcome_message:
                     plugin_setting:
                         name: change_welcome_message

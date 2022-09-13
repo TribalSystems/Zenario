@@ -273,10 +273,19 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	protected function gettingBreadcrumbs($tags = false) {
 		return !$this->beingDisplayed || empty($tags);
 	}
+	
+	private static $_addedLibs = false;
+	public static function requireJSLibsForFEAs() {
+		if (!static::$_addedLibs) {
+			static::$_addedLibs = true;
+			ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
+			ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. \ze::$visLang);
+			ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		}
+	}
 
 	public function init() {
-		ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
-		
+		self::requireJSLibsForFEAs();
 		return true;
 	}
 

@@ -165,7 +165,7 @@ plugin_settings:
                 show_missing_menu_nodes:
                     plugin_setting:
                         name: show_missing_menu_nodes
-                    label: 'Show missing menu nodes'
+                    label: 'Where menu node translation is missing, show menu node in default language'
                     type: checkbox
                     value: ""
                 enable_open_close:
@@ -250,3 +250,8 @@ plugin_settings:
                     visible_if: lib.value('show_custom_title')
                     validation:
                         required_if_not_hidden: 'Please enter a title.'
+                show_parent_menu_node_text:
+                    plugin_setting:
+                        name: show_parent_menu_node_text
+                    type: checkbox
+                    label: "Show parent menu node text (if available)"

@@ -44,12 +44,10 @@ ze\dbAdm::revision(6, "
 		 'To User: Account Activated',
 		 'Your account on [[cms_url]] has been activated',
 		 '<p>Dear [[first_name]] [[last_name]],</p>
-		<p>Your account has been activated and you can now login to the extranet area using the following details:</p>
-		<p>screen name: [[screen_name]]<br /> 
-		email: [[email]]<br /> 
-		password: [[password]]</p>
-		<p>&nbsp;</p>
-		<p>This is an auto-generated email from [[cms_url]] .</p>',
+		<p>Your account has been activated and you can now log in using the following details:</p>
+		<p>Email address: [[email]]<br /> 
+		Password: [[password]]</p>
+		<p>Click here to go to the site now: [[cms_url]]</p>',
 		 NOW(),
 		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
 		 0,

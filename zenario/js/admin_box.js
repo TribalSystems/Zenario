@@ -223,7 +223,7 @@ zenarioAB.size = function(refresh) {
 				$('#zenario_fabBox').width(FAB_WIDTH);
 				newWidth = FAB_WIDTH;
 				
-				zenarioAB.previewMD5 =
+				zenarioAB.previewChecksum =
 				zenarioAB.previewWidth =
 				zenarioAB.previewPost = false;
 				
@@ -237,7 +237,7 @@ zenarioAB.size = function(refresh) {
 				if (previewHidden) {
 					newWidth = PLUGIN_SETTINGS_WIDTH;
 				
-					zenarioAB.previewMD5 =
+					zenarioAB.previewChecksum =
 					zenarioAB.previewWidth =
 					zenarioAB.previewPost = false;
 			
@@ -426,6 +426,26 @@ zenarioAB.clickTab = function(tab) {
 
 
 //Specific bespoke functions for a few cases. These could have been on onkeyup/onchange events, but zenarioAB way is more efficient.
+//Remove http and https from alias...
+zenarioAB.removeHttpAndHttpsFromAlias = function() {
+	var domAlias = get('alias');
+	var alias = domAlias.value;
+
+	alias = alias.replace(/(http|https)\:\/\//,'');
+
+	domAlias.value = alias;
+};
+
+//... and .html or .htm if the mod_rewrite_suffix is set in the site settings.
+zenarioAB.removeHtmAndHtmlFromAlias = function(suffix) {
+	var domAlias = get('alias');
+	var alias = domAlias.value;
+
+	alias = alias.replace(suffix, '');
+
+	domAlias.value = alias;
+};
+
 //Add the alias validation functions from the meta-data tab
 zenarioAB.validateAlias = function() {
 	zenario.actAfterDelayIfNotSuperseded('validateAlias', function() {

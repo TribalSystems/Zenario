@@ -84,8 +84,15 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			}
 		}
 
+		if (!ze\module::isRunning('zenario_ctype_document')) {
+			unset($panel['columns']['attachment_word_count']);
+		}
+
 		if ($refinerName == 'content_type') {
 			$requestedContentType = $refinerId ?: ($_REQUEST['parent__id'] ?? '');
+			if ($requestedContentType != 'document') {
+				unset($panel['columns']['attachment_word_count']);
+			}
 
 			if ($requestedContentType) {
 				$pinningEnabled = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $requestedContentType]);
@@ -263,7 +270,6 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				unset($panel['columns']['sync_assist']);
 			}
 		}
-		
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -439,10 +445,17 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			unset($panel['item_buttons']['delete']);
 
 		} elseif (($_GET['refinerName'] ?? false) == 'find_duplicates') {
+			$panel['notice']['show'] = true;
 			unset($panel['collection_buttons']['create']);
 			$panel['title'] = ze\admin::phrase('Items with duplicate file attachments');
 			$panel['no_items_message'] = ze\admin::phrase('No items with duplicate file attachments found');
 			unset($panel['collection_buttons']['diagnostics_dropdown']);
+
+			$panel['columns']['file_id']['always_show'] = $panel['columns']['checksum']['always_show'] = true;
+			$panel['columns']['file_id']['ord'] = 1;
+			$panel['columns']['checksum']['ord'] = 1.1;
+			$panel['columns']['filename']['ord'] = 1.2;
+			$panel['columns']['tag']['ord'] = 1.3;
 	
 			//Attempt to turn off a few columns by default here.
 			//These options are only defaults and will be overridden if the Administrator has ever set or changed them.
@@ -461,6 +474,9 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					}
 				}
 			}
+
+			//Get an extra property on the "Export" button which will export more columns from the "Find duplicates" panel.
+			$panel['collection_buttons']['export']['admin_box']['key']['exportDuplicates'] = true;
 
 		} elseif ($path == 'zenario__content/panels/chained') {
 			$cID = $cType = false;
@@ -1135,7 +1151,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					ze\contentAdm::createDraft($content['id'], $content['id'], $content['type'], $cVersionTo, ze::post('cVersion') ?: $content['admin_version']);
 			
 					if (($_GET['method_call'] ?? false) == 'handleAdminToolbarAJAX') {
-						$_SESSION['last_item'] = $content['type']. '_'. $content['id'];
+						$_SESSION['last_item'] = $content['type']. '_'. $content['id']. '.'. $cVersionTo;
 				
 						if ($_REQUEST['switch_to_edit_mode'] ?? false) {
 							$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'edit';

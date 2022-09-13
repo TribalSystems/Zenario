@@ -16,7 +16,6 @@ zenario_translate_phrase:
             edit_mode:
                 priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                 enabled: true
-                always_on: true
             fields: 
                 module:
                     label: 'Module:'
@@ -62,4 +61,4 @@ zenario_translate_phrase:
                     visible_if: |
                         zenarioAB.editModeOn()
                     side_note : >
-                        Protecting a Phrase will stop it from being overwritten when importing phrases.
+                        If importing a CSV/Excel translation file, prevent this phrase from being overwritten.

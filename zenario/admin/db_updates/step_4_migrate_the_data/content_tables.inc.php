@@ -1184,3 +1184,96 @@ if (ze\dbAdm::needRevision(54801)) {
 
 	ze\dbAdm::revision(54801);
 }
+
+//In 9.3, the "floor" schematic object type was renamed to "room".
+//Rename the site settings to match...
+if (ze\dbAdm::needRevision(55152)) {
+	$module = 'assetwolf_2_schematics_2';
+	if (ze\module::isRunning($module)) {
+		foreach (['assetwolf_schematic_floor_room', 'assetwolf_schematic_floor_female', 'assetwolf_schematic_floor_male', 'assetwolf_schematic_floor_disabled', 'assetwolf_schematic_floor_family'] as $oldSettingName) {
+			$value = ze::setting($oldSettingName);
+
+			switch ($oldSettingName) {
+				case 'assetwolf_schematic_floor_room':
+					$newSettingName = 'assetwolf_schematic_room_generic';
+					break;
+				case 'assetwolf_schematic_floor_female':
+					$newSettingName = 'assetwolf_schematic_room_female';
+					break;
+				case 'assetwolf_schematic_floor_male':
+					$newSettingName = 'assetwolf_schematic_room_male';
+					break;
+				case 'assetwolf_schematic_floor_disabled':
+					$newSettingName = 'assetwolf_schematic_room_disabled';
+					break;
+				case 'assetwolf_schematic_floor_family':
+					$newSettingName = 'assetwolf_schematic_room_family';
+					break;
+			}
+
+			ze\site::setSetting($newSettingName, $value);
+			ze\row::delete('site_settings', ['name' => $oldSettingName]);
+		}
+	}
+
+	ze\dbAdm::revision(55152);
+}
+
+//... and the plugin settings too.
+if (ze\dbAdm::needRevision(55153)) {
+	$module = 'assetwolf_2_schematics_2';
+	if (ze\module::isRunning($module)) {
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
+		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['enable.schematic_floors']) && $instance['settings']['enable.schematic_floors'] == 1) {
+				ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'enable.add_a_room']);
+			}
+		}
+
+		ze\row::delete('plugin_settings', ['name' => 'enable.schematic_floors']);
+	}
+
+	ze\dbAdm::revision(55153);
+}
+
+//In 9.3, the "Cookie consent" plugin setting in HTML snippet and Twig snippet
+//had one value removed. Migrate value 3 to value 2.
+if (ze\dbAdm::needRevision(55601)) {
+	$modules = ['zenario_html_snippet', 'zenario_twig_snippet'];
+	foreach ($modules as $module) {
+		if (ze\module::isRunning($module)) {
+			$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
+			$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+			
+			foreach ($instances as $instance) {
+				if (!empty($instance['settings']['cookie_consent']) && $instance['settings']['cookie_consent'] == 'required') {
+					ze\row::update('plugin_settings', ['value' => 'needed'], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'cookie_consent']);
+				}
+			}
+		}
+	}
+
+	ze\dbAdm::revision(55601);
+}
+
+if (ze\dbAdm::needRevision(56251)) {
+	$module = 'zenario_location_map_and_listing_2';
+	if (ze\module::isRunning($module)) {
+		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
+		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['location_display']) && $instance['settings']['hide_filters_list'] == 'show_all_locations') {
+				if (!empty($instance['settings']['hide_filters_list']) && $instance['settings']['hide_filters_list'] == 1) {
+					ze\row::set('plugin_settings', ['value' => 'show_all_locations_with_filter'], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'location_display']);
+				}
+			}
+		}
+
+		ze\row::delete('plugin_settings', ['name' => 'hide_filters_list']);
+	}
+
+	ze\dbAdm::revision(56251);
+}

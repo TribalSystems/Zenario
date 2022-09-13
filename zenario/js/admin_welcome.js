@@ -143,6 +143,17 @@ zenarioAW.returnAJAXURL = function() {
 		zenario.urlRequest(zenarioAW.key || zenarioAW.tuix.key);
 };
 
+zenarioAW._nextLoadIsAnInstall = false;
+zenarioAW.retryAJAX = function(url, post, json, done, nowDoingSomething, onCancel) {
+	
+	if (nowDoingSomething === 'loading'
+	 && zenarioAW._nextLoadIsAnInstall) {
+		nowDoingSomething = 'installing';
+		zenarioAW._nextLoadIsAnInstall = false;
+	}
+	
+	methodsOf(zenarioAF).retryAJAX.call(zenarioAW, url, post, json, done, nowDoingSomething, onCancel);
+};
 
 	
 	

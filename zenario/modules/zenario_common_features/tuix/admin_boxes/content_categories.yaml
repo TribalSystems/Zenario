@@ -47,7 +47,7 @@ zenario_content_categories_add:
     tabs:
         
         categories_add:
-            label: Add categories
+            label: Add to categories
             edit_mode:
                 enabled: true
             fields:
@@ -56,7 +56,7 @@ zenario_content_categories_add:
                     snippet:
                         html: ""    
                 categories_add:
-                    label: 'Add categories:'
+                    label: 'Add to categories:'
                     type: checkboxes
                     values: ""
                     checking_child_checks_parents: true
@@ -82,7 +82,7 @@ zenario_content_categories_remove:
     tabs:
         
         categories_remove:
-            label: Remove categories
+            label: Remove from categories
             edit_mode:
                 enabled: true
             fields:
@@ -91,7 +91,7 @@ zenario_content_categories_remove:
                     snippet:
                         html: ""    
                 categories_remove:
-                    label: 'Remove categories:'
+                    label: 'Remove from categories:'
                     type: checkboxes
                     values: ""
                     checking_parent_checks_children: true

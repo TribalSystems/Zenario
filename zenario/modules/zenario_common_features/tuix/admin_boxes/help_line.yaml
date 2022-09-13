@@ -13,7 +13,6 @@ zenario_help_line:
             edit_mode: 
                 enabled: true
                 on: true
-                always_on: true
             fields: 
                 desc:
                     snippet:

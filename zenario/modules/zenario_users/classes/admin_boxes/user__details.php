@@ -36,6 +36,10 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$fields['details/status']['values']['active']['hidden'] = true;
 			$fields['details/status']['side_note'] = ze\admin::phrase("Creation of extranet users is disabled. Start the Extranet Base Module to create users.");
 		}
+
+		if (!ze\module::isRunning('zenario_organization_manager')) {
+			$box['tabs']['zenario_organization_manager__roles']['hidden'] = true;
+		}
 		
 		if ($box['key']['id']) {
 			ze\priv::exitIfNot('_PRIV_VIEW_USER');

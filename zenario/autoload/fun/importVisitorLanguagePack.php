@@ -72,10 +72,6 @@ if (\ze::in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 	
 	$pCSV = new parseCSV();
 	
-	if (\ze\server::checkFunctionEnabled('ini_set')) {
-		ini_set('auto_detect_line_endings', true);
-	}
-	
 	$f = fopen($file, "r");
 
 } else {
@@ -116,7 +112,7 @@ for ($i = 1; true; ++$i) {
 		
 		$row = $pCSV->parse_string("0,1,2,3,4,5\n". $row. "\n");
 		$row = $row[0] ?? false;
-		$rowCount = count($row);
+		$rowCount = (is_array($row) ? count($row) : 0);
 		
 		//Ignore empty lines, though remember that we've had them
 		if (!$row || $rowCount == 0 || $row[0] === '' || $row[0] === null) {

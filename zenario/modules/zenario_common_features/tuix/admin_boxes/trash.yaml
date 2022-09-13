@@ -10,7 +10,6 @@ zenario_trash:
         trash:
             edit_mode:
                 enabled: true
-                always_on: true
                 enable_revert: false
             
             notices:

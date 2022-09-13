@@ -35,7 +35,7 @@ class zenario_advanced_interface_tools_fea extends zenario_abstract_fea {
 	
 	public function init() {
 		if ($this->subClass = $this->runSubClass(__FILE__)) {
-			ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
+			self::requireJSLibsForFEAs();
 			return $this->subClass->init();
 		}
 		return false;

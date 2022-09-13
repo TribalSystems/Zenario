@@ -36,7 +36,7 @@
 */
 
 
-
+var sourceLib;
 
 
 zenario.lib(function(
@@ -47,9 +47,16 @@ zenario.lib(function(
 	encodeURIComponent, defined, engToBoolean, get, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
 	devTools, editor,
-	$toolbar, $editor, $sidebar, $sidebarInner
+	
 ) {
 	"use strict";
+
+
+var $toolbar = $('#toolbar'),
+	$editor = $('#editor'),
+	$lowerbar = $('#lowerbar'),
+	$sidebar = $('#sidebar'),
+	$sidebarInner = $('#sidebar_inner');
 
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
@@ -161,7 +168,7 @@ devTools.init = function(mode, schemaName, schema, orgMap) {
 	
 	
 	var editorHeight = $editor.height(),
-		menuHeight = $toolbar.height(),
+		menuHeight = $toolbar.height() + $lowerbar.height(),
 		winHeight = Math.floor($(window).height()),
 		options = {
 			containment: 'document',
@@ -262,6 +269,8 @@ devTools.load = function() {
 		return;
 	}
 	
+	sourceLib = windowOpener[devTools.mode];
+	
 	//Work out the full URL to the TUIX ajax file, including the appropriate mode and any requests
 	var url;
 	if (devTools.orgMap) {
@@ -269,13 +278,13 @@ devTools.load = function() {
 		devTools.path = '';
 	
 	} else {
-		if (windowOpener[devTools.mode].devToolsURL) {
-			url = windowOpener[devTools.mode].devToolsURL + '&_debug=1';
+		if (sourceLib.devToolsURL) {
+			url = sourceLib.devToolsURL + '&_debug=1';
 		} else {
-			url = windowOpener[devTools.mode].url + '&_debug=1';
+			url = sourceLib.url + '&_debug=1';
 		}
 		
-		devTools.path = windowOpener[devTools.mode].path;
+		devTools.path = sourceLib.path;
 	}
 	
 	
@@ -287,7 +296,7 @@ devTools.load = function() {
 		devTools.tagPath = devTools.focus.tag_path || devTools.path || '';
 		
 		if (devTools.orgMap) {
-			devTools.map = $.extend(true, {}, windowOpener[devTools.mode].map);
+			devTools.map = $.extend(true, {}, sourceLib.map);
 			devTools.filterNav(devTools.map);
 			devTools.filterNav(devTools.focus.tuix);
 		}
@@ -336,7 +345,7 @@ devTools.load = function() {
 devTools.filterNav = function(tuix, topLevel, parentKey, parentParentKey) {
 	
 	if (!defined(topLevel)) {
-		topLevel = windowOpener[devTools.mode].currentTopLevelPath.split('/');
+		topLevel = sourceLib.currentTopLevelPath.split('/');
 		topLevel = topLevel[0];
 	}
 	
@@ -394,6 +403,8 @@ devTools.draw = function() {
 	devTools.updateEditor();
 };
 
+
+var filePathsUsed;
 devTools.updateToolbar = function(refresh) {
 	var merge = {
 		files: {},
@@ -410,6 +421,8 @@ devTools.updateToolbar = function(refresh) {
 		modules = devTools.focus.modules_files_loaded,
 		cursor;
 	
+	filePathsUsed = {};
+	
 	foreach (modules as moduleClassName => module) {
 		if (paths = module.paths) {
 			foreach (paths as file => path) {
@@ -418,7 +431,8 @@ devTools.updateToolbar = function(refresh) {
 				dir = dirs.join('/');
 				dir += '/';
 				merge.paths[dir] = dirs.slice(-3).join('/');
-				merge.files[moduleClassName + '.' + file] = paths[file];
+				merge.files[moduleClassName + '.' + file] =
+				filePathsUsed[moduleClassName + '.' + file] = paths[file];
 			}
 		}
 	}
@@ -427,7 +441,25 @@ devTools.updateToolbar = function(refresh) {
 		merge.selectedFile = get('view').value;
 	}
 	
-	get('toolbar').innerHTML = zenarioT.microTemplate('zenario_dev_tools_toolbar', merge);
+	$toolbar.html(zenarioT.microTemplate('zenario_dev_tools_toolbar', merge));
+	$lowerbar.html(zenarioT.microTemplate('zenario_dev_tools_lowerbar', merge));
+	
+	devTools.setupCopyButton();
+};
+
+devTools.setupCopyButton = function() {
+	var $copy = $('#copyFilePath'),
+		$view = $('#view'),
+		selectedView = $view.val();
+	
+	if (selectedView && filePathsUsed[selectedView] && zenario.canCopy()) {
+		$copy.show().on('click', function() {
+			zenario.copy(filePathsUsed[selectedView]);
+			toastr.success(zenarioA.phrase.copied);
+		});
+	} else {
+		$copy.off().hide();
+	}
 };
 
 devTools.removeHiddenItems = function(tuix) {
@@ -451,7 +483,8 @@ devTools.lastView = false;
 devTools.updateEditor = function() {
 	
 	var view = get('view').value,
-		format = 'yaml';
+		format = 'yaml',
+		wordWrap = false;
 	
 	
 	//Set a variable to work around a bug where Most of the editor's API functions trigger the "change" event
@@ -473,7 +506,7 @@ devTools.updateEditor = function() {
 	
 	//Show the current TUIX
 	if (view == 'current' || view == 'visible') {
-		var tuix = windowOpener[devTools.mode].tuix;
+		var tuix = sourceLib.tuix;
 		if (view == 'visible') {
 			tuix = JSON.parse(JSON.stringify(tuix));
 			devTools.removeHiddenItems(tuix);
@@ -510,6 +543,13 @@ devTools.updateEditor = function() {
 		//editor.setReadOnly(true);
 		format = 'mysql';
 	
+	//Show the HTML used for a tuix form
+	} else if (view == 'form_html') {
+		editor.setValue(sourceLib.__lastFormHTML || '');
+		//editor.setReadOnly(true);
+		format = 'html';
+		wordWrap = true;
+	
 	//Show an individual TUIX file
 	} else {
 		
@@ -534,6 +574,7 @@ devTools.updateEditor = function() {
 	}
 	
 	editor.setReadOnly(true);
+	editor.setOption('wrap', wordWrap);
 	
 	//if (devTools.editingPositions[view]) {
 	//	editor.session.setScrollTop(devTools.editingPositions[view].top);
@@ -577,7 +618,8 @@ devTools.handleResize = function(event, ui) {
 		right = winWidth - width;
 	
 	$toolbar.width(left).css('right', right);
-	$editor.width(left).css('right', right);
+	$editor.width(left).css('right', right).css('height', '');
+	$lowerbar.width(left).css('right', right);
 	$sidebar.css('left', left).width(right);
 	
 	editor.resize();
@@ -629,6 +671,28 @@ devTools.arrayToList = function(array) {
 	} else {
 		return array.join(', ');
 	}
+};
+
+//ksort an object.
+//Warning: this relies on behaviour that's not actually in the JavaScript spec to work!
+devTools.ksort = function(unsorted, method) {
+	var sorted = {},
+		ki, keys = _.keys(unsorted);
+	
+	keys.sort(method);
+	
+	for (ki = 0; ki < keys.length; ++ki) {
+		sorted[keys[ki]] = unsorted[keys[ki]];
+	}
+	
+	return sorted;
+};
+
+devTools.underscoresLast = function(a, b) {
+	a = a.replace(/_/g, '~');
+	b = b.replace(/_/g, '~');
+	
+	return a < b? -1 : 1;
 };
 
 
@@ -689,7 +753,7 @@ devTools.highlightFilesContainingSelection = function(path) {
 		}
 		
 		if (view == 'current' || view == 'visible') {
-			contains = devTools.checkPathIsInData(localPath, windowOpener[devTools.mode].focus);
+			contains = devTools.checkPathIsInData(localPath, sourceLib.focus);
 		
 		} else if (view == 'orgmap') {
 			contains = devTools.checkPathIsInData(localPath, devTools.map);
@@ -779,6 +843,8 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 					sche.schema = sche.schema.additionalProperties;
 				
 				} else {
+					sche.depthReached = i;
+					sche.totalDepth = tags.length;
 					return devTools.formatRequiredPropertiesInSchema(sche);
 				}
 				
@@ -803,9 +869,11 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 					
 					if (devTools.schemaName) {
 						if (devTools.pages[tag]) {
+							sche.object.documentedTag = tag;
 							sche.object.url = 'https://zenar.io/ref-' + devTools.schemaName + '-' + tag;
 						} else
 						if (lastTag && devTools.pages[lastTag]) {
+							sche.object.documentedTag = lastTag;
 							sche.object.url = 'https://zenar.io/ref-' + devTools.schemaName + '-' + lastTag;
 						}
 					}
@@ -902,7 +970,7 @@ devTools.validate = function() {
 				if (code == 500) {
 					
 					var staticValue = devTools.checkPathIsInData(path, devTools.focus.tuix, true),
-						currentValue = devTools.checkPathIsInData(path, windowOpener[devTools.mode].focus, true);
+						currentValue = devTools.checkPathIsInData(path, sourceLib.focus, true);
 					
 					//If there are no changes, then don't flag the error.
 					if (typeof staticValue == 'object'
@@ -1257,7 +1325,7 @@ devTools.showSidebar = function(path, data) {
 		}
 		
 		if (devTools.mode == 'zenarioO') {
-			sche.shortPath = windowOpener[devTools.mode].shortenPath(sche.fullPath);
+			sche.shortPath = sourceLib.shortenPath(sche.fullPath);
 		}
 		
 		var path = '',
@@ -1267,6 +1335,7 @@ devTools.showSidebar = function(path, data) {
 			sche.tag = paths[p];
 			path += (path? '/' : '') + paths[p];
 			sche.paths.push({tag: paths[p], path: path});
+			sche.displayedPath = path;
 		}
 	}
 	
@@ -1326,13 +1395,12 @@ devTools.editorOnSelect = function(e) {
 
 
 editor.on('change', devTools.editorOnChange);
-editor.on('changeSelection', devTools.editorOnSelect);
 editor.on('changeCursor', devTools.editorOnSelect);
+editor.on('changeSelection', devTools.editorOnSelect);
 editor.session.setUseSoftTabs(false);
 
 
 },
 	window.devTools = function() {},
-	window.editor = ace.edit('editor'),
-	$('#toolbar'), $('#editor'), $('#sidebar'), $('#sidebar_inner')
+	window.editor = ace.edit('editor')
 );

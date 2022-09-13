@@ -19,7 +19,6 @@ zenario_phrase:
             edit_mode:
                 priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                 enabled: true
-                always_on: true
             fields:
                 module:
                     label: 'Module:'

@@ -1,150 +1,181 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
-  module_class_name: zenario_menu_responsive_push_pull
-  tabs:
-    push_pull:
-      ord: 1.1
-      label: Title/links
-      fields:
-        show_menu_title:
-          label: "Show a title"
-          plugin_setting:
-            name: show_menu_title
-          type: checkbox
-          value: true
-          redraw_onchange: true
-        menu_title:
-          indent: 1
-          label: "Menu title:"
-          plugin_setting:
-            name: menu_title
-          type: text
-          value: Menu
-          maxlength: 255
-          show_phrase_icon: true
-          visible_if: lib.value('show_menu_title')
-          validation:
-            required_if_not_hidden: "Please enter a title."
-        show_link_to_home_page:
-          plugin_setting:
-            name: show_link_to_home_page
-          label: 'Show link to home page'
-          type: checkbox
-          value: ""
-          format_onchange: true
-          side_note: 'Only enable this setting if you don't have a visible link to the home page in the menu.'
-        home_page:
-          plugin_setting:
-            name: home_page
-            foreign_key_to: content
-            dangling_cross_references: remove
-          label: 'Home Page:'
-          indent: 1
-          pick_items:
-            path: zenario__content/panels/content/refiners/filter_by_lang////
-            min_path: zenario__content/panels/content
-            max_path: zenario__content/panels/content
-            target_path: zenario__content/panels/content
-            disallow_refiners_looping_on_min_path: true
-            select_phrase: Select a content item...
-            hide_remove_button: true
-          visible_if: zenarioAB.value('show_link_to_home_page')
-          validation:
-            required_if_not_hidden: Please select a content item
-        show_search_box:
-          plugin_setting:
-            name: show_search_box
-          label: 'Show search'
-          type: checkbox
-          value: false
-          redraw_onchange: true
-        specific_search_results_page:
-          plugin_setting:
-            name: specific_search_results_page
-            foreign_key_to: content
-            dangling_cross_references: remove
-          label: 'Search Results Page:'
-          indent: 1
-          pick_items:
-            path: zenario__content/panels/content/refiners/filter_by_lang////
-            min_path: zenario__content/panels/content
-            max_path: zenario__content/panels/content
-            target_path: zenario__content/panels/content
-            disallow_refiners_looping_on_min_path: true
-            select_phrase: Select a content item...
-            hide_remove_button: true
-          visible_if: zenarioAB.value('show_search_box')
-          validation:
-              required_if_not_hidden: Please select a content item
-        search_placeholder:
-          indent: 1
-          plugin_setting:
-            name: search_placeholder
-          label: 'Show "Search the site" placeholder'
-          type: checkbox
-          value: 0
-          format_onchange: true
-          visible_if: zenarioAB.value('show_search_box')
-        search_placeholder_phrase:
-          indent: 2
-          plugin_setting:
-            name: search_placeholder_phrase
-          label: 'Search placeholder phrase:'
-          type: text
-          value: "Search the site"
-          format_onchange: true
-          visible_if: zenarioAB.value('show_search_box') && zenarioAB.value('search_placeholder')
-          validation:
-            required_if_not_hidden: Please enter a phrase
-        
-        show_link_to_registration_page:
-          plugin_setting:
-            name: show_link_to_registration_page
-          label: 'Show link to registration page'
-          type: checkbox
-          value: ""
-          format_onchange: true
-        registration_page:
-          plugin_setting:
-            name: registration_page
-            foreign_key_to: content
-            dangling_cross_references: remove
-          label: 'Registration Page:'
-          indent: 1
-          pick_items:
-            path: zenario__content/panels/content/refiners/filter_by_lang////
-            min_path: zenario__content/panels/content
-            max_path: zenario__content/panels/content
-            target_path: zenario__content/panels/content
-            disallow_refiners_looping_on_min_path: true
-            select_phrase: Select a content item...
-            hide_remove_button: true
-          visible_if: zenarioAB.value('show_link_to_registration_page')
-          validation:
-            required_if_not_hidden: Please select a content item
-        show_link_to_login_page:
-          plugin_setting:
-            name: show_link_to_login_page
-          label: 'Show link to login page'
-          type: checkbox
-          value: ""
-          format_onchange: true
-        login_page:
-          plugin_setting:
-            name: login_page
-            foreign_key_to: content
-            dangling_cross_references: remove
-          label: 'Login Page:'
-          indent: 1
-          pick_items:
-            path: zenario__content/panels/content/refiners/filter_by_lang////
-            min_path: zenario__content/panels/content
-            max_path: zenario__content/panels/content
-            target_path: zenario__content/panels/content
-            disallow_refiners_looping_on_min_path: true
-            select_phrase: Select a content item...
-            hide_remove_button: true
-          visible_if: zenarioAB.value('show_link_to_login_page')
-          validation:
-            required_if_not_hidden: Please select a content item
+	module_class_name: zenario_menu_responsive_push_pull
+	tabs:
+		first_tab:
+			fields:
+				menu_number_of_levels:
+					#Override the default value here.
+					#The new list of values is created in the PHP class.
+					value: "all"
+		push_pull:
+			ord: 1.1
+			label: Title/links
+			fields:
+				show_menu_title:
+					label: "Show a title"
+					plugin_setting:
+						name: show_menu_title
+					type: checkbox
+					value: true
+					redraw_onchange: true
+				menu_title:
+					indent: 1
+					label: "Menu title:"
+					plugin_setting:
+						name: menu_title
+					type: text
+					value: Menu
+					maxlength: 255
+					show_phrase_icon: true
+					visible_if: lib.value('show_menu_title')
+					validation:
+						required_if_not_hidden: "Please enter a title."
+				show_link_to_home_page:
+					plugin_setting:
+						name: show_link_to_home_page
+					label: 'Show link to home page'
+					type: checkbox
+					value: ""
+					format_onchange: true
+					side_note: 'Only enable this setting if you don't have a visible link to the home page in the menu.'
+				home_page:
+					plugin_setting:
+						name: home_page
+						foreign_key_to: content
+						dangling_cross_references: remove
+					label: 'Home Page:'
+					indent: 1
+					pick_items:
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
+					visible_if: zenarioAB.value('show_link_to_home_page')
+					validation:
+						required_if_not_hidden: Please select a content item.
+				show_search_box:
+					plugin_setting:
+						name: show_search_box
+					label: 'Show search'
+					type: checkbox
+					value: false
+					redraw_onchange: true
+				specific_search_results_page:
+					plugin_setting:
+						name: specific_search_results_page
+						foreign_key_to: content
+						dangling_cross_references: remove
+					label: 'Search Results Page:'
+					indent: 1
+					pick_items:
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
+					visible_if: zenarioAB.value('show_search_box')
+					validation:
+						required_if_not_hidden: Please select a content item.
+				search_placeholder:
+					indent: 1
+					plugin_setting:
+						name: search_placeholder
+					label: 'Show "Search the site" placeholder'
+					type: checkbox
+					value: 0
+					format_onchange: true
+					visible_if: zenarioAB.value('show_search_box')
+				search_placeholder_phrase:
+					indent: 2
+					plugin_setting:
+						name: search_placeholder_phrase
+					label: 'Search placeholder phrase:'
+					type: text
+					value: "Search the site"
+					format_onchange: true
+					visible_if: zenarioAB.value('show_search_box') && zenarioAB.value('search_placeholder')
+					validation:
+						required_if_not_hidden: Please enter a phrase
+				
+				show_link_to_registration_page:
+					plugin_setting:
+						name: show_link_to_registration_page
+					label: 'Show link to registration page'
+					type: checkbox
+					value: ""
+					format_onchange: true
+				registration_page:
+					plugin_setting:
+						name: registration_page
+						foreign_key_to: content
+						dangling_cross_references: remove
+					label: 'Registration Page:'
+					indent: 1
+					pick_items:
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
+					visible_if: zenarioAB.value('show_link_to_registration_page')
+					validation:
+						required_if_not_hidden: Please select a content item.
+				show_link_to_login_page:
+					plugin_setting:
+						name: show_link_to_login_page
+					label: 'Show link to login page'
+					type: checkbox
+					value: ""
+					format_onchange: true
+				login_page:
+					plugin_setting:
+						name: login_page
+						foreign_key_to: content
+						dangling_cross_references: remove
+					label: 'Login Page:'
+					indent: 1
+					pick_items:
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
+					visible_if: zenarioAB.value('show_link_to_login_page')
+					validation:
+						required_if_not_hidden: Please select a content item.
+				show_link_to_contact_page:
+					plugin_setting:
+						name: show_link_to_contact_page
+					label: 'Show link to Contact page'
+					type: checkbox
+					value: ""
+					format_onchange: true
+				contact_page:
+					plugin_setting:
+						name: contact_page
+						foreign_key_to: content
+						dangling_cross_references: remove
+					label: 'Contact Page:'
+					indent: 1
+					pick_items:
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
+					visible_if: zenarioAB.value('show_link_to_contact_page')
+					validation:
+						required_if_not_hidden: Please select a content item.

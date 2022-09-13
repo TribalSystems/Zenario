@@ -77,6 +77,16 @@ class zenario_common_features__organizer__custom_fields_hierarchy extends ze\mod
 				AND f.dataset_id = " . (int)$refinerId . "
 				AND f.type NOT IN ('file_picker')";
 		}
+		
+		//This panel manually loads items from the database, rather than using Organizer's
+		//standard tech. So the typeahead search won't work unless we try to manually
+		//implement it as well.
+		if ($mode == 'typeahead_search') {
+			$sql .= "
+				AND (f.label LIKE '%". ze\escape::like(ze::request('_search')). "%'
+				  OR f.field_name LIKE '%". ze\escape::like(ze::request('_search')). "%')";
+		}
+		
 		$sql .= "
 			ORDER BY f.ord";
 		
@@ -109,31 +119,34 @@ class zenario_common_features__organizer__custom_fields_hierarchy extends ze\mod
 			}
 		}
 		
-		$showDatasets = count($datasetTabs) > 1;
-		foreach ($datasetTabs as $datasetId => $tabs) {
-			// If the panel shows fields from more than one dataset, add another level to the hierarchy
-			if ($showDatasets) {
-				$dataset = ze\dataset::details($datasetId);
-				$panel["items"][$this->getDatasetPanelId($datasetId)] = ["label" => $dataset["label"]];
-			}
-			
-			// Add tabs to hierarchy
-			$sql = "
-				SELECT name, label, default_label
-				FROM " . DB_PREFIX . "custom_dataset_tabs
-				WHERE dataset_id = " . (int)$datasetId . "
-				AND name IN (" . ze\escape::in($tabs) . ")";
-			$result = ze\sql::select($sql);
-			while ($row = ze\sql::fetchAssoc($result)) {
-				$label = $row["label"] ? $row["label"] : $row["default_label"];
-				
-				$item = [];
-				$item["label"] = $label;
+		//Try to add the tab headings, unless this is the typeahead search which sholud just be a flat list
+		if ($mode != 'typeahead_search') {
+			$showDatasets = count($datasetTabs) > 1;
+			foreach ($datasetTabs as $datasetId => $tabs) {
+				// If the panel shows fields from more than one dataset, add another level to the hierarchy
 				if ($showDatasets) {
-					$item["parent_id"] = $this->getDatasetPanelId($datasetId);
+					$dataset = ze\dataset::details($datasetId);
+					$panel["items"][$this->getDatasetPanelId($datasetId)] = ["label" => $dataset["label"]];
 				}
+			
+				// Add tabs to hierarchy
+				$sql = "
+					SELECT name, label, default_label
+					FROM " . DB_PREFIX . "custom_dataset_tabs
+					WHERE dataset_id = " . (int)$datasetId . "
+					AND name IN (" . ze\escape::in($tabs) . ")";
+				$result = ze\sql::select($sql);
+				while ($row = ze\sql::fetchAssoc($result)) {
+					$label = $row["label"] ? $row["label"] : $row["default_label"];
 				
-				$panel["items"][$this->getDatasetTabPanelId($datasetId, $row["name"])] = $item;
+					$item = [];
+					$item["label"] = $label;
+					if ($showDatasets) {
+						$item["parent_id"] = $this->getDatasetPanelId($datasetId);
+					}
+				
+					$panel["items"][$this->getDatasetTabPanelId($datasetId, $row["name"])] = $item;
+				}
 			}
 		}
 		

@@ -50,7 +50,7 @@ if (($instance = ze\plugin::details($instanceId))
 	
 	
 	if ($resync) {
-		self::resyncNest($instanceId);
+		self::resyncNest($instanceId, $instance);
 	
 		ze\contentAdm::resyncLibraryPluginFiles($instanceId, $instance);
 	

@@ -10,7 +10,6 @@ zenario_path:
         linkToOtherContentItem: false
         equiv_id: 0
         content_type: ''
-    max_height: 450
     hide_tab_bar: true
     #identifier:
     #    css_class: ''
@@ -21,7 +20,6 @@ zenario_path:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 command:
                     type: radios

@@ -21,7 +21,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML/Javascript to go within the <code>&lt;head&gt;</code> tag of all content items:
+                            Add HTML/Javascript to go within the <code>&lt;head&gt;</code> tag of all content items (irrespective of cookie settings and visitor acceptance):
                 sitewide_head:
                     site_setting:
                         name: sitewide_head
@@ -54,7 +54,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML/Javascript immediately after the <code>&lt;body&gt;</code> tag of all content items:
+                            Add HTML/Javascript immediately after the <code>&lt;body&gt;</code> tag of all content items (irrespective of cookie settings and visitor acceptance):
 
                 sitewide_body:
                     site_setting:
@@ -85,7 +85,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: >
-                            Add HTML/Javascript immediately before the <code>&lt;/body&gt;</code> tag of all content items:
+                            Add HTML/Javascript immediately before the <code>&lt;/body&gt;</code> tag of all content items (irrespective of cookie settings and visitor acceptance):
                 sitewide_foot:
                     site_setting:
                         name: sitewide_foot
@@ -135,35 +135,22 @@ site_settings:
                         <a target="_blank" href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}' >
                         cookie consent</a> set to "implied consent", any Javascript here will always be run.
                 
-                explicit:
-                    type: warning
-                    show: true
-                    html: true
-                    visible_if: |
-                        zenarioA.siteSettings.cookie_require_consent == 'explicit' &&
-                        !zenarioA.siteSettings.individual_cookie_consent
-                    message: |
-                        This site has
-                        <a target="_blank" href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}' >
-                        cookie consent</a> set to "explicit consent", add Javascipt here that will only be run when a visitor clicks Accept for cookies.
-                
                 individual:
                     type: warning
                     show: true
                     html: true
                     visible_if: |
-                        zenarioA.siteSettings.cookie_require_consent == 'explicit' &&
-                        !!zenarioA.siteSettings.individual_cookie_consent
+                        zenarioA.siteSettings.cookie_require_consent == 'explicit'
                     message: |
                         This site has
                         <a target="_blank" href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}' >
-                        cookie consent</a> set to "explicit consent" / "individual cookies", add Javascipt to each box that will only be run when each option is enabled.
+                        cookie consent</a> set to "explicit consent", Javascipt in each box below will only be served to the client (and run on the client browser) when the client accepts the appropriate type of cookie.
             fields:
                 sitewide_analytics_html_location:
                     site_setting:
                         name: sitewide_analytics_html_location
                     type: select
-                    pre_field_html: 'Add <b>web analytics</b> HTML/JS&nbsp;'
+                    pre_field_html: '<b>Analytics</b>: if visitor has accepted Analytics cookies (or all cookies), add HTML/JavaScript&nbsp;'
                     values:
                         head:
                             label: within the <head> tag
@@ -171,7 +158,7 @@ site_settings:
                             label: immediately after the <body> tag
                         foot:
                             label: immediately before the </body> tag
-                    post_field_html: '&nbsp;of all pages unless the user has explicitly disabled analytics cookies:'
+                    post_field_html: '&nbsp;of all pages:'
 
                 sitewide_analytics_html:
                     site_setting:
@@ -188,7 +175,7 @@ site_settings:
                     site_setting:
                         name: sitewide_social_media_html_location
                     type: select
-                    pre_field_html: 'Add <b>social media</b> HTML&nbsp;'
+                    pre_field_html: '<b>Social Media</b>: if visitor has accepted Social Media cookies (or all cookies), add HTML/JS&nbsp;'
                     values:
                         head:
                             label: within the <head> tag
@@ -196,7 +183,7 @@ site_settings:
                             label: immediately after the <body> tag
                         foot:
                             label: immediately before the </body> tag
-                    post_field_html: '&nbsp;of all pages unless the user has explicitly disabled social media cookies:'
+                    post_field_html: '&nbsp;of all pages:'
 
                 sitewide_social_media_html:
                     site_setting:

@@ -9,6 +9,11 @@ zenario__content:
                 language: ''
                 layoutId: ''
             title: All content items, flat view
+
+            notice:
+                show: false
+                type: information
+                message: 'If only 1 content item appears, this means that another content item uses a duplicate in the visitor version, but not in the latest draft.'
             
             #panel_type: list_with_subheadings
             #subheading_column: release_date
@@ -35,6 +40,10 @@ zenario__content:
                       AND mt.language_id = c.language_id
                     LEFT JOIN [[DB_PREFIX]]files AS f
                        ON f.id = v.file_id
+                    LEFT JOIN [[DB_PREFIX]]content_cache AS cc
+                       ON v.id = cc.content_id
+                      AND v.type = cc.content_type
+                      AND v.version = cc.content_version
                 id_column: c.tag_id
                 custom_where_statement__not_trashed: |
                     WHERE c.status NOT IN ('trashed','deleted')
@@ -129,8 +138,8 @@ zenario__content:
                 find_duplicates:
                     sql: |
                         (select count(*) FROM [[DB_PREFIX]]content_item_versions as vfcd INNER JOIN [[DB_PREFIX]]content_items AS cfcd 
-                            ON cfcd.id = vfcd.id AND cfcd.type = vfcd.type AND cfcd.admin_version = vfcd.version
-                            AND cfcd.admin_version = cfcd.visitor_version WHERE vfcd.file_id = f.id) > 1
+                            ON cfcd.id = vfcd.id AND cfcd.type = vfcd.type
+                            WHERE vfcd.file_id = f.id AND vfcd.version IN (cfcd.admin_version, cfcd.visitor_version)) > 1
                 work_in_progress:
                     sql: |
                         c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft')
@@ -264,8 +273,15 @@ zenario__content:
                     searchable: true
                     width: large
                     show_by_default: true
-                number_of_categories:
+
+                release_date:
                     ord: 7
+                    title: Release date
+                    db_column: v.release_date
+                    format: date
+
+                number_of_categories:
+                    ord: 8
                     title: Number of categories
                     db_column: |
                         (
@@ -277,54 +293,49 @@ zenario__content:
                    # show_by_default: false
                     #hidden: true
                 menunodecounter:
-                    ord: 8
+                    ord: 9
                     title: menunodecounter
                     hidden: true
                 description:
-                    ord: 8
+                    ord: 10
                     title: Description
                     db_column: v.description
                     searchable: true
                     length_limit: 250
                 keywords:
-                    ord: 9
+                    ord: 11
                     title: Keywords
                     db_column: v.keywords
                     searchable: true
                     length_limit: 250
                 
                 file_id:
-                    ord: 10
+                    ord: 12
                     title: File ID
                     db_column: f.id
                     searchable: No
+                    width: xsmall
+                    align_right: true
+                    #On "Find duplicates" panel, this column will always be shown.
+                    #The logic is in the class file.
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
-                s3_file_id:
-                    ord: 10.1
-                    title: S3 File ID
-                    db_column: v.s3_file_id
-                    searchable: No
-                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')    
                 checksum:
-                    db_column: f.checksum
-                mime_type:
-                    db_column: f.mime_type
+                    ord: 12.1
+                    title: Checksum (short)
+                    db_column: f.short_checksum
+                    #On "Find duplicates" panel, this column will always be shown.
+                    #The logic is in the class file.
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 filename:
-                    ord: 11
+                    ord: 12.2
                     title: Filename
                     db_column: v.filename
                     searchable: true
                     width: large
-                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
-                s3_filename:
-                    ord: 11.1
-                    title: S3 filename
-                    db_column: v.s3_filename
-                    searchable: No
-                    width: large
+                    always_show: true
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 file_size:
-                    ord: 12
+                    ord: 12.3
                     title: File size
                     db_column: f.size
                     format: filesize
@@ -332,6 +343,22 @@ zenario__content:
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 file_path:
                     db_column: f.path
+                s3_filename:
+                    ord: 12.4
+                    title: S3 filename
+                    db_column: v.s3_filename
+                    searchable: No
+                    width: large
+                    visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
+                s3_file_id:
+                    ord: 12.5
+                    title: S3 File ID
+                    db_column: v.s3_file_id
+                    searchable: No
+                    hidden: true
+                mime_type:
+                    db_column: f.mime_type
+
                 version:
                     ord: 13
                     title: Version
@@ -406,18 +433,18 @@ zenario__content:
                     hidden: true
                 first_created_datetime:
                     ord: 18
-                    title: Date/time first created
+                    title: First draft created
                     db_column: c.first_created_datetime
                     format: datetime
                 created_datetime:
                     ord: 19
-                    title: Latest version created
+                    title: Latest draft created
                     db_column: v.created_datetime
-                    show_by_default: Yes
+                    show_by_default: No
                     width: large
                 concealed_datetime:
                     ord: 20
-                    title: Date/time canceled/trashed
+                    title: Trashed
                     db_column: v.concealed_datetime
                     format: datetime
                     show_by_default: No
@@ -431,41 +458,41 @@ zenario__content:
                     width: large
                 last_modified_by_admin:
                     ord: 22
-                    title: Last modified by admin
+                    title: Last edited by
                     width: large
                     show_by_default: Yes
                 last_author_id:
                     db_column: v.last_author_id
                 published_datetime:
                     ord: 23
-                    title: Date/time published
+                    title: Published
                     db_column: v.published_datetime
                     format: datetime
                 publisher_id:
                     db_column: v.publisher_id
-                release_date:
-                    ord: 24
-                    title: Release date
-                    db_column: v.release_date
-                    format: date
                 word_count:
                     ord: 25
-                    title: Word count
+                    title: Page word count
                     sortable: true
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]content_cache AS cc
-                            ON v.id = cc.content_id
-                           AND v.type = cc.content_type
-                           AND v.version = cc.content_version
                     db_column: >
                         IFNULL(cc.text_wordcount, 0)
                     align_right: true
                     width: xsmall
                     show_by_default: true
                     tooltip: "Word count of version controlled plugins on the content item."
-                accesses:
+                attachment_word_count:
                     ord: 26
-                    title: Accesses
+                    title: Attachment word count
+                    sortable: true
+                    db_column: >
+                        IFNULL(cc.extract_wordcount, 0)
+                    align_right: true
+                    width: xsmall
+                    show_by_default: true
+                    tooltip: "Word count of the attachment on the content item."
+                accesses:
+                    ord: 27
+                    title: User accesses
                     sortable: true
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]user_content_accesslog AS uca
@@ -476,12 +503,12 @@ zenario__content:
                         IF(COUNT(uca.user_id) > 0, COUNT(uca.user_id), 0)
                     align_right: true
                     width: xsmall
-                    show_by_default: true
+                    show_by_default: false
                 lock_owner_id:
                     db_column: c.lock_owner_id
                 lock_owner_name:
                 writer_name:
-                    ord: 27
+                    ord: 28
                     title: Writer name
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]writer_profiles AS wp
@@ -489,7 +516,7 @@ zenario__content:
                     db_column: CONCAT(wp.first_name, " ", wp.last_name)
                     searchable: true
                 archives_exist:
-                    ord: 28
+                    ord: 29
                     hidden: true
                     width: medium
                     title: 'Archives exist?'
@@ -503,20 +530,6 @@ zenario__content:
                             LIMIT 1
                         )
                     format: yes_or_no
-                inline_files:
-                    ord: 29
-                    title: Images and animations
-                    db_column: |
-                        (
-                            SELECT COUNT(DISTINCT ii.image_id)
-                            FROM [[DB_PREFIX]]inline_images AS ii
-                            WHERE ii.foreign_key_to = 'content'
-                              AND ii.foreign_key_id = v.id
-                              AND ii.foreign_key_char = v.type
-                              AND ii.foreign_key_version = v.version
-                        )
-                    align_right: true
-                    width: xsmall
                 zenario_trans__links:
                     ord: 30
                     title: Translations
@@ -548,7 +561,7 @@ zenario__content:
                         #...
                 menu:
                     ord: 33
-                    title: Menu Node
+                    title: Menu node
                     db_column: mt.name
                     show_by_default: true
                     item_link: menu_item
@@ -574,13 +587,10 @@ zenario__content:
             label_format_for_popouts: '[[tag]] Version [[version]] [[[admin_version_status]]]'
             default_sort_column: first_created_datetime
             collection_buttons:
-
-                
                 new_dropdown:
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
                     label: New
-           
                 create:
                     priv: _PRIV_EDIT_DRAFT
                     hide_in_select_mode: true
@@ -618,10 +628,11 @@ zenario__content:
                     parent: diagnostics_dropdown
                     hide_in_select_mode: true
                     hide_when_no_search_results: true
+                    hide_on_filter: true
                     visible_if: |
                         zenarioO.tuix.key &&
                         zenarioO.tuix.key.cType == 'document'
-                    label: Items with duplicate file attachments
+                    label: Find items with duplicate file attachments
                     link:
                         branch: true
                         path: zenario__content/panels/content
@@ -629,11 +640,26 @@ zenario__content:
                 export:
                     hide_when_no_search_results: true
                     hide_in_select_mode: true
+                    visible_if: |
+                        !zenarioO.filteredView
                     label: Export
                     admin_box:
                         path: zenario_export_content_items
                         key:
                             type: ''
+                        pass_matched_ids: true
+                export_filtered_list:
+                    hide_when_no_search_results: true
+                    hide_in_select_mode: true
+                    visible_if: |
+                        zenarioO.filteredView
+                    label: Export filtered list
+                    admin_box:
+                        path: zenario_export_content_items
+                        key:
+                            type: ''
+                            wasFiltered: true
+                        pass_matched_ids: true
                 
                 settings_dropdown:
                     css_class: organizer_settings_dropdown
@@ -644,7 +670,8 @@ zenario__content:
                     priv: _PRIV_EDIT_CONTENT_TYPE
                     parent: settings_dropdown
                     hide_in_select_mode: true
-                    hidden: hidden
+                    hidden: true
+                    hide_on_refiner: find_duplicates
                     label: ''
                     admin_box:
                         path: zenario_content_type_details
@@ -781,9 +808,11 @@ zenario__content:
             item_buttons:
                 settings:
                     priv: _PRIV_EDIT_DRAFT
+                    multiple_select: true
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     label: Edit content item
+                    multiple_select_label: Edit content items
                     admin_box:
                         path: zenario_content
                     without_columns_set:
@@ -1103,9 +1132,8 @@ zenario__content:
                     parent: action_dropdown
                     priv: _PRIV_ADD_MENU_ITEM
                     hide_in_select_mode: true
-                    label: Attach to menu
+                    label: Attach content item to menu
                     multiple_select: No
-                    tooltip: Quick-add this content item to the menu (select a position)
                     combine_items:
                         path: zenario__menu/panels/menu_position/refiners/create////
                         min_path: zenario__menu/panels/menu_position

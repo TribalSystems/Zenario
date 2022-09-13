@@ -51,9 +51,9 @@ plugin_settings:
                             label: "Item's summary"
                         description:
                             label: "Item's meta description"
-                show_sticky_images:
+                show_featured_image:
                     plugin_setting:
-                        name: show_sticky_images
+                        name: show_featured_image
                     label: "Show featured image of content item"
                     type: checkbox
                     value: ""
@@ -81,6 +81,16 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: Yes
+                retina:
+                    plugin_setting:
+                        name: retina
+                    label: 'Treat as a retina image'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Display image at double density.
+                    enable_microtemplates_in_properties: true
+                    same_row: true
                 width:
                     plugin_setting:
                         name: width
@@ -107,6 +117,15 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 1
+                webp:
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    plugin_setting:
+                        name: webp
+                        save_value_when_hidden: true
+                    type: checkbox
+                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    value: 1
                 date_format:
                     plugin_setting:
                         name: date_format

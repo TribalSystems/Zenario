@@ -61,7 +61,7 @@ class cookie {
 	//Formerly "setCookieConsent()"
 	public static function setConsent($types = false) {
 		\ze\cookie::set('cookies_accepted', $types ? $types : 1);
-		unset($_SESSION['cookies_rejected']);
+		unset($_SESSION['unnecessary_cookies_rejected']);
 	}
 
 	//Formerly "setCookieNoConsent()"
@@ -69,7 +69,7 @@ class cookie {
 		if (isset($_COOKIE['cookies_accepted'])) {
 			\ze\cookie::clear('cookies_accepted');
 		}
-		$_SESSION['cookies_rejected'] = true;
+		$_SESSION['unnecessary_cookies_rejected'] = true;
 	}
 	
 	
@@ -97,27 +97,59 @@ class cookie {
 	}
 
 
+	public static function canSetAll() {
+		//Always accept cookies on sites that only notify about cookies,
+		//for administrators who are logged in,
+		//or for visitors who have pressed the "Accept all" button (stored as a "1" in the "cookies_accepted" cookie).
+		return \ze::setting('cookie_require_consent') != 'explicit'
+			|| \ze::isAdmin()
+			|| 1 == ($cookiesAccepted = $_COOKIE['cookies_accepted'] ?? '');
+	}
 
 
 
 	const canSetFromTwig = true;
 	//Formerly "canSetCookie()"
 	public static function canSet($type = false) {
-		if (\ze::setting('cookie_require_consent') != 'explicit' || \ze\priv::check()) {
+		
+		//Always accept cookies on sites that only notify about cookies,
+		//for administrators who are logged in,
+		//or for visitors who have pressed the "Accept all" button (stored as a "1" in the "cookies_accepted" cookie).
+		if (\ze::setting('cookie_require_consent') != 'explicit'
+		 || \ze::isAdmin()
+		 || 1 == ($cookiesAccepted = $_COOKIE['cookies_accepted'] ?? '')) {
 			return true;
 		}
 		
-		$cookies = explode(',', $_COOKIE['cookies_accepted'] ?? '');
-		//If "1" set, any cookie can be set
-		if (in_array(1, $cookies)) {
-			return true;
+		//"Necessary" cookies are a special case.
+		//We don't allow you to opt out of then; the checkbox is disabled and jammed on.
+		//So as long as the visitor has at least pressed the save button on the cookie prompt,
+		//they've accepted necessary cookies.
+		if ($type === 'necessary') {
+			return \ze\cookie::isDecided();
 		}
-		//Otherwise check if specific cookie is allowed
+		
+		//Otherwise the list of cookie types will be stored as a comma separated list
+		$cookiesAccepted = array_flip(explode(',', $cookiesAccepted));
+		
 		if ($type) {
-			return in_array($type, $cookies);
+			//If the caller is requesting a specific type, check that
+			return isset($cookiesAccepted[$type]);
+		} else {
+			//For backwards compatibility, if the caller just wants to know if all
+			//cookies are accepted, return true if all three specific options
+			//were selected.
+			return isset(
+				$cookiesAccepted['functionality'],
+				$cookiesAccepted['analytics'],
+				$cookiesAccepted['social_media']
+			);
 		}
-		//Otherwise check if every cookie type has been set (required, functionality, analytics, social_media)
-		return count($cookies) == 4;
+	}
+	
+	//This returns true if the visitor hasn't yet responded to the cookie prompt
+	public static function isDecided() {
+		return !empty($_COOKIE['cookies_accepted']) || !empty($_SESSION['unnecessary_cookies_rejected']);
 	}
 
 	//Formerly "hideCookieConsent()"

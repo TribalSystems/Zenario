@@ -7,11 +7,9 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Password Reset
 description: |
-    <p>This Module allows registered Extranet Users who have forgotten their password to reset by entering their email address.</p>
-    <p>When you install this Module it will automatically create a Password Reset page on your site. The Module inserts a plugin of this Module on that page.</p>
-    <p>Registered Extranet Users will then be able to enter the email address with which they have registered, and the Module will send an email containing a link to a page where they can enter a new password.</p>
-    <p>The default behaviour is to have just one Password Reset page, however on a multilingual site you may create a Password Reset page for each Language by creating translations of the original Password Reset page in each Language.</p>
-    <p>This Module installs a password reset Email Template, which can be edited. The selected Email Template can contain merge fields which will be replaced by real values when the email is sent:</p>
+    <p>This module allows registered extranet users who have forgotten their password to reset it by entering their email address.</p>
+    <p>When the module is started, it creates a Password Reset page (an HTML content item), and inserts its plugin into a slot on that page.</p>
+    <p>This module also creates a password reset email template, which can be edited. It can contain merge fields which will be replaced by real values when the email is sent:</p>
     <ul>
         <li>[[first_name]] - User's first name.</li>
         <li>[[last_name]] - User's last name.</li>
@@ -51,4 +49,4 @@ special_pages:
 # to fix it automatically for every site.
 dependencies:
     zenario_extranet: true
-default_instance_name: Extranet Password Reset
+default_instance_name: Password Reset

@@ -6,6 +6,74 @@ plugin_settings:
         first_tab:
             label: Display
             fields:
+                
+                nest_type:
+                    plugin_setting:
+                        name: nest_type
+                    type: radios
+                    value: indicator_and_buttons
+                    values:
+                        buttons:
+                            label: Show Next and Previous
+                        indicator:
+                            label: Show sequence indicator
+                        indicator_and_buttons:
+                            label: Show sequence indicator, Next and Previous
+                        tabs:
+                            label: Show tabs with labels
+                        tabs_and_buttons:
+                            label: Show tabs with labels, Next and Previous
+                        permission:
+                            label: Don't show any controls
+                    redraw_onchange: true
+                
+                buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        buttons: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Next and Previous buttons will be shown, which can be used to navigate between slides.
+                indicator_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        indicator: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the slideshow will have an indicator.
+                            Clicking on the indicator will switch to that slide.
+                indicator_and_buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        indicator_and_buttons: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the slideshow will have an indicator.
+                            Clicking on the indicator will switch to that slide.
+                            Next and Previous buttons will also be shown, which can be used to navigate between slides.
+                tabs_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        tabs: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the slideshow will have a tab with a label.
+                            Clicking on a tab will switch to that slide.
+                tabs_and_buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        tabs_and_buttons: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the slideshow will have a tab with a label.
+                            Clicking on a tab will switch to that slide.
+                            Next and Previous buttons will also be shown, which can be used to navigate between slides.
+                
                 show_heading:
                     plugin_setting:
                         name: show_heading
@@ -38,18 +106,6 @@ plugin_settings:
                         p: Paragraph
                     value: h1
                     side_note: Choose which HTML tag the heading will be displayed in.
-                show_tabs:
-                    plugin_setting:
-                        name: show_tabs
-                    label: 'Show tabs'
-                    type: checkbox
-                    value: 1
-                
-                show_next_prev_buttons:
-                    plugin_setting:
-                        name: show_next_prev_buttons
-                    label: 'Show next/previous buttons'
-                    type: checkbox
                 
                 animation_library:
                     plugin_setting:

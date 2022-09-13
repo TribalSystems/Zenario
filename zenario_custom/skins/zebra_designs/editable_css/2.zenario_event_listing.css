@@ -1,0 +1,126 @@
+.zenario_event_listing {
+	/* This class will be applied to all plugins of this type. */
+}
+
+/* This class will be applied to all plugins of this type,
+	   unless overridden or removed for a specific plugin. */
+	   
+.zenario_event_listing__default_style .event_listing .single_event {
+	overflow:hidden;
+	position: relative;	
+  	padding: 20px 0;
+  	border-bottom: 1px dotted #777;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event:first-child {
+	padding-top:0;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_sticky_image {
+  	float: left;
+  	margin-right: 20px;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_sticky_image img {
+  border: 1px solid #777;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description {
+  	overflow:hidden;
+  	position:relative;
+  	padding-bottom:22px;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description .event_title > h2 {
+  	font-size: 1.25em;
+	font-family: 'robotolight',Arial, Helvetica, sans-serif;
+  	margin-bottom: 3px;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span {
+	display:block;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_date {
+	font-family:'cardoregular','Times New Roman','Georgia',serif;
+	padding-top:5px;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_description,
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_location_name {
+	padding-top:8px;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_date,
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span[class*="single_event_location"] {
+	position:relative;
+	padding-left:22px;
+	color:#000;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span[class*="single_event_location"] {
+	font-size:0.938em;
+	font-style:italic;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description a.single_event_more_link {
+  	display:inline-block;
+  	position:absolute;
+  	right:0;
+  	bottom:0;
+  	font-family: 'robotolight',Arial, Helvetica, sans-serif;
+	font-size: 0.857em;
+  	color:#2a98ce;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_date:before,
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_location_name:before,
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description a.single_event_more_link:after {
+	font-family: 'FontAwesome';
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_date:before {
+  	content: "\f133";
+  	position:absolute;
+  	left:0;
+}
+
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_location_name:before {
+  	content: "\f276";
+  	position:absolute;
+  	left:0;
+  	font-style:normal;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event .single_event_description a.single_event_more_link:after {
+  	content: "\f138";
+  	padding-left:5px;
+}
+
+.zenario_event_listing__default_style .event_listing .year_label {
+	background: #225474;
+	padding: 10px 20px;
+  	height: 40px;
+	line-height: 40px;
+
+	font-size: 2em;
+	color: #FFF;
+  	letter-spacing: 0.02em;
+	font-family: 'robotolight',Arial, Helvetica, sans-serif;
+}
+
+.zenario_event_listing__default_style .event_listing .month_label {
+	background:#dbe6ea;
+	font-size: 1.1em;
+	text-transform: uppercase;
+  	height: 30px;
+	line-height: 30px;
+	padding: 6px 20px;
+	margin-top:5px;
+	color:#000;
+}
+
+.zenario_event_listing__default_style .event_listing .single_event + .month_label {
+	margin-top:15px;
+}

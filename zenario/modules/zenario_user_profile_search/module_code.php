@@ -43,7 +43,9 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 	
 	protected $data = [];
 	
-	public function init(){
+	public function init() {
+		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		
 		$this->country_id_to_search = $_REQUEST['country_id_to_search'] ?? false;
 		$this->name_to_search = $_REQUEST['name_to_search'] ?? false;
 		$this->keywords_to_search = $_REQUEST['keywords_to_search'] ?? false;
@@ -140,9 +142,9 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'plugin_settings':
 				$hidden = !$values['results_tab/photo_list_show'];
-				$this->showHideImageOptions($fields, $values, 'results_tab', $hidden, 'photo_list_');
+				$this->showHideImageOptions($fields, $values, 'results_tab', $hidden, 'image_');
 				$hidden = !$values['results_tab/photo_popup_show'];
-				$this->showHideImageOptions($fields, $values, 'results_tab', $hidden, 'photo_popup_');
+				$this->showHideImageOptions($fields, $values, 'results_tab', $hidden, 'image_2_');
 				break;
 		}
 	}

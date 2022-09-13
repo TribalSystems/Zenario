@@ -278,6 +278,10 @@ methods.putHTMLOnPage = function(html) {
 	
 	$fea.html(html);
 	
+	if (zenarioT.showDevTools()) {
+		thus.__lastFormHTML = html;
+	}
+	
 	thus.cb.done();
 	thus.addJQueryElements('#' + sel);
 	
@@ -499,6 +503,9 @@ methods.loadData = function(request, json, TUIXSnippetLink) {
 };
 
 methods.doAjaxLoadThenShowPlugin = function(request, callWhenLoaded) {
+	
+	delete thus.__lastFormHTML;
+	
 	switch (thus.typeOfLogic()) {
 		case 'list':
 			thus.doAjaxLoadThenShowList(callWhenLoaded);
@@ -516,6 +523,8 @@ methods.doAjaxLoadThenShowPlugin = function(request, callWhenLoaded) {
 
 methods.loadingDoneInAdvanceSoDrawPlugin = function() {
 	var typeOfLogic = thus.typeOfLogic();
+	
+	delete thus.__lastFormHTML;
 	
 	switch (typeOfLogic) {
 		case 'list':

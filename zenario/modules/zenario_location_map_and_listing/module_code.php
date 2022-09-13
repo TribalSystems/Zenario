@@ -311,9 +311,9 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		$lat = $lng = $label = $error = false;
 		if ($this->setting('enable_postcode_search') && !empty($this->data['postcode'])) {
 			//Debug code if we ever need it
-			//echo 'https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_geocode_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']);
+			//echo 'https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']);
 			
-			$json = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_geocode_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
+			$json = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?key=' . urlencode(ze::setting('google_maps_api_key')) . '&address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
 			$data = json_decode($json, true);
 			switch ($data['status']) {
 				case 'OK':
@@ -562,8 +562,8 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				}
 				
 				$hidden = !$values['image/show_images'];
-				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'map_view_thumbnail_');
-				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'list_view_thumbnail_');
+				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'image_2_');
+				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'image_');
 				break;
 		}
 	}
@@ -572,14 +572,14 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		if ($imageId && $mode && $this->setting('show_images')) {
 			$url = $width = $height = false;
 			if($mode == "map"){
-				$widthImage = $this->setting('map_view_thumbnail_width'); 
-				$heightImage = $this->setting('map_view_thumbnail_height');
-				$canvas = $this->setting('map_view_thumbnail_canvas'); 
+				$widthImage = $this->setting('image_2_width'); 
+				$heightImage = $this->setting('image_2_height');
+				$canvas = $this->setting('image_2_canvas'); 
 				$offset = $this->setting('map_view_thumbnail_offset');
 			}else{
-				$widthImage = $this->setting('list_view_thumbnail_width'); 
-				$heightImage = $this->setting('list_view_thumbnail_height');
-				$canvas = $this->setting('list_view_thumbnail_canvas'); 
+				$widthImage = $this->setting('image_width'); 
+				$heightImage = $this->setting('image_height');
+				$canvas = $this->setting('image_canvas'); 
 				$offset = $this->setting('list_view_thumbnail_offset');
 			}
 			ze\file::imageLink($width, $height, $url, $imageId, $widthImage, $heightImage, $canvas, $offset);

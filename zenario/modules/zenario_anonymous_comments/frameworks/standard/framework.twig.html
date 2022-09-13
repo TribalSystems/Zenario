@@ -20,33 +20,11 @@
 				<td class="xl"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="xr"></td>
 			</tr><tr class="{{this.oddOrEven()}}">
 				<td class="ml"></td><td class="mc thread_title first_column">
-					{% if Show_Sticky_Image %}
+					{% if Show_Featured_Image %}
 						<div class="sticky_image">
 							<a {{item.Link}} class="{{item.Status_Class}}">
-								{% if item.Sticky_Image %}
-									<picture>
-										{% set i = 0 %}
-
-										{# WebP source: 1 source, responsive to retina setting. #}
-										{% if item.Sticky_Image_WebP %}
-											{% set i = i + 1 %}
-											<source id="{{containerId}}_source_{{i}}" srcset="{{item.Sticky_Image_WebP|e}}" type="image/webp">
-										{% endif %}
-
-										{# Non-WebP retina source #}
-										{% if item.Sticky_Image_Retina_Srcset %}
-											{% set i = i + 1 %}
-											<source id="{{containerId}}_source_{{i}}" srcset="{{item.Sticky_Image_Retina_Srcset|e}}" type="{{item.Sticky_Image_Mime_Type|e}}">
-										{% endif %}
-
-										{# Non-WebP fallback #}
-										<img class="{{item.Sticky_Image_Css_Class|e}}"
-											alt="{{item.Sticky_Image_Alt|e}}"
-											src="{{item.Sticky_Image_Src|e}}"
-											type="{{item.Sticky_Image_Mime_Type|e}}"
-											style="width: {{item.Sticky_Image_Width|e}}px; height: {{item.Sticky_Image_Height|e}}px;"
-										/>
-									</picture>
+								{% if item.Featured_Image_HTML %}
+									{{item.Featured_Image_HTML}}
 								{% endif %}
 							</a>
 						</div>
@@ -112,9 +90,6 @@
 	{% if Confirmation_Box %}
 		{{Confirmation_Box.Open_Form}}
 			<div class="confirmation_box">
-			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
-				<div class="top"><div class="tl"></div><div class="tr"></div></div>
-				<div class="confirmation_box_center">
 		
 					<div class="question_icon"></div>	
 						
@@ -123,14 +98,11 @@
 					</div>
 					
 					<div class="buttons">
-						<div class="control_btn"><div class="r"><a class="i" {{Confirmation_Box.Cancel_Link}}>{{'Cancel'|trans}}</a></div></div>
-						<div class="control_btn"><div class="r"><input class="i" type="submit" value="{{Confirmation_Box.Submit_Button_Text}}" /></div></div>
+						<div class="control_btn"><input class="i" type="submit" value="{{Confirmation_Box.Submit_Button_Text}}" /></div>
+						<div class="control_btn"><a class="i cancel" {{Confirmation_Box.Cancel_Link}}>{{'Cancel'|trans}}</a></div>
 					</div>
 				
-				</div>
-				</div>
-				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
-			</div></div>
+			</div>
 		{{Close_Form}}
 	{% endif %}
 	
@@ -139,33 +111,33 @@
 	{% if Thread_Controls %}
 		<div class="buttons">
 			{% if Forum_Login_To_Post %}
-				<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}>{{'Please Login to comment'|trans}}</a></div></div>
+				<div class="main_btn"><a class="i" {{Login_To_Post_Link}}>{{'Please login to comment'|trans}}</a></div>
 			{% endif %}
 			{% if Add_New_Thread %}
-				<div class="main_btn"><div class="r"><a class="i" {{Add_New_Thread_Link}}>{{'Add Thread'|trans}}</a></div></div>
+				<div class="main_btn"><a class="i" {{Add_New_Thread_Link}}>{{'Add thread'|trans}}</a></div>
 			{% endif %}
 			{% if Forum_Profile_Link %}
-				<div class="main_btn"><div class="r"><p>{{Forum_Profile_Link}}</p></div></div>
+				<div class="main_btn"><p>{{Forum_Profile_Link}}</p></div>
 			{% endif %}
 		</div>
 		
 		<div class="buttons moderators_buttons">
 			{% if Login_To_Subs_Forum %}
-				<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}>{{'Login to subscribe to this forum'|trans}}</a></div></div>
+				<div class="main_btn"><a class="i" {{Login_To_Post_Link}}>{{'Login to subscribe to this forum'|trans}}</a></div>
 			{% endif %}
 			{% if Subs_To_Forum %}
-				<div class="main_btn"><div class="r"><a class="i" {{Subs_To_Forum_Link}}>{{'Subscribe to this forum'|trans}}</a></div></div>
+				<div class="main_btn"><a class="i" {{Subs_To_Forum_Link}}>{{'Subscribe to this forum'|trans}}</a></div>
 			{% endif %}
 			{% if Unsubs_To_Forum %}
-				<div class="forum_btn"><div class="r"><a class="i" {{Unsubs_To_Forum_Link}}>{{'Unsubscribe from this forum'|trans}}</a></div></div>
+				<div class="forum_btn"><a class="i" {{Unsubs_To_Forum_Link}}>{{'Unsubscribe from this forum'|trans}}</a></div>
 			{% endif %}
 		</div>
 		<div class="buttons users_buttons">
 			{% if Forum_Locked %}
-				<div class="forum_btn"><div class="r"><a class="i">{{'Further messages may not be added in this forum'|trans}}</a></div></div>
+				<div class="forum_btn"><a class="i">{{'Further messages may not be added in this forum'|trans}}</a></div>
 			{% endif %}
 			{% if Mark_Forum_Read %}
-				<div class="forum_btn"><div class="r"><a class="i" {{Mark_Forum_Read_Link}}>{{'Mark all Messages as Read'|trans}}</a></div></div>
+				<div class="forum_btn"><a class="i" {{Mark_Forum_Read_Link}}>{{'Mark all messages as read'|trans}}</a></div>
 			{% endif %}
 		</div>
 	{% endif %}
@@ -186,7 +158,7 @@
 	
 	{% if Search_No_Results %}
 		<div class="search_no_results">
-			<p>{{"No Threads were found that matched your search."|trans}}</p>
+			<p>{{"No threads were found that matched your search."|trans}}</p>
 		</div>
 	{% endif %}
 	
@@ -201,10 +173,7 @@
 				<a href="{{item.Thread_Link}}">{{item.Thread_Title}}</a>
 			</h1>
 		{% endif %}
-		<div class="{{this.oddOrEven()}} {{item.Employee}}">
-			<div class="comments_box_inner"><div class="comments_box_wrap">
-			<div class="top"><div class="tl"></div><div class="tr"></div></div>
-			<div class="comments_box_center">
+		<div class="comments_box {{this.oddOrEven()}} {{item.Employee}}">
 				<div class="user_info">
 					<div class="user_info_avatar">
 						{% if item.Show_Avatar %}
@@ -232,13 +201,13 @@
 						{% if item.Show_Join_Date %}
 							<div class="join_date">{{item.Join_Date}}</div>
 						{% endif %}
-					</div>
-				</div>
 				
-				<div class="date_posted">{{item.Date_Posted}}
-					{% if item.Pending_Post %}
-						<span style="color:red;">{{"Pending administrator approval"|trans}}</span>
-					{% endif %}
+						<div class="date_posted">{{item.Date_Posted}}
+							{% if item.Pending_Post %}
+								<span style="color:red;">{{"Awaiting administrator approval"|trans}}</span>
+							{% endif %}
+						</div>
+					</div>
 				</div>
 				<div class="post_area">{{item.Post_Text}}</div>
 				
@@ -263,33 +232,43 @@
 				{% if item.Post_Controls %}
 					<div class="buttons">
 					{% if item.Quote_Post %}
-						<div class="quote_button control_btn"><div class="r"><a class="i" {{item.Quote_Post_Link}}>{{"Quote"|trans}}</a></div></div>
-					{% endif %}
-					{% if item.Report_Post %}
-						<div class="report_button control_btn"><div class="r"><a class="i" {{item.Report_Post_Link}}>{{"Report as Offensive"|trans}}</a></div></div>
+						<div class="quote_button control_btn"><a class="i" {{item.Quote_Post_Link}}>{{"Quote"|trans}}</a></div>
 					{% endif %}
 					{% if item.Edit_Post %}
-						<div class="edit_button control_btn"><div class="r"><a class="i" {{item.Edit_Post_Link}}>{{"Edit comment (admin)"|trans}}</a></div></div>
+						<div class="edit_button control_btn {% if User_is_admin %} admin {% endif %}">
+							<a class="i" {{item.Edit_Post_Link}}>
+								{% if User_is_admin %}
+									{{"Edit comment (admin)"|trans}}
+								{% else %}
+									{{"Edit your comment"|trans}}
+								{% endif %}
+							</a>
+						</div>
 					{% endif %}
 					{% if item.Delete_Post %}
-						<div class="delete_button control_btn"><div class="r"><a class="i" {{item.Delete_Post_Link}}>{{"Delete comment (admin)"|trans}}</a></div></div>
+						<div class="delete_button control_btn {% if User_is_admin %} admin {% endif %}">
+							<a class="i" {{item.Delete_Post_Link}}>
+								{% if User_is_admin %}
+									{{"Delete comment (admin)"|trans}}
+								{% else %}
+									{{"Delete your comment"|trans}}
+								{% endif %}
+							</a>
+						</div>
 					{% endif %}
 					{% if item.Approve_Post %}
-						<div class="aprove_button control_btn"><div class="r"><a class="i" {{item.Approve_Post_Link}}>{{"Approve comment"|trans}}</a></div></div>
+						<div class="aprove_button control_btn admin"><a class="i" {{item.Approve_Post_Link}}>{{"Approve comment"|trans}}</a></div>
+					{% endif %}
+					{% if item.Report_Post %}
+						<div class="report_button control_btn report"><a class="i" {{item.Report_Post_Link}}>{{"Report..."|trans}}</a></div>
 					{% endif %}
 					</div>
 				{% endif %}
-			</div>
-			<div class="bottom"><div class="bl"></div><div class="br"></div></div>
-		  </div></div>
 		</div>
 	{% endfor %}
 	{% if Post_Message %}
 		{% if Post_Errors %}
 			<div class="confirmation_box post_errors">
-			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
-				<div class="top"><div class="tl"></div><div class="tr"></div></div>
-				<div class="confirmation_box_center">
 		
 					<div class="question_icon post_error_icon"></div>	
 					
@@ -302,55 +281,55 @@
 					{% endfor %}
 					
 					<div class="post_error_padding">&nbsp;</div>	
-				</div>
-				</div>
-				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
-			</div></div>
+			</div>
+				
 			<div class="post_error_padding">&nbsp;</div>	
 		{% endif %}
 			
 		{{Post_Message.Open_Form}}
 			{% if Show_Post_Title %}
 				<div class="comments_label">{{Post_Message.Title_Text}}</div>
-				<div class="comments_post_title">{{Post_Message.Post_Title}}</div>
+				<div class="comments_field comments_post_title">{{Post_Message.Post_Title}}</div>
 			{% endif %}
 			{% if Show_Post_Name %}
-				<div class="comments_label">{{"Your Name:"|trans}}</div>
-				<div class="comments_post_title comments_post_name">{{Post_Message.Post_Name}}</div>
+				<div class="comments_label">{{"Your name:"|trans}}</div>
+				<div class="comments_field comments_post_name">{{Post_Message.Post_Name}}</div>
 			{% endif %}
 			{% if Show_Post_Email %}
 				<div class="comments_label">{{"Your email:"|trans}}</div>
-				<div class="comments_post_title comments_post_email">{{Post_Message.Post_Email}}</div>
+				<div class="comments_field comments_post_email">{{Post_Message.Post_Email}}</div>
 			{% endif %}
 			
-			<div class="comments_form"><div class="comments_box_inner"><div class="comments_box_wrap">
-				<div class="top"><div class="tl"></div><div class="tr"></div></div>
-				<div class="comments_box_center">
+			<div class="comments_form">
 					
 					<div class="user_info">
-						{% if Post_Message.Posting_Show_Avatar %}
-							<img class="avatar" src="{{Post_Message.Src}}" width="{{Post_Message.Width}}" height="{{Post_Message.Height}}" alt="{{Post_Message.Username}}" />
-						{% endif %}
-						{% if Post_Message.Posting_No_Avatar %}
-							<div class="no_avatar"></div>
-						{% endif %}
-						<div class="username">{{Post_Message.Username_Link}}</div>
-						<div class="username email">{{Post_Message.Email}}</div>
-						{% if Post_Message.Posting_Show_Title %}
-							<div class="title">{{Post_Message.Title}}</div>
-						{% endif %}
-						{% if Post_Message.Posting_Show_Online %}
-							<div class="online">{{"Online"|trans}}</div>
-						{% endif %}
-						{% if Post_Message.Posting_Show_Offline %}
-							<div class="offline">{{"Offline"|trans}}</div>
-						{% endif %}
-						{% if Post_Message.Posting_Show_Post_Count %}
-							<div class="post_count">{{Post_Message.Post_Count}}</div>
-						{% endif %}
-						{% if Post_Message.Posting_Show_Join_Date %}
-							<div class="join_date">{{Post_Message.Join_Date}}</div>
-						{% endif %}
+						<div class="user_info_avatar">
+							{% if Post_Message.Posting_Show_Avatar %}
+								<img class="avatar" src="{{Post_Message.Src}}" width="{{Post_Message.Width}}" height="{{Post_Message.Height}}" alt="{{Post_Message.Username}}" />
+							{% endif %}
+							{% if Post_Message.Posting_No_Avatar %}
+								<div class="no_avatar"></div>
+							{% endif %}
+						</div>
+						<div class="user_info_data">
+							<div class="username">{{Post_Message.Username_Link}}</div>
+							<div class="username email">{{Post_Message.Email}}</div>
+							{% if Post_Message.Posting_Show_Title %}
+								<div class="title">{{Post_Message.Title}}</div>
+							{% endif %}
+							{% if Post_Message.Posting_Show_Online %}
+								<div class="online">{{"Online"|trans}}</div>
+							{% endif %}
+							{% if Post_Message.Posting_Show_Offline %}
+								<div class="offline">{{"Offline"|trans}}</div>
+							{% endif %}
+							{% if Post_Message.Posting_Show_Post_Count %}
+								<div class="post_count">{{Post_Message.Post_Count}}</div>
+							{% endif %}
+							{% if Post_Message.Posting_Show_Join_Date %}
+								<div class="join_date">{{Post_Message.Join_Date}}</div>
+							{% endif %}
+						</div>
 					</div>
 					
 					<div class="comments_label">{{Post_Message.Label_Text}}</div>
@@ -382,24 +361,19 @@
 					{% endif %}
 					
 					<div class="buttons">
-						<div class="main_btn"><div class="r"><input class="i" type="submit" value="{{Post_Message.Submit_Button_Text}}" /></div></div>
-						<div class="main_btn"><div class="r"><a class="i" {{Post_Message.Cancel_Link}}>{{'Cancel'|trans}}</a></div></div>
+						<div class="main_btn"><input class="i" type="submit" value="{{Post_Message.Submit_Button_Text}}" /></div>
+						<div class="main_btn"><a class="i cancel" {{Post_Message.Cancel_Link}}>{{'Cancel'|trans}}</a></div>
 					</div>
-				</div>
-				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
-			</div></div></div>
+			</div>
 			
 			{% if Show_Post_Screening_Notice %}
-				<div class="comments_label comments_screening_notice">{{"Please note that your comment will be verified by a site administrator before it will appear."|trans}}</div>
+				<div class="comments_label comments_screening_notice">{{"Please note that your comment will not appear until it has been verified by a site administrator."|trans}}</div>
 			{% endif %}
 		{{Post_Message.Close_Form}}
 	{% endif %}
 	{% if Confirmation_Box %}
 		{{Confirmation_Box.Open_Form}}
 			<div class="confirmation_box">
-			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
-				<div class="top"><div class="tl"></div><div class="tr"></div></div>
-				<div class="confirmation_box_center">
 		
 					<div class="question_icon"></div>	
 						
@@ -408,14 +382,11 @@
 					</div>
 					
 					<div class="buttons">
-						<div class="control_btn"><div class="r"><a class="i" {{Confirmation_Box.Cancel_Link}}>{{'Cancel'|trans}}</a></div></div>
-						<div class="control_btn"><div class="r"><input class="i" type="submit" value="{{Confirmation_Box.Submit_Button_Text}}" /></div></div>
+						<div class="control_btn"><input class="i" type="submit" value="{{Confirmation_Box.Submit_Button_Text}}" /></div>
+						<div class="control_btn"><a class="i cancel" {{Confirmation_Box.Cancel_Link}}>{{'Cancel'|trans}}</a></div>
 					</div>
 				
-				</div>
-				</div>
-				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
-			</div></div>
+			</div>
 		{{Confirmation_Box.Close_Form}}
 	{% endif %}
 	
@@ -424,71 +395,57 @@
 	<div class="buttons">
 		{% if Add_Reply %}
 			<div class="{{this.oddOrEven()}} comments_description">
-				<div class="comments_box_inner"><div class="comments_box_wrap">
-					<div class="top"><div class="tl"></div><div class="tr"></div></div>
-					<div class="comments_box_center">
-						<div class="comments_description_text">
-							<p>{{"Please click the 'Add comment' button below if you wish to comment."|trans}}</p>
-							<div class="main_btn"><div class="r"><a class="i" {{Add_Reply_Link}}">{{'Add comment'|trans}}</a></div></div>
-								<br />&nbsp;
-						</div>
-					</div>
-					<div class="bottom"><div class="bl"></div><div class="br"></div></div>
-				</div></div>
+				<div class="comments_description_text">
+					<p>{{"Please click the 'Add comment' button below if you wish to comment."|trans}}</p>
+				</div>	
+			</div>
+			<div class="buttons">
+				<div class="main_btn"><a class="i" {{Add_Reply_Link}}">{{'Add comment'|trans}}</a></div>
 			</div>
 		{% endif %}
 		{% if Comments_Profile_Link %}
 			<div class="{{this.oddOrEven()}} comments_description">
-				<div class="comments_box_inner"><div class="comments_box_wrap">
-					<div class="comments_box_center">
-						<div class="comments_description_text">
-							<p>{{Comments_Profile_Link}}</p>
-						</div>
-					</div>
-				</div></div>
+				<div class="comments_description_text">
+					<p>{{Comments_Profile_Link}}</p>
+				</div>
 			</div>
 		{% endif %}
 		{% if Login_To_Post %}
 			<div class="{{this.oddOrEven()}} comments_description">
-				<div class="comments_box_inner"><div class="comments_box_wrap">
-					<div class="top"><div class="tl"></div><div class="tr"></div></div>
-					<div class="comments_box_center">
-						<div class="comments_description_text">
-							<p>{{"Please Login if you wish to add a comment."|trans}}</p>
-							<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}>{{'Please Login to comment'|trans}}</a></div></div>
-							<br />&nbsp;
-						</div>
-					</div>
-					<div class="bottom"><div class="bl"></div><div class="br"></div></div>
-				</div></div>
+				<div class="comments_description_text">
+					<p>{{"Please Login if you wish to add a comment."|trans}}</p>
+				</div>		
+			</div>
+			<div class="buttons">
+				<div class="main_btn"><a class="i" {{Login_To_Post_Link}}>{{'Please Login to comment'|trans}}</a></div>	
 			</div>
 		{% endif %}
 		<div class="moderators_buttons">
 			{% if Login_To_Subs_To_Thread %}
-				<div class="main_btn"><div class="r"><a class="i" {{Login_To_Post_Link}}">{{'Login to subscribe'|trans}}</a></div></div>
+				<div class="main_btn"><a class="i" {{Login_To_Post_Link}}">{{'Login to subscribe'|trans}}</a></div>
 			{% endif %}
 			{% if Subs_To_Thread %}
-				<div class="main_btn"><div class="r"><a class="i" {{Subs_To_Thread_Link}}">{{'Subscribe'|trans}}</a></div></div>
+				<div class="main_btn"><a class="i" {{Subs_To_Thread_Link}}">{{'Subscribe'|trans}}</a></div>
 			{% endif %}
 			{% if Unsubs_To_Thread %}
-				<div class="forum_btn"><div class="r"><a class="i" {{Unsubs_To_Thread_Link}}">{{'Unsubscribe'|trans}}</a></div></div>
+				<div class="forum_btn"><a class="i" {{Unsubs_To_Thread_Link}}">{{'Unsubscribe'|trans}}</a></div>
 			{% endif %}
 			{% if Thread_Locked %}
-				<div class="forum_btn"><div class="r"><a class="i">{{'Further comments may not be added'|trans}}</a></div></div>
+				<div class="forum_btn"><a class="i">{{'No further comments may be added'|trans}}</a></div>
 			{% endif %}
 		</div>
 		<div class="users_buttons">
 			{% if Lock_Thread %}
-				<div class="forum_btn"><div class="r"><a class="i" {{Lock_Thread_Link}}">{{'Disallow further comments'|trans}}</a></div></div>
+				<div class="forum_btn admin"><a class="i" {{Lock_Thread_Link}}">{{'Disallow further comments'|trans}}</a></div>
 			{% endif %}
 			{% if Unlock_Thread %}
-				<div class="forum_btn"><div class="r"><a class="i" {{Unlock_Thread_Link}}">{{'Allow further comments'|trans}}</a></div></div>
+				<div class="forum_btn admin"><a class="i" {{Unlock_Thread_Link}}">{{'Allow further comments'|trans}}</a></div>
 			{% endif %}
 			{% if Move_Thread %}
-				<div class="forum_btn"><div class="r"><a class="i" {{Move_Thread_Link}}>{{'Move Thread'|trans}}</a></div></div>
+				<div class="forum_btn admin"><a class="i" {{Move_Thread_Link}}>{{'Move thread'|trans}}</a></div>
 			{% endif %}	
 			{% if Delete_Thread %}
-				<div class="forum_btn"><div class="r"><a class="i" {{Delete_Thread_Link}}">{{'Delete Thread'|trans}}</a></div></div>
+				<div class="forum_btn admin"><a class="i" {{Delete_Thread_Link}}">{{'Delete thread'|trans}}</a></div>
 			{% endif %}	
 		</div>
 	</div>

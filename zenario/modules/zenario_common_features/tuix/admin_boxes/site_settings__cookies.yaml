@@ -16,13 +16,14 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            <p>This tab allows you to control when your site's modules can place cookies on a visitor's computer.</p>
+                            <p>You can control when this site can place cookies on a visitor's browser.</p>
+                            <p>Zenario can display simple "Continue" button (implied cookie consent), or a sequence of two popup boxes (where explicit consent is asked for, with one small box with summary info, and one large box with more detail about the types of cookies). The large box can be accessed again via the Footer menu.</p>
                 cookie_require_consent:
                     site_setting:
                         name: cookie_require_consent
                     type: select
                     value: ""
-                    label: 'Policy:'
+                    label: 'Cookie policy:'
                     empty_value: "Don't inform visitor or require consent when setting cookies"
                     values:
                         implied:
@@ -33,16 +34,6 @@ site_settings:
                             label: "Explicit consent: require visitor's consent before setting cookies"
                     redraw_onchange: true
                 
-                individual_cookie_consent:
-                    site_setting:
-                        name: individual_cookie_consent
-                    label: Allow the user to consent to individual cookies
-                    type: checkbox
-                    side_note: Adds a "Manage" button to the visitor message.
-                    visible_if: |
-                        zenarioAB.value('cookie_require_consent') == 'explicit'
-                    indent: 1
-                    redraw_onchange: true
                 description__dont_inform:
                     snippet:
                         html: |
@@ -71,49 +62,20 @@ site_settings:
                             </p>
                     visible_if: "zenarioAB.value('cookie_require_consent') == 'implied'"
                     indent: 1
-                cookie_consent_type__explicit:
-                    site_setting:
-                        name: cookie_consent_type
-                    label: 'Message for visitor:'
-                    type: select
-                    visible_if: "zenarioAB.value('cookie_require_consent') == 'explicit'"
-                    indent: 1
-                    values:
-                        message_accept_reject: |
-                            A consent message with an "Accept" button and a "Reject" button
-                        message_accept: |
-                            A consent message with an "Accept" button only
-                    redraw_onchange: true
-                description__explicit__message_accept:
-                    snippet:
-                        html: |
-                            <p>
-                                A panel will appear on every page of your site, until the visitor presses
-                                the &quot;Accept&quot; button.
-                            </p><p>
-                                Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
-                                (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
-                            </p>
-                    visible_if: |
-                        zenarioAB.value('cookie_require_consent') == 'explicit' &&
-                        zenarioAB.value('cookie_consent_type__explicit') != 'message_accept_reject'
-                    indent: 1
-                    
                 description__explicit__message_accept_reject:
                     snippet:
                         html: |
                             <p>
                                 A panel will appear on every page of your site, until the visitor presses either
-                                the &quot;Accept&quot; or &quot;Reject&quot; button.
+                                the &quot;Accept&quot; or &quot;Manage cookies&quot; button.
                             </p><p>
                                 Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
                                 (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
                             </p>
                     visible_if: |
-                        zenarioAB.value('cookie_require_consent') == 'explicit' &&
-                        zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
                     indent: 1
-                _COOKIE_CONSENT_IMPLIED_MESSAGE:
+                _COOKIE_BOX1_01_IMPLIED_MSG:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'implied'
@@ -122,79 +84,113 @@ site_settings:
                     insert_link_button: true
                     validation:
                         required_if_not_hidden: Please enter a message
-                _COOKIE_CONSENT_CONTINUE:
+                    note_below: 'The CSS class will be "cookies_implied".'
+                _COOKIE_BOX1_02_CONTINUE_BTN:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'implied'
                     label: '"Continue" button text'
                     type: text
+                    show_phrase_icon: true
                     validation:
                         required_if_not_hidden: true
                 
-                _COOKIE_CONSENT_MESSAGE:
+                _COOKIE_BOX1_03_COOKIE_CONSENT_MSG:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit'
-                    label: Message
+                    label: |
+                        Initial message:
                     type: editor
                     insert_link_button: true
                     validation:
                         required_if_not_hidden: Please enter a message
-                _COOKIE_CONSENT_ACCEPT:
+                    note_below: 'The CSS class will be "cookies_explicit".'
+                _COOKIE_BOX1_05_ACCEPT_BTN:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit'
-                    label: '"Accept cookies" button text'
+                    label: |
+                        Text for "Accept cookies" button:
+                    note_below: |
+                        If the visitor clicks this button, they agree to accept all cookies without seeing further information.
                     type: text
+                    show_phrase_icon: true
                     validation:
                         required_if_not_hidden: true
-                _COOKIE_CONSENT_MANAGE:
+                _COOKIE_BOX1_04_MANAGE_BTN:
                     indent: 1
                     visible_if: |
-                        zenarioAB.value('cookie_require_consent') == 'explicit' && 
-                        zenarioAB.value('individual_cookie_consent')
-                    label: '"Manage cookies" button text'
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    label: |
+                        Text for "Manage cookies" button:
+                    note_below: |
+                        If the user clicks this button, they will see a "Manage cookies" popup box. They will be able to access this again later, usually via the Footer menu.
                     type: text
+                    show_phrase_icon: true
                     validation:
                         required_if_not_hidden: true
-                
-                manage_cookie_consent_content_item:
+                _COOKIE_BOX2_01_INTRO_MSG:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    label: |
+                        Message in the large "Manage cookies" popup box:
+                    type: editor
+                    insert_link_button: true
+                    validation:
+                        required_if_not_hidden: Please enter a message
+                _COOKIE_BOX2_02_ACCEPT_ALL_BTN:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    label: |
+                        Text for "Accept all cookies" button:
+                    note_below: |
+                        In the large popup box, the text for the "Accept all cookies" button.
+                    type: text
+                    show_phrase_icon: true
+                    validation:
+                        required_if_not_hidden: true
+                _COOKIE_BOX2_11_SAVE_PREFERENCES_BTN:
+                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                    label: |
+                        Text for "Save preferences" button:
+                    note_below: |
+                        In the large popup box, the text for the "Save preferences" button.
+                    type: text
+                    show_phrase_icon: true
+                    validation:
+                        required_if_not_hidden: true
+                phrases_panel_link:
+                    snippet:
+                        html: '<div class="zenario_fbInfo">To edit further cookie-related phrases, go to <a href="organizer.php#zenario__languages/panels/phrases~-cookie" target="blank">Organizer's Phrases</a> panel.</div>'
+                    visible_if: zenarioAB.value('cookie_require_consent') == 'explicit'
+                popup_cookie_type_switches_initial_state:
+                    indent: 1
                     site_setting:
-                        name: manage_cookie_consent_content_item
-                    visible_if: |
-                        zenarioAB.value('cookie_require_consent') == 'explicit' && 
-                        zenarioAB.value('individual_cookie_consent')
-                    indent: 2
-                    label: 'Content item for managing cookies:'
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/filter_by_language_and_content_type//html//
-                        min_path: zenario__content/panels/content
-                        max_path: zenario__content/panels/content
-                        target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: "Please select a content item."
-                    note_below: "A content item that should have a cookie consent status plugin to allow visitors to manage their privacy settings."
-                
-                _COOKIE_CONSENT_REJECT:
-                    indent: 1
-                    visible_if: |
-                        zenarioAB.value('cookie_require_consent') == 'explicit' &&
-                        zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
-                    label: '"Reject cookies" button text'
-                    type: text
-                    validation:
-                        required_if_not_hidden: true
-                _COOKIE_CONSENT_CLOSE:
-                    indent: 1
+                        name: popup_cookie_type_switches_initial_state
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit'
-                    label: '"Close" button text'
-                    type: text
-                    validation:
-                        required_if_not_hidden: true
+                    label: 'In popup message, cookie-type switches should appear to new visitors in an initial state of:'
+                    type: radios
+                    value: "off"
+                    values:
+                        off:
+                            ord: 1
+                            label: "Off"
+                        on:
+                            ord: 2
+                            label: "On"
+                extranet_info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                Extranet plugins will only be loaded when a user accepts Functionality-type cookies.
+                            </div>
+                    visible_if: zenarioAB.value('cookie_require_consent') == 'explicit'
         
         cookie_timeouts:
             label: Timeouts

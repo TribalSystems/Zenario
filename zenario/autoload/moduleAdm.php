@@ -62,34 +62,25 @@ class moduleAdm {
 			return false;
 		}
 		$tags = [];
-		$limit = 20;
 		$modulesWeHaveRead = [];
-		$baseModuleName = $inherit_description_from_module = $moduleName;
+		$baseModuleName = $moduleName;
 		$settingGroup = 'own';
 	
-		while (--$limit && $inherit_description_from_module && empty($modulesWeHaveRead[$inherit_description_from_module])) {
-			$modulesWeHaveRead[$inherit_description_from_module] = true;
-			$baseModuleName = $inherit_description_from_module;
-			$inherit_description_from_module = false;
+		//Attempt to open and read the description file
+		if ($path = \ze\moduleAdm::descriptionFilePath($baseModuleName)) {
 		
-			//Attempt to open and read the description file
-			if ($path = \ze\moduleAdm::descriptionFilePath($baseModuleName)) {
+			if (!$tagsToParse = \ze\tuix::readFile(CMS_ROOT. $path)) {
+				echo \ze\admin::phrase('[[path]] appears to be in the wrong format or invalid.', ['path' => CMS_ROOT. $path]);
+				return false;
+		
+			} elseif (!empty($tagsToParse['inheritance']['inherit_description_from_module'])) {
+				echo \ze\admin::phrase('The file [[path]] uses the option "inherit_description_from_module", which is no longer supported. Please edit the file, remove this line and copy in any necessary sections from the module it refers to.', ['path' => CMS_ROOT. $path]);
+				return false;
 			
-				if (!$tagsToParse = \ze\tuix::readFile(CMS_ROOT. $path)) {
-					echo \ze\admin::phrase('[[path]] appears to be in the wrong format or invalid.', ['path' => CMS_ROOT. $path]);
-					return false;
-			
-				} else {
-					if (!empty($tagsToParse['inheritance']['inherit_description_from_module'])) {
-						$inherit_description_from_module = trim((string) $tagsToParse['inheritance']['inherit_description_from_module']);
-					}
-				
-					\ze\tuix::parse($tags, $tagsToParse, 'module_description', '', $settingGroup);
-					unset($tagsToParse);
-				}
+			} else {
+				\ze\tuix::parse($tags, $tagsToParse, 'module_description', '', $settingGroup);
+				unset($tagsToParse);
 			}
-		
-			$settingGroup = 'inherited';
 		}
 	
 		$replaces = [];
@@ -132,10 +123,6 @@ class moduleAdm {
 	public static function readDependencies($targetModuleClassName, &$desc) {
 		$modules = [];
 	
-		if (!empty($desc['inheritance']['inherit_description_from_module'])) {
-			$dep = $desc['inheritance']['inherit_description_from_module'];
-			$modules[$dep] = $dep;
-		}
 		if (!empty($desc['inheritance']['inherit_frameworks_from_module'])) {
 			$dep = $desc['inheritance']['inherit_frameworks_from_module'];
 			$modules[$dep] = $dep;

@@ -5,7 +5,6 @@ update:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 description:
                     full_width: true

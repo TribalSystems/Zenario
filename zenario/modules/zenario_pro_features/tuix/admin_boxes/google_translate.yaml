@@ -12,7 +12,6 @@ zenario_pro_features__google_translate:
             edit_mode:
                 enabled: Yes
                 on: Yes
-                always_on: Yes
             fields:
                 desc:
                     full_width: Yes

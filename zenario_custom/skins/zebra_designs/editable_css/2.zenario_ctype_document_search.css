@@ -1,0 +1,202 @@
+.zenario_ctype_document_search {
+	overflow:hidden;
+}
+
+/* Search form */
+
+body.desktop .zenario_ctype_document_search .search_form {
+	width:35%;
+	float:left;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap {
+	overflow:hidden;
+	border:1px solid #cddde7;
+	background:#f1f6f9;
+	margin-bottom:10px;
+	padding:10px 15px 10px 10px;
+}
+
+body.desktop .zenario_ctype_document_search .search_form .search_by_wrap {
+	padding:20px 20px 20px 15px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap.on {
+	border-color:#8fc1df;
+	background:#dcecf6;
+}
+
+body.desktop .zenario_ctype_document_search .search_form .search_by_wrap .search_by_main_radio {
+	font-size:1.3em;
+	line-height:1.5em;
+}
+
+body.mobile .zenario_ctype_document_search .search_form .search_by_wrap .search_by_main_radio {
+	font-weight:bold;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_main_radio input[type="radio"] {
+	width:0.8em;
+	height:0.8em;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field {
+	padding-top:20px;
+	padding-left:20px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field > .label {
+	margin-bottom:8px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_number,
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_name,
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_type {
+	padding-top:15px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_number .label,
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_name .label,
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_type .label {
+	display:none;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.published_dates .published_date_range,
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.text_search_extra,
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.text_search_extra fieldset {
+	display:flex;
+	line-height:34px;
+	align-items: center;
+  	justify-content: center;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.published_dates .published_date_range > *:not(:first-child),
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_type fieldset > input:not(:first-child) {
+	margin-left:8px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_type fieldset label {
+	white-space: nowrap;
+	margin-right:10px;
+	line-height:1.7em;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.case_type fieldset label label span {
+  	display: inline-block;
+  	white-space: normal;
+  	vertical-align: top;
+  	position: relative;
+  	top: 2px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.text_search_extra fieldset input {
+	margin-right:5px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.text_search_extra fieldset label {
+	margin-right:10px;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.published_dates .published_date_range,
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field.text_search_extra fieldset {
+	font-size:0.813em;
+}
+
+.zenario_ctype_document_search .search_form .search_by_wrap .search_by_field select {
+	
+	padding:0 5px;
+}
+
+.zenario_ctype_document_search .search_form .buttons {
+	text-align:center;
+	margin-top:30px;
+}
+
+.zenario_ctype_document_search .search_form .buttons input {
+	margin:0 5px;
+}
+
+.zenario_ctype_document_search .search_form .buttons .clear {
+	display:none;
+}
+
+/* Search results */
+
+body.desktop .zenario_ctype_document_search .search_results {
+	width:60.66%;
+	float:right;
+}
+
+body.mobile .zenario_ctype_document_search .search_results {
+	padding-top:20px;
+}
+
+.zenario_ctype_document_search .search_results .result {
+	overflow:hidden;
+	padding:15px 0;
+	border-top:1px dotted #777;
+	display:flex;
+}
+
+body.desktop .zenario_ctype_document_search .search_results .result {
+	padding:15px;
+}
+
+.zenario_ctype_document_search .search_results .result:first-child {
+	border:0;
+	padding-top:0;
+}
+
+body.desktop .zenario_ctype_document_search .search_results .result .result_image {
+	padding-right:30px;
+}
+
+body.mobile .zenario_ctype_document_search .search_results .result .result_image {
+	padding-right:20px;
+}
+
+.zenario_ctype_document_search .search_results .result .result_image img {
+	border:1px solid #2a98ce;
+}
+
+.zenario_ctype_document_search .search_results .result p {
+	margin:0;
+}
+
+.zenario_ctype_document_search .search_results .result p.title {
+	overflow-wrap: anywhere;
+	font-size:1.25em;
+}
+
+.zenario_ctype_document_search .search_results .result .categories {
+	display: inline-block;
+    padding: 0 5px;
+    margin:5px 0;
+    background: #efecec;
+    font-size: 0.813em;
+}
+
+.zenario_ctype_document_search .search_results .result p.release_date {
+	font-size:0.813em;
+	font-family: 'cardoregular','Times New Roman','Georgia',serif;
+}
+
+.zenario_ctype_document_search .search_results .result .extract {
+	margin-top:8px;
+}
+
+.zenario_ctype_document_search .search_results .result .extract .matched_word {
+	font-weight:bold;
+	color:#000;
+}
+
+.zenario_ctype_document_search .search_results .result .result_info a {
+	margin-top:10px;
+	padding:0 10px;
+}
+
+.zenario_ctype_document_search .search_results .result .result_info a:before {
+    font-family: "FontAwesome";
+    content: "\f15b";
+    padding-right: 10px;
+}

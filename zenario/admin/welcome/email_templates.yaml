@@ -155,6 +155,18 @@ email_templates:
             Your email address has been changed from "[[OLD_EMAIL]]" to "[[NEW_EMAIL]]".
 
             This is an auto-generated email from [[URL]][[SUBDIRECTORY]].
+    change_password_complete:
+        subject: Password change successful
+        from: false
+        body: |
+            Dear [[NAME]]
+
+            Your password has been changed successfully.
+
+            If this was not you, then your website's security may have been compromised.
+
+
+            This is an auto-generated email from [[URL]][[SUBDIRECTORY]].
     security_code:
         subject: Your administrator login at [[URL]][[SUBDIRECTORY]]
         from: false
@@ -184,8 +196,8 @@ email_templates:
             <h1>Administrator account created</h1>
             Dear&nbsp;[[first_name]] [[last_name]],
             
-            You have been created an administrator account on [[cms_url]].
-            Your username is <strong>[[username]]</strong>.
+            An administator account has been created for you in the site at [[cms_url]].
+            Your administrator username is <strong>[[username]]</strong>.
             
             What to do now:
             1) Follow this link to create a password:

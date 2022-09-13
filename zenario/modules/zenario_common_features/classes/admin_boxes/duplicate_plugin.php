@@ -36,7 +36,6 @@ class zenario_common_features__admin_boxes__duplicate_plugin extends ze\moduleBa
 			exit;
 		}
 		
-		$box['tabs']['instance']['edit_mode']['always_on'] = true;
 		$box['title'] = ze\admin::phrase('Duplicating the plugin "[[instance_name]]".', $instance);
 		
 		switch ($instance['class_name']) {

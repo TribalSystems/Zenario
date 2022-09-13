@@ -5,7 +5,7 @@ site_settings:
     title: Editing Data Protection settings
     tabs:
         data_protection:
-            ord: 10
+            ord: 11
             label: Data recording and deletion
             edit_mode:
                 enabled: true

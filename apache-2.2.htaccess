@@ -17,7 +17,7 @@ Options -Indexes
 
 <ifModule mod_headers.c>
 	Header set Content-Security-Policy "default-src *; img-src * data:; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'"
-	Header set Feature-Policy "sync-xhr *; camera 'none'; fullscreen 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none'; speaker 'none';"
+	Header set Feature-Policy "sync-xhr *; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none'; speaker 'none';"
 	Header set Referrer-Policy strict-origin-when-cross-origin
 	Header set X-Content-Type-Options nosniff
 	Header set X-Frame-Options SAMEORIGIN

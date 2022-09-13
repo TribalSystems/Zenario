@@ -38,6 +38,7 @@ $content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cType]);
 $chain = ze\row::get('translation_chains', true, ['equiv_id' => $content['equiv_id'], 'type' => $cType]);
 $version = ze\row::get('content_item_versions', true, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 $menuItems = ze\menu::getFromContentItem($cID, $cType, true, false, true, true);
+// mail('support@tribalsystems.uk', 'Menu items array', print_r($menuItems, true));
 
 $tagId = $cType. '_'. $cID;
 $isMultilingual = ze\lang::count() > 1;
@@ -50,7 +51,7 @@ if (!$content || !$version) {
 	$LayoutIdentifier = ze\layoutAdm::codeName(ze::$layoutId);
 	$layout['usage'] = ze\layoutAdm::usage(ze::$layoutId);
 	
-	$adminToolbar['sections']['layout']['buttons']['settings']['label'] = ze\admin::phrase('[[name]] properties', ['name' => $LayoutIdentifier]);
+	$adminToolbar['sections']['layout']['buttons']['settings']['label'] = ze\admin::phrase('Edit layout settings', ['name' => $LayoutIdentifier]);
 	$adminToolbar['sections']['layout']['buttons']['settings']['admin_box']['key']['id'] = ze::$layoutId;
 	
 	//Hide "copy from.." when content type is document.
@@ -86,7 +87,7 @@ if (!$content || !$version) {
 	} elseif (isset($adminToolbar['sections']['layout']['buttons']['edit_skin'])) {
 		$adminToolbar['sections']['layout']['buttons']['edit_skin']['admin_box']['key']['skinId'] = ze::$skinId;
 		$adminToolbar['sections']['layout']['buttons']['edit_skin']['label'] =
-			ze\admin::phrase('Edit "[[display_name]]" skin CSS', $skin);
+			ze\admin::phrase('Edit skin CSS', $skin);
 	}
 	
 	if (isset($adminToolbar['sections']['layout']['buttons']['settings']['admin_box']['key']['id'])) {
@@ -258,6 +259,8 @@ if (ze::$adminVersion == 1
 	unset($adminToolbar['sections']['edit']['buttons']['delete_archives']);
 }
 
+$menu = ze\menu::getFromContentItem($cID, $cType);
+
 //Draft Version
 if ($cVersion == ze::$adminVersion && ze::$isDraft) {
 	
@@ -276,8 +279,6 @@ if ($cVersion == ze::$adminVersion && ze::$isDraft) {
 	
 	// First draft
 	if ($cVersion == 1) {
-		$menu = ze\menu::getFromContentItem($cID, $cType);
-		
 		$redirect_page = ze\admin::phrase('the Home page');
 		if ($menu && $menu['parent_id']) {
 			$redirectContent = ze\row::get('menu_nodes', ['equiv_id', 'content_type'], ['id' => $menu['parent_id']]);
@@ -291,9 +292,9 @@ if ($cVersion == ze::$adminVersion && ze::$isDraft) {
 		
 		$adminToolbar['sections']['edit']['label'] = ze\admin::phrase('First draft');
 		$adminToolbar['sections']['status_button']['buttons']['delete_draft']['ajax']['confirm']['message'] = ze\admin::phrase("
-			You are about to delete the draft version of this content item. 
+			Zenario will delete the draft version of this content item. 
 			
-			As there is no published version, the content item will be permanently deleted and you will be redirected to [[redirect_page]].
+			As this is version 1, the content item will be permanently deleted and you will be redirected to [[redirect_page]].
 			
 			Proceed?
 		", ['redirect_page' => $redirect_page]);
@@ -328,7 +329,7 @@ if ($cVersion == ze::$adminVersion && ze::$isDraft) {
 	//Archived/Previous Versions
 	} else {
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_brown zenario_section_dark_text';
-		$adminToolbar['sections']['edit']['label'] = ze\admin::phrase('Archived Version');
+		$adminToolbar['sections']['edit']['label'] = ze\admin::phrase('Bananas version');
 	}
 }
 
@@ -369,6 +370,12 @@ if (isset($adminToolbar['sections']['status_button']['buttons']['delete_draft'])
 		} else {
 			unset($adminToolbar['sections']['status_button']['buttons']['delete_draft']);
 		}
+	}
+}
+
+if (isset($adminToolbar['sections']['status_button']['buttons']['delete_media_content_item'])) {
+	if (!(ze::in($cType, 'audio', 'document', 'picture', 'video') && ze::$status != 'first_draft')) {
+		unset($adminToolbar['sections']['status_button']['buttons']['delete_media_content_item']);
 	}
 }
 
@@ -682,6 +689,8 @@ if (isset($adminToolbar['sections']['translations'])) {
 
 
 //Set up the version history navigation, including a left arrow, the current item in view and a right arrow, with the correct icons and tooltips on each
+//Commented out by Tony to reduce clutter... eventually we can remove this I think.
+/*
 if ($cVersion > 1 && ze\row::exists('content_item_versions', ['id' => $cID, 'type' => $cType, 'version' => $cVersion - 1])) {
 	$mrg = ['status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion - 1), 'prevver' => $cVersion - 1];
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['css_class'] = ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion - 1, 'zenario_at_prev_version_');
@@ -692,11 +701,11 @@ if ($cVersion > 1 && ze\row::exists('content_item_versions', ['id' => $cID, 'typ
 } else {
 	unset($adminToolbar['sections']['history']['buttons']['content_item_left']);
 }
-
+*/
 
 $mrg = ['status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion), 'v' => $cVersion];
-$adminToolbar['sections']['history']['buttons']['content_item_current']['css_class'] = ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion, 'zenario_at_current_version_');
-$adminToolbar['sections']['history']['buttons']['content_item_current']['label'] = ze\admin::phrase('This is version [[v]] ([[status]])', $mrg);
+//$adminToolbar['sections']['history']['buttons']['content_item_current']['css_class'] = ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion, 'zenario_at_current_version_');
+//$adminToolbar['sections']['history']['buttons']['content_item_current']['label'] = ze\admin::phrase('This is version [[v]] ([[status]])', $mrg);
 
 //At the top right of the toolbar, show either a Publish button, or the current status if we can't currently publish
 if (isset($adminToolbar['sections']['status_button']['buttons']['publish'])) {
@@ -705,12 +714,9 @@ if (isset($adminToolbar['sections']['status_button']['buttons']['publish'])) {
 } else {
 	$adminToolbar['sections']['status_button']['buttons']['status_button']['css_class'] .= ' '. ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion, 'zenario_at_status_button_');
 	$adminToolbar['sections']['status_button']['buttons']['status_button']['label'] = ucwords($mrg['status']);
-	$adminToolbar['sections']['status_button']['buttons']['status_button']['tooltip'] =
-		ze\admin::phrase('Version [[v]]', ['v' => $cVersion]). '|'.
-		ze\admin::phrase('Version status: [[status]]', $mrg);
 }
 
-
+/*
 if (ze\row::exists('content_item_versions', ['id' => $cID, 'type' => $cType, 'version' => $cVersion + 1])) {
 	$mrg = ['status' => ze\contentAdm::getContentItemVersionStatus($content, $cVersion + 1), 'nextver' => $cVersion + 1];
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['css_class'] = ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion + 1, 'zenario_at_next_version_');
@@ -722,7 +728,7 @@ if (ze\row::exists('content_item_versions', ['id' => $cID, 'type' => $cType, 've
 } else {
 	unset($adminToolbar['sections']['history']['buttons']['content_item_right']);
 }
-
+*/
 
 
 
@@ -880,7 +886,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				$adminToolbar['toolbars']['menu'. $i] = $adminToolbar['toolbars']['menu_secondary'];
 				$adminToolbar['toolbars']['menu'. $i]['ord'] .= '.'. str_pad($i, 3, '0', STR_PAD_LEFT);
 				$adminToolbar['toolbars']['menu'. $i]['label'] = $i;
-			
+				
 				if ($menuItem['name'] === null) {
 					$adminToolbar['toolbars']['menu'. $i]['warning_icon'] = 'zenario_link_status zenario_link_status__menu_warning';
 					$adminToolbar['toolbars']['menu'. $i]['tooltip'] .= '<br/>'. ze\admin::phrase('Warning: text of menu node is missing in this language.');
@@ -905,6 +911,12 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				
 				$adminToolbar['sections']['menu1'] = $adminToolbar['sections']['primary_menu_node'];
 			}
+			
+			if (ze\menu::isUnique($menuItem['redundancy'], $menuItem['equiv_id'], $menuItem['content_type'])) {
+				$menuItem['redundancy'] = 'unique';
+			}
+
+			$adminToolbar['sections']['menu'. $i]['custom__menu_icon_css_class'] = ze\menuAdm::cssClass($menuItem);
 			
 			
 			if (!empty($adminToolbar['sections']['menu'. $i]['buttons'])) {
@@ -985,6 +997,12 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			}
 			
 			$primary = false;
+
+			//If a menu node is used as a suggestion for a particular content type,
+			//add an extra class.
+			if (!empty($menuItem) && $menuItem['restrict_child_content_types']) {
+				$adminToolbar['toolbars']['menu'. $i]['css_class'] .= ' node_suggest_on';
+			}
 		}
 		
 		//If there is only one Menu Node left for this content item, warn that removing it will cause the
@@ -1069,12 +1087,12 @@ $mrg = [
 	'wordcount' => (int) ze\row::get('content_cache', 'text_wordcount', ['content_id' => ze::$cID, 'content_type' => ze::$cType, 'content_version' => ze::$cVersion])
 ];
 
-if (ze::$cVersion < ze::$adminVersion
- || ze::$cVersion < ze::$visitorVersion) {
-	$mrg['status'] = 'archived';
+if (ze::$cVersion < ze::$visitorVersion) {
+	$mrg['status'] = $versionStatus = 'archived';
 } elseif (ze::$cVersion == ze::$visitorVersion) {
-	$mrg['status'] = str_replace('_with_draft', '', ze::$status);
+	$mrg['status'] = $versionStatus = str_replace('_with_draft', '', ze::$status);
 } else {
+	$versionStatus = ze::$status;
 	$mrg['status'] = str_replace('_with_draft', ' with draft', ze::$status);
 }
 
@@ -1104,12 +1122,14 @@ if (ze\content::isSpecialPage(ze::$cID, ze::$cType)) {
 }
 
 $adminToolbar['meta_info']['title'] = ze::$pageTitle;
+$adminToolbar['meta_info']['cversion_css_class'] =
+	ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $versionStatus);
 
 if ($isMultilingual) {
-	$adminToolbar['sections']['icons']['buttons']['title']['tooltip'] =
+	$adminToolbar['sections']['edit']['buttons']['item_meta_data']['tooltip'] =
 		ze\admin::phrase('Title: [[title]]<hr/>Content item ID: [[tagId]]<br/>Version: [[cVersion]] ([[status]])<br/>Alias: [[alias]]<br/>Word count: [[wordcount]]<br/>Language: [[lang]]', $mrg);
 } else {
-	$adminToolbar['sections']['icons']['buttons']['title']['tooltip'] =
+	$adminToolbar['sections']['edit']['buttons']['item_meta_data']['tooltip'] =
 		ze\admin::phrase('Title: [[title]]<hr/>Content item ID: [[tagId]]<br/>Version: [[cVersion]] ([[status]])<br/>Alias: [[alias]]<br/>Word count: [[wordcount]]', $mrg);
 }
 
@@ -1160,13 +1180,18 @@ $layoutItemCount = $layoutDetails['item_count'];
 if ($layoutDetails['status'] == 'active') {
 	$layoutStatus = '';
 } elseif ($layoutDetails['status'] == 'suspended') {
-	$layoutStatus = 'Layout is archived';
+	$layoutStatus = 'Layout is retired';
 }
 
 $isDefaultForAContentType = $layoutDetails['default_layout_for_ctype'] ? 'Default layout for content type ' . $layoutDetails['default_layout_for_ctype'] : '';
 
-$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
-	'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content item(s) use this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+if ($layoutItemCount == 1) {
+	$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+		'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content item uses this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+} else {
+	$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+		'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content items use this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+}
 	
 $adminToolbar['sections']['icons']['buttons']['layout_id']['css_class'] .= ' layout_status_' . $layoutDetails['status'];
 
@@ -1185,10 +1210,11 @@ if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
 		'if (!zenarioA.checkSlotsBeingEdited()) zenarioAT.draw();';
 }
 if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
-	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = ze\admin::phrase('Go to content item via its alias "[[alias]]"', ['alias' => (ze::$alias)]);
+	$adminToolbar['sections']['icons']['buttons']['alias']['label'] = ze\admin::phrase('Edit alias "[[alias]]"', ['alias' => (ze::$alias)]);
+	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = ze\admin::phrase('Go to content item via alias', ['alias' => (ze::$alias)]);
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['frontend_link'] = $visitorURL;
 } else {
-	$adminToolbar['sections']['icons']['buttons']['no_alias']['label'] = ze\admin::phrase('This content item does not have an alias');
+	$adminToolbar['sections']['icons']['buttons']['no_alias']['label'] = ze\admin::phrase('Content item has no alias');
 	unset($adminToolbar['sections']['icons']['buttons']['no_alias']['tooltip']);
 	$adminToolbar['sections']['icons']['buttons']['alias']['label'] = ze\admin::phrase('Set an alias');
 }
@@ -1199,16 +1225,13 @@ if (isset($adminToolbar['sections']['icons']['buttons']['no_alias'])) {
 }
 
 
-//here!
-	//Right now: I need to order these by version
-	//I need to make up to 3 version blobs, add CSS classes for the statuses, and put the info on each, or hide each if they're not needed
-
 //Show version information on all relevant versions
 $showVersions = [];
 $showVersions[$cVersion] = true;
 $showVersions[ze::$adminVersion] = true;
 $showVersions[ze::$visitorVersion] = true;
 $showVersions[ze::$adminVersion - 1] = true;
+$showVersions[ze::$visitorVersion - 1] = true;
 ksort($showVersions);
 
 $i = 0;
@@ -1218,11 +1241,29 @@ foreach ($showVersions as $showVersion => $dummy) {
 		
 		$tuixId = 'version_'. ++$i;
 		
+		//Come up with a tooltip to show for this version.
+		//Come up with a generic tooltip first, depending on what information we have.
+		if (!empty($v['published_datetime']) && !empty($v['publisher_id'])) {
+			$lastAction = $v['published_datetime'];
+			$lastActionBy = $v['publisher_id'];
+			$tooltipPhrase = 'Version [[version]], published by [[name]], [[time]] [[date]]';
+		
+		} elseif (!empty($v['last_modified_datetime']) && !empty($v['last_author_id'])) {
+			$lastAction = $v['last_modified_datetime'];
+			$tooltipPhrase = 'Version [[version]], draft edited by [[name]], [[time]] [[date]]';
+		
+		} else {
+			$lastAction = $v['created_datetime'];
+			$lastActionBy = $v['creating_author_id'];
+			$tooltipPhrase = 'Version [[version]], draft created by [[name]], [[time]] [[date]]';
+		}
+		
+		//Try to change the icons/tooltip/info specifically for the status
 		switch (ze\contentAdm::versionStatus($v['version'], ze::$visitorVersion, ze::$adminVersion, ze::$status)) {
 			case 'draft':
 				if ($versionChanged = ze\contentAdm::checkIfVersionChanged($v)) {
 					$labelPhrase = 'v[[version]] (draft)';
-					$tooltipPhrase = 'Version [[version]], draft modified by [[name]], [[time]] [[date]]';
+					$tooltipPhrase = 'Version [[version]], draft edited by [[name]], [[time]] [[date]]';
 					$cssClass = 'zenario_at_icon_version_draft';
 					
 					if ($v['last_modified_datetime']) {
@@ -1258,69 +1299,37 @@ foreach ($showVersions as $showVersion => $dummy) {
 
 			case 'hidden':
 				$labelPhrase = 'v[[version]] (hidden)';
-				$tooltipPhrase = 'Version [[version]], hidden by [[name]], [[time]] [[date]]';
 				$cssClass = 'zenario_at_icon_version_hidden';
 				
-				if (!is_null($v['concealed_datetime'])) {
+				if (!empty($v['concealed_datetime']) && !empty($v['concealer_id'])) {
 					$lastAction = $v['concealed_datetime'];
-				} elseif (!is_null($v['last_modified_datetime'])) {
-					$lastAction = $v['last_modified_datetime'];
-				} else {
-					$lastAction = $v['created_datetime'];
-				}
-				
-				if ($v['concealer_id'] != 0) {
 					$lastActionBy = $v['concealer_id'];
-				} elseif ($v['last_author_id'] != 0) {
-					$lastActionBy = $v['last_author_id'];
-				} else {
-					$lastActionBy = $v['creating_author_id'];
+					$tooltipPhrase = 'Version [[version]], hidden by [[name]], [[time]] [[date]]';
 				}
 				
 				break;
 	
 			case 'trashed':
 				$labelPhrase = 'v[[version]] (trashed)';
-				$tooltipPhrase = 'Version [[version]], trashed by [[name]], [[time]] [[date]]';
 				$cssClass = 'zenario_at_icon_version_trashed';
 				
-				if (!is_null($v['concealed_datetime'])) {
+				if (!empty($v['concealed_datetime']) && !empty($v['concealer_id'])) {
 					$lastAction = $v['concealed_datetime'];
-				} elseif (!is_null($v['last_modified_datetime'])) {
-					$lastAction = $v['last_modified_datetime'];
-				} else {
-					$lastAction = $v['created_datetime'];
-				}
-				
-				if ($v['concealer_id'] != 0) {
 					$lastActionBy = $v['concealer_id'];
-				} elseif ($v['last_author_id'] != 0) {
-					$lastActionBy = $v['last_author_id'];
-				} else {
-					$lastActionBy = $v['creating_author_id'];
+					$tooltipPhrase = 'Version [[version]], trashed by [[name]], [[time]] [[date]]';
 				}
 				
 				break;
 	
 			case 'archived':
 				$labelPhrase = 'v[[version]] (archived)';
-				$tooltipPhrase = 'Version [[version]], archived by [[name]], [[time]] [[date]]';
 				$cssClass = 'zenario_at_icon_version_archived';
 				
-				if (!is_null($v['concealed_datetime'])) {
+				if (!empty($v['concealed_datetime']) && !empty($v['concealer_id'])) {
 					$lastAction = $v['concealed_datetime'];
-				} elseif (!is_null($v['last_modified_datetime'])) {
-					$lastAction = $v['last_modified_datetime'];
-				} else {
-					$lastAction = $v['created_datetime'];
-				}
-				
-				if ($v['concealer_id'] != 0) {
 					$lastActionBy = $v['concealer_id'];
-				} elseif ($v['last_author_id'] != 0) {
-					$lastActionBy = $v['last_author_id'];
-				} else {
-					$lastActionBy = $v['creating_author_id'];
+					$tooltipPhrase = 'Version [[version]], archived by [[name]], [[time]] [[date]]';
+				
 				}
 				
 				break;
@@ -1337,9 +1346,10 @@ foreach ($showVersions as $showVersion => $dummy) {
 		}
 		
 		//Only show the status for the most recent version
-		if ($v['version'] != ze::$adminVersion) {
+/*		if ($v['version'] != ze::$adminVersion) {
 			$labelPhrase = 'v[[version]]';
 		}
+*/
 
 		$adminToolbar['sections']['icons']['buttons'][$tuixId]['hidden'] = false;
 		$adminToolbar['sections']['icons']['buttons'][$tuixId]['label'] = ze\admin::phrase($labelPhrase, $mrg);
@@ -1478,6 +1488,12 @@ if (isset($adminToolbar['sections']['edit']['buttons'])) {
 		$button['parent'] = 'action_dropdown';
 		$button['ord'] = $adminToolbar['sections']['edit']['buttons']['redraft_pos']['ord'] ?? 997;
 		$adminToolbar['sections']['edit']['buttons']['redraft'] = $button;
+	}
+	if ($button = $adminToolbar['sections']['status_button']['buttons']['delete_media_content_item'] ?? false) {
+		unset($button['tooltip'], $button['appears_in_toolbars']);
+		$button['ord'] = 997;
+		$button['parent'] = 'action_dropdown';
+		$adminToolbar['sections']['edit']['buttons']['delete_media_content_item'] = $button;
 	}
 	if ($button = $adminToolbar['sections']['status_button']['buttons']['delete_draft'] ?? false) {
 		unset($button['tooltip'], $button['appears_in_toolbars']);

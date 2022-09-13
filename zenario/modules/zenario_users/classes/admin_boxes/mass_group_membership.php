@@ -192,6 +192,7 @@ class zenario_users__admin_boxes__mass_group_membership extends ze\moduleBaseCla
 		if ($fields['groups/groups']['value']) {
 			$initial = explode(',', $fields['groups/groups']['value']);
 		}
+
 		if ($fields['groups/groups']['current_value']) {
 			$current = explode(',', $fields['groups/groups']['current_value']);
 		}
@@ -204,6 +205,10 @@ class zenario_users__admin_boxes__mass_group_membership extends ze\moduleBaseCla
 					foreach ($diff as $groupId) {
 						ze\user::addToGroup($userId, $groupId, $box['key']['remove']);
 					}
+
+					$cols = [];
+					ze\admin::setUserLastUpdated($cols, false);
+					ze\userAdm::save($cols, $userId);
 				}
 			}
 		}

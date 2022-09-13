@@ -60,6 +60,29 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$ids = ze\ray::explodeAndTrim($box['key']['id']);
+
+		$goToContentItem = '';
+		if (!isset($_GET['refinerName']) && count($ids) == 1) {
+			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids[0]);
+			$menu = ze\menu::getFromContentItem($cID, $cType);
+
+			if (!empty($menu) && is_array($menu) && !empty($menu['parent_id'])) {
+				$parentMenuContentItem = ze\menu::getContentItem($menu['parent_id']);
+
+				if (!empty($parentMenuContentItem) && is_array($parentMenuContentItem)) {
+					$goToContentItem = ze\link::toItem(
+						$parentMenuContentItem['content_id'], $parentMenuContentItem['content_type'],
+						$fullPath = true, '', false, false, $forceAliasInAdminMode = true
+					);
+				}
+			} else {
+				$goToContentItem = ze\link::toItem(
+					ze::$homeEquivId, ze::$homeCType,
+					$fullPath = true, '', false, false, $forceAliasInAdminMode = true
+				);
+			}
+		}
+
 		foreach ($ids as $tagId) {
 			$cID = $cType = false;
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
@@ -70,5 +93,12 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 		
 		//Trash any translations flagged for trashing
 		zenario_common_features::deleteOrTrashTranslations($fields, $values, $tabName = 'trash');
+
+		//If it looks like this was opened from the front-end
+		//(i.e. there's no sign of any of Organizer's variables)
+		//then try to redirect the admin to whatever the visitor URL should be
+		if ($goToContentItem) {
+			ze\tuix::closeWithFlags(['go_to_url' => $goToContentItem]);
+		}
 	}
 }

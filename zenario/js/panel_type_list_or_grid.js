@@ -187,7 +187,7 @@ methods.showPanel = function($header, $panel, $footer) {
 methods.changeViewMode = function(view) {
 	
 	var selectedItems;
-							
+	
 	if (thus.view == 'C' && thus.pic) {
 		selectedItems = thus.pic.returnSelectedItems();
 	} else if (thus.view == 'B') {

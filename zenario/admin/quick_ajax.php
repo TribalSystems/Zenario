@@ -81,8 +81,8 @@ if (!empty($_REQUEST['keep_session_alive'])) {
             
             $request = $get;
             $post = [];
-            $cID = $cType = $redirectNeeded = $aliasInURL = false;
-            ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $get, $request, $post);
+            $cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
+            ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $get, $request, $post);
             
             if (in_array($aliasInURL, $spareAliases)) {
             	$linkStatus = 'spare_alias';

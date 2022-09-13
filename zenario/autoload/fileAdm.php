@@ -38,23 +38,8 @@ class fileAdm {
 	
 		if ($_REQUEST['fileUpload'] ?? false) {
 		
-			//If this is the plugin settings FAB, and this is an image, try to add the image
-			//to the image library straight away, and return the id.
-			if (!empty($_REQUEST['path'])
-			 && $_REQUEST['path'] == 'plugin_settings'
-			 && (\ze\priv::check('_PRIV_MANAGE_MEDIA') || \ze\priv::check('_PRIV_EDIT_DRAFT') || \ze\priv::check('_PRIV_EDIT_DRAFT') || \ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN'))
-			 && \ze\file::isImageOrSVG(\ze\file::mimeType($_FILES['Filedata']['name']))) {
-				
-				\ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
-			
-				$imageId = \ze\file::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true);
-				echo json_encode(\ze\file::labelDetails($imageId));
-		
-			//Otherwise upload
-			} else {
-				\ze\fileAdm::exitIfUploadError(true, true, true, 'Filedata');
-				\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], ($_REQUEST['_html5_backwards_compatibility_hack'] ?? false));
-			}
+			\ze\fileAdm::exitIfUploadError(true, true, true, 'Filedata');
+			\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], ($_REQUEST['_html5_backwards_compatibility_hack'] ?? false));
 	
 		} else if ($_REQUEST['fetchFromDropbox'] ?? false) {
 			\ze\fileAdm::putDropboxFileIntoCacheDir($_POST['name'] ?? false, $_POST['link'] ?? false);

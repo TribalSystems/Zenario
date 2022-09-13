@@ -99,7 +99,7 @@ zenario_admin: &admin
             label: Password
             edit_mode:
                 enabled: true
-                always_on: false
+                use_view_and_edit_mode: true
             notices:
                 new_admin:
                     show: false

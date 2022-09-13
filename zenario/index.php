@@ -119,8 +119,8 @@ if ($isAdmin = ze::isAdmin()) {
 
 
 //Attempt to get this page.
-$cID = $cType = $content = $chain = $version = $redirectNeeded = $aliasInURL = false;
-ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET, $_REQUEST, $_POST);
+$cID = $cType = $content = $chain = $version = $redirectNeeded = $aliasInURL = $langIdInURL = false;
+ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $_GET, $_REQUEST, $_POST);
 
 if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $isAdmin)) {
 	
@@ -387,8 +387,11 @@ if (ze::$langId !== ze::$visLang || $applyNoindexMetaTag) {
 <meta property="og:title" content="', htmlspecialchars(ze::$pageTitle), '"/>';
 }
 
+$ogImageMaxWidth = ze::setting('og_image_max_width') ?: 1200;
+$ogImageMaxHeight = ze::setting('og_image_max_height') ?: 630;
+
 $imageWidth = $imageHeight = $imageURL = false;
-if (ze::$pageImage && ze\file::imageLink($imageWidth, $imageHeight, $imageURL, ze::$pageImage, 0, 0, 'resize', 0, false, $fullPath = true)) {
+if (ze::$pageImage && ze\file::imageLink($imageWidth, $imageHeight, $imageURL, ze::$pageImage, $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true)) {
 	$mimeType = ze\row::get('files', 'mime_type', ze::$pageImage);
 	
 	echo '
@@ -404,13 +407,14 @@ if (ze::$pageImage && ze\file::imageLink($imageWidth, $imageHeight, $imageURL, z
 else {
 
 //This default image will be shown if a page does not have a feature image.
-   if (ze::setting('default_icon') && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], ze::setting('default_icon')))) {
-			if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
-				$url = ze\file::link($icon['id']);
-			} else {
-				$imageWidth = $imageHeight = $url = false;
-				ze\file::imageLink($imageWidth, $imageHeight, $url, $icon['id'], 0, 0, 'resize', 0, false, $fullPath = true);
-			}
+	if (($ogImageId = ze::setting('default_icon')) && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], $ogImageId))) {
+
+		if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
+			$url = ze\file::link($icon['id']);
+		} else {
+			$imageWidth = $imageHeight = $url = false;
+			ze\file::imageLink($imageWidth, $imageHeight, $url, $icon['id'], $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true);
+		}
     	echo '
 <meta property="og:image:type" content="' . htmlspecialchars($icon['mime_type']) . '" />
 <meta property="og:image" content="', htmlspecialchars($url), '"/>
@@ -421,14 +425,14 @@ else {
 <meta property="og:image:secure_url" content="', htmlspecialchars($url), '"/>';
 	}
 
-  }
+	}
 }
 
 echo '
-<meta property="og:description" content="', htmlspecialchars(ze::$pageDesc), '"/>
-<meta name="description" content="', htmlspecialchars(ze::$pageDesc), '" />
+<meta property="og:description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '"/>
+<meta name="description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '" />
 <meta name="generator" content="Zenario ', ze\site::versionNumber(), '" />
-<meta name="keywords" content="', htmlspecialchars(ze::$pageKeywords), '" />';
+<meta name="keywords" content="', (ze::$pageKeywords ? htmlspecialchars(ze::$pageKeywords) : ''), '" />';
 
 
 // Add hreflang tags

@@ -10,7 +10,7 @@ site_settings:
                     site_setting:
                         name: period_to_delete_the_email_template_sending_log_headers
                     type: select
-                    ord: 5
+                    ord: 6
                     values:
                         0:
                             label: Don't save
@@ -18,10 +18,16 @@ site_settings:
                             label: Delete after 1 day
                         7:
                             label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
                         30:
                             label: Delete after 1 month
                         90:
                             label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
                         365:
                             label: Delete after 1 year
                         730: 
@@ -37,7 +43,7 @@ site_settings:
                     site_setting:
                         name: delete_email_template_sending_log_content_sooner
                     label: Delete email body sooner (just save headers)
-                    ord: 6
+                    ord: 7
                     type: checkbox
                     redraw_onchange: true
                 
@@ -47,7 +53,7 @@ site_settings:
                     indent: 2
                     site_setting:
                         name: period_to_delete_the_email_template_sending_log_content
-                    ord: 7
+                    ord: 8
                     type: select
                     values:
                         0:
@@ -56,10 +62,16 @@ site_settings:
                             label: Delete after 1 day   
                         7:
                             label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
                         30:
                             label: Delete after 1 month
                         90:
                             label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
                         365:
                             label: Delete after 1 year
                         730: 

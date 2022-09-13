@@ -540,27 +540,59 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					$box['tabs']['filters']['hidden'] = true;
 				}
 
-				$map_lookup = "<select id=\"pin_placement_method\">\n";
-				$methods = static::getMapPinPlacementMethods();
-				$defaultMethod = ze::setting('zenario_location_manager__default_pin_placement_method');
-				foreach ($methods as $method => $label) {
-				    $map_lookup .= "<option value=\"" . $method . "\"";
-				    if ($method == $defaultMethod) {
-				        $map_lookup .= " selected";
-				    }
-				    $map_lookup .= ">" . $label . "</option>\n";
-				}
-				
-				$map_lookup .= "</select>\n";
-				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.placeMarker(document.getElementById('pin_placement_method').value);return false\">Place Pin</button>\n";
-				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.clearMap();return false\">Clear Map</button>\n";
-				
-				$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=1") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
-				$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+				//Check if Google Maps API key is present
+				$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_maps~k{\"id\"%3A\"api_keys\"}' target='_blank'>";
+				$linkEnd = "</a>";
 
-				$fields['details/map_lookup']['snippet']['html'] = $map_lookup;				
-				$fields['details/map_edit']['snippet']['html'] = $mapEdit;
-				$fields['details/map_view']['snippet']['html'] = $mapView;
+				$googleMapsApiKey = ze::setting('google_maps_api_key');
+				if ($googleMapsApiKey) {
+					$fields['details/no_google_maps_api_key_saved']['hidden'] = true;	
+					
+					$googleMapsApiKeyNoteBelow = ze\admin::phrase(
+						'Fine tune your map by setting the zoom level and dragging/dropping the pin. Note that this map relies on a Google Maps API key, see [[link_start]]site settings[[link_end]].',
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+
+					$fields['details/map_edit']['note_below'] = $fields['details/map_view']['note_below'] = $googleMapsApiKeyNoteBelow;
+
+					$map_lookup = "<select id=\"pin_placement_method\">\n";
+					$methods = static::getMapPinPlacementMethods();
+					$defaultMethod = ze::setting('zenario_location_manager__default_pin_placement_method');
+					foreach ($methods as $method => $label) {
+						$map_lookup .= "<option value=\"" . $method . "\"";
+						if ($method == $defaultMethod) {
+							$map_lookup .= " selected";
+						}
+						$map_lookup .= ">" . $label . "</option>\n";
+					}
+					
+					$map_lookup .= "</select>\n";
+					$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.placeMarker(document.getElementById('pin_placement_method').value);return false\">Place Pin</button>\n";
+					$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.clearMap();return false\">Clear Map</button>\n";
+					
+					$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=1") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+					$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+
+					$fields['details/map_lookup']['snippet']['html'] = $map_lookup;				
+					$fields['details/map_edit']['snippet']['html'] = $mapEdit;
+					$fields['details/map_view']['snippet']['html'] = $mapView;
+				} else {
+					$fields['details/map_edit']['hidden'] =
+					$fields['details/map_view']['hidden'] =
+					$fields['details/map_lookup']['hidden'] =
+					$fields['details/map_center_lat']['hidden'] =
+					$fields['details/map_center_lng']['hidden'] =
+					$fields['details/marker_lat']['hidden'] =
+					$fields['details/marker_lng']['hidden'] =
+					$fields['details/hide_pin']['hidden'] =
+					$fields['details/hide_pin']['hidden'] = true;
+
+					$googleMapsApiKeyInfoNote = ze\admin::phrase(
+						'Location Manager can display locations on a Google Map, but Zenario requires an API key to be stored in site settings. See [[link_start]]site settings[[link_end]] to set a key.',
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+					ze\lang::applyMergeFields($fields['details/no_google_maps_api_key_saved']['snippet']['html'], ['No_google_maps_api_key_saved' => $googleMapsApiKeyInfoNote]);
+				}
 				
 				
 				$this->setTimezoneValues($fields['details/timezone']);
@@ -732,7 +764,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
                     $values['details/name'] = $sectorDetails['name'];
                   
                     $box['tabs']['details']['edit_mode']['on'] = false;
-                    $box['tabs']['details']['edit_mode']['always_on'] = false;
+                    $box['tabs']['details']['edit_mode']['use_view_and_edit_mode'] = true;
                 }
 				
 				break;
@@ -793,26 +825,28 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case "zenario_location_manager__location":
-				$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . 
-						htmlspecialchars($this->showFileLink("	&map_center_lat=" . ($values['details/map_center_lat'] ?? false) . "
-															 	&map_center_lng=" . ($values['details/map_center_lng'] ?? false) . "
-															 	&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
-															 	&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
-															 	&zoom=" . ($values['details/zoom'] ?? false)) . "
-															 	&editmode=1") . "\" 
-															 	style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
-				$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . 
-						htmlspecialchars($this->showFileLink("	&map_center_lat=" . ($values['details/map_center_lat'] ?? false) . "
-																&map_center_lng=" . ($values['details/map_center_lng'] ?? false) . "
-																&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
-																&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
-																&zoom=" . ($values['details/zoom'] ?? false)) . "
-																&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+				if (ze::setting('google_maps_api_key')) {
+					$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . 
+							htmlspecialchars($this->showFileLink("	&map_center_lat=" . ($values['details/map_center_lat'] ?? false) . "
+																	&map_center_lng=" . ($values['details/map_center_lng'] ?? false) . "
+																	&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
+																	&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
+																	&zoom=" . ($values['details/zoom'] ?? false)) . "
+																	&editmode=1") . "\" 
+																	style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+					$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . 
+							htmlspecialchars($this->showFileLink("	&map_center_lat=" . ($values['details/map_center_lat'] ?? false) . "
+																	&map_center_lng=" . ($values['details/map_center_lng'] ?? false) . "
+																	&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
+																	&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
+																	&zoom=" . ($values['details/zoom'] ?? false)) . "
+																	&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
-				$fields['details/map_edit']['snippet']['html'] =  $mapEdit;
-				$fields['details/map_view']['snippet']['html'] =  $mapView;
+					$fields['details/map_edit']['snippet']['html'] =  $mapEdit;
+					$fields['details/map_view']['snippet']['html'] =  $mapView;
+				}
+
 				$countryValue = $values['details/country'];
-
 				if ($countryValue) {
 					$regions = zenario_country_manager::getRegions("all",$countryValue);
 					

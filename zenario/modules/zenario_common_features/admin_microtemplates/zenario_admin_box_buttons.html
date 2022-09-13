@@ -81,13 +81,23 @@
 	<% } %>
 <% } %>
 
-<% if (zenarioAB.tuix.save_button_message || zenarioAB.tuix.save_button_message === undefined) { %>
-	<input id="zenario_fabSave"  type="button" value="{{zenarioAB.tuix.save_button_message || zenarioA.phrase.save|e}}"
+<% if (zenarioAB.tuix.key.openNextMode && zenarioAB.tuix.key.nextIds) { %>
+	<input type="button" onclick="zenarioAB.openNext();" value="{{zenarioA.phrase.skipToNext|e}}" />
+	
+	<% if (!m.isReadOnly) { %>
+		<input type="button" class="submit_selected" onclick="zenarioAB.save(false, false, false, true);" value="{{zenarioA.phrase.saveAndNext|e}}" />
+		<input type="button" class="submit_selected" onclick="zenarioAB.save();" value="{{zenarioA.phrase.saveAndClose|e}}" />
+	<% } %>
+			 
+<% } else { %>
+	<% if (zenarioAB.tuix.save_button_message || zenarioAB.tuix.save_button_message === undefined) { %>
+		<input id="zenario_fabSave"  type="button" value="{{zenarioAB.tuix.save_button_message || zenarioA.phrase.save|e}}"
 
-	<% if (m.isReadOnly) { %>
-		 class="submit_disabled"/>
-	<% } else { %>
-		 class="submit_selected" onclick="zenarioAB.save();"/>
+		<% if (m.isReadOnly) { %>
+			 class="submit_disabled"/>
+		<% } else { %>
+			 class="submit_selected" onclick="zenarioAB.save();"/>
+		<% } %>
 	<% } %>
 <% } %>
 

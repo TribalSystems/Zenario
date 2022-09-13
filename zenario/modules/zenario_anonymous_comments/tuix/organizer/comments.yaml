@@ -4,15 +4,14 @@ zenario__social:
     ord: -770
     css_class: zenario__social
     label: Social
-    tooltip: Administer comments made by Extranet Users
+    tooltip: Manage comments added to the site
     nav:
         comments:
-            name: Pending Comments
+            name: Pending comments
             tooltip: >
-                Approve or delete any User comments that are awaiting
-                approval
+                Approve or delete any comments that are awaiting approval
             panel:
-                title: Pending Comments awaiting approval
+                title: Comments awaiting approval
                 db_items:
                     table: |
                         [[DB_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments cm
@@ -54,23 +53,23 @@ zenario__social:
                     summary:
                         db_column: cm.message_text
                     comment_date:
-                        title: Date/Time created
+                        title: Date/time created
                         db_column: cm.date_posted
                         show_by_default: Yes
                         format: datetime
                     comment_last_edit:
-                        title: Date/Time last edited
+                        title: Date/time last edited
                         db_column: IF(cm.date_updated,cm.date_updated,cm.date_posted)
                         show_by_default: Yes
                         format: datetime
                 item:
                     css_class: pending_comment
-                    name: Pending Comment
-                    names: Pending Comments
+                    name: Pending comment
+                    names: Pending comments
                 inline_buttons:
                     view_frontend:
                         css_class: view_frontend
-                        tooltip: View in Front-end window
+                        tooltip: View in front-end window
                         frontend_link:
                             exists: Yes
                         visible_if: >

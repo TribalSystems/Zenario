@@ -397,6 +397,7 @@ body.webkit .zenario_event_calendar .calendar_content .calendar_month_content ta
 #colorbox .zenario_event_calendar .day_view_title h1 {
 	float:left;
 	font-size:1.2em;
+	color:#FFF;
 }
 
 #colorbox .zenario_event_calendar .day_view_title .event_count_in_window {

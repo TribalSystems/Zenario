@@ -58,7 +58,7 @@ _sql
 		UNIQUE INDEX (`newsletter_name`),
 		INDEX (`status`),
 		INDEX (`date_modified`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 
@@ -81,7 +81,7 @@ _sql
 		INDEX `user_id` (`newsletter_id`, `email_sent`, `user_id`),
 		INDEX `time_sent` (`newsletter_id`, `time_sent`),
 		UNIQUE (`tracker_hash`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 //Fix some errors in MySQL strict mode
@@ -163,7 +163,7 @@ _sql
 		`include` tinyint(1) NOT NULL default 1,
 		`sent_newsletter_id` int(10) unsigned NOT NULL,
 		PRIMARY KEY  (`newsletter_id`,`include`,`sent_newsletter_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 
@@ -380,7 +380,7 @@ _sql
 	(
 		`newsletter_id` int(10) unsigned NOT NULL,
 		`smart_group_id` int(10) unsigned NOT NULL
-	)  ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	)  ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 , <<<_sql
@@ -431,7 +431,7 @@ _sql
 		PRIMARY KEY  (`id`),
 		INDEX (`newsletter_id`),
 		INDEX (`link_ordinal`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 
@@ -494,7 +494,7 @@ _sql
 		`date_modified` datetime DEFAULT NULL,
 		`modified_by_id` int(10) unsigned NOT NULL DEFAULT '0',
 		PRIMARY KEY (`id`)
-	)  ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	)  ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 //Add some sample designs
@@ -969,91 +969,91 @@ _sql
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
 ); ze\dbAdm::revision( 180
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `body` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `body` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `delete_account_text` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `delete_account_text` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_address_from` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_address_from` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `email_name_from` = SUBSTR(`email_name_from`, 1, 250) WHERE CHAR_LENGTH(`email_name_from`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_name_from` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `email_name_from` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `head` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `head` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `newsletter_name` = SUBSTR(`newsletter_name`, 1, 250) WHERE CHAR_LENGTH(`newsletter_name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `newsletter_name` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `newsletter_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `smart_group_descriptions_when_sent_out` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `smart_group_descriptions_when_sent_out` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `subject` = SUBSTR(`subject`, 1, 250) WHERE CHAR_LENGTH(`subject`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `subject` varchar(250) CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `subject` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `unsubscribe_text` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `unsubscribe_text` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` SET `url` = SUBSTR(`url`, 1, 250) WHERE CHAR_LENGTH(`url`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `url` varchar(250) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters` MODIFY COLUMN `url` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` SET `hyperlink` = SUBSTR(`hyperlink`, 1, 250) WHERE CHAR_LENGTH(`hyperlink`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `hyperlink_hash` varchar(40) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `link_text` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks` MODIFY COLUMN `link_text` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `body` text CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `body` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `head` mediumtext CHARACTER SET utf8mb4 NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `head` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` SET `name` = SUBSTR(`name`, 1, 250) WHERE CHAR_LENGTH(`name`) > 250
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `name` varchar(250) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates` MODIFY COLUMN `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `delete_account_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `delete_account_hash` varchar(40) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email` varchar(100) CHARACTER SET utf8mb4 NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` SET `email_overridden_by` = SUBSTR(`email_overridden_by`, 1, 245) WHERE CHAR_LENGTH(`email_overridden_by`) > 245
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email_overridden_by` varchar(245) CHARACTER SET utf8mb4 NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `email_overridden_by` varchar(245) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `identifier` varchar(50) CHARACTER SET utf8mb4 NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `identifier` varchar(50) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `remove_hash` varchar(40) CHARACTER SET ascii NOT NULL default ''
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `remove_hash` varchar(40) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default ''
 _sql
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `tracker_hash` varchar(40) CHARACTER SET ascii NOT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link` MODIFY COLUMN `tracker_hash` varchar(40) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
 _sql
 
 

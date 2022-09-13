@@ -1,11 +1,14 @@
-	<div class="event_listing">
+{% set titleTags = this.setting('title_tags') ?: 'h2' | escape %}
+{% set locNameTags = this.setting('loc_name_tags') ?: 'h2' | escape %}
+
+	<div class="location_listing">
 		{% if Title %}
-			<div class="location_listing_title"><h2>{{Title}} </h2></div>
+			<div class="location_listing_title"><{{titleTags}}>{{Title}} </{{titleTags}}></div>
 		{% endif %}
 		
 		{% for location_row in Location_Row_On_List %}
 			<div class="single_location country_{{location_row.Country_Code}}" id="location_id_{{location_row.Location_Id}}">
-				{% if show_sticky_images %}
+				{% if Show_Featured_Image %}
 					<div class = "single_location_sticky_image">
 						{% if location_row.Default_Image_No_Link %}
 							<div class="location_image">
@@ -19,7 +22,7 @@
 						{% endif %}
 
 						{% if location_row.Location_Image_No_Link %}
-							<img src="{{location_row.Link_To_Image}}"/>
+							{{location_row.Image_HTML}}
 						{% endif %}
 					
 						{% if location_row.Location_Image_With_Link %}
@@ -28,13 +31,13 @@
 								<a name="country_{{location_row.Country_Code_Section}}"></a>
 							{% endif %}
 							<a class="single_location_image_link" href="{{location_row.Link_To_Location}}" >
-								<img src="{{location_row.Link_To_Image}}"/>
+								{{location_row.Image_HTML}}
 							</a>
 						{% endif %}
 					</div>
 				{% endif %}
 				<div class = "single_location_description">
-					<h2>{{location_row.Location_Name}}</h2>
+					<{{locNameTags}}>{{location_row.Location_Name}}</{{locNameTags}}>
 					{% if location_row.Location_Description %}
 						<span class="single_location_description">{{location_row.Location_Description}}</span>
 					{% endif %}
@@ -90,9 +93,10 @@
 
 					{% if location_row.Location_Map %}
 						<div class="btn_single_location">
-							<div class="r">
-								<a onclick="$.colorbox({href: '{{location_row.Map_URL}}',iframe: true,width: 491,height: 340});return false;" href="{{location_row.Map_URL}}" class="google_map_link i iframe">{{"Display Map"|trans}}</a>
-							</div>
+							<a onclick="$.colorbox({href: '{{location_row.Map_URL}}', className: 'location_listing_map caption_hidden', iframe: true, width: 510, height: 365});return false;" 
+							   href="{{location_row.Map_URL}}" 
+							   class="google_map_link i iframe" 
+							>{{"Display Map"|trans}}</a>
 						</div>
 					{% endif %}
 				</div>

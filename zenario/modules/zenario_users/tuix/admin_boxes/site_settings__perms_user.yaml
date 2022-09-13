@@ -27,7 +27,7 @@ site_settings:
                     indent: 1
                     hide_if_previous_outdented_value_isnt: specific
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of the groups:'
                     redraw_onchange: true
                 perm.view.user.groups:
                     site_setting:
@@ -41,11 +41,11 @@ site_settings:
                         min_path: zenario__users/panels/groups
                         max_path: zenario__users/panels/groups
                         disallow_refiners_looping_on_min_path: true
-                        nothing_selected_phrase: No group selected
-                        select_phrase: Select a group...
+                        nothing_selected_phrase: No groups selected
+                        select_phrase: Select groups...
                         multiple_select: true
                     validation:
-                        required_if_not_hidden: Please select a group who can view a user's details.
+                        required_if_not_hidden: Please select one or more groups, members of which can view a user's details.
                 perm.view.user.atLocation:
                     site_setting:
                         name: perm.view.user.atLocation
@@ -105,7 +105,7 @@ site_settings:
                         name: perm.create-user.unassigned.by.group
                     indent: 1
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of the groups:'
                     redraw_onchange: true
                 perm.create-user.unassigned.groups:
                     site_setting:
@@ -114,7 +114,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can create a user.
+                        required_if_not_hidden: Please select one or more groups, members of which can create a user.
                 
                 perm.create-user.location:
                     snippet:
@@ -124,7 +124,7 @@ site_settings:
                         name: perm.create-user.location.by.group
                     indent: 1
                     type: checkbox
-                    label: 'The current user is a member of the group(s):'
+                    label: 'The current user is a member of any of these groups:'
                     redraw_onchange: true
                 perm.create-user.location.groups:
                     site_setting:
@@ -133,14 +133,14 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can create a user at a location.
+                        required_if_not_hidden: Please select one or more groups, members of which can create a user at a location.
                 perm.create-user.location.by.atCountry:
                     site_setting:
                         name: perm.create-user.location.by.atCountry
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: 'The current user is linked to the country the location is in, and is a member of the group(s):'
+                    label: 'The current user is linked to the country the location is in, AND is a member of any of these groups:'
                     redraw_onchange: true
                 perm.create-user.location.atCountry.groups:
                     site_setting:
@@ -149,7 +149,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can create a user at a location.
+                        required_if_not_hidden: Please select one or more groups, members of which can create a user at a location.
                 perm.create-user.location.atLocation:
                     site_setting:
                         name: perm.create-user.location.atLocation
@@ -193,7 +193,7 @@ site_settings:
                         name: perm.edit.user.by.group
                     indent: 1
                     type: checkbox
-                    label: 'The current user is a member of the group(s):'
+                    label: 'The current user is a member of any of these groups:'
                     redraw_onchange: true
                 perm.edit.user.groups:
                     site_setting:
@@ -202,7 +202,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can edit a user.
+                        required_if_not_hidden: Please select one or more groups, members of which can edit a user.
                 perm.edit.user.atLocation:
                     site_setting:
                         name: perm.edit.user.atLocation
@@ -253,7 +253,7 @@ site_settings:
                         name: perm.delete.user.by.group
                     indent: 1
                     type: checkbox
-                    label: 'The current user is a member of the group(s):'
+                    label: 'The current user is a member of any of these groups:'
                     redraw_onchange: true
                 perm.delete.user.groups:
                     site_setting:
@@ -262,7 +262,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can delete a user.
+                        required_if_not_hidden: Please select one or more groups, members of which can delete a user.
                 perm.delete.user.atLocation:
                     site_setting:
                         name: perm.delete.user.atLocation

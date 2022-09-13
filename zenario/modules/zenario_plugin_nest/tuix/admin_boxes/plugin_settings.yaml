@@ -7,68 +7,81 @@ plugin_settings:
             label: Display
             fields:
                 
-                enable_conductor:
-                    plugin_setting:
-                        name: enable_conductor
-                        save_value_when_hidden: true
-                    hidden: true
-                    type: checkbox
-                
-                show_tabs:
-                    plugin_setting:
-                        name: show_tabs
-                        save_value_when_hidden: true
-                    hidden: true
-                    type: checkbox
-                
-                show_next_prev_buttons:
-                    plugin_setting:
-                        name: show_next_prev_buttons
-                        save_value_when_hidden: true
-                    hidden: true
-                    type: checkbox
-                
                 nest_type:
+                    plugin_setting:
+                        name: nest_type
                     label: 'Nest type:'
                     type: radios
                     value: permission
                     values:
-                        permission:
-                            label: Single slide/permission-based
-                        tabs:
-                            label: Tabbed
                         buttons:
-                            label: Next and previous
+                            label: Show Next and Previous
+                        #indicator:
+                        #    label: Show sequence indicator
+                        #indicator_and_buttons:
+                        #    label: Show sequence indicator, Next and Previous
+                        tabs:
+                            label: Show tabs with labels
                         tabs_and_buttons:
-                            label: Tabbed with next and previous
+                            label: Show tabs with labels, Next and Previous
+                        permission:
+                            label: Single slide, or with user permissions applied to slides
                         conductor:
                             label: Conductor-driven
                     redraw_onchange: true
-                
-                tabs_desc:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt:
-                        tabs: true
-                        tabs_and_buttons: true
-                    snippet:
-                        span: |
-                            Every slide in the nest that the visitor can see will have a tab.
-                            Clicking on a tab will switch to that slide.
                 
                 buttons_desc:
                     indent: 1
                     hide_if_previous_outdented_value_isnt:
                         buttons: true
-                        tabs_and_buttons: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
                     snippet:
-                        span: |
-                            Next and previous buttons will be shown, which can be used to navigate between slides.
-                
+                        label: |
+                            Next and Previous buttons will be shown, which can be used to navigate between slides.
+                indicator_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        indicator: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the nest that the visitor can see will have an indicator.
+                            Clicking on the indicator will switch to that slide.
+                indicator_and_buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        indicator: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the nest that the visitor can see will have an indicator.
+                            Clicking on the indicator will switch to that slide.
+                            Next and Previous buttons will also be shown, which can be used to navigate between slides.
+                tabs_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        tabs: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the nest that the visitor can see will have a tab with a label.
+                            Clicking on a tab will switch to that slide.
+                tabs_and_buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        tabs_and_buttons: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the nest that the visitor can see will have a tab with a label.
+                            Clicking on a tab will switch to that slide.
+                            Next and Previous buttons will also be shown, which can be used to navigate between slides.
                 permission_desc:
                     indent: 1
                     hide_if_previous_outdented_value_isnt: permission
+                    row_class: zenario_fbInfo zenario_fbInfo_small
                     snippet:
-                        span: |
+                        label: |
                             Only one slide, the first slide, will be shown.
                             
                             If you define multiple slides, visitors will be shown the first slide in the
@@ -76,12 +89,12 @@ plugin_settings:
                             
                             You can use this to show different plugins to different people, based on
                             their permissions.
-                
                 conductor_desc:
                     indent: 1
                     hide_if_previous_outdented_value_isnt: conductor
+                    row_class: zenario_fbInfo zenario_fbInfo_small
                     snippet:
-                        span: |
+                        label: |
                             When the visitor first visits the page, the first slide will be shown.
                             
                             From there on, conductor will be used to control the navigation.
@@ -93,7 +106,7 @@ plugin_settings:
                     hide_if_previous_outdented_value_isnt:
                         buttons: true
                         tabs_and_buttons: true
-                    label: 'Loop next/previous buttons'
+                    label: 'Loop Next/Previous buttons'
                     type: checkbox
                     side_note: |
                         I.e. pressing the next button on the last slide goes to the first slide.
@@ -220,7 +233,7 @@ plugin_settings:
                 show_heading:
                     plugin_setting:
                         name: show_heading
-                    label: 'Show a heading'
+                    label: 'Show a heading for the nest'
                     type: checkbox
                     redraw_onchange: true
                 heading_text:
@@ -228,7 +241,8 @@ plugin_settings:
                         name: heading_text
                     indent: 1
                     visible_if: zenarioAB.value('show_heading')
-                    label: Heading
+                    label: |
+                        Heading:
                     type: text
                     placeholder: 'Type your heading here'
                 heading_tag: 
@@ -239,15 +253,15 @@ plugin_settings:
                     visible_if: zenarioAB.value('show_heading')
                     type: select
                     values: 
-                        h1: Heading 1
-                        h2: Heading 2
-                        h3: Heading 3
-                        h4: Heading 4
-                        h5: Heading 5
-                        h6: Heading 6
-                        p: Paragraph
-                    value: h1
-                    side_note: Choose which HTML tag the heading will be displayed in.
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: h2
+                    side_note: You can choose the HTML tag to use for the heading
         
         
         size:

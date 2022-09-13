@@ -96,17 +96,13 @@
 									</div>
 								{% elseif val.type == "checkbox"%}
 									<div class="extranet_field">
-										<div class="label">
-											<input id="{{val.name|e}}" type="{{val.type|e}}" name="{{val.name|e}}" />
-											<label for="{{val.name|e}}">{{val.label|e}}</label>
-										</div>
+										<input id="{{val.name|e}}" type="{{val.type|e}}" name="{{val.name|e}}" />
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
 									</div>
 								{% elseif val.type == "consent" or  val.type == "group"%}
 									<div class="extranet_field">
-										<div class="label">
-											<input id="{{val.name|e}}" type="checkbox" id="{{key|e}}" name="{{val.name|e}}">
-											<label for="{{val.name|e}}">{{val.label|e}}</label>
-										</div>
+										<input id="{{val.name|e}}" type="checkbox" id="{{key|e}}" name="{{val.name|e}}">
+										<div class="label"><label for="{{val.name|e}}">{{val.label|e}}</label></div>
 									</div>
 								{% elseif val.type == "radios" or val.type == "centralised_radios"%}
 									<div class="extranet_field">

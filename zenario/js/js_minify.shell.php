@@ -267,9 +267,6 @@ minify('zenario/libs/manually_maintained/mit/intro/', 'intro', $level, '.js');
 //Minify jPaginator
 minify('zenario/libs/manually_maintained/mit/jpaginator/', 'jPaginator', $level, '.js');
 
-//Minify doubleTapToGo
-minify('zenario/libs/manually_maintained/mit/doubletap-to-go/', 'jquery.doubletaptogo', $level, '.js');
-
 //Minify Modernizr
 minify('zenario/libs/manually_maintained/mit/modernizr/', 'modernizr', $level, '.js');
 
@@ -281,6 +278,8 @@ minify('zenario/libs/manually_maintained/mit/slimmenu/', 'slimmenu', $level, '.c
 minify('zenario/libs/manually_maintained/mit/slimmenu/', 'jquery.slimmenu', $level, '.js');
 
 //Minify and/or re-minify some of the YARN packages
+minify('zenario/libs/yarn/js-crc/src/', 'crc', $level, '.js');
+minify('zenario/libs/yarn/jquery-doubletaptogo/dist/', 'jquery.dcd.doubletaptogo', $level, '.js');
 minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.css');
 minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.js');
 minify('zenario/libs/yarn/toastr/build/', 'toastr', $level, '.css');
@@ -293,6 +292,3 @@ minify('zenario/libs/manually_maintained/mit/underscore/', 'underscore', $level,
 //Minify the libraries in the public domain directory
 minify('zenario/libs/manually_maintained/public_domain/mousehold/', 'mousehold', $level, '.js');
 minify('zenario/libs/manually_maintained/public_domain/tv4/', 'tv4', $level, '.js');
-
-//Minify the JavaScript MD5 library
-minify('zenario/libs/manually_maintained/bsd/javascript_md5/', 'md5', $level, '.js');

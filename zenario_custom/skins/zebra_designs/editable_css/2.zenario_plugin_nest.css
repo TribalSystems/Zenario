@@ -1,12 +1,28 @@
-/* Background transparent
---------------------------------------------------------------------------------------------------*/
+.zenario_plugin_nest .nest_wrap {
+	position:relative;
+}
+
+.zenario_plugin_nest .nest_wrap:before,
+.zenario_plugin_nest .nest_wrap:after {
+	content: '.';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.zenario_plugin_nest .nest_wrap:after {
+	clear: both;
+}
 
 .zenario_plugin_nest .nest_plugins {
 	background:transparent !important;
 }
 
-/* Nest tabs
---------------------------------------------------------------------------------------------------*/
+/* Nest tabs */
 
 .zenario_plugin_nest .nest_tabs {
 	overflow:hidden;
@@ -39,6 +55,42 @@
 	color:#2a98ce; 
 }
 
+/* Indicators */
+
+.zenario_plugin_nest .nest_tabs.indicators {
+	position:absolute;
+	bottom:-25px !important;
+	width:100% !important;
+	height:24px !important;
+	text-align:center;
+	overflow:hidden;
+	
+	display: flex;
+	justify-content: center;
+}
+
+.zenario_plugin_nest .nest_tabs.indicators ul li a {
+	float:left;
+	position:static;
+	width:9px;
+	height:9px;
+	margin:0 2px 0;
+	padding:0;
+	background:#CCC;
+	-webkit-border-radius: 50%;
+	border-radius: 50%;
+	
+	text-indent:-99px;
+	line-height:0;
+	font-size:0;
+}
+
+.zenario_plugin_nest .nest_tabs.indicators ul li.tab_on a {
+	background:#333;
+}
+
+/* Prev next arrows */
+
 .zenario_plugin_nest .prev,
 .zenario_plugin_nest .next {
 	color:rgba(0,0,0,0.9);
@@ -61,9 +113,7 @@
 .zenario_plugin_nest .prev_disabled,
 .zenario_plugin_nest .next,
 .zenario_plugin_nest .next_disabled {
-	float:left;
 	margin:0 5px;
-	display:inline-block;
 	font-size:30px;
 	line-height:1.3em;
 	font-family: 'FontAwesome';
@@ -72,6 +122,16 @@
     -moz-transition: all 0.2s ease-in-out;
     transition: all 0.2s ease-in-out;
     cursor:pointer;
+}
+
+.zenario_plugin_nest .prev,
+.zenario_plugin_nest .prev_disabled {
+	float:left;
+}
+
+.zenario_plugin_nest .next,
+.zenario_plugin_nest .next_disabled {
+	float:right;
 }
 
 .zenario_plugin_nest .prev:hover,

@@ -22,6 +22,10 @@ max_local_administrators: 0
 # The max number of languages that can be created on this site (0 means no limit):
 max_enabled_languages: 0
 
+# Normally, when an admin logs in, Zenario will show the last IP address of that administrator.
+# Set this option to true to hide that info.
+hide_admin_ip_address_on_login: false
+
 
 # Style formats are class names that can be selected in the WYSIWYG Editor
 # under the Styles menu.

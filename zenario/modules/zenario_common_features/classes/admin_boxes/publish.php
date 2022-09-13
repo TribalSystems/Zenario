@@ -230,8 +230,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				if ($values['publish/publish_options'] == 'immediately') {
 					// Publish now
 					ze\contentAdm::publishContent($cID, $cType);
-					if (ze::session('last_item') == $cType. '_'. $cID) {
-						$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
+					if (ze\ring::chopPrefix($cType. '_'. $cID. '.', ze::session('last_item'))) {
+						unset($_SESSION['last_item'], $_SESSION['page_mode'], $_SESSION['page_toolbar']);
 					}
 				} elseif ($values['publish/publish_options'] == 'schedule') {
 					// Publish at a later date
@@ -255,11 +255,13 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
+		$ids = (($box['key']['id']) ? $box['key']['id'] : $box['key']['cID']);
+		$tags = ze\ray::explodeAndTrim($ids);
+
 		//If it looks like this was opened from the front-end
 		//(i.e. there's no sign of any of Organizer's variables)
 		//then try to redirect the admin to whatever the visitor URL should be
-		if (!isset($_GET['refinerName'])) {
+		if (!isset($_GET['refinerName']) && count($tags) == 1) {
 			$link = ze\link::toItem(
 				$box['key']['cID'], $box['key']['cType'],
 				$fullPath = true, '', false,

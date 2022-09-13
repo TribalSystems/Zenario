@@ -28,11 +28,9 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+$mergeFields = [];
 //Add the login link for admins if this looks like a logged out admin
-if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
- && !\ze\priv::check()
- && !\ze\link::adminDomainIsPrivate()) {
-
+if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link::adminDomainIsPrivate()) {
 	$url =
 		(\ze::setting('admin_use_ssl')? 'https://' : \ze\link::protocol()).
 		\ze\link::adminDomain(). SUBDIRECTORY.
@@ -101,39 +99,32 @@ switch (\ze::setting('cookie_require_consent')) {
 		//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
 		if (!empty($_COOKIE['cookies_accepted']) || ($_SESSION['cookies_accepted'] ?? false)) {
 			return;
-		}
-	
-		echo '
-<!--googleoff: all-->
-<div id="zenario_cookie_consent" class="zenario_cookie_consent"></div>
-<script type="text/javascript" src="zenario/cookie_message.php?type=implied"></script>
-<!--googleon: all-->';
-	
-		$_SESSION['cookies_accepted'] = true;
-		break;
-	
-	
-	case 'explicit':
-		//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
-		if (ze::$cookieConsent == 'hide'
-		 || \ze\cookie::canSet('required')
-		 || (ze::$cookieConsent != 'require') && ($_SESSION['cookies_rejected'] ?? false)) {
-			return;
-		}
-	
-		if (\ze::setting('cookie_consent_type') == 'message_accept_reject' && ze::$cookieConsent != 'require') {
-			echo '
-<!--googleoff: all-->
-<div id="zenario_cookie_consent" class="zenario_cookie_consent"></div>
-<script type="text/javascript" src="zenario/cookie_message.php?type=accept_reject"></script>
-<!--googleon: all-->';
 		} else {
 			echo '
 <!--googleoff: all-->
-<div id="zenario_cookie_consent" class="zenario_cookie_consent"></div>
+<div id="zenario_cookie_consent" class="zenario_cookie_consent cookies_implied"></div>
+<script type="text/javascript" src="zenario/cookie_message.php?type=implied"></script>
+<!--googleon: all-->';
+	
+			$_SESSION['cookies_accepted'] = true;
+		}
+		break;
+	
+	case 'explicit':
+		//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
+		//If cookies are rejected but something on the page needs then, also reopen the box.
+		if (
+			(\ze\cookie::isDecided() || ze::$cookieConsent == 'hide')
+		 && ze::$cookieConsent != 'require'
+		) {
+			return;
+		} else {
+			echo '
+<!--googleoff: all-->
+<div id="zenario_cookie_consent" class="zenario_cookie_consent cookies_explicit"></div>
+<div id="zenario_cookie_consent_manage_popup" class="zenario_cookie_consent_manage_popup" style="opacity:0; visibility:hidden;"></div>
 <script type="text/javascript" src="zenario/cookie_message.php?type=accept"></script>
 <!--googleon: all-->';
 		}
-	
 		break;
 }

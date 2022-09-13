@@ -40,7 +40,7 @@ _sql
 		`url` varchar(250) NULL,
 		`stop_dates` text,
 		UNIQUE KEY  (`id`,`version`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ); ze\dbAdm::revision(38
@@ -65,7 +65,7 @@ _sql
 ); ze\dbAdm::revision(42
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
-	ADD COLUMN `location` varchar(250) CHARACTER SET utf8mb4 NULL AFTER `location_id`
+	ADD COLUMN `location` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL AFTER `location_id`
 _sql
 
 ); ze\dbAdm::revision(45

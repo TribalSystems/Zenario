@@ -13,7 +13,7 @@ site_settings:
                 warning_message:
                     pre_field_html: '<div class="warning_icon">'
                     snippet:
-                        html: 'The scheduled task "jobSendDelayedRegistrationEmails" is required but not running.'
+                        html: 'The Scheduled Task "jobSendDelayedRegistrationEmails" is required, but it is not running.'
                     post_field_html: '</div>'
                 send_delayed_registration_email:
                     site_setting:

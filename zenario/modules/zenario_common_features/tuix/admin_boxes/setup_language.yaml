@@ -76,13 +76,24 @@ zenario_setup_language:
                     indent: 1
                 translate_phrases:
                     type: checkbox
+                    readonly: true
                     label: 'Use phrases system'
-                    side_note: |
-                        If a phrase that does not start with an underscore is found in a
-                        plugin setting or Twig framework and this option is checked,
-                        it will search for a translation in the database.
-                        Otherwise it will just use them as-is.
-                        
+                uses_phrases:
+                    same_row: true
+                    note_below: |
+                        Phrases are pieces of English text that can be found in plugin settings,
+                        twig frameworks, and PHP files.
+                        When Zenario comes across these, it will look to see if you've created
+                        a translation in the <em>Phrases</em> panel in Organizer, and will display the
+                        translation instead of the original English text.
+                doesnt_use_phrases:
+                    same_row: true
+                    note_below: |
+                        Phrases are pieces of English text that can be found in plugin settings,
+                        twig frameworks, and PHP files.
+                        Were Zenario displaying a non-English language, it would look to see if you've
+                        created a translation in the <em>Phrases</em> panel in Organizer.
+                        For English languages, phrases will be displayed "as-is", with one exception:
                         If a phrase starts with an underscore it will always be looked up.
                 
                 search_type:

@@ -74,12 +74,12 @@ _sql
 
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]admins`
-	MODIFY COLUMN `specific_languages` varchar(255) CHARACTER SET ascii
+	MODIFY COLUMN `specific_languages` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci
 _sql
 
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]admins`
-	ADD COLUMN `specific_content_types` varchar(255) CHARACTER SET ascii
+	ADD COLUMN `specific_content_types` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci
 	AFTER `specific_content_items`
 _sql
 
@@ -93,5 +93,18 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]admins`
 	DROP COLUMN `specific_languages`
+_sql
+
+
+//
+//	Zenario 9.3
+//
+
+//In 9.3, we're going through and fixing the character-set on several columns that should
+//have been using "ascii"
+);	ze\dbAdm::revision(55140
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admin_organizer_prefs`
+	MODIFY COLUMN `checksum` varchar(22) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '{}'
 _sql
 );

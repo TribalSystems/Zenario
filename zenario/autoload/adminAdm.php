@@ -109,6 +109,38 @@ class adminAdm {
 			  AND id = ". (int) $admin_id;
 		\ze\sql::update($sql);
 	}
+	
+	//Actually delete a local admin or admins from the system. No way to undo.
+	//This doesn't tidy up any dangling references/foreign keys to content tables,
+	//so shouldn't be called unless you're doing a site reset or deleting an admin account
+	//that was never use.
+	public static function reallyDelete($adminId, $onlyDeleteAdminsThatHaveNeverLoggedIn, $deleteAllButThisAdmin) {
+		
+		$sql = '
+			DELETE a.*, aal.*, aop.*, aset.*
+			FROM `'. DB_PREFIX. 'admins` AS a
+			LEFT JOIN `'. DB_PREFIX. 'action_admin_link` AS aal
+			   ON aal.admin_id = a.id
+			LEFT JOIN `'. DB_PREFIX. 'admin_organizer_prefs` AS aop
+			   ON aop.admin_id = a.id
+			LEFT JOIN `'. DB_PREFIX. 'admin_settings` AS aset
+			   ON aset.admin_id = a.id
+			WHERE a.authtype = \'local\'
+			  AND a.id ';
+		
+		if ($deleteAllButThisAdmin) {
+			$sql .= ' != '. (int) $adminId;
+		} else {
+			$sql .= ' = '. (int) $adminId;
+		}
+		
+		if ($onlyDeleteAdminsThatHaveNeverLoggedIn) {
+			$sql .= '
+			  AND a.last_login IS NULL';
+		}
+		
+		return \ze\sql::update($sql);
+	}
 
 	//Sets an admin's password, overwriting the current value
 	//By default changing someone's password removes the password_needs_changing flag, but

@@ -1,9 +1,12 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 
+display_name: 'Menu with Promo Images'
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
-display_name: 'Menu with Promo Images'
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: 'Modified BSD License'
 description: |
     <p>
         Displays a horizontal menu bar, with multi-column dropdown, so that when a visitor hovers over a level 1 menu node, it shows a large dropdown panel with level 2 and level 3 items.
@@ -14,7 +17,6 @@ description: |
     </p>
 category: pluggable
 keywords: menu, navigation, promotion, link, image
-editions: Community, Pro, ProBusiness, Enterprise
 
 # Warning: adding a new dependency to an existing module will break any existing sites
 # where the dependency is not running.

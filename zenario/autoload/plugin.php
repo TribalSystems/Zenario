@@ -1012,6 +1012,12 @@ class plugin {
 		return $instanceDetails['instance_name'];
 	}
 
+	public static function setting($name, $instanceId, $eggId = 0) {
+		return \ze\row::get('plugin_settings', 'value', [
+			'instance_id' => $instanceId, 'egg_id' => $eggId, 'name' => $name
+		]);
+	}
+
 	//Formerly "getPluginInstanceInItemSlot()"
 	public static function idInItemSlot($slotName, $cID, $cType = 'html', $cVersion = false, $getModuleId = false) {
 	

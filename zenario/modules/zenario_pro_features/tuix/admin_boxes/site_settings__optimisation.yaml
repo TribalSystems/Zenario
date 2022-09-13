@@ -97,7 +97,6 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: true
-                always_on: true
             notices:
                 notice:
                     type: success

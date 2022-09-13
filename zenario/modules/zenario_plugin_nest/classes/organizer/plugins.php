@@ -75,11 +75,36 @@ class zenario_plugin_nest__organizer__plugins extends ze\moduleBaseClass {
 							$item['contents'] = implode(', ', $contents);
 						}
 					}
+					
+					//Simple slideshows sholud have a different link than nests or advanced slideshows
+					if ($item['module_class_name'] == 'zenario_slideshow_simple') {
+						$item['link'] = [
+							'path' => 'zenario__modules/panels/images_in_slideshow',
+							'refiner' => 'nest'
+						];
+					}
 				}
 		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
+		
+		//If the admin selects one or more nested plugins to copy, put their IDs along with a
+		//little bit of info on what was copied into a session variable to remember it.
+		if (!empty($_POST['copy']) && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+			$ids = ze\ray::explodeAndTrim($ids, true);
+			
+			if (!empty($ids)) {
+				$_SESSION['zenario_copy_plugin'] = [];
+				$_SESSION['zenario_copy_plugin']['ids'] = $ids;
+				$_SESSION['zenario_copy_plugin']['eggs'] = false;
+				$_SESSION['zenario_copy_plugin']['all_banners'] =
+					!ze\row::exists('plugin_instances', ['id' => $ids, 'module_id' => ['!' => ze\module::id('zenario_banner')]]);
+				
+				echo '<!--Toast_Type:success-->';
+				echo '<!--Toast_Message:'. ze\escape::hyp(ze\admin::nphrase('Plugin copied', '[[count]] plugins copied', count($ids))). '-->';
+			}
+		}
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {

@@ -73,9 +73,8 @@ sections:
                 hide_when_children_are_not_visible: true
             quick_add_to_menu:
                 priv: _PRIV_ADD_MENU_ITEM
-                label: Create secondary node
+                label: Create secondary menu node for this item
                 parent: advanced_dropdown
-                tooltip: Create another menu node linking to this item
                 pick_items:
                     path: zenario__menu/panels/menu_position/refiners/create////
                     target_path: zenario__menu/panels/menu_position
@@ -87,7 +86,7 @@ sections:
                         mass_add_to_menu: 1
             detach:
                 priv: _PRIV_EDIT_MENU_ITEM
-                label: Detach content item
+                label: Detach item from menu
                 parent: advanced_dropdown
                 ajax:
                     confirm:

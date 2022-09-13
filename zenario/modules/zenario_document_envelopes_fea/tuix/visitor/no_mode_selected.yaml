@@ -1,8 +1,0 @@
-zenario_no_mode_selected:
-    fea_type: form
-    key:
-        envelopeId: ''
-    title: " This plugin is inactive. Please select a mode to make the plugin active."
-    tab: details
-        go:
-            command: back

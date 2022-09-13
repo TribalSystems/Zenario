@@ -62,5 +62,6 @@
 {% endif %}
 
 {% if hasSmartBCs %}
+	{% do this.requireJsLib('zenario/libs/yarn/jquery-doubletaptogo/dist/jquery.dcd.doubletaptogo.min.js') %}
 	{% do this.jQuery('#' ~ containerId ~ ' .breadcrumb_parent > a', 'doubleTapToGo') %}
 {% endif %}

@@ -16,7 +16,6 @@ zenario_layout:
             edit_mode:
                 priv: _PRIV_EDIT_TEMPLATE
                 enabled: true
-                always_on: true
             fields:
                 description:
                     ord: "0"
@@ -37,16 +36,6 @@ zenario_layout:
                         required: Please enter a unique name for this layout.
                 content_item_count:
                     hidden: true
-                status:
-                    label: 'Layout status:'
-                    type: radios
-                    values:
-                        active:
-                            label: Available
-                        suspended:
-                            label: Retired
-                    side_note: |
-                        "Available" layouts may be chosen when creating or editing content items. "Retired" layouts are not available, but they cannot be deleted while some content items depend on them.
                 content_type:
                     label: 'Used for content type:'
                     type: text
@@ -56,18 +45,16 @@ zenario_layout:
                         min_path: zenario__content/panels/content_types
                         max_path: zenario__content/panels/content_types
                         disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a Content Type...
+                        select_phrase: Select a content type...
                         hide_remove_button: true
                     format_onchange: true
                     value: html
                     validation:
                         required: Please select a content type.
-                layout_is_detault_for_ctype:
-                    indent: 1
-                    label: 'Default layout for this content type'
-                    side_note: |
-                        When creating content items of this type, the default layout will be picked automatically.
+                layout_is_default_for_ctype:
+                    label: 'Default layout for new items of this content type'
                     type: checkbox
+                    read_only: true
                 skin_id:
                     label: 'Skin:'
                     pick_items:
@@ -90,7 +77,6 @@ zenario_layout:
             edit_mode:
                 priv: _PRIV_EDIT_TEMPLATE
                 enabled: true
-                always_on: true
             fields:
                 desc:
                     full_width: true

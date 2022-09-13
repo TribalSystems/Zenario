@@ -130,6 +130,35 @@ class miscAdm {
 		$includeLinks = $usageLinks !== false;
 		
 		
+		//Modules
+		if (!empty($usage['modules'])) {
+			$moduleId = $usage['module'];
+			$name = \ze\module::displayName($moduleId);
+			
+			if ($includeLinks) {
+				$link = 'zenario__modules/panels/modules//'. (int) $moduleId; 
+				$name =
+					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+						<span class="listicon organizer_item_image plugin">
+						</span>'. htmlspecialchars($name). '</a>';
+			}
+			
+			//Add other item text
+			$count = $usage['modules'];
+			if ($count > 1) {
+				$text = \ze\admin::nphrase(
+					'[[name]] and 1 other module', 
+					'[[name]] and [[count]] other modules',
+					$count - 1, 
+					['name' => $name]
+				);
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
+		}
+		
+		
 		//Check if banner plugins are specifically mentioned (no support for usage links)
 		if (!empty($usage['banners'])) {
 			$instanceId = $usage['banner'];
@@ -792,7 +821,7 @@ class miscAdm {
 		
 				//Fill the list of slides
 				$result = \ze\sql::select("
-					SELECT id, slide_num, states, name_or_title
+					SELECT id, slide_num, states, name_or_slide_label
 					FROM ". DB_PREFIX. "nested_plugins
 					WHERE instance_id = ". (int) $box['key']['instanceId']. "
 					  AND slide_num != ". (int) $box['key']['slideNum']. "
@@ -802,7 +831,7 @@ class miscAdm {
 				while ($row = \ze\sql::fetchAssoc($result)) {
 					//Format the name so people aren't looking at the merge fields
 					if ($incNest) {
-						$row['name_or_title'] = \zenario_plugin_nest::formatTitleTextAdmin($row['name_or_title']);
+						$row['name_or_slide_label'] = \zenario_plugin_nest::formatTitleTextAdmin($row['name_or_slide_label']);
 					}
 		
 					$states = \ze\ray::explodeAndTrim($row['states']);
@@ -811,7 +840,7 @@ class miscAdm {
 						$row['state'] = $state;
 						$box['lovs']['slides_and_states'][$state] = [
 							'ord' => ++$ord,
-							'label' => \ze\admin::phrase('Slide [[slide_num]][[state]]: [[name_or_title]]', $row)
+							'label' => \ze\admin::phrase('Slide [[slide_num]][[state]]: [[name_or_slide_label]]', $row)
 						];
 					}
 				}

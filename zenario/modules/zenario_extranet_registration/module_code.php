@@ -61,16 +61,19 @@ class zenario_extranet_registration extends zenario_extranet {
 		$this->objects['Thank_You_Wait_For_Activation_Text'] = $this->phrase(nl2br($this->setting('register_thank_you_wait_for_activation_text')));
 		$this->objects['Thank_You_Verify_Email_Resent_Text'] = $this->phrase(nl2br($this->setting('register_thank_you_verify_email_resent_text')));
 		
-		if (!ze\cookie::canSet('required') && ze::setting('cookie_consent_for_extranet') == 'required') {
-			ze\cookie::requireConsent();
-			$this->message = $this->phrase('This site needs to place a cookie on your computer before you can register. Please accept cookies from this site to continue.');
+		if (ze::setting('cookie_require_consent') == 'explicit' && !ze\cookie::canSet('functionality')) {
+			$this->message = $this->phrase(
+				'This site needs to place a cookie on your computer before you can log in. Please accept cookies from this site to continue. [[manage_cookies_link_start]]Manage cookies[[manage_cookies_link_end]]',
+				[
+					'manage_cookies_link_start' => '<a onclick="zenario.manageCookies();">',
+					'manage_cookies_link_end' => '</a>'
+				]
+			);
 			$this->mode = 'modeCookiesNotEnabled';
 			return true;
 		
 		} else {
-			if (ze::setting('cookie_consent_for_extranet') == 'granted') {
-				ze\cookie::hideConsent();
-			}
+			ze\cookie::hideConsent();
 			$this->manageCookies();
 			
 			
@@ -187,7 +190,7 @@ class zenario_extranet_registration extends zenario_extranet {
 						$this->setEmailVerified($userId);
 						$this->applyAccountActivationPolicy($userId);
 						if ($this->isActive($userId)){
-							if (ze::setting('cookie_consent_for_extranet') == 'granted') {
+							if (ze\cookie::canSet('functionality')) {
 								ze\cookie::setConsent();
 							}
 							$this->logUserIn($userId);
@@ -835,7 +838,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		$this->sendSignalFromForm('eventUserRegistered', $userId);
 		
 		unset($_SESSION['captcha_passed__'. $this->instanceId]);
-		if (ze::setting('cookie_consent_for_extranet') == 'granted') {
+		if (ze\cookie::canSet('functionality')) {
 			ze\cookie::setConsent();
 		}
 		$this->applyEmailVerificationPolicy($userId);

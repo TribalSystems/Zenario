@@ -356,7 +356,7 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
-                    value: fixed_width_and_height
+                    value: fixed_width
                     format_onchange: Yes
                     indent: 2
                 html_feature_image_width:
@@ -435,6 +435,12 @@ plugin_settings:
                     type: checkbox
                     value: "0"
                     format_onchange: true
+                document_ctype_not_running_warning:
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">The Document content type module is not running; start the module to make the search work as expected.</div>'
+                    #If the Document content type module is running, this field will be unset in the module code.
+                    visible_if: lib.value('search_document')
                 document_column_heading_text:
                     plugin_setting:
                         name: document_column_heading_text
@@ -474,7 +480,7 @@ plugin_settings:
                         name: document_show_feature_image
                     label: 'Show featured image'
                     type: checkbox
-                    value: ""
+                    value: "1"
                     side_note: Display the content item's featured image if available.
                     format_onchange: Yes
                     indent: 1
@@ -500,7 +506,7 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
-                    value: fixed_width_and_height
+                    value: fixed_width
                     format_onchange: Yes
                     indent: 2
                 document_feature_image_width:
@@ -579,6 +585,12 @@ plugin_settings:
                     type: checkbox
                     value: "0"
                     format_onchange: true
+                news_ctype_not_running_warning:
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">The News content type module is not running; start the module to make the search work as expected.</div>'
+                    #If the News content type module is running, this field will be unset in the module code.
+                    visible_if: lib.value('search_news')
                 news_column_heading_text:
                     plugin_setting:
                         name: news_column_heading_text
@@ -618,7 +630,7 @@ plugin_settings:
                         name: news_show_feature_image
                     label: 'Show featured image'
                     type: checkbox
-                    value: ""
+                    value: "1"
                     side_note: Display the content item's featured image if available.
                     format_onchange: Yes
                     indent: 1
@@ -644,7 +656,7 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
-                    value: unlimited
+                    value: fixed_width
                     format_onchange: Yes
                     indent: 2
                 news_feature_image_width:
@@ -712,6 +724,156 @@ plugin_settings:
                     style: "width: 4em;"
                     post_field_html: "%"
                     visible_if: lib.value('search_news') && lib.modeIn('search_entry_box')
+                
+                #################
+                ## Search blog ##
+                #################
+                search_blog:
+                    plugin_setting:
+                        name: search_blog
+                    label: 'Blog content items'
+                    type: checkbox
+                    value: "0"
+                    format_onchange: true
+                blog_ctype_not_running_warning:
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">The Blog content type module is not running; start the module to make the search work as expected.</div>'
+                    #If the Blog content type module is running, this field will be unset in the module code.
+                    visible_if: lib.value('search_blog')
+                blog_column_heading_text:
+                    plugin_setting:
+                        name: blog_column_heading_text
+                    indent: 1
+                    type: text
+                    label: 'Tab/column heading text:'
+                    visible_if: lib.value('search_blog')
+                    validation:
+                        required_if_not_hidden: 'Please type in the heading text.'
+                blog_show_message_if_no_results:
+                    plugin_setting:
+                        name: blog_show_message_if_no_results
+                    indent: 1
+                    label: 'Show message if no results from blog'
+                    side_note: Only appears when other content types are yielding results.
+                    type: checkbox
+                    visible_if: lib.value('search_blog')
+                    format_onchange: true
+                blog_no_results_text:
+                    plugin_setting:
+                        name: blog_no_results_text
+                    indent: 2
+                    label: 'No-results text:'
+                    type: text
+                    visible_if: lib.value('search_blog') && lib.value('blog_show_message_if_no_results')
+                    validation:
+                        required_if_not_hidden: 'Please type in the phrase.'
+                blog_show_title:
+                    indent: 1
+                    label: Show title
+                    type: checkbox
+                    value: true
+                    read_only: true
+                    visible_if: lib.value('search_blog')
+                blog_show_feature_image:
+                    plugin_setting:
+                        name: blog_show_feature_image
+                    label: 'Show featured image'
+                    type: checkbox
+                    value: "1"
+                    side_note: Display the content item's featured image if available.
+                    format_onchange: Yes
+                    indent: 1
+                    visible_if: lib.value('search_blog')
+                blog_feature_image_canvas:
+                    plugin_setting:
+                        name: blog_feature_image_canvas
+                    label: 'Canvas for featured image:'
+                    type: select
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    value: fixed_width
+                    format_onchange: Yes
+                    indent: 2
+                blog_feature_image_width:
+                    plugin_setting:
+                        name: blog_feature_image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width for listing photo.
+                        numeric: The width must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                blog_feature_image_height:
+                    plugin_setting:
+                        name: blog_feature_image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height for listing photo.
+                        numeric: The height must be a number.
+                    value: "80"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                blog_show_language:
+                    plugin_setting:
+                        name: blog_show_language
+                    indent: 1
+                    label: 'Show language'
+                    type: checkbox
+                    value: '1'
+                    site_note: >
+                        Display the language of a content item next to each result.
+                    visible_if: lib.value('search_blog')
+                blog_show_summary:
+                    plugin_setting:
+                        name: blog_show_summary
+                    indent: 1
+                    label: 'Show summary'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_blog')
+                blog_show_menu_path_if_available:
+                    plugin_setting:
+                        name: blog_show_menu_path_if_available
+                    indent: 1
+                    label: 'Show menu path if available'
+                    type: checkbox
+                    visible_if: lib.value('search_blog')
+                blog_column_width:
+                    plugin_setting:
+                        name: blog_column_width
+                    indent: 1
+                    label: 'Width of column (desktop view only):'
+                    validation:
+                        numeric: "The width must be a number."
+                        required_if_not_hidden: 'Please type in the width.'
+                    type: text
+                    maxlength: 5
+                    decimal_places: 2
+                    style: "width: 4em;"
+                    post_field_html: "%"
+                    visible_if: lib.value('search_blog') && lib.modeIn('search_entry_box')
                 
                 ###########
                 ## Other ##

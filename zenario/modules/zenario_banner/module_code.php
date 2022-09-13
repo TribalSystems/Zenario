@@ -88,7 +88,6 @@ class zenario_banner extends ze\moduleBaseClass {
 			    $link .= '#' . $anchor;
 			}
 			//Use the Theme Section for a Masthead with a link and set the link
-			$mergeFields['Link_Href'] =
 			$mergeFields['Image_Link_Href'] =
 				'href="'. htmlspecialchars($link). '"';
 			
@@ -141,7 +140,6 @@ class zenario_banner extends ze\moduleBaseClass {
 			//Don't show private documents on public content items.
 			if ($document['privacy'] == 'public' || ($document['privacy'] == 'private' && $contentItemPrivacy != 'public' && $contentItemPrivacy != 'logged_out')) {
 				//Use the Theme Section for a Masthead with a link and set the link
-				$mergeFields['Link_Href'] =
 				$mergeFields['Image_Link_Href'] =
 					'href="'. htmlspecialchars($link). '"';
 		
@@ -212,7 +210,6 @@ class zenario_banner extends ze\moduleBaseClass {
 				}
 				
 				if ($link = $this->setting($url)) {
-					$mergeFields['Link_Href'] =
 					$mergeFields['Image_Link_Href'] =
 						'href="'. htmlspecialchars($link). '"';
 				}
@@ -220,7 +217,6 @@ class zenario_banner extends ze\moduleBaseClass {
 			}  elseif ($linkTo == '_EMAIL') {
 				$url = 'email_address';
 				if ($link = $this->setting($url)) {
-					$mergeFields['Link_Href'] =
 					$mergeFields['Image_Link_Href'] =
 						'href="'. htmlspecialchars($link). '"';
 				}
@@ -232,6 +228,8 @@ class zenario_banner extends ze\moduleBaseClass {
 			$mergeFields['Target_Blank'] .= ' target="_blank"';
 			
 			if (!$downloadFile && $openIn == 2) {
+				ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+				
 				$mergeFields['Target_Blank'] .= ' onclick="if (window.$) { $.colorbox({href: \''. ze\escape::js($link). '\', iframe: true, width: \'95%\', height: \'95%\'}); return false; }"';
 			}
 		}
@@ -267,14 +265,13 @@ class zenario_banner extends ze\moduleBaseClass {
 		
 		$addWidthAndHeight = false;
 		$imageId = false;
-		$fancyboxLink = false;
 		$cID = $cType = false;
 		if (!$this->setupLink($this->mergeFields, $cID, $cType, $this->setting('use_translation'))) {
 			return false;
 		}
 		
 		
-		$pictureCID = $pictureCType = $width = $height = $respWidth = $respHeight = $url = $url2 = $widthFullSize = $heightFullSize = $urlFullSize = false;
+		$pictureCID = $pictureCType = false;
 		
 		//Attempt to find a masthead image to display
 		//Check to see if an overwrite has been set, and use it if so
@@ -290,9 +287,10 @@ class zenario_banner extends ze\moduleBaseClass {
 		  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))) {
 			
 			//Get the resize options for the image from the plugin settings
-			$banner_canvas = $this->setting('canvas');
-			$banner_width = $this->setting('width');
-			$banner_height = $this->setting('height');
+			$bannerMaxWidth = $this->setting('width');
+			$bannerMaxHeight = $this->setting('height');
+			$bannerCanvas = $this->setting('canvas');
+			$bannerRetina = $this->setting('retina');
 			
 			//If this banner is in a nest, check if there are default settings set by the nest
 			if (isset($this->parentNest)
@@ -301,36 +299,36 @@ class zenario_banner extends ze\moduleBaseClass {
 				$inheritDimensions = true;
 				
 				//fixed_width/fixed_height/fixed_width_and_height settings can be merged together
-				if ($banner_canvas == 'fixed_width_and_height'
+				if ($bannerCanvas == 'fixed_width_and_height'
 				 || $this->parentNest->banner_canvas == 'fixed_width_and_height'
-				 || ($this->parentNest->banner_canvas == 'fixed_width' && $banner_canvas == 'fixed_height')
-				 || ($this->parentNest->banner_canvas == 'fixed_height' && $banner_canvas == 'fixed_width')) {
-					$banner_canvas = 'fixed_width_and_height';
+				 || ($this->parentNest->banner_canvas == 'fixed_width' && $bannerCanvas == 'fixed_height')
+				 || ($this->parentNest->banner_canvas == 'fixed_height' && $bannerCanvas == 'fixed_width')) {
+					$bannerCanvas = 'fixed_width_and_height';
 				
 				//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
 				//crop_and_zoom settings on the banner, and vice versa. So do an XOR and only update the settings if
 				//they're not both different
 				} else
-				if (!$banner_canvas
-				 || $banner_canvas == 'unlimited'
-				 || !(($this->parentNest->banner_canvas == 'crop_and_zoom') XOR ($banner_canvas == 'crop_and_zoom'))) {
-					$banner_canvas = $this->parentNest->banner_canvas;
+				if (!$bannerCanvas
+				 || $bannerCanvas == 'unlimited'
+				 || !(($this->parentNest->banner_canvas == 'crop_and_zoom') XOR ($bannerCanvas == 'crop_and_zoom'))) {
+					$bannerCanvas = $this->parentNest->banner_canvas;
 				
 				} else {
 					$inheritDimensions = false;
 				}
 				
 				if ($inheritDimensions && $this->parentNest->banner_width) {
-					if (!$banner_width
-					 || !ze::in($banner_canvas, 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom')) {
-						$banner_width = $this->parentNest->banner_width;
+					if (!$bannerMaxWidth
+					 || !ze::in($bannerCanvas, 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom')) {
+						$bannerMaxWidth = $this->parentNest->banner_width;
 					}
 				}
 				
 				if ($inheritDimensions && $this->parentNest->banner_height) {
-					if (!$banner_height
-					 || !ze::in($banner_canvas, 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
-						$banner_height = $this->parentNest->banner_height;
+					if (!$bannerMaxHeight
+					 || !ze::in($bannerCanvas, 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
+						$bannerMaxHeight = $this->parentNest->banner_height;
 					}
 				}
 			}
@@ -398,228 +396,182 @@ class zenario_banner extends ze\moduleBaseClass {
 				$cols[] = 'floating_box_title';
 			}
 			
+			if ($this->setting('show_image_credit')) {
+				$cols[] = 'image_credit';
+			}
+			
+			$image = false;
 			if (!empty($cols)) {
 				$image = ze\row::get('files', $cols, $imageId);
 			}
 			
-			$alt_tag = '';
+			
+			//Start prepping some parameters for a call to the ze\file::imageHTML() function
+			$useRollover =
+			$showAsBackgroundImage = $lazyLoad = $hideOnMob = $changeOnMob =
+			$mobImageId = $mobMaxWidth = $mobMaxHeight = $mobCanvas = $mobRetina = false;
+			$cssClass = $styles = $attributes = $sourceIDPrefix = '';
+			$preferInlineStypes = true;
+			$makeWebP = $this->setting('webp');
+			$mobWebP = $this->setting('mobile_webp');
+			
+			$htmlID = $this->containerId. '_img';
+			
+			$altTag = '';
 			if ($this->setting('alt_tag')) {
-				$alt_tag = htmlspecialchars($this->setting('alt_tag'));
-			} else {
-				if (!empty($image)) {
-					$alt_tag = htmlspecialchars($image['alt_tag']);
+				$altTag = $this->setting('alt_tag');
+			
+			} elseif (!empty($image)) {
+				$altTag = $image['alt_tag'];
+			}
+			$this->mergeFields['Image_Alt'] = htmlspecialchars($altTag);
+			
+			//Change some parameters based on the option chosen for  the "Additional behaviour"
+			//(né "Advanced behaviour") plugin setting.
+			switch ($this->setting('advanced_behaviour')) {
+				case 'background_image':
+					$showAsBackgroundImage = true;
+					$preferInlineStypes = false;
+					break;
+				
+				case 'lazy_load':
+					$lazyLoad = true;
+					break;
+				
+				case 'use_rollover':
+					if ($rolloImageId = $this->setting('rollover_image')) {
+						$useRollover = true;
+						
+						//We'll need to give IDs to our <source> tags for the rollover code below to work.
+						$sourceIDPrefix = $this->containerId. '_source_';
+					}
+					break;
+			}
+			
+			//Change some parameters based on the option chosen for "mobile behaviour" in the plugin settings
+			//But note this needs a responsive layout with a minimum width set to work.
+			//It's also not currently compatible with the "Lazy load" option.
+			if (!$lazyLoad && ze::$minWidth) {
+				switch ($this->setting('mobile_behaviour')) {
+					
+					//Same image as for desktop, but use a different size
+					case 'mobile_same_image_different_size':
+						$changeOnMob = true;
+						$preferInlineStypes = false;
+						$mobImageId = $imageId;
+						$mobMaxWidth = $this->setting('mobile_width');
+						$mobMaxHeight = $this->setting('mobile_height');
+						$mobCanvas = $this->setting('mobile_canvas');
+						$mobRetina = $this->setting('mobile_retina');
+						break;
+					
+					//Different image
+					case 'mobile_change_image':
+						if ($mobImageId = $this->setting('mobile_image')) {
+							$changeOnMob = true;
+							$preferInlineStypes = false;
+							$mobMaxWidth = $this->setting('mobile_width');
+							$mobMaxHeight = $this->setting('mobile_height');
+							$mobCanvas = $this->setting('mobile_canvas');
+							$mobRetina = $this->setting('mobile_retina');
+						}
+						break;
+					
+					//Don't show an image
+					case 'mobile_hide_image':
+						$hideOnMob = true;
+						break;
 				}
 			}
-			$this->mergeFields['Image_Alt'] = $alt_tag;
 			
+			$html = ze\file::imageHTML(
+				$this->styles, $preferInlineStypes,
+				$imageId, $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+				$altTag, $htmlID, $cssClass, $styles, $attributes,
+				$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
+				$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+				$sourceIDPrefix
+			);
 			
-			$banner_offset = $this->setting('offset');
-			$banner_retina = $banner_canvas != 'unlimited' || $this->setting('retina');
-			
-			
-			
-			//Try to get a link to the image
-			if (ze\file::imageLink($width, $height, $url, $imageId, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
+			if ($this->setting('show_image_credit')) {
 				
-				$this->normalImage = $url;
+				if ($image) {
+					$icText = $image['image_credit'];
 				
-				$mimeType = ze\file::mimeType($url);
-
-				if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
-					$fileParts = pathinfo($url);
-					$this->normalImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-					$this->mergeFields['WebP_Image_URL'] = $this->normalImageWebP;
-				}
-
-				//If this was a retina image, get a normal version of the image as well for standard displays
-				if ($banner_retina) {
-					$sWidth = $sHeight = $sURL = false;
-					if (ze\file::imageLink($sWidth, $sHeight, $sURL, $imageId, $width, $height, $banner_canvas == 'crop_and_zoom'? 'crop_and_zoom' : 'adjust', $banner_offset, false)) {
-						
-						if ($url != $sURL) {
-							$this->mergeFields['Image_Retina_Srcset'] = $url. ' 2x';
-
-							$mimeType = ze\file::mimeType($url);
-							$this->mergeFields['Mime_Type'] = $mimeType;
-
-							$this->retinaImage = $url;
-							$this->normalImage = $sURL;
-							
-							$url = $sURL;
-
-							if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
-								$fileParts = pathinfo($sURL);
-								$this->normalImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-								$this->mergeFields['WebP_Image_URL'] = $this->normalImageWebP. ' 1x, '. $this->mergeFields['WebP_Image_URL']. ' 2x';
-							}
-						}
+					if (!empty($icText)) {
+						$this->mergeFields['Image_Credit_1'] = true;
+						$this->mergeFields['Image_Credit_1_CSS'] = '';
+						$this->mergeFields['Image_Credit_1_Text'] = $icText;
 					}
 				}
 				
 				
-				if ($this->setting('image_source') == '_CUSTOM_IMAGE') {
-					$this->clearCacheBy(
-						false, false, false, $clearByFile = true, false);
+				if ($hideOnMob) {
+					$this->mergeFields['Image_Credit_1_CSS'] = 'responsive';
 				
-				} else {
-					$this->clearCacheBy(
-						$clearByContent = true, false, false, $clearByFile = true, false);
-				}
-				
-				$this->subSections['Image'] = true;
-				$this->mergeFields['Image_URL'] = $url;
-				$this->mergeFields['Image_Height'] = $height;
-				$this->mergeFields['Image_Width'] = $width;
-				$this->mergeFields['Image_Style'] = 'id="'. $this->containerId. '_img"';
+				} elseif ($changeOnMob && $mobImageId != $imageId) {
+					$this->mergeFields['Image_Credit_1_CSS'] = 'responsive';
 					
-				if (ze::isAdmin()) {
-					$this->mergeFields['Image_Class'] = ' zenario_image_properties zenario_image_id__'. $imageId. '__';
-				}
-				
-				$addWidthAndHeight = $addWidthAndHeightInline = true;
-				
-				//Deprecated merge field for old frameworks
-				$this->mergeFields['Image_Src'] = htmlspecialchars($url);
-				
-				
-				
-				//Set a responsive version of the image
-				if (ze::$minWidth) {
-					switch ($this->setting('mobile_behaviour')) {
-						case 'mobile_change_image':
-						case 'mobile_same_image_different_size':
-							
-							switch ($this->setting('mobile_behaviour')) {
-								case 'mobile_change_image':
-									$mobile_image = $this->setting('mobile_image');
-									break;
-								case 'mobile_same_image_different_size':
-									$mobile_image = $this->setting('image');
-									break;
-							}
-							
-							$mobile_canvas = $this->setting('mobile_canvas');
-							$mobile_width = $this->setting('mobile_width');
-							$mobile_height = $this->setting('mobile_height');
-							$mobile_offset = $this->setting('mobile_offset');
-							$mobile_retina = $mobile_canvas != 'unlimited' || $this->setting('mobile_retina');
+					$icText = ze\row::get('files', 'image_credit', $mobImageId);
 					
-							$respURL = false;
-							if (ze\file::imageLink($respWidth, $respHeight, $respURL, $mobile_image, $mobile_width, $mobile_height, $mobile_canvas, $mobile_offset, $mobile_retina)) {
-				
-								$this->respImage = $respURL;
-								$this->mergeFields['Mobile_Srcset'] = $respURL;
-
-								$mimeType = ze\file::mimeType($respURL);
-								$this->mergeFields['Mobile_Mime_Type'] = $mimeType;
-
-								if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
-									$fileParts = pathinfo($respURL);
-									$this->respImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-									$this->mergeFields['Mobile_Srcset_WebP'] = $this->respImageWebP;
-								}
-						
-								//If this was a retina image, get a normal version of the image as well for standard displays
-								if ($mobile_retina) {
-									$sWidth = $sHeight = $sURL = false;
-									if (ze\file::imageLink($sWidth, $sHeight, $sURL, $mobile_image, $respWidth, $respHeight, $mobile_canvas, $mobile_offset, false)) {
-										if ($respURL != $sURL) {
-											
-											$this->respImage = $sURL;
-											$this->retinaRespImage = $respURL;
-
-											$fileParts = pathinfo($sURL);
-											$this->respImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-
-											$fileParts = pathinfo($respURL);
-											$this->retinaRespImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-											
-											$this->mergeFields['Mobile_Srcset'] = $sURL. ' 1x, '. $respURL. ' 2x';
-
-											if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
-												$this->mergeFields['Mobile_Srcset_WebP'] = $this->respImageWebP. ' 1x, '. $this->retinaRespImageWebP. ' 2x';
-											}
-										}
-									}
-								}
-								
-								$this->mergeFields['Mobile_Media'] = '(max-width: '. (ze::$minWidth - 1). 'px)';
-						
-								if ($respWidth != $width
-								 || $respHeight != $height) {
-									$this->styles[] = 'body.mobile #'. $this->containerId. '_img { width: '. $respWidth. 'px; height: '. $respHeight. 'px; }';
-									$addWidthAndHeightInline = false;
-								}
-							}
-							
-							break;
-						
-						//Hide the image on mobiles, and add some hacks to try and make sure that they never even try to download it
-						case 'mobile_hide_image':
-							$this->mergeFields['Mobile_Media'] = '(max-width: '. (ze::$minWidth - 1). 'px)';
-							$trans = ze\link::absoluteIfNeeded(). 'zenario/admin/images/trans.png';
-							$this->mergeFields['Mobile_Srcset'] = $trans. ' 1x, '. $trans. ' 2x';
-							$this->styles[] = 'body.mobile #'. $this->containerId. '_img { display: none; }';
+					if (!empty($icText)) {
+						$this->mergeFields['Image_Credit_2'] = true;
+						$this->mergeFields['Image_Credit_2_CSS'] = 'responsive_only';
+						$this->mergeFields['Image_Credit_2_Text'] = $icText;
 					}
 				}
-				
-				
-				
-				//Set a rollover version of the image
-				if ($this->setting('advanced_behaviour')
-				 && ($this->setting('advanced_behaviour') == 'use_rollover')
-				 && $this->setting('image_source') == '_CUSTOM_IMAGE'
-				 && ($rollover_image = $this->setting('rollover_image'))) {
-					$this->mergeFields['Rollover_Image'] = true;
+			}
+			
+			if ($showAsBackgroundImage) {
+				$this->mergeFields['Image_HTML'] = '';
+				$this->mergeFields['Background_Image_Attributes'] = $html;
+			
+			} else {
+				if ($useRollover) {
+					//If we're using a rollover, we need to prepare two more <picture> elements.
+					//The first is to pre-load and store the rollover image.
+					//The second is to store the original image, which will be used later to revert the rollover.
+					$ignoreStyles = [];
+					$preferInlineStypes = false;
+					$styles = 'width: 1px; height: 1px; visibility: hidden;';
 					
-					$rollSrcset = '';
-					$normalSrcset = '';
+					$htmlID = $this->containerId. '_rollover';
+					$sourceIDPrefix = $this->containerId. '_rollover_source_';
+					$showImageLinkInAdminMode = true;
+					$alsoShowMobileLink = false;
 					
-					$rWidth = $rHeight = $rollURL = false;
-					if (ze\file::imageLink($rWidth, $rHeight, $rollURL, $rollover_image, $banner_width, $banner_height, $banner_canvas, $banner_offset, $banner_retina)) {
-						
-						$this->rolloverImage = $rollURL;
-						$this->mergeFields['Rollover_Image_URL'] = $this->rolloverImage;
-
-						$mimeType = ze\file::mimeType($rollURL);
-
-						if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
-							$fileParts = pathinfo($rollURL);
-							$this->rolloverImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-							$this->mergeFields['Rollover_WebP_Image_URL'] = $this->rolloverImageWebP;
-						}
-						
-						//If this was a retina image, get a normal version of the image as well for standard displays
-						if ($banner_retina) {
-							$sWidth = $sHeight = $sURL = false;
-							if (ze\file::imageLink($sWidth, $sHeight, $sURL, $rollover_image, $rWidth, $rHeight, $banner_canvas == 'crop_and_zoom'? 'crop_and_zoom' : 'adjust', $banner_offset, false)) {
-								if ($rollURL != $sURL) {
-									$rollSrcset = $rollURL. ' 2x';
-									$rollSrcset = 'srcset="'. htmlspecialchars($rollSrcset). '"';
-
-									if (ze::in($mimeType, 'image/png', 'image/jpeg')) {
-										$fileParts = pathinfo($rollURL);
-										$this->rolloverImageRetinaWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-										$this->mergeFields['Rollover_Image_Retina_Srcset'] = $this->rolloverImageRetinaWebP;
-									}
-									
-									$this->rolloverImage = $sURL;
-									$this->retinaRolloverImage = $rollURL;
-									
-									$rollURL = $sURL;
-								}
-							}
-						}
+					if ($changeOnMob && $mobImageId != $imageId) {
+						$imageLinkNum = 3;
+					} else {
+						$imageLinkNum = 2;
 					}
 					
-					if (!empty($this->mergeFields['Image_Retina_Srcset'])) {
-						$normalSrcset = 'srcset="'. htmlspecialchars($this->mergeFields['Image_Retina_Srcset']). '"';
-					}
+					$html .= ze\file::imageHTML(
+						$ignoreStyles, $preferInlineStypes,
+						$rolloImageId, $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+						$altTag, $htmlID, $cssClass, $styles, $attributes,
+						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
+						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+						$sourceIDPrefix,
+						$showImageLinkInAdminMode, $imageLinkNum, $alsoShowMobileLink
+					);
 					
-					//Do not allow mobile images to use a rollover.
-					//Mobile images have a "media" attribute set in the framework.
-					//Non-mobile images do not have that attribute.
-					//The onmouseover event will skip images with the "media" attribute.
+					$htmlID = $this->containerId. '_rollout';
+					$sourceIDPrefix = $this->containerId. '_rollout_source_';
+					$showImageLinkInAdminMode = false;
+					
+					$html .= ze\file::imageHTML(
+						$ignoreStyles, $preferInlineStypes,
+						$imageId, $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+						$altTag, $htmlID, $cssClass, $styles, $attributes,
+						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
+						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+						$sourceIDPrefix,
+						$showImageLinkInAdminMode
+					);
+					
+					//Add some code to switch the images in the <picture> element when the mouse
+					//hovers over the wrapper, and switch back again when the mouse leaves.
 					$this->mergeFields['Wrap'] =
 						'onmouseover="
 							var
@@ -652,39 +604,59 @@ class zenario_banner extends ze\moduleBaseClass {
 								z = document.getElementById(x + \'_rollout_source_\' + i);
 								y.srcset = z.srcset;
 							}"';
+					//N.b. do not allow mobile images to use a rollover.
+					//Mobile images have a "media" attribute set in the framework.
+					//Non-mobile images do not have that attribute.
+					//The onmouseover event will skip images with the "media" attribute.
+				}
 				
+				$this->mergeFields['Image_HTML'] = $html;
+				$this->mergeFields['Background_Image_Attributes'] = '';
+			}
+			
+			$this->subSections['Image'] = true;
+			
+			if ($this->setting('link_type') == '_ENLARGE_IMAGE') {
 				
-				
-				
-				} if (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (empty($this->mergeFields['Link_Href']))){
-					if (ze\file::imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
-						$this->mergeFields['Link_Href'] = 'rel="lightbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
-						$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box" ';
-						
-						if ($this->setting('floating_box_title_mode') == 'overwrite') {
-							$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
-							$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
-						} else {
-							$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
-							$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
-						}
-						
-						//HTML 5 friendly version of the above code
-							//Would need support from colorbox, and ", a[data-colorbox-group]" added to the jQuery pattern that sets colorboxes up
-						//$this->mergeFields['Link_Href'] = 'data-colorbox-group="group1" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
-						//$this->mergeFields['Image_Link_Href'] = 'data-colorbox-group="group2" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
-						
-						$this->subSections['Enlarge_Image'] = true;
-						$fancyboxLink = true;
+				$width = $height = $url = $webPURL = $isRetina = $mimeType = false;
+				if (ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, false, $isRetina, $mimeType, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
+					
+					ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+					
+					$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box" ';
+					
+					if ($makeWebP && $webPURL) {
+						$this->mergeFields['Image_Link_Href'] .= ' data-webp-href="'. htmlspecialchars($webPURL). '"';
 					}
+					
+					//HTML 5 friendly version of the above code
+						//Would need support from colorbox, and ", a[data-colorbox-group]" added to the jQuery pattern that sets colorboxes up
+					//$this->mergeFields['Image_Link_Href'] = 'data-colorbox-group="group2" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box"';
+					
+					if ($this->setting('floating_box_title_mode') == 'overwrite') {
+						$caption = $this->setting('floating_box_title');
+					} else {
+						$caption = $image['floating_box_title'];
+					}
+					
+					if ($this->setting('show_image_credit') && !empty($image['image_credit'])) {
+						$icText = $this->phrase('Credit: [[image_credit]]', $image);
+						
+						if (empty($caption)) {
+							$caption = $icText;
+						} else {
+							$caption .= ' ('. $icText. ')';
+						}
+					}
+					
+					if (!empty($caption)) {
+						$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($caption). '"';
+					}
+					
+					$this->subSections['Enlarge_Image'] = true;
 				}
 			}
 		}
-		
-		//Enable lazy load in the framework if enabled.
-		$this->mergeFields['Lazy_Load'] = (
-			$this->setting('advanced_behaviour') && $this->setting('advanced_behaviour') == 'lazy_load'
-			&& $this->setting('mobile_behaviour') && $this->setting('mobile_behaviour') == 'mobile_same_image');
 		
 		$this->subSections['Text'] = (bool) $this->setting('text') || $this->editing;
 		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;
@@ -755,61 +727,6 @@ class zenario_banner extends ze\moduleBaseClass {
 					if ($this->setting('translate_text')) {
 						$this->mergeFields['More_Link_Text'] = $this->phrase($this->mergeFields['More_Link_Text']);
 					}
-				}
-			}
-			
-			//Enable an option to use a background images instead of <picture><img/></picture>
-			if ($this->setting('advanced_behaviour') && ($this->setting('advanced_behaviour') == 'background_image') && $this->normalImage) {
-				$this->mergeFields['Wrap'] = '';
-				$this->mergeFields['Background_Image'] = true;
-				$this->mergeFields['Image_css_id'] = $this->containerId. '_img';
-
-				$isJpegOrPng = ze::in($mimeType, 'image/png', 'image/jpeg');
-				
-				if ($isJpegOrPng && $this->normalImageWebP) {
-					$this->styles[] = '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImageWebP).  '\'); }';
-					$this->styles[] = 'body.no_webp #'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
-				} else {
-					$this->styles[] = '#'. $this->containerId. '_img { display: block; background-repeat: no-repeat; background-image: url(\''. htmlspecialchars($this->normalImage).  '\'); }';
-				}
-				
-				if ($this->retinaImage) {
-					if ($isJpegOrPng) {
-						$fileParts = pathinfo($this->retinaImage);
-						$this->retinaImageWebP = $fileParts['dirname'] . '/' . $fileParts['filename'] . '.webp';
-						
-						$this->styles[] = 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImageWebP).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
-						$this->styles[] = 'body.retina.no_webp #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
-					} else {
-						$this->styles[] = 'body.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaImage).  '\'); background-size: '. $width. 'px '. $height. 'px; }';
-					}
-				}
-				
-				if ($this->respImage) {
-					if ($isJpegOrPng && $this->respImageWebP) {
-						$this->styles[] = 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImageWebP).  '\'); }';
-					} else {
-						$this->styles[] = 'body.mobile #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->respImage).  '\'); }';
-					}
-					
-					if ($this->retinaRespImage) {
-						if ($isJpegOrPng && $this->retinaRespImageWebP) {
-							$this->styles[] = 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImageWebP).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
-						} else {
-							$this->styles[] = 'body.mobile.retina #'. $this->containerId. '_img { background-image: url(\''. htmlspecialchars($this->retinaRespImage).  '\'); background-size: '. $respWidth. 'px '. $respHeight. 'px; }';
-						}
-					}
-				}
-				
-				$addWidthAndHeightInline = false;
-			}
-			
-			if ($addWidthAndHeight) {
-				if ($addWidthAndHeightInline) {
-					$this->mergeFields['Image_Style'] .= ' style="width: '. $width. 'px; height: '. $height. 'px;"';
-			
-				} else {
-					array_unshift($this->styles, '#'. $this->containerId. '_img { width: '. $width. 'px; height: '. $height. 'px; }');
 				}
 			}
 			

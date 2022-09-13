@@ -55,7 +55,8 @@ class zenario_slideshow extends zenario_plugin_nest {
 		$this->loadTabs();
 		
 		if (empty($this->slides)) {
-			$this->slides = [1 => ['id' => 0, 'slide_num' => 1, 'name_or_title' => '']];
+			//Don't show anything if not slides have been created
+			return false;
 		}
 		
 		foreach ($this->slides as &$slide) {
@@ -84,7 +85,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 				'Class' => 'tab_'. $tabOrd. ' tab',
 				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
 				'Tab_Link' => $link,
-				'Tab_Name' => $this->formatTitleText($slide['name_or_title'], true)
+				'Tab_Name' => $this->formatTitleText($slide['name_or_slide_label'], true)
 			];
 			
 			if (!$firstTabNum) {
@@ -96,9 +97,20 @@ class zenario_slideshow extends zenario_plugin_nest {
 			$this->sections['Tab'][$firstTabNum]['Class'] .= '_on';
 		}
 		
-		
-		$this->setPrevNextLinks();
-		$this->startSlideshow();
+		//Catch the unusual case where someone wants a slideshow, but has only defined one slide,
+		//so there are no transistions to animate
+		if ($tabOrd < 2) {
+			$this->mergeFields['Next_Link'] = '';
+			$this->mergeFields['Next_Disabled'] = '_disabled';
+			$this->mergeFields['Prev_Link'] = '';
+			$this->mergeFields['Prev_Disabled'] = '_disabled';
+		} else {
+			$this->mergeFields['Next_Link'] = 'href="#" onclick="return zenario_slideshow.next(this);"';
+			$this->mergeFields['Next_Disabled'] = '';
+			$this->mergeFields['Prev_Link'] = 'href="#" onclick="return zenario_slideshow.prev(this);"';
+			$this->mergeFields['Prev_Disabled'] = '';
+			$this->startSlideshow();
+		}
 		
 		$this->showInFloatingBox(false);
 		
@@ -123,13 +135,6 @@ class zenario_slideshow extends zenario_plugin_nest {
 		}
 		
 		return $link;
-	}
-	
-	protected function setPrevNextLinks() {
-		$this->mergeFields['Next_Link'] = 'href="#" onclick="return zenario_slideshow.next(this);"';
-		$this->mergeFields['Next_Disabled'] = '';
-		$this->mergeFields['Prev_Link'] = 'href="#" onclick="return zenario_slideshow.prev(this);"';
-		$this->mergeFields['Prev_Disabled'] = '';
 	}
 	
 	protected function startSlideshow() {
@@ -200,7 +205,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 		//Show all of the plugins on this slide
 		} else {
 			
-			$this->mergeFields['Tabs'] = $this->sections['Tab'];
+			$this->mergeFields['Tabs'] = $this->sections['Tab'] ?? null;
 			
 			if ($this->show) {
 				$hide = false;

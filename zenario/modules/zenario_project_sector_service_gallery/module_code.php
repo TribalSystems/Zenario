@@ -73,35 +73,35 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['first_tab']['fields']['sticky_image_width']['hidden'] = 
+				$box['tabs']['first_tab']['fields']['image_width']['hidden'] = 
 					$box['tabs']['first_tab']['fields']['canvas']['hidden']
 				 || !ze::in($values['first_tab/canvas'], 'fixed_width', 'resize_and_crop', 'resize');
 
-				$box['tabs']['first_tab']['fields']['sticky_image_height']['hidden'] = 
+				$box['tabs']['first_tab']['fields']['image_height']['hidden'] = 
 					$box['tabs']['first_tab']['fields']['canvas']['hidden']
 				 || !ze::in($values['first_tab/canvas'], 'fixed_height', 'resize_and_crop', 'resize');
 		 
 				if (isset($box['tabs']['first_tab']['fields']['canvas'])
 				 && empty($box['tabs']['first_tab']['fields']['canvas']['hidden'])) {
 					if ($values['first_tab/canvas'] == 'fixed_width') {
-						$box['tabs']['first_tab']['fields']['sticky_image_width']['note_below'] =
+						$box['tabs']['first_tab']['fields']['image_width']['note_below'] =
 							ze\admin::phrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 					} else {
-						unset($box['tabs']['first_tab']['fields']['sticky_image_width']['note_below']);
+						unset($box['tabs']['first_tab']['fields']['image_width']['note_below']);
 					}
 			
 					if ($values['first_tab/canvas'] == 'fixed_height'
 					 || $values['first_tab/canvas'] == 'resize') {
-						$box['tabs']['first_tab']['fields']['sticky_image_height']['note_below'] =
+						$box['tabs']['first_tab']['fields']['image_height']['note_below'] =
 							ze\admin::phrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 					} elseif ($values['first_tab/canvas'] == 'resize_and_crop') {
-						$box['tabs']['first_tab']['fields']['sticky_image_height']['note_below'] =
+						$box['tabs']['first_tab']['fields']['image_height']['note_below'] =
 							ze\admin::phrase('Images may be scaled up or down maintaining aspect ratio.');
 			
 					} else {
-						unset($box['tabs']['first_tab']['fields']['sticky_image_height']['note_below']);
+						unset($box['tabs']['first_tab']['fields']['image_height']['note_below']);
 					}
 				}
 				break;
@@ -271,12 +271,12 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 
 			$url = $width = $height = false;
 			if (ze::in($imageCanvas = $this->setting('canvas'), 'resize_and_crop', 'resize')) {
-				$width = (int)$this->setting('sticky_image_width');
-				$height = (int)$this->setting('sticky_image_height');
+				$width = (int)$this->setting('image_width');
+				$height = (int)$this->setting('image_height');
 			} elseif (ze::in($imageCanvas = $this->setting('canvas'), 'fixed_width')) {
-				$width = (int)$this->setting('sticky_image_width');
+				$width = (int)$this->setting('image_width');
 			} elseif (ze::in($imageCanvas = $this->setting('canvas'), 'fixed_height')) {
-				$height = (int)$this->setting('sticky_image_height');
+				$height = (int)$this->setting('image_height');
 			}
 			
 			$img_tag = '';

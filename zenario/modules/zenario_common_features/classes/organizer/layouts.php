@@ -158,25 +158,26 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			if (count($usageContentItems) > 0) {
 				$contentTypeEnname='';
 				foreach (ze\content::getContentTypes() as $cType) {
-					if($cType['content_type_id'] == $item['content_type'])
-					{
-						if($item['content_type'] == 'html')
-							$contentTypeEnname = $cType['content_type_name_en'].' content item(s)';
-						else
-							$contentTypeEnname = $cType['content_type_name_en'].'(s)';
+					if($cType['content_type_id'] == $item['content_type']) {
+						if(count($usageContentItems)==1) {
+							$contentTypeEnname = $cType['content_type_name_en'].' content item';
+						} else {
+							$contentTypeEnname = $cType['content_type_name_en'].' content items';
+						}
 					}
-						
 				}
 				
 				if (ze\row::exists('content_types', ['default_layout_id' => $id])) {
-					$item['default_used'] = ze\admin::phrase('Used on [[typeCount]] [[contentTypes]] (default for this content type)', ['contentTypes' => $contentTypeEnname, 'typeCount' => count($usageContentItems)]);					
+					$item['default_used'] = ze\admin::phrase('Used by [[typeCount]] [[contentTypes]], default for this content type', ['contentTypes' => $contentTypeEnname, 'typeCount' => count($usageContentItems)]);
 				} else {
-					$item['default_used'] = ze\admin::phrase('Used on [[typeCount]] [[contentTypes]]', ['contentTypes' => $contentTypeEnname, 'typeCount' => count($usageContentItems)]);
+					$item['default_used'] = ze\admin::phrase('Used by [[typeCount]] [[contentTypes]]', ['contentTypes' => $contentTypeEnname, 'typeCount' => count($usageContentItems)]);
 				}
 			} else {
-				
-				$item['default_used'] = ze\admin::phrase('Not used');
-				
+				if (ze\row::exists('content_types', ['default_layout_id' => $id])) {
+					$item['default_used'] = ze\admin::phrase('Not used, default for this content type.');
+				} else {
+					$item['default_used'] = ze\admin::phrase('Not used');
+				}
 			}
 			
 			$item['row_class'] = ' layout_status_' . $item['status'];

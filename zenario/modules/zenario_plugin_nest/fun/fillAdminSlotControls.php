@@ -35,22 +35,50 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	$existingPlugins = ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 0]);
 	//$slideCount = ze\row::count('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1]);
 	
-	$isSlideshow = false !== strpos($this->moduleClassName, 'slide');
+	$selectedId = '';
+	if (!empty($this->slideId)) {
+		$selectedId = (int) $this->slideId;
+	}
 	
+	$tagPath = 'zenario__modules/panels/nested_plugins';
+	
+	switch ($this->moduleClassName) {
+		case 'zenario_slideshow':
+			$buttonName = 'plugins_in_slideshow';
+			$isSlideshow = true;
+			break;
+		case 'zenario_slideshow_simple':
+			$isSlideshow = true;
+			$buttonName = 'images_in_slideshow';
+			$tagPath = 'zenario__modules/panels/images_in_slideshow';
+			break;
+		default:
+			$buttonName = 'plugins_in_nest';
+			$isSlideshow = false;
+			break;
+	}
+	
+	$navPath = 'zenario__modules/panels/modules/item//'. (int) $this->moduleId. '//item_buttons/'. $buttonName. '//'. (int) $this->instanceId. '//'. $selectedId;
 	
 	if ($isSlideshow) {
-		$buttonName = 'plugins_in_slideshow';
 		
 		$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow settings');
 		
-		if ($existingPlugins) {
-			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add/edit plugins in slideshow');
+		if ($this->moduleClassName == 'zenario_slideshow_simple') {
+			if ($existingPlugins) {
+				$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add/edit images in slideshow');
+			} else {
+				$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add images to this slideshow');
+			}
 		} else {
-			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add plugins to this slideshow');
+			if ($existingPlugins) {
+				$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add/edit plugins in slideshow');
+			} else {
+				$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add plugins to this slideshow');
+			}
 		}
 	
 	} else {
-		$buttonName = 'plugins_in_nest';
 		$controls['actions']['settings']['ord'] = 63;
 		$controls['actions']['settings']['label'] = ze\admin::phrase('Nest settings');
 		
@@ -61,16 +89,11 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		}
 	}
 	
-	$selectedId = '';
-	if (!empty($this->slideId)) {
-		$selectedId = (int) $this->slideId;
-	}
-	
 	$controls['actions']['nested_plugins']['ord'] = 61;
 	$controls['actions']['nested_plugins']['onclick'] = "
 		return zenarioAT.organizerQuick(
-			'zenario__modules/panels/modules/item//". (int) $this->moduleId. "//item_buttons/". $buttonName. "//". (int) $this->instanceId. "//". $selectedId. "',
-			'zenario__modules/panels/nested_plugins',
+			'". $navPath. "',
+			'". $tagPath. "',
 			false,
 			'". ze\escape::js($this->slotName). "',
 			false,
@@ -103,7 +126,7 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	
 	
 	////For nests, add a button that opens the conductor
-	//if (!$isSlideshow && $this->setting('enable_conductor')) {
+	//if (!$isSlideshow && $this->setting('nest_type') == 'conductor') {
 	//	
 	//	$selectedId = '';
 	//	if (!empty($this->state)) {

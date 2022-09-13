@@ -252,9 +252,9 @@ plugin_settings:
                         name: show_event_summary
                     type: checkbox
                     value: "1"
-                show_sticky_images:
+                show_featured_image:
                     plugin_setting:
-                        name: show_sticky_images
+                        name: show_featured_image
                     label: "Show image"
                     type: checkbox
                     value: ""
@@ -319,7 +319,6 @@ plugin_settings:
                         name: canvas
                     label: 'Image canvas:'
                     type: select
-                    value: unlimited
                     values:
                         unlimited:
                             ord: "1"
@@ -336,6 +335,7 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
+                    value: fixed_width
                     format_onchange: Yes
                 width:
                     plugin_setting:
@@ -345,7 +345,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: ""
+                    value: 240
                     maxlength: "5"
                     style: 'width: 5em;'
                     align_right: 1
@@ -359,7 +359,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
-                    value: ""
+                    value: 160
                     maxlength: "5"
                     style: 'width: 5em;'
                     align_right: 1

@@ -20,12 +20,6 @@ site_settings:
                     label: 'Google Maps API key:'
                     type: text
                     note_below: You can obtain an API key <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank">here</a>.
-                google_maps_geocode_api_key:
-                    site_setting:
-                        name: google_maps_geocode_api_key
-                    label: 'Google Maps Geocode API key:'
-                    type: text
-                    note_below: Geocode API key should only be used for Location Map and Listing module. For all other purposes, please use the regular API key (above).
         google_custom_search:
             label: Google Programmable Search
             edit_mode:

@@ -194,45 +194,50 @@ switch ($path) {
 				
 				$box['tabs']['email']['fields']['email_body_non_escaped']['snippet']['html'] = $logRecord['email_body'];
 				
+				
 				//Display a one-liner showing where the email came from
-				$mergeFields = [];
-				if (empty($logRecord['content_id'])) {
-					$mergeFields['content_item'] = ze\admin::phrase('n/a');
-				} else {
+				$info = [];
+				$sayFrom = false;
+				
+				if (!empty($logRecord['content_id'])) {
 					$link = ze\link::toItem($logRecord['content_id'], $logRecord['content_type']);
 					$name = ze\content::formatTag($logRecord['content_id'], $logRecord['content_type']);
-					$mergeFields['content_item'] = ze\admin::phrase('<a href="' . $link . '" target="_blank">' . $name . '</a>');
+					$info[] = ze\admin::phrase('<a href="' . $link . '" target="_blank">' . $name . '</a>');
+					$sayFrom = true;
 				}
 				
 				if ($logRecord['module_id'] && ($module = ze\row::get('modules', ['class_name', 'display_name'], $logRecord['module_id']))) {
-					$mergeFields['module'] = ze\admin::phrase('module: [[class_name]] ([[display_name]])', $module);
-				} else {
-					$mergeFields['module'] = ze\admin::phrase('n/a');
+					$info[] = ze\admin::phrase('Module: [[class_name]] ([[display_name]])', $module);
+					$sayFrom = true;
 				}
 				
 				if ($logRecord['instance_id'] && ($instance = ze\row::get('plugin_instances', ['name', 'id'], $logRecord['instance_id']))) {
-					$mergeFields['plugin'] = ze\admin::phrase('plugin: P[[id]] ([[name]])', $instance);
-				} else {
-					$mergeFields['plugin'] = ze\admin::phrase('n/a');
-				}
-				
-				if (!isset($logRecord['attachment_present'])) {
-					$mergeFields['attachment'] = ze\admin::phrase('n/a');
-				} elseif ($logRecord['attachment_present']) {
-					$mergeFields['attachment'] = ze\admin::phrase('attachment');
-				} else {
-					$mergeFields['attachment'] = ze\admin::phrase('no attachment');
+					$info[] = ze\admin::phrase('Plugin: P[[id]] ([[name]])', $instance);
+					$sayFrom = true;
 				}
 				
 				if ($logRecord['email_template_id'] && $logRecord['email_template_name']) {
 					$template = ze\row::get('email_templates', ['id', 'code'], ['id' => $logRecord['email_template_id']]);
 					$templateLink = ze\link::absolute() . 'organizer.php#zenario__email_template_manager/panels/email_templates//' . $template['code'];
-					$mergeFields['template'] = ze\admin::phrase('email template: <a href="' . $templateLink . '" target="_blank">' . $logRecord['email_template_name'] . '</a> (ID' . $template['id'] . ')');
+					$info[] = ze\admin::phrase('Email template: <a href="' . $templateLink . '" target="_blank">' . $logRecord['email_template_name'] . '</a> (ID' . $template['id'] . ')');
 				} else {
-					$mergeFields['template'] = ze\admin::phrase('no template');
+					$info[] = ze\admin::phrase('No template');
 				}
 				
-				$fields['email/sent_form_text']['snippet']['html'] = ze\admin::phrase('Sent from: [[content_item]], [[module]], [[plugin]], [[template]], [[attachment]].', $mergeFields);
+				if (isset($logRecord['attachment_present'])) {
+					if ($logRecord['attachment_present']) {
+						$info[] = ze\admin::phrase('Attachment');
+					} else {
+						$info[] = ze\admin::phrase('No attachment');
+					}
+				}
+				
+				$html = '';
+				if ($sayFrom) {
+					$html .= ze\admin::phrase('Sent from:'). ' ';
+				}
+				$html .= implode('<br/>', $info);
+				$fields['email/sent_form_text']['snippet']['html'] = $html;
 			}
 		}
 		break;

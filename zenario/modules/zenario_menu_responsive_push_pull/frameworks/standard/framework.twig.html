@@ -70,7 +70,15 @@
 						{% endif %}
 							
 						<li id="{{containerId}}_node_{{node.mID}}" class="{{node.Class}} zenario_push_pull-listitem">
+							{% if node.Inactive_Open_Tag %}
+								{{node.Inactive_Open_Tag}}
+							{% endif %}
+
 							{{node.Hyperlink}}
+
+							{% if node.Inactive_Close_Tag %}
+								{{node.Inactive_Close_Tag}}
+							{% endif %}
 						
 							{% if node.hasChildren %}
 								<a
@@ -85,13 +93,17 @@
 
 						{# If is the first panel and any of these settings are enabled, show them here  #}
 						{% if divNumber == '0' and loop.last %}
-							{% if Search_Box or Registration_Link or Login_Link %}
+							{% if Search_Box or Registration_Link or Login_Link or Contact_Link %}
 								{% if Login_Link %}
 									<li class="level1 zenario_menu_node zenario_menu_node_special log_in"><a {{Login_Link}}>{{"Log in"|trans}}</a></li>
 								{% endif %}
 								
 								{% if Registration_Link %}
 									<li class="level1 zenario_menu_node zenario_menu_node_special sign_up"><a {{Registration_Link}}>{{"Sign up"|trans}}</a></li>
+								{% endif %}
+
+								{% if Contact_Link %}
+									<li class="level1 zenario_menu_node zenario_menu_node_special contact"><a {{Contact_Link}}>{{"Contact"|trans}}</a></li>
 								{% endif %}
 							
 								{% if Search_Box %}

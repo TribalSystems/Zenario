@@ -137,7 +137,6 @@ zenarioAT.clickTab = function(toolbar) {
 					edit_disabled: 0,
 					edit: 0,
 					rollback: 0,
-					item: 0,
 					menu: 0,
 					layout: 0
 				};

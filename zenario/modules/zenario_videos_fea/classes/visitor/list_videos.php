@@ -191,9 +191,15 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 		if ($this->setting('view_video_new_window')) {
 			$tags['item_buttons']['view']['new_window'] = true;
 		}
+
 		if (!$this->setting('list_videos__column__short_description')) {
 			$tags['columns']['description']['hidden'] = true;
 		}
+
+		if (!$this->setting('show_video_titles')) {
+			$tags['columns']['title']['hidden'] = true;
+		}
+
 		if (!$this->setting('list_videos__column__date')) {
 			$tags['columns']['date']['hidden'] = true;
 		}

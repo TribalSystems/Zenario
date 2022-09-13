@@ -73,19 +73,19 @@ switch($path) {
 		if ($parentRegionId){
 			if ($regions = self::getRegions('all','','',false,$parentRegionId,$regionName,$regionId)) {
 				$box['tabs']['details']['errors'][] =  
-					ze\admin::phrase('Error. The Sub-Region "[[subregion_name]]" already exists in the Region "[[region_name]]"',
+					ze\admin::phrase('Error. The sub-region "[[subregion_name]]" already exists in the region "[[region_name]]"',
 						['subregion_name' => $regionName, 'region_name' => self::getEnglishRegionName($parentRegionId)]);
 				break;
 			} 
 		} elseif ($countryCode) {
 			if ($regions = self::getRegions('all',$countryCode,'',false,0,$regionName,$regionId)) {
 				$box['tabs']['details']['errors'][] = 
-					ze\admin::phrase('Error. The Region "[[region_name]]" already exists in the Country "[[country_name]]"',
+					ze\admin::phrase('Error. A region called "[[region_name]]" already exists in the country "[[country_name]]"',
 						['region_name' => $regionName, 'country_name' => self::getEnglishCountryName($countryCode)]);
 				break;
 			}
 		} else {
-			return 'Error. No parent Country or Region was set.';
+			return 'Error. No parent country or region was set.';
 		}
 
 		

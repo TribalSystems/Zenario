@@ -1030,6 +1030,16 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		(\ze\welcome::runSQL(false, 'local-DROP.sql', $error)) &&
 		(\ze\welcome::runSQL(false, 'local-CREATE.sql', $error)) &&
 		(\ze\welcome::runSQL(false, 'local-INSERT.sql', $error));
+		
+		//Insert the starter images from the starter_images folder, read from the yaml file
+		$tags = \ze\tuix::readFile('zenario/admin/db_install/starter_image_list.yaml', false);
+		if ($tags) {
+			foreach ($tags['imagelist'] as $image) {
+				$imagepath = 'zenario/admin/db_install/starter_images/'. $image['name'];
+				\ze\file::addToDatabase('image', $imagepath, $image['name'], false, false, false, $image['alt_tag'], false, false, $image['mime_type']);
+			}
+		}
+
 	
 		//Reset the cached table details, in case any of the definitions are out of date
 		\ze\dbAdm::resetTableDefs();
@@ -1076,6 +1086,10 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 			
 			//Try to restore the settings again. This should work fully this time.
 			\ze\dbAdm::restoreLocationalSiteSettings();
+			
+			//T12215, When resetting a site, delete all admins other than current user
+			\ze\adminAdm::reallyDelete($_SESSION['admin_userid'], $onlyDeleteAdminsThatHaveNeverLoggedIn = false, $deleteAllButThisAdmin = true);
+			
 		
 			\ze\welcome::postInstallTasks();
 		
@@ -1143,6 +1157,11 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 			} else {
 				define('ZENARIO_TABLE_ENGINE', 'MyISAM');
 			}
+			
+			//We don't support versions of MySQL 5.5 or older any more,
+			//so our default character-set will always be utf8mb4.
+			define('ZENARIO_TABLE_CHARSET', 'utf8mb4');
+			define('ZENARIO_TABLE_COLLATION', 'utf8mb4_unicode_ci');
 		}
 		
 		return ZENARIO_TABLE_ENGINE;

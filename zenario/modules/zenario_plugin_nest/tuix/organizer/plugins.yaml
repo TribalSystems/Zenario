@@ -35,3 +35,29 @@ zenario__modules:
                     link:
                         path: zenario__modules/panels/nested_plugins
                         refiner: nest
+                
+                images_in_slideshow:
+                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    ord: edit.3
+                    visible_if: |
+                        item.module_class_name == 'zenario_slideshow_simple'
+                    label: Edit slideshow's images
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__modules/panels/images_in_slideshow
+                        refiner: nest
+                
+                copy:
+                    parent: action_dropdown
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    with_columns_set:
+                        nestable: true
+                    label: Copy plugin
+                    tooltip: Use this to copy a plugin into a nest or slideshow
+                    multiple_select: true
+                    multiple_select_label: Copy plugins
+                    multiple_select_tooltip: Use this to copy plugins into a nest or slideshow
+                    ajax:
+                        request:
+                            copy: 1
+

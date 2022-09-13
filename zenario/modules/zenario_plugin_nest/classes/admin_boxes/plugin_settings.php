@@ -5,7 +5,6 @@ class zenario_plugin_nest__admin_boxes__plugin_settings extends ze\moduleBaseCla
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$this->syncNestTypeSettings($box, $fields, $values, true);
 		
 		//Hide the breadcrumbs option if the module isn't running
 		if (!ze\module::inc('zenario_breadcrumbs')) {
@@ -25,7 +24,6 @@ class zenario_plugin_nest__admin_boxes__plugin_settings extends ze\moduleBaseCla
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$this->syncNestTypeSettings($box, $fields, $values);
 		
 		if (isset($box['tabs']['size']['fields']['max_height'])) {
 			$box['tabs']['size']['fields']['max_height']['hidden'] = 
@@ -42,8 +40,6 @@ class zenario_plugin_nest__admin_boxes__plugin_settings extends ze\moduleBaseCla
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$this->syncNestTypeSettings($box, $fields, $values);
-		
 		//...your PHP code...//
 	}
 	
@@ -60,52 +56,5 @@ class zenario_plugin_nest__admin_boxes__plugin_settings extends ze\moduleBaseCla
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		//...your PHP code...//
-	}
-	
-	
-	//The main select list in the plugin settings is actually stored as three checkboxes,
-	//which I don't want to change for backwards compatability reasons
-	//(e.g. some frameworks use these settings and I don't want to have to change them when migrating sites).
-	//So instead I'll use this function to change the format when loading/saving
-	protected function syncNestTypeSettings(&$box, &$fields, &$values, $filling = false) {
-		if ($filling) {
-			if ($values['first_tab/enable_conductor']) {
-				$values['first_tab/nest_type'] = 'conductor';
-			} else {
-				if ($values['first_tab/show_next_prev_buttons']) {
-					if ($values['first_tab/show_tabs']) {
-						$values['first_tab/nest_type'] = 'tabs_and_buttons';
-					} else {
-						$values['first_tab/nest_type'] = 'buttons';
-					}
-				} else {
-					if ($values['first_tab/show_tabs']) {
-						$values['first_tab/nest_type'] = 'tabs';
-					} else {
-						$values['first_tab/nest_type'] = 'permission';
-					}
-				}
-			}
-		} else {
-			$values['first_tab/show_tabs'] = '';
-			$values['first_tab/show_next_prev_buttons'] = '';
-			$values['first_tab/enable_conductor'] = '';
-			
-			switch ($values['first_tab/nest_type']) {
-				case 'conductor':
-					$values['first_tab/enable_conductor'] = 1;
-					break;
-				case 'tabs':
-					$values['first_tab/show_tabs'] = 1;
-					break;
-				case 'tabs_and_buttons':
-					$values['first_tab/show_tabs'] = 1;
-					$values['first_tab/show_next_prev_buttons'] = 1;
-					break;
-				case 'buttons':
-					$values['first_tab/show_next_prev_buttons'] = 1;
-					break;
-			}
-		}
 	}
 }

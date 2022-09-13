@@ -70,8 +70,8 @@ if ($methodCall == 'refreshPlugin'
 	ze\cache::start();
 	
 	//Check the content item that this is being linked from, and whether the current user has permissions to access it
-	$cID = $cType = $content = $chain = $version = $redirectNeeded = $aliasInURL = $instanceFound = false;
-	ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $_GET, $_REQUEST, $_POST);
+	$cID = $cType = $content = $chain = $version = $redirectNeeded = $aliasInURL = $langIdInURL = $instanceFound = false;
+	ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $_GET, $_REQUEST, $_POST);
 	
 	if (!$cVersion = $_REQUEST['cVersion'] ?? false) {
 		$cVersion = ze\content::appropriateVersion($cID, $cType);

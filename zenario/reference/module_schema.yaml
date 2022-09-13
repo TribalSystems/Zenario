@@ -188,28 +188,6 @@ properties:
     inheritance:
         type: object
         properties:
-            inherit_description_from_module:
-                type: string
-                description: >
-                    If you create a simple or a "skinny" module that extends another module - or
-                    is just very similar to another module - then you can enter the class name of
-                    that module here to automatically copy that module's descriptive properties,
-                    dependencies and inheritances from its <code>description.yaml</code> file.
-        
-                    Where you have both set the same property, the property in your module's <code>description.yaml</code>
-                    file will overwrite the property from the module your are inheriting from.
-        
-                    You may only specify one module to inherit the description from, but this
-                    inheritance can be chained; i.e. if you inherit the description of a module
-                    that itself inherits the description of a third module, you'll get a combined
-                    description from all three modules.
-        
-                    Only the basic descriptive properties, <code>dependencies</code> and <code>inheritance</code> are copied.
-        
-                    The <code>content_types</code>, <code>jobs</code>, <code>signals</code>,
-                    <code>special_pages</code> and <code>centralised_lists</code> properties are not copied. You must
-                    repeat these properties in your own <code>description.yaml</code> file if you wish to use them.
-            
             inherit_frameworks_from_module:
                 type: string
                 description: >

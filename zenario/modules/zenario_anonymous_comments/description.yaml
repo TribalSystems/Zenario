@@ -7,22 +7,20 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Comments (without login)
 description: |
-    <p>This Module allows visitors, without needing to log in as an extranet user,
-        to write comments on content items, thereby adding a useful
-        feedback feature to blogs and other content items.<p>
-    <p>The editor is a rich text editor, the features of which can be enabled
-        or disabled in the plugin's settings.</p>
-    <p>When a comment is added, an email notification can be sent to a specified
-        email address (typically a site administrator).
-        Template and this will be used to send the report.</p>
-    <p>Use the following fields in emails:</p>
+    <p>This module allows visitors to write comments on pages on the site (content items).
+        This may be a useful feature to have on news and blog items.<p>
+    <p>Visitors will see a rich text editor, and you can use the plugin settings 
+        to enable or disable certain of its features.</p>
+    <p>When a comment is added, Zenario can send an email notification to a specified
+        email address (typically a site administrator).</p>
+    <p>Use the following fields may be merged into these emails:</p>
     <ul>
-        <li>[[cms_url]] - The URL to the website.</li>
-        <li>[[link]] - A link to the page.</li>
-        <li>[[message]] - The message that was just created or edited.</li>
-        <li>[[page_title]] - The title of the page.</li>
-        <li>[[poster_screen_name]] or [[poster_username]] - The name and/or email
-            (If the option to display either the name and/or the email was enabled in the plugin settings.)</li>
+        <li>[[link]] - Page URL</li>
+        <li>[[page_title]] - The title of the page</li>
+        <li>[[message]] - The message that was just created (or edited)</li>
+        <li>[[poster_username]] or [[poster_screen_name]]: if the page was used by an
+            extranet user these will be set.</li>
+        <li>[[cms_url]] - Website URL</li>
     </ul>
 category: management
 keywords: anonymous, comment, forum, post, chat, blog, message

@@ -49,8 +49,9 @@ ze\dbAdm::revision(217, "
 		'Your Zenario administrator account',
 		'<h1>Administrator account created</h1>
 <p>Dear&nbsp;[[first_name]] [[last_name]],</p>
-<p><br>You have been created an administrator account on [[cms_url]].</p>
-<p>Your username is <strong>[[username]]</strong>.</p>
+<p>An administator account has been created for you in the site at [[cms_url]].</p>
+<p>Your administrator username is <strong>[[username]]</strong>.</p>
+
 <p>&nbsp;</p>
 <p>What to do now:</p>
 <p>1) Follow this link to create a password: [[new_admin_cms_url]]</p>
@@ -116,8 +117,9 @@ _sql
 	UPDATE [[DB_PREFIX]]email_templates
 	SET `body` = '<h1>Administrator account created</h1>
 		<p>Dear&nbsp;[[first_name]] [[last_name]],</p>
-		<p><br>You have been created an administrator account on [[cms_url]].</p>
-		<p>Your username is <strong>[[username]]</strong>.</p>
+		<p><br>An administator account has been created for you in the site at [[cms_url]].</p>
+		<p>Your administrator username is <strong>[[username]]</strong>.</p>
+
 		<p>&nbsp;</p>
 		<p>What to do now:</p>
 		<p>1) Follow this link to create a password:</p>

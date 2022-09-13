@@ -16,28 +16,34 @@ zenario_videos_manager__video:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
                 url:
                     label: 'URL:'
                     type: text
                     maxlength: 255
-                    note_below: Enter a URL on YouTube or Vimeo, e.g. https://youtu.be/12345. If it's YouTube, press "Fetch" to get its thumbnail and descriptive text.
+                    note_below: Enter a URL on YouTube or Vimeo, e.g. https://youtu.be/12345. You can then press the "Fetch" button to get the video's thumbnail and descriptive text.
                     row_class: zenario_row_full_width_field
                     onclick: "if ($(this).val()=='') {$(this).val('https://')}"
                     validation:
                         required: "Please enter a URL."
+                    format_onchange: true
                 url_test:
                     same_row: Yes
                     type: button
                     value: Test
                     onclick: "if ($('#url').val()!='') {window.open($('#url').val())}"
-                fetch_youtube_settings:
+                fetch_youtube_details:
                     type: button
                     value: Fetch YouTube details
                     format_onchange: true
+                    hidden: true
+                fetch_vimeo_details:
+                    type: button
+                    value: Fetch Vimeo details
+                    format_onchange: true
+                    hidden: true
                 video_privacy:
-                    label: "Privacy (Vimeo only):"
+                    label: "Privacy (determined on the fly; applies to Vimeo only):"
                     snippet:
                         html: ""
                 image:

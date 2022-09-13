@@ -4,6 +4,7 @@ zenario__content:
 	nav:
 		mic_image_library:
 			ord: 27
+			css_class: media_image
 			label: MIC images
 			tooltip: |
 				View and manage images used by Multiple Image Container plugins.

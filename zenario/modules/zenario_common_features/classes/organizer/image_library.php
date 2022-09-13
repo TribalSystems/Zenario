@@ -523,9 +523,9 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 					if ($unusedImaged > 0) {
 						$phrase = ze\admin::nPhrase(
 							'You have selected [[total_images]] images for deletion, but one of them is in use. Are you sure you wish to delete them?',
-							'You have selected [[total_images]] images for deletion, but [[unused_images]] of them are in use. Are you sure you wish to delete them?',
-							$unusedImaged,
-							['unused_images' => $unusedImaged, 'total_images' => $count]
+							'You have selected [[total_images]] images for deletion, but [[used_images]] of them are in use. Are you sure you wish to delete them?',
+							$usedImages,
+							['used_images' => $usedImages, 'total_images' => $count]
 						);
 					} else {
 						$phrase = ze\admin::phrase(
@@ -559,16 +559,21 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 
 			$width = $height = $url = false;
 			if (ze\file::imageLink($width, $height, $url, $ids)) {
+				$mergeFields = [
+					'Copy_phrase' => ze\admin::phrase('Copy'),
+					'Copied_phrase' => ze\admin::phrase('Copied'),
+					'Heading_phrase' => ze\admin::phrase('The URL to your image is shown below:'),
+					'Full_hyperlink_phrase' => ze\admin::phrase('Full hyperlink:'),
+					'Full_hyperlink_value' => htmlspecialchars(ze\link::absolute(). $url),
+					'Internal_hyperlink_phrase' => ze\admin::phrase('Internal hyperlink:'),
+					'Internal_hyperlink_value' => htmlspecialchars($url),
+					'Private_links_phrase' => ze\admin::phrase('If this image is made private, these links will stop working.')
+				];
+				
+				$frameworkPath = ze::moduleDir('zenario_common_features', 'twig/image_url.twig.html');
+				$html = ze\twig::render($frameworkPath, $mergeFields);
 
-				echo
-					'<!--Message_Type:Success-->',
-					'<h3>', ze\admin::phrase('The URL to your image is shown below:'), '</h3>',
-					'<p>', ze\admin::phrase('Full hyperlink:<br/>[[full]]<br/><br/>Internal hyperlink:<br/>[[internal]]<br/>',
-						[
-							'full' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars(ze\link::absolute(). $url). '"/>',
-							'internal' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars($url). '"/>'
-					]), '</p>',
-					'<p>', ze\admin::phrase('If this image is made private, these links will stop working.'), '</p>';
+				echo $html;
 
 			} else {
 				echo

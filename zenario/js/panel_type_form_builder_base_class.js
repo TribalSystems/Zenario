@@ -573,7 +573,7 @@ methods.getTUIXFieldValue = function(tuixField, tuixFieldId) {
 	} else if (tuixField.type == 'radios') {
 		value = $('#organizer_field_details_form input[name="' + tuixFieldId + '"]:checked').val();
 	
-	} else if (tuixField.type == 'checkboxes') {
+	} else if (tuixField.type == 'checkboxes' || tuixField.type == 'sortable_selection') {
 		value = [];
 		$('#organizer_field_details_form input[name="' + tuixFieldId + '"]:checked').each(function() {
 			value.push($(this).val());

@@ -7,7 +7,6 @@ diagnostics:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             show_errors_after_field: description
             fields:
                 description:
@@ -598,10 +597,8 @@ diagnostics:
                     snippet:
                         html: |
                             Your site is in development mode.<br/>
-                            The PHP error reporting level will currently suppress PHP errors/notices which developers should see.<br/>
-                            To change this, edit the <code>zenario_siteconfig.php</code> file and ensure the following line is not commented out:<br/>
+                            The PHP error reporting level specified in <code>zenario_siteconfig.php</code> currently tells Zenario to suppress PHP issues which developers should see. To change this, edit the file and ensure it has the following line:<br/>
                             <code>define('ERROR_REPORTING_LEVEL', (E_ALL | E_NOTICE | E_STRICT));</code><br/>
-                            Alternatively, click the "hammer" icon in Zenario to make the site run in normal production mode.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 notices_shown:
@@ -610,8 +607,8 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site is in production mode, but its configuration file is set to show "Notices" raised by PHP programs. These minor PHP program errors may be seen by website visitors. Notices are normally intended for Zenario software developers.<br/>
-                            To change this, edit the <code>zenario_siteconfig.php</code> file and ensure the following line is not commented out:<br/>
+                            Your site is in production mode, but its <code>zenario_siteconfig.php</code> file is set to show "Notices" raised by PHP programs. These could be seen by website visitors. Notices are normally intended for Zenario software developers.<br/>
+                            To change this, edit the file and ensure it has the following line:<br/>
                             <code>define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE & ~E_STRICT));</code><br>
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
@@ -686,8 +683,8 @@ diagnostics:
                     snippet:
                         html: |
                             This site uses Personal Data Encryption to protect user data.
-                            However, the encryption key in the <code>zenario_custom/site_description.yaml</code>
-                            file does not correspond with the encryption key on this server,
+                            However, the encryption key is either not specified in the <code>zenario_siteconfig.php</code>
+                            file, or it does not correspond with the encryption key on this server,
                             so no encrypted personal data will be displayed.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
@@ -723,11 +720,6 @@ diagnostics:
                     visible_if: zenarioAW.togglePressed(field)
                 
                 web_pages_not_cached:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_level
-                    visible_if: zenarioAW.togglePressed(field)
-                fabs_not_cached:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level

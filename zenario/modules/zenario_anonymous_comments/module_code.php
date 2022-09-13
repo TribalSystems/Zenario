@@ -123,6 +123,8 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			return $this->show = false;
 		}
 		
+		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		
 		$this->registerGetRequest('comm_page', 1);
 		$this->page = (int) ($_REQUEST['comm_page'] ?? 1) ?: 1;
 
@@ -138,6 +140,8 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$this->threadActionHandler();
 		
 		$this->threadSelectMode();
+
+		$this->mergeFields['User_is_admin'] = ze\admin::id();
 		
 		return $this->show = true;
 	}
@@ -162,9 +166,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	}
 	
 	function defaultReplyStatus() {
-		return $this->setting('comments_require_approval') 
-					? ( $this->canApprovePost() ? 'published' : 'pending' ) 
-						: 'published';
+		return $this->setting('comments_require_approval') ? 'pending' : 'published';
 	}
 	
 	function canDeleteThread() {
@@ -194,6 +196,32 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			return false;
 		} else {
 			return $this->modPrivs;
+		}
+	}
+
+
+	function postHasTooManyHyperlinks($post, $hyperlinkLimit) {
+		if ($hyperlinkLimit > 0) {
+			//Limit set
+			return (substr_count($post, '<a') > $hyperlinkLimit);
+		} else {
+			//Limit disabled
+			return false;
+		}
+	}
+
+	function addNofollowToHyperlinks(&$post) {
+		if (!empty($post)) {
+			$doc = new DOMDocument();
+			$doc->formatOutput = false;
+			$doc->loadHTML($post, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+			$links = $doc->getElementsByTagName('a');
+			
+			foreach ($links as $link) {
+				$link->setAttribute('rel', 'nofollow');
+			}
+
+			$post = $doc->saveHTML();
 		}
 	}
 	
@@ -822,7 +850,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		if ($this->canMoveThread()) {
 			$this->sections['Move_Thread'] = true;
-			$this->mergeFields['Move_Thread_Link'] = 'href="#" onclick="'. $this->moduleClassName. ".moveThread('". $this->slotName. "', '". ze\admin::phrase('Move Thread to a different Forum'). "', ". $this->forumId. ", ". $this->thread['id']. ", '". ($_SESSION['confirm_key'] ?? false). "'); return false;". '"';
+			$this->mergeFields['Move_Thread_Link'] = 'href="#" onclick="'. $this->moduleClassName. ".moveThread('". $this->slotName. "', '". ze\admin::phrase('Move thread to a different forum'). "', ". $this->forumId. ", ". $this->thread['id']. ", '". ($_SESSION['confirm_key'] ?? false). "'); return false;". '"';
 		}
 		
 		if ($this->canDeleteThread()) {
@@ -860,17 +888,17 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		if ($_REQUEST['comm_confirm'] ?? false) {
 			if (($_REQUEST['comm_request'] ?? false) == 'delete_post' && $this->canDeletePost($this->post)) {
-				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this comment?'), $this->phrase('Delete Comment'));
+				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this comment?'), $this->phrase('Delete comment'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'approve_post' && $this->canApprovePost()) {
 				if (($_REQUEST['checksum'] ?? false) == md5($this->post['message_text'] ?? $this->thread['title'])) {
-					$this->showConfirmBox($this->phrase('Are you sure that you wish to approve this comment?'), $this->phrase('Approve Comment'));
+					$this->showConfirmBox($this->phrase('Are you sure that you wish to approve this comment?'), $this->phrase('Approve comment'));
 				} else {
-					$this->showConfirmBox($this->phrase('The comment has just been edited. Please review it again.'), $this->phrase('Approve modified Comment'));
+					$this->showConfirmBox($this->phrase('The comment has just been edited. Please review it again.'), $this->phrase('Approve modified comment'));
 				}
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'delete_thread' && $this->canDeleteThread()) {
-				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this thread?'), $this->phrase('Delete Thread'));
+				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this thread?'), $this->phrase('Delete thread'));
 				
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'lock_thread' && $this->canLockThread()) {
 				$this->showConfirmBox($this->phrase('Are you sure that you wish to disallow further comments?'), $this->phrase('Disallow further comments'));
@@ -887,16 +915,16 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			
 		} elseif ($_REQUEST['comm_enter_text'] ?? false) {
 			if (($_REQUEST['comm_request'] ?? false) == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
-				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save Comment'), 'edit', $this->phrase('Edit Title:'));
+				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save comment'), 'edit', $this->phrase('Edit title:'));
 			
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
-				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save Comment'), 'edit');
+				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save comment'), 'edit');
 			
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
 				$this->showPostScreen($this->phrase('Enter a comment:'), $this->phrase('Add comment'), 'quote');
 			
 			} elseif (($_REQUEST['comm_request'] ?? false) == 'report_post' && $this->canReportPost()) {
-				$this->showPostScreen($this->phrase('Report the comment above as offensive:'), $this->phrase('Report as Offensive'), 'none');
+				$this->showPostScreen($this->phrase('Report the comment above as offensive:'), $this->phrase('Report this comment'), 'none');
 			}
 			
 		} else {
@@ -944,10 +972,86 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		require ze::funIncPath(__FILE__, __FUNCTION__);
+		switch ($path) {
+			case 'plugin_settings':
+				if (!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {
+					//Show warning
+					$recaptchaLink = "<a href='organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
+					$box['tabs']['posting']['notices']['captcha_keys_not_set']['message'] = $this->phrase(
+						"Recaptcha keys are not set. To show a captcha you must set the recaptcha [[recaptcha_link]].",
+						['recaptcha_link' => $recaptchaLink]
+					);
+					$box['tabs']['posting']['notices']['captcha_keys_not_set']['show'] = true;
+				}
+
+				if (empty($fields['moderation/notification_email_template']['value'])) {
+					$fields['moderation/notification_email_template']['value'] = 'zenario_comments__to_admin_comment_notification_en';
+				}
+
+				if (empty($fields['moderation/email_template_for_reports']['value'])) {
+					$fields['moderation/email_template_for_reports']['value'] = 'zenario_comments__comment_report';
+				}
+
+				if (empty($fields['moderation/email_template_for_approve_requests']['value'])) {
+					$fields['moderation/email_template_for_approve_requests']['value'] = 'zenario_comments__comment_awaiting_approval';
+				}
+
+				$box['tabs']['order']['fields']['pagination_style_posts']['values'] = 
+					ze\pluginAdm::paginationOptions();
+				
+				if (isset($box['tabs']['order']['fields']['pagination_style_threads'])) {
+					$box['tabs']['order']['fields']['pagination_style_threads']['values'] = 
+						ze\pluginAdm::paginationOptions();
+				}
+				
+				if (isset($box['tabs']['moderation']['fields']['email_address_for_reports']) && !$box['key']['instanceId']) {
+					$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = ze::setting('email_address_admin');
+				}
+				
+				
+				$moderators =
+					isset($box['tabs']['moderation']['fields']['moderators']);
+				$restrict_posting_to_group =
+					isset($box['tabs']['posting']['fields']['restrict_posting_to_group']);
+				$restrict_new_thread_to_group =
+					isset($box['tabs']['posting']['fields']['restrict_new_thread_to_group']);
+				
+				if ($moderators
+				 || $restrict_posting_to_group
+				 || $restrict_new_thread_to_group) {
+					
+					$groups = ze\datasetAdm::listCustomFields('users', $flat = false, $filter = 'groups_only', true, true);
+					//ze\datasetAdm::listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
+					
+					if ($moderators) {
+						$box['tabs']['moderation']['fields']['moderators']['values'] = $groups;
+					}
+					if ($restrict_posting_to_group) {
+						$box['tabs']['posting']['fields']['restrict_posting_to_group']['values'] = $groups;
+					}
+					if ($restrict_new_thread_to_group) {
+						$box['tabs']['posting']['fields']['restrict_new_thread_to_group']['values'] = $groups;
+					}
+				}
+				
+				foreach ($fields as &$field) {
+					if (!empty($field['note_below'])
+					 && $field['note_below'] == '_insert_email_template_note_here_') {
+						$field['note_below'] =
+							ze\admin::phrase('Please see the <a href="[[link]]" target="_blank">module description</a> to get a full list of merge fields which can be used in the selected email template.',
+								['link' => htmlspecialchars(
+									ze\link::absolute().
+									'organizer.php#zenario__modules/panels/modules//'. $box['key']['moduleId']. '/')]);
+						
+						
+					}
+				}
+				
+				break;
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		return require ze::funIncPath(__FILE__, __FUNCTION__);
+		//...
 	}
 }

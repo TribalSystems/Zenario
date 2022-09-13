@@ -56,23 +56,29 @@
 					<% if (zenarioA.adminPrivs._PRIV_VIEW_DIAGNOSTICS) { %>
 						<div
 							class="zenario_at_dev_icon organizer_diagnostics"
-							onclick="zenario.goToURL(URLBasePath + '{{zenario.jsEscape(zenarioATLinks.diagnostics)}}');"
-							title="View site diagnostics"
+							<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
+								onclick="zenario.goToURL(URLBasePath + '{{zenario.jsEscape(zenarioATLinks.diagnostics)}}');"
+								title="View site diagnostics"
+							<% } %>
 						></div>
 					<% } %>
 					
 					<div
 						class="zenario_at_dev_icon organizer_info_box"
-						onclick="zenarioA.infoBox();"
-						title="About Zenario"
+						<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
+							onclick="zenarioA.infoBox();"
+							title="About Zenario"
+						<% } %>
 					></div>
 					<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
 						<div
 							class="zenario_at_dev_icon organizer_help_box"
 							data-step="16" data-position="bottom-right-aligned"
 							data-intro="{{'<p><strong>Help</strong></p><p>Click here for Help.</p>'|escape}}"
-							onclick="zenarioAB.open('zenario_help_line', {currentUrl: document.location.href});"
-							title="Zenario support line"
+							<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
+								onclick="zenarioAB.open('zenario_help_line', {currentUrl: document.location.href});"
+								title="Zenario support line"
+							<% } %>
 							data-tooltip-options="
 								{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
 							"
@@ -81,23 +87,30 @@
 				
 					<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
 						<div
-							onclick="zenarioAB.enableOrDisableSite();"
+							<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
+								onclick="zenarioAB.enableOrDisableSite();"
+							<% } %>
 						
 							<% if (zenarioA.siteSettings.site_enabled) { %>
 								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
 									class="zenario_at_dev_icon site_enabled_development"
-									title="Site enabled; development mode"
+									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
+										title="Site enabled; development mode"
+									<% } %>
 								<% } else { %>
 									class="zenario_at_dev_icon site_enabled"
-									title="Site enabled; production mode"
 								<% } %>
 							<% } else { %>
 								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
 									class="zenario_at_dev_icon site_disabled"
-									title="Site disabled; development mode"
+									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
+										title="Site disabled; development mode"
+									<% } %>
 								<% } else { %>
 									class="zenario_at_dev_icon site_disabled"
-									title="Site disabled"
+									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
+										title="Site disabled"
+									<% } %>
 								<% } %>
 							<% } %>
 						></div>

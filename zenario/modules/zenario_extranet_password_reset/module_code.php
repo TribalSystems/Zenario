@@ -47,9 +47,14 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			//Add a short delay to make it a tiny bit harder to repeatedly spam this plugin
 			usleep(500000);
 			
-			if ($this->sendResetEmail()) {
-				if ($this->setting('block_email_enumeration')) {
-					$this->message = $this->phrase('If the email address you provided matches your email on this site, you will be sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
+			$userIsContactOrSuspended = false;
+
+			//If the user is a contact or suspended, no email will be sent,
+			//and the function sendResetEmail() will set $userIsContactOrSuspended to true.
+			//The "if" statement below will run.
+			if ($this->sendResetEmail($userIsContactOrSuspended) || $userIsContactOrSuspended) {
+				if ($this->setting('block_email_enumeration') || $userIsContactOrSuspended) {
+					$this->message = $this->phrase('If the email address you provided matches your email on this site, you will have been sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
 				} else {
 					$this->message = $this->phrase('You have been sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
 				}
@@ -109,7 +114,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
 	}
 	
-	private function sendResetEmail() {
+	private function sendResetEmail(&$userIsContactOrSuspended) {
 		if (!$this->validateFormFields('Reset_Password_Form')) {
 			// Function displays error message so no action here
 		} elseif (!$userDetails = $this->getDetailsFromEmail($_POST['extranet_email'] ?? false)) {
@@ -123,20 +128,25 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			if (ze\row::exists('users', ['email' => ($_POST['extranet_email'] ?? false), 'status' => 'pending', 'email_verified' => false  ])) {
 				$this->errors[] = ['Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.')];
 			} else {
-				ze\userAdm::updateHash($userDetails['id']);
-				ze\row::update('users', ['reset_password_time' => ze\date::now()], ['id' => $userDetails['id']]);
-				$userDetails = ze\user::details($userDetails['id']);
-				$userDetails['cms_url'] = ze\link::absolute();
-				$userDetails['reset_url'] = static::getExtranetPasswordResetLink($userDetails['id'], $this->cID, $this->cType);
-				
-				if (ze\module::inc('zenario_email_template_manager')){
-					if (zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'],$this->setting('password_reset_email_template'),$userDetails,[])){
-						return true;
+				if ($userDetails['status'] == 'active') {
+					ze\userAdm::updateHash($userDetails['id']);
+					ze\row::update('users', ['reset_password_time' => ze\date::now()], ['id' => $userDetails['id']]);
+					$userDetails = ze\user::details($userDetails['id']);
+					$userDetails['cms_url'] = ze\link::absolute();
+					$userDetails['reset_url'] = static::getExtranetPasswordResetLink($userDetails['id'], $this->cID, $this->cType);
+					
+					if (ze\module::inc('zenario_email_template_manager')){
+						if (zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'],$this->setting('password_reset_email_template'),$userDetails,[])){
+							return true;
+						} else {
+							$this->errors[] = ['Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.')];
+						}
 					} else {
 						$this->errors[] = ['Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.')];
 					}
 				} else {
-					$this->errors[] = ['Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.')];
+					$userIsContactOrSuspended = true;
+					return false;
 				}
 			}
 		}

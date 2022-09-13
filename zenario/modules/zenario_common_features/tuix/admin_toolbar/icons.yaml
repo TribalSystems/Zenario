@@ -3,91 +3,70 @@
 sections:
     icons:
         buttons:
-            pinned:
-                ord: 10
-                css_class: pinned
-                tooltip: "This content item is pinned"
-                admin_box:
-                    path: zenario_content
-            not_pinned:
-                ord: 10.1
-                css_class: not_pinned
-                tooltip: "This content item is not pinned"
-                admin_box:
-                    path: zenario_content
-            item_categories_some:
-                ord: 11
-                css_class: zenario_at_icon_categories_some
-                tooltip: Content Item Categories|
-                admin_box:
-                    priv: _PRIV_EDIT_DRAFT
-                    path: zenario_content_categories
-            item_categories_none:
-                ord: 11.2
-                css_class: zenario_at_icon_categories_none
-                tooltip: Content Item Categories|None
-                admin_box:
-                    priv: _PRIV_EDIT_DRAFT
-                    path: zenario_content_categories
-            layout_id: 
-                ord: 18
-                css_class: zenario_at_icon_layout
-                tooptip: Content Item Layout
-                admin_box:
-                    path: zenario_content_layout
-            language_id:
-                ord: 19
-                css_class: zenario_at_icon_language
+            tag_id:
+                css_class: zenario_at_icon_tag_id
+                label: ""
+            version_1:
+                hidden: true
+                css_class: zenario_at_icon_version
+                label: ""
+            version_2:
+                hidden: true
+                css_class: zenario_at_icon_version
+                label: ""
+            version_3:
+                hidden: true
+                css_class: zenario_at_icon_version
                 label: ""
             alias_dropdown:
-                ord: 20
                 css_class: zenario_at_icon_alias
             copy_url:
-                ord: 22
                 visible_if: zenario.canCopy()
                 parent: alias_dropdown
                 label: Copy URL/alias to clipboard
             go_to_alias:
-                ord: 23
                 parent: alias_dropdown
                 label: Go to content item via its alias
             no_alias:
-                ord: 24
                 parent: alias_dropdown
                 tooltip: This content item does not have an alias
             alias:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                     && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
-                ord: 21
                 parent: alias_dropdown
                 label: Edit alias
                 admin_box:
                     priv: _PRIV_EDIT_DRAFT
                     path: zenario_alias
-            title:
-                ord: 40
-                css_class: zenario_at_icon_title
-                tooltip: ""
+            language_id:
+                css_class: zenario_at_icon_language
+                label: ""
+            layout_id: 
+                css_class: zenario_at_icon_layout
+                tooptip: Content Item Layout
+                admin_box:
+                    path: zenario_content_layout
+            item_categories_some:
+                css_class: zenario_at_icon_categories_some
+                tooltip: Content Item Categories|
                 admin_box:
                     priv: _PRIV_EDIT_DRAFT
+                    path: zenario_content_categories
+            item_categories_none:
+                css_class: zenario_at_icon_categories_none
+                tooltip: Content Item Categories|None
+                admin_box:
+                    priv: _PRIV_EDIT_DRAFT
+                    path: zenario_content_categories
+            pinned:
+                css_class: pinned
+                tooltip: "This content item is pinned"
+                admin_box:
                     path: zenario_content
-            version_3:
-                ord: 50
-                hidden: true
-                css_class: zenario_at_icon_version
-                label: ""
-            version_2:
-                ord: 60
-                hidden: true
-                css_class: zenario_at_icon_version
-                label: ""
-            version_1:
-                ord: 70
-                hidden: true
-                css_class: zenario_at_icon_version
-                label: ""
-            tag_id:
-                ord: 80
-                css_class: zenario_at_icon_tag_id
-                label: ""
+            not_pinned:
+                css_class: not_pinned
+                tooltip: "This content item is not pinned"
+                admin_box:
+                    path: zenario_content
+            

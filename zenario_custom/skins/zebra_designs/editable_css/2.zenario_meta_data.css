@@ -32,7 +32,8 @@
 .zenario_meta_data > div[class*='writer_'] h4,
 .zenario_meta_data > div[class*='writer_'] h5,
 .zenario_meta_data > div[class*='writer_'] h6,
-.zenario_meta_data > div[class*='writer_'] p {
+.zenario_meta_data > div[class*='writer_'] p,
+.zenario_meta_data > div.pinned_text > * {
 	margin-bottom:5px;
 }
 

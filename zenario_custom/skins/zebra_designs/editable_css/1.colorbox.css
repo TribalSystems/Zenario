@@ -1,40 +1,68 @@
 /* Reset backgrounds */
-#cboxTitle,
-#cboxLoadingGraphic,
-#cboxPrevious,
-#cboxNext,
-#cboxClose,
-#cboxClose:hover {
+#colorbox:not(.zenario_admin_cb) #cboxTitle,
+#colorbox:not(.zenario_admin_cb) #cboxLoadingGraphic,
+#colorbox:not(.zenario_admin_cb) #cboxPrevious,
+#colorbox:not(.zenario_admin_cb) #cboxNext,
+#colorbox:not(.zenario_admin_cb) #cboxClose,
+#colorbox:not(.zenario_admin_cb) #cboxClose:hover {
 	background:none;
 }
 
-body #cboxOverlay {
+#colorbox:not(.zenario_admin_cb) #cboxTopLeft, 
+#colorbox:not(.zenario_admin_cb) #cboxTopCenter, 
+#colorbox:not(.zenario_admin_cb) #cboxTopRight, 
+#colorbox:not(.zenario_admin_cb) #cboxMiddleLeft, 
+#colorbox:not(.zenario_admin_cb) #cboxMiddleRight, 
+#colorbox:not(.zenario_admin_cb) #cboxBottomLeft, 
+#colorbox:not(.zenario_admin_cb) #cboxBottomCenter, 
+#colorbox:not(.zenario_admin_cb) #cboxBottomRight {
+	visibility:hidden;
+}
+
+body #colorbox:not(.zenario_admin_cb) #cboxOverlay {
 	filter:alpha(opacity=80) !important;
 	opacity:.8 !important;
 	background:#000;
 }
 
-#cboxContent {
+#colorbox:not(.zenario_admin_cb) #cboxContent {
+  	background: #FFF;
+  	-webkit-border-radius: 6px;
+  	margin: 5px;
+  	border-radius: 4px;
+	-webkit-box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.7);
+  	box-shadow: 0px 1px 6px 0px rgba(0, 0, 0, 0.7);
+  	border: 5px solid #fff;
 	font-family:'robotolight',Arial, Helvetica, sans-serif;
 	font-size:100%;
 	line-height:22px;
 }
 
-#cboxTitle {
+#colorbox:not(.zenario_admin_cb) #cboxLoadedContent {
+	margin-bottom:0;
+}
+
+#colorbox:not(.zenario_admin_cb) #cboxTitle {
+	bottom:0; 
+	left:0; 
+	color:#fff; 
+	width:100%; 
+	padding:0;
 	width:calc(100% - 20px);
 	padding:3px 10px;
 	background:rgba(0,0,0,0.6);
+	text-align:left;
 }
 
-#cboxClose {
+#colorbox:not(.zenario_admin_cb) #cboxClose {
 	width:20px;
 	height:20px;
 	top:5px;
 	right:5px;
 }
 
-#cboxClose:before, 
-#cboxClose:after {
+#colorbox:not(.zenario_admin_cb) #cboxClose:before, 
+#colorbox:not(.zenario_admin_cb) #cboxClose:after {
   position: absolute;
   left: 10px;
   content: ' ';
@@ -46,27 +74,32 @@ body #cboxOverlay {
     transition: all 0.1s ease-in-out;
 }
 
-#cboxClose:hover:before, 
-#cboxClose:hover:after {
+#colorbox:not(.zenario_admin_cb) #cboxClose:hover:before, 
+#colorbox:not(.zenario_admin_cb) #cboxClose:hover:after {
   background-color: #2a98ce;
 }
 
-#cboxClose:before {
+#colorbox:not(.zenario_admin_cb) #cboxClose:before {
   transform: rotate(45deg);
 }
-#cboxClose:after {
+#colorbox:not(.zenario_admin_cb) #cboxClose:after {
   transform: rotate(-45deg);
 }
 
-#cboxPrevious,
-#cboxNext {
+#colorbox:not(.zenario_admin_cb) #cboxPrevious,
+#colorbox:not(.zenario_admin_cb) #cboxNext {
 	display: inline-block;
 	width: 12px;
 	height: 12px;
+	top:50%;
 }
 
-#cboxPrevious:after,
-#cboxNext:after {
+#colorbox:not(.zenario_admin_cb) #cboxCurrent {
+	display:none !important;
+}
+
+#colorbox:not(.zenario_admin_cb) #cboxPrevious:after,
+#colorbox:not(.zenario_admin_cb) #cboxNext:after {
 	content: '';
 	display: inline-block;
 	height: 12px;
@@ -82,37 +115,38 @@ body #cboxOverlay {
     transition: all 0.1s ease-in-out;
 }
 
-#cboxPrevious:hover:after,
-#cboxNext:hover:after {
+#colorbox:not(.zenario_admin_cb) #cboxPrevious:hover:after,
+#colorbox:not(.zenario_admin_cb) #cboxNext:hover:after {
   border-color: #2a98ce;
 }
 
-#cboxClose,
-#cboxClose:before, 
-#cboxClose:after,
-#cboxPrevious,
-#cboxNext,
-#cboxPrevious:after,
-#cboxNext:after {
+#colorbox:not(.zenario_admin_cb) #cboxClose,
+#colorbox:not(.zenario_admin_cb) #cboxClose:before, 
+#colorbox:not(.zenario_admin_cb) #cboxClose:after,
+#colorbox:not(.zenario_admin_cb) #cboxPrevious,
+#colorbox:not(.zenario_admin_cb) #cboxNext,
+#colorbox:not(.zenario_admin_cb) #cboxPrevious:after,
+#colorbox:not(.zenario_admin_cb) #cboxNext:after {
 	outline:none;
 	outline:0;
 }
 
-#cboxPrevious {
+#colorbox:not(.zenario_admin_cb) #cboxPrevious {
 	left:15px;
     -moz-transform: rotate(135deg);
     -webkit-transform: rotate(135deg);
     transform: rotate(135deg);
 }
 
-#cboxNext {
+#colorbox:not(.zenario_admin_cb) #cboxNext {
 	right:15px;
+	left:auto;
 	-moz-transform: rotate(315deg);
     -webkit-transform: rotate(315deg);
     transform: rotate(315deg);
 }
 
-#cboxLoadingGraphic {
+#colorbox:not(.zenario_admin_cb) #cboxLoadingGraphic {
 	display: inline-block;
   	width: 40px;
   	height: 40px;
@@ -122,7 +156,7 @@ body #cboxOverlay {
   	background:none;
 }
 
-#cboxLoadingGraphic:after {
+#colorbox:not(.zenario_admin_cb) #cboxLoadingGraphic:after {
   content: " ";
   display: block;
   width: 34px;
@@ -146,26 +180,26 @@ body #cboxOverlay {
 /*  Colorbox 
 --------------------------------------------------------------------------------------------------*/
 
-#colorbox form {
+#colorbox:not(.zenario_admin_cb) form {
 	margin:0;
 	padding:0;
 }
 
-#colorbox input,
-#colorbox button,
-#colorbox select,
-#colorbox textarea,
-#colorbox select {
+#colorbox:not(.zenario_admin_cb) input,
+#colorbox:not(.zenario_admin_cb) button,
+#colorbox:not(.zenario_admin_cb) select,
+#colorbox:not(.zenario_admin_cb) textarea,
+#colorbox:not(.zenario_admin_cb) select {
 	font-size:1em;
 	font-family:'robotolight',Arial, Helvetica, sans-serif;
 }
 
-#colorbox input[type='text'],
-#colorbox input[type='password'],
-#colorbox input[type='email'],
-#colorbox input[type='search'],
-#colorbox textarea,
-#colorbox select {
+#colorbox:not(.zenario_admin_cb) input[type='text'],
+#colorbox:not(.zenario_admin_cb) input[type='password'],
+#colorbox:not(.zenario_admin_cb) input[type='email'],
+#colorbox:not(.zenario_admin_cb) input[type='search'],
+#colorbox:not(.zenario_admin_cb) textarea,
+#colorbox:not(.zenario_admin_cb) select {
 	width:calc(100% - 22px);
 	padding:0 10px;
 	color:#525151;
@@ -173,56 +207,56 @@ body #cboxOverlay {
 	border:1px solid #b8babc;
 }
 
-#colorbox select {
+#colorbox:not(.zenario_admin_cb) select {
 	width:100%;
 }
 
-#colorbox textarea {
+#colorbox:not(.zenario_admin_cb) textarea {
 	padding-top:10px;
 	padding-bottom:10px;
 }
 
-#colorbox input[type='text'],
-#colorbox input[type='password'],
-#colorbox input[type='email'],
-#colorbox input[type='search'],
-#colorbox select {
+#colorbox:not(.zenario_admin_cb) input[type='text'],
+#colorbox:not(.zenario_admin_cb) input[type='password'],
+#colorbox:not(.zenario_admin_cb) input[type='email'],
+#colorbox:not(.zenario_admin_cb) input[type='search'],
+#colorbox:not(.zenario_admin_cb) select {
 	height:30px;
 	line-height:30px;
 	font-size:1em;
 }
 
-#colorbox input[type='text'],
-#colorbox input[type='password'],
-#colorbox input[type='email'],
-#colorbox input[type='search'],
-#colorbox select,
-#colorbox textarea {
+#colorbox:not(.zenario_admin_cb) input[type='text'],
+#colorbox:not(.zenario_admin_cb) input[type='password'],
+#colorbox:not(.zenario_admin_cb) input[type='email'],
+#colorbox:not(.zenario_admin_cb) input[type='search'],
+#colorbox:not(.zenario_admin_cb) select,
+#colorbox:not(.zenario_admin_cb) textarea {
    	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 	border-radius: 6px;
 }
 
-#colorbox input[readonly=''],
-#colorbox input[disabled='disabled'],
-#colorbox textarea[disabled='disabled'],
-#colorbox select[disabled='disabled'] {
+#colorbox:not(.zenario_admin_cb) input[readonly=''],
+#colorbox:not(.zenario_admin_cb) input[disabled='disabled'],
+#colorbox:not(.zenario_admin_cb) textarea[disabled='disabled'],
+#colorbox:not(.zenario_admin_cb) select[disabled='disabled'] {
 	color:#888 !important;
 	background-color:#DFDFDF !important;
 	border-color:#DFDFDF !important;
 	opacity:0.8 !important;
 }
 
-#colorbox input[type='file'] {
+#colorbox:not(.zenario_admin_cb) input[type='file'] {
 	width:100%;
 	white-space: nowrap;
   	overflow: hidden;
   	text-overflow: ellipsis;
 }
 
-#colorbox input[type='submit'],
-#colorbox input[type='button'],
-#colorbox button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext) {
+#colorbox:not(.zenario_admin_cb) input[type='submit'],
+#colorbox:not(.zenario_admin_cb) input[type='button'],
+#colorbox:not(.zenario_admin_cb) button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext) {
 	display:inline-block;
 	height:36px;
 	line-height:32px;
@@ -242,9 +276,9 @@ body #cboxOverlay {
   	cursor:pointer;
 }
 
-#colorbox input[type='submit']:hover,
-#colorbox input[type='button']:hover,
-#colorbox button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext):hover {
+#colorbox:not(.zenario_admin_cb) input[type='submit']:hover,
+#colorbox:not(.zenario_admin_cb) input[type='button']:hover,
+#colorbox:not(.zenario_admin_cb) button:not(#cboxClose):not(#cboxPrevious):not(#cboxNext):hover {
 	background:#b8babc;
 	color:#282e35;
 	text-decoration:none;
@@ -261,5 +295,9 @@ body #cboxOverlay {
 }
 
 #colorbox.zenario_slot #cboxTitle {
+	display:none !important;
+}
+
+#colorbox.caption_hidden #cboxTitle {
 	display:none !important;
 }

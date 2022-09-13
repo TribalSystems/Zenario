@@ -35,12 +35,12 @@ site_settings:
                     snippet:
                         html: |
                             If you will run automated backups of this site,
-                            please ensure that your backup script creates a CSV log file
-                            when it runs, with entries in this format:
+                            please ensure that your backup script appends to a log file to report
+                            when it makes a backup. This should be a CSV file in this format:
                     note_below: |
-                        <pre tstyle="margin: 10px;">2016-01-31 23:59:59,dbhost,dbname1
-                        2016-01-31 23:59:59,dbhost,dbname2
-                        2016-01-31 23:59:59,dbhost,dbname3
+                        <pre tstyle="margin: 10px;">2021-01-31 23:59:59,dbhost,dbname1
+                        2021-01-31 23:59:59,dbhost,dbname2
+                        2021-01-31 23:59:59,dbhost,dbname3
                         ...</pre>
                 automated_backup_log_path:
                     indent: 1
@@ -64,7 +64,7 @@ site_settings:
                     visible_if: zenarioAB.value('check_automated_backups')
                     site_setting:
                         name: automated_backup_days
-                    label: 'Warn if a backup has not been taken for more than:'
+                    label: 'Show a warning on diagnostics screen if a backup has not been taken for more than:'
                     type: select
                     value: 1
                     values:
@@ -115,4 +115,35 @@ site_settings:
                 #    snippet:
                 #        html: '&nbsp;'
         
-        
+        restore_policy:
+            label: Restore policy
+            edit_mode: 
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields: 
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Settings shown in pink boxes are determined in the <code>zenario_siteconfig.php</code> file.
+                            Ask your Zenario system administrator to make changes.
+                zenario_site_description: 
+                    class_name: zenario_common_features
+                    type: grouping
+                    name: zenario_site_description
+                allow_restore:
+                    grouping: zenario_site_description
+                    legend: Set in the <code>zenario_siteconfig.php</code> file
+                    label: |
+                        Restore policy (<code>RESTORE_POLICY</code>):
+                    type: text
+                    readonly: true
+                    style:
+                        width: 4em
+                    note_below: |
+                        "always" means allow database backups to be restored using Organizer.
+                        "never" means disable the ability to restore database backups using Organizer.
+                        Today's date means to allow database backups to be restored on today only.
+                        The diagnostics screen will show a warning if not set.
+
+

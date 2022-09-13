@@ -73,11 +73,8 @@ class menuAdm {
 			$cssClass = 'zenario_menunode_unlinked';
 		}
 		
-		if (empty($item['parent_id'])) {
-			$cssClass .= ' zenario_menunode_toplevel';
-		}
-		if (!empty($item['children'])) {
-			$cssClass .= ' zenario_menunode_with_children';
+		if (!empty($menuNode['restrict_child_content_types'])) {
+			$cssClass .= ' node_suggest_on';
 		}
 		
 		return $cssClass;

@@ -105,7 +105,7 @@ methods.open = function(path, key, tab, values, callBack, createAnotherObject, r
 	thus.isSlidUp =
 	thus.heightBeforeSlideUp =
 	thus.hasPreviewWindow =
-	thus.previewMD5 =
+	thus.previewChecksum =
 	thus.previewPost =
 	thus.previewSlotWidth = false;
 	thus.previewSlotWidthInfo = '';
@@ -145,8 +145,54 @@ methods.initFields = function() {
 };
 
 
-methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, createAnother) {
+//This feature that lets an admin edit multiple content items by
+//selecting multiple in Organizer, but then editing them one at a time.
+methods.openNext = function(saveAndNext) {
+	
+	if (!saveAndNext && !thus.confirmClose(true)) {
+		return;
+	}
+	
+	var key = thus.tuix.key,
+		nextIds = key.nextIds;
+	
+	//Check we're in openNextMode.
+	if (key.openNextMode && defined(nextIds)) {
+		//Clear info from the currently open FAB
+		$('#zenario_abtab').clearQueue();
+		delete thus.tuix;
+		
+		//Throw away the current id and put the next ids in its place
+		key.id = nextIds;
+		delete key.nextIds;
+		
+		//Open the next item
+		thus.open(
+			thus.path,
+			key,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			true,
+			undefined);
+	
+	//Fallback if this was called by mistake.
+	} else {
+		thus.refreshParentAndClose();
+	}
+};
+
+
+methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, createAnother, saveAndNext) {
 	zenarioA.nowDoingSomething(false);
+	
+	//Check if the "saveAndNext" option was requested.
+	//In this case, we don't actually want to close the FAB, instead we'll open up the next one
+	if (saveAndNext && defined(thus.tuix.key.nextIds)) {
+		thus.openNext(saveAndNext);
+		return;
+	}
 	
 	var slotName,
 		requests = {};
@@ -299,7 +345,7 @@ methods.close = function(keepMessageWindowOpen) {
 	
 	delete thus.cb;
 	delete thus.tuix;
-	delete thus.previewMD5;
+	delete thus.previewChecksum;
 	delete thus.previewPost;
 	delete thus.previewSlotWidth;
 	delete thus.previewSlotWidthInfo;
@@ -307,18 +353,28 @@ methods.close = function(keepMessageWindowOpen) {
 	return false;
 };
 
-methods.closeButton = function(onlyCloseIfNoChanges) {
-	//Check if there is an editor open
-	var message = zenarioT.onbeforeunload();
+methods.closeButton = function() {
 	
-	//If there was, give the Admin a chance to stop leaving the page
-	if (!defined(message) || (!onlyCloseIfNoChanges && confirm(message))) {
-		if (thus.isOpen) {
+	if (thus.confirmClose()) {
+		
+		if (thus.tuix
+		 && thus.tuix.key
+		 && thus.tuix.key.openNextMode) {
+			thus.refreshParentAndClose();
+		} else {
 			thus.close();
 		}
 	}
 	
 	return false;
+};
+
+methods.confirmClose = function() {
+	//Check if changes have been made
+	var message = zenarioT.onbeforeunload();
+	
+	//If there is, give the Admin a chance to stop before closing
+	return (!defined(message) || (confirm(message))) && thus.isOpen;
 };
 
 
@@ -755,7 +811,7 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 			includeSlotInfo = false;
 			
 			if (loadValues) {
-				details.md5 = hex_md5(
+				details.checksum = crc32(
 					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getValues1D(false, true, false, true, true)))
 				);
 			}
@@ -763,7 +819,7 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 		
 		case 'plugin_settings':
 			if (loadValues) {
-				details.md5 = hex_md5(
+				details.checksum = crc32(
 					(details.post.overrideSettings = JSON.stringify(thus.getValues1D(true, false)))
 					+
 					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getValues1D(false, true, false, true, true, ['this_css_tab', 'all_css_tab', 'framework_tab'])))
@@ -866,8 +922,8 @@ methods.updatePreview = function(delay) {
 	
 			//If they've changed since last time, refresh the preview window
 			if (preview
-			 && thus.previewMD5 != preview.md5) {
-				thus.previewMD5 = preview.md5;
+			 && thus.previewChecksum != preview.checksum) {
+				thus.previewChecksum = preview.checksum;
 				thus.previewPost = preview.post;
 				thus.submitPreview(preview);
 			}
@@ -933,7 +989,7 @@ methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 		return;
 	}
 	
-	thus.previewMD5 = preview.md5;
+	thus.previewChecksum = preview.checksum;
 	thus.previewPost = preview.post;
 	
 	//Attempt to load the page via GET
@@ -981,8 +1037,7 @@ methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 
 
 methods.editModeAlwaysOn = function(tab) {
-	return !defined(thus.tuix.tabs[tab].edit_mode.always_on)
-		|| engToBoolean(thus.tuix.tabs[tab].edit_mode.always_on)
+	return !thus.tuix.tabs[tab].edit_mode.use_view_and_edit_mode
 		|| thus.savedAndContinued(tab);
 };
 
@@ -1036,7 +1091,7 @@ methods.sendStateToServer = function() {
 
 
 
-methods.save = function(confirm, saveAndContinue, createAnother) {
+methods.save = function(confirm, saveAndContinue, createAnother, saveAndNext) {
 	var url;
 	
 	if (!thus.loaded || !(url = thus.getURL('save'))) {
@@ -1066,14 +1121,14 @@ methods.save = function(confirm, saveAndContinue, createAnother) {
 				_box: thus.sendStateToServer()};
 	
 			if (engToBoolean(thus.tuix.download) || (thus.tuix.confirm && engToBoolean(thus.tuix.confirm.download))) {
-				thus.save2(zenario.nonAsyncAJAX(thus.getURL('save'), zenario.urlRequest(post), true), saveAndContinue, createAnother);
+				thus.save2(zenario.nonAsyncAJAX(thus.getURL('save'), zenario.urlRequest(post), true), saveAndContinue, createAnother, saveAndNext);
 			} else {
 				thus.retryAJAX(
 					url,
 					post,
 					true,
 					function(data) {
-						thus.save2(data, saveAndContinue, createAnother);
+						thus.save2(data, saveAndContinue, createAnother, saveAndNext);
 					},
 					'saving'
 				);
@@ -1082,7 +1137,7 @@ methods.save = function(confirm, saveAndContinue, createAnother) {
 	}
 };
 
-methods.save2 = function(data, saveAndContinue, createAnother) {
+methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 	delete thus.saving;
 	
 	var flags = data
@@ -1126,7 +1181,7 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 			thus.load(data);
 			thus.sortTabs();
 			thus.draw();
-			thus.showConfirm(saveAndContinue, createAnother);
+			thus.showConfirm(saveAndContinue, createAnother, saveAndNext);
 		
 		} else if (flags.download) {
 			zenarioA.doDownload(
@@ -1142,11 +1197,11 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 				thus.load(data);
 			}
 			
-			thus.refreshParentAndClose(true, saveAndContinue, createAnother);
+			thus.refreshParentAndClose(true, saveAndContinue, createAnother, saveAndNext);
 		
 		} else if (flags.saved) {
 			thus.load(data);
-			thus.refreshParentAndClose(false, saveAndContinue, createAnother);
+			thus.refreshParentAndClose(false, saveAndContinue, createAnother, saveAndNext);
 		
 		} else {
 			thus.close();
@@ -1162,7 +1217,7 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 };
 
 
-methods.showConfirm = function(saveAndContinue, createAnother) {
+methods.showConfirm = function(saveAndContinue, createAnother, saveAndNext) {
 	if (thus.tuix && thus.tuix.confirm && engToBoolean(thus.tuix.confirm.show)) {
 		
 		var message = thus.tuix.confirm.message;
@@ -1173,7 +1228,7 @@ methods.showConfirm = function(saveAndContinue, createAnother) {
 		
 		var buttons =
 			'<input type="button" class="submit_selected" value="' + thus.tuix.confirm.button_message + '" onclick="' + thus.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ');"/>' +
-			'<input type="button" class="submit" value="' + thus.tuix.confirm.cancel_button_message + '"/>';
+			'<input type="button" class="submit" value="' + (thus.tuix.confirm.cancel_button_message || zenarioA.phrase.cancel) + '"/>';
 		
 		zenarioA.floatingBox(message, buttons, thus.tuix.confirm.message_type || 'none');
 	}

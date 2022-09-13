@@ -154,13 +154,14 @@ plugin_settings:
                 allow_user_edit_own_post:
                     plugin_setting:
                         name: allow_user_edit_own_post
-                    label: 'Allow posters to edit their own posts'
+                    label: 'Allow extranet users to edit their own posts'
+                    side_note: "Only allowed until moderator approves the post."
                     type: checkbox
                     value: 1
                 allow_user_delete_own_post:
                     plugin_setting:
                         name: allow_user_delete_own_post
-                    label: 'Allow posters to delete own posts'
+                    label: 'Allow extranet users to delete own posts'
                     type: checkbox
                     value: ""
                 enable_posting_restrictions:
@@ -335,6 +336,7 @@ plugin_settings:
                     value: ""
                     format_onchange: true
                 notification_email_address:
+                    indent: 1
                     plugin_setting:
                         name: notification_email_address
                         is_email_address: true
@@ -348,7 +350,9 @@ plugin_settings:
                             Please ensure all the email addresses you have entered are
                             valid.
                     side_note: Separate multiple addresses with commas.
+                    visible_if: lib.value('send_notification_email')
                 notification_email_template:
+                    indent: 1
                     plugin_setting:
                         name: notification_email_template
                         foreign_key_to: email_template
@@ -367,6 +371,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_comments__to_admin_comment_notification_en
+                    visible_if: lib.value('send_notification_email')
                 separator:
                     full_width: true
                     snippet:

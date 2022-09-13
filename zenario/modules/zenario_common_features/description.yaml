@@ -9,14 +9,7 @@ is_abstract: true
 fill_organizer_nav: true
 display_name: Common Features
 description: |
-    <p>This Module provides all the standard features for Zenario.</p>
-            <p>
-                All of the administrative interfaces for the standard functionality of your Zenario 
-                installation are defined in this Module including Content, the Menu, Categories, 
-                Templates, Layouts, languages, images, movies, Users, Modules, Administration, 
-                the Dropbox, Settings, Backups, and URLs.
-            </p>
-            <p>This Module defines interfaces including the Storekeeper panels, the Admin Boxes and the Admin Toolbar. </p>
+    <p>This module provides all the standard features for Zenario. It does not normally appear in the Organizer Modules panel.</p>
 category: core
 vlp_class_name: zenario_common_features
 content_types:
@@ -41,13 +34,20 @@ special_pages:
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
+        default_content: |
+            <h2>Welcome to your new Zenario site!</h2>
+            <p>Congratulations, you have just installed your new Zenario site.</p>
+            <p>You may add another page by clicking "New..." on the Admin Toolbar, then selecting what kind of content to create. Initially you may just see HTML pages but you can enable more content types <a href="organizer.php?#zenario__modules/panels/modules~-zenario_ctype">in Organizer</a>.</p>
+            <p>Pages (called "content items" in Zenario) will be created as drafts and visible to administrators only. Click on the "Publish" button to make them visible to regular site visitors.</p>
+            <p>View tutorials, and get support, at <a href="https://zenar.io" target="_blank" rel="noopener">https://zenar.io</a>.</p>
+            <p>We hope you enjoy using Zenario.</p>
     zenario_not_found:
         page_type: zenario_not_found
         default_alias: not-found
         default_title: Not found
         default_content: |
-            <h1>Error 404: Page not found</h1>
-            <p>The requested content item was not found on this server or may not be accessed.</p>
+            <h1>Oops! There is no such page.</h1>
+            <p>The page you requested was not found.</p>
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
@@ -56,8 +56,8 @@ special_pages:
         default_alias: no-access
         default_title: No access
         default_content: |
-            <h1>Error 401: Access permission denied</h1>
-            <p>Sorry, you have tried to access a content item that requires a higher level of permissions than you currently possess.</p>
+            <h1>Sorry! You cannot see that page.</h1>
+            <p>You are trying to access a page that requires a higher level of permissions than you have.</p>
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
@@ -68,16 +68,7 @@ special_pages:
         menu_title: Second page
         logic: create_in_default_language_on_install
         default_content: |
-            <h1>
-                <img
-                    src="zenario/file.php?c=kgp-3&amp;width=424&amp;height=424&amp;k=8SRE2KWqzq&amp;filename=seed-portfolio-image1.jpg"
-                    alt="seed portfolio image1"
-                    width="424"
-                    height="424"
-                    align="right"
-                />
-                Second page
-            </h1>
+            <h1>Second page</h1>
             <p>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur euismod ullamcorper nibh sit amet congue.
                 Nullam rutrum orci vitae lacus luctus, eu facilisis urna varius. Morbi nec orci sed lacus tincidunt tincidunt sit amet et justo.
@@ -97,11 +88,11 @@ special_pages:
     zenario_privacy_policy:
         page_type: zenario_privacy_policy
         default_alias: privacy-policy
-        default_title: Privacy Policy
+        default_title: Privacy policy
         default_content: |
-            <h1>Privacy Policy</h1>
-            <p>Here you can state your company's privacy policy.</p>
-            <p>Include information about any cookies you may use, how you process confidential data, or any other relevant information.</p>
+            <h1>Privacy policy</h1>
+            <p>This page is auto-created. Its purpose is that you can state organisation's privacy policy here.</p>
+            <p>We recommend you include information about any cookies you may use, how you process confidential data, or any other relevant information.</p>
         logic: create_and_maintain_in_default_language
         allow_hide: true
         allow_search: true
@@ -155,6 +146,17 @@ jobs:
         hours: >
             0h,1h,2h,3h,4h,5h,6h,7h,8h,9h,10h,11h,12h,13h,14h,15h,16h,17h,18h,19h,20h,21h,22h,23h
         minutes: 0m,5m,10m,15m,20m,25m,30m,35m,40m,45m,50m,55m
+        log_on_action: true
+        log_on_no_action: false
+        email_on_action: false
+        email_on_no_action: false
+    -
+        name: jobUnpinContent
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: 0h
+        minutes: 0m
         log_on_action: true
         log_on_no_action: false
         email_on_action: false

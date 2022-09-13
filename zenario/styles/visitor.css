@@ -7,16 +7,21 @@
 	Cookie Consent form - default styles  
 */
 
+div.zenario_cookie_consent,
+.zenario_cookie_consent_manage_popup {
+	font-family:Verdana,Arial,Helvetica,Sans-Serif;
+	font-size:12px;
+	line-height:1.6em;
+}
+
 div.zenario_cookie_consent {
 	overflow:hidden;
 	width:calc(100% - 20px);
-	padding:10px;
+	padding:10px 10px 12px;
 	position: fixed;
 	bottom:0;
 	z-index:99;
 	background: #333;
-	font-family:Arial,Helvetica,Sans-Serif;
-	font-size:12px;
 }
 
 div.zenario_cookie_consent .zenario_cookie_consent_wrap {
@@ -30,11 +35,6 @@ div.zenario_cookie_consent .zenario_cc_message {
 	width:calc(100% - 215px);
 	margin:auto;
 	float:left;
-	line-height:1.4em;
-}
-
-div.zenario_cookie_consent .zenario_cc_message p:first-child {
-	font-weight:bold;
 }
 
 div.zenario_cookie_consent .zenario_cc_message p:first-child a {
@@ -58,7 +58,14 @@ div.zenario_cookie_consent .zenario_cc_buttons div {
 }
 
 div.zenario_cookie_consent .zenario_cc_buttons a {
-	text-decoration:underline;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+div.zenario_cookie_consent .zenario_cc_buttons a,
+div.zenario_cookie_consent .zenario_cc_buttons a:hover {
+	text-decoration:none;
 }
 
 div.zenario_cookie_consent .zenario_cc_accept a,
@@ -69,19 +76,30 @@ div.zenario_cookie_consent .zenario_cc_continue a {
 	background:#FFFFFF;
 	color:#333;
 	font-weight:bold;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
-	border-radius: 8px;
-	-webkit-transition: all 0.2s ease-in-out;
-  	-moz-transition: all 0.2s ease-in-out;
-  	-o-transition: all 0.2s ease-in-out;
-  	transition: all 0.2s ease-in-out;
+}
+
+div.zenario_cookie_consent .zenario_cc_manage a {
+	height:28px;
+	line-height:26px;
+	padding:0 15px;
+	border:1px solid #FFF;
+	color:#FFF;
+	cursor:pointer;
+}
+
+div.zenario_cookie_consent .zenario_cc_accept a,
+div.zenario_cookie_consent .zenario_cc_manage a {
+	text-decoration:none;
 }
 
 div.zenario_cookie_consent .zenario_cc_accept a:hover,
-div.zenario_cookie_consent .zenario_cc_continue a:hover {
-	opacity:0.85;
-	text-decoration:none;
+div.zenario_cookie_consent .zenario_cc_continue a:hover,
+div.zenario_cookie_consent .zenario_cc_manage a:hover {
+	background:rgba(255,255,255,0.8);
+}
+
+div.zenario_cookie_consent .zenario_cc_manage a:hover {
+	color:#333;
 }
 
 div.zenario_cookie_consent .zenario_cc_close a {
@@ -131,6 +149,197 @@ div.zenario_cookie_consent .zenario_cc_message a:hover {
 body.no_js div.zenario_cookie_consent .zenario_cc_close,
 .zenario_dn {
 	display: none;
+}
+
+/* Cookies Explicit mode */ 
+
+div.zenario_cookie_consent.cookies_explicit,
+.zenario_cookie_consent_manage_popup {
+	position:fixed;
+	z-index:99;
+	top:0;
+	bottom:0;
+	left:0;
+	right:0;
+    background-color: rgba(0,0,0,0.5);
+    font-size:13px;
+}
+
+div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap,
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap {
+	position:fixed;
+	z-index:100;
+	top: 50%;
+	left: 50%;
+	bottom:auto;
+	transform: translate(-50%, -50%);
+	width: 100%;
+	max-width:860px;
+	margin:auto;
+	padding:30px;
+}
+
+div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
+	background-color:rgba(0,0,0,1);
+}
+
+div.zenario_cookie_consent.cookies_explicit,
+div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons {
+	text-align:center;
+}
+
+div.zenario_cookie_consent.cookies_explicit .zenario_cc_message,
+div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons {
+	width:100%;
+	float:none;
+	padding:0;
+}
+
+div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons {
+	margin-top:30px;
+	font-size:14px;
+}
+
+div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons a {
+	height:40px;
+	line-height:38px;
+	padding:0 25px;
+}
+
+div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons .zenario_cc_manage a {
+	height:38px;
+	line-height:36px;
+}
+
+.zenario_cookie_consent_manage_popup {
+	background: rgba(0,0,0,0.75);
+	transition: opacity 0.5s ease;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap {
+	background:#FFF;
+	padding:0;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form {
+	padding:30px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h1 {
+	font-size:1.6em;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h2 {
+	font-size:1.5em;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h3 {
+	font-size:1.4em;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h1,
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h2,
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h3 {
+	padding-bottom:5px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text {
+	padding:20px 30px 15px;
+	border-bottom:1px solid #ccc;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie {
+	overflow:hidden;
+	padding-bottom:25px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > label {
+	float:left;
+	margin-top:2px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info {
+	overflow:hidden;
+	padding-left:20px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info h5 {
+	font-size:15px;
+	padding-bottom:4px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons {
+	text-align:center;
+	padding-top:10px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons.top {
+	padding:0 0 15px;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input {
+	height:36px;
+	border:0;
+	min-width:80px;
+	padding:0 15px;
+	margin:0 5px;
+	background:#333;
+	color:#fff;
+	font-family:Verdana,Arial,Helvetica,Sans-Serif;
+	-webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+	cursor:pointer;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input.cookie_save_preferences {
+	border:1px solid #333;
+	color:#333;
+	background:transparent;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input.cookie_save_preferences:hover {
+	color:#FFF;
+	background:#333;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel {
+	position:absolute; 
+	width:20px;
+	height:20px;
+	top:15px;
+	right:15px;
+	display:block;  
+	text-indent:-9999px;
+	background:transparent;
+	border:0;
+  	cursor:pointer;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:before, 
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:after {
+  position: absolute;
+  left: 10px;
+  content: ' ';
+  height: 20px;
+  width: 1px;
+  background-color: #000;
+	-webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:hover:before, 
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:hover:after {
+  background-color: #2a98ce;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:before {
+  transform: rotate(45deg);
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:after {
+  transform: rotate(-45deg);
 }
 
 @media all and (max-width: 581px) {
@@ -289,6 +498,74 @@ input[type="password"].border_green {
 }
 
 /*
+	Styles for the on/off switches, used on cookie consent status plugin
+*/
+
+/* The switch - the box around the slider */
+	.switch {
+	  position: relative;
+	  display: inline-block;
+	  width: 60px;
+	  height: 34px;
+	}
+
+	/* Hide default HTML checkbox */
+	.switch input {display:none;}
+
+	/* The slider */
+	.slider {
+	  position: absolute;
+	  cursor: pointer;
+	  top: 0;
+	  left: 0;
+	  right: 0;
+	  bottom: 0;
+	  background-color: #8c8c8c;
+	  -webkit-transition: .4s;
+	  transition: .4s;
+	}
+
+	.switch .slider:before {
+	  position: absolute;
+	  content: "";
+	  height: 26px;
+	  width: 26px;
+	  left: 4px;
+	  bottom: 4px;
+	  background-color: white;
+	  -webkit-transition: .4s;
+	  transition: .4s;
+	}
+
+	.switch input:checked + .slider {
+	  background-color: #2196F3;
+	}
+	
+	.switch input:disabled + .slider {
+    	background: #CCC;
+    	cursor:default;
+	}
+
+	.switch input:focus + .slider {
+	  box-shadow: 0 0 1px #2196F3;
+	}
+
+	.switch input:checked + .slider:before {
+	  -webkit-transform: translateX(26px);
+	  -ms-transform: translateX(26px);
+	  transform: translateX(26px);
+	}
+
+	/* Rounded sliders */
+	.switch .slider.round {
+	  	border-radius: 34px;
+	}
+
+	.switch .slider.round:before {
+	  	border-radius: 50%;
+	}
+
+/*
 	Disabled flags on the language picker
 */
 
@@ -336,12 +613,36 @@ span.zenario_copy {
     padding-bottom: 5px;
 }
 
-.zenario_slot .pinned_icon:before {
+.zenario_slot .pinned_icon:before,
+.zenario_slot .page_title .pinned_icon:after {
     font-family: "FontAwesome";
     content: "\f08d";
-    padding-right: 5px;
+	position:absolute;
+	transform:rotateY(0deg) rotate(45deg);
 }
 
+.zenario_slot .pinned_icon {
+	padding-left:18px;
+	position:relative;
+}
+
+.zenario_slot .pinned_icon:before {
+	left:0;
+}
+
+.zenario_slot .page_title .pinned_icon {
+	padding-left:0;
+}
+
+.zenario_slot .page_title .pinned_icon:before {
+	content:"";
+	padding:0;
+}
+
+.zenario_slot .page_title .pinned_icon:after {
+	margin-left:10px;
+	font-size:20px;
+}
 
 /*
 	Spinner

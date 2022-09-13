@@ -14,7 +14,6 @@ zenario_newsletter:
             label: Meta Data
             edit_mode:
                 priv: _PRIV_EDIT_NEWSLETTER
-                always_on: true
                 enabled: true
             fields:
                 newsletter_name:
@@ -158,7 +157,6 @@ zenario_newsletter:
             label: Recipients
             edit_mode:
                 priv: _PRIV_EDIT_NEWSLETTER
-                always_on: true
                 enabled: true
             
             notices:
@@ -253,8 +251,9 @@ zenario_newsletter:
                     label: 'Select newsletter(s):'
                     pick_items:
                         path: zenario__email_template_manager/panels/newsletters/refiners/archive////
-                        target_path: zenario__email_template_manager/panels/newsletters
+                        target_path: zenario__email_template_manager/panels/newsletters/refiners/archive////
                         min_path: zenario__email_template_manager/panels/newsletters
+                        disallow_refiners_looping_on_min_path: true
                         multiple_select: true
                         select_phrase: Select newsletter(s)...
                         nothing_selected_phrase: No newsletters selected
@@ -267,7 +266,6 @@ zenario_newsletter:
             label: Advanced
             edit_mode:
                 priv: _PRIV_EDIT_NEWSLETTER
-                always_on: true
                 enabled: true
             fields:
                 desc:

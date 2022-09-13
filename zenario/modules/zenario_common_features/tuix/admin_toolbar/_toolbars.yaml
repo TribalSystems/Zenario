@@ -86,12 +86,6 @@ sections:
             usage:
                 hidden: true
                 label:
-            settings:
-                priv: _PRIV_VIEW_TEMPLATE
-                hide_in_select_mode: true
-                label: Layout settings
-                admin_box:
-                    path: zenario_layout
             edit_grid:
                 priv: _PRIV_EDIT_TEMPLATE
                 hide_in_select_mode: true
@@ -113,6 +107,12 @@ sections:
                     traits.grid: true
                 without_columns_set:
                     missing: true
+            settings:
+                priv: _PRIV_VIEW_TEMPLATE
+                hide_in_select_mode: true
+                label: Layout settings
+                admin_box:
+                    path: zenario_layout
             edit_css:
                 priv: _PRIV_EDIT_CSS
                 label: CSS
@@ -249,14 +249,14 @@ sections:
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Make a draft
+                label: Start editing
                 css_class: zenario_at_big_action_button zenario_at_start_editing
                 ajax:
                     confirm:
                         message: |
-                            This is a content item that's published. To edit it, Zenario will make a new version as a draft. This won't be seen by site visitors until it is published.
-                            
-                            Happy to proceed?
+                            This content item is published. Zenario will make a draft version that can be edited.
+                                                       
+                            Proceed?
                         message__editing_published: |
                             You are editing a published content item.
                                 
@@ -273,32 +273,9 @@ sections:
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: "Can't edit"
+                label: "Published; draft exists so editing not allowed"
                 css_class: zenario_at_big_action_button zenario_at_cant_start_editing
-                tooltip: >
-                    You cannot edit this version because a draft exists. Use the
-                    Navigate tab to return to the latest draft.
             
-            delete_draft:
-                appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Delete draft
-                css_class: zenario_at_big_action_button zenario_delete_draft 
-                ajax:
-                    confirm:
-                        message: |
-                            You are about to delete the current draft version of this content item. Any edits you've made on this draft version will be lost.
-                            
-                            This will not affect the published version, if one exists.
-                            
-                            Are you sure you wish to proceed?
-                        button_message: Delete draft
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        delete: 1
             republish:
                 appears_in_toolbars: *publish_appears_in_toolbars
                 priv: _PRIV_EDIT_DRAFT
@@ -318,13 +295,13 @@ sections:
                 tooltip: >
                     Re-draft this content item|This will create a new draft of
                     this content item, which will be available to visitors if
-                    you Publish it.
+                    you publish it.
                 ajax:
                     confirm:
                         message: >
                             Do you wish to re-draft this content item? This will create
                             a new draft of this content item, which will be available to
-                            visitors if you Publish it.
+                            visitors if you publish it.
                         button_message: Re-draft
                         cancel_button_message: Cancel
                         message_type: question
@@ -335,7 +312,7 @@ sections:
                 priv: _PRIV_HIDE_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Hide
+                label: Hide content item
                 css_class: zenario_at_big_action_button zenario_hide_content 
                 ajax:
                     confirm:
@@ -350,13 +327,42 @@ sections:
                         message_type: warning
                     request:
                         hide: 1
+            delete_draft:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Delete draft
+                css_class: zenario_at_big_action_button zenario_delete 
+                ajax:
+                    confirm:
+                        message: |
+                            Zenario will delete the draft version of this content item. Any edits on the draft will be lost.
+                            
+                            This will not affect the published version.
+                            
+                            Proceed?
+                        button_message: Delete draft
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delete: 1
+            delete_media_content_item:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Delete content item
+                css_class: zenario_at_big_action_button zenario_delete 
+                admin_box:
+                    path: zenario_delete_media_content_item
             trash_content:
                 appears_in_toolbars: *publish_appears_in_toolbars
                 priv: _PRIV_HIDE_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Trash
-                css_class: zenario_at_big_action_button zenario_trash_content 
+                label: Trash content item
+                css_class: zenario_at_big_action_button zenario_delete 
                 
                 admin_box:
                     path: zenario_trash

@@ -6,10 +6,13 @@ license_info: 'Modified BSD License'
 display_name: CRM Form Integration
 description: |
     <p>
-        This Module allows you integrate the User Forms module with a third party CRM (customer relationship management) system.
+        This module builds on the User Forms module by allowing form data to be sent on to a CRM (customer relationship management) system.
     </p>
     <p>
-        There are options to specifically send form data to Salesforce or MailChimp.
+        Once the module is started, you will need to go to Site Settings->Forms and CRM integration and enter your connection details for the CRM. Currently, Salesforce, Mailchimp and 360 Lifecyle are supported. You will need the API key and other details from your CRM.
+    </p>
+    <p>
+        You will need to edit each form's settings to enable that form for CRM integration. And then you will need to edit the form itself to identify the fields that should be sent to the CRM. When selecting a field in the form editor, a "CRM" tab will appear, and you will need to check "Send to CRM" in order to enable the sending of data for that field.
     </p>
 category: management
 keywords: crm, integration, form, forms, salesforce, mailchimp

@@ -72,9 +72,8 @@ plugin_settings:
             hide_when_children_are_not_visible: true
         
         tuix_snippet:
-            parent: advanced_dropdown
+            ord: 100003
             label: TUIX Snippet
-            ord: 10
             visible_if: |
                 tuix.key.isFEA
             fields:

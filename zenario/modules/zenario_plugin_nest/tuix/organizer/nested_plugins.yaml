@@ -37,9 +37,9 @@ zenario__modules:
                 prefix:
                     title: Prefix
                     show_by_default: true
-                name_or_title:
+                name_or_slide_label:
                     title: Name
-                    db_column: np.name_or_title
+                    db_column: np.name_or_slide_label
                     css_class: organizer_long_title
                     show_by_default: true
                     width: large
@@ -152,7 +152,7 @@ zenario__modules:
                     show_by_default: true
                     title: "Static method"
                     #Values for columns like this one are set in the PHP class file.
-            default_sort_column: name_or_title
+            default_sort_column: name_or_slide_label
             item:
                 name: Nested slide/plugin
                 names: Nested slides and plugins
@@ -402,6 +402,35 @@ zenario__modules:
                             message_type: warning
                         request:
                             duplicate_plugin: 1
+                copy:
+                    only_show_on_refiner: nest
+                    without_columns_set:
+                        is_slide: true
+                    label: Copy plugin
+                    tooltip: Use this to copy a plugin in a nest or slideshow
+                    multiple_select: true
+                    multiple_select_label: Copy plugins
+                    multiple_select_tooltip: Use this to copy plugins in a nest or slideshow
+                    ajax:
+                        request:
+                            copy: 1
+                paste:
+                    only_show_on_refiner: nest
+                    with_columns_set:
+                        is_slide: true
+                    #label: Paste plugin
+                    ajax:
+                        request:
+                            paste: 1
+                insert:
+                    only_show_on_refiner: nest
+                    without_columns_set:
+                        is_slide: true
+                    #label: Insert/paste plugin
+                    ajax:
+                        request:
+                            paste: 1
+                            insert: 1
                 remove_plugin:
                     only_show_on_refiner: nest
                     ord: 99

@@ -66,10 +66,10 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 			ze\sql::update("
 				CREATE TABLE `". ze\escape::sql(DB_PREFIX. static::table()). "` (
 					`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-					`record_name` varchar(255) CHARACTER SET utf8mb4 NOT NULL default '',
+					`record_name` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default '',
 					PRIMARY KEY (`id`),
 					KEY (`record_name`)
-				) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 			");
 		}
 		

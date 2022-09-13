@@ -2,7 +2,6 @@
 ---
 zenario_country_manager__country:
     title: Creating a country
-    max_height: 300
     key:
         id: ""
     identifier:
@@ -22,9 +21,10 @@ zenario_country_manager__country:
                     type: text
                     maxlength: "5"
                     style: width:55px;
+                    note_below: ISO codes cannot be edited.
                 name:
                     label: 'Country name:'
                     type: text
                 update_phrase:
-                    label: 'Copy change to localised phrases for translation'
+                    label: 'When saving, copy the name to localised phrases. The name can then be translated into other languages.'
                     type: checkbox

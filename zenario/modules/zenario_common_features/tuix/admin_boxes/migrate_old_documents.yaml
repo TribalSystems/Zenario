@@ -8,7 +8,6 @@ zenario_migrate_old_documents:
             label: Document metadata
             edit_mode:
                 on: true
-                always_on: true
                 enabled: true
             fields:
                 html:

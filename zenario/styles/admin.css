@@ -128,10 +128,6 @@
     z-index: 360000;
 }
 
-#zenario_fbAdminImageManager {
-    z-index: 310000;
-}
-
 #colorbox.zenario_show_colobox_above_fab {
     z-index: 370000;
 }
@@ -503,15 +499,45 @@ input, textarea, button {
 	background:#D7ABEA;
 }
 
-#organizer_rightColumn div.organizer_row.layout_status_suspended div.organizer_cell div.zenario_layout_inline_button a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_suspended a {
-	background:#EBACB3;
-}
-
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_layout_inline_button a:hover,
 #zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout a:hover {
 	background:#4B4D4C;
 	color:#FFF;
+}
+
+#organizer_rightColumn div.organizer_row.layout_status_suspended div.organizer_cell div.zenario_layout_inline_button a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_suspended a {
+	position:relative;
+}
+
+#organizer_rightColumn div.organizer_row.layout_status_suspended div.organizer_cell div.zenario_layout_inline_button a {
+	background:#e2e2e2;
+	color:#3c3c3c;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_suspended a {
+	padding-right:15px;
+	background:#808080;
+	color:#FFF;
+}
+
+#organizer_rightColumn div.organizer_row.layout_status_suspended div.organizer_cell div.zenario_layout_inline_button a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_suspended a:after {
+	content:"";
+	display:block;
+	position:absolute;
+	top:3px;
+	right:3px;
+	width:10px;
+	height:10px;
+	background:url('../admin/images/icon-warning.svg') no-repeat center;
+}
+
+#organizer_rightColumn div.organizer_row.layout_status_suspended div.organizer_cell div.zenario_layout_inline_button a:after {
+	width: 8.5px;
+	height: 8.5px;
+  	top: 0;
+  	right: 0;
 }
 
 /*  Debug icon  */
@@ -951,6 +977,24 @@ x-zenario-admin-slot-wrapper:hover .zenario_image_properties_button {
 	z-index: 4;
 }
 
+x-zenario-admin-slot-wrapper:hover .zenario_image_properties_button.zenario_ipb_2 {
+	margin-left: 25px;
+}
+
+x-zenario-admin-slot-wrapper:hover .zenario_image_properties_button.zenario_ipb_3 {
+	margin-left: 50px;
+}
+
 body.zenario_showing_plugin_preview .zenario_image_properties_button {
 	display: none;
+}
+
+/* JQuery-ui */
+
+.ui-widget-header .ui-icon.ui-icon-circle-triangle-w {
+	background:url('../admin/images/icon-circle-previous.svg') no-repeat center center / 14px 14px;
+}
+
+.ui-widget-header .ui-icon.ui-icon-circle-triangle-e {
+	background:url('../admin/images/icon-circle-next.svg') no-repeat center center / 14px 14px;
 }

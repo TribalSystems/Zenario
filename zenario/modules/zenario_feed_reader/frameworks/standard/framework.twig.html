@@ -1,6 +1,9 @@
 {% if Feed_Reader %}
 <div class="feed_reader_content">
-	<{{title_tags}} class="heading">{{Title}}</{{title_tags}}>
+	{% if Title %}
+		<{{title_tags}} class="heading">{{Title}}</{{title_tags}}>
+	{% endif %}
+
 	{% if Feeds %}
 		{% if Content_Section %}
 			{% for Feed in Feeds %}

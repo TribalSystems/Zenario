@@ -157,8 +157,6 @@ zenarioGM.checkDataNonZeroAndNumeric = function(data, warning) {
 	warnFix =	zenarioGM.checkDataNonZero(warnFix, data, 'colWidth', 60, 1);
 	warnFlu =	zenarioGM.checkDataNonZero(warnFlu, data, 'minWidth', 600, 100);
 	warning =	zenarioGM.checkDataNonZero(warning, data, 'maxWidth', 960, 100);
-	warnFlu =	zenarioGM.checkDataNumeric(warning, data, 'bp1', 0, 1);
-	warnFlu =	zenarioGM.checkDataNumeric(warning, data, 'bp2', 0, 1);
 	warnFix =	zenarioGM.checkDataNumeric(warnFix, data, 'gutter', 40);
 	warnFix =	zenarioGM.checkDataNumeric(warnFix, data, 'gutterLeftEdge', 0);
 	warnFix =	zenarioGM.checkDataNumeric(warnFix, data, 'gutterRightEdge', 0);
@@ -435,7 +433,8 @@ zenarioGM.deleteCell = function(el) {
 		levels,
 		data,
 		slot,
-		doDelete;
+		doDelete,
+		willRemoveGrouping = false;
 	
 	//Try to get the cell that the delete button was for
 	if ((cell = $(el).data('for'))
@@ -453,22 +452,24 @@ zenarioGM.deleteCell = function(el) {
 				l *= 1;
 				data = data.cells[1*levels[l]];
 			}
+			
+			willRemoveGrouping = data.cells.length == 1;
 		}
 		slot = data.cells[i];
+		
 		
 		//Remove the deleted element
 		doDelete = function() {
 			data.cells.splice(i, 1);
 			zenarioGM.change();
-			toastr.success(phrase.growlSlotDeleted);
+			toastr.success(willRemoveGrouping? phrase.growlSlotAndGroupingDeleted : phrase.growlSlotDeleted);
 		};
 		
 		//If this slot was never saved, allow it to be instantly deleted.
 		//If this slot has been previously saved, show a prompt with some info first
 		if (slot.oName
-		 && zenarioGM.layoutId
-		 && zenarioGM.confirmDeleteSlot) {
-			zenarioGM.confirmDeleteSlot(slot, doDelete);
+		 && zenarioGM.layoutId) {
+			zenarioGM.confirmDeleteSlot(slot, doDelete, willRemoveGrouping);
 		} else {
 			doDelete();
 		}
@@ -922,7 +923,7 @@ zenarioGM.drawEditor = function(
 			_$div('class', 'zenario_grid_object_properties',
 				_$div(
 					_$span(
-						'class', 'zenario_grid_object_edit_properties',
+						'class', zenarioGM.getSlotCSSName(data),
 						'title', phrase.gridEditProperties,
 						'data-for', thisCellId,
 						'data-type', 'grouping',
@@ -1090,7 +1091,7 @@ zenarioGM.drawEditor = function(
 				html +=
 					'<div class="zenario_grid_object_properties"><div><span' +
 						' title="' + phrase.gridEditProperties + '"' +
-						' class="zenario_grid_object_edit_properties"' +
+						' class="' + htmlspecialchars(zenarioGM.getSlotCSSName(cells[i])) + '"' +
 						' data-for="' + elId + '-' + i + '"' +
 						' data-type="' + (cells[i].grid_break? 'grid_break' : 'space') + '"';
 				
@@ -1121,8 +1122,9 @@ zenarioGM.drawEditor = function(
 			
 			var nHTML = htmlspecialchars(zenarioGM.cellLabel(cells[i]));
 			
-			if (cells[i].height && cells[i].height != 'small') {
-				nHTML += ' (' + htmlspecialchars(cells[i].height) + ')';
+			//For Gridbreak + Slot objects, display both the slot name and the CSS class on the next container
+			if (cells[i].grid_break) {
+				nHTML += ' + ' + htmlspecialchars(cells[i].grid_css_class);
 			}
 			
 			
@@ -1135,7 +1137,7 @@ zenarioGM.drawEditor = function(
 					_$div('class', 'zenario_grid_object_properties',
 						_$div(
 							_$span(
-								'class', 'zenario_grid_slot_name zenario_grid_object_edit_properties',
+								'class', 'zenario_grid_slot_name ' + zenarioGM.getSlotCSSName(cells[i]),
 								'title', phrase.gridEditProperties,
 								'data-for', elId + '-' + i,
 								'data-type', cells[i].grid_break? 'grid_break_with_slot' : 'slot',
@@ -1765,11 +1767,31 @@ zenarioGM.drawEditor = function(
 
 
 			
+zenarioGM.getSlotCSSName = function(data) {
+	
+	cssClass = 'zenario_grid_object_edit_properties';
+	
+	switch (data.small) {
+		case 'hide':
+			cssClass += ' show_desktop';
+			break;
+		case 'first':
+			cssClass += ' show_first';
+			break;
+		case 'only':
+			cssClass += ' show_mobile';
+			break;
+	}
+	
+	return cssClass;
+};
+
+
+			
 zenarioGM.getSlotDescription = function(slot) {
 	
 	var pluginDesc;
 	
-	//To do - add phrases here, don't have hard-coded english text
 	if (slot) {
 		
 		pluginDesc = htmlspecialchars(slot.display_name);
@@ -1791,11 +1813,11 @@ zenarioGM.getSlotDescription = function(slot) {
 			}
 			pluginDesc += ('' + slot.instance_id).padStart(2, '0');
 		} else {
-			pluginDesc += ' (version controlled)';
+			pluginDesc += ' (' + phrase.versionControlled + ')';
 		}
 		
 	} else {
-		pluginDesc = _$html('em', 'class', 'zenario_grid_empty_slot_contents', 'Empty');
+		pluginDesc = _$html('em', 'class', 'zenario_grid_empty_slot_contents', phrase.empty);
 	}
 	
 	return pluginDesc;
@@ -1814,9 +1836,6 @@ zenarioGM.drawOptions = function() {
 	if (!zenarioGM.data.fluid) {
 		zenarioGM.recalcColumnAndGutterOptions(zenarioGM.data);
 	}
-	
-	$('#' + formId + ' input.zenario_grid_setting_break_1').change(zenarioGM.update).spinner({stop: zenarioGM.update, min: 10, step: 10}).after('<span class="zenario_grid_unit">px</span>');
-	$('#' + formId + ' input.zenario_grid_setting_break_2').change(zenarioGM.update).spinner({stop: zenarioGM.update, min: 300, step: 10}).after('<span class="zenario_grid_unit">px</span>');
 	
 	//Refresh the previews every time a field is changed
 	$('#' + formId + ' input.zenario_grid_setting_min_width').change(zenarioGM.recalcOnChange).spinner({stop: zenarioGM.recalcOnInc, min: 100, step: 10}).after('<span class="zenario_grid_unit">px</span>');
@@ -1985,7 +2004,7 @@ zenarioGM.editProperties = function(el) {
 			transition: 'none',
 			html: zenarioGM.microTemplate(zenarioGM.mtPrefix + 'object_properties', m),
 			height: '99%',
-			width: 580,
+			width: 720,
 		
 			onOpen: function() { zenario.addClassesToColorbox(cssClasses); },
 			onClosed: function() { zenario.removeClassesToColorbox(cssClasses); },
@@ -2263,14 +2282,15 @@ zenarioGM.drawLinks = function() {
 };
 
 
-zenarioGM.confirmDeleteSlot = function(slot, doDelete) {
+zenarioGM.confirmDeleteSlot = function(slot, doDelete, willRemoveGrouping) {
 	
 	var url = URLBasePath + 'zenario/ajax.php?moduleClassName=zenario_common_features&method_call=handleAJAX',
 		requests = {
 			removeSlot: 1,
 			level: 2,
 			slotName: slot.oName,
-			layoutId: zenarioGM.layoutId
+			layoutId: zenarioGM.layoutId,
+			willRemoveGrouping: willRemoveGrouping? '1' : ''
 		};
 	
 	zenario.ajax(url + zenario.urlRequest(requests)).after(function(message) {
@@ -2484,12 +2504,6 @@ zenarioGM.readSettings = function(data) {
 	}
 	if ((sel = $('#' + formId + ' input.zenario_grid_setting_min_width')).length) {
 		data.minWidth = 1 * sel.val();
-	}
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_break_1')).length) {
-		data.bp1 = 1 * sel.val();
-	}
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_break_2')).length) {
-		data.bp2 = 1 * sel.val();
 	}
 	//if ((sel = $('#' + formId + ' input.zenario_grid_setting_col_width')).length) {
 	//	data.colWidth = 1 * sel.val();

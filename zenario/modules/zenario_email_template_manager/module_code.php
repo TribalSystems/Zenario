@@ -76,7 +76,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$templateNo = 0, $disableHTMLEscaping = false, 
 		$addressReplyTo = false, $nameReplyTo = false,
 		$ccs = '', $bccs = '', $debugOverride = '',
-		$makeURLsNotClickable = false
+		$makeURLsNotClickable = false, $ignoreDebugMode = false
 	){
 		
 		if (!empty($mergeFields)) {
@@ -153,7 +153,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 						$attachments, $attachmentFilenameMappings,
 						'bulk', $isHTML = true, false,
 						$addressReplyTo, $nameReplyTo, false,
-						$ccs, $bccs
+						$ccs, $bccs, $action = 'To', $ignoreDebugMode
 					);
 					
 					self::logEmail(
@@ -175,7 +175,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 					$attachments, $attachmentFilenameMappings,
 					'bulk', $isHTML = true, false,
 					$addressReplyTo, $nameReplyTo, false,
-					$ccs, $bccs
+					$ccs, $bccs, $action = 'To', $ignoreDebugMode
 				);
 			
 				self::logEmail(
@@ -196,34 +196,57 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 	
 	public static function logEmail(
 		$subject, &$body, $addressTo, $addressToOverriddenBy,
-		$addressFrom, $nameFrom,
-		$attachments, $attachmentFilenameMappings,
-		$templateNo, $status,
+		$addressFrom = false, $nameFrom = false,
+		$attachments = [], $attachmentFilenameMappings = [],
+		$templateNo = 0, $status = 'success',
 		$senderCmsObjectArray = [],
 		$addressReplyTo = false, $nameReplyTo = false,
 		$ccs = false
 	) {
 		self::clearOldData();
 		
+		if ($addressFrom === false) {
+			$addressFrom = \ze::setting('email_address_from');
+		}
+		if (!$nameFrom) {
+			$nameFrom = \ze::setting('email_name_from');
+		}
+		
 		//Check if this email should be logged
-		$template = ze\row::get('email_templates', ['template_name', 'period_to_delete_log_headers', 'period_to_delete_log_content'], $templateNo);
-		if (is_array($template) && count($template) > 0) {
-			if ($template['period_to_delete_log_headers'] === '0'
-				|| ($template['period_to_delete_log_headers'] === '' && ze::setting('period_to_delete_the_email_template_sending_log_headers') === '0')
-			) {
-				return false;
+		$template = false;
+		if ($templateNo) {
+			$template = ze\row::get('email_templates', ['template_name', 'period_to_delete_log_headers', 'period_to_delete_log_content'], $templateNo);
+			if ($template) {
+				if ($template['period_to_delete_log_headers'] === '0'
+				 || ($template['period_to_delete_log_headers'] === '' && ze::setting('period_to_delete_the_email_template_sending_log_headers') === '0')) {
+					return false;
+				}
 			}
 		}
 		
 		$sql = "
-			INSERT INTO ". DB_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET
-				module_id = ". (int) ze\row::get('plugin_instances', 'module_id', ['id' => ($senderCmsObjectArray['instanceId'] ?? false)]). ",
-				instance_id = ". (int) ($senderCmsObjectArray['instanceId'] ?? false). ",
-				content_id = ". (int) ($senderCmsObjectArray['cID'] ?? false). ",
-				content_type = '". ze\escape::asciiInSQL($senderCmsObjectArray['cType'] ?? false). "',
-				content_version = ". (int) ($senderCmsObjectArray['cVersion'] ?? false). ",
+			INSERT INTO ". DB_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET";
+		
+		if (!empty($senderCmsObjectArray['instanceId'])) {
+			$sql .= "
+				module_id = ". (int) ze\row::get('plugin_instances', 'module_id', ['id' => $senderCmsObjectArray['instanceId']]). ",
+				instance_id = ". (int) ($senderCmsObjectArray['instanceId'] ?? 0). ",";
+		}
+		
+		if (!empty($senderCmsObjectArray['cID'])) {
+			$sql .= "
+				content_id = ". (int) $senderCmsObjectArray['cID']. ",
+				content_type = '". ze\escape::asciiInSQL($senderCmsObjectArray['cType'] ?? ''). "',
+				content_version = ". (int) ($senderCmsObjectArray['cVersion'] ?? 0). ",";
+		}
+		
+		if ($template) {
+			$sql .= "
 				email_template_id = ". (int) $templateNo. ",
-				email_template_name = '". ze\escape::sql(($template['template_name'] ?? '')). "',
+				email_template_name = '". ze\escape::sql(($template['template_name'] ?? '')). "',";
+		}
+		
+		$sql .= "
 				email_subject = '". ze\escape::sql($subject). "',
 				email_address_to = '". ze\escape::sql($addressTo). "',
 				email_address_to_overridden_by = '". ze\escape::sql($addressToOverriddenBy). "',
@@ -248,7 +271,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		}
 		
 		//Check if this email's content should be logged
-		if (is_array($template) && count($template) > 0) {
+		if ($template) {
 			if ($template['period_to_delete_log_content'] === '0') {
 				$body = ze\admin::phrase('Body not saved because the email template setting for data deletion is set to "Don\'t save".');
 			} elseif ($template['period_to_delete_log_content'] === '' && ze::setting('period_to_delete_the_email_template_sending_log_content') === '0') {
@@ -375,7 +398,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$rcpts, $templateCode, $mergeFields = [],
 		$attachments = [], $attachmentFilenameMappings = [],
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false,
-		$makeURLsNotClickable = false
+		$makeURLsNotClickable = false, $ignoreDebugMode = false
 	) {
 		if ($template = self::getTemplateByCode($templateCode)) {
 			
@@ -426,7 +449,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				!$template['debug_override'] && $template['send_cc'] ? $template['cc_email_address'] : '',
 				!$template['debug_override'] && $template['send_bcc'] ? $template['bcc_email_address'] : '',
 				$template['debug_override'] ? $template['debug_email_address'] : '',
-				$makeURLsNotClickable
+				$makeURLsNotClickable, $ignoreDebugMode
 			)) {
 				
 				$sql = "
@@ -447,7 +470,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$rcpts, $templateId, $emailSubject = '', $emailBody = '',
 		$attachments = [], $attachmentFilenameMappings = [],
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false,
-		$makeURLsNotClickable = false
+		$makeURLsNotClickable = false, $ignoreDebugMode = false
 	) {
 		if ($template = self::getTemplateById($templateId)) {
 			if (!$emailSubject) {
@@ -498,7 +521,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				!$template['debug_override'] && $template['send_cc'] ? $template['cc_email_address'] : '',
 				!$template['debug_override'] && $template['send_bcc'] ? $template['bcc_email_address'] : '',
 				$template['debug_override'] ? $template['debug_email_address'] : '',
-				$makeURLsNotClickable
+				$makeURLsNotClickable, $ignoreDebugMode
 			)) {
 				
 				$sql = "

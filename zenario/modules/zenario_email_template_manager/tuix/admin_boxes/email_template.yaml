@@ -16,7 +16,6 @@ zenario_email_template:
             label: Sending details
             edit_mode:
                 priv: _PRIV_MANAGE_EMAIL_TEMPLATE
-                always_on: true
                 enabled: true
             notices:
                 debug_mode:
@@ -251,7 +250,6 @@ zenario_email_template:
             label: Preview
             edit_mode:
                 priv: _PRIV_MANAGE_EMAIL_TEMPLATE
-                always_on: true
                 enabled: true
             fields:
                 body:
@@ -332,7 +330,6 @@ zenario_email_template:
             label: Advanced
             edit_mode:
                 priv: _PRIV_MANAGE_EMAIL_TEMPLATE
-                always_on: true
                 enabled: true
             fields:
                 desc:

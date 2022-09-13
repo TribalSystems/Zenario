@@ -1,153 +1,153 @@
 <div class="interface_header">
-	<div class="interface_header_top">
-		<div class="interface_back_link">
-			<a onclick="history.back(-1)">{{"Back"|trans}}</a>
-		</div>
-		<div class="interface_logo">
-		</div>
-	</div>
-	<div class="interface_header_bottom">
-		<div id="interface_filters" class="interface_filters" {% if this.setting('hide_filters_list') %} style="display: none;" {% endif %}>
-			<div id="filter_button_and_dropdown">
-				<h5 id="filter_button" class="filter_button" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.filterOnclick();">Filters</h5>
-				{% if Level_1_filters %}
-					<div id="filter_dropdown" class="filter_dropdown">
-						<div class="filter_dropdown_inner">
-							<span id="apply_filters_button" class="apply_filters_button">Apply filters</span>
-							{{openForm}}
-							
-							{% set excludeDatasetFilters = this.setting('exclude_dataset_filters_picker') %}
-				
-							{# Draw the top level filters. #}
-							{% for Level_1_filter_key, Level_1_filter in Level_1_filters %}
-								{% set location_dataset_filter_level_1 = this.setting('location_dataset_filter_level_1') %}
-								{% set location_dataset_filter_level_2 = this.setting('location_dataset_filter_level_2') %}
-								{% if ((not location_dataset_filter_level_1) or (location_dataset_filter_level_1 and location_dataset_filter_level_1 == Level_1_filter_key)) and Level_1_filter_key not in excludeDatasetFilters %}
-									<div class="interface_filter_{{Level_1_filter_key|e}}">
-										<input
-											type="checkbox"
-											name="level_1_filter_{{Level_1_filter_key|e}}"
-											id="level_1_filter_{{Level_1_filter_key|e}}"
-											{% if Level_1_filter.checked %} checked {% endif %}
-											{% if Level_1_filter.readonly %} readonly {% endif %}
-											{% if Level_1_filter.hidden %} hidden {% endif %}
-										>
-										{% if not Level_1_filter.hidden %}
-											<label class="level_1" for="level_1_filter_{{Level_1_filter_key|e}}">{{Level_1_filter.label|trans}}</label>
-										{% endif %}
+		{% if Show_filter_button %}
+			<div id="interface_filters" class="interface_filters" {% if this.setting('hide_filters_list') %} style="display: none;" {% endif %}>
+				<div id="filter_button_and_dropdown">
+					<h5 id="{{Container_Id|e}}_filter_button" class="filter_button" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.filterOnclick('{{Container_Id|e}}');">Filters</h5>
+					{% if Level_1_filters %}
+						<div id="{{Container_Id|e}}_filter_dropdown" class="filter_dropdown">
+							<div class="filter_dropdown_inner">
+								<span id="{{Container_Id|e}}_apply_filters_button" class="apply_filters_button">Apply filters</span>
+								{{openForm}}
+								
+								{% set excludeDatasetFilters = this.setting('exclude_dataset_filters_picker') %}
 					
-										{# For each top level filter, draw the level 2 filters. #}
-										{# Level 2 filters are grouped by the top level filter ID. #}
+								{# Draw the top level filters. #}
+								{% for Level_1_filter_key, Level_1_filter in Level_1_filters %}
+									{% set location_dataset_filter_level_1 = this.setting('location_dataset_filter_level_1') %}
+									{% set location_dataset_filter_level_2 = this.setting('location_dataset_filter_level_2') %}
+									{% if ((not location_dataset_filter_level_1) or (location_dataset_filter_level_1 and location_dataset_filter_level_1 == Level_1_filter_key)) and Level_1_filter_key not in excludeDatasetFilters %}
+										<div class="interface_filter_{{Level_1_filter_key|e}}">
+											<input
+												type="checkbox"
+												name="level_1_filter_{{Level_1_filter_key|e}}"
+												id="level_1_filter_{{Level_1_filter_key|e}}"
+												{% if Level_1_filter.checked %} checked {% endif %}
+												{% if Level_1_filter.readonly %} readonly {% endif %}
+												{% if Level_1_filter.hidden %} hidden {% endif %}
+											>
+											{% if not Level_1_filter.hidden %}
+												<label class="level_1" for="level_1_filter_{{Level_1_filter_key|e}}">{{Level_1_filter.label|trans}}</label>
+											{% endif %}
 						
-										{% if Level_2_filters and Level_2_filters[Level_1_filter_key] %}
-											<div class="interface_filter_{{Level_1_filter_key|e}}_subfilters">
-												{% for Level_2_filter_key, Level_2_filter in Level_2_filters[Level_1_filter_key] %}
-													{% if not location_dataset_filter_level_2 or location_dataset_filter_level_2 == Level_2_filter_key %}
-														{% set doNotRepeat = false %}
-														{% for field_id, field in Level_2_filter['values'] %}
-										
-															{# For level 2 filters, first draw a checkbox to enable the filter. Then draw the filter input (text, select list, radios, checkboxes...) #}
-															{% if Level_2_filter_key not in excludeDatasetFilters %}
-																{% if not doNotRepeat %}
-																	<label class="level_2">
-																		<input
-																			type="checkbox"
-																			{% if field.type == "radio" or field.type == "select" %}
-																				name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_checkbox"
-																				id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_checkbox"
-																				{% if Level_2_filter.checked %} checked {% endif %}
-																			{% else %}
-																				name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
-																				id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
-																				{% if field.checked %} checked {% endif %}
-																			{% endif %}
-																		>
-																		{% if field.type == "radio" or field.type == "select" %}
-																			{{Level_2_filter.label|trans}}
-																		{% else %}
-																			{{field.label|trans}}
-																		{% endif %}
-																	</label>
-																	{% if field.type == "radio" or field.type == "select" %}
-																		{# This is to prevent generating a checkbox for every radio/select option. #}
-																		{# Also, if this element is a select list, the select tag is needed. #}
-																		{% set doNotRepeat = true %}
-																		{% if field.type == "select" and Level_2_filter.checked %}
-																			<select
-																				name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_select"
-																				id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_select"
+											{# For each top level filter, draw the level 2 filters. #}
+											{# Level 2 filters are grouped by the top level filter ID. #}
+							
+											{% if Level_2_filters and Level_2_filters[Level_1_filter_key] %}
+												<div class="interface_filter_{{Level_1_filter_key|e}}_subfilters">
+													{% for Level_2_filter_key, Level_2_filter in Level_2_filters[Level_1_filter_key] %}
+														{% if not location_dataset_filter_level_2 or location_dataset_filter_level_2 == Level_2_filter_key %}
+															{% set doNotRepeat = false %}
+															{% for field_id, field in Level_2_filter['values'] %}
+											
+																{# For level 2 filters, first draw a checkbox to enable the filter. Then draw the filter input (text, select list, radios, checkboxes...) #}
+																{% if Level_2_filter_key not in excludeDatasetFilters %}
+																	{% if not doNotRepeat %}
+																		<label class="level_2">
+																			<input
+																				type="checkbox"
+																				{% if field.type == "radio" or field.type == "select" %}
+																					name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_checkbox"
+																					id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_checkbox"
+																					{% if Level_2_filter.checked %} checked {% endif %}
+																				{% else %}
+																					name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																					id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																					{% if field.checked %} checked {% endif %}
+																				{% endif %}
 																			>
+																			{% if field.type == "radio" or field.type == "select" %}
+																				{{Level_2_filter.label|trans}}
+																			{% else %}
+																				{{field.label|trans}}
+																			{% endif %}
+																		</label>
+																		{% if field.type == "radio" or field.type == "select" %}
+																			{# This is to prevent generating a checkbox for every radio/select option. #}
+																			{# Also, if this element is a select list, the select tag is needed. #}
+																			{% set doNotRepeat = true %}
+																			{% if field.type == "select" and Level_2_filter.checked %}
+																				<select
+																					name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_select"
+																					id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_select"
+																				>
+																			{% endif %}
 																		{% endif %}
 																	{% endif %}
-																{% endif %}
-										
-																{# Draw a list of input fields of the correct type, so the user can adjust the values. #}
-																{% if field.type == "text" and field.checked %}
-																	<input
-																		type="{{field.type|e}}"
-																		name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_text"
-																		id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_text"
-																		{% if field.value %} value="{{field.value|e}}" {% endif %}
-																	>
-																{% elseif field.type == "radio" and Level_2_filter.checked %}
-																	<label>
+											
+																	{# Draw a list of input fields of the correct type, so the user can adjust the values. #}
+																	{% if field.type == "text" and field.checked %}
 																		<input
 																			type="{{field.type|e}}"
-																			name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_radio"
+																			name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_text"
+																			id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_text"
+																			{% if field.value %} value="{{field.value|e}}" {% endif %}
+																		>
+																	{% elseif field.type == "radio" and Level_2_filter.checked %}
+																		<label>
+																			<input
+																				type="{{field.type|e}}"
+																				name="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_radio"
+																				id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																				value="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
+																				{% if field.checked %} checked {% endif %}
+																			>
+																			{{field.label|trans}}
+																		</label>
+																	{% elseif field.type == "select" and Level_2_filter.checked %}
+																		<option
 																			id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
 																			value="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
-																			{% if field.checked %} checked {% endif %}
+																			{% if field.checked %} selected {% endif %}
 																		>
 																		{{field.label|trans}}
-																	</label>
-																{% elseif field.type == "select" and Level_2_filter.checked %}
-																	<option
-																		id="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
-																		value="level_2_filter_{{Level_1_filter_key|e}}_{{Level_2_filter_key|e}}_{{field_id|e}}"
-																		{% if field.checked %} selected {% endif %}
-																	>
-																	{{field.label|trans}}
-																	</option>
+																		</option>
+																	{% endif %}
 																{% endif %}
+															{% endfor %}
+										
+															{% if Level_2_filter.type == "select" %}
+																</select>
 															{% endif %}
-														{% endfor %}
-									
-														{% if Level_2_filter.type == "select" %}
-															</select>
 														{% endif %}
-													{% endif %}
-												{% endfor %}
-											</div>
-										{% endif %}
-									</div>
-								{% endif %}
-							{% endfor %}
-				
-							{{closeForm}}
+													{% endfor %}
+												</div>
+											{% endif %}
+										</div>
+									{% endif %}
+								{% endfor %}
+					
+								{{closeForm}}
+							</div>
 						</div>
+					{% endif %}
+
+					{% if not Level_1_filters and not Level_2_filters %}
+						<div id="{{Container_Id|e}}_filter_dropdown" class="filter_dropdown">
+							<p>{{'No flags found.'|trans}}</p>
+						</div>
+					{% endif %}
+				</div>
+				{% if Selected_filters %}
+					<div class="selected_filters">
+						{% for Selected_filter in Selected_filters %}
+							<span>
+								{{Selected_filter.label}}
+								<span class="closing_button" onclick="zenario_location_map_and_listing_2.selectedFiltersElementOnclick('{{Selected_filter.onclickTarget}}', '{{Container_Id|e}}');">
+									X
+								</span>
+							</span>
+						{% endfor %}
 					</div>
 				{% endif %}
 			</div>
-			{% if Selected_filters %}
-				<div class="selected_filters">
-					{% for Selected_filter in Selected_filters %}
-						<span>
-							{{Selected_filter.label}}
-							<span class="closing_button" onclick="zenario_location_map_and_listing_2.selectedFiltersElementOnclick({{Selected_filter.onclickTarget}});">
-								X
-							</span>
-						</span>
-					{% endfor %}
-				</div>
-			{% endif %}
-		</div>
+		{% endif %}
+
 		{% if this.setting('show_location_list') and this.setting('show_map') %}
 			<ul class="mode">
 				<li id="mode_list_button" class="mode_list" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.setModeTo('mode_list');">List</li>
 				<li id="mode_map_button" class="mode_map" onclick="if (typeof zenario_location_map_and_listing_2 !== 'undefined') zenario_location_map_and_listing_2.setModeTo('mode_map');">Map</li>
 			</ul>
 		{% endif %}
-	</div>
 </div>
 
 <div class="interface_body">

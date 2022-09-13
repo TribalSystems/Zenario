@@ -35,6 +35,15 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		if ($box['key']['id'] && !$box['key']['cID']) {
 			ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
 		}
+
+		//Make sure the suffix is removed if set in the site settings
+		if (ze::setting('mod_rewrite_enabled')) {
+			$modRewriteSuffix = ze::setting('mod_rewrite_suffix');
+
+			if ($modRewriteSuffix && ze::in($modRewriteSuffix, '.htm', '.html')) {
+				$fields['meta_data/alias']['onkeyup'] .= ' zenarioAB.removeHtmAndHtmlFromAlias("' . htmlspecialchars($modRewriteSuffix) . '");';
+			}
+		}
 		
 		$content =
 			ze\row::get(

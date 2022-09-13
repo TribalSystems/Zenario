@@ -27,9 +27,9 @@ plugin_settings:
                     plugin_setting:
                         name: show_invisible_menu_items
                     label: |
-                        Show menu items even if marked "invisible" (not recommended)
+                        Show menu nodes even if marked "invisible" (not recommended)
                     side_note: |
-                        Menu items marked as "invisible" are hidden from menus and sitemaps, but still appear in breadcrumb trails. Check this to override the usual behaviour and make them visible in the sitemap.
+                        Menu nodes marked as "invisible" are hidden from menus and sitemaps, but still appear in breadcrumb trails. Check this to override the usual behaviour and make them visible in the sitemap.
                     type: checkbox
                     value: ""
                 menu_number_of_levels:

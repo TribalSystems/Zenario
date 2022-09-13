@@ -33,36 +33,38 @@ class zenario_error_log__organizer__error_log extends ze\moduleBaseClass {
 		$spareAliases = [];
 		$sql = '
 			SELECT el.id, sa.target_loc, sa.content_id, sa.content_type, sa.ext_url
-			FROM '.DB_PREFIX.'spare_aliases sa
-			INNER JOIN '.DB_PREFIX. ZENARIO_ERROR_LOG_PREFIX. 'error_log el
+			FROM ' . DB_PREFIX . 'spare_aliases sa
+			INNER JOIN ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log el
 				ON sa.alias = el.page_alias';
 		$result = ze\sql::select($sql);
-		while($row = ze\sql::fetchAssoc($result)) {
+		while ($row = ze\sql::fetchAssoc($result)) {
 			$spareAliases[$row['id']] = $row;
 		}
+
 		$accessLogDuration = '';
-			switch (ze::setting('period_to_delete_error_log')) {
-				case 'never_delete':
-					$accessLogDuration = ze\admin::phrase('Entries in the error log are stored forever.');
-					break;
-				case 90:
-					$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 3 months.');
-					break;
-				case 180:
-					$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 6 months.');
-					break;
-				case 365:
-					$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 1 year.');
-					break;
-				case 730:
-					$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 2 years.');
-					break;
-				case 1095:
-					$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 3 years.');
-					break;
-				
-			}
-		$link = ze\link::absolute(). 'organizer.php#zenario__administration/panels/site_settings//zenario_error_log__site_settings_group~.site_settings~tdetails~k{"id"%3A"zenario_error_log__site_settings_group"}';
+		switch (ze::setting('period_to_delete_error_log')) {
+			case 'never_delete':
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are stored forever.');
+				break;
+			case 90:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 3 months.');
+				break;
+			case 180:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 6 months.');
+				break;
+			case 365:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 1 year.');
+				break;
+			case 730:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 2 years.');
+				break;
+			case 1095:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 3 years.');
+				break;
+			
+		}
+
+		$link = ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//zenario_error_log__site_settings_group~.site_settings~tdetails~k{"id"%3A"zenario_error_log__site_settings_group"}';
 		$accessLogDuration .= ' ' . "<a target='_blank' href='" . $link . "'>View error log settings</a>";
 		$panel['notice']['show'] = true;
 		$panel['notice']['message'] = $accessLogDuration.".";
@@ -78,8 +80,5 @@ class zenario_error_log__organizer__error_log extends ze\moduleBaseClass {
 				}
 			}
 		}
-	
-		
-	
 	}
 }

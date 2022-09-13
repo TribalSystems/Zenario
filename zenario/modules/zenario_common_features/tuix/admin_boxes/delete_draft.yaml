@@ -10,7 +10,6 @@ zenario_delete_draft:
         delete_draft:
             edit_mode:
                 enabled: true
-                always_on: true
                 enable_revert: false
             
             notices:

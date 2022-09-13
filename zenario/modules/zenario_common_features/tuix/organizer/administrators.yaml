@@ -165,7 +165,7 @@ zenario__administration:
                     hide_in_select_mode: true
             item_buttons:
                 edit:
-                    ord: "1"
+                    ord: 1
                     priv: _PRIV_VIEW_ADMIN
                     label: Edit acccount
                     hide_in_select_mode: true
@@ -196,22 +196,46 @@ zenario__administration:
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            restore: "1"
+                            restore: 1
                     with_columns_set:
-                        traits.local: true
-                        traits.trashed: true
+                        isLocal: true
+                        isTrashed: true
                 trash_admin:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_ADMIN
                     label: Trash
                     hide_in_select_mode: true
+                    with_columns_set:
+                        isLocal: true
+                        isActive: true
+                        last_login: true
+                    without_columns_set:
+                        isCurrentAdmin: true
                     admin_box:
                         path: zenario_trash_admin
+                delete_admin:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_ADMIN
+                    label: Delete
+                    hide_in_select_mode: true
+                    multiple_select: true
                     with_columns_set:
-                        traits.local: true
-                        traits.active: true
+                        isLocal: true
+                        isActive: true
                     without_columns_set:
-                        traits.current_admin: true
+                        last_login: true
+                        isCurrentAdmin: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete the administrator account "[[username]]"?
+                            multiple_select_message: |
+                                Are you sure you wish to restore the selected administrator accounts?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: 1
             inline_buttons:
                 inactive:
                     visible_if: |

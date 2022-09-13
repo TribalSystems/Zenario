@@ -46,18 +46,17 @@ ze\db::loadSiteConfig();
 
 //Show a manage button if visitors can manage thier cookies individually
 $manageButtonHTML = '';
-if (in_array($_GET['type'], ['accept', 'accept_reject']) 
-	&& ze\module::inc('zenario_cookie_consent_status')
-	&& ze::setting('individual_cookie_consent') 
-	&& ($tagId = ze::setting('manage_cookie_consent_content_item'))
-) {
-	$cID = $cType = false;
-	ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-	ze\content::langEquivalentItem($cID, $cType);
-	$link = ze\link::toItem($cID, $cType);
+if (in_array($_GET['type'], ['accept', 'accept_reject'])) {
 	$manageButtonHTML =  '
 		<div class="zenario_cc_manage">
-			<a href="' . htmlspecialchars($link) . '">'. ze\lang::phrase('_COOKIE_CONSENT_MANAGE'). '</a>
+			<a
+				onclick="
+					document.getElementById(\'zenario_cookie_consent_manage_popup\').style.cssText = \'opacity:1; visibility:visible;\';
+					document.getElementById(\'zenario_cookie_consent\').style.display = \'none\';
+				"
+			>
+				'. ze\lang::phrase('_COOKIE_BOX1_04_MANAGE_BTN'). '
+			</a>
 		</div>';
 }
 
@@ -67,11 +66,11 @@ switch ($_GET['type']) {
 		echo '
 document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js('
 	<div class="zenario_cookie_consent_wrap">
-		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_CONSENT_IMPLIED_MESSAGE'). '</div>
+		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_BOX1_01_IMPLIED_MSG'). '</div>
 		<div class="zenario_cc_buttons">
 			<div class="zenario_cc_continue">
 				<a href="" onclick="$(\'div.zenario_cookie_consent\').slideUp(\'slow\'); return false;">'.
-					ze\lang::phrase('_COOKIE_CONSENT_CONTINUE').
+					ze\lang::phrase('_COOKIE_BOX1_02_CONTINUE_BTN').
 				'</a>
 			</div>
 		</div>
@@ -84,43 +83,127 @@ document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js
 		echo '
 document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js('
 	<div class="zenario_cookie_consent_wrap">
-		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_CONSENT_MESSAGE'). '</div>
-		<div class="zenario_cc_close">
-			<a href="#" onclick="$(\'div.zenario_cookie_consent\').fadeOut(\'slow\'); return false;">'.
-				ze\lang::phrase('_COOKIE_CONSENT_CLOSE').
-			'</a>
-		</div>
+		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_BOX1_03_COOKIE_CONSENT_MSG'). '</div>
 		<div class="zenario_cc_buttons">
-			<div class="zenario_cc_accept">
-				<a href="zenario/cookies.php?accept_cookies=1">'. ze\lang::phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
-			</div>
 			' . $manageButtonHTML . '
+			<div class="zenario_cc_accept">
+				<a href="zenario/cookies.php?accept_cookies=1">'. ze\lang::phrase('_COOKIE_BOX1_05_ACCEPT_BTN'). '</a>
+			</div>
 		</div>
 	</div>
 '), '\';';
+
 		break;
-		
-	//Explicit consent - show the cookie message until it is accepted or rejected
-	case 'accept_reject':
-		echo '
-document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js('
-	<div class="zenario_cookie_consent_wrap">
-		<div class="zenario_cc_message">'. ze\lang::phrase('_COOKIE_CONSENT_MESSAGE'). '</div>
-		<div class="zenario_cc_close">
-			<a href="#" onclick="$(\'div.zenario_cookie_consent\').fadeOut(\'slow\'); return false;">'.
-				ze\lang::phrase('_COOKIE_CONSENT_CLOSE').
-			'</a>
+}
+
+if (ze::in($_GET['type'], 'accept', 'popup_only')) {
+	$cancelButtonOnclick = '';
+	if ($_GET['type'] == 'accept') {
+		$cancelButtonOnclick .= '
+			document.getElementById(\'zenario_cookie_consent\').style.display = \'block\';';
+	}
+	$cancelButtonOnclick .= '
+		document.getElementById(\'zenario_cookie_consent_manage_popup\').style.display = \'none\';';
+
+	echo '
+cookieConsentPopup = document.getElementById("zenario_cookie_consent_manage_popup");
+if (!cookieConsentPopup) {
+	cookieConsentPopup = document.createElement(\'div\');
+	cookieConsentPopup.setAttribute(\'id\', \'zenario_cookie_consent_manage_popup\');
+	cookieConsentPopup.setAttribute(\'class\', \'zenario_cookie_consent_manage_popup\');
+	document.body.append(cookieConsentPopup);
+}';
+
+if ($_GET['type'] == 'popup_only') {
+	echo '
+		cookieConsentPopup.setAttribute(\'style\', \'opacity:1; visibility:visible;\');';
+}
+	
+	//If the zenario.manageCookies() function put the previous choices in the URL, use those.
+	//Otherwise default all of the options to the site setting default.
+	$defaultStateSiteSetting = \ze::setting('popup_cookie_type_switches_initial_state');
+	
+	if (isset($_REQUEST['funOn'])) {
+		$funOn = !empty($_REQUEST['funOn']);
+	} else {
+		$funOn = ($defaultStateSiteSetting == 'on');
+	}
+	if (isset($_REQUEST['anOn'])) {
+		$anOn = !empty($_REQUEST['anOn']);
+	} else {
+		$anOn = ($defaultStateSiteSetting == 'on');
+	}
+	if (isset($_REQUEST['socialOn'])) {
+		$socialOn = !empty($_REQUEST['socialOn']);
+	} else {
+		$socialOn = ($defaultStateSiteSetting == 'on');
+	}
+
+	echo '
+cookieConsentPopup.innerHTML = \'', ze\escape::js('
+	<div class="zenario_cookie_consent_manage_popup_wrap">
+		<div class="cookie_title_text">
+			' . \ze\lang::phrase('_COOKIE_BOX2_01_INTRO_MSG') . '
 		</div>
-		<div class="zenario_cc_buttons">
-			<div class="zenario_cc_reject">
-				<a href="zenario/cookies.php?accept_cookies=0">'. ze\lang::phrase('_COOKIE_CONSENT_REJECT'). '</a>
+		<form method="post" action="zenario/cookies.php">
+			<button type="button" class="cancel"
+					onclick="
+						' . $cancelButtonOnclick . '
+					"
+				>' . \ze\lang::phrase('Cancel') . '</button>
+
+			<div class="cookies_buttons top">
+				<input type="submit" name="cookie_accept_all" value="' . \ze\lang::phrase('_COOKIE_BOX2_02_ACCEPT_ALL_BTN') . '">
 			</div>
-			<div class="zenario_cc_accept">
-				<a href="zenario/cookies.php?accept_cookies=1">'. ze\lang::phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
+
+			<div class="cookie">
+				<label class="switch">
+					<input type="checkbox" checked disabled>
+					<span class="slider round"></span>
+				</label>
+				<div class="cookie_info">
+					<h5>' . \ze\lang::phrase('_COOKIE_BOX2_03_NECESSARY_HEADER_1') . '</h5>
+					<p>' . \ze\lang::phrase('_COOKIE_BOX2_04_NECESSARY_MSG_1') . '</p>
+				</div>
 			</div>
-			' . $manageButtonHTML . '
-		</div>
+
+			<div class="cookie">
+				<label class="switch">
+					<input type="checkbox" name="functionality" ' . ($funOn ? 'checked' : '') . '>
+					<span class="slider round"></span>
+				</label>
+				<div class="cookie_info">
+					<h5>' . \ze\lang::phrase('_COOKIE_BOX2_05_FUNCT_HEADER_2') . '</h5>
+					<p>' . \ze\lang::phrase('_COOKIE_BOX2_06_FUNCT_MSG_2') . '</p>
+				</div>
+			</div>
+
+			<div class="cookie">
+				<label class="switch">
+					<input type="checkbox" name="analytics" ' . ($anOn ? 'checked' : '') . '>
+					<span class="slider round"></span>
+				</label>
+				<div class="cookie_info">
+					<h5>' . \ze\lang::phrase('_COOKIE_BOX2_07_ANALYTICS_HEADER_3') . '</h5>
+					<p>' . \ze\lang::phrase('_COOKIE_BOX2_08_ANALYTICS_MSG_3') . '</p>
+				</div>
+			</div>
+
+			<div class="cookie">
+				<label class="switch">
+					<input type="checkbox" name="social_media" ' . ($socialOn ? 'checked' : '') . '>
+					<span class="slider round"></span>
+				</label>
+				<div class="cookie_info">
+					<h5>' . \ze\lang::phrase('_COOKIE_BOX2_09_SOC_MEDIA_HEADER_4') . '</h5>
+					<p>' . \ze\lang::phrase('_COOKIE_BOX2_10_SOC_MEDIA_MSG_4') . '</p>
+				</div>
+			</div>
+
+			<div class="cookies_buttons">
+				<input type="submit" name="cookie_save_preferences" class="cookie_save_preferences" value="' . \ze\lang::phrase('_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN') . '">
+			</div>
+		</form>
 	</div>
 '), '\';';
-		break;
 }

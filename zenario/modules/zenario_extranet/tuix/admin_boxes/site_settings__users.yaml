@@ -10,7 +10,9 @@ site_settings:
                     site_setting:
                         name: temp_password_timeout
                     pre_field_html: |
-                        If you create a user in Organizer and ask them to change their password when they first log in, they have&nbsp;
+                        For users created by administrators, temporary password validity period:&nbsp;
+                    side_note: |
+                        After this time, users will need to perform a password reset in order to log in.
                     type: select
                     value: 14
                     values:
@@ -22,5 +24,3 @@ site_settings:
                             label: 2 weeks
                         28:
                             label: 4 weeks
-                    post_field_html: |
-                        &nbsp;to do so before the password needs to be reset.

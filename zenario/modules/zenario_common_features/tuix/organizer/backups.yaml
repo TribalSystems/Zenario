@@ -4,7 +4,7 @@ zenario__administration:
     panels:
         backups:
             priv: _PRIV_BACKUP_SITE
-            title: Database backups
+            title: Backups of the Zenario database
             view_mode: list
             disable_grid_view: true
             #no_items_message is set in the PHP class file.
@@ -13,12 +13,12 @@ zenario__administration:
                 filename:
                     title: Filename
                     searchable: true
-                    show_by_default: true
-                    width: large
+                    always_show: true
+                    width: xxlarge
                 size:
                     title: Size
                     format: filesize
-                    show_by_default: true
+                    always_show: true
                     align_right: true
             default_sort_column: filename
             item:
@@ -29,13 +29,13 @@ zenario__administration:
                     hide_on_filter: true
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
-                    label: Create a database backup...
+                    label: Create a backup of the database...
                 create:
                     priv: _PRIV_BACKUP_SITE
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     parent: create_dropdown
-                    label: Create a database backup on site
+                    label: Create a backup on site
                     admin_box:
                         path: zenario_backup
                         key:
@@ -45,17 +45,17 @@ zenario__administration:
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     parent: create_dropdown
-                    label: Create and download a database backup
+                    label: Create and download a backup
                     admin_box:
                         path: zenario_backup
                 upload:
                     priv: _PRIV_BACKUP_SITE
-                    label: Upload database backup
+                    label: Upload a backup
                     tooltip: |
-                        Upload database backup|
-                        <p>This tool allows you to upload a database backup of a zenario site.</p>
+                        Upload a backup of the database|
+                        <p>This tool allows you to upload a database backup of a Zenario site.</p>
                         
-                        <p>(You will need to ftp the file to the backup directory if it is too big.)</p>
+                        <p>(If the file it too large, you may need to upload the file to the backup directory using an FTP/SFTP tool.)</p>
                     upload:
                         accept: '.sql, .gz, .encrypted'
                         fileDesc: Database backup files
@@ -69,7 +69,7 @@ zenario__administration:
                 
                 settings:
                     priv: _PRIV_VIEW_SITE_SETTING
-                    label: Settings for Backups
+                    label: Settings for backups
                     parent: settings_dropdown
                     hide_in_select_mode: true
                     admin_box:

@@ -19,13 +19,13 @@ echo
 	<title>';
 	
 		switch ($_GET['mode'] ?? false) {
-			case 'zenarioAB';
+			case 'zenarioAB':
 				echo ze\admin::phrase('TUIX Inspector for an Admin Box');
 				break;
-			case 'zenarioAT';
+			case 'zenarioAT':
 				echo ze\admin::phrase('TUIX Inspector for the Admin Toolbar');
 				break;
-			case 'zenarioO';
+			case 'zenarioO':
 				if (ze\ring::engToBoolean($_GET['orgMap'] ?? false)) {
 					echo ze\admin::phrase("TUIX Inspector for Organizer's map");
 				} else {
@@ -52,25 +52,13 @@ echo '</head>';
 ze\content::pageBody();
 ze\content::pageFoot($prefix, false, false, false);
 
-echo '
-<script type="text/javascript" src="../../libs/manually_maintained/apache/docson/lib/marked.js?v=', $v, '"></script>
-<script type="text/javascript" src="../../libs/manually_maintained/mit/js-yaml/js-yaml.js?v=', $v, '"></script>
-<script type="text/javascript" src="../../libs/manually_maintained/public_domain/tv4/tv4.js?v=', $v, '"></script>
-<script type="text/javascript" src="../../libs/manually_maintained/public_domain/tv4/customised_messages.js?v=', $v, '"></script>';
-
-/*
-echo '
-<script type="text/javascript">
-	window.zenarioAdminHasZipPerms = ', ze\ring::engToBoolean(ze\priv::check('_PRIV_VIEW_TEMPLATE')), ';
-	window.zenarioAdminHasSavePerms = ', ze\ring::engToBoolean(ze\priv::check('_PRIV_EDIT_TEMPLATE')), ';
-</script>';
-*/
 
 ?>
 
 
 <div id="toolbar"></div>
 <div id="editor"></div>
+<div id="lowerbar"></div>
 <div id="sidebar" class="sidebarEmpty">
 	<div class="vscroll" id="sidebar_inner">
 	</div>
@@ -105,7 +93,7 @@ switch ($_GET['mode'] ?? false) {
 }
 
 
-$schema = ze\tuix::readFile(CMS_ROOT. 'zenario/reference/'. $schemaName. '.yaml');
+$schema = ze\tuix::readFile(CMS_ROOT. $schemaPath = 'zenario/reference/'. $schemaName. '.yaml');
 
 //Copy the some definitions from the FAB toolkit to the FEA toolkit
 //(This is a hack to save me from writing all of that out twice!)
@@ -141,12 +129,18 @@ unset($schema['common_definitions']);
 
 
 echo '
+<script type="text/javascript">
+	var schema = ', json_encode($schema), ';
+	var schemaPath = ', json_encode($schemaPath), ';
+</script>
+<script type="text/javascript" src="../../libs/manually_maintained/apache/docson/lib/marked.js?v=', $v, '"></script>
+<script type="text/javascript" src="../../libs/manually_maintained/mit/js-yaml/js-yaml.js?v=', $v, '"></script>
+<script type="text/javascript" src="../../libs/manually_maintained/public_domain/tv4/tv4.js?v=', $v, '"></script>
+<script type="text/javascript" src="../../libs/manually_maintained/public_domain/tv4/customised_messages.js?v=', $v, '"></script>
 <script type="text/javascript" src="doc_tools.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/dev_tools.min.js?v=', $v, '"></script>
 <script type="text/javascript">
-	var schema = ', json_encode($schema), ';
 	devTools.init(\'', ze\escape::js($_GET['mode'] ?? false), '\', \'', ze\escape::js($schemaNameForURL), '\', schema, ', ze\ring::engToBoolean($_GET['orgMap'] ?? false), ');
-	var sshPath = "', ze\escape::js(ze\link::hostWithoutPort(). CMS_ROOT), '";
 </script>
 </body>
 </html>';

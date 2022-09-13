@@ -38,7 +38,7 @@ CREATE TABLE [[DB_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_email
 	`new_email` varchar(100) NOT NULL,
 	`hash` varchar(255)  NOT NULL,
 	PRIMARY KEY(`user_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ); ze\dbAdm::revision(4,
@@ -121,5 +121,14 @@ _sql
 		1
 	)
 "
+
+
+//In 9.3, we're going through and fixing the character-set on several columns that should
+//have been using "ascii"
+);	ze\dbAdm::revision(40
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_emails`
+	MODIFY COLUMN  `hash` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+_sql
 
 );

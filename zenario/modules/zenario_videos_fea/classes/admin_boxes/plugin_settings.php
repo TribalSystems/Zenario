@@ -63,4 +63,11 @@ class zenario_videos_fea__admin_boxes__plugin_settings extends zenario_videos_fe
         $hidden = $values['global_area/mode'] != 'list_videos' || !$values['first_tab/show_images'];
 		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'image_');
 	}
+
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		if ($values['global_area/mode'] == 'list_videos' && (!$values['first_tab/show_images'] && !$values['first_tab/show_video_titles'])) {
+			$fields['first_tab/show_images']['error'] =
+			$fields['first_tab/show_video_titles']['error'] = ze\admin::phrase('Please select either "Show video titles", "Show images", or both.');
+		}
+	}
 }

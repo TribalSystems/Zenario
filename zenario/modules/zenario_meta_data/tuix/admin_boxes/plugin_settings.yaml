@@ -45,25 +45,18 @@ plugin_settings:
                     values: &tags
                         h1:
                             label: h1
-                            ord: 1
                         h2:
                             label: h2
-                            ord: 2
                         h3:
                             label: h3
-                            ord: 3
                         h4:
                             label: h4
-                            ord: 4
                         h5:
                             label: h5
-                            ord: 5
                         h6:
                             label: h6
-                            ord: 6
                         p:
                             label: p
-                            ord: 8
                 show_icon_when_pinned:
                     plugin_setting:
                         name: show_icon_when_pinned
@@ -326,19 +319,14 @@ plugin_settings:
                     value: unlimited
                     values:
                         unlimited:
-                            ord: "1"
                             label: Unlimited size
                         fixed_width:
-                            ord: "2"
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
                             label: Constrain by width and height
                         resize_and_crop:
-                            ord: "5"
                             label: Resize and crop
                     format_onchange: true
                     indent: 2
@@ -441,9 +429,9 @@ plugin_settings:
                     type: select
                     values: *tags
                 
-                show_sticky_image:
+                show_featured_image:
                     plugin_setting:
-                        name: show_sticky_image
+                        name: show_featured_image
                     grouping: filters
                     label: "Show content item's featured image"
                     type: checkbox
@@ -459,34 +447,40 @@ plugin_settings:
                     type: select
                     values: *tags
                     
-                sticky_image_canvas:
+                image_2_canvas:
                     plugin_setting:
-                        name: sticky_image_canvas
+                        name: image_2_canvas
                     grouping: filters
                     label: "Image canvas:"
                     type: select
                     value: unlimited
                     values:
                         unlimited:
-                            ord: "1"
                             label: Unlimited size
                         fixed_width:
-                            ord: "2"
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
                             label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                        crop_and_zoom:
+                            label: Crop and zoom
                     format_onchange: true
                     indent: 1
-                sticky_image_width:
+                image_2_retina:
                     plugin_setting:
-                        name: sticky_image_width
+                        name: image_2_retina
+                    grouping: filters
+                    label: 'Treat as a retina image'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Display image at double density.
+                    enable_microtemplates_in_properties: true
+                    same_row: true
+                image_2_width:
+                    plugin_setting:
+                        name: image_2_width
                     grouping: filters
                     label: 'Width:'
                     type: text
@@ -498,9 +492,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                sticky_image_height:
+                image_2_height:
                     plugin_setting:
-                        name: sticky_image_height
+                        name: image_2_height
                     grouping: filters
                     label: 'Height:'
                     type: text
@@ -512,36 +506,28 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                sticky_image_offset:
-                    plugin_setting:
-                        name: sticky_image_offset
-                    grouping: filters
-                    label: 'Offset:'
-                    type: text
-                    style: 'width: 50px;'
-                    value: "0"
-                    slider:
-                        min: "-10"
-                        max: "10"
-                        before_field: true
-                        style: 'width: 200px;'
-                    side_note: |
-                        Moving the slider to the left will move the image left or down;
-                        moving the slider to the right will move the image right or up.
+                image_2_webp:
                     indent: 2
-                show_feature_image_fallback:
+                    hide_with_previous_outdented_field: true
+                    plugin_setting:
+                        name: image_2_webp
+                        save_value_when_hidden: true
+                    type: checkbox
+                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    value: 1
+                fall_back_to_default_image:
                     indent: 1
                     plugin_setting:
-                        name: show_feature_image_fallback
+                        name: fall_back_to_default_image
                     grouping: filters
                     label: "Show a fallback image, if content item doesn't have a featured image"
                     type: checkbox
                     format_onchange: true
-                    visible_if: lib.value('show_sticky_image')
-                feature_image_fallback:
+                    visible_if: lib.value('show_featured_image')
+                default_image_id:
                     indent: 2
                     plugin_setting:
-                        name: feature_image_fallback
+                        name: default_image_id
                         foreign_key_to: file
                     grouping: filters
                     label: 'Fallback image:'
@@ -563,7 +549,7 @@ plugin_settings:
                             - .png
                         drag_and_drop: true
                         reorder_items: false
-                    visible_if: lib.value('show_sticky_image') && lib.value('show_feature_image_fallback')
+                    visible_if: lib.value('show_featured_image') && lib.value('fall_back_to_default_image')
                     validation:
                         required_if_not_hidden: Please select an image.
         order_tab:

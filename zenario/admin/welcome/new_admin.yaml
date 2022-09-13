@@ -5,7 +5,6 @@ new_admin:
             edit_mode:
                 enabled: true
                 on: true
-                always_on: true
             show_errors_after_field: description
             fields:
                 description:
@@ -16,39 +15,36 @@ new_admin:
                             <p>
                                 Please choose a password to confirm your account. After that, you will have administrator access to this site.
                             </p>
+                username:
+                    label: "Username:"
+                    autocomplete: "username"
+                    type: text
+                    row_class: row_form
+                    readonly: true
                 password:
                     label: "Password:"
+                    autocomplete: "new-password"
                     type: password
                     oninput: |
                         zenario.updatePasswordNotifier('#password', '#snippet_password_message');
-                    onmouseover: |
-                        $('#snippet__password_requirements').show();
-                    onmouseout: |
-                        $('#snippet__password_requirements').hide();
                     row_class: row_form
-                    return_key_presses_button: save_password_and_login
-                password_requirements:
-                    snippet:
-                        html: ""
                 password_message:
                     same_row: true
                     snippet:
                         html: "&nbsp;"
                 re_password:
                     label: "Re-enter your password:"
+                    autocomplete: "new-password"
                     type: password
                     row_class: row_form
-                    return_key_presses_button: save_password_and_login
                 accept_box:
                     type: checkbox
                     row_class: row_form
-                    return_key_presses_button: save_password_and_login
                     label:  I accept that my email, name and other details will be stored on this site, for the purposes of administering the site.
                 remember_me:
                     type: checkbox
                     row_class: row_form
                     value: true
-                    return_key_presses_button: save_password_and_login
                     label: Remember me
                     tooltip: |
                         If checked, Zenario will set a cookie on your browser, and you will see a convenient "LOGIN" button on the website front-end when not in admin mode.
@@ -58,4 +54,3 @@ new_admin:
                     full_width: true
                     style: |
                         float: right;
-                

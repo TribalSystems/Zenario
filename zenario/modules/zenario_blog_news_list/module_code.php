@@ -282,7 +282,7 @@ class zenario_blog_news_list extends zenario_content_list {
 				'Show_Author_Image' => $this->setting('show_author_image'),
 				'Show_Excerpt' => (bool) $this->dataField,
 				'Show_Item_Title' => (bool)$this->setting('show_titles'),
-				'Show_Sticky_Image' => (bool) $this->setting('show_sticky_images'),
+				'Show_Featured_Image' => (bool) $this->setting('show_featured_image'),
 				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 				'Show_Title' => (bool)$this->setting('show_headings'),
 				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),

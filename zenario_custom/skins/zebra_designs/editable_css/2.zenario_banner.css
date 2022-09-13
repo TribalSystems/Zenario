@@ -1,6 +1,6 @@
-.zenario_banner .banner_image img {
-	max-width:100% !important;
-	height:auto !important;
+.zenario_banner .banner_wrap_inner > a + .banner_content,
+.zenario_banner .banner_wrap_inner .banner_image + .banner_content {
+	margin-top:15px;
 }
 
 /* Logo
@@ -94,7 +94,6 @@
 
 .zenario_banner.banner_overlay_content {
 	overflow:hidden;
-	text-align:center;
 }
 
 .zenario_banner.banner_overlay_content .banner_wrap {
@@ -105,6 +104,7 @@
 
 .zenario_banner.banner_overlay_content .banner_wrap .banner_content {
   	position: absolute;
+  	z-index:10;
   	top: 50%;
   	transform: translateY(-50%);
   	padding:0 20px;
@@ -114,12 +114,13 @@
   	margin:auto;
 }
 
-.zenario_banner.banner_overlay_content .banner_wrap .banner_content h2 a:hover {
-	text-decoration:none;
+body.desktop .zenario_banner.banner_overlay_content .banner_wrap .banner_content {
+  	padding:0 30px;
+  	width:calc(100% - 60px);
 }
 
-.zenario_banner.banner_overlay_content .banner_wrap .banner_content p {
-	color:#000;
+.zenario_banner.banner_overlay_content .banner_wrap .banner_content h2 a:hover {
+	text-decoration:none;
 }
 
 .zenario_banner.banner_overlay_content .banner_wrap .banner_more {
@@ -222,4 +223,24 @@ body.desktop .zenario_banner.banner_overlay_content .banner_wrap .banner_content
 body.mobile .zenario_banner a.anchor,
 body.zenario_adminLoggedIn.mobile .zenario_banner a.anchor {
 	top:-80px;
+}
+
+/* Banner Zenario and TS websites
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_banner.banner_zenario_website {
+	text-align:center;
+}
+
+.zenario_banner.banner_zenario_website,
+.zenario_banner.banner_tribal_systems_website {
+	font-size:0.813em;
+}
+
+.zenario_banner.banner_zenario_website .banner_image {
+	padding-bottom:10px;
+}
+
+.zenario_banner.banner_tribal_systems_website p.phone {
+	font-size:1em;
 }

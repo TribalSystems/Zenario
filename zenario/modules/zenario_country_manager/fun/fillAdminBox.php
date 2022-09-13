@@ -34,7 +34,7 @@ switch($path) {
 		}
 		if ($box['key']['id'] ?? false) {
 			$countryName = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => ($box['key']['id'] ?? false)]);
-			$box['title'] = ze\admin::phrase('Renaming the Country "[[country_name]]"', ['country_name' => $countryName]);
+			$box['title'] = ze\admin::phrase('Editing the country "[[country_name]]"', ['country_name' => $countryName]);
 
 			$box['tabs']['details']['fields']['code']['value'] = $box['key']['id'] ?? false;
 			$box['tabs']['details']['fields']['code']['readonly'] = true;
@@ -52,7 +52,7 @@ switch($path) {
 			$box['key']['parent_id'] = $_GET['refinerId'] ?? false;
 			if ($box['key']['id'] ?? false) {
 				$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name','region_type'], ['id' => ($box['key']['id'] ?? false)]);
-				$box['title'] = ze\admin::phrase('Renaming the Region "[[region_name]]"', ['region_name' => $region['name']]);
+				$box['title'] = ze\admin::phrase('Editing the region "[[region_name]]"', ['region_name' => $region['name']]);
 				$box['tabs']['details']['fields']['name']['value'] = $region['name'];
 				$box['tabs']['details']['fields']['update_phrase']['hidden'] = false;
 				if (ze::setting('zenario_country_manager__region_type_management')) {
@@ -60,7 +60,7 @@ switch($path) {
 				}
 			} elseif ($box['key']['parent_id'] ?? false) {
 				$parentRegion = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name'], ['id' => ($box['key']['parent_id'] ?? false)]);
-				$box['title'] = ze\admin::phrase('Creating a Sub-region of the Region "[[parent_region_name]]"', 
+				$box['title'] = ze\admin::phrase('Creating a sub-region of "[[parent_region_name]]"', 
 												['parent_region_name' => $parentRegion['name']]);
 				$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
 			}
@@ -69,7 +69,7 @@ switch($path) {
 			$countryName = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => ($box['key']['country_id'] ?? false)]);
 			if ($box['key']['id'] ?? false) {
 				$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name', 'region_type'], ['id' => ($box['key']['id'] ?? false)]);
-				$box['title'] = ze\admin::phrase('Renaming the Region "[[region_name]]" in the Country "[[country_name]]"', 
+				$box['title'] = ze\admin::phrase('Editing the region "[[region_name]]" in "[[country_name]]"', 
 												['region_name' => $region['name'], 'country_name' => $countryName]);
 				$box['tabs']['details']['fields']['name']['value'] = $region['name'];
 				$box['tabs']['details']['fields']['update_phrase']['hidden'] = false;
@@ -77,7 +77,7 @@ switch($path) {
 					$box['tabs']['details']['fields']['region_type']['value'] = $region['region_type'];
 				}
 			} else {
-				$box['title'] = ze\admin::phrase('Creating a Region in the Country "[[country_name]]"', 
+				$box['title'] = ze\admin::phrase('Creating a region within "[[country_name]]"', 
 												['country_name' => $countryName]);
 				$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
 			}

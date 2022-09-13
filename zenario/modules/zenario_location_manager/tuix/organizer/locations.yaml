@@ -339,6 +339,7 @@ zenario__locations:
                 label: Start import wizard
                 parent: import_dropdown
                 hide_on_filter: true
+                hide_on_refiner: true
                 hide_in_select_mode: true
                 admin_box:
                     path: zenario_import
@@ -349,6 +350,7 @@ zenario__locations:
                 label: Download sample file
                 parent: import_dropdown
                 hide_on_filter: true
+                hide_on_refiner: true
                 hide_in_select_mode: true
                 admin_box:
                     path: zenario_download_sample_file

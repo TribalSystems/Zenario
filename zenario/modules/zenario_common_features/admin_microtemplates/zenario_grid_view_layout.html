@@ -1,6 +1,6 @@
 <table>
-	<tr><th>ID:</th><td>{{zenarioO.columnValue(m.id, 'code')}}</td></tr>
-	<tr><th>Content type:</th><td>{{zenarioO.columnValue(m.id, 'content_type')}}</td></tr>
+	<tr><th>{{zenarioA.phrase.id}}</th><td>{{zenarioO.columnValue(m.id, 'code')}}</td></tr>
+	<tr><th>{{zenarioA.phrase.cType}}</th><td>{{zenarioO.columnValue(m.id, 'content_type')}}</td></tr>
 	<tr><td colspan=2>{{zenarioO.columnValue(m.id, 'status')}}</td></tr>
-	<tr><th>Used on:</th><td>{{zenarioO.columnValue(m.id, 'usage_count')}} items</td></tr>
+	<tr><th>{{zenarioA.phrase.usedOn}}</th><td>{{zenarioA.nItems(zenarioO.columnValue(m.id, 'usage_count'))}}</td></tr>
 </table>

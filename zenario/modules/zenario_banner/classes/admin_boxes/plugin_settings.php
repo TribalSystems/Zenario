@@ -62,9 +62,41 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		if ((!empty($box['key']['eggId']))
 		 && ($nestedPlugin = ze\pluginAdm::getNestDetails($box['key']['eggId']))
 		 && (ze\module::className($nestedPlugin['module_id']) == 'zenario_banner')) {
-			$box['tabs']['image_and_link']['fields']['canvas']['note_below'] =
-			$box['tabs']['image_and_link']['fields']['enlarge_canvas']['note_below'] =
-				ze\admin::phrase('If placed in a nest or slideshow, the canvas size setting will be overridden by the setting of the nest or slideshow.');
+			//If this banner is in a nest, check if the nest has a banner image size constraint set.
+			$nestCanvasSetting = ze\plugin::setting('banner_canvas', $nestedPlugin['instance_id']);
+			if (ze::in($nestCanvasSetting, 'fixed_width', 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
+				$fields['image_and_link/canvas']['values']['unlimited']['label'] = ze\admin::phrase('Inherit from nest');
+
+				$nestWidth = ze\plugin::setting('banner_width', $nestedPlugin['instance_id']);
+				$nestHeight = ze\plugin::setting('banner_height', $nestedPlugin['instance_id']);
+
+				switch ($nestCanvasSetting) {
+					case 'fixed_width':
+						$nestSetting = 'constrain by width';
+						$nestDimensions = $nestWidth . 'w';
+						break;
+					case 'fixed_height':
+						$nestSetting = 'constrain by height';
+						$nestDimensions = $nestHeight . 'h';
+						break;
+					case 'fixed_width_and_height':
+						$nestSetting = 'constrain by width and height';
+						$nestDimensions = $nestWidth . 'w x ' . $nestHeight . 'h';
+						break;
+					case 'crop_and_zoom':
+						$nestSetting = 'crop and zoom';
+						$nestDimensions = $nestWidth . 'w x ' . $nestHeight . 'h';
+						break;
+				}
+
+				$nestSettingString = ze\admin::phrase('Nest setting: [[nest_banner_canvas]] [[dimensions]]', ['nest_banner_canvas' => $nestSetting, 'dimensions' => $nestDimensions]);
+
+				ze\lang::applyMergeFields($fields['image_and_link/nest_canvas_setting']['snippet']['html'], ['nest_canvas_setting' => $nestSettingString]);
+			} else {
+				unset($box['tabs']['image_and_link']['fields']['nest_canvas_setting']);
+			}
+		} else {
+			unset($box['tabs']['image_and_link']['fields']['nest_canvas_setting']);
 		}
 
 		$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_special_characters'] =
@@ -321,7 +353,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		//Lazy load - only works if Mobile Behaviour is set to "Same image".
 		if ($values['image_and_link/mobile_behaviour'] != 'mobile_same_image') {
 			$fields['image_and_link/advanced_behaviour']['values']['lazy_load']['disabled'] = true;
-			$fields['image_and_link/advanced_behaviour']['side_note'] = ze\admin::phrase('Lazy load may not be used if Mobile Behaviour is not set to "Same image". There is no WebP support for lazy loading.');
+			$fields['image_and_link/advanced_behaviour']['side_note'] = ze\admin::phrase('Lazy load may not be used if Mobile Behaviour is not set to "Same image".');
 		} else {
 			$fields['image_and_link/advanced_behaviour']['values']['lazy_load']['disabled'] = false;
 			unset($fields['image_and_link/advanced_behaviour']['side_note']);
@@ -332,19 +364,11 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
 			$fields['image_and_link/mobile_behaviour']['note_below'] = ze\admin::phrase('If lazy load is enabled, only "Same image" setting may be used.');
-
-			$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase('There is no WebP support for lazy loading.');
 		} else {
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
 			$fields['image_and_link/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
 			unset($fields['image_and_link/mobile_behaviour']['note_below']);
-
-			if ($values['image_and_link/advanced_behaviour'] == 'use_rollover') {
-				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP images will be generated, with fallback for browsers not supporting WebP.");
-			} else {
-				$fields['image_and_link/advanced_behaviour']['note_below'] = ze\admin::phrase("WebP image will be generated, with fallback for browsers not supporting WebP.");
-			}
 		}
 		
 		if ($values['first_tab/set_an_anchor']) {

@@ -7,11 +7,13 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Sitemap
 description: |
-    <p>This is an essential Module which automatically generates a sitemap of a Zenario website.</p>
+    <p>This module creates a plugin that displays a sitemap of a Zenario website.</p>
     
-    <p>The Sitemap module will display all pages which are in the menu hierarchy to site visitors in a structured way.</p>
+    <p>The sitemap will include all content items in the menu hierarchy, and they will be displayed in a structured way.</p>
     
-    <p>Items which are private (i.e. password-protected for extranet users only) may only appear in the sitemap when an extranet user is logged in, according to the settings of each menu node.</p>
+    <p>Content items that are private (i.e. password-protected for extranet users) may or may not appear, depending on the setting of the menu node linking to each content item, thus they can be made to appear only when an extranet user is logged in. The module follows the same rules as for regular menus.</p>
+    
+    <p>The administrator may choose which menu section to display (default is Main), and how many levels to descend. The usual behaviour is to not show menu nodes marked as "invisible".</p>
 category: pluggable
 keywords: map, plan, site, structure
 

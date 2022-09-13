@@ -40,7 +40,7 @@ ze\dbAdm::revision(37, "
     ) VALUES (
     	'zenario_comments__to_admin_comment_notification_en',
         'To Admin: Comment notification',
-        'Comment notification',
+        'A comment has been added on your site',
         '<p>Dear Admin,</p>
         <p>The following comment has been made on the page entitled &quot;[[page_title]]&quot;:</p>
         <p>Comment:<br/>[[message]]</p>
@@ -67,10 +67,10 @@ ze\dbAdm::revision(104, "
         `use_standard_email_template`
     ) VALUES (
     	'zenario_comments__comment_report',
-        'To Admin: Reported User Comment',
-        'Reported User Comment',
+        'To Admin: Reported comment',
+        'A comment has been reported on your site',
         '<p>Dear Admin,</p>
-        <p>A visitor to your website has reported the following User-submitted comment as offensive:</p>
+        <p>Someone has reported the following comment as offensive:</p>
 		<p><b>URL: </b><a href=\"[[link]]\">[[link]]</a></p>
 		<p><b>Poster: </b>[[poster_screen_name]]</p>
 		<p><b>Last updated by: </b>[[last_editor_screen_name]]</p>

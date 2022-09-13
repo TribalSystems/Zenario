@@ -3,22 +3,8 @@
 <div class="banner_wrap"><div class="banner_wrap_outer"><div class="banner_wrap_inner" {{Wrap}}>
 	{% include this.frameworkBaseDir() ~ 'includes/privacy_warning.twig.html' %}
 
-	{% if Background_Image %}
-		<a
-			id="{{Image_css_id}}" 
-			{{Image_Link_Href}}{{Target_Blank}}
-			{% if Image_Class %}
-				class="{{Image_Class|e}}"
-			{% endif %}
-		></a>
-	{% elseif Image %}
-		<div class="banner_image">
-			{% include this.frameworkBaseDir() ~ 'includes/image_link_href_start.twig.html' %}
-				
-			{% include this.frameworkBaseDir() ~ 'includes/image.twig.html' %}
-			
-			{% include this.frameworkBaseDir() ~ 'includes/image_link_href_end.twig.html' %}
-		</div>
+	{% if Image %}
+		{% include this.frameworkBaseDir() ~ 'includes/image.twig.html' %}
 	{% endif %}
 	
 	{% if (Title or Text or More_Link_Text) %}
@@ -26,8 +12,8 @@
 			{% if Title %}
 				<div class="banner_title">
 					<{{Title_Tags}}>
-						{% if Link_Href and not Enlarge_Image %}
-							<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
+						{% if Image_Link_Href and not Enlarge_Image %}
+							<a {{Image_Link_Href}}{{Target_Blank}}>{{Title}}</a>
 						{% else %}
 							{{Title}}
 						{% endif %}
@@ -39,7 +25,7 @@
 
 			{% if More_Link_Text %}
 				<div class="banner_more">
-					<a {{Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
+					<a {{Image_Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
 				</div>
 			{% endif %}
 		</div>

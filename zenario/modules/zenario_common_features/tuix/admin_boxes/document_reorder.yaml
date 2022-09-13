@@ -9,7 +9,6 @@ zenario_reorder_documents:
 			label: Details
 			edit_mode:
 				on: Yes
-				always_on: Yes
 				enabled: Yes
 			fields:
 				order_warning: 

@@ -179,7 +179,10 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 										['file' => htmlspecialchars($_FILES['Filedata']['name'])]);
 							
 							} else {
-								$filename = preg_replace('/([^.a-z0-9]+)/i', '_', $_FILES['Filedata']['name']);
+								$filename = preg_replace('/([^.a-z0-9_\(\)\[\]]+)/i', '-', $_FILES['Filedata']['name']);
+								
+								$fileData = pathinfo($_FILES['Filedata']['name']);
+								$filenameForTitle = preg_replace('/([^.a-z0-9\-_\(\)\[\]\'\"]+)/i', ' ', $fileData['filename']);
 								
 								if ($fileId = ze\file::addToDocstoreDir(
 									'content',
@@ -189,7 +192,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 									ze\contentAdm::createDraft($cID, false, $cType, $cVersion, false, $languageId);
 									ze\row::set(
 										'content_item_versions',
-										['layout_id' => $layoutId, 'title' => $filename, 'filename' => $filename, 'file_id' => $fileId],
+										['layout_id' => $layoutId, 'title' => $filenameForTitle, 'filename' => $filename, 'file_id' => $fileId],
 										['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 									$newIds[] = $cType. '_'. $cID;
 								}

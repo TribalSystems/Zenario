@@ -302,10 +302,6 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 						$dependencies = ze\moduleAdm::readDependencies($module['class_name'], $desc);
 				
 						//Display inheritances as dependencies if they are not already
-						if (!empty($desc['inheritance']['inherit_description_from_module'])) {
-							$dep = $desc['inheritance']['inherit_description_from_module'];
-							$dependencies[$dep] = $dep;
-						}
 						if (!empty($desc['inheritance']['inherit_frameworks_from_module'])) {
 							$dep = $desc['inheritance']['inherit_frameworks_from_module'];
 							$dependencies[$dep] = $dep;

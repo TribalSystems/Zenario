@@ -559,7 +559,7 @@ if (!$xml) {
 								[
 									'ord' => 0,
 									'module_id' => 0,
-									'name_or_title' => zenario_pro_features::getValue($slide)],
+									'name_or_slide_label' => zenario_pro_features::getValue($slide)],
 								[
 									'instance_id' => $instanceId,
 									'is_slide' => 1,
@@ -582,7 +582,7 @@ if (!$xml) {
 									'nested_plugins',
 									[
 										'framework' => $egg->attributes()->framework,
-										'name_or_title' => $egg->attributes()->name_or_title],
+										'name_or_slide_label' => $egg->attributes()->name_or_slide_label],
 									[
 										'instance_id' => $instanceId,
 										'is_slide' => 0,

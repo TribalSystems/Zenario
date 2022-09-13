@@ -1306,14 +1306,12 @@ class contentAdm {
 		
 			case 'trashed_with_draft':
 				return $specialPage? 'special_content_draft_trashed' : 'content_draft_trashed';
+			
+			case 'archived':
+				return 'content_archived';
 		}
 	
 		return '';
-	}
-
-	//Formerly "getContentStatusIcon()"
-	public static function getContentStatusIcon($cID, $cType, $status = false) {
-		return '<div class="'. \ze\contentAdm::getItemIconClass($cID, $cType, false, $status). '"></div>';
 	}
 
 
@@ -1367,7 +1365,7 @@ class contentAdm {
 	
 		if ($alias!="") {
 			if (preg_match('/\s/', $alias)) {
-				$error[] = \ze\admin::phrase("An alias or spare alias cannot contain spaces. Use a - (hyphen) as a word separator.");
+				$error[] = \ze\admin::phrase("An alias or spare alias cannot contain spaces. Use a - (hyphen) to separate words.");
 			}
 		
 			if ($alias == 'admin' || is_dir(CMS_ROOT. $alias)) {
@@ -1377,7 +1375,7 @@ class contentAdm {
 				$error[] = \ze\admin::phrase("An alias or spare alias must start with a letter, not a digit or special character.");
 		
 			} elseif (preg_match('/[^a-zA-Z 0-9_-]/', $alias)) {
-				$error[] = \ze\admin::phrase("An alias or spare alias can only contain: a-z, A-Z, 0-9, - (hyphen) and _ (underscore).");
+				$error[] = \ze\admin::phrase("An alias/spare alias can only contain a-z, A-Z, 0-9, - (hyphen) and _ (underscore). Do not enter http/s, a domain name, menu path or language code.");
 		
 			} elseif (\ze\row::exists('visitor_phrases', ['language_id' => $alias])) {
 				$error[] = \ze\admin::phrase("Don't incude a language code (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr').");
@@ -1409,9 +1407,7 @@ class contentAdm {
 			if (($result = \ze\sql::select($sql))
 			 && ($row = \ze\sql::fetchAssoc($result))) {
 				$tag = \ze\content::formatTag($row['id'], $row['type']);
-				$error[] = \ze\admin::phrase('Please choose an alias that is unique. "[[alias]]" is already the alias for "[[tag]]".', ['alias' => $alias, 'tag' => $tag]);
-
-				//If the alias is not unique, avoid potential dupllicate errors.
+				$error[] = \ze\admin::phrase('You can\'t have a spare alias with the same name as a regular alias. "[[alias]]" is the alias for "[[tag]]".', ['alias' => $alias, 'tag' => $tag]);
 				$aliasIsUniqueError = true;
 			}
 
@@ -1426,7 +1422,7 @@ class contentAdm {
 			 && ($row = \ze\sql::fetchAssoc($result))) {
 				if (!$aliasIsUniqueError) {
 					$tag = \ze\content::formatTag($row['content_id'], $row['content_type']);
-					$error[] = \ze\admin::phrase('Please choose an alias that is unique. "[[alias]]" is already a spare alias which redirects to "[[tag]]".', ['alias' => $alias, 'tag' => $tag]);
+					$error[] = \ze\admin::phrase('Please enter alias text that is unique. "[[alias]]" is already a spare alias, and it redirects to "[[tag]]".', ['alias' => $alias, 'tag' => $tag]);
 				}
 			}
 		}
@@ -2034,6 +2030,6 @@ class contentAdm {
 				htmlspecialchars($msg),
 			'</div>';
 		
-		\ze\db::reportError('Layouts not writable on ', $msg);
+		\ze\db::reportError('Directory not writable at: ', $msg);
 	}
 }

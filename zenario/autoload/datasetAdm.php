@@ -136,6 +136,12 @@ class datasetAdm {
 				\ze\sql::update($sql);
 		
 			} elseif ($field['type'] != 'repeat_end') {
+				//If PDE is in use, make sure the encrypted and/or hashed columns
+				//are removed along with the original.
+				//The function below will run all the necessary checks
+				//(whether the key is set, and whether the column is encrypted/hashed)
+				\ze\zewlAdm::decryptColumn($dataset['table'], $field['db_column']);
+
 				$sql = "
 					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
 					DROP COLUMN `". \ze\escape::sql($field['db_column']). "`";

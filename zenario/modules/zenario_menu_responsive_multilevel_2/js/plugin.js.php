@@ -1,7 +1,5 @@
 <?php
 
-require CMS_ROOT. 'zenario/libs/manually_maintained/mit/slimmenu/jquery.slimmenu.min.js';
-
 echo "\n/**/\n";
 
 ?>

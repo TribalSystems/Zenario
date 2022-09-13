@@ -192,7 +192,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		//Flag that this plugin is actually a nest
 		ze::$slotContents[$this->slotName]['is_nest'] = true;
 		
-		$conductorEnabled = (bool) $this->setting('enable_conductor');
+		$conductorEnabled = $this->setting('nest_type') == 'conductor';
 		$this->sameHeight = (bool) $this->setting('eggs_equal_height');
 		
 		$this->allowCaching(
@@ -285,7 +285,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					if (!$slide['invisible_in_nav']) {
 						$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
 						$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $slide['id'], false);
-						$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['name_or_title'], true);
+						$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['name_or_slide_label'], true);
 					}
 					
 					if ($conductorEnabled
@@ -533,7 +533,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				//(Though use a static variable to stop this happening twice if there are two nests on the same page.)
 				if (!self::$addedSubtitle) {
 					self::$addedSubtitle = true;
-					$this->setPageTitle(ze::$pageTitle. ': '. $this->formatTitleText($this->slides[$this->slideNum]['name_or_title']));
+					$this->setPageTitle(ze::$pageTitle. ': '. $this->formatTitleText($this->slides[$this->slideNum]['name_or_slide_label']));
 				}
 				
 				
@@ -734,7 +734,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$sql = "
 			SELECT
 				id, id AS slide_id,
-				slide_num, css_class, name_or_title,
+				slide_num, css_class, name_or_slide_label,
 				states, show_back, no_choice_no_going_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
 				request_vars, hierarchical_var, global_command,
 				invisible_in_nav,
@@ -835,7 +835,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				'breadcrumb_trail' => $this->setting('bc_breadcrumb_trail'),
 				'breadcrumb_prefix_menu' => $this->setting('bc_breadcrumb_prefix_menu'),
 				'breadcrumb_trail_separator' => $this->setting('bc_breadcrumb_trail_separator'),
-				'add_conductor_slides' => $this->setting('enable_conductor')
+				'add_conductor_slides' => $this->setting('nest_type') == 'conductor'
 			];
 			
 			$eggs[] = $egg;
@@ -1503,10 +1503,14 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				'ord' => 0,
 				'module_id' => 0,
 				'is_slide' => 1,
-				'name_or_title' => $title]);
+				'name_or_slide_label' => $title]);
 	}
 	
 	public static function duplicatePlugin($eggId, $instanceId) {
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	public static function copyPastePlugin($sourceId, $isEgg, $instanceId, $destId, $mustBeBanner) {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1520,11 +1524,11 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	
 
-	public static function reorderNest($instanceId, $ids, $ordinals, $parentIds) {
+	public static function reorderNest($instanceId, $ids, $ordinals, $parentIds, $instance = null) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	public static function resyncNest($instanceId) {
+	public static function resyncNest($instanceId, $instance = null) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	

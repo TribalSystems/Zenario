@@ -183,7 +183,16 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			if ($panel['key']['moduleIds']) {
 				$key['id'] = explode(',', $panel['key']['moduleIds']);
 			}
-			$modules = ze\row::getValues('modules', 'display_name', $key, 'display_name');
+			
+			//Show the modules in reverse order for slideshows
+			if ($refinerName == 'slideshows') {
+				$orderBy = ['display_name', 'DESC'];
+			} else {
+				$orderBy = 'display_name';
+			}
+			
+			
+			$modules = ze\row::getValues('modules', 'display_name', $key, $orderBy);
 			$ord = 222;
 			
 			//Automatically create drop-down menus for quickly adding plugins
@@ -412,7 +421,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			}
 		}
 
-		if ($refinerName == 'plugin' && $refinerId) {
+		if ($mode == 'full' && $refinerName == 'plugin' && $refinerId) {
 			$usageInNestsAndSlideshows = ze\moduleAdm::usageInNestsAndSlideshows($refinerId);
 			$usageInNestsAndSlideshowsTotal = $usageInNestsAndSlideshows['nestCount'] + $usageInNestsAndSlideshows['slideshowCount'];
 			if ($usageInNestsAndSlideshowsTotal > 0) {

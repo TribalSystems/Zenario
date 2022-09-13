@@ -21,7 +21,7 @@
 						{% for row in Months_row_element %}
 							<tr class="monthrow" >
 								{% for item in row.Months_cell_element %}
-									<td class="monthcell {{item.Current_month}} {% if item.Month_with_events %} has_events {% endif %}">
+									<td class="monthcell {{item.Current_month}} {% if item.Month_with_events %} has_events {% endif %} {{item.Year_CSS_Class|e}}">
 										<div class="content_cell">
 											{% if Enable_popup and item.Anchor %}
 												<div class="content_month">
@@ -31,12 +31,26 @@
 														onmouseover="{{item.On_mouseover_script}}"
 														data-box-className="event_calendar"
 													>
-														<span class="month_label">{{item.Month_label}}</span>
+														<span class="month_label">
+															{{item.Month_label}}
+															
+															{% if item.Display_year_beside_jan_month_name and item.January_year %}
+																{{item.January_year|e}}
+															{% endif %}
+														</span>
 														<span class="see_events">{{"See events"|trans}}</span>
 													</a>
 												</div>
 											{% else %}
-												<div class="content_month {{item.Current_month}} {{item.Month_with_events}}"><span class="month_label">{{item.Month_label}}</span></div>
+												<div class="content_month {{item.Current_month}} {{item.Month_with_events}}">
+													<span class="month_label">
+														{{item.Month_label}}
+
+														{% if item.Display_year_beside_jan_month_name and item.January_year %}
+															{{item.January_year|e}}
+														{% endif %}
+													</span>
+												</div>
 											{% endif %}
 											
 											{% if Show_event_count and item.Num_events %}

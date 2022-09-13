@@ -42,6 +42,8 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
 		
+		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		
 		$this->pageSize = (int) $this->setting('page_size') ?: 10;
 		$this->page = (int) ($_GET['page'] ?? 1) ?: 1;
 		$this->registerGetRequest('page', 1);
@@ -227,7 +229,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 			
 			
 			$this->data['Title'] = $this->setting('title');
-			$this->data['show_sticky_images'] = $this->setting('show_sticky_images');
+			$this->data['Show_Featured_Image'] = $this->setting('show_featured_image');
 			
 			$lastCountryCode = "";
 			while($row=ze\sql::fetchAssoc($result)){
@@ -247,11 +249,12 @@ class zenario_location_listing extends ze\moduleBaseClass {
 				
 				 
 
-				if ($row['image_id'] && $this->setting('show_sticky_images')) {
-					$mergeFields['Link_To_Image'] =
-					$mergeFields['Image_Width'] =
-					$mergeFields['Image_Height'] = '';
-					ze\file::imageLink($mergeFields['Image_Width'], $mergeFields['Image_Height'], $mergeFields['Link_To_Image'], $row['image_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+				if ($row['image_id'] && $this->setting('show_featured_image')) {
+					$cssRules = [];
+					$mergeFields['Image_HTML'] = ze\file::imageHTML(
+						$cssRules, $preferInlineStypes = true,
+						$row['image_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('retina'), $this->setting('webp')
+					);
 				}
 
 				$cID = $row['equiv_id'];
@@ -363,8 +366,8 @@ class zenario_location_listing extends ze\moduleBaseClass {
 					$box['tabs']['first_tab']['fields']['region']['hidden'] = true;
 				}
 				
-				$hidden = !$values['first_tab/show_sticky_images'];
-				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
+				$hidden = !$values['display/show_featured_image'];
+				$this->showHideImageOptions($fields, $values, 'display', $hidden);
 				
 				break;
 		}
@@ -376,6 +379,9 @@ class zenario_location_listing extends ze\moduleBaseClass {
 			<html>
 				<head>
 					<script id="google_api" type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>
+					<style>
+						.zenario_slot_padding { display:none; }
+					</style>
 				</head>
 				<body onload="
 					function initMap(elId,lat,lng,zoom) {
@@ -411,7 +417,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 						'. (float) ($_GET['map_zoom'] ?? false). '
 					);
 				">
-					<div id="map" style="width: 475px; height: 324px;"></div>
+					<div id="map" style="width: 475px; height: 325px;"></div>
 				</body>
 			</html>';
 	}

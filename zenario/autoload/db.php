@@ -129,6 +129,15 @@ class col {
 						$this->isASCII = true;
 						break;
 					
+					//A few rare examples of inconsistent columns that are ASCII in
+					//certain tables but UTF in others.
+					case 'code':
+						if (defined('DB_PREFIX')) {
+							if ($this->tbl === DB_PREFIX. 'email_templates') {
+								$this->isASCII = true;
+							}
+						}
+						break;
 					
 					case 'type':
 						if (defined('DB_PREFIX')) {
@@ -719,9 +728,9 @@ class db {
 			\ze::noteErrors();
 		
 			if ($con) {
-				if (mysqli_query($con,'SET NAMES "UTF8"')
-				 && mysqli_query($con,"SET collation_connection='utf8mb4_general_ci'")
-				 && mysqli_query($con,"SET collation_server='utf8mb4_general_ci'")
+				if (mysqli_query($con,'SET NAMES "utf8mb4"')
+				 && mysqli_query($con,"SET collation_connection='utf8mb4_unicode_ci'")
+				 && mysqli_query($con,"SET collation_server='utf8mb4_unicode_ci'")
 				 && mysqli_query($con,"SET character_set_client='utf8mb4'")
 				 && mysqli_query($con,"SET character_set_connection='utf8mb4'")
 				 && mysqli_query($con,"SET character_set_results='utf8mb4'")
@@ -1013,7 +1022,12 @@ class db {
 			$addressFrom = \ze::setting('email_address_from') ?: EMAIL_ADDRESS_GLOBAL_SUPPORT,
 			$nameFrom = false,
 			false, false, false,
-			$isHTML = false);
+			$isHTML = false,
+			false, false, false, false,
+			'', '', 'To',
+			$ignoreDebugMode = true		//Error messages should always be sent to the intended recipient,
+										//even if debug mode is on.
+		);
 	
 		\ze::$dbL = $lastDB;
 	}

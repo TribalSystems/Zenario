@@ -43,7 +43,7 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 		} else if ($box['key']['sub_category']) {
 			$box['key']['parent_id'] = $box['key']['id'];
 			$box['key']['id'] = "";
-		}else{
+		} else {
 			$box['key']['parent_id'] = $_REQUEST['refiner__parent_category'] ?? false;
 			if (!$box['key']['parent_id']) {
 				$box['title'] = ze\admin::phrase('Creating a top-level category');
@@ -61,6 +61,16 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 		
 		if (ze::setting('enable_display_categories_on_content_lists') && ze::setting('enable_category_landing_pages')) {
 			$fields['details/landing_page']['hidden'] = false;
+		}
+
+		if ($box['key']['id']) {
+			//Only admins are allowed to manage categories.
+			//Set the required parameters to null to comply with the ze\admin::formatLastUpdated() function.
+			$record['created_user_id'] =
+			$record['created_username'] =
+			$record['last_edited_user_id'] =
+			$record['last_edited_username'] = null;
+			$box['last_updated'] = ze\admin::formatLastUpdated($record);
 		}
 	}
 	
@@ -153,6 +163,17 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 			$row['landing_page_equiv_id'] = $equivId;
 			$row['landing_page_content_type'] = $cType;
 		}
+
+		$lastUpdated = [];
+        ze\admin::setLastUpdated($lastUpdated, !$box['key']['id']);
+
+        if ($box['key']['id']) {
+            $row['last_edited'] = $lastUpdated['last_edited'];
+            $row['last_edited_admin_id'] = $lastUpdated['last_edited_admin_id'];
+        } else {
+            $row['created'] = $lastUpdated['created'];
+            $row['created_admin_id'] = $lastUpdated['created_admin_id'];
+        }
 		
 		$categoryId = ze\row::set('categories', $row, $box['key']['id']);
 		if ($box['key']['sub_category']) {
@@ -165,17 +186,20 @@ class zenario_common_features__admin_boxes__categories extends ze\moduleBaseClas
 			foreach (ze\lang::getLanguages() as $lang) {
 				if (isset($values['visitor_name_' . $lang['id']]) &&$values['visitor_name_' . $lang['id']]) {
 					ze\row::set('visitor_phrases', 
-								['local_text'=> $values['visitor_name_' . $lang['id']], 
-									'language_id' => $lang['id'],
-									'code' => '_CATEGORY_'. (int) $categoryId,
-									'module_class_name' => 'zenario_common_features'], 
-								['language_id' => $lang['id'], 
-									'code' => '_CATEGORY_'. (int) $categoryId, 
-									'module_class_name' => 'zenario_common_features']
-						);
+						[
+							'local_text'=> $values['visitor_name_' . $lang['id']], 
+							'language_id' => $lang['id'],
+							'code' => '_CATEGORY_'. (int) $categoryId,
+							'module_class_name' => 'zenario_common_features'
+						], 
+						[
+							'language_id' => $lang['id'], 
+							'code' => '_CATEGORY_'. (int) $categoryId, 
+							'module_class_name' => 'zenario_common_features'
+						]
+					);
 				}
 			}
 		}
 	}
-	
 }

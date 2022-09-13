@@ -377,11 +377,16 @@ if (ZENARIO_IS_BUILD) {
 
 echo '
 <div id="zenario_now_installing" class="zenario_now" style="display: none;">
-	<h1 style="text-align: center;">', ze\admin::phrase('Now Installing'), '
+	<div id="organizer_preloader_circle">
+		<div></div>
+	</div>
+</div>
+<div id="zenario_now_loading" class="zenario_now" style="display: none;">
+	<h1 style="text-align: center;">', ze\admin::phrase('Now loading'), '
 		<div class="bounce1"></div>
-  		<div class="bounce2"></div>
-  		<div class="bounce3"></div>
-  	</h1>
+		<div class="bounce2"></div>
+		<div class="bounce3"></div>
+	</h1>
 </div>
 <div id="welcome_outer">
 	<div id="welcome" class="welcome">

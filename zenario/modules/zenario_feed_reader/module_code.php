@@ -52,12 +52,34 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	
 	function init() {
 		
-		if ( 'new_window' == $this->setting( 'target' ) ) {
+		if ('new_window' == $this->setting('target')) {
 			$this->linkTarget = ' target="_blank"';
 		}
 		
-		$this->field = $this->setting( 'regexp_field' );
-		$this->pattern = '/'. $this->setting( 'regexp' ) . '/';
+		$this->field = $this->setting('regexp_field');
+		$this->pattern = '/'. $this->setting('regexp') . '/';
+
+		$feedSource = $this->setting('feed_source');
+		$result = '';
+
+		if ($feedSource) {
+			//Check if the source is a valid.
+			$ch = curl_init();
+			$timeout = 5;
+			curl_setopt($ch, CURLOPT_URL, $feedSource);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+			$result = curl_exec($ch);
+			curl_close($ch);
+		}
+
+		if (!$feedSource || !$result) {
+			if (ze::isAdmin()) {
+				$this->setErrorMessage(ze\admin::phrase('Specified feed URL does not appear to be valid'));
+			}
+
+			return false;
+		}
 		
 		return true;
 	}
@@ -65,60 +87,63 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 
 	public function __construct() {
 		$this->xmlParser = xml_parser_create();
-		xml_parser_set_option( $this->xmlParser, XML_OPTION_CASE_FOLDING, 1 );
-		xml_parser_set_option( $this->xmlParser, XML_OPTION_SKIP_WHITE, 1 );
-		xml_set_object( $this->xmlParser, $this );
-		xml_set_element_handler( $this->xmlParser, 'startElementHandler', 'endElementHandler' );
-		xml_set_character_data_handler( $this->xmlParser, 'characterDataHandler' );
+		xml_parser_set_option($this->xmlParser, XML_OPTION_CASE_FOLDING, 1);
+		xml_parser_set_option($this->xmlParser, XML_OPTION_SKIP_WHITE, 1);
+		xml_set_object($this->xmlParser, $this);
+		xml_set_element_handler($this->xmlParser, 'startElementHandler', 'endElementHandler');
+		xml_set_character_data_handler($this->xmlParser, 'characterDataHandler');
 	}
 	
-	function startElementHandler( $xmlParser, $tagName, $attributes ) {
-		if ( $this->insideItem )  {
+	function startElementHandler($xmlParser, $tagName, $attributes) {
+		if ($this->insideItem)  {
 			$this->tag = $tagName;
 			$this->attributes = $attributes;
-		} elseif  ( 'ITEM' == $tagName || 'ENTRY' == $tagName )  {
+		} elseif ('ITEM' == $tagName || 'ENTRY' == $tagName)  {
 			$this->insideItem = true;
 			$this->inChannel = false;
-		} elseif ( $this->inChannel ) {
+		} elseif ($this->inChannel) {
 			$this->tag = $tagName;
 			$this->attributes = $attributes;
-		} elseif ( 'CHANNEL' == $tagName ) {
+		} elseif ('CHANNEL' == $tagName) {
 			$this->inChannel = true;
 		}
 	}
 
-	function endElementHandler( $xmlParser, $tagName ) {
-		if ( $this->insideItem && ( 'ITEM' == $tagName || 'ENTRY' == $tagName ) ) {
-			if ( ( $this->field == 'title' && ! preg_match( $this->pattern, $this->title ) ) 
-				|| ( $this->field == 'description' && ! preg_match( $this->pattern, $this->description ) )
-				|| ( $this->field == 'date' && ! preg_match( $this->pattern, $this->date ) )
-				|| ( $this->field == 'title_or_description' && ! preg_match( $this->pattern, $this->title . $this->description ) ) 
-				) {
+	function endElementHandler($xmlParser, $tagName) {
+		if ($this->insideItem && ('ITEM' == $tagName || 'ENTRY' == $tagName)) {
+			if (( $this->field == 'title' && !preg_match($this->pattern, $this->title)) 
+				|| ($this->field == 'description' && !preg_match($this->pattern, $this->description))
+				|| ($this->field == 'date' && !preg_match($this->pattern, $this->date))
+				|| ($this->field == 'title_or_description' && !preg_match($this->pattern, $this->title . $this->description)) 
+			) {
 				//$this->itemCount++;
 			} else {
-				$this->link = trim( $this->link );
-				if (  empty( $this->link ) ) {	
+				$this->link = trim($this->link);
+				if (empty($this->link)) {	
 					array_push( $this->content, [ 
-						'title' => htmlspecialchars( trim( $this->title ) ),
-						'description' => ( trim( $this->description) ),
-						'date' =>  trim( $this->date ) ] ); 
+						'title' => htmlspecialchars(trim($this->title)),
+						'description' => (trim($this->description)),
+						'date' => trim($this->date)]); 
 				} else {
-					array_push( $this->content, [ 
-						'title' => '<a href="' . trim( $this->link ) . '"' . $this->linkTarget . '>'. htmlspecialchars( trim( $this->title ) ) . '</a>',
-						'description' => ( trim( $this->description) ),
-						'date' =>  trim( $this->date ) ] ); 
+					array_push($this->content,
+						[
+							'title' => '<a href="' . trim($this->link) . '"' . $this->linkTarget . '>'. htmlspecialchars(trim($this->title)) . '</a>',
+							'description' => (trim($this->description)),
+							'date' => trim($this->date)
+						]
+					); 
 				}
 
-				if ($this->setting('rss_date_format')=='backslashed_american'){
+				if ($this->setting('rss_date_format') == 'backslashed_american') {
 					$dateFeedContent = trim($this->date);
-				}elseif($this->setting('rss_date_format')=='backslashed_european'){
-					$dateFeedContent = explode('/',trim($this->date));
-					if (count($dateFeedContent)==3){
-						$dateFeedContent=$dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
-					} else{
-						$dateFeedContent=$feedContent['date'];
+				} elseif ($this->setting('rss_date_format') == 'backslashed_european') {
+					$dateFeedContent = explode('/', trim($this->date));
+					if (count($dateFeedContent) == 3) {
+						$dateFeedContent = $dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
+					} else {
+						$dateFeedContent = $dateFeedContent[0];
 					}
-				}elseif($this->setting('rss_date_format')=='autodetect'){
+				} elseif ($this->setting('rss_date_format') == 'autodetect') {
 					$dateFeedContent = trim($this->date);
 				} else {
 					$dateFeedContent = trim($this->date);
@@ -138,35 +163,35 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 
 
 
-	function characterDataHandler( $xmlParser, $data ) {
-		if ( $this->insideItem ) {
-			switch ( $this->tag ) {
+	function characterDataHandler($xmlParser, $data) {
+		if ($this->insideItem) {
+			switch ($this->tag) {
 				case 'TITLE':
 					$this->title .= $data;
-				break;
+					break;
 				case 'DESCRIPTION':
 				case 'SUMMARY':
 				case 'CONTENT':
 					$this->description .= $data;
-				break;
+					break;
 				case 'ADMIN_MESSAGE':
-					if ( ze\priv::check() ) {
+					if (ze\priv::check()) {
 						$this->description .= ' ' . $data;
 					}
-				break;
+					break;
 				case 'LINK':
-					if ( array_key_exists( 'HREF', $this->attributes ) ) {
+					if (array_key_exists('HREF', $this->attributes)) {
 						$this->link .= $this->attributes['HREF'];
 					}
 					$this->link .= $data;
-				break;
+					break;
 				case 'PUBDATE':
 				case 'UPDATED':
 					$this->date .= $data;
-				break;
+					break;
 			}
-		} elseif ( $this->inChannel ) {
-			switch ( $this->tag ) {
+		} elseif ($this->inChannel) {
+			switch ($this->tag) {
 				case 'TITLE':
 					$this->feedTitle .= $data;
 					break;
@@ -193,85 +218,92 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 		
 		$pageMergeFields = [
 			'Title' => $title,
-			'Source' => '<p>Feed source: <a href="' . $this->setting( 'feed_source' ) . '">' . $this->setting( 'feed_source' ) . '</a></p>'
+			'Source' => '<p>Feed source: <a href="' . $this->setting('feed_source') . '">' . $this->setting('feed_source') . '</a></p>'
 		];
 
-		$subSections = [ 'Content_Section' => true ];
+		$subSections = ['Content_Section' => true];
 		$dateFormat = '';
 
-		if ( "dont_show" == $this->setting( 'show_date_time' ) ) {
+		if ($this->setting('show_date_time') == "dont_show") {
 			$subSections['Date_Section'] = false; 
 		} else {
 			$subSections['Date_Section'] = true; 
-			if ( $this->setting('date_format') == '_SHORT' ) {
+			if ($this->setting('date_format') == '_SHORT') {
 				$dateFormat = ze::setting('vis_date_format_short');
-			} elseif ( $this->setting('date_format') == '_LONG' ) {
+			} elseif ($this->setting('date_format') == '_LONG') {
 				$dateFormat = ze::setting('vis_date_format_long');
-			} elseif ( $this->setting('date_format') == '_MEDIUM' ) {
+			} elseif ($this->setting('date_format') == '_MEDIUM') {
 				$dateFormat = ze::setting('vis_date_format_med');
 			}
 		}
 
 		$subSections['Feeds'] = [];
-			$itemCount =0;
-			foreach ( $items as $feedContent ) {
-				if (++$itemCount>$this->itemCount){
-					break;
-				}
-				if ($this->setting('rss_date_format')=='backslashed_american'){
-					$dateFeedContent = $feedContent['date'];
-				}elseif($this->setting('rss_date_format')=='backslashed_european'){
-					$dateFeedContent = explode('/',$feedContent['date']);
-					if (count($dateFeedContent)==3){
-						$dateFeedContent=$dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
-					} else{
-						$dateFeedContent=$feedContent['date'];
-					}
-				}elseif($this->setting('rss_date_format')=='autodetect'){
-					$dateFeedContent = $feedContent['date'];
-				} else {
-					$dateFeedContent = $feedContent['date'];
-				}
-
-				if ( "date_only" == $this->setting( 'show_date_time' ) ) {
-					$feedContent['date'] = ze\date::format( date( 'Y-m-d', strtotime( $dateFeedContent ) ), $dateFormat );
-				} elseif ( "date_and_time" == $this->setting( 'show_date_time' ) ) {
-					$feedContent['date'] = ze\date::formatDateTime( date( 'Y-m-d H:i:s', strtotime( $dateFeedContent ) ), $dateFormat );
-				}
-				
-				if ( ! $this->setting( 'size' ) > 0 ) {
-					$feedContent['description'] = '';
-				} else {
-					$feedContent['description'] = $this->truncateNicely( trim ( strip_tags( strtr( $feedContent['description'], [ "\n" => '<br> ', "\r\n" =>'<br> ' ] ) ) ) , $this->setting( 'size' ) );
-				}
-				$feedMergeFields = [ 
-					'Feed_Title' => $feedContent['title'], 
-					'Feed_Description' => $feedContent['description'], 
-					'Date' => $feedContent['date'] 
-				];
-				$subSections['Feeds'][] = $feedMergeFields;
+		$itemCount = 0;
+		foreach ($items as $feedContent) {
+			if (++$itemCount > $this->itemCount) {
+				break;
 			}
+			if ($this->setting('rss_date_format') == 'backslashed_american') {
+				$dateFeedContent = $feedContent['date'];
+			} elseif ($this->setting('rss_date_format') == 'backslashed_european') {
+				$dateFeedContent = explode('/', $feedContent['date']);
+				if (count($dateFeedContent) == 3) {
+					$dateFeedContent=$dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
+				} else {
+					$dateFeedContent=$feedContent['date'];
+				}
+			} elseif ($this->setting('rss_date_format') == 'autodetect') {
+				$dateFeedContent = $feedContent['date'];
+			} else {
+				$dateFeedContent = $feedContent['date'];
+			}
+
+			if ($this->setting('show_date_time') == "date_only") {
+				$feedContent['date'] = ze\date::format( date( 'Y-m-d', strtotime($dateFeedContent)), $dateFormat);
+			} elseif ($this->setting('show_date_time') == "date_and_time") {
+				$feedContent['date'] = ze\date::formatDateTime(date('Y-m-d H:i:s', strtotime($dateFeedContent)), $dateFormat);
+			}
+			
+			if (!$this->setting( 'size' ) > 0) {
+				$feedContent['description'] = '';
+			} else {
+				$feedContent['description'] = $this->truncateNicely(trim(strip_tags(strtr($feedContent['description'], ["\n" => '<br> ', "\r\n" => '<br> ']))), $this->setting('size'));
+			}
+			$feedMergeFields = [ 
+				'Feed_Title' => $feedContent['title'], 
+				'Feed_Description' => $feedContent['description'], 
+				'Date' => $feedContent['date'] 
+			];
+			$subSections['Feeds'][] = $feedMergeFields;
+		}
 		
 		$pageMergeFields['title_tags'] = $this->setting('title_tags');
 		$pageMergeFields['feed_title_tags'] = $this->setting('feed_title_tags');
 		
-		$this->framework('Feed_Reader', $pageMergeFields, $subSections );
+		$this->framework('Feed_Reader', $pageMergeFields, $subSections);
 	}
 	
 	protected function getLiveFeed() {
-		$feed = @file_get_contents( $this->setting( 'feed_source' ) );
-		if ( ! $feed  ) { 
+		$feedSource = $this->setting('feed_source');
+		$feed = '';
+
+		if ($feedSource) {
+			$feed = @file_get_contents($feedSource);
+		}
+
+		if (!$feed) { 
 			$feed = '<?xml version="1.0" encoding="UTF-8"			<error>
 				<item>
 					<title>Feed read error</title>
-					<link>' . htmlentities( $this->setting( 'feed_source' ) ) . '</link>
+					<link>' . htmlentities($feedSource) . '</link>
 					<description>Error reading feed data</description>
-					<admin_message>from ' . htmlentities( $this->setting( 'feed_source' ) ) . '.</admin_message>
-					<updated>' . date( 'Y-m-d H:i:s' ) . '</updated>
+					<admin_message>from ' . htmlentities($feedSource) . '.</admin_message>
+					<updated>' . date('Y-m-d H:i:s') . '</updated>
 				</item>
 			</error>';
 		}
-		return mb_convert_encoding($feed,"UTF-8");
+
+		return mb_convert_encoding($feed, "UTF-8");
 	}
 
 	protected function getRssFeed() {
@@ -279,13 +311,13 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 		$xml = $this->cache('getLiveFeed', 60 * (int) $this->setting('cache'), $this->setting('feed_source'));
 		xml_parse( $this->xmlParser, $xml );
 		xml_parser_free( $this->xmlParser );
-		if (count($this->newsDates)==0) {
+		if (!is_array($this->newsDates) || count($this->newsDates) == 0) {
 			return [];
-		} elseif ($this->setting('news_order')=='asc'){
+		} elseif ($this->setting('news_order') == 'asc') {
 			array_multisort($this->newsDates, SORT_ASC, $this->content);
-		} elseif($this->setting('news_order')=='desc') {
+		} elseif ($this->setting('news_order') == 'desc') {
 			array_multisort($this->newsDates, SORT_DESC, $this->content);
-		} elseif ($this->setting('news_order')=='title_alpha') {
+		} elseif ($this->setting('news_order') == 'title_alpha') {
 			array_multisort($this->newsTitles, SORT_ASC, $this->content);
 		}
 		
@@ -294,13 +326,13 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	
 	protected function truncateNicely( $string, $max ) {
 		$string = trim( $string );
-		if ( strlen( $string ) > $max ) {
-			$breakpoint2 = strpos( $string, ' ', $max ); // find last ' '
-			$breakpoint1 = strrpos( substr( $string, 0, $breakpoint2 ), ' ' ); // find new last ' '
-    		if ( false ===  $breakpoint1 ) { 
+		if (strlen($string) > $max) {
+			$breakpoint2 = strpos($string, ' ', $max); // find last ' '
+			$breakpoint1 = strrpos(substr($string, 0, $breakpoint2), ' '); // find new last ' '
+    		if (false ===  $breakpoint1) { 
 				$string = ''; 
 			} else {
-				$string = substr( $string, 0, $breakpoint1 ) . $this->phrase('...'); 
+				$string = substr($string, 0, $breakpoint1) . '...'; 
 			}
 		}
 		return $string;
@@ -309,14 +341,12 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path){
 			case 'plugin_settings':
-				$box['tabs']['display']['fields']['date_format']['hidden'] = $values['display/show_date_time']=='dont_show';
-				$box['tabs']['display']['fields']['feed_title']['hidden'] = $values['display/title']!='use_custom_title';
-				$box['tabs']['filtering']['fields']['regexp']['hidden'] = $values['filtering/regexp_field']=='do_no_filter';
-				$box['tabs']['display']['fields']['title_tags']['hidden'] = $values['display/title']=='dont_show';
+				$box['tabs']['display']['fields']['date_format']['hidden'] = $values['display/show_date_time'] == 'dont_show';
+				$box['tabs']['display']['fields']['feed_title']['hidden'] = $values['display/title'] != 'use_custom_title';
+				$box['tabs']['filtering']['fields']['regexp']['hidden'] = $values['filtering/regexp_field'] == 'do_no_filter';
+				$box['tabs']['display']['fields']['title_tags']['hidden'] = $values['display/title'] == 'dont_show';
 				break;
 				
 		}
 	}
 }
-
-?>

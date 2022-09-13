@@ -66,6 +66,8 @@ foreach([
 	'closeEditorWarning' => 'Are you sure you wish to close the editor? You will lose any unsaved changes.',
 	'colDisplaySort' => 'Adjust your view of this panel',
 	'colon' => ': ',
+	'column' => 'column',
+	'columns' => 'columns',
 	'compressed' => 'Compressed',
 	'contentSaved' => 'Content saved',
 	'continueAnyway' => 'Continue',
@@ -76,12 +78,15 @@ foreach([
 	'createAnother' => 'Save & create another',
 	'createdAnother' => 'Created &quot;[[name]]&quot;',
 	'csv' => 'CSV',
+	'cType' => 'Content type:',
 	'deleteSearch' => 'Delete',
 	'deleteSearchConfirm' => 'Are you sure you wish to delete the &quot;[[name]]&quot; advanced search?',
+	'dimensions' => 'Dimensions (w × h):',
 	'dropboxDotDotDot' => 'Choose from Dropbox...',
 	'dropToUpload' => 'Drop files here to upload',
 	'edit' => 'Edit',
 	'editorOpen' => 'You have a WYSIWYG editor open, please close this before continuing.',
+	'empty' => 'Empty',
 	'error404' => 'Could not access a file on the server. Please check that you have uploaded all of the Zenario files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
 	'error404Dev' => 'Could not access a file on the server. Please check that you have uploaded all of the Zenario files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
 	'error500' => "Something on the server is incorrectly set up or misconfigured.",
@@ -101,10 +106,13 @@ foreach([
 	'insertPlugin' => 'Insert plugin',
 	'insertSlideshow' => 'Insert slideshow',
 	'invertFilter' => 'Invert filter',
+	'id' => 'ID:',
 	'is' => 'Is:',
 	'isnt' => 'Is not:',
 	'item' => 'Item',
 	'items' => 'Items',
+	'oneItem' => '1 item',
+	'nItems' => '[[count]] items',
 	'leaveAdminBoxWarning' => 'You are currently editing this floating admin box. If you leave now you will lose any unsaved changes.',
 	'leavePageWarning' => 'You are currently editing this page. If you leave now you will lose any unsaved changes.',
 	'like' => 'Like:',
@@ -160,6 +168,8 @@ foreach([
 	'revert' => 'Revert',
 	'revertConfirm' => '<p>Are you sure you wish to abandon any changes made to this plugin since the previous version?</p><p>Only settings/content in this slot will be affected.</p>',
 	'save' => 'Save',
+	'saveAndClose' => 'Save & close',
+	'saveAndNext' => 'Save & next',
 	'savedButNotShown' => 'Item saved, but your filter prevents it from appearing',
 	'saveDontSyncSummary' => 'No, just save here',
 	'saveDontUpdateSummary' => 'No, just save here',
@@ -178,7 +188,9 @@ foreach([
 	'showCol' => 'Click here to show or hide this column',
 	'showExport' => 'Show CSV export options...',
 	'siteSettingProtected' => 'This setting is protected during a site reset',
+	'size' => 'Size:',
 	'skin' => 'Skin',
+	'skipToNext' => 'Skip to next',
 	'sort' => 'Sort',
 	'sortByCol' => 'Click here to sort by this column',
 	'swapContentsConfirm' => 'Are you sure you wish to paste? The contents you previously copied will appear here, and the contents that were here will be copied.',
@@ -189,7 +201,9 @@ foreach([
 	'updatePreview' => 'Update preview',
 	'upload' => 'Upload',
 	'uploadDotDotDot' => 'Upload...',
-	'uploadTooLarge' => 'Your file is too large, please upload a file that is smaller than [[maxUploadF]].',
+	'uploadTooLarge' => 'This file is too large, and exceeds the file size limit of [[maxUploadF]]. (This limit is determined in site settings, "Documents, images and file handling".)',
+	'usedOn' => 'Used on:',
+	'versionControlled' => 'version controlled',
 	'viewModuleFolder' => 'View module swatch folder in Organizer',
 	'viewSkinFolder' => 'View skin folder in Organizer',
 	'viewTrash' => 'View&nbsp;Trash',
@@ -246,9 +260,10 @@ _help
 	,
 	
 	
-	//Phrases used by Gridmaker
+	//Phrases specifically used by Gridmaker
 	'gridAdd' => 'Add...',
 	'growlSlotAdded' => 'A slot has been added, use the resize handle in the lower right corner to change its size',
+	'growlSlotAndGroupingDeleted' => 'The slot and its grouping have been deleted',
 	'growlSlotDeleted' => 'The slot has been deleted',
 	'growlSlotMoved' => 'The slot has been moved',
 	'growlSpaceAdded' => 'Whitespace has been added; drag the bottom-right resize tool to change its width',	
@@ -256,13 +271,9 @@ _help
 	'growlGridBreakAdded' => 'A gridbreak has been added',	
 	'gridAddChildren' => 'Multiple slots in a grouping',
 	'gridAddGridBreak' => 'Gridbreak',
-	'gridAddGridBreakWithSlot' => 'Slot outside the grid',//Changed "Add a slot outside the grid" to "Slot outside the grid"
+	'gridAddGridBreakWithSlot' => 'Gridbreak + slot',
 	'gridAddSlot' => 'Slot',//Changed "Add a slot" to "Slot"
 	'gridAddSpace' => 'Whitespace',//Changed "Add whitespace" to "Whitespace"
-	//Removed as no longer needed; fixed anf fluid grids now work the same way!
-	//'gridChangeGridWarning' => '<p>You are changing a grid which already has slots. This may disrupt the placement of the slots.</p><p>If you proceed you should check and if need be adjust all of your slots, or undo.</p>',
-	'gridBreak1' => 'Addl breaks:',//Changed "Cust. bps:" to "Addl breaks:"--JS
-	'gridBreak2' => ',',
 	'gridCols' => 'Cols:',//Changed "Columns:" to "Cols:"--JS
 	'gridConfirmClose' => 'You have unsaved changes. Are you sure you wish to close and abandon these changes?',
 	'gridContentWidth' => 'Content width:',
@@ -291,8 +302,8 @@ _help
 	'gridFluidTooltip' => 'Fluid|In a fluid grid, all of the widths are specified in percentages, and the size of your columns and gutters will vary depending on the screen size. Fluid grids can be prone to pixel rounding errors, especially in Internet Explorer 6 and 7.',
 	'gridFullWidth' => 'Full w:',//Changed "Full width:" to "Full w:"--JS
 	'gridGridBreak' => 'Gridbreak|Drag to move',
-	'gridGridBreakWithSlot' => 'Slot outside the grid|Drag to move',
-	'gridGridCSSClass' => 'CSS class name(s):',
+	'gridGridBreakWithSlot' => 'Gridbreak + slot|Drag to move',
+	'gridGridCSSClass' => 'CSS class name(s) for the following container:',
 	'gridGutter' => 'G:', //Changed "Gutter:" to "G:"--JS
 	'gridGutterAndWidth' => 'Col / g:', //Changed "Column / gutter:" to "Col / g:"--JS
 	'gridGutterLeftEdge' => 'LM:',//Changed "L g:" to "LM"--JS
@@ -322,6 +333,9 @@ _help
 	'gridResp_first' => 'Move to start of row on mobile',
 	'gridResp_hide' => 'Show on desktop only',
 	'gridResp_only' => 'Show on mobile only',
+	'gridResp_slot_always' => 'Show the slot on desktop and mobile',
+	'gridResp_slot_hide' => 'Show the slot on desktop only',
+	'gridResp_slot_only' => 'Show the slot on mobile only',
 	'gridSave' => 'Save',
 	'gridSaveAs' => 'Save a copy',
 	'gridSaveTemplate' => '',
@@ -332,6 +346,7 @@ _help
 	'gridSlot' => 'Slot|Drag to move or drag the corner to resize',
 	'gridTablet' => 'Tablet',
 	'gridTemplateFileName' => 'Template filename:',
+	'gridTitle' => 'Editing [[layoutName]] with Gridmaker',
 	'gridUndo' => 'Undo'
 
 ] as $code => $phrase) {

@@ -161,7 +161,7 @@ body > x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_from
 
 /* Cache info on frontend */
 .zenario_cache_info_tooltip {
-	max-width:365px;
+	max-width:450px;
 	background: #333;
 	filter: Alpha(Opacity=100); /* support: IE8 */
 	opacity:1 !important;

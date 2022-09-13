@@ -29,7 +29,7 @@ site_settings:
                     indent: 1
                     hide_if_previous_outdented_value_isnt: specific
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of these groups:'
                     redraw_onchange: true
                 perm.view.location.groups:
                     site_setting:
@@ -43,11 +43,11 @@ site_settings:
                         min_path: zenario__users/panels/groups
                         max_path: zenario__users/panels/groups
                         disallow_refiners_looping_on_min_path: true
-                        nothing_selected_phrase: No group selected
-                        select_phrase: Select a group...
+                        nothing_selected_phrase: No groups selected
+                        select_phrase: Select groups...
                         multiple_select: true
                     validation:
-                        required_if_not_hidden: Please select a group who can view a location's details.
+                        required_if_not_hidden: Please select one or more groups, members of which can view a location's details.
                 perm.view.location.atCountry:
                     site_setting:
                         name: perm.view.location.atCountry
@@ -55,7 +55,7 @@ site_settings:
                     row_class: zfab_or
                     hide_if_previous_outdented_value_isnt: specific
                     type: checkbox
-                    label: "They are a member of the group(s) AND are linked to the location's country:"
+                    label: "They are linked to the location's country AND are a member of any of the group:"
                     redraw_onchange: true
                 perm.view.location.atCountry.groups:
                     site_setting:
@@ -65,7 +65,7 @@ site_settings:
                     hide_if_previous_outdented_value_isnt: 1
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can view a location's details.
+                        required_if_not_hidden: Please select one or more groups, members of which can view a location's details.
                 perm.view.location.atLocation:
                     site_setting:
                         name: perm.view.location.atLocation
@@ -73,7 +73,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: They have
+                    label: They have the role
                 perm.view.location.atLocation.role:
                     site_setting:
                         name: perm.view.location.atLocation.role
@@ -118,7 +118,7 @@ site_settings:
                         name: perm.create-location.unassigned.by.group
                     indent: 1
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of the groups:'
                     redraw_onchange: true
                 perm.create-location.unassigned.groups:
                     site_setting:
@@ -127,7 +127,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can create a location.
+                        required_if_not_hidden: Please select one or more groups, members of which can create a location.
                 
                 perm.create-location.company:
                     snippet:
@@ -137,7 +137,7 @@ site_settings:
                         name: perm.create-location.company.by.group
                     indent: 1
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of the groups:'
                     redraw_onchange: true
                 perm.create-location.company.groups:
                     site_setting:
@@ -146,7 +146,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can edit a company.
+                        required_if_not_hidden: Please select one or more groups, members of which can edit a company.
                 perm.create-location.company.atCompany:
                     site_setting:
                         name: perm.create-location.company.atCompany
@@ -154,7 +154,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: They have
+                    label: They have the role
                 perm.create-location.company.atCompany.role:
                     site_setting:
                         name: perm.create-location.company.atCompany.role
@@ -173,7 +173,7 @@ site_settings:
                         name: perm.edit.location.by.group
                     indent: 1
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of the groups:'
                     redraw_onchange: true
                 perm.edit.location.groups:
                     site_setting:
@@ -182,14 +182,14 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can edit a location.
+                        required_if_not_hidden: Please select one or more groups, members of which can edit a location.
                 perm.edit.location.atCountry:
                     site_setting:
                         name: perm.edit.location.atCountry
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: "They are a member of the group(s) AND are linked to the location's country:"
+                    label: "They are linked to the location's country AND are a member of any of the groups:"
                     redraw_onchange: true
                 perm.edit.location.atCountry.groups:
                     site_setting:
@@ -198,7 +198,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can edit a location.
+                        required_if_not_hidden: Please select one or more groups, members of which can edit a location.
                 perm.edit.location.atLocation:
                     site_setting:
                         name: perm.edit.location.atLocation
@@ -206,7 +206,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: They have
+                    label: They have the role
                 perm.edit.location.atLocation.role:
                     site_setting:
                         name: perm.edit.location.atLocation.role
@@ -225,7 +225,7 @@ site_settings:
                         name: perm.delete.location.by.group
                     indent: 1
                     type: checkbox
-                    label: 'They are a member of the group(s):'
+                    label: 'They are a member of any of the groups:'
                     redraw_onchange: true
                 perm.delete.location.groups:
                     site_setting:
@@ -234,14 +234,14 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can delete a location.
+                        required_if_not_hidden: Please select one or more groups, members of which can delete a location.
                 perm.delete.location.atCountry:
                     site_setting:
                         name: perm.delete.location.atCountry
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: "They are a member of the group(s) AND are linked to the location's country:"
+                    label: "They are linked to the location's country AND are a member of any of the groups:"
                     redraw_onchange: true
                 perm.delete.location.atCountry.groups:
                     site_setting:
@@ -250,7 +250,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select a group who can delete a location.
+                        required_if_not_hidden: Please select one or more groups, members of which can delete a location.
                 perm.delete.location.atLocation:
                     site_setting:
                         name: perm.delete.location.atLocation
@@ -258,7 +258,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: They have
+                    label: They have the role
                 perm.delete.location.atLocation.role:
                     site_setting:
                         name: perm.delete.location.atLocation.role

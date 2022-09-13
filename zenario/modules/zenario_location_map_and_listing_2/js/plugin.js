@@ -28,15 +28,17 @@
 
 	$(document).ready(function () {
 		if (zenario_location_map_and_listing_2 && zenario_location_map_and_listing_2.setDefaultMode) {
+			var containerId = zenario_location_map_and_listing_2.pluginSettings['containerId'];
 			zenario_location_map_and_listing_2.setDefaultMode();
-			zenario_location_map_and_listing_2.setDefaultFilterVisibility();
+			zenario_location_map_and_listing_2.setDefaultFilterVisibility(containerId);
 		}
 	});
 
 	$(document).ajaxComplete(function () {
 		if (zenario_location_map_and_listing_2 && zenario_location_map_and_listing_2.setDefaultMode) {
+			var containerId = zenario_location_map_and_listing_2.pluginSettings['containerId'];
 			zenario_location_map_and_listing_2.setDefaultMode();
-			zenario_location_map_and_listing_2.setDefaultFilterVisibility();
+			zenario_location_map_and_listing_2.setDefaultFilterVisibility(containerId);
 		}
 	});
 	
@@ -67,10 +69,11 @@
 		
 		//... and the logic for closing.
 		document.onclick = function(e) {
-		   	if ((zenario_location_map_and_listing_2 && !e.target.closest("#filter_dropdown") && e.target.id != "filter_button") || e.target.id == "apply_filters_button") {
+			var containerId = zenario_location_map_and_listing_2.pluginSettings['containerId'];
+		   	if ((zenario_location_map_and_listing_2 && !e.target.closest("#" + containerId + "_filter_dropdown") && e.target.id != (containerId + "_filter_button")) || e.target.id == (containerId + "_apply_filters_button")) {
 			  	//Clicked outside, or clicked "apply filters"
-			  	zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden');
-			  	window.parent.zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden');
+			  	zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden', containerId);
+			  	window.parent.zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden', containerId);
 		   	}
 		};
 	};
@@ -117,21 +120,21 @@
 		}
 	};
 	
-	zenario_location_map_and_listing_2.setDefaultFilterVisibility = function () {
+	zenario_location_map_and_listing_2.setDefaultFilterVisibility = function (containerId) {
 		var body = $(document.body);
 		
 		if (!body.hasClass('filters_visible') && !body.hasClass('filters_hidden')) {
-			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden');
+			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden', containerId);
 		} else if (body.hasClass('filters_visible')) {
 			//If the filter visibility was set already, make sure the button CSS classes are set up correctly.
-			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_visible');
+			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_visible', containerId);
 		} else if (body.hasClass('filters_hidden')) {
-			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden');
+			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden', containerId);
 		}
 	}
 	
-	zenario_location_map_and_listing_2.setFilterVisibilityTo = function(visibilityName) {
-		var filterDropdown = $('#filter_dropdown');
+	zenario_location_map_and_listing_2.setFilterVisibilityTo = function(visibilityName, containerId) {
+		var filterDropdown = $('#' + containerId + '_filter_dropdown');
 		
 		if (visibilityName == 'filters_visible') {
 			zenarioL.set(1, 'filters_visible', 'filters_hidden');
@@ -143,33 +146,34 @@
 			filterDropdown.removeClass("active");
 			
 			if (!doNotSubmit) {
-				var form = $('form');
+				var form = $('#form_location_map_and_listing_2_' + containerId);
 			  	form.submit();
 			}
 		}
 	};
 	
-	zenario_location_map_and_listing_2.filterOnclick = function() {
-		var filterDropdown = $('#filter_dropdown');
+	zenario_location_map_and_listing_2.filterOnclick = function(containerId) {
+		var filterDropdown = $('#' + containerId + '_filter_dropdown');
 		if (filterDropdown.hasClass("active")) {
-			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden');
+			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_hidden', containerId);
 		} else {
-			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_visible');
+			zenario_location_map_and_listing_2.setFilterVisibilityTo('filters_visible', containerId);
 		}
 	};
 	
-	zenario_location_map_and_listing_2.selectedFiltersElementOnclick = function(targetElString) {
-		targetEl = $(targetElString);
+	zenario_location_map_and_listing_2.selectedFiltersElementOnclick = function(targetElString, containerId) {
+		targetEl = $('#' + targetElString);
 		targetEl.removeAttr('checked');
-		zenario_location_map_and_listing_2.filterOnclick();
+		zenario_location_map_and_listing_2.filterOnclick(containerId);
 	};
 	
 	zenario_location_map_and_listing_2.pluginSettings = {};
 	
-	zenario_location_map_and_listing_2.savePluginSettings = function(show_location_list, show_map) {
+	zenario_location_map_and_listing_2.savePluginSettings = function(show_location_list, show_map, containerId) {
 		zenario_location_map_and_listing_2.pluginSettings = {};
 		zenario_location_map_and_listing_2.pluginSettings['show_location_list'] = show_location_list;
 		zenario_location_map_and_listing_2.pluginSettings['show_map'] = show_map;
+		zenario_location_map_and_listing_2.pluginSettings['containerId'] = containerId;
 	}
 	
 	//Variable to remember the variables needed for the google maps

@@ -21,7 +21,6 @@ tv4.addLanguage('en', {
 	OBJECT_PROPERTIES_MINIMUM: "Too few properties defined ({propertyCount}), minimum {minimum}",
 	OBJECT_PROPERTIES_MAXIMUM: "Too many properties defined ({propertyCount}), maximum {maximum}",
 	OBJECT_REQUIRED: "Missing required property: {key}",
-	OBJECT_ADDITIONAL_PROPERTIES: "Additional properties not allowed",
 	OBJECT_DEPENDENCY_KEY: "Dependency failed: {missing} must be set if {key} is set",
 	OBJECT_DEPENDENCY_IF_TRUE_KEY: "Dependency failed: {missing} must be set if {key} is true",
 	OBJECT_FORBIDDEN_IF_TRUE_KEY: "You may not use the {missing} property if {key} is set",
@@ -31,7 +30,7 @@ tv4.addLanguage('en', {
 	ARRAY_UNIQUE: "Array items are not unique (indices {match1} and {match2})",
 	ARRAY_ADDITIONAL_ITEMS: "Additional items not allowed",
 	//Unrecognised properties
-	OBJECT_ADDITIONAL_PROPERTIES: 'Warning: unrecognised property. You probably have a typo in the property name.\n' +
+	OBJECT_ADDITIONAL_PROPERTIES: "Warning: this property isn't defined in " + schemaPath + ". You may have a typo in the property name.\n" +
 		'If you are trying to add your own meta-data, please prefix your custom property names with "custom_" to avoid this warning.\n'
 	
 	, STATIC_PROPERTY: 'This property cannot be changed in your php code'

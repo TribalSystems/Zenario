@@ -112,7 +112,7 @@ _sql
 		`id` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
 		`code` varchar(255) NOT NULL UNIQUE,
 		`description` text NULL
-	)ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	)ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 , <<<_sql
@@ -125,7 +125,7 @@ _sql
 		`code_id` int(10) unsigned NOT NULL,
 		`group_id` int(10) unsigned NOT NULL,
 		UNIQUE KEY `code_group` (`code_id`,`group_id`)
-	)ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=utf8
+	)ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
 ); ze\dbAdm::revision(90,

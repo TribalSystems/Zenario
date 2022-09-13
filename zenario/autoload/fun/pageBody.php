@@ -96,6 +96,13 @@ echo '
 var URLBasePath = "', \ze\escape::js(\ze\link::protocol(). ($_SERVER["HTTP_HOST"] ?? false) . SUBDIRECTORY), '";
 ', file_get_contents(CMS_ROOT. 'zenario/js/body.min.js');
 
+if (\ze::setting('mod_rewrite_slashes')) {
+	echo file_get_contents(CMS_ROOT. 'zenario/js/body.anchor-fix.min.js');
+}
+
+echo
+'})(document,window);';
+
 	//Use the "no_js" class if we're showing a preview
 	if ($showingPreview) {
 		echo '

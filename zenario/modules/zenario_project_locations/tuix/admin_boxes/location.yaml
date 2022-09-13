@@ -11,7 +11,6 @@ zenario_project_locations__project:
                 priv: _PRIV_MANAGE_PROJECT_LOCATIONS
                 enabled: Yes
                 on: Yes
-                always_on: Yes
                 enable_revert: Yes
             
             fields:
@@ -142,7 +141,6 @@ zenario_project_locations__project:
                 priv: _PRIV_MANAGE_PROJECT_LOCATIONS
                 enabled: Yes
                 on: Yes
-                always_on: Yes
                 enable_revert: Yes
             fields:
                 image:

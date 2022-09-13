@@ -1,9 +1,10 @@
-<div class="organizer_item second_level_item {{m.css_class|escape}}">
-	<div class="organizer_legend {{m.selected? 'legend_on' : ''|escape}}">
-		<a title="{{m.tooltip|escape}}"
-			href="{{m.href|escape}}"
-			onclick="{{m.onclick|escape}}">
-				<span>{{m.label|escape}}</span>
-		</a>
-	</div>
-</div>
+<li>
+	<a
+		href="{{m.href|escape}}"
+		onclick="{{m.onclick|escape}}">
+		<span>
+			<span class="organizer_item_image {{m.css_class|escape}}"></span>
+			{{m.label|escape}}
+		</span>
+	</a>
+</li>

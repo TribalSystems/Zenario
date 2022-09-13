@@ -2,6 +2,7 @@
 ---
 zenario_content:
     key:
+        openNextMode: ''
         id: ''
         cID: ''
         cType: ''
@@ -52,7 +53,7 @@ zenario_content:
                 archived_template:
                     show: false
                     type: warning
-                    message: The chosen Layout is archived.
+                    message: The chosen layout is retired.
                 locked_warning:
                     show: false
                     type: warning
@@ -76,35 +77,26 @@ zenario_content:
                     type: text
                     maxlength: 125
                     note_below: 'title'
+                    show_plain_note_below: true
+                    progress_bar: true
                     oninput: |
                         zenarioAB.contentTitleChange();
                         cnt = $('#title').val().length;
-                        if(cnt<1) {
-                            $('#snippet__title_length').attr('class','title_red');
+                        if (cnt < 1) {
                             seo_message_title = 'Please enter a title.';
-                        } else if (cnt<20) {
-                            $('#snippet__title_length').attr('class','title_orange');
-                            seo_message_title = 'For good SEO, make the title longer.';
-                        } else if (cnt<40) {
-                            $('#snippet__title_length').attr('class','title_yellow');
-                            seo_message_title = 'For good SEO, make the title a little longer.';
-                        } else if (cnt<66) {
-                            $('#snippet__title_length').attr('class','title_green');
-                            seo_message_title = 'This is a good title length for SEO.';
+                        } else if (cnt < 12) {
+                            seo_message_title = 'For good SEO and on-site search, make the title longer.';
+                        } else if (cnt < 26) {
+                            seo_message_title = 'For good SEO and on-site search, make the title a little longer.';
+                        } else if (cnt < 70) {
+                            seo_message_title = 'This is a good title length.';
                         } else {
-                            $('#snippet__title_length').attr('class','title_yellow');
                             seo_message_title = 'The title may not be fully visible in search engine results.';
                         }
-                        $('#snippet__title_counter').html(cnt);
-                        $('#row__title .zenario_note_content').text(seo_message_title);
+
+                        $('#row__title .zenario_note_below_plain .zenario_note_content').text(seo_message_title);
                         
                         zenarioAB.updateSEP();
-                    post_field_html: |
-                        <div class="snippet__title" >
-                            <div id="snippet__title_length" class="[[initial_class_name]]">
-                                <span id="snippet__title_counter">[[initial_characters_count]]</span>
-                            </div>
-                        </div>
                 language_id:
                     ord: 30
                     label: 'Language:'
@@ -359,7 +351,7 @@ zenario_content:
                             seo_message_description = 'The description is a little long for good SEO as it may not be fully visible.';
                         }
                         $('#snippet__description_counter').html(cnt);
-                        $('#row__description .zenario_note_content').text(seo_message_description);
+                        $('#row__description .zenario_note_below_plain .zenario_note_content').text(seo_message_description);
                     
                         zenarioAB.updateSEP();
                     post_field_html: |
@@ -461,6 +453,93 @@ zenario_content:
                     ord: 135
                     type: checkbox
                     side_note: 'Pinned content items always appear first on content summary lists.'
+                    redraw_onchange: true
+                pinned_duration:
+                    indent: 1
+                    ord: pinned.1
+                    type: radios
+                    value: until_unpinned
+                    values:
+                        fixed_date:
+                            ord: 1
+                            label: 'Until date:'
+                            split_values_if_selected: true
+                        fixed_duration:
+                            ord: 2
+                            label: 'For fixed duration:'
+                            split_values_if_selected: true
+                        until_unpinned:
+                            ord: 3
+                            label: 'Until unpinned'
+                    redraw_onchange: true
+                    visible_if: lib.value('pinned')
+                    validation:
+                        required_if_not_hidden: 'Please select the duration.'
+                unpin_date:
+                    ord: pinned.2
+                    indent: 2
+                    label: 'Unpin date:'
+                    type: date
+                    change_month_and_year: true
+                    visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_date'
+                pinned_fixed_duration_value:
+                    ord: pinned.3
+                    indent: 2
+                    type: text
+                    value: 1
+                    maxlength: 2
+                    style: 'width: 3em;'
+                    format_onchange: true
+                    validation:
+                        numeric: 'Please enter a number.'
+                    visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_duration'
+                pinned_fixed_duration_unit:
+                    ord: pinned.4
+                    same_row: true
+                    type: select
+                    value: days
+                    values:
+                        days:
+                            ord: 1
+                            label: 'Days'
+                        weeks:
+                            ord: 2
+                            label: 'Weeks'
+                    visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_duration'
+                pinned_duration_part_2:
+                    ord: pinned.5
+                    indent: 1
+                    snippet:
+                        show_split_values_from: pinned_duration
+                    visible_if: lib.value('pinned')
+                pinned_error_scheduled_task_manager_not_running:
+                    ord: pinned.6
+                    indent: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is not installed. [[link_start]]Click for more info.[[link_end]]</div>
+                    hidden: true
+                pinned_error_scheduled_task_master_switch_is_off:
+                    ord: pinned.7
+                    indent: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is enabled, but the master switch is Off. [[link_start]]Click for more info.[[link_end]]</div>
+                    hidden: true
+                pinned_error_scheduled_task_master_not_set_up_correctly:
+                    ord: pinned.8
+                    indent: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is installed and the master switch is On, but the crontab is not set up correctly. [[link_start]]Click for more info.[[link_end]]</div>
+                    hidden: true
+                pinned_error_scheduled_task_master_job_not_running:
+                    ord: pinned.9
+                    indent: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is set up correctly, but the scheduled unpinning task (jobUnpinContent) is not enabled. [[link_start]]Click for more info.[[link_end]]</div>
+                    hidden: true
                 content_summary:
                     label: 'Summary:'
                     ord: 130
@@ -830,6 +909,12 @@ zenario_content:
                         drag_and_drop: true
                         accept: ''
                         extensions: []
+                        
+                file_is_missing:
+                    ord: 20.1
+                    hidden: true
+                    snippet:
+                        html: '<div class="zenario_fbError">File is missing from the doctore directory at [[path]].</div>'
                         
                 s3_document_desc:
                     ord: 21

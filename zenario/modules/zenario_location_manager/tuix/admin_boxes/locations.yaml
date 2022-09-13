@@ -92,9 +92,7 @@ zenario_location_manager__location:
                     snippet:
                         html: ""
                     visible_if: zenarioAB.editModeOn()
-                    note_below: >
-                        Fine tune your map by setting the zoom level and
-                        dragging/dropping the pin
+                    #The note_below is created in the class file.
                 map_view:
                     dataset_label: '[Map (in readonly mode)]'
                     label: 'Map:'
@@ -102,9 +100,7 @@ zenario_location_manager__location:
                     snippet:
                         html: ""
                     visible_if: '!zenarioAB.editModeOn()'
-                    note_below: >
-                        Fine tune your map by setting the zoom level and
-                        dragging/dropping the pin
+                    #The note_below is created in the class file.
                 hide_pin:
                     label: 'Hide pin'
                     type: checkbox
@@ -141,6 +137,11 @@ zenario_location_manager__location:
                     same_row: true
                     type: hidden
                 
+                no_google_maps_api_key_saved:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">[[No_google_maps_api_key_saved]]</div>
+                
                 timezone:
                     ord: 9996
                     label: Timezone
@@ -150,7 +151,6 @@ zenario_location_manager__location:
             edit_mode:
                 enabled: Yes
                 on: Yes
-                always_on: Yes
             fields:
                 desc:
                     dataset_label: '[Description]'
@@ -178,7 +178,6 @@ zenario_location_manager__location:
             edit_mode:
                 enabled: Yes
                 on: Yes
-                always_on: Yes
             fields:
                 desc:
                     dataset_label: '[Description]'
@@ -231,7 +230,6 @@ zenario_location_manager__sector:
             edit_mode:
                 enabled: Yes
                 on: Yes
-                always_on: Yes
             fields:
                 name:
                     label: 'Name:'
@@ -248,7 +246,6 @@ zenario_location_manager__score:
             edit_mode:
                 enabled: Yes
                 on: Yes
-                always_on: Yes
             fields:
                 name:
                     label: 'Name:'

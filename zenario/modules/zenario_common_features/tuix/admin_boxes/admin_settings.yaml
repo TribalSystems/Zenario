@@ -6,7 +6,6 @@ zenario_admin:
             edit_mode:
                 priv: _PRIV_EDIT_ADMIN
                 enabled: true
-                always_on: true
             notices:
                 is_trashed:
                     show: false

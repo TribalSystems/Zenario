@@ -7,7 +7,6 @@ zenario_site_reset:
             edit_mode: 
                 enabled: true
                 on: true
-                always_on: true
             notices: 
                 are_you_sure: 
                     show: true

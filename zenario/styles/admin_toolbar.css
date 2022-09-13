@@ -109,7 +109,7 @@
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_hide_content a,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_start_editing a,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_unhide_content a,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_trash_content a,
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_delete a,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_redraft_content a {
 	display: block;
     margin-top:0;
@@ -129,7 +129,7 @@
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_hide_content a:hover,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_start_editing a:hover,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_unhide_content a:hover,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_trash_content a:hover,
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_delete a:hover,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_redraft_content a:hover {
 	background-color:#fbf290;
 }
@@ -221,7 +221,11 @@
 	animation: blink 2s ease-in-out 2s infinite;
 }
 
-#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_delete_draft a {	
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_delete a {	
+	color:#D90000;
+}
+/*
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_delete a {	
 	margin-top:7px;
 	font-size:11px;
 	font-weight:normal;
@@ -231,7 +235,7 @@
 	margin-left:0;
 	display:inline-block;
 	cursor:pointer;
-}
+}*/
 
 #zenario_at .zenario_at_tabs_container {
 	background:#333333;
@@ -427,7 +431,7 @@
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons span {
 	font-size:10px;
 	display:inline-block;
-	float:right;
+	float:left;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons span.zenario_at_icon_version_in_view {
@@ -571,13 +575,13 @@
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a {
-	background-image:url('../admin/images/icon-categories-dark-v2.svg');
-	background-size:auto 14px;
+	background-image:url('../admin/images/icon-category-dark-grey.svg');
+	background-size:auto 18px;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
-	background-image:url('../admin/images/icon-categories-on.svg');
-	background-size:auto 14px;
+	background-image:url('../admin/images/icon-category-red.svg');
+	background-size:auto 18px;
 	background-color:#C5E8F4;
 }
 
@@ -682,6 +686,11 @@
 	background-size:16px 16px;
 }
 
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .node_suggest_on .zenario_middle_child .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary.node_suggest_on .zenario_middle_child .zenario_middle_inner {
+	padding-left:38px;
+}
+
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner {
 	background-size:19px 19px;
 }
@@ -704,8 +713,7 @@
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit .zenario_middle .zenario_middle_inner:hover,
-#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit_disabled .zenario_middle .zenario_middle_inner:hover,
-#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__rollback .zenario_middle .zenario_middle_inner:hover {
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__edit_disabled .zenario_middle .zenario_middle_inner:hover {
 	background-image:url('../admin/images/icon-edit-hover-state.svg');
 }
 
@@ -772,6 +780,53 @@
 	background-image:url('../admin/images/icon-menu-node-2-dark.svg');
 }
 
+
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.node_suggest_on > .zenario_middle > .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on.node_suggest_on > .zenario_middle > .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on.node_suggest_on > .zenario_middle > .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-node-blue-folder-green.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.node_suggest_on .zenario_middle > .zenario_middle_inner {
+	background-image:url('../admin/images/icon-menu-node-light-grey-folder.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.node_suggest_on .zenario_middle > .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-node-grey-folder.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on.zenario_at_tab_with_children.node_suggest_on .zenario_middle > .zenario_middle_inner, 
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_toolbar_on.zenario_at_tab_with_children.node_suggest_on .zenario_middle > .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-node-1-blue-folder-green.svg');
+}
+
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_at_tab_with_children.node_suggest_on .zenario_middle > .zenario_middle_inner {
+	background-image:url('../admin/images/icon-menu-node-1-light-grey-folder.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_at_tab_with_children.node_suggest_on .zenario_middle > .zenario_middle_inner:hover {
+	background-image:url('../admin/images/icon-menu-node-1-grey-folder.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary.node_suggest_on .zenario_middle_child .zenario_middle_inner  {
+	background-image:url('../admin/images/icon-menu-node-2-light-grey-folder.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary.node_suggest_on .zenario_middle_child .zenario_middle_inner:hover,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary.zenario_toolbar_on.node_suggest_on .zenario_middle_child .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_tabOrTabsChildSelected .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary .zenario_middle .zenario_at_menu_tab_secondary.zenario_toolbar_on.node_suggest_on .zenario_middle_child .zenario_middle_inner:hover  {
+	background-image:url('../admin/images/icon-menu-node-2-dark-folder.svg');
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.node_suggest_on > .zenario_middle > .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_menu_tab.zenario_at_menu_tab_primary.zenario_at_tab_with_children.node_suggest_on .zenario_middle > .zenario_middle_inner,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_at_tab_with_children .zenario_middle .node_suggest_on .zenario_middle_child .zenario_middle_inner {
+	background-size:25px auto;
+	background-position:6px 8px;
+}
+
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout .zenario_middle .zenario_middle_inner,
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__layout .zenario_middle .zenario_middle_inner:hover {
 	background-image:url('../admin/images/icon-layout-off-and-hover-state.svg');
@@ -786,6 +841,16 @@ body.zenario_pageMode_edit #zenario_at .zenario_at_tabs .zenario_toolbar.zenario
 body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
 body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner {
 	/* To style */
+}
+
+/* Top right icons and status button on toolbar */
+
+.zenario_pageMode_menu #zenario_at .zenario_at_toolbar_container .zenario_at_status_button,
+.zenario_pageMode_layout #zenario_at .zenario_at_toolbar_container .zenario_at_status_button,
+.zenario_pageMode_menu #zenario_at .zenario_at_toolbar_container .zenario_at_topRightIcons > div:not(.zenario_debug),
+.zenario_pageMode_layout #zenario_at .zenario_at_toolbar_container .zenario_at_topRightIcons > div:not(.zenario_debug) {
+	opacity:50%;
+	cursor:default;
 }
 
 /* Inactive tab */
@@ -1147,6 +1212,22 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	width: 0;
 }
 
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias.zenario_at_button_with_children > a {
+  	background-position: 5px center;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias.zenario_at_button_with_children > a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias.zenario_at_button_with_children > a > span {
+	padding-right: 15px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias.zenario_at_button_with_children > a > span {
+	display: block;
+	width: 100%;
+	height: 100%;
+	background: url('../admin/images/icon-arrow-down-dark.svg') no-repeat 85% center / 8px 8px;
+}
+
 #zenario_at ul li:hover ul {
 	display: block;
 }
@@ -1338,6 +1419,14 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 
 #zenario_at #zenario_at_lower_section .zenario_at_menu_image[onclick] {
 	cursor: pointer;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_icon {
+	float:left;
+	height:23px;
+	width:23px;
+	padding:0 5px;
+	cursor: default;
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_infobar {
@@ -2255,6 +2344,163 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 #zenario_at_title .zenario_at_title_for {
 }
 
+/* Status icon arrows */
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a {
+	position:relative;
+	display:block;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a {
+	-webkit-border-radius:0;
+	border-radius:0;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a {
+	-webkit-border-top-right-radius: 0;
+	-webkit-border-bottom-right-radius: 0;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a {
+	margin-left:0;
+	padding-left:14px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed + .zenario_at_icon_version_draft a:after { 
+  content: " "; 
+  display: block; 
+  width: 0; 
+  height: 0;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  border-left: 6px solid #CCC;
+  position: absolute;
+  top: 50%;
+  margin-top: -11px; 
+  left: 100%;
+  z-index: 2; 
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version.zenario_at_icon_version_archived a:after {
+	border-left-color:#6c3900; /* brown */
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version.zenario_at_icon_version_published a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after {
+	border-left-color:#01ac02; /* green */
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden + .zenario_at_icon_version_draft a:after {
+	border-left-color:#484848; /* dark grey */
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed + .zenario_at_icon_version_draft a:after {
+	border-left-color:#c42754; /* dark red */
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a:after {
+	border-left-color:#e2e2e2; /* grey */
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id.zenario_at_icon_tag_id_special_page a:after {
+	border-left-color:#e50707; /* red */
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a:before,  
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed + .zenario_at_icon_version_draft a:before {
+  content: " "; 
+  display: block; 
+  width: 0; 
+  height: 0;
+  border-top: 14px solid transparent;       
+  border-bottom: 14px solid transparent;
+  border-left: 8px solid #333;
+  position: absolute;
+  top: 50%;
+  margin-top: -14px; 
+  margin-left: 0;
+  left: 100%;
+  z-index: 1; 
+}
+
+
+
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a:after {
+	left:calc(100% - 1px);
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed + .zenario_at_icon_version_draft a:after {
+	left:-2px;
+}
+
+	/* Last tag */
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_trashed a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_trashed a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_hidden a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_hidden a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden a:after,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed a:after {
+	display:none;
+	content:none;
+} 
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:before,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a:after {
+	content: " " !important; 
+  	display: block !important; 
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_draft a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_archived + .zenario_at_icon_version_published + .zenario_at_icon_version_draft a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed + .zenario_at_icon_version_draft a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_published a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_archived + .zenario_at_icon_version_trashed a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_trashed a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id + .zenario_at_icon_version_hidden + .zenario_at_icon_version_draft a {
+	-webkit-border-top-right-radius: 2px;
+	-webkit-border-bottom-right-radius: 2px;
+	border-top-right-radius: 2px;
+	border-bottom-right-radius: 2px;
+}
+
 /* RESPONSIVE STYLES
 --------------------------------------------------------------------------------------------------*/
 
@@ -2419,8 +2665,8 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 		color:#000 !important;
 	}
 
-	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete_draft a,
-	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete_draft:hover a {	
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete a,
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete:hover a {	
 		color:#D90000 !important;
 	}
 	

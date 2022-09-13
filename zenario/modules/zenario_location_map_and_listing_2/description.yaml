@@ -18,6 +18,11 @@ description: |
         
     </p>
     <p>
+        Custom icons may be used. They need to be in <code>zenario_custom/skins/[skin_name]/images/zenario_location_map_and_listing_2</code>.
+        They need to be in .svg format and named <code>icon_[filter_code_name].svg</code>.
+        For example, if a filter code name is "hotel", then the icon name needs to be <code>icon_hotel.svg</code>.
+    </p>
+    <p>
         The plugin can also be set to filter by dataset field; if this is enabled,
         visitors will only see locations that are in the dataset field,
         and the list of filters will only display the level 2 ones

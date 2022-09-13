@@ -81,15 +81,10 @@ plugin_settings:
                     snippet:
                         label: Filters
                         label_class: subheading
-                show_columns:
+                show_fields:
                     type: grouping
                     snippet:
-                        label: Show columns
-                        label_class: subheading
-                buttons:
-                    type: grouping
-                    snippet:
-                        label: Buttons
+                        label: Show fields
                         label_class: subheading
                 item_buttons:
                     type: grouping
@@ -103,24 +98,109 @@ plugin_settings:
                         label_class: subheading
                 
                 
-                list_videos__column__image:
-                    grouping: show_columns
+                show_video_titles:
+                    grouping: show_fields
+                    label: Show video titles
                     visible_if:
-                        lib.modeIs: list_videos
-                    label: Image
-                    type: checkbox
+                        lib.modeIn: 
+                            - list_videos
+                    plugin_setting:
+                        name: show_video_titles
                     value: 1
-                    readonly: true
-                list_videos__column__title:
-                    grouping: show_columns
+                    type: checkbox
+                show_images:
+                    grouping: show_fields
+                    label: Show images
                     visible_if:
-                        lib.modeIs: list_videos
-                    label: Title
-                    type: checkbox
+                        lib.modeIn: 
+                            - list_videos
+                    plugin_setting:
+                        name: show_images
                     value: 1
-                    readonly: true
+                    type: checkbox
+                    format_onchange: true
+                
+                fall_back_to_default_image:
+                    grouping: show_fields
+                    indent: 1
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('show_images')
+                    plugin_setting:
+                        name: fall_back_to_default_image
+                    label: Fall back to default image
+                    type: checkbox
+                    redraw_onchange: true
+                    
+                default_image_id:
+                    grouping: show_fields
+                    indent: 2
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('fall_back_to_default_image')
+                    plugin_setting:
+                        name: default_image_id
+                    label: 'Default image:'
+                    upload:
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                    validation:
+                        required_if_not_hidden: Please choose a default image.
+                
+                image_canvas:
+                    grouping: show_fields
+                    indent: 1
+                    plugin_setting:
+                        name: image_canvas
+                    label: 'Image size:'
+                    type: select
+                    value: fixed_width_and_height
+                    values:
+                        unlimited:
+                            label: Unlimited size
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                    format_onchange: true
+                image_width:
+                    grouping: show_fields
+                    indent: 2
+                    plugin_setting:
+                        name: image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        numeric: The width must be a number.
+                    value: "320"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                image_height:
+                    grouping: show_fields
+                    indent: 2
+                    plugin_setting:
+                        name: image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        numeric: The height must be a number.
+                    value: "180"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
                 list_videos__column__short_description:
-                    grouping: show_columns
+                    grouping: show_fields
                     visible_if:
                         lib.modeIs: list_videos
                     plugin_setting:
@@ -129,7 +209,7 @@ plugin_settings:
                     type: checkbox
                     value: 1
                 list_videos__column__date:
-                    grouping: show_columns
+                    grouping: show_fields
                     visible_if:
                         lib.modeIs: list_videos
                     plugin_setting:
@@ -137,19 +217,6 @@ plugin_settings:
                     label: Date
                     type: checkbox
                     value: 1
-                
-                enable.new_video:
-                    grouping: buttons
-                    visible_if:
-                        lib.key: usesConductor
-                        lib.modeIs: list_videos
-                    plugin_setting:
-                        name: enable.new_video
-                    label: New video
-                    type: checkbox
-                    redraw_onchange: true
-                to_state1.new_video: *to_state1
-                to_state2.new_video: *to_state2
                 
                 enable.view_video:
                     grouping: item_buttons
@@ -200,7 +267,7 @@ plugin_settings:
                 
                 show_title:
                     grouping: options
-                    label: Show title
+                    label: Show overall title
                     visible_if:
                         lib.modeIn: 
                             - list_videos
@@ -218,7 +285,7 @@ plugin_settings:
                     plugin_setting:
                         name: title_tags
                     label: Title tags
-                    value: h1
+                    value: h2
                     type: select
                     values: &tags
                         h1:
@@ -245,6 +312,20 @@ plugin_settings:
                         p:
                             label: p
                             ord: 8
+                
+                enable.new_video:
+                    grouping: options
+                    visible_if:
+                        lib.key: usesConductor
+                        lib.modeIs: list_videos
+                    plugin_setting:
+                        name: enable.new_video
+                    label: New video (superuser feature)
+                    type: checkbox
+                    redraw_onchange: true
+                to_state1.new_video: *to_state1
+                to_state2.new_video: *to_state2
+                
                 show_video_title:
                     grouping: options
                     label: Show video title
@@ -268,98 +349,6 @@ plugin_settings:
                     value: h1
                     type: select
                     values: *tags
-                
-                show_images:
-                    grouping: options
-                    label: Show images
-                    visible_if:
-                        lib.modeIn: 
-                            - list_videos
-                    plugin_setting:
-                        name: show_images
-                    value: 1
-                    type: checkbox
-                    format_onchange: true
-                
-                fall_back_to_default_image:
-                    grouping: options
-                    indent: 1
-                    hide_with_previous_field: true
-                    visible_if: zenarioAB.value('show_images')
-                    plugin_setting:
-                        name: fall_back_to_default_image
-                    label: Fall back to default image
-                    type: checkbox
-                    redraw_onchange: true
-                    
-                default_image_id:
-                    grouping: options
-                    indent: 2
-                    hide_with_previous_field: true
-                    visible_if: zenarioAB.value('fall_back_to_default_image')
-                    plugin_setting:
-                        name: default_image_id
-                    label: 'Default image:'
-                    upload:
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
-                    pick_items:
-                        path: zenario__content/panels/image_library
-                        select_phrase: Select image...
-                    validation:
-                        required_if_not_hidden: Please choose a default image.
-                
-                image_canvas:
-                    grouping: options
-                    indent: 1
-                    plugin_setting:
-                        name: image_canvas
-                    label: 'Image size:'
-                    type: select
-                    value: fixed_width_and_height
-                    values:
-                        unlimited:
-                            label: Unlimited size
-                        fixed_width:
-                            label: Constrain by width
-                        fixed_height:
-                            label: Constrain by height
-                        fixed_width_and_height:
-                            label: Constrain by width and height
-                    format_onchange: true
-                image_width:
-                    grouping: options
-                    indent: 2
-                    plugin_setting:
-                        name: image_width
-                    label: 'Width:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter a width in pixels.
-                        numeric: The width must be a number.
-                    value: "320"
-                    maxlength: "5"
-                    style: 'width: 5em;'
-                    post_field_html: '&nbsp;pixels'
-                image_height:
-                    grouping: options
-                    indent: 2
-                    plugin_setting:
-                        name: image_height
-                    label: 'Height:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter a height in pixels.
-                        numeric: The height must be a number.
-                    value: "180"
-                    maxlength: "5"
-                    style: 'width: 5em;'
-                    post_field_html: '&nbsp;pixels'
 
                 show_video_language:
                     grouping: options

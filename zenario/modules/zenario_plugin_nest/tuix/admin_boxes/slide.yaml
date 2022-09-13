@@ -14,7 +14,6 @@ zenario_slide:
         cVersion: ""
         slotName: ""
     title: Slide
-    max_height: 600
     hide_tab_bar: true
     identifier:
         css_class: zenario_nest_tab
@@ -25,15 +24,14 @@ zenario_slide:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
             fields:
-                name_or_title:
+                name_or_slide_label:
                     row_class: zenario_row_with_dropdown
-                    label: 'Slide title:'
+                    label: 'Slide label:'
                     type: text
                     maxlength: 100
                     validation:
-                        required: Please enter a title for the tab to this slide
+                        required: Please enter a label for the link to this slide
                 
                 title_merge_fields:
                     same_row: true
@@ -48,7 +46,7 @@ zenario_slide:
                     style: |
                         width: 400px;
                     onchange: |
-                        var domTitle = lib.get('name_or_title');
+                        var domTitle = lib.get('name_or_slide_label');
                         lib.insertText(domTitle, $(this).val())
                         $(this).val('').iconselectmenu('refresh');
                         $(domTitle).change();

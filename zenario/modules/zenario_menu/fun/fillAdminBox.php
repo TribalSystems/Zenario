@@ -76,9 +76,14 @@ switch ($path) {
 		}
 
 		if ($box['module_class_name'] != 'zenario_menu') {
-			unset($fields['first_tab/limit_initial_level_1_menu_nodes_checkbox']);
-			unset($fields['first_tab/limit_initial_level_1_menu_nodes']);
-			unset($fields['first_tab/text_for_more_button']);
+			unset($box['tabs']['first_tab']['fields']['limit_initial_level_1_menu_nodes_checkbox']);
+			unset($box['tabs']['first_tab']['fields']['limit_initial_level_1_menu_nodes']);
+			unset($box['tabs']['first_tab']['fields']['text_for_more_button']);
+			unset($box['tabs']['first_tab']['fields']['reverse_order']);
+		}
+
+		if (!ze::in($box['module_class_name'], 'zenario_menu_vertical', 'zenario_menu_responsive_multilevel_2')) {
+			unset($box['tabs']['first_tab']['fields']['show_parent_menu_node_text']);
 		}
 		
 		break;

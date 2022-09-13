@@ -115,7 +115,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			}
 		}
 		
-		if ($this->setting('show_sticky_image')) {
+		if ($this->setting('show_featured_image')) {
 			$sql = '
 				SELECT f.id, f.alt_tag
 				FROM '.DB_PREFIX.'content_item_versions v
@@ -128,27 +128,26 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			$file = ze\sql::fetchAssoc($result);
 
 			//If there is no featured image, try to use the fallback image.
-			if (empty($file) && $this->setting('show_feature_image_fallback')) {
-				$file = ze\row::get('files', ['id', 'alt_tag'], $this->setting('feature_image_fallback'));
+			if (empty($file) && $this->setting('fall_back_to_default_image')) {
+				$file = ze\row::get('files', ['id', 'alt_tag'], $this->setting('default_image_id'));
 			}
 
 			if (!empty($file)) {
-				$width = $height = $url = false;
-				ze\file::imageLink(
-					$width, $height, $url, $file['id'],
-					$this->setting('sticky_image_width'), $this->setting('sticky_image_height'),
-					$this->setting('sticky_image_canvas'), $this->setting('sticky_image_offset')
-				);
-				if ($url) {
-					$this->mergeFields['Sticky_image'] = [
-						'Sticky_Image_Src' => $url,
-						'Sticky_Image_Alt' => $file['alt_tag'],
-						'html_tag' => $this->setting('sticky_image_label_html_tag'),
-						'label' => $this->phrase('Featured image'),
-						'class' => 'sticky_image'
-					];
-					$this->showSections['show_sticky_image'] = true;
-				}
+				
+				$this->mergeFields['Featured_image'] = [
+					'html_tag' => $this->setting('sticky_image_label_html_tag'),
+					'label' => $this->phrase('Featured image'),
+					'class' => 'sticky_image'
+				];
+				
+				$this->mergeFields['Featured_image']['Featured_Image_HTML'] =
+					ze\file::featureImageHTML(
+						$this->cID, $this->cType, $this->cVersion,
+						$this->setting('fall_back_to_default_image'), $this->setting('default_image_id'),
+						$this->setting('image_2_width'), $this->setting('image_2_height'),
+						$this->setting('image_2_canvas'), $this->setting('image_2_retina'), $this->setting('image_2_webp'),
+						$file['alt_tag']
+					);
 			}
 		}
 		
@@ -226,7 +225,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		$this->mergeFields['content'] = [];
 		
 		foreach (explode(',', $this->setting('reorder_fields')) as $field) {
-
+			
 			$fieldName = str_replace('show_', '', $field);
 			
 			if (isset($this->mergeFields[ucwords($fieldName)])) {				
@@ -265,8 +264,8 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$hidden = !$values['show_writer_name'] || !$values['first_tab/show_writer_image'];
 				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
 				
-				$hidden = !$values['first_tab/show_sticky_image'];
-				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'sticky_image_');
+				$hidden = !$values['first_tab/show_featured_image'];
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'image_2_');
 				
 				//Control visibility settings
 				if ($values['show_writer_name'] == 1 && $values['show_writer_image'] == 1 && $values['show_labels'] == 1) {
@@ -287,7 +286,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					$fields['first_tab/writer_profile_label_html_tag']['hidden'] = true;
 				}
 				
-				if ($values['show_sticky_image'] == 1 && $values['show_labels'] == 1) {
+				if ($values['show_featured_image'] == 1 && $values['show_labels'] == 1) {
 					$fields['first_tab/sticky_image_label_html_tag']['hidden'] = false;
 				} else {
 					$fields['first_tab/sticky_image_label_html_tag']['hidden'] = true;
@@ -308,7 +307,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					'show_writer_image',
 					'show_writer_email',
 					'show_writer_profile',
-					'show_sticky_image',
+					'show_featured_image',
 					'show_text_when_pinned'
 				];
 													
@@ -318,10 +317,6 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				foreach($availableFields as $field) {
 					if ($values['first_tab/' . $field] == "1") {
 						$niceName = ucwords(str_replace('_', ' ', str_replace('show_', '', $field)));
-						
-						if ($niceName == 'Sticky Image') {
-							$niceName = 'Feature Image';
-						}
 						
 						if($niceName == 'Categories') {
 							$niceName = 'Public Categories';

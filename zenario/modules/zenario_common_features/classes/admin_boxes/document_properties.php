@@ -136,9 +136,9 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		if (!$newDocumentName ){
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a filename.');
 		} else {
-			// Stop forward slashes being used in filenames
+			// Stop spaces and illegal characters being used in filenames
 			if ($newDocumentName !== ze\file::safeName($newDocumentName)) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('Your filename cannot contain illegal characters, e.g. /, \\, :, ;, *, ?, ", <, > or |');
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('Your filename cannot contain any of the following characters: /, \\, :, ;, *, ?, ", <, > or |');
 			}
 		}
 		

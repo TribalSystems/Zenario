@@ -341,21 +341,22 @@ class zenario_users extends ze\moduleBaseClass {
 					$userDetails=self::getInactiveUserDetails($setting['period']);
 					
 					if(is_array($userDetails) && $userDetails){
-						foreach($userDetails as $user){
+						foreach($userDetails as $user) {
 							$emailMergeFields = [];
 							$emailMergeFields['salutation'] = $user['salutation'];
 							$emailMergeFields['first_name'] = $user['first_name'];
 							$emailMergeFields['last_name'] = $user['last_name'];
 							$emailMergeFields['cms_url'] = ze\link::absolute();
 							$k++;
+							
 							zenario_email_template_manager::sendEmailsUsingTemplate(
-																			$user['email'],
-																			$setting['emailTemplate'],
-																			$emailMergeFields,
-																			[],
-																			false,
-																			true
-																			);
+								$user['email'],
+								$setting['emailTemplate'],
+								$emailMergeFields,
+								[],
+								false,
+								true
+							);
 						}
 					}
 				}
@@ -472,6 +473,10 @@ class zenario_users extends ze\moduleBaseClass {
 		if ($imageId) {
 			foreach (explode(',', $userIds) as $userId) {
 				ze\row::update('users', ['image_id' => $imageId], $userId);
+
+				$cols = [];
+				ze\admin::setUserLastUpdated($cols, false);
+				ze\userAdm::save($cols, $userId);
 			}
 			ze\contentAdm::deleteUnusedImagesByUsage('user');
 		}
@@ -480,6 +485,10 @@ class zenario_users extends ze\moduleBaseClass {
 	public static function deleteUserImage($userIds) {
 		foreach (explode(',', $userIds) as $userId) {
 			ze\row::update('users', ['image_id' => 0], $userId);
+
+			$cols = [];
+			ze\admin::setUserLastUpdated($cols, false);
+			ze\userAdm::save($cols, $userId);
 		}
 		ze\contentAdm::deleteUnusedImagesByUsage('user');
 	}

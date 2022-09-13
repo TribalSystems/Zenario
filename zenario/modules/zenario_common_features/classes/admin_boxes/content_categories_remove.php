@@ -85,10 +85,10 @@ class zenario_common_features__admin_boxes__content_categories_remove extends ze
 					$row['total'] = $total;
 					if ($row['cnt'] == $total) {
 						$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
-						' '. ze\admin::phrase('(all [[total]] selected are in this category)', $row);
+						' '. ze\admin::phrase('(all [[total]] selected content items are in this category)', $row);
 					} else {
 						$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
-						' '. ze\admin::phrase('([[cnt]] of [[total]] selected are in this category)', $row);
+						' '. ze\admin::phrase('([[cnt]] of [[total]] selected content items are in this category)', $row);
 					}
 				}
 			}
@@ -137,7 +137,7 @@ class zenario_common_features__admin_boxes__content_categories_remove extends ze
 		if ($total > 1) {
 			$box['confirm']['message'] .=
 				"\n\n".
-				ze\admin::phrase('The content items in all selected translation chains will be set to the categories you selected.');
+				ze\admin::phrase('The selected content items will be removed from these categories. (If the content items are translated, the translations will also be removed these categories.)');
 		}
 	}
 

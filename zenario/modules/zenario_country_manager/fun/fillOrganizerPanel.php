@@ -73,12 +73,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				switch ($_GET['refinerName'] ?? false){
 					case 'country_code_filter':
 						if ($country=$this->getEnglishCountryName($refinerId)){
-							$panel['title'] = 'Regions in the Country "'. $country . '"';
+							$panel['title'] = 'Regions within "'. $country . '"';
 						}
 						break;
 					case 'parent_id':
 						if ($region=$this->getEnglishRegionName($refinerId)){
-							$panel['title'] = 'Sub-Regions of the Region "'. $region . '"';
+							$panel['title'] = 'Sub-regions of "'. $region . '"';
 						}
 						break;
 				}

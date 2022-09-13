@@ -6,7 +6,7 @@
 * Project: PHPWavUtils: Classes for creating, reading, and manipulating WAV files in PHP<br />
 * File: WavFile.php<br />
 *
-* Copyright (c) 2012 - 2014, Drew Phillips
+* Copyright (c) 2014, Drew Phillips
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without modification,
@@ -33,14 +33,16 @@
 * Any modifications to the library should be indicated clearly in the source code
 * to inform users that the changes are not a part of the original software.<br /><br />
 *
-* @copyright 2012 Drew Phillips
+* @copyright 2014 Drew Phillips
 * @author Drew Phillips <drew@drew-phillips.com>
 * @author Paul Voegler <http://www.voegler.eu/>
-* @version 1.1 (Feb 2014)
+* @version 1.1.1 (Sep 2015)
 * @package PHPWavUtils
 * @license BSD License
 *
 * Changelog:
+*   1.1.1 (09/08/2015)
+*     - Fix degrade() method to call filter correctly (Rasmus Lerdorf)
 *
 *   1.1 (02/8/2014)
 *     - Add method setIgnoreChunkSizes() to allow reading of wav data with bogus chunk sizes set.
@@ -167,7 +169,7 @@ class WavFile
     /** @var int Size of the data chunk in the opened wav file */
     protected $_dataSize_fp;
 
-    /** @var int Does _dataSize really reflect strlen($_samples)? Case when a wav file is read with readData = false */
+    /** @var bool Does _dataSize really reflect strlen($_samples)? Case when a wav file is read with readData = false */
     protected $_dataSize_valid;
 
     /** @var int Starting offset of data chunk */
@@ -176,7 +178,7 @@ class WavFile
     /** @var int The audio format - WavFile::WAVE_FORMAT_* */
     protected $_audioFormat;
 
-    /** @var int The audio subformat - WavFile::WAVE_SUBFORMAT_* */
+    /** @var int|string|null The audio subformat - WavFile::WAVE_SUBFORMAT_* */
     protected $_audioSubFormat;
 
     /** @var int Number of channels in the audio file */
@@ -209,7 +211,7 @@ class WavFile
     /** @var string Binary string of samples */
     protected $_samples;
 
-    /** @var resource The file pointer used for reading wavs from file or memory */
+    /** @var resource|null The file pointer used for reading wavs from file or memory */
     protected $_fp;
 
 
@@ -294,7 +296,7 @@ class WavFile
      *
      * @param string $sampleBinary  (Required) The sample to decode.
      * @param int $bitDepth  (Optional) The bits per sample to decode. If omitted, derives it from the length of $sampleBinary.
-     * @return int|float  The numeric sample value. Float for 32-bit samples. Returns null for unsupported bit depths.
+     * @return int|float|null  The numeric sample value. Float for 32-bit samples. Returns null for unsupported bit depths.
      */
     public static function unpackSample($sampleBinary, $bitDepth = null)
     {
@@ -340,7 +342,7 @@ class WavFile
      *
      * @param int|float $sample  (Required) The sample to encode. Has to be within valid range for $bitDepth. Float values only for 32 bits.
      * @param int $bitDepth  (Required) The bits per sample to encode with.
-     * @return string  The encoded binary sample. Returns null for unsupported bit depths.
+     * @return string|null  The encoded binary sample. Returns null for unsupported bit depths.
      */
     public static function packSample($sample, $bitDepth)
     {
@@ -467,6 +469,7 @@ class WavFile
         return $this->_actualSize;
     }
 
+    /** @param int $actualSize */
     protected function setActualSize($actualSize = null) {
         if (is_null($actualSize)) {
             $this->_actualSize = 8 + $this->_chunkSize;  // + "RIFF" header (ID + size)
@@ -481,6 +484,7 @@ class WavFile
         return $this->_chunkSize;
     }
 
+    /** @param int $chunkSize */
     protected function setChunkSize($chunkSize = null) {
         if (is_null($chunkSize)) {
             $this->_chunkSize = 4 +                                                            // "WAVE" chunk
@@ -501,6 +505,7 @@ class WavFile
         return $this->_fmtChunkSize;
     }
 
+    /** @param int $fmtChunkSize */
     protected function setFmtChunkSize($fmtChunkSize = null) {
         if (is_null($fmtChunkSize)) {
             $this->_fmtChunkSize = 16 + $this->_fmtExtendedSize;
@@ -518,6 +523,7 @@ class WavFile
         return $this->_fmtExtendedSize;
     }
 
+    /** @param int $fmtExtendedSize */
     protected function setFmtExtendedSize($fmtExtendedSize = null) {
         if (is_null($fmtExtendedSize)) {
             if ($this->_audioFormat == self::WAVE_FORMAT_EXTENSIBLE) {
@@ -540,6 +546,7 @@ class WavFile
         return $this->_factChunkSize;
     }
 
+    /** @param int $factChunkSize */
     protected function setFactChunkSize($factChunkSize = null) {
         if (is_null($factChunkSize)) {
             if ($this->_audioFormat != self::WAVE_FORMAT_PCM) {
@@ -561,6 +568,7 @@ class WavFile
         return $this->_dataSize;
     }
 
+    /** @param int $dataSize */
     protected function setDataSize($dataSize = null) {
         if (is_null($dataSize)) {
             $this->_dataSize = strlen($this->_samples);
@@ -579,6 +587,7 @@ class WavFile
         return $this->_dataOffset;
     }
 
+    /** @param int $dataOffset */
     protected function setDataOffset($dataOffset = null) {
         if (is_null($dataOffset)) {
             $this->_dataOffset = 8 +                                                            // "RIFF" header (ID + size)
@@ -597,6 +606,7 @@ class WavFile
         return $this->_audioFormat;
     }
 
+    /** @param int $audioFormat */
     protected function setAudioFormat($audioFormat = null) {
         if (is_null($audioFormat)) {
             if (($this->_bitsPerSample <= 16 || $this->_bitsPerSample == 32)
@@ -626,6 +636,7 @@ class WavFile
         return $this->_audioSubFormat;
     }
 
+    /** @param int $audioSubFormat */
     protected function setAudioSubFormat($audioSubFormat = null) {
         if (is_null($audioSubFormat)) {
             if ($this->_bitsPerSample == 32) {
@@ -644,6 +655,7 @@ class WavFile
         return $this->_numChannels;
     }
 
+    /** @param int $numChannels */
     public function setNumChannels($numChannels) {
         if ($numChannels < 1 || $numChannels > self::MAX_CHANNEL) {
             throw new WavFileException('Unsupported number of channels. Only up to ' . self::MAX_CHANNEL . ' channels are supported.');
@@ -746,6 +758,7 @@ class WavFile
         return $this->_blockAlign;
     }
 
+    /** @param int $blockAlign */
     protected function setBlockAlign($blockAlign = null) {
         if (is_null($blockAlign)) {
             $this->_blockAlign = $this->_numChannels * $this->_bitsPerSample / 8;
@@ -763,6 +776,7 @@ class WavFile
         return $this->_numBlocks;
     }
 
+    /** @param int $numBlocks */
     protected function setNumBlocks($numBlocks = null) {
         if (is_null($numBlocks)) {
             $this->_numBlocks = (int)($this->_dataSize / $this->_blockAlign);  // do not count incomplete sample blocks
@@ -777,6 +791,7 @@ class WavFile
         return $this->_byteRate;
     }
 
+    /** @param int $byteRate */
     protected function setByteRate($byteRate = null) {
         if (is_null($byteRate)) {
             $this->_byteRate = $this->_sampleRate * $this->_numChannels * $this->_bitsPerSample / 8;
@@ -1014,7 +1029,7 @@ class WavFile
     /**
      * Read wav file from a stream.
      *
-     * @param $readData  (Optional) If true, also read the data chunk.
+     * @param bool $readData  (Optional) If true, also read the data chunk.
      * @throws WavFormatException
      * @throws WavFileException
      */
@@ -1251,7 +1266,6 @@ class WavFile
             throw new WavFormatException('Missing "data" subchunk.', 101);
         }
 
-
         // check "data" subchunk
         $dataOffset = ftell($this->_fp);
         if ($this->getIgnoreChunkSizes()) {
@@ -1291,8 +1305,8 @@ class WavFile
     /**
      * Read the wav data from the file into the buffer.
      *
-     * @param $dataOffset  (Optional) The byte offset to skip before starting to read. Must be a multiple of BlockAlign.
-     * @param $dataSize  (Optional) The size of the data to read in bytes. Must be a multiple of BlockAlign. Defaults to all data.
+     * @param int $dataOffset  (Optional) The byte offset to skip before starting to read. Must be a multiple of BlockAlign.
+     * @param int $dataSize  (Optional) The size of the data to read in bytes. Must be a multiple of BlockAlign. Defaults to all data.
      * @throws WavFileException
      */
     public function readWavData($dataOffset = 0, $dataSize = null)
@@ -1334,7 +1348,7 @@ class WavFile
      * Return a single sample block from the file.
      *
      * @param int $blockNum  (Required) The sample block number. Zero based.
-     * @return string  The binary sample block (all channels). Returns null if the sample block number was out of range.
+     * @return string|null  The binary sample block (all channels). Returns null if the sample block number was out of range.
      */
     public function getSampleBlock($blockNum)
     {
@@ -1403,7 +1417,7 @@ class WavFile
      *
      * @param int $blockNum  (Required) The sample block number to fetch. Zero based.
      * @param int $channelNum  (Required) The channel number within the sample block to fetch. First channel is 1.
-     * @return float  The float sample value. Returns null if the sample block number was out of range.
+     * @return float|null  The float sample value. Returns null if the sample block number was out of range.
      * @throws WavFileException
      */
     public function getSampleValue($blockNum, $channelNum)
@@ -1770,8 +1784,8 @@ class WavFile
      */
     public function degrade($quality = 1.0)
     {
-        return $this->filter(self::FILTER_DEGRADE, array(
-            WavFile::FILTER_DEGRADE => $quality
+        return $this->filter(array(
+            self::FILTER_DEGRADE => $quality
         ));
     }
 

@@ -47,7 +47,6 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 					$fields['details/warning_message']['snippet']['html'] = 
 						'<p>' . ze\admin::phrase('There are no user responses for this field. Delete this form field?') . '</p>';
 				} else {
-					$box['max_height'] = 260;
 					$fields['details/delete_field_options']['hidden'] = false;
 					
 					$responsesTransferFields = json_decode($values['details/dummy_field'], true);

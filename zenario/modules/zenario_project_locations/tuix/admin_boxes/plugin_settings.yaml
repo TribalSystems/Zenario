@@ -14,9 +14,9 @@ plugin_settings:
                     maxlength: "5"
                     style: "width: 5em;"
                     note_below: The number of results per page to be shown when visitors use this search facility.
-                sticky_image_width: 
+                image_width: 
                     plugin_setting: 
-                        name: sticky_image_width
+                        name: image_width
                     label: "Sticky image width:"
                     type: text
                     validation: 
@@ -27,9 +27,9 @@ plugin_settings:
                     style: "width: 5em;"
                     post_field_html: "&nbsp;pixels"
                     note_below: "Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up."
-                sticky_image_height: 
+                image_height: 
                     plugin_setting: 
-                        name: sticky_image_height
+                        name: image_height
                     label: "Sticky image height:"
                     type: text
                     validation: 

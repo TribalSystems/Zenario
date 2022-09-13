@@ -135,6 +135,27 @@ additionalProperties:
                         
                         If you are saving a newly created Item, you should populate the id
                         yourself as soon as you know what it is.
+                openNextMode:
+                    type: boolean
+                    description: >
+                        Set this to true if you want to edit multiple items one after the other.
+                        
+                        This will cause the "Skip to next", "Save & next" and "Save & close" buttons
+                        to appear at the bottom instead of the "save" button.
+                        
+                        This works from version 9.3 onwards.
+                nextIds:
+                    type: string
+                    description: >
+                        If you want to edit multiple items one after the other, place the id of the
+                        first item to edit in the id variable, and the ids of subsequent items in a
+                        comma-separated list in this variable.
+                        
+                        When the user presses the "Skip to next" or "Save & next" button, the current
+                        id will be deleted, the nextIds will be placed back into the id variable,
+                        and your fillAdminBox() method will be called again.
+                        
+                        This works from version 9.3 onwards.
             additionalProperties:
                 type: *variable
                 description: >
@@ -524,12 +545,11 @@ additionalProperties:
                                 modified_by_cms: true
                                 description: >
                                     The CMS will automatically set this property when this tab is in edit mode.
-                            always_on:
+                            use_view_and_edit_mode:
                                 type: boolean
                                 description: >
-                                    Include this property to lock a tab in edit mode, and not show the cancel
-                                    button.
-                                    Note: if this property is not defined then it will default to true.
+                                    Set this property if you wish the user to first press an "edit" button
+                                    before they can start editing a tab.
                                 default: true
                             #enable_revert:
                             #    type: boolean
@@ -778,7 +798,14 @@ additionalProperties:
                                 same_row:
                                     type: boolean
                                     description: >
-                                        This will place a field on the same row as the previous field.
+                                        This will place the current field directly after the previous field, without drawing
+                                        any HTML from the microtemplate.
+                                        
+                                        To turn the microtemplate's HTML off for a section of the form and use your own HTML instead,
+                                        you can set this property on multiple fields, and then use the pre_field_html and post_field_html
+                                        properties to add your own HTML.
+                                        For example, you could place several fields in a table-layout using table, tr, th and td tags
+                                        instead of the usual HTML from the microtemplate.
                                 
                                 indent:
                                     type: number
@@ -853,6 +880,11 @@ additionalProperties:
                                     description: >
                                         Places a piece of text below the field in italics.
                                         Won't be HTML escaped.
+                                
+                                show_plain_note_below:
+                                    type: boolean
+                                    description: >
+                                        If this property is set, the note_below will be displayed as plain text.
                                 
                                 show_phrase_icon:
                                     type: boolean
@@ -1026,6 +1058,25 @@ additionalProperties:
                                             default: 'Choose from Dropbox...'
                                             description: >
                                                 The text for the Choose from Dropbox button.
+                                        
+                                        usage:
+                                            type: string
+                                            description: >
+                                                The value for the `usage` column when adding the image(s) to the 'files' table.
+
+                                                If not specified, the fallback value 'image' will be used.
+
+                                                This works from version 9.2 onwards.
+                                        location:
+                                            type: string
+                                            description: >
+                                                Whether to store the file(s) in the database, or docstore folder.
+
+                                                Possible values: 'db', 'docstore'.
+                                                
+                                                If not specified, the file will be stored in the database.
+
+                                                This works from version 9.2 onwards.
                                 
                                 pick_items: &pick_items
                                     type: object
@@ -1923,7 +1974,7 @@ additionalProperties:
                                             type: string
                                             static: true
                                             description: >
-                                                The code-name of this Plugin Setting.
+                                                The name of this plugin setting in the database.
                                                 
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
@@ -2315,6 +2366,14 @@ additionalProperties:
                                                     or radio's label.
                                                     
                                                     This works from version 8.0 onwards.
+                                            
+                                            icon_class:
+                                                type: string
+                                                description: >
+                                                    If you set this property, an empty <span> will appear inside the label
+                                                    with the specified CSS class name.
+                                                    
+                                                    This works from version 9.3 onwards.
                                             
                                             accesskey:
                                                 type: *stringy

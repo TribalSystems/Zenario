@@ -13,7 +13,6 @@ zenario_user__delete:
             label: Details
             edit_mode:
                 enabled: true
-                always_on: true
             notices:
                 are_you_sure:
                     show: true

@@ -9,7 +9,7 @@ site_settings:
                     site_setting:
                         name: period_to_delete_sign_in_log
                     label: "How long should the user sign-in log be saved?"
-                    ord: 8
+                    ord: 9
                     type: select
                     values: 
                         0: 
@@ -18,10 +18,16 @@ site_settings:
                             label: Delete after 1 day
                         7:
                             label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
                         30:
                             label: Delete after 1 month
                         90: 
                             label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
                         365: 
                             label: Delete after 1 year
                         730: 
@@ -33,7 +39,7 @@ site_settings:
                     site_setting:
                         name: period_to_delete_the_user_content_access_log
                     label: "How long should the user content-access log be saved?"
-                    ord: 9
+                    ord: 10
                     type: select
                     values: 
                         0: 
@@ -42,10 +48,16 @@ site_settings:
                             label: Delete after 1 day
                         7:
                             label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
                         30:
                             label: Delete after 1 month
                         90: 
                             label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
                         365: 
                             label: Delete after 1 year
                         730: 
@@ -84,4 +96,3 @@ site_settings:
                     type: checkbox
                     note_below: |
                         The last octet of IPv4 IP addresses and the last 60 bits of IPv6 addresses will be set to zeros.
-                        

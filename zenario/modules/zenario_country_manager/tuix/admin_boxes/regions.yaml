@@ -17,7 +17,6 @@ zenario_country_manager__region:
                 priv: _PRIV_MANAGE_COUNTRY
                 enabled: true
                 on: true
-                always_on: true
             fields:
                 name:
                     label: 'Region name:'

@@ -138,8 +138,6 @@ zenario__content:
                         zenarioO.itemButtonClick('edit');
                     admin_box:
                         path: zenario_image
-                        key:
-                            mic_image: true
                 actions_dropdown:
                     label: Actions
                     multiple_select: true
