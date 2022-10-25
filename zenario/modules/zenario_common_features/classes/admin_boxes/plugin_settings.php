@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -795,12 +795,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							$sql = "
 								SELECT 1
 								FROM ". DB_PREFIX. "plugin_instances
-								WHERE name =  '". ze\escape::sql($values['first_tab/instance_name']). "'";
-				
-							if (ze::in($duplicate_or_rename, 'replace', 'duplicate')) {
-								$sql .= "
+								WHERE name =  '". ze\escape::sql($values['first_tab/instance_name']). "'
 								  AND id != ". (int) $box['key']['id'];
-							}
 				
 							if (ze\sql::fetchRow($sql)) {
 								$fields['first_tab/instance_name']['error'] =

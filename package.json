@@ -9,7 +9,7 @@
 		"wysiwyg",
 		"zenario"
 	],
-	"homepage": "https:\/\/github.com\/TribalSystems\/Zenario",
+	"homepage": "https://github.com/TribalSystems/Zenario",
 	"license": "BSD-3-Clause",
 	"dependencies": {
 		"bez": "*",
@@ -24,6 +24,5 @@
 		"underscore.string": "*",
 		"vimeo-upload": "*",
 		"wowjs": "*"
-	},
-	"version": "9.0.55141"
+	}
 }

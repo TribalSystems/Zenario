@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -441,6 +441,7 @@ To correct this, please ask your system administrator to perform a
               AND in_use = 1
 			  AND archived = 0
 			  AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template') 
+			  AND foreign_key_id != 0
 			GROUP BY foreign_key_to, is_nest, is_slideshow
 		") as $ucat) {
 			$keyTo = $ucat['foreign_key_to'];

@@ -1,7 +1,7 @@
 <?php
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit;
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without

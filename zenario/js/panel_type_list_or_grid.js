@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -185,6 +185,8 @@ methods.showPanel = function($header, $panel, $footer) {
 };
 
 methods.changeViewMode = function(view) {
+	
+	var selectedItems;
 							
 	if (thus.view == 'C' && thus.pic) {
 		selectedItems = thus.pic.returnSelectedItems();

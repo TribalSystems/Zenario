@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -270,8 +270,19 @@ class skinAdm {
 		
 			//Check to see if there are any .css, .js, .html, .php or .yaml files that have changed on the system
 			$useFallback = true;
+			
+			//Catch the case where a skin's directory has been completely deleted
+			//(This wouldn't be picked up by the modification date below.)
+			foreach (\ze\row::getAssocs('skins', ['name', 'missing'], []) as $skin) {
+				if (((bool) $skin['missing']) != !((bool) is_dir(CMS_ROOT. 'zenario_custom/skins/'. $skin['name']))) {
+					$changed = true;
+					$skinChanges = true;
+					$useFallback = false;
+					break;
+				}
+			}
 		
-			if (defined('PHP_OS') && \ze\server::execEnabled()) {
+			if ($useFallback && defined('PHP_OS') && \ze\server::execEnabled()) {
 				//Make sure we are in the CMS root directory.
 				chdir(CMS_ROOT);
 			

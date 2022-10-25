@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2021, Tribal Limited
+ * Copyright (c) 2022, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -602,6 +602,7 @@ class file {
 			case 'exe':
 			case 'js':
 			case 'jsp':
+			case 'phar':
 			case 'php':
 			case 'php3':
 			case 'ph3':
