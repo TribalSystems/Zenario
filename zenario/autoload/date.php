@@ -56,6 +56,10 @@ class date {
 
 	//Formerly "formatDateNicely()"
 	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false, $admin = false) {
+		
+		if (empty($date)) {
+			return '';
+		}
 	
 		//Use $languageId === true as a shortcut to the site default language
 		//Otherwise if $languageId is not set, try to get language from session, or the site default if that is not set

@@ -551,12 +551,13 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		}
 		
 		
-		//If all tabs were hidden, don't show anything
+		//If the slide we're trying to display has at least one plugin on it, display it.
 		if ($this->slideNum !== false && $this->loadTab($this->slideNum)) {
 			$this->show = true;
 		
-		//...except if no tabs exist, don't hide anything
-		} elseif (!ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1]) && $this->loadTab($this->slideNum = 1)) {
+		//Special edge-case for if no slides have been created. Return true in this case.
+		} elseif (!ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1])) {
+			$this->loadTab($this->slideNum = 1);
 			$this->show = true;
 		}
 		
@@ -794,6 +795,8 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	protected function loadTab($slideNum) {
 		
+		$eggRunning = false;
+		
 		
 		//This bit of code prevents a small bug/exploit, where a user could show the wrong data pool
 		//on the wrong level slide by hacking the URL in a very specific way.
@@ -992,6 +995,12 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'addJavaScript', ze::$slotContents[$slotNameNestId]['class_name'], ze::$slotContents[$slotNameNestId]['module_id']);
 					$addedJavaScript = true;
 				}
+				
+				//Only return true from this function if at least one egg was running.
+				//(Even in admin mode where plugins that aren't running are usually visible.)
+				if (!empty(ze::$slotContents[$slotNameNestId]['init'])) {
+					$eggRunning = true;
+				}
 			}
 			
 			if (ze\priv::check() && !empty(ze::$slotContents[$slotNameNestId]['class'])) {
@@ -1044,7 +1053,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			$this->showInMenuMode($showInMenuMode);
 		}
 		
-		return true;
+		return $eggRunning;
 	}
 	
 	

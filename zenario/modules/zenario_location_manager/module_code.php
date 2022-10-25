@@ -2152,19 +2152,19 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		return true;
 	}
 	
-	public static function handleMediaUpload($filename, $maxSize, $locationId) {
+	public static function handleMediaUpload($fileVar, $maxSize, $locationId) {
 		$error = [];
-		if (isset($_FILES[$filename])) {
+		if (isset($_FILES[$fileVar])) {
 			
-			ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
+			ze\fileAdm::exitIfUploadError(true, false, true, $fileVar);
 			
-			if (ze\fileAdm::isUploadedFile($_FILES[$filename]['tmp_name'])) {
-				if ($_FILES[$filename]['size'] > $maxSize) {
+			if (ze\fileAdm::isUploadedFile($_FILES[$fileVar]['tmp_name'])) {
+				if ($_FILES[$fileVar]['size'] > $maxSize) {
 					$error['document'] = ze\admin::phrase('Your file must be less than [[size]]', ['size' => $maxSize]);
 				}
 			
 			} else {
-				switch ($_FILES[$filename]['error']) {
+				switch ($_FILES[$fileVar]['error']) {
 					case 1:
 						$error['document'] = ze\admin::phrase( 'Your file must be less than [[size]]', [ 'size' => $maxSize ] );
 						break;
@@ -2180,7 +2180,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			}
 		
 			if (!count($error)) {
-				return self::addImage($locationId, $_FILES[$filename]['tmp_name'], $_FILES[$filename]['name']);
+				return self::addImage($locationId, $_FILES[$fileVar]['tmp_name'], $_FILES[$fileVar]['name']);
 			} else {
 				return $error;
 			}
@@ -2190,7 +2190,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 		
-	public static function makeLocationImageSticky($locationId,$image_id) {
+	public static function makeLocationImageSticky($locationId, $image_id) {
 		$sql = "
 			UPDATE " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
 				sticky_flag = 0

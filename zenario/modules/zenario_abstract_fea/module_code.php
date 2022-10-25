@@ -264,6 +264,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			case 'formatVisitorTUIX':
 			case 'validateVisitorTUIX':
 			case 'saveVisitorTUIX':
+			case 'typeaheadSearchAJAX':
 				return true;
 		}
 		

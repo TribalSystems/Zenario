@@ -133,14 +133,15 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	if (!$instanceFound) {
-		if (!ze\priv::check() || !$slotName) {
+		if (!ze::isAdmin() || !$slotName) {
 			exit;
 		} else {
 			ze\plugin::setupNewBaseClass($slotName);
 			$instanceId = 0;
 		}
 	
-	} elseif (empty(ze::$slotContents[$slotName]['class'])) {
+	} elseif (empty(ze::$slotContents[$slotName]['class']) || (empty(ze::$slotContents[$slotName]['init']) && !ze::isAdmin())) {
+		echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
 		exit;
 	}
 	
@@ -227,7 +228,7 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	//If this is a logged in administrator, log any missing phrases
-	if (!empty($codes) && ze\priv::check()) {
+	if (!empty($codes) && ze::isAdmin()) {
 		foreach ($codes as $code) {
 			if (!isset($phrases[$code])) {
 				$phrases[$code] = ze\lang::phrase($code, [], ($_GET['__class__'] ?? false), $languageId, ze\admin::phrase('JavaScript code'));
@@ -271,7 +272,7 @@ if ($methodCall == 'refreshPlugin'
 	
 	require 'visitorheader.inc.php';
 	
-	if (empty($_SESSION['allow_file_uploads_in_the_installer']) && !ze\priv::check()) {
+	if (empty($_SESSION['allow_file_uploads_in_the_installer']) && !ze::isAdmin()) {
 		exit;
 	}
 	
@@ -569,13 +570,13 @@ if ($methodCall == 'showFile') {
 	$showInfo = true;
 	
 	if ($url = $module->checkHeaderRedirectLocation()) {
-		if (!ze\priv::check()) {
+		if (!ze::isAdmin()) {
 			$showInfo = false;
 		}
 		ze\escape::flag('FORCE_PAGE_RELOAD', $url);
 	
 	} elseif ($module->checkForcePageReloadVar()) {
-		if (!ze\priv::check()) {
+		if (!ze::isAdmin()) {
 			$showInfo = false;
 		}
 		ze\escape::flag('FORCE_PAGE_RELOAD', ze\link::toItem(ze::$cID, ze::$cType, true, '', ze::$alias, true));
@@ -610,7 +611,7 @@ if ($methodCall == 'showFile') {
 		$layoutPreview = null;
 		$slotControlHTML = null;
 			
-		if (ze\priv::check()) {
+		if (ze::isAdmin()) {
 			$slotContents = [$slotName => &ze::$slotContents[$slotName]];
 			$slotControlHTML = ze\pluginAdm::setupSlotControls($slotContents, true);
 			

@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_user_forms extends ze\moduleBaseClass {
 	
-	protected $data = false;
+	protected $data = [];
 	protected $inFullScreen = false;
 	protected $dataset = false;
 	protected $form = false;
@@ -491,6 +491,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	public function handlePluginAJAX() {
 		if (isset($_GET['fileUpload'])) {
+			ze\fileAdm::exitIfUploadError($adminFacing = false);
+			
 			$data = ['files' => []];
 			foreach ($_FILES as $fieldName => $file) {
 				if ($file && !empty($file['tmp_name'])) {
@@ -510,7 +512,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								exit('Could not create cache directory in private/uploads');
 							}
 							
-							if (move_uploaded_file($file['tmp_name'][$j], CMS_ROOT. $newName)) {
+							if (ze\fileAdm::moveUploadedFile($file['tmp_name'][$j], CMS_ROOT. $newName)) {
 								$cacheFile = ['name' => urldecode($file['name'][$j]), 'path' => $newName];
 								
 								//If requested, make thumbnails
@@ -584,7 +586,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				
 				//Step 2: combine all pdfs into a single file
 				$rawUserFullPDFFileName = (($_POST['name'] ?? false) ? ($_POST['name'] ?? false) : 'my-combined-file');
-				$fullPDFName = preg_replace('/[^\w-\.]/', '_', $rawUserFullPDFFileName);
+				$fullPDFName = preg_replace('/[^\w\-\.]/', '_', $rawUserFullPDFFileName);
 				
 				if (substr($fullPDFName, -4) != '.pdf') {
 					$fullPDFName .= '.pdf';
@@ -1239,6 +1241,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			} elseif ($field['repeat_start_id']) {
 				$repeatBlockFields[$field['id']] = $field;
 			}
+			
+			if (is_null($field['css_classes'])) {
+				$field['css_classes'] = '';
+			}
+			
 			$fields[$field['id']] = $field;
 		}
 		

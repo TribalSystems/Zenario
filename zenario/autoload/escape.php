@@ -196,13 +196,21 @@ class escape {
 		}
 		$sql = '';
 		foreach ($csv as $var) {
-			$var = trim($var);
+			if (is_string($var)) {
+				$var = trim($var);
+			}
 		
 			if ($sql !== '') {
 				$sql .= ',';
 			}
 		
-			if ($escaping === -1) {
+			if (is_null($var)) {
+				//Handle the case where someone passes a NULL value into an array.
+				//This won't find any matches because IN() statements in SQL don't find NULLs.
+				//However this line is here to stop a PHP or SQL error being triggered.
+				$sql .= 'NULL';
+		
+			} elseif ($escaping === -1) {
 				$sql .= \ze\escape::stringToIntOrFloat($var, true);
 		
 			} elseif ($escaping === 'numeric' || $escaping === true) {
