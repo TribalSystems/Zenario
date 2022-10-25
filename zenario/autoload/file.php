@@ -606,6 +606,7 @@ class file {
 			case 'exe':
 			case 'js':
 			case 'jsp':
+			case 'phar':
 			case 'php':
 			case 'php3':
 			case 'ph3':

@@ -1,3 +1,5 @@
+_A copy of [alnorris's SVG Sanitizer](https://github.com/alnorris/SVG-Sanitizer), with some PHP errors fixed, and some security patches as well._
+
 SVG Sanitizer
 ======
 
