@@ -1735,15 +1735,9 @@ class welcome {
 					}
 					
 					//Insert the starter images from the starter_images folder
-					$tags = \ze\tuix::readFile('zenario/admin/db_install/starter_image_list.yaml', false);
-					if ($tags) {
-						foreach ($tags['imagelist'] as $image) {
-							$imagepath = 'zenario/admin/db_install/starter_images/'. $image['name'];
-							\ze\file::addToDatabase('image', $imagepath, $image['name'], false, false, false, $image['alt_tag'], false, false, $image['mime_type']);
-						}
-					}
-
-				
+					\ze\welcome::addStarterImagesToDB();
+					
+					
 					//Was the install successful?
 					if (empty($tags['tabs'][8]['errors'])) {
 					
@@ -1923,6 +1917,26 @@ class welcome {
 		}
 	
 		return false;
+	}
+	
+	//Insert the starter images from the starter_images/ directory (also using the yaml file for their metadata).
+	public static function addStarterImagesToDB() {
+		$tags = \ze\tuix::readFile('zenario/admin/db_install/starter_image_list.yaml', false);
+		if ($tags) {
+			foreach ($tags['imagelist'] as $image) {
+				$imagepath = 'zenario/admin/db_install/starter_images/'. $image['name'];
+				$imageId = \ze\file::addToDatabase('image', $imagepath, $image['name'], false, false, false, $image['alt_tag'], false, false, $image['mime_type']);
+				
+				#//For the starter images, we'll make sure they're initially public images, not auto or private.
+				#if ($imageId) {
+				#	\ze\row::update('files', ['privacy' => 'public'], $imageId);
+				#	\ze\file::addPublicImage($imageId);
+				#}
+				
+				//N.b. the above code was taking a long time to run and caused "Maximum execution time" timeouts in the installer.
+				//I've removed it for now.
+			}
+		}
 	}
 	
 	//Some tasks that should be run immediately after a fresh install or site reset.
@@ -3921,8 +3935,13 @@ class welcome {
 					$specialPageUnpublishedMessage = (\ze\content::isSpecialPage($row['id'], $row['type'])) ? \ze\admin::phrase('<br />This page is a special page and it should be published.') : "";
 					$fields['0/content_unpublished']['hidden'] = false;
 					$fields['0/content_unpublished']['row_class'] = 'content_unpublished_wrap'; //Don't display warning triangle icons for unpublished items anymore. Deleting this line will show a green tick icon.
-					$fields['0/content_unpublished']['snippet']['html'] .='<div id="row__content_unpublished_'. $i.'" style="" class=" zenario_ab_row__content_unpublished_'. $i.'    zenario_row_for_snippet ">'.
-						\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode. ', $row) . $specialPageUnpublishedMessage.'<br/>'.$item['unpublished_content_info'].'</div>';
+					$fields['0/content_unpublished']['snippet']['html'] .=
+						'<div id="row__content_unpublished_'. $i.'" style="" class=" zenario_ab_row__content_unpublished_'. $i.'    zenario_row_for_snippet ">'.
+							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode. ', $row).
+							$specialPageUnpublishedMessage.
+							'<br/>'.
+							htmlspecialchars($item['unpublished_content_info']).
+						'</div>';
 				
 				}
 			}

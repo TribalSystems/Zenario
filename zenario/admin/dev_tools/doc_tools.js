@@ -175,7 +175,7 @@ if (window.parent
  && window.parent.document.getElementById('tuix_documentation')) {
 	setInterval(function() {
 		if (window.$) {
-			$(window.parent.document.getElementById('tuix_documentation')).height($('#doc').height() + 25);
+			$(window.parent.document.getElementById('tuix_documentation')).height($(document.body).height() + 25);
 		}
 	}, 50);
 }

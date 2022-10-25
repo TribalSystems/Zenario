@@ -39,7 +39,7 @@ class cookie {
 			$expire += time();
 		}
 	
-		setcookie($name, $value, $expire, SUBDIRECTORY, COOKIE_DOMAIN, \ze\link::isHttps(), true);
+		setcookie($name, $value ?? '', $expire, SUBDIRECTORY, COOKIE_DOMAIN, \ze\link::isHttps(), true);
 		$_COOKIE[$name] = $value;
 	}
 

@@ -342,6 +342,49 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons .zenario_cc_mana
   transform: rotate(-45deg);
 }
 
+.touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input {
+	-webkit-appearance: none; /*Safari/Chrome*/
+	-moz-appearance: none; /*Firefox*/
+	appearance: none;
+	-webkit-border-radius: 0;
+}
+
+.touchscreen div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
+	padding: 20px;
+    width: calc(100% - 60px);
+}
+	
+.touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text,
+.touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form {
+	padding:15px;
+}
+	
+.touchscreen div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons a {
+	padding:0 15px;
+}
+	
+.touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap {
+	width:90%;
+	height: 85vh;
+	overflow-y: auto;
+}
+	
+.touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .switch {
+	transform: scale(0.8);
+}
+	
+.touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info {
+	padding-left:10px;
+}
+
+@media (orientation: landscape) {
+
+	.touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap {
+		height: 75vh;
+	}
+
+}
+
 @media all and (max-width: 581px) {
 
 	div.zenario_cookie_consent .zenario_cc_message,

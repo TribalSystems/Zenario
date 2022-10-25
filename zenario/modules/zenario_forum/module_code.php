@@ -423,7 +423,7 @@ class zenario_forum extends zenario_comments {
 	protected function manageOneUpload($postId, $location, $file_name){
 	
 	
-		ze\fileAdm::exitIfVirusInFile(false, $location, $file_name, true);
+		ze\fileAdm::exitIfUploadError(false, $location, $file_name);
 	
 		if($this->allow_uploads){
 			if(!$location || !strlen($location)) return;

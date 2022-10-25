@@ -41,7 +41,19 @@
 
 	{% set Title = this.getTitleMergeFields() %}
 	{% if Title %}
-		<li><h2 class="side_menu_title"><a href="{{Title.Parent_Link}}">{{Title.Parent_Name}}</a></h2></li>
+		<li>
+			<h2 class="side_menu_title">
+				{% if Title.Parent_Link %}
+					<a href="{{Title.Parent_Link}}">
+				{% endif %}
+				
+				{{Title.Parent_Name}}
+				
+				{% if Title.Parent_Link %}
+					</a>
+				{% endif %}
+			</h2>
+		</li>
 	{% endif %}
 
 	{% for node in nodes %}

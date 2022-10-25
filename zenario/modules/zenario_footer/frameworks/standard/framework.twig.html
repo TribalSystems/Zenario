@@ -5,18 +5,44 @@
 			{% if first %}
 				{% set first = false %}
 			{% else %}
-				|
+				{% if Separator_character_setting == 'separator_character' %}
+					{{Separator_character|e}}
+				{% elseif Separator_character_setting == 'line_breaks' %}
+					<br />
+				{% endif %}
+			{% endif %}
+			
+			{% if Separator_character_setting == 'paragraph_breaks' %}
+				<p>
 			{% endif %}
 			
 			{{node.Hyperlink}}
+			
+			{% if Separator_character_setting == 'paragraph_breaks' %}
+				</p>
+			{% endif %}
 		</span>
 	{% endfor %}
 
 	{% if Visitor_cookie_management %}
 		<span class="zenario_cc_manage">
-			| <a onclick="zenario.manageCookies();">
+			{% if nodes|length > 0 %}
+				{% if Separator_character_setting == 'separator_character' %}
+					{{Separator_character|e}}
+				{% elseif Separator_character_setting == 'line_breaks' %}
+					<br />
+				{% elseif Separator_character_setting == 'paragraph_breaks' %}
+					<p>
+				{% endif %}
+			{% endif %}
+			
+			<a onclick="zenario.manageCookies();">
 				{{Manage_cookies_phrase}}
 			</a>
+			
+			{% if nodes|length > 0 and Separator_character_setting == 'paragraph_breaks' %}
+				</p>
+			{% endif %}
 		</span>
 	{% endif %}
 </div>

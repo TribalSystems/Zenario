@@ -61,7 +61,34 @@ class zenario_footer extends zenario_menu {
 			$this->mergeFields['Visitor_cookie_management'] = true;
 			$this->mergeFields['Manage_cookies_phrase'] = ze\lang::phrase($this->setting('manage_cookies_phrase'));
 		}
+		
+		$this->mergeFields['Separator_character_setting'] = $this->setting('separate_menu_nodes_with');
+		$this->mergeFields['Separator_character'] = $this->setting('separator_character');
 
 		parent::showSlot();
+	}
+	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if ($path == 'plugin_settings') {
+			$defaultLangName = ze\lang::name(ze::$defaultLang);
+			$fields['first_tab/show_missing_menu_nodes']['side_note'] = ze\admin::phrase(
+				"Show the menu node in the site's default language ([[default_lang_name]]) if a translation is not available. Recommended to ensure important links (e.g. Privacy info) are always visible.",
+				['default_lang_name' => $defaultLangName]
+			);
+			
+			if (ze\lang::count() == 1) {
+				$fields['first_tab/show_missing_menu_nodes']['hidden'] = true;
+			}
+		}
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($path == 'plugin_settings') {
+			if ($values['first_tab/show_visitor_cookie_management_link'] && ze::setting('cookie_require_consent') != 'explicit') {
+				$fields['first_tab/show_visitor_cookie_management_link']['notices_below']['cookie_policy_not_set_to_explicit']['hidden'] = false;
+			} else {
+				$fields['first_tab/show_visitor_cookie_management_link']['notices_below']['cookie_policy_not_set_to_explicit']['hidden'] = true;
+			}
+		}
 	}
 }

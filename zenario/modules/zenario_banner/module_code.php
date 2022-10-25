@@ -486,10 +486,10 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			$html = ze\file::imageHTML(
 				$this->styles, $preferInlineStypes,
-				$imageId, $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+				$this->noteImage($imageId), $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
 				$altTag, $htmlID, $cssClass, $styles, $attributes,
 				$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
-				$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+				$this->noteImage($mobImageId), $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
 				$sourceIDPrefix
 			);
 			
@@ -548,7 +548,7 @@ class zenario_banner extends ze\moduleBaseClass {
 					
 					$html .= ze\file::imageHTML(
 						$ignoreStyles, $preferInlineStypes,
-						$rolloImageId, $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+						$this->noteImage($rolloImageId), $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
 						$altTag, $htmlID, $cssClass, $styles, $attributes,
 						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
 						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
@@ -572,42 +572,14 @@ class zenario_banner extends ze\moduleBaseClass {
 					
 					//Add some code to switch the images in the <picture> element when the mouse
 					//hovers over the wrapper, and switch back again when the mouse leaves.
-					$this->mergeFields['Wrap'] =
-						'onmouseover="
-							var
-								i = 0,
-								x = \''. $this->containerId. '\',
-								y = document.getElementById(x + \'_img\'),
-								z = document.getElementById(x + \'_rollover\');
-							
-							y.src = z.src;
-							y.srcset = z.srcset;
-							
-							while (y = document.getElementById(x + \'_source_\' + ++i)) {
-								if (!y.media) {
-									z = document.getElementById(x + \'_rollover_source_\' + i);
-									y.srcset = z.srcset;
-								}
-							}"
+					$rolloverJS = file_get_contents(CMS_ROOT. 'zenario/js/rollover.min.js');
+					$rolloverJS = str_replace('"', "'", $rolloverJS);
+					$mouseOverJS = str_replace('();', '(document,"'. ze\escape::js($this->containerId). '","rollover");', $rolloverJS);
+					$mouseOutJS = str_replace('();', '(document,"'. ze\escape::js($this->containerId). '","rollout");', $rolloverJS);
 					
-						onmouseout="
-							var
-								i = 0,
-								x = \''. $this->containerId. '\',
-								y = document.getElementById(x + \'_img\'),
-								z = document.getElementById(x + \'_rollout\');
-							
-							y.src = z.src;
-							y.srcset = z.srcset;
-
-							while (y = document.getElementById(x + \'_source_\' + ++i)) {
-								z = document.getElementById(x + \'_rollout_source_\' + i);
-								y.srcset = z.srcset;
-							}"';
-					//N.b. do not allow mobile images to use a rollover.
-					//Mobile images have a "media" attribute set in the framework.
-					//Non-mobile images do not have that attribute.
-					//The onmouseover event will skip images with the "media" attribute.
+					$this->mergeFields['Wrap'] = '
+						onmouseover="'. htmlspecialchars($mouseOverJS). '"
+						onmouseout="'. htmlspecialchars($mouseOutJS). '"';
 				}
 				
 				$this->mergeFields['Image_HTML'] = $html;
@@ -782,6 +754,16 @@ class zenario_banner extends ze\moduleBaseClass {
 	}
 	
 	
+	protected $imgsUsed = [];
+	public function noteImage($imageId) {
+		if (isset($this->parentNest)) {
+			$this->parentNest->noteImage($imageId);
+		} else {
+			$this->imgsUsed[$imageId] = $imageId;
+		}
+		return $imageId;
+	}
+	
 	public function fillAdminSlotControls(&$controls) {
 		
 		//If this is a version controlled plugin and the current administrator is an author,
@@ -834,6 +816,8 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 		}
+		
+		$this->listImagesOnSlotControls($controls, $this->imgsUsed);
 	}
 
 }

@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!$details = ze\row::get(
 			'files',
-			['id', 'usage', 'filename', 'mime_type', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum', 'privacy', 'image_credit'],
+			['id', 'usage', 'path', 'filename', 'mime_type', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum', 'privacy', 'image_credit'],
 			$box['key']['id'])
 		) {
 			exit;
@@ -389,6 +389,12 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 
 			unset($box['tabs']['details']['fields']['tags']);
 			unset($box['tabs']['details']['fields']['floating_box_title']);
+			
+			unset($box['tabs']['details']['fields']['filename']['side_note']);
+			$box['tabs']['details']['fields']['filename']['note_below'] = ze\admin::phrase(
+				'Stored in the docstore, folder name [[folder_name]]. Actual filename in the docstore may differ.',
+				['folder_name' => $details['path']]
+			);
 		} else {
 			//Load details on the image tags in use in the system, and which have been chosen here
 			$sql = "

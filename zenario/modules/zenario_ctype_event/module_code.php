@@ -132,12 +132,15 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				}
 			}
 			
-			$stopDates = explode(',',$event['stop_dates']);
-			if ($event['stop_dates'] && count($stopDates)) {
-				foreach ($stopDates as $K=>$stopDate){
-					$stopDates[$K] = ze\date::format($stopDate, $this->setting('date_format'), false, false);
+			if (!empty($event['stop_dates'])) {
+				$stopDates = explode(',', $event['stop_dates']);
+				if (count($stopDates)) {
+					foreach ($stopDates as $K => $stopDate){
+						$stopDates[$K] = ze\date::format($stopDate, $this->setting('date_format'), false, false);
+					}
+					
+					$this->data['stop_dates'] = implode(', ', $stopDates);
 				}
-				$this->data['stop_dates'] = implode(', ',$stopDates);
 			}
 			
 			if ($event['url']) {
@@ -225,9 +228,18 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 					$values['zenario_ctype_event__when_and_where/specify_time'] = $eventDetails['specify_time'];
 					$values['zenario_ctype_event__when_and_where/late_evening_event'] = $eventDetails['next_day_finish'];
 					
-					$startTime = explode(":", $eventDetails['start_time']);
-					$endTime = explode(":", $eventDetails['end_time']);
+					if (!empty($eventDetails['start_time'])) {
+						$startTime = explode(":", $eventDetails['start_time']);
+					} else {
+						$startTime = [];
+					}
 					
+					if (!empty($eventDetails['end_time'])) {
+						$endTime = explode(":", $eventDetails['end_time']);
+					} else {
+						$endTime = [];
+					}
+				
 					$values['zenario_ctype_event__when_and_where/start_time_hours'] = $startTime[0] ?? false;
 					$values['zenario_ctype_event__when_and_where/start_time_minutes'] = $startTime[1] ?? false;
 
@@ -267,12 +279,12 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 					if (!ze::setting('zenario_ctype_event__location_text')) {
 						$fields['zenario_ctype_event__when_and_where/location']['disabled'] = true;
 						$fields['zenario_ctype_event__when_and_where/at_physical_location']['values']['address_text']['disabled'] = true;
-
-						$siteSettingLink = "<a href='organizer.php#zenario__content/panels/content_types//event~.zenario_content_type_details~tdetails~k{\"id\":\"event\"}' target='_blank'>Content type site settings</a>";
 						
+						$siteSettingLinkStart = "<a href='organizer.php#zenario__content/panels/content_types//event~.zenario_content_type_details~tdetails~k{\"id\":\"event\"}' target='_blank'>";
+						$siteSettingLinkEnd = "</a>";
 						$fields['zenario_ctype_event__when_and_where/at_physical_location']['values']['address_text']['side_note'] = ze\admin::phrase(
-							'You can enable this setting in the [[site_setting_link]].',
-							['site_setting_link' => $siteSettingLink]
+							'You can enable this setting in the [[site_setting_link_start]]Content type site settings[[site_setting_link_end]].',
+							['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
 						);
 					}
 				}
@@ -303,10 +315,11 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				}
 				break;
 			case 'plugin_settings':
-				$siteSettingLink = "<a href='organizer.php#zenario__content/panels/content_types//event~.zenario_content_type_details~tdetails~k{\"id\":\"event\"}' target='_blank'>Content type site settings</a>";
+				$siteSettingLinkStart = "<a href='organizer.php#zenario__content/panels/content_types//event~.zenario_content_type_details~tdetails~k{\"id\":\"event\"}' target='_blank'>";
+				$siteSettingLinkEnd = "</a>";
 				$disabledPhrase = ze\admin::phrase(
-					'You can enable this setting in the [[site_setting_link]].',
-					['site_setting_link' => $siteSettingLink]
+					'You can enable this setting in the [[site_setting_link_start]]Content type site settings[[site_setting_link_end]].',
+					['site_setting_link_start' => $siteSettingLinkStart, 'site_setting_link_end' => $siteSettingLinkEnd]
 				);
 
 				if (ze::setting('zenario_ctype_event__location_field') == 'hidden') {

@@ -2186,45 +2186,58 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		return true;
 	}
 	
-	public static function handleMediaUpload($filename, $maxSize, $locationId) {
+	public static function handleMediaUpload($fileVar, $maxSize, $locationId) {
 		$error = [];
-		if (isset($_FILES[$filename])) {
+		if (isset($_FILES[$fileVar])) {
 			
-			ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
-			
-			if (ze\fileAdm::isUploadedFile($_FILES[$filename]['tmp_name'])) {
-				if ($_FILES[$filename]['size'] > $maxSize) {
-					$error['document'] = ze\admin::phrase('Your file must be less than [[size]]', ['size' => $maxSize]);
-				}
-			
+			if (!empty($_FILES[$fileVar]['error']) && ze::in($_FILES[$fileVar]['error'], 4, 'UPLOAD_ERR_NO_FILE')) {
+				$error['document'] = ze\lang::phrase('Please select a file.');
 			} else {
-				switch ($_FILES[$filename]['error']) {
-					case 1:
-						$error['document'] = ze\admin::phrase( 'Your file must be less than [[size]]', [ 'size' => $maxSize ] );
-						break;
-					case 2:
-						$error['document'] = ze\admin::phrase( 'Your file must be less than [[size]]', [ 'size' => $maxSize ] );
-						break;
-					case 3:
-						$error['document'] = ze\admin::phrase( '_FILE_UPLOAD_ERROR_PARTIAL_UPLOAD', [ 'size' => $maxSize ] );
-						break;
-					default:
-						$error['document'] = ze\admin::phrase( 'Please select a file.');
-				}		
+				if (ze\fileAdm::isUploadedFile($_FILES[$fileVar]['tmp_name'])) {
+					if ($_FILES[$fileVar]['size'] > $maxSize) {
+						$maxSize = ze\file::fileSizeConvert($maxSize);
+						$error['document'] = ze\lang::phrase('Your file must be less than [[size]]', ['size' => $maxSize]);
+					}
+			
+				} else {
+					$maxSize = ze\file::fileSizeConvert($maxSize);
+					switch ($_FILES[$fileVar]['error']) {
+						case 1:
+							$error['document'] = ze\lang::phrase('Your file must be less than [[size]]', ['size' => $maxSize]);
+							break;
+						case 2:
+							$error['document'] = ze\lang::phrase('Your file must be less than [[size]]', ['size' => $maxSize]);
+							break;
+						case 3:
+							$error['document'] = ze\lang::phrase('_FILE_UPLOAD_ERROR_PARTIAL_UPLOAD', ['size' => $maxSize]);
+							break;
+						default:
+							$error['document'] = ze\lang::phrase('Please select a file.');
+					}
+					return $error;
+				}
+				
+				ze\fileAdm::exitIfUploadError(true, false, true, $fileVar);
 			}
 		
 			if (!count($error)) {
-				return self::addImage($locationId, $_FILES[$filename]['tmp_name'], $_FILES[$filename]['name']);
+				$mimeType = ze\file::mimeType($_FILES[$fileVar]['name']);
+				if ($mimeType == 'image/jpeg' || $mimeType == 'image/png') {
+					return self::addImage($locationId, $_FILES[$fileVar]['tmp_name'], $_FILES[$fileVar]['name']);
+				} else {
+					$error['document'] = ze\lang::phrase('The file format must be a .jpg, .jpeg or .png.');
+					return $error;
+				}
 			} else {
 				return $error;
 			}
 		} else {
-			return [ze\admin::phrase("_ERR_FILE_SIZE_GREATER_THAN_SERVER_LIMIT")];
+			return [ze\lang::phrase("_ERR_FILE_SIZE_GREATER_THAN_SERVER_LIMIT")];
 		}
 	}
 
 		
-	public static function makeLocationImageSticky($locationId,$image_id) {
+	public static function makeLocationImageSticky($locationId, $image_id) {
 		$sql = "
 			UPDATE " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
 				sticky_flag = 0

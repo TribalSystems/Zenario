@@ -128,7 +128,8 @@ plugin_settings:
                     plugin_setting:
                         name: webp
                     type: checkbox
-                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    label: 'Show WebP-format image where browser supports it'
+                    note_below: 'Recommended on publicly-accessible areas of a site as file download is smaller. Not recommended for private areas of a site.'
                     value: 1
                 lazy_load:
                     plugin_setting:
@@ -417,7 +418,8 @@ plugin_settings:
                     plugin_setting:
                         name: enlarge_webp
                     type: checkbox
-                    label: 'Link to WebP-format for enlarged image (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    label: 'Link to WebP-format for enlarged image where browser supports it'
+                    note_below: 'Recommended on publicly-accessible areas of a site as file download is smaller. Not recommended for private areas of a site.'
                     value: 1
                 show_link_to_download_original:
                     grouping: options_for_all_images

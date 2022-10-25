@@ -420,7 +420,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				if (ze\row::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
 						&& ze\row\g::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
-					$box['tabs']['details']['errors'][] = ze\admin::phrase('A Zenario administrator with this already exists with this email address. Please either edit that administrtor or enter a different email address.');
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('A Zenario administrator with this already exists with this email address. Please either edit that administrator or enter a different email address.');
 				}
 			}
 		}

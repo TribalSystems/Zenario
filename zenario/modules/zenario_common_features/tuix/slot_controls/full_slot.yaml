@@ -79,6 +79,18 @@ full_slot:
         #    page_modes:
         #        edit: true
         #        layout: true
+        plugin_images:
+            css_class: zenario_slotControl_pluginImages
+            hidden: true
+            page_modes:
+                edit: true
+                layout: true
+        menu_section:
+            css_class: zenario_slotControl_menuSection
+            hidden: true
+            page_modes:
+                edit: true
+                layout: true
         mobile:
             css_class: zenario_slotControl_onlyMobile
             label: Only shown on mobile

@@ -2063,14 +2063,7 @@ zenarioA.addImagePropertiesButtons = function(path) {
 				$el.before($imagePropertiesButton);
 			
 				$imagePropertiesButton.on('click', function() {
-					zenarioAB.open('zenario_image', {
-						id: imageId,
-						slotName: slotName,
-						instanceId: instanceId,
-						eggId: eggId
-					}, 'crop_1');
-					
-					return false;
+					return zenarioA.imageProperties(imageId, slotName, instanceId, eggId);
 				});
 				
 				if (mobImageId) {
@@ -2092,6 +2085,17 @@ zenarioA.addImagePropertiesButtons = function(path) {
 			}
 		});
 	}
+};
+
+zenarioA.imageProperties = function(imageId, slotName, instanceId, eggId) {
+	zenarioAB.open('zenario_image', {
+		id: imageId,
+		slotName: slotName,
+		instanceId: instanceId,
+		eggId: eggId
+	}, 'crop_1');
+	
+	return false;
 };
 
 zenarioA.setTooltipIfTooLarge = function(target, title, sizeThreshold) {

@@ -328,79 +328,17 @@ class file {
 					}
 				}
 	
-			} else
-			if (function_exists('simplexml_load_string')) {
+			} else {
+				if (function_exists('simplexml_load_string')) {
+					//Try and get the width and height of the SVG from its metadata.
+					$rtn = \ze\file::getWidthAndHeightOfSVG($file, file_get_contents($location));
 				
-				//For SVGs, try to read the metadata from the image and get the width and height from it.
-				\ze::ignoreErrors();
-					$svg = simplexml_load_string(file_get_contents($location));
-				\ze::noteErrors();
-				
-				if ($svg) {
-					//There are lots of possible formats for this to watch out for.
-					//I've tried to be very flexible and code support for as many as I
-					//know. This code has suppose for setting the width and height in the
-					//following formats:
-						// width="123" height="456"
-						// width="123px" height="456px"
-						// width="100%" height="100%" viewbox="0 0 123 456"
-					//...and also any variation of those should work!
-					$vars = [];
-					foreach ($svg->attributes() as $name => $value) {
-						switch (strtolower($name)) {
-							case 'width':
-							case 'height':
-								$value = (string) $value;
-								if (is_numeric($value)) {
-									$vars[$name] = (int) $value;
-								} else {
-									$value2 = str_replace('px', '', $value);
-									if (is_numeric($value2)) {
-										$vars[$name] = (int) $value2;
-									} else {
-										$value2 = str_replace('%', '', $value);
-										if (is_numeric($value2)) {
-											$vars[$name. '%'] = (int) $value2;
-										}
-									}
-								}
-								break;
-							case 'viewbox':
-								$vb = explode(' ', (string) $value);
-								for ($i = 0; $i < 4; ++$i) {
-									if (isset($vb[$i]) && is_numeric($vb[$i])) {
-										$vars['vb'. $i] = (int) $vb[$i];
-									}
-									
-								}
-								break;
-						}
+					//If PHP's simplexml_load_string function isn't callable allow this and continue.
+					//However if the funciton was callable and couldn't parse the file, don't allow this
+					//and reject the file.
+					if (!$rtn) {
+						return false;
 					}
-					
-					//Set the width and height from the variables we just extracted.
-					//If we failed to do this, default to 100x100.
-					if (isset($vars['width'])) {
-						$file['width'] = $vars['width'];
-					
-					} elseif (isset($vars['vb0'], $vars['vb2'])) {
-						$file['width'] = (int) (($vars['vb2'] - $vars['vb0']) * ($vars['width%'] ?? 100) / 100);
-					
-					} else {
-						$file['width'] = 100;
-					}
-					
-					if (isset($vars['height'])) {
-						$file['height'] = $vars['height'];
-					
-					} elseif (isset($vars['vb1'], $vars['vb3'])) {
-						$file['height'] = (int) (($vars['vb3'] - $vars['vb1']) * ($vars['height%'] ?? 100) / 100);
-					
-					} else {
-						$file['height'] = 100;
-					}
-					
-				} else {
-					return false;
 				}
 			}
 	
@@ -447,6 +385,86 @@ class file {
 		\ze\fileAdm::updateShortChecksums();
 		return $fileId;
 	}
+	
+	//Try and get the width and height of a SVG from its metadata.
+	public static function getWidthAndHeightOfSVG(&$file, $data) {
+			
+		//For SVGs, try to read the metadata from the image and get the width and height from it.
+		\ze::ignoreErrors();
+			$svg = simplexml_load_string($data);
+		\ze::noteErrors();
+		
+		if ($svg) {
+			//There are lots of possible formats for this to watch out for.
+			//I've tried to be very flexible and code support for as many as I
+			//know. This code has suppose for setting the width and height in the
+			//following formats:
+				// width="123" height="456"
+				// width="123px" height="456px"
+				// width="100%" height="100%" viewbox="0 0 123 456"
+			//...and also any variation of those should work!
+			$vars = [];
+			foreach ($svg->attributes() as $name => $value) {
+				switch (strtolower($name)) {
+					case 'width':
+					case 'height':
+						$value = (string) $value;
+						if (is_numeric($value)) {
+							$vars[$name] = (int) $value;
+						} else {
+							$value2 = str_replace('px', '', $value);
+							if (is_numeric($value2)) {
+								$vars[$name] = (int) $value2;
+							} else {
+								$value2 = str_replace('%', '', $value);
+								if (is_numeric($value2)) {
+									$vars[$name. '%'] = (int) $value2;
+								}
+							}
+						}
+						break;
+					case 'viewbox':
+						$vb = explode(' ', (string) $value);
+						for ($i = 0; $i < 4; ++$i) {
+							if (isset($vb[$i]) && is_numeric($vb[$i])) {
+								$vars['vb'. $i] = (int) $vb[$i];
+							}
+							
+						}
+						break;
+				}
+			}
+			
+			//Set the width and height from the variables we just extracted.
+			//If we failed to do this, default to 100x100.
+			if (isset($vars['width'])) {
+				$file['width'] = $vars['width'];
+			
+			} elseif (isset($vars['vb0'], $vars['vb2'])) {
+				$file['width'] = (int) (($vars['vb2'] - $vars['vb0']) * ($vars['width%'] ?? 100) / 100);
+			
+			} else {
+				$file['width'] = 100;
+			}
+			
+			if (isset($vars['height'])) {
+				$file['height'] = $vars['height'];
+			
+			} elseif (isset($vars['vb1'], $vars['vb3'])) {
+				$file['height'] = (int) (($vars['vb3'] - $vars['vb1']) * ($vars['height%'] ?? 100) / 100);
+			
+			} else {
+				$file['height'] = 100;
+			}
+			
+			return true;
+			
+		} else {
+			return false;
+		}
+	}
+	
+	
 
 	protected static $factory;
 	protected static $options = [
@@ -2434,7 +2452,7 @@ class file {
 			switch ($canvas) {
 				case 'crop_and_zoom':
 				case 'resize_and_crop':
-					$canvas = 'stretch';
+					$canvas = 'resize';
 			}
 		}
 		

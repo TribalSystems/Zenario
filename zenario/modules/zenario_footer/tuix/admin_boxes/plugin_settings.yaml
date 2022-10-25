@@ -21,10 +21,43 @@ plugin_settings:
                     value: "2"
                     validation:
                         required: Please select a menu section
+                separate_menu_nodes_with:
+                    plugin_setting:
+                        name: separate_menu_nodes_with
+                    label: 'Separate menu nodes with:'
+                    redraw_onchange: true
+                    type: radios
+                    value: separator_character
+                    values:
+                        separator_character:
+                            ord: 1
+                            label: 'Separator character'
+                            split_values_if_selected: true
+                        line_breaks:
+                            ord: 2
+                            label: 'Line breaks'
+                        paragraph_breaks:
+                            ord: 3
+                            label: 'Paragraph breaks'
+                separator_character:
+                    indent: 1
+                    plugin_setting:
+                        name: separator_character
+                    type: text
+                    label: 'Separator character:'
+                    value: '|'
+                    maxlength: 2
+                    style: "width: 2em;"
+                    visible_if: lib.value('separate_menu_nodes_with') == 'separator_character'
+                    validation:
+                        required_if_not_hidden: 'Please enter the separator character.'
+                separate_menu_nodes_with_part_2:
+                    snippet:
+                        show_split_values_from: separate_menu_nodes_with
                 show_missing_menu_nodes:
                     plugin_setting:
                         name: show_missing_menu_nodes
-                    label: 'Where menu node translation is missing, show menu node in default language'
+                    label: 'Ensure the menu node is always shown'
                     type: checkbox
                     value: ""
                 show_visitor_cookie_management_link:
@@ -32,9 +65,15 @@ plugin_settings:
                         name: show_visitor_cookie_management_link
                     label: 'Show link to visitor cookie management'
                     type: checkbox
-                    value: ""
-                    redraw_onchange: true
+                    value: true
+                    format_onchange: true
                     side_note: 'This will only appear if the <a href=\'organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~tcookies~k{"id"%3A"cookies"}\' target=\'_blank\'>cookie policy</a> is set to "Explicit consent".'
+                    notices_below:
+                        cookie_policy_not_set_to_explicit:
+                            hidden: true
+                            type: warning
+                            size: large
+                            message: "The cookie policy is not set to explicit consent. The cookie management link will not be displayed."
                 manage_cookies_phrase:
                     indent: 1
                     plugin_setting:
@@ -46,4 +85,5 @@ plugin_settings:
                     visible_if: lib.value('show_visitor_cookie_management_link')
                     validation:
                         required_if_not_hidden: 'Please enter the "Manage cookies" phrase.'
+                    
     module_class_name: zenario_footer

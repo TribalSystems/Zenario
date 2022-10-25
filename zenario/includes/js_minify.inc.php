@@ -486,6 +486,7 @@ class zenario_minify {
 		'zenarioA.hideAJAXLoader(' => 'zenarioA._hAL(',
 		'zenarioA.hidePlugin(' => 'zenarioA._hP(',
 		'zenarioA.infoBox(' => 'zenarioA._iB(',
+		'zenarioA.imageProperties(' => 'zenarioA._iP(',
 		'zenarioA.initTutorialSlideshow(' => 'zenarioA._iTS(',
 		'zenarioA.isHtaccessWorking(' => 'zenarioA._iHW(',
 		'zenarioA.loggedOut(' => 'zenarioA._lO(',

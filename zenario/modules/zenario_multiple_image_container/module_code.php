@@ -333,7 +333,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 			foreach ($fileIDs as $fileID){
 				$fileDetails = ze\row::get('files', ['path', 'filename'], ['id' => $fileID]);
 				if (!empty($fileDetails) && $fileDetails['path'] && $fileDetails['filename']) {
-					$filesize += filesize(ze::setting("docstore_dir") . "/" . $fileDetails['path'] . "/" . $fileDetails['filename']);
+					$filesize += filesize(ze\file::docstorePath($fileDetails['path']));
 				}
 			}
 		}
@@ -389,9 +389,10 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 								chdir($randomDir);
 								
 								$filePathAndFilename = ze\row::get('files', ['path', 'filename'], ['id' => $ID]);
-								if (!empty($filePathAndFilename) && $filePathAndFilename['path'] && $filePathAndFilename['filename']) {
+								$filePath = (ze\file::docstorePath($ID));
+								if (!empty($filePath) && !empty($filePathAndFilename['filename'])) {
 									$nextFileName = $this->getNextFileName($contentSubdirectory . '/' . $filePathAndFilename['filename']);
-									copy(ze::setting("docstore_dir") . "/" . $filePathAndFilename['path'] . "/" . $filePathAndFilename['filename'], $nextFileName);
+									copy($filePath, $nextFileName);
 									if (($err = $this->addToZipArchive($zipArchive, $nextFileName)) == "") {
 										$archiveEmpty = false;
 									} else {
@@ -407,7 +408,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 							rmdir($randomDir . '/' . $contentSubdirectory);
 
 							if (isset($errors)) {
-								return [false, implode('\n', $errors)];
+								return [false, implode('<br />', $errors)];
 							} elseif ($archiveEmpty) {
 								return [true, []];
 							} else {

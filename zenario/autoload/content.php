@@ -877,6 +877,8 @@ class content {
 	//Formerly "getShowableContent()"
 	public static function getShowableContent(&$content, &$chain, &$version, $cID, $cType = 'html', $requestVersion = false, $checkRequestVars = false, $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
 
+		$versionNumber = \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
+	
 		if ($checkRequestVars) {
 			//Look variables such as userId, locationId, etc., in the request
 			if (!require \ze::editionInclude('checkRequestVars')) {
@@ -893,8 +895,6 @@ class content {
 			}
 		}
 		
-		$versionNumber = \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
-	
 		if ($versionNumber && is_numeric($versionNumber)) {
 			$versionColumns = [
 				'version',

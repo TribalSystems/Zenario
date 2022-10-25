@@ -1032,13 +1032,7 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		(\ze\welcome::runSQL(false, 'local-INSERT.sql', $error));
 		
 		//Insert the starter images from the starter_images folder, read from the yaml file
-		$tags = \ze\tuix::readFile('zenario/admin/db_install/starter_image_list.yaml', false);
-		if ($tags) {
-			foreach ($tags['imagelist'] as $image) {
-				$imagepath = 'zenario/admin/db_install/starter_images/'. $image['name'];
-				\ze\file::addToDatabase('image', $imagepath, $image['name'], false, false, false, $image['alt_tag'], false, false, $image['mime_type']);
-			}
-		}
+		\ze\welcome::addStarterImagesToDB();
 
 	
 		//Reset the cached table details, in case any of the definitions are out of date

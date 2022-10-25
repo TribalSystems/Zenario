@@ -55,22 +55,22 @@ ALTER TABLE `[[DB_PREFIX]]plugin_instances` ENABLE KEYS;
 
 ALTER TABLE `[[DB_PREFIX]]nested_plugins` DISABLE KEYS;
 INSERT INTO `[[DB_PREFIX]]nested_plugins` VALUES 
- (1,4,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (2,4,1,1,9,'show',2,'image_then_title_then_text','align_right',0,0,0,0,0,0,0,0,60,'','','','','Banner','public','any',0,'','','','',1),
- (3,4,1,2,3,'show',11,'select_list','align_right',0,0,0,0,0,0,0,0,60,'','','','','Language Picker','public','any',0,'','','','',1),
- (4,5,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (5,5,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,60,'','','','','slide-1.jpg','public','any',0,'','','','',1),
- (6,5,2,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 2','public','any',0,'','','','',1),
- (7,5,2,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,60,'','','','','slide-2.jpg','public','any',0,'','','','',1),
- (10,8,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (11,8,1,1,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Design Service','public','any',0,'','','','',1),
- (12,8,1,2,4,'show',2,'image_then_title_then_text','animated_child_2',0,0,0,0,0,0,0,0,60,'','','','','Banner: Development Service','public','any',0,'','','','',1),
- (13,8,1,3,4,'show',2,'image_then_title_then_text','animated_child_3',0,0,0,0,0,0,0,0,60,'','','','','Banner: Support Service','public','any',0,'','','','',1),
- (14,9,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (15,9,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,60,'','','','','Banner: a call to action...','public','any',0,'','','','',1),
- (16,9,1,2,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 1','public','any',0,'','','','',1),
- (17,9,1,3,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 2','public','any',0,'','','','',1),
- (18,9,1,4,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 3','public','any',0,'','','','',1);
+ (1,4,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (2,4,1,1,9,'show',2,'image_then_title_then_text','align_right',0,0,0,0,0,0,0,0,0,60,'','','','','Banner','public','any',0,'','','','',1),
+ (3,4,1,2,3,'show',11,'select_list','align_right',0,0,0,0,0,0,0,0,0,60,'','','','','Language Picker','public','any',0,'','','','',1),
+ (4,5,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (5,5,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,0,60,'','','','','slide-1.jpg','public','any',0,'','','','',1),
+ (6,5,2,0,0,'show',0,'','',0,1,0,0,0,0,0,0,0,60,'','','','','Slide 2','public','any',0,'','','','',1),
+ (7,5,2,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,0,60,'','','','','slide-2.jpg','public','any',0,'','','','',1),
+ (10,8,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (11,8,1,1,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,0,60,'','','','','Banner: Design Service','public','any',0,'','','','',1),
+ (12,8,1,2,4,'show',2,'image_then_title_then_text','animated_child_2',0,0,0,0,0,0,0,0,0,60,'','','','','Banner: Development Service','public','any',0,'','','','',1),
+ (13,8,1,3,4,'show',2,'image_then_title_then_text','animated_child_3',0,0,0,0,0,0,0,0,0,60,'','','','','Banner: Support Service','public','any',0,'','','','',1),
+ (14,9,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (15,9,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,0,60,'','','','','Banner: a call to action...','public','any',0,'','','','',1),
+ (16,9,1,2,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 1','public','any',0,'','','','',1),
+ (17,9,1,3,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 2','public','any',0,'','','','',1),
+ (18,9,1,4,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 3','public','any',0,'','','','',1);
 ALTER TABLE `[[DB_PREFIX]]nested_plugins` ENABLE KEYS;
 
 

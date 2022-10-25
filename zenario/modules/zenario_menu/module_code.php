@@ -658,4 +658,27 @@ class zenario_menu extends ze\moduleBaseClass {
             echo json_encode($return);
         }
 	}
+	
+	//In admin mode, show the name of the menu section that the plugin has,
+	//and add a link to Organizer.
+	public function fillAdminSlotControls(&$controls) {
+		if ($this->sectionId && isset($controls['info']['menu_section'])) {
+			
+			$text = ze\admin::phrase('"[[section]]" menu section', [
+				'section' => ze\menu::sectionName($this->sectionId)
+			]);
+			$orgLink = ze\link::absolute() . 'organizer.php#'. ze\menuAdm::organizerLink(false, true, $this->sectionId);
+			
+			$controls['info']['menu_section']['hidden'] = false;
+			$controls['info']['menu_section']['label'] = '
+				<span
+					class="zenario_slotControl_MsInfo"
+				>'. htmlspecialchars($text). '</span><a
+					href="'. htmlspecialchars($orgLink). '"
+					target="_blank"
+					onclick="zenarioA.closeSlotControls(); zenario.stop(event);"
+					class="zenario_linkToNewTab"
+				></a>';
+		}
+	}
 }

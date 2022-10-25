@@ -1452,9 +1452,9 @@ class zenario_content_list extends ze\moduleBaseClass {
 										$nextFileName = $this->getNextFileName($contentSubdirectory . '/' . $filename);
 										$latestVersion = ze\content::latestVersion($ID, $cType);
 										if ($fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
-											$filePathAndFilename = ze\row::get('files', ['path', 'filename'], ['id' => $fileID]);
-											if (!empty($filePathAndFilename) && $filePathAndFilename['path'] && $filePathAndFilename['filename']) {
-												copy(ze::setting("docstore_dir") . "/" . $filePathAndFilename['path'] . "/" . $filePathAndFilename['filename'], $nextFileName);
+											$filePath = (ze\file::docstorePath($fileID));
+											if (!empty($filePath)) {
+												copy($filePath, $nextFileName);
 												if (($err = $this->addToZipArchive($zipArchive, $nextFileName)) == "") {
 													$archiveEmpty = false;
 													if ((int)($_SESSION['extranetUserID'] ?? false)) {

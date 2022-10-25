@@ -884,6 +884,7 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `css_class` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `makes_breadcrumbs` tinyint(1) NOT NULL DEFAULT '0',
   `is_slide` tinyint(1) NOT NULL DEFAULT '0',
+  `use_slide_layout` enum('','asset_schema','datapool_schema') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `invisible_in_nav` tinyint(1) NOT NULL DEFAULT '0',
   `show_back` tinyint(1) NOT NULL DEFAULT '0',
   `no_choice_no_going_back` tinyint(1) NOT NULL DEFAULT '0',
@@ -907,8 +908,7 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   PRIMARY KEY (`id`),
   KEY `instance_id` (`instance_id`,`is_slide`,`slide_num`,`ord`),
   KEY `slide_num` (`instance_id`,`slide_num`,`ord`),
-  KEY `makes_breadcrumbs` (`instance_id`,`makes_breadcrumbs`),
-  KEY `module_id` (`module_id`)
+  KEY `makes_breadcrumbs` (`instance_id`,`makes_breadcrumbs`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 

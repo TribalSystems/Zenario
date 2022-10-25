@@ -67,7 +67,6 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
 		$this->mergeFields = [];
-		$this->mergeFields = [];
 		
 		$this->mergeFields['Search_Results'] = true;
 		
@@ -1111,7 +1110,15 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			SELECT v.id, v.type, score, tc.privacy";
 		foreach ($fields as $field) {
 			if (substr($field['name'], 0, 3) != 'cc.') {
-				$resultsSql .= ", ". $field['name'];
+				$columnName = substr($field['name'], (strpos($field['name'], '.') + 1));
+				
+				if (ze::in($columnName, 'language_id', 'title', 'keywords', 'description', 'content_summary')) {
+					//These columns use NULL as default. Make sure they are blank strings if needed
+					//to better support the changes in PHP 8.1.
+					$resultsSql .= ", IFNULL(" . $field['name'] . ", '') AS " . $columnName;
+				} else {
+					$resultsSql .= ", ". $field['name'];
+				}
 			}
 		}
 

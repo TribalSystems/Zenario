@@ -1468,6 +1468,10 @@ class moduleAPI {
 		}
 	}
 	
+	protected function listImagesOnSlotControls(&$controls, $images) {
+		require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+	
 	
 	
 	  ////////////

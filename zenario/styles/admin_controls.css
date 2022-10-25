@@ -726,6 +726,10 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_
 	font-size: 10px;
 }
 
+div.zenario_slotControlsWrap .zenario_slotControl_ImgInfo {
+	cursor: pointer;
+}
+
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyMobile,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc.zenario_slotControl_onlyDesktop {
 	font-weight: bold;
@@ -784,6 +788,26 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
 	background-color:#6F6F6F;
 }
 
+.zenario_sc a.zenario_imgProps,
+.zenario_sc a.zenario_linkToNewTab {
+	width: 10px;
+	height: 10px;
+	margin-left: 3px;
+	display: inline-block;
+	background: url('../admin/images/icon-link-to-new-tab-placeholder.svg') no-repeat center center;
+}
+
+.zenario_sc a.zenario_imgProps {
+	background: url('../admin/images/icon-edit-image-properties-white.svg') no-repeat center center;
+	background-size: 12px 12px;
+    margin-left: 2px;
+    margin-right: 0;
+}
+
+.zenario_sc a.zenario_linkToNewTab {
+	background: url('../admin/images/icon-link-to-new-tab-placeholder.svg') no-repeat center center;
+}
+
 div.zenario_slotControlsWrap .zenario_slotControl_slotName,
 div.zenario_slotControlsWrap .zenario_slotControl_Overridden {
 	background:url('../admin/images/slots/slot-icon.png') no-repeat 0 0;
@@ -795,6 +819,14 @@ div.zenario_slotControlsWrap .zenario_slotControl_module {
 
 div.zenario_slotControlsWrap .zenario_slotControl_reusable {
 	background:url('../admin/images/slots/icon-plugin.svg') no-repeat 0 0 / 15px auto;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControl_pluginImages {
+	background:url('../admin/images/icon-image-library-white.svg') no-repeat 0 0 / 15px auto;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControl_menuSection {
+	background:url('../admin/images/icon-menu-sections-white.svg') no-repeat 0 0 / 15px auto;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControl_empty {

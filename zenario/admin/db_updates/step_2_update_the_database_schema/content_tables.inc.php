@@ -2029,4 +2029,44 @@ _sql
 	WHERE ii.foreign_key_to = 'library_plugin'
 _sql
 
+//Bugfixes: moved logic to add columns from:
+//Email Template Manager, Common Features and Users.
+//Also added checks to make sure the columns exist before attempting to add them again.
+//Please note: this set of updates was backpatched from HEAD to 9.3.
+//It was added to 9.3 as a post-branch fix.
+);	if (ze\dbAdm::needRevision(56356) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'email_templates LIKE "include_a_fixed_attachment"')) ze\dbAdm::revision(56356
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]email_templates`
+	ADD COLUMN `include_a_fixed_attachment` tinyint(1) NOT NULL default 0,
+	ADD COLUMN `selected_attachment` int(10) unsigned default NULL,
+	ADD COLUMN `allow_visitor_uploaded_attachments` tinyint(1) NOT NULL default 0,
+	ADD COLUMN `when_sending_attachments` enum('send_organizer_link', 'send_actual_file') DEFAULT 'send_organizer_link'
+_sql
+
+);	if (ze\dbAdm::needRevision(56357) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_item_versions LIKE "sensitive_content_message"')) ze\dbAdm::revision(56357
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]content_item_versions
+	ADD COLUMN `sensitive_content_message` tinyint(1) NOT NULL default 0
+_sql
+
+);	if (ze\dbAdm::needRevision(56358) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'layouts LIKE "sensitive_content_message"')) ze\dbAdm::revision(56358
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]layouts
+	ADD COLUMN `sensitive_content_message` tinyint(1) NOT NULL default 0
+_sql
+
+);	if (ze\dbAdm::needRevision(56359) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'users LIKE "consent_hash"')) ze\dbAdm::revision(56359
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]users 
+	ADD COLUMN `consent_hash` varchar(28) NULL
+_sql
+
+//In addition to the previous comment, this update was in Zenario User Consent Forms.
+//A core table column should not have different sizes depending on what module is or isn't running,
+//so this will be standardised.
+);	ze\dbAdm::revision( 56360
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]users 
+	MODIFY COLUMN `consent_hash` varchar(35) NULL
+_sql
 );

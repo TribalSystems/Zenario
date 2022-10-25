@@ -121,7 +121,7 @@ zenario__administration:
                             extensions:
                                 label: 'Allowed file types:'
                                 type: text
-                                note_below: Enter a comma seperated list of allowed file types (e.g. .png, .jpg, .jpeg, .gif).
+                                note_below: Enter a comma seperated list of allowed file types (e.g. .png, .jpg, .jpeg, .gif). If left blank, all types will be allowed.
                                 visible_if: |
                                     item.type == 'file_picker'
                             width:

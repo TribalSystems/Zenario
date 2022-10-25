@@ -28,15 +28,33 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-//Fix a bug where the example page was being flagged as a special page after its creation
-//in some situations after a migration
-ze\dbAdm::revision(134,
-<<<_sql
-	ALTER TABLE `[[DB_PREFIX]]email_templates`
-	ADD COLUMN `include_a_fixed_attachment` tinyint(1) NOT NULL default 0,
-	ADD COLUMN `selected_attachment` int(10) unsigned default NULL,
-	ADD COLUMN `allow_visitor_uploaded_attachments` tinyint(1) NOT NULL default 0,
-	ADD COLUMN `when_sending_attachments` enum('send_organizer_link', 'send_actual_file') DEFAULT 'send_organizer_link'
-_sql
+		
+//For each image used, add its name to the slot controls, a link to the image properties FAB,
+//and a link to the image in the image library.
+$imgs = [];
+foreach ($images as $imageId) {
+	if ($image = ze\row::get('files', ['filename', 'usage'], $imageId)) {
+		if ($image['usage'] == 'image') {
+			$orgLink = ze\link::absolute() . 'organizer.php#zenario__content/panels/image_library//'. $imageId;
+			
+			$imgs[$image['filename']] = '
+				<span
+					class="zenario_slotControl_ImgInfo"
+				>'. htmlspecialchars($image['filename']). '</span><a
+					href="'. htmlspecialchars($orgLink). '"
+					target="_blank"
+					onclick="
+						zenarioA.closeSlotControls();
+						return zenarioA.imageProperties('. (int) $imageId. ', \''. ze\escape::jsOnClick($this->slotName). '\', '. (int) $this->instanceId. ', '. (int) $this->eggId. ');
+					"
+					class="zenario_imgProps"
+				></a>';
+		}
+	}
+}
 
-);
+if ($imgs !== []) {
+	ksort($imgs);
+	$controls['info']['plugin_images']['hidden'] = false;
+	$controls['info']['plugin_images']['label'] = implode(', ', $imgs);
+}
