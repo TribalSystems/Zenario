@@ -169,7 +169,15 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		 
 			 || ($values['image_and_link/image_source'] == '_STICKY_IMAGE'
 			  && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['image_and_link/hyperlink_target']))
-			  && ($imageId = ze\file::itemStickyImageId($cID, $cType))));
+			  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))
+			  
+			  || (isset($fields['first_tab/product_source'])
+			  && (
+			  		($values['first_tab/product_source'] == 'auto' && $product = zenario_ecommerce_manager::getProductFromDescriptiveContentItem($this->cID, $this->cType))
+			  		|| ($values['first_tab/product_source'] == 'select_product' && $values['first_tab/product_for_sale'] && ($product = zenario_ecommerce_manager::getProduct($values['first_tab/product_for_sale'])) && $product)
+			  	)
+			  	&& (($values['image_and_link/image_source'] == '_PRODUCT_IMAGE' && ($imageId = $product['image_id'])) || ($values['image_and_link/image_source'] == '_CUSTOM_IMAGE' && ($imageId = $values['first_tab/image'])))
+			  ));
 			
 			$imagePicked = (bool) $imageId;
 		}
@@ -242,6 +250,10 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 					$fields['image_and_link/stretched_image_warning']['hidden'] = false;
 				}
 			}
+			
+			$fields['image_and_link/mobile_behaviour']['hidden'] = false;
+		} else {
+			$fields['image_and_link/mobile_behaviour']['hidden'] = true;
 		}
 		
 		$box['first_display'] = false;
@@ -334,13 +346,16 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		}
 		
 
-		//Only show the image picker if "Mobile behaviour" is set to "Different image".
-		$fields['image_and_link/mobile_image']['hidden'] = $values['image_and_link/mobile_behaviour'] != 'mobile_change_image';
+		//Only show the mobile image picker if an image is picked and "Mobile behaviour" is set to "Different image".
+		$fields['image_and_link/mobile_image']['hidden'] = $fields['image_and_link/mobile_behaviour']['hidden'] || $values['image_and_link/mobile_behaviour'] != 'mobile_change_image';
 		
 		//Only show mobile options if "Mobile behaviour" is set to either "Different image", or "Same image, different size".
 		$hideMobileOptions = (
-			($values['image_and_link/mobile_behaviour'] != 'mobile_change_image')
-			&& ($values['image_and_link/mobile_behaviour'] != 'mobile_same_image_different_size')
+			(
+				($values['image_and_link/mobile_behaviour'] != 'mobile_change_image')
+				&& ($values['image_and_link/mobile_behaviour'] != 'mobile_same_image_different_size')
+			)
+			|| $fields['image_and_link/mobile_behaviour']['hidden']
 			);
 			
 		$this->showHideImageOptions($fields, $values, 'image_and_link', $hideMobileOptions, 'mobile_');

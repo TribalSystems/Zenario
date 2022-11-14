@@ -1424,6 +1424,13 @@ zenarioA.showPlugin = function(el, slotName) {
 //Callback function for refreshPluginSlot()
 zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp, scriptsToRunBefore) {
 	
+	//Fix for a very obscure bug Tony found.
+	//Triggering a refreshPluginSlot() will normally automatically close the slot drop-down menu.
+	//If a plugin takes a little while to load, it's possible to open the menu again whilst it's loading,
+	//and have the menu open when the slot contents are replaced, which causes some glitches.
+	//This line is just to make sure it's closed, avoiding this issue.
+	zenarioA.closeSlotControls();
+	
 	var script,
 		containerId = plgslt_ + slotName,
 		flags = resp.flags,

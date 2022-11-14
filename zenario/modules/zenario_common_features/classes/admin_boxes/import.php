@@ -264,7 +264,6 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				$currentLineHeaders = [];
 				$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
 				if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
-					ini_set('auto_detect_line_endings', true);
 					$file = fopen($path, 'r');
 					if ($file) {
 						$lineNumber = 0;
@@ -324,7 +323,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						}
 						$cellIterator = $row->getCellIterator();
 						foreach ($cellIterator as $cell) {
-							$cellValue = trim($cell->getCalculatedValue());
+							$cellValue = trim($cell->getCalculatedValue() ?: '');
 							$headers[] = $cellValue;
 							$blankCount = ($cellValue == false) ? $blankCount + 1 : 0;
 							if ($blankCount >= $blankLimit) {
@@ -505,7 +504,6 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				
 				$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
 				if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
-					ini_set('auto_detect_line_endings', true);
 					$file = fopen($path, 'r');
 					if ($file) {
 						$lineNumber = 0;
@@ -1053,7 +1051,6 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 		
 		$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
 		if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
-			ini_set('auto_detect_line_endings', true);
 			$file = fopen($path, 'r');
 			if ($file) {
 				$lineNumber = 0;
@@ -1270,7 +1267,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 		$importRecord = $importBaseRecord;
 		foreach ($line as $i => $value) {
 			if (!empty($lineDatasetFields[$i])) {
-				$value = trim($value);
+				$value = trim($value ?: '');
 				//Special fields
 				if ($lineDatasetFields[$i] == 'name_split_on_first_space') {
 					if (($pos = strpos($value, ' ')) !== false) {

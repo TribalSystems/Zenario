@@ -58,12 +58,6 @@ _sql
 		PRIMARY KEY (`id`)
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
-); ze\dbAdm::revision(3
-
-, <<<_sql
-	ALTER TABLE [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations
-	ADD COLUMN `region_id` int(10) unsigned NULL AFTER country_id
-_sql
 
 ); ze\dbAdm::revision(4
 
@@ -310,10 +304,6 @@ _sql
 
 );  ze\dbAdm::revision(43
 
-, <<<_sql
-	ALTER TABLE [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations
-	ADD COLUMN `parent_id` int(10) AFTER `id`
-_sql
 , <<<_sql
 	ALTER TABLE [[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations
 	ADD KEY idxLocationParent(`parent_id`);

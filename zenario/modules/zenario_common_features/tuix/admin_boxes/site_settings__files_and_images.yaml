@@ -332,7 +332,6 @@ site_settings:
                             label: GB
                     value: MB
                     redraw_onchange: true
-                    hide_if_empty: true
                 apache_max_filesize:
                     label: 'Server-wide maximum uploadable file size:'
                     type: text

@@ -248,6 +248,11 @@ class zenario_country_manager extends ze\moduleBaseClass {
 
 	//code refiner - if set returns one dimensional country that code mathces $codeFilter, or zero if no  matching country code found
 	public static function getCountryFullInfo($activityFilter='all',$codeFilter=''){
+		if (!$codeFilter) {
+			//PHP 8 compatibility: make sure the code filter is always a string, and not for example NULL.
+			$codeFilter = '';
+		}
+		
 		$rv=[];
 		$sql = 'SELECT 
 					id,

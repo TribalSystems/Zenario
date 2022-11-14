@@ -629,7 +629,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					}
 				
 					if ($htmlescape) {
-						$text .= htmlspecialchars($val);
+						$text .= htmlspecialchars($val ?: '');
 					} else {
 						$text .= $val;
 					}
