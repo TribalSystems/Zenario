@@ -236,6 +236,9 @@ class user {
 			$_SESSION['extranetUser_firstname'],
 			$_SESSION['extranetUserSteps']
 		);
+		
+		\ze\cookie::antiSessionFixationScript();
+		
 		$_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE'] = true;
 	}
 
@@ -323,6 +326,8 @@ class user {
 
 	//Formerly "logUserIn()"
 	public static function logIn($userId, $impersonate = false) {
+		
+		\ze\cookie::antiSessionFixationScript();
 	
 		//Get details on this user
 		$user = \ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'email', 'password'], $userId);

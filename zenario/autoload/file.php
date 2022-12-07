@@ -2683,12 +2683,21 @@ class file {
 						$resized_image = imagecreatetruecolor($finalImageWidth, $finalImageHeight);
 		
 						//Transparent gifs need a few fixes. Firstly, we need to fill the new image with the transparent colour.
-						if ($mimeType == 'image/gif' && ($trans = imagecolortransparent($image)) >= 0) {
-							$colour = imagecolorsforindex($image, $trans);
-							$trans = imagecolorallocate($resized_image, $colour['red'], $colour['green'], $colour['blue']);				
+						if ($mimeType == 'image/gif') {
+							$trans = imagecolortransparent($image);
+							
+							//N.b. check the transparrent colour ID is actually valid and in-range of the colour index.
+							//Some GIF images can be corrupt come with bogus colour IDs. This will cause a fatal error in PHP 8.1 if we don't catch this.
+							if ($trans >= 0
+							 && $trans < imagecolorstotal($image)) {
+								$colour = imagecolorsforindex($image, $trans);
+								$trans = imagecolorallocate($resized_image, $colour['red'], $colour['green'], $colour['blue']);				
 			
-							imagefill($resized_image, 0, 0, $trans);				
-							imagecolortransparent($resized_image, $trans);
+								imagefill($resized_image, 0, 0, $trans);				
+								imagecolortransparent($resized_image, $trans);
+							} else {
+								$trans = -1;
+							}
 		
 						//Transparent pngs should also be filled with the transparent colour initially.
 						} elseif ($mimeType == 'image/png') {

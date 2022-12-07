@@ -82,6 +82,8 @@ if ($admin = \ze\row::get('admins', $adminCols, $adminIdL, [], $ignoreMissingCol
 			return false;
 	}
 	
+	\ze\cookie::antiSessionFixationScript();
+	
 	//Set the admin's details in their session
 	//Some are different depending on whether this was a local or a super admin
 	$_SESSION['admin_userid'] = $adminIdL;

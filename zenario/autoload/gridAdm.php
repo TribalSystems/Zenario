@@ -342,33 +342,39 @@ body {
 }';
 	}
 	
-	if ($maxDepth) {
-		//Remove the outermost gutters from nested cells
-		$css .= '
+	
+	//Remove the outermost gutters from nested cells.
+	//N.b. we used to skip doing this if there were no groupings, however
+	//minigrids also need this rule, so we'll always need at least one level
+	//of it.
+	if ($maxDepth < 1) {
+		$maxDepth = 1;
+	}
+	
+	$css .= '
 ';
-		
-		$prefix = '.container ';
-		for ($i = 0; $i < $maxDepth; ++$i) {
-			$prefix .= '.span ';
-			$css .= ($i? ',' : ''). "\n". $prefix. '.alpha';
-		}
-		
-		$css .= ' {
+	
+	$prefix = '.container ';
+	for ($i = 0; $i < $maxDepth; ++$i) {
+		$prefix .= '.span ';
+		$css .= ($i? ',' : ''). "\n". $prefix. '.alpha';
+	}
+	
+	$css .= ' {
 	margin-left: 0;
 }
 ';
-		
-		$prefix = '.container ';
-		for ($i = 0; $i < $maxDepth; ++$i) {
-			$prefix .= '.span ';
-			$css .= ($i? ',' : ''). "\n". $prefix. '.omega';
-		}
-		
-		$css .= ' {
+	
+	$prefix = '.container ';
+	for ($i = 0; $i < $maxDepth; ++$i) {
+		$prefix .= '.span ';
+		$css .= ($i? ',' : ''). "\n". $prefix. '.omega';
+	}
+	
+	$css .= ' {
 	margin-right: 0;
 	margin-left: -50px;
 }';
-	}
 	
 	if ($data['gCols'] > 1) {
 		//Right-float the right-most cell - this hack is needed as old browsers will have rounding errors in the total width

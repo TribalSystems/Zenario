@@ -206,4 +206,11 @@ class cookie {
 			\ze\cookie::set(session_name(), session_id(), SESSION_TIMEOUT);
 		}
 	}
+	
+	//Generate a new session ID for a user.
+	//This can help make certain attacks harder to pull off.
+	public static function antiSessionFixationScript() {
+		session_regenerate_id(true);
+		\ze\cookie::set(session_name(), session_id(), SESSION_TIMEOUT);
+	}
 }

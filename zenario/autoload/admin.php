@@ -452,6 +452,8 @@ class admin {
 			$_SESSION['privs'],
 			$_SESSION['admin_last_login']
 		);
+		
+		\ze\cookie::antiSessionFixationScript();
 	
 		if ($destorySession) {
 			if (\ze::isAdmin()) {
@@ -486,6 +488,14 @@ class admin {
 	public static function logIn($adminId, $rememberMe = false) {
 		$admin = \ze\row::get('admins', ['username', 'authtype', 'global_id', 'last_login', 'last_login_ip'], $adminId);
 		
+		if ($admin['authtype'] == 'super') {
+			\ze\admin::setSession($adminId, $admin['global_id']);
+		} else {
+			\ze\admin::setSession($adminId);
+		}
+		
+		\ze\cookie::setConsent();
+		
 		if ($rememberMe) {
 			\ze\cookie::set('COOKIE_LAST_ADMIN_USER', $admin['username']);
 			\ze\cookie::clear('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER');
@@ -497,13 +507,6 @@ class admin {
 		$_SESSION['admin_last_login'] = $admin['last_login'];
 		$_SESSION['admin_last_login_ip'] = $admin['last_login_ip'];
 		$_SESSION['admin_ip_at_login'] = \ze\user::ip();
-		
-		if ($admin['authtype'] == 'super') {
-			\ze\admin::setSession($adminId, $admin['global_id']);
-		} else {
-			\ze\admin::setSession($adminId);
-		}
-		\ze\cookie::setConsent();
 
 		//Note the time this admin last logged in
 			//This might fail if this site needs a db_update and the last_login_ip column does not exist.
