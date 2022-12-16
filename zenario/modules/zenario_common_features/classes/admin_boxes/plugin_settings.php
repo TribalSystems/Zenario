@@ -418,7 +418,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				} else {
 					switch ($module['class_name']) {
 						case 'zenario_plugin_nest':
-							$title = ze\admin::phrase('New nest ([[class_name]])');
+							$title = ze\admin::phrase('New nest ([[class_name]])', $titleMrg);
 							break;
 						default:
 							$title = 

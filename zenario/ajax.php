@@ -658,6 +658,9 @@ if ($methodCall == 'showFile') {
 				echo '<em>', htmlspecialchars(ze::$slotContents[$slotName]['error']), '</em>';
 			}
 		
+		} elseif (empty(ze::$slotContents[$slotName]['init'])) {
+			\ze\pluginAdm::showInitialisationError(ze::$slotContents[$slotName], ze::$slotContents[$slotName]['init'] ?? null);
+		
 		} else {
 			$module->showSlot();
 			

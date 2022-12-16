@@ -254,7 +254,6 @@ class row {
 	}
 
 
-	const existsFromTwig = true;
 	//Declare a function to check if something exists in the database
 	//Formerly "checkRowExists()"
 	public static function exists($table, $ids, $ignoreMissingColumns = false) {
@@ -266,12 +265,6 @@ class row {
 		$ignoreMissingColumns = false, $cols = false, $multiple = false, $mode = false, $orderBy = [],
 		$distinct = false, $returnArrayIndexedBy = false, $addId = false, $storeResult = true
 	) {
-		
-		//Block the ability to check the site settings table from Twig.
-		//You need to use the settings() function instead
-		if (\ze::$isTwig && $table == 'site_settings') {
-			return false;
-		}
 		
 		$tableName = static::$db->prefix. $table;
 	
@@ -764,37 +757,31 @@ class row {
 		return static::selectInternal($table, $ids, false, false, $multiple, 'delete');
 	}
 
-	const getFromTwig = true;
 	//Formerly "getRow()"
 	public static function get($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, false, $orderBy);
 	}
 
-	const queryFromTwig = true;
 	//Formerly "getRows()"
 	public static function query($table, $cols, $ids, $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false, $storeResult = true) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy, false, $storeResult);
 	}
 
-	const distinctQueryFromTwig = true;
 	//Formerly "getDistinctRows()"
 	public static function distinctQuery($table, $cols, $ids, $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false, $storeResult = true) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, true, $indexBy, false, $storeResult);
 	}
 
-	const getAssocsFromTwig = true;
 	//Formerly "getRowsArray()"
 	public static function getAssocs($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
 	}
 	
-	const getValuesFromTwig = true;
 	//Alternate name for getAssocs() - included for consistency with the ze\sql library
 	public static function getValues($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
 	}
 	
-	const getDistinctValuesFromTwig = true;
 	public static function getDistinctValues($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, true, $indexBy? $indexBy : true);
 	}
@@ -804,36 +791,30 @@ class row {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
 	}
 
-	const getDistinctAssocsFromTwig = true;
 	//Formerly "getDistinctRowsArray()"
 	public static function getDistinctAssocs($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true, $indexBy? $indexBy : true);
 	}
 
-	const countFromTwig = true;
 	//Formerly "selectCount()"
 	public static function count($table, $ids = []) {
 		return (int) static::selectInternal($table, $ids, false, false, false, 'count');
 	}
 
-	const maxFromTwig = true;
 	//Formerly "selectMax()"
 	public static function max($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'max');
 	}
 
-	const minFromTwig = true;
 	//Formerly "selectMin()"
 	public static function min($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'min');
 	}
 
-	const sumFromTwig = true;
 	public static function sum($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'sum');
 	}
 
-	const avgFromTwig = true;
 	public static function avg($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'avg');
 	}

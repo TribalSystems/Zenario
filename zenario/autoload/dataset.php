@@ -86,7 +86,6 @@ class dataset {
 		}
 	}
 
-	const fieldsDetailsFromTwig = true;
 	//Formerly "getDatasetFieldsDetails()"
 	public static function fieldsDetails($dataset, $indexById = false) {
 		if (!is_numeric($dataset)) {
@@ -115,7 +114,6 @@ class dataset {
 		return $fieldId . '___rows';
 	}
 
-	const fieldValueFromTwig = true;
 	//Formerly "datasetFieldValue()"
 	public static function fieldValue($dataset, $cfield, $recordId, $returnCSV = true, $forDisplay = false, $row = false) {
 		if ($dataset && !is_array($dataset)) {
@@ -234,7 +232,6 @@ class dataset {
 	
 	}
 	
-	const fieldDisplayValueFromTwig = true;
 	//Formerly "datasetFieldDisplayValue()"
 	public static function fieldDisplayValue($dataset, $cfield, $recordId, $returnCSV = true) {
 		return \ze\dataset::fieldValue($dataset, $cfield, $recordId, $returnCSV, true);
@@ -391,7 +388,6 @@ class dataset {
 	
 	private static $ord;
 
-	const fieldLOVFromTwig = true;
 	//Formerly "getDatasetFieldLOV()"
 	public static function fieldLOV($field, $flat = true, $filter = false) {
 		if (!is_array($field)) {

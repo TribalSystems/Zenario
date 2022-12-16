@@ -34,7 +34,6 @@ use ZxcvbnPhp\Zxcvbn;
 class user {
 
 
-	const ipFromTwig = true;
 	//Formerly "visitorIP()"
 	public static function ip() {
 		if (defined('USE_FORWARDED_IP')
@@ -112,7 +111,6 @@ class user {
 		return $groups;
 	}
 
-	const isInGroupFromTwig = true;
 	//Formerly "checkUserInGroup()"
 	public static function isInGroup($groupId, $userId = 'session') {
 	
@@ -242,7 +240,6 @@ class user {
 		$_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE'] = true;
 	}
 
-	const emailFromTwig = true;
 	//Formerly "userEmail()"
 	public static function email($userId = null) {
 		if ($userId === null) {
@@ -261,7 +258,6 @@ class user {
 		return ($_SESSION['extranetUserID'] ?? false);
 	}
 
-	const screenNameFromTwig = true;
 	//Formerly "getUserScreenName()", "userScreenName()"
 	public static function screenName($userId = 'session') {
 		if ($userId === 'session') {
@@ -275,7 +271,6 @@ class user {
 		}
 	}
 
-	const fieldDisplayValueFromTwig = true;
 	//Formerly "userFieldDisplayValue()"
 	public static function fieldDisplayValue($cfield, $userId = -1, $returnCSV = true) {
 		if ($userId === -1) {
@@ -284,7 +279,6 @@ class user {
 		return \ze\dataset::fieldValue('users', $cfield, $userId, $returnCSV, true);
 	}
 
-	const fieldValueFromTwig = true;
 	//Formerly "userFieldValue()"
 	public static function fieldValue($cfield, $userId = -1, $returnCSV = true) {
 		if ($userId === -1) {
@@ -300,7 +294,6 @@ class user {
 		return \ze\row::get('users', 'identifier', $userId);
 	}
 
-	const nameFromTwig = true;
 	//Formerly "userFirstAndLastName()", "getUserFirstNameSpaceLastName()"
 	public static function name($userId = null) {
 		if ($userId === null) {
@@ -638,7 +631,6 @@ class user {
 		);
 	}
 
-	const canFromTwig = true;
 	//Formerly "checkUserCan()"
 	public static function can($action, $target = 'unassigned', $targetId = false, $multiple = false, $authenticatingUserId = -1) {
 	
@@ -1133,7 +1125,6 @@ class user {
 		return false;
 	}
 
-	const canCreateFromTwig = true;
 	//Shortcut function for creating things, which has a slightly less confusing syntax
 	//Formerly "checkUserCanCreate()"
 	public static function canCreate($thingToCreate, $assignedTo = 'unassigned', $assignedToId = false, $multiple = false, $authenticatingUserId = -1) {
@@ -1145,6 +1136,16 @@ class user {
 		}
 	
 		return \ze\user::can('create-'. $thingToCreate, $assignedTo, $assignedToId, $multiple, $authenticatingUserId);
+	}
+	
+	//Twig-safe versions
+	const currentUserCanFromTwig = true;
+	public static function currentUserCan($action, $target = 'unassigned', $targetId = false, $multiple = false) {
+		return \ze\user::can($action, $target, $targetId, $multiple);
+	}
+	const currentUserCanCreateFromTwig = true;
+	public static function currentUserCanCreate($thingToCreate, $assignedTo = 'unassigned', $assignedToId = false, $multiple = false) {
+		return \ze\user::canCreate($thingToCreate, $assignedTo, $assignedToId, $multiple);
 	}
 	
 	
@@ -1294,7 +1295,6 @@ class user {
 		return $time;
 	}
 
-	const timeZoneFromTwig = true;
 	//Formerly "getUserTimezone()"
 	public static function timeZone($userId = false) {
 		$timezone = false;

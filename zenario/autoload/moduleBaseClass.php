@@ -562,6 +562,13 @@ class moduleAPI {
 	
 	
 	
+	//The \ze::setting function was removed from Twig because we didn't want site admins to be able to access
+	//it when writing Twig code in Twig Snippets.
+	//However we still want plugin developers to be able to call it from their frameworks, so we'll provide
+	//access to it through this class function.
+	public final function siteSetting($settingName) {
+		return \ze::setting($settingName);
+	}
 	
 	  ////////////////////////////////
 	 //  Initialization Functions  //
@@ -1292,23 +1299,7 @@ class moduleAPI {
 					}
 				
 				} elseif ($checkPriv) {
-					//In admin mode, show an error if the plugin could not run due to user permissions
-					if ($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
-					
-						//N.b. as a convience feature, I'll allow for plugin devs to send either a 401 or a 403 error,
-						//and pick the correct message here
-						if (\ze\user::id()) {
-							echo '<em>'. \ze\admin::phrase('You do not have permission to view this plugin, or there is a problem with its settings.'). '</em>';
-						} else {
-							echo '<em>'. \ze\admin::phrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
-						}
-				
-					} elseif (!empty($slot['error'])) {
-						echo '<em>'. htmlspecialchars($slot['error']). '</em>';
-				
-					} elseif (empty($slot['module_id'])) {
-						echo \ze\admin::phrase('[Empty Slot]');
-					}
+					\ze\pluginAdm::showInitialisationError($slot, $status);
 				}
 			}
 		echo $this->endInner();

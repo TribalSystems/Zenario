@@ -61,7 +61,6 @@ class admin {
 	}
 	
 
-	const settingFromTwig = true;
 	//Get the value of an admin's setting
 	//Formerly "adminSetting()"
 	public static function setting($settingName) {
@@ -88,6 +87,12 @@ class admin {
 		\ze::$adminSettings[$settingName] = $value;
 	
 		\ze\row::set('admin_settings', ['value' => $value], array('name' => $settingName, 'admin_id' => $_SESSION['admin_userid']));
+	}
+
+
+	const showDevToolsFromTwig = true;
+	public static function showDevTools() {
+		return \ze\admin::setting('show_dev_tools');
 	}
 
 

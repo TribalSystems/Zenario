@@ -35,7 +35,6 @@ class priv {
 
 	//	Permission functions  //
 
-	const checkFromTwig = true;
 
 	//Check to see if an Admin has a certain privilege
 	//Formerly "checkPriv()"

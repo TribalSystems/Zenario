@@ -97,7 +97,6 @@ class smartGroup {
 		return false;
 	}
 
-	const isUserInFromTwig = true;
 	//Formerly "checkUserIsInSmartGroup()"
 	public static function isUserIn($smartGroupId, $userId = -1) {
 	

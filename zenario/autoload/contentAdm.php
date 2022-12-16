@@ -1359,9 +1359,9 @@ class contentAdm {
 
 	//Validation function for checking aliases
 	//Formerly "validateAlias()"
-	public static function validateAlias($alias, $cID = false, $cType = false, $equivId = false) {
+	public static function validateAlias($alias, $cID = false, $cType = false, $equivId = false, $isSpareAlias = false) {
 		$error = [];
-		$dummy1 = $dummy2 = false;
+		$cIDToCheck = $cTypeToCheck = false;
 	
 		if ($alias!="") {
 			if (preg_match('/\s/', $alias)) {
@@ -1380,8 +1380,32 @@ class contentAdm {
 			} elseif (\ze\row::exists('visitor_phrases', ['language_id' => $alias])) {
 				$error[] = \ze\admin::phrase("Don't incude a language code (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr').");
 		
-			} elseif (\ze\content::getCIDAndCTypeFromTagId($dummy1, $dummy2, $alias)) {
-				$error[] = \ze\admin::phrase("Your alias/spare alias looks like a content item ID (e.g. 'html_1', 'news_2'), which isn't allowed. Use a - (hyphen) as a word separator.");
+			} elseif (\ze\content::getCIDAndCTypeFromTagId($cIDToCheck, $cTypeToCheck, $alias)) {
+				$allow = false;
+				
+				if ($isSpareAlias) {
+					//If this is meant to be a spare alias, and the parsed string looks like it could be a real content ID and type,
+					//check if there is an actual content type like that enabled.
+					//Then check if there already is a content item with that ID and type, which has been trashed and deleted.
+					
+					//Otherwise, block. Do not allow situations where, for example, an admin attempts to create a spare alias
+					//html_11, when the highest number created is html_10.
+					if (\ze\content::getContentTypes($cTypeToCheck)) {
+						$contentItemStatus = \ze\row::get('content_items', 'status', ['id' => $cIDToCheck, 'type' => $cTypeToCheck]);
+					
+						if ($contentItemStatus && $contentItemStatus == 'deleted') {
+							$allow = true;
+						}
+					}
+				}
+				
+				if (!$allow) {
+					if ($isSpareAlias) {
+						$error[] = \ze\admin::phrase("Your spare alias looks like a content item ID (e.g. 'html_1', 'news_2'), which is only allowed when the content item of that ID has been trashed and deleted. Unless you are trying to redirect from such a content item, use a - (hyphen) as a word separator.");
+					} else {
+						$error[] = \ze\admin::phrase("Your alias looks like a content item ID (e.g. 'html_1', 'news_2'), which isn't allowed. Use a - (hyphen) as a word separator.");
+					}
+				}
 			}
 		
 		

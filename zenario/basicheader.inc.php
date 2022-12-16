@@ -387,7 +387,6 @@ class ze {
 	}
 
 	//Get the value of a site setting
-	const settingFromTwig = true;
 	//Formerly "setting()", "getSiteConfig()"
 	public static function setting($settingName, $useCache = true, $default = false, $secret = false) {
 		$secret = (int) $secret;

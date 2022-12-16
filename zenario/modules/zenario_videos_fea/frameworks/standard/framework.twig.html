@@ -246,7 +246,7 @@
 	</div>
 	
 	<script>
-		{% set token = ze('', 'setting', 'vimeo_access_token') %}
+		{% set token = this.siteSetting('vimeo_access_token') %}
 		var token = "{{token}}";
 	</script>
 {% endif %}

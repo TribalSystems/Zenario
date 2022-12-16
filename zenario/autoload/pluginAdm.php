@@ -1501,4 +1501,25 @@ class pluginAdm {
 		//N.b. the parents, depth and level variables calculated are currently not used anywhere
 	}
 
+	//In admin mode, show an error if the plugin could not run due to user permissions
+	public static function showInitialisationError($slot, $status) {
+		
+		if ($status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
+		
+			//N.b. as a convience feature, I'll allow for plugin devs to send either a 401 or a 403 error,
+			//and pick the correct message here
+			if (\ze\user::id()) {
+				echo '<em>'. \ze\admin::phrase('You do not have permission to view this plugin, or there is a problem with its settings.'). '</em>';
+			} else {
+				echo '<em>'. \ze\admin::phrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
+			}
+	
+		} elseif (!empty($slot['error'])) {
+			echo '<em>'. htmlspecialchars($slot['error']). '</em>';
+	
+		} elseif (empty($slot['module_id'])) {
+			echo \ze\admin::phrase('[Empty Slot]');
+		}
+	}
+
 }

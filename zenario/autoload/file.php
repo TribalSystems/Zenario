@@ -1085,7 +1085,6 @@ class file {
 
 	
 	//Try to set the feature image (aka sticky image) for a link to a content item in the framework
-	const featureImageHTMLFromTwig = true;
 	public static function featureImageHTML(
 		$cID, $cType, $cVersion,
 		$useFallbackImage, $fallbackImageId,
@@ -1121,7 +1120,6 @@ class file {
 	//N.b. some modes/features are not compatible with each other, and are mutualy exclusive:
 		//You may only use one of the two following options: Show as background image; Lazy Load
 		//Different options for mobile images cannot be used if the Lazy Load option is being used
-	const imageHTMLFromTwig = true;
 	public static function imageHTML(
 		&$cssRules, $preferInlineStypes,
 		$imageId, $maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
@@ -2022,7 +2020,6 @@ class file {
 
 
 
-	const imageLinkArrayFromTwig = true;
 	//Formerly "imageLinkArray()"
 	public static function imageLinkArray(
 		$imageId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,

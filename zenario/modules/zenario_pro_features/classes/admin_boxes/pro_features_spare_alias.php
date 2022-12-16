@@ -55,6 +55,8 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 					'Delete all instances of "[[alias]]" from error log ([[log_count]] in log) ',
 					['alias' => $brokenAlias, 'log_count' => (int) $logCount]
 				);
+		} else {
+			$fields['spare_alias/delete_error_log']['hidden'] = true;
 		}
 		
 		if (!$box['key']['id']) {
@@ -125,7 +127,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$box['confirm']['show'] = false;
 		$box['confirm']['message'] = '';
-		if ($values['spare_alias/delete_error_log']== true) {
+		if ($values['spare_alias/delete_error_log'] == true) {
 			if (ze\module::inc('zenario_error_log')) {
 				
 				$aliasCount = ze\row::count(ZENARIO_ERROR_LOG_PREFIX.'error_log', ['page_alias' => $values['spare_alias/alias']]);
@@ -142,7 +144,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 			} elseif (ze\row::exists('spare_aliases', ['alias' => $values['spare_alias/alias']])) {
 				$box['tabs']['spare_alias']['errors'][] = ze\admin::phrase('The spare alias "[[alias]]" is already in use.', ['alias' => $values['spare_alias/alias']]);
 		
-			} elseif ($mistakesInAlias = ze\contentAdm::validateAlias($values['spare_alias/alias'])) {
+			} elseif ($mistakesInAlias = ze\contentAdm::validateAlias($values['spare_alias/alias'], false, false, false, $isSpareAlias = true)) {
 				$box['tabs']['spare_alias']['errors'] = $mistakesInAlias;
 			}
 		}
@@ -178,7 +180,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		ze\row::set('spare_aliases', $row, ['alias' => $alias]);
 		
 		//Delete all instances of alias from error log		
-		if ($values['spare_alias/delete_error_log']== true) {
+		if ($values['spare_alias/delete_error_log'] == true) {
 			if (ze\module::inc('zenario_error_log')) {
 				$deleteAliasLog = $values['spare_alias/delete_alias'];
 				

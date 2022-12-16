@@ -168,7 +168,6 @@ class date {
 	}
 	
 	//A deprecated aliases
-	const formattedTimeZoneFromTwig = true;
 	public static function formattedTimeZone($date = null) {
 		return \ze\date::formatTimeZone($date);
 	}
