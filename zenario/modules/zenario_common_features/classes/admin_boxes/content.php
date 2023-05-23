@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -676,19 +676,22 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Location (DB, docstore, s3)
 			if ($values['file/file']) {
 				$fileInfo = ze\row::get('files', ['location', 'path'], $values['file/file']);
-				$storageString = "Stored in the [[storage_location]]";
-				if (!empty($fileInfo['location']) && $fileInfo['location'] == 'docstore') {
-					$storageString .= ", folder name [[folder_name]].";
-				} else {
-					$storageString .= ".";
-				}
 				
-				if ($fileInfo['path'] && !ze\file::docstorePath($fileInfo['path'])) {
-					ze\lang::applyMergeFields($fields['file/file_is_missing']['snippet']['html'], ['path' => $fileInfo['path']]);
-					$fields['file/file_is_missing']['hidden'] = false;
-				}
+				if (is_array($fileInfo) && !empty($fileInfo)) {
+					$storageString = "Stored in the [[storage_location]]";
+					if (!empty($fileInfo['location']) && $fileInfo['location'] == 'docstore') {
+						$storageString .= ", folder name [[folder_name]].";
+					} else {
+						$storageString .= ".";
+					}
+				
+					if ($fileInfo['path'] && !ze\file::docstorePath($fileInfo['path'])) {
+						ze\lang::applyMergeFields($fields['file/file_is_missing']['snippet']['html'], ['path' => $fileInfo['path']]);
+						$fields['file/file_is_missing']['hidden'] = false;
+					}
 
-				$fields['file/file']['note_below'] = ze\admin::phrase($storageString, ['storage_location' => $fileInfo['location'] ?? '', 'folder_name' => $fileInfo['path'] ?? '']);
+					$fields['file/file']['note_below'] = ze\admin::phrase($storageString, ['storage_location' => $fileInfo['location'] ?? '', 'folder_name' => $fileInfo['path'] ?? '']);
+				}
 			}
 		} else {
 			//If we are enforcing a specific Content Type, ensure that only layouts of that type can be picked
@@ -1856,12 +1859,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 			}
 			
-			//To upload file on AWS s3 
+			//If an S3 file was picked, save its details. Otherwise blank out the name and file ID.
 			if ($values['file/s3_file_id']) {
 				$version['s3_filename'] = $values['file/s3_file_name'];
-				$version['s3_file_id'] = $values['file/s3_file_id'];
+				$version['s3_file_id'] = (int) $values['file/s3_file_id'];
 			} else {
-				$version['s3_file_id'] = $values['file/s3_file_id'];
+				$version['s3_file_id'] = 0;
+				$version['s3_filename'] = '';
 			}
 			
 		}

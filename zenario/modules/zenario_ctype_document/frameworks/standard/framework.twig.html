@@ -39,7 +39,7 @@
 									{% endif %}
 								</div>
 							{% endif %}
-							{% if Aws_Link %}
+							{% if Aws_Support_Enabled_On_Site %}
 								{% if Published_Section %}
 									<p><span class="label">{{"Published:"|trans}} </span>{{Published}}</p>
 								{% endif %}
@@ -118,19 +118,27 @@
 								</h3>
 							{% endif %}
 
-							{% if this.setting('s3_file') and Download_S3_File and Aws_Link and S3_Link %}
-								{% if S3_File_Name %}
-									<h3>{{"S3 filename:"|trans}}</h3>
-									<p>{{S3_File_Name|e}}</p>
-								{% endif %}
+							{# S3 file support #}
+							{% if this.setting('s3_file') and S3_File_Download_Phrase and Aws_Support_Enabled_On_Site %}
+								{% if S3_File_Id %}
+									{% if S3_Link %}
+										{% if S3_File_Name %}
+											<h3>{{"S3 filename:"|trans}}</h3>
+											<p>{{S3_File_Name|e}}</p>
+										{% endif %}
 
-								<h3>
-									<a href="{{S3_Link}}" class="document_download" download>{{Download_S3_File|trans}}</a>
+										<h3>
+											<a href="{{S3_Link}}" class="document_download" download>{{S3_File_Download_Phrase|trans}}</a>
 
-									{% if Show_S3_File_Type_And_Size %}
-										({{S3Type}}, {{S3_Size}})
+											{% if Show_S3_File_Type_And_Size %}
+												({{S3Type}}, {{S3_Size}})
+											{% endif %}
+										</h3>
+									{% else %}
+										<h3>{{"S3 filename:"|trans}}</h3>
+										<p class="error">{{S3_File_Not_Found_Error_Phrase|e}}</p>
 									{% endif %}
-								</h3>
+								{% endif %}
 							{% endif %}
 							
 							{% if No_Document_Link_Section %}

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ class zenario_conductor__link {
 				//with any specific values set here.
 				foreach ($dRequests as $var => &$val) {
 					if (isset($requests[$var])) {
-						$var = $requests[$var];
+						$val = $requests[$var];
 					}
 				}
 				unset($val);

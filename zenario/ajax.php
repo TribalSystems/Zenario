@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -133,15 +133,22 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	if (!$instanceFound) {
-		if (!ze::isAdmin() || !$slotName) {
+		if (!($continueIfNoAccess = $methodCall == 'refreshPlugin' && ze::isAdmin()) || !$slotName) {
 			exit;
+		
 		} else {
 			ze\plugin::setupNewBaseClass($slotName);
 			$instanceId = 0;
 		}
 	
-	} elseif (empty(ze::$slotContents[$slotName]['class']) || (empty(ze::$slotContents[$slotName]['init']) && !ze::isAdmin())) {
-		echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
+	} else
+	if (empty(ze::$slotContents[$slotName]['class'])
+	 || (empty(ze::$slotContents[$slotName]['init'])
+	  && !($continueIfNoAccess = $methodCall == 'refreshPlugin' && ze::isAdmin()))) {
+	  	
+	  	if (ze::isAdmin()) {
+			echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
+		}
 		exit;
 	}
 	
@@ -348,7 +355,10 @@ if ($methodCall == 'showFile') {
 
 	//Check to see if this path is allowed.
 	} else if (!$module->returnVisitorTUIXEnabled($requestedPath)) {
-		echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
+	  	
+	  	if (ze::isAdmin()) {
+			echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
+		}
 		exit;
 	}
 	

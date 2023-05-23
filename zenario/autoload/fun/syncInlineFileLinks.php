@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -467,8 +467,6 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				}
 				\ze::$mustUseFullPath = $rememberWhatThisWas;
 			}
-			
-			//bool(true) string(5) "image" string(6) "public" bool(false) string(103) "zenario/file.php?usage=resize&c=qbWD-Niu9h0MKBFPS6qXly2RF4E&retina=1&filename=seed-portfolio-image1.jpg" string(3) "nah"
 			
 			
 			//Regenerate/tidy up the URL if one of the other flags above was set

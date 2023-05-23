@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -2068,5 +2068,16 @@ _sql
 , <<<_sql
 	ALTER TABLE [[DB_PREFIX]]users 
 	MODIFY COLUMN `consent_hash` varchar(35) NULL
+_sql
+
+
+//Update the home page layout for everyone who has the wrong path to the wow.js library.
+//Please note: this patch was made in 9.5 and backpatched to 9.3 and 9.4.
+//However this code is safe to run more than once without a specific check needed.
+);	ze\dbAdm::revision( 56365
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]layouts`
+	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')
+	WHERE foot_html like '%zenario/libs/yarn/wowjs%'
 _sql
 );

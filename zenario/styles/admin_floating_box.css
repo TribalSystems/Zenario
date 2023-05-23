@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -3743,7 +3743,8 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 	color:#FFF;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner .zenario_note_content a {
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner .zenario_note_content,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner .zenario_note_content * {
 	color:#333;
 }
 

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -96,8 +96,8 @@ removeUnwantedCode('spectrum-colorpicker/test');
 removeUnwantedCode('toastr/node_modules');
 removeUnwantedCode('toastr/nuget');
 removeUnwantedCode('toastr/tests');
-removeUnwantedCode('wowjs/css');
-removeUnwantedCode('wowjs/spec');
+removeUnwantedCode('wow.js/css');
+removeUnwantedCode('wow.js/spec');
 
 //Remove some optional dependancies that the yarn packages we've asked for installed, but I don't actuall think we need
 removeUnwantedCode('sprintf-js');

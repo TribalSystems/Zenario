@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -101,7 +101,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		$this->mergeFields['Type'] = htmlspecialchars($type);
 		
 		//When S3 is enabled in site setting
-		if($version['s3_filename']){
+		if ($version['s3_filename']) {
 			$s3type = explode('.', $version['s3_filename']);
 			$s3type = $s3type[count($s3type) - 1];
 			$this->mergeFields['S3Type'] = htmlspecialchars($s3type);
@@ -142,7 +142,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		
 		$url = false;
 		$localFileDownload = '';
-		$s3FileDownload = '';
+		$s3FileDownloadPhrase = '';
 		$s3Link = '';
 		$s3Filesize = '';
 		
@@ -159,9 +159,9 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			}
 		} else {
 			
-			if (ze::setting('aws_s3_support')) {
+			if ($s3SupportEnabledOnSite = ze::setting('aws_s3_support')) {
 				$localFileDownload = ze::setting('local_file_link_text');
-				$s3FileDownload = ze::setting('s3_file_link_text');
+				$s3FileDownloadPhrase = ze::setting('s3_file_link_text');
 			} else {
 				//This will be translated in the framework.
 				$localFileDownload = 'Download Now';
@@ -186,7 +186,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				$link = '';
 			}
 			
-			if (ze::setting('aws_s3_support') && $version['s3_file_id']) {
+			if ($s3SupportEnabledOnSite && $version['s3_file_id']) {
 				$fileDetails = ze\row::get('files', ['filename','path','size'], $version['s3_file_id']);
 				if ($fileDetails && $fileDetails['size']) {
 					$s3Filesize = ze\file::formatSizeUnits($fileDetails['size']);
@@ -205,7 +205,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 
 				$s3FileDetails = self::getS3FileDetails($version['s3_file_id']);
 				if (!empty($s3FileDetails) && isset($s3FileDetails['ContentType']) && $s3FileDetails['ContentType'] == 'video/mp4') {
-					$s3FileDownload = ze::setting('s3_file_play_video_text');
+					$s3FileDownloadPhrase = ze::setting('s3_file_play_video_text');
 				}
 			}
 
@@ -226,15 +226,18 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				}
 			}
 			$this->mergeFields['CopyLink'] = $this->linkToItem($this->targetID, $this->targetType, $fullpath = true, $request);
-
-			$this->mergeFields['Aws_Link'] = ze::setting('aws_s3_support');
-			$this->mergeFields['Show_S3_File_Type_And_Size'] = $this->mergeFields['Aws_Link'] && $this->setting('show_s3_file_type_and_size');
-			$this->mergeFields['S3_Size'] = $s3Filesize;
+			
 			$this->mergeFields['File_Size'] = $localFileSize;
+
+			$this->mergeFields['Aws_Support_Enabled_On_Site'] = $s3SupportEnabledOnSite;
+			$this->mergeFields['Show_S3_File_Type_And_Size'] = $this->mergeFields['Aws_Support_Enabled_On_Site'] && $this->setting('show_s3_file_type_and_size');
+			$this->mergeFields['S3_Size'] = $s3Filesize;
+			$this->mergeFields['S3_File_Id'] = $version['s3_file_id'];
 			$this->mergeFields['S3_Link'] = $s3Link;
+			$this->mergeFields['S3_File_Not_Found_Error_Phrase'] = $this->phrase($this->setting('s3_file_not_found_error_phrase'));
 			$this->mergeFields['Google_Analytics_Link'] = htmlspecialchars(ze\file::trackDownload($link));
 			$this->mergeFields['Download_Local_File'] = $localFileDownload;
-			$this->mergeFields['Download_S3_File'] = $s3FileDownload;
+			$this->mergeFields['S3_File_Download_Phrase'] = $s3FileDownloadPhrase;
 			$this->mergeFields['module_loc'] = ze::moduleDir('zenario_ctype_document');
 
 			if ($this->cType == 'document') {
@@ -685,12 +688,17 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 					$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
 					$file['alt_tag'] = $altTag;
 					$file['archived'] = 0;
-					$file['created_datetime'] = \ze\date::now();
-					$file['location'] = 's3';
-					$file['path'] = $folderName;
-					$file['data'] = null;
 					
-					$fileId = \ze\row::set('files', $file, $filekey);
+					//If the file already exists in the DB, keep some of its files table values without overwriting.
+					//Otherwise, set them on the new file.
+					if (!ze\row::exists('files', $filekey)) {
+						$file['location'] = 's3';
+						$file['created_datetime'] = \ze\date::now();
+						$file['path'] = $folderName;
+						$file['data'] = null;
+					}
+					
+					$fileId = ze\row::set('files', $file, $filekey);
 					$file['fid'] = $fileId;
 					
 					return $file;

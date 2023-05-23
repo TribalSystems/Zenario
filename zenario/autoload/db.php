@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -764,6 +764,11 @@ class db {
 
 	//Formerly "loadSiteConfig()"
 	public static function loadSiteConfig() {
+		
+		//We use our own error reporting system for database errors, that mails them to the support mailbox.
+		//We need to turn PHP's system off as it's only needed if you don't already have a reporting system,
+		//and it actually breaks other reporting systems.
+		mysqli_report(MYSQLI_REPORT_OFF);
 
 		//Connect to the database
 		\ze\db::connectLocal();

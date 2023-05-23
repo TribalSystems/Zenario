@@ -246,6 +246,16 @@ plugin_settings:
                     type: checkbox
                     hidden: true
                     redraw_onchange: true
+                s3_file_not_found_error_phrase:
+                    indent: 1
+                    plugin_setting:
+                        name: s3_file_not_found_error_phrase
+                        translate: true
+                    label: 'Error phrase if S3 file is not found:'
+                    type: text
+                    value: 'AWS file not found or the storage settings are incorrect'
+                    show_phrase_icon: true
+                    visible_if: zenarioAB.value('s3_file')
                 show_s3_file_type_and_size:
                     indent: 1
                     label: 'Show file type and size'
@@ -254,4 +264,7 @@ plugin_settings:
                     type: checkbox
                     value: 1
                     visible_if: zenarioAB.value('s3_file')
-                    hide_with_previous_outdented_field: true
+                dummy_comment_field:
+                    #This dummy field is here so that the "Update" button does not cover up the phrase icon of the field above.
+                    snippet:
+                        html: ''

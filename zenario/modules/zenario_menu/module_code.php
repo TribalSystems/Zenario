@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -346,6 +346,8 @@ class zenario_menu extends ze\moduleBaseClass {
 		
 		if (!empty($row['name'])) {
 			$objects['Name'] = htmlspecialchars($row['name']);
+		} else {
+			$objects['Name'] = '';
 		}
 
 		if (!empty($row['id'])) {

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2022, Tribal Limited
+ * Copyright (c) 2023, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -475,7 +475,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					}
 					
 					$requests = '';
-					if($result['type'] == 'document') {
+					if ($result['type'] == 'document' && $result['file_id']) {
 						$requests = 'download=1';
 					}
 					$result['url'] = htmlspecialchars($this->linkToItem($result['id'], $result['type'], false, $requests, $result['alias']));
@@ -1107,7 +1107,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 		//... and actual columns
 		$resultsSql = "
-			SELECT v.id, v.type, score, tc.privacy";
+			SELECT v.id, v.type, score, tc.privacy, v.file_id, v.s3_file_id";
 		foreach ($fields as $field) {
 			if (substr($field['name'], 0, 3) != 'cc.') {
 				$columnName = substr($field['name'], (strpos($field['name'], '.') + 1));

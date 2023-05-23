@@ -26,8 +26,8 @@
 		"spectrum-colorpicker": "*",
 		"toastr": "*",
 		"underscore.string": "*",
-		"wowjs": "*",
+		"wow.js": "^1.2.2",
 		"zxcvbn": "^4.4.2"
 	},
-	"version": "9.3.57754"
+	"version": "9.3.58670"
 }
